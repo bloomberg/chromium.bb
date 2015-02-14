@@ -37,7 +37,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
   size_t CharToGlyph(size_t pos) const;
 
   // Returns the corresponding glyph range of the given character range.
-  // |range| is in text-space (0 corresponds to |GetLayoutText()[0]|). Returned
+  // |range| is in text-space (0 corresponds to |GetDisplayText()[0]|). Returned
   // value is in run-space (0 corresponds to the first glyph in the run).
   Range CharRangeToGlyphRange(const Range& range) const;
 
@@ -79,6 +79,53 @@ struct GFX_EXPORT TextRunHarfBuzz {
   DISALLOW_COPY_AND_ASSIGN(TextRunHarfBuzz);
 };
 
+// Manages the list of TextRunHarfBuzz and its logical <-> visual index mapping.
+class TextRunList {
+ public:
+  TextRunList();
+  ~TextRunList();
+
+  size_t size() const { return runs_.size(); }
+
+  // Converts the index between logical and visual index.
+  size_t visual_to_logical(size_t index) const {
+    return visual_to_logical_[index];
+  }
+  size_t logical_to_visual(size_t index) const {
+    return logical_to_visual_[index];
+  }
+
+  const ScopedVector<TextRunHarfBuzz>& runs() const { return runs_; }
+
+  // Adds the new |run| to the run list.
+  void add(TextRunHarfBuzz* run) { runs_.push_back(run); }
+
+  // Reset the run list.
+  void Reset();
+
+  // Initialize the index mapping.
+  void InitIndexMap();
+
+  // Precomputes the offsets for all runs.
+  void ComputePrecedingRunWidths();
+
+  // Get the total width of runs, as if they were shown on one line.
+  // Do not use this when multiline is enabled.
+  float width() const { return width_; }
+
+ private:
+  // Text runs in logical order.
+  ScopedVector<TextRunHarfBuzz> runs_;
+
+  // Maps visual run indices to logical run indices and vice versa.
+  std::vector<int32_t> visual_to_logical_;
+  std::vector<int32_t> logical_to_visual_;
+
+  float width_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextRunList);
+};
+
 }  // namespace internal
 
 class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
@@ -86,8 +133,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   RenderTextHarfBuzz();
   ~RenderTextHarfBuzz() override;
 
-  // Overridden from RenderText.
+  // RenderText:
   scoped_ptr<RenderText> CreateInstanceOfSameType() const override;
+  const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
   SizeF GetStringSizeF() override;
   SelectionModel FindCursorPosition(const Point& point) override;
@@ -95,8 +143,8 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   Range GetGlyphBounds(size_t index) override;
 
  protected:
-  // Overridden from RenderText.
-  int GetLayoutTextBaseline() override;
+  // RenderText:
+  int GetDisplayTextBaseline() override;
   SelectionModel AdjacentCharSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
@@ -104,10 +152,11 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
-  size_t TextIndexToLayoutIndex(size_t index) const override;
-  size_t LayoutIndexToTextIndex(size_t index) const override;
+  size_t TextIndexToDisplayIndex(size_t index) override;
+  size_t DisplayIndexToTextIndex(size_t index) override;
   bool IsValidCursorIndex(size_t index) override;
-  void ResetLayout() override;
+  void OnLayoutTextAttributeChanged(bool text_changed) override;
+  void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
   void DrawVisualText(Canvas* canvas) override;
 
@@ -131,7 +180,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
-  size_t GetRunContainingCaret(const SelectionModel& caret) const;
+  size_t GetRunContainingCaret(const SelectionModel& caret);
   size_t GetRunContainingXCoord(float x, float* offset) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
@@ -142,38 +191,65 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel LastSelectionModelInsideRun(
       const internal::TextRunHarfBuzz* run);
 
-  // Break the text into logical runs and populate the visual <-> logical maps.
-  void ItemizeText();
+  // Break the text into logical runs and populate the visual <-> logical maps
+  // into |run_list_out|.
+  void ItemizeTextToRuns(const base::string16& string,
+                         internal::TextRunList* run_list_out);
 
-  // Helper method for ShapeRun() that calls ShapeRunWithFont() with |run|,
-  // |family|, and |render_params|, returning true if the family provides all
-  // needed glyphs and false otherwise. Additionally updates |best_family|,
-  // |best_render_params|, and |best_missing_glyphs| if |family| has fewer than
-  // |best_missing_glyphs| missing glyphs.
-  bool CompareFamily(internal::TextRunHarfBuzz* run,
+  // Helper method for ShapeRun() that calls ShapeRunWithFont() with |text|,
+  // |run|, |family|, and |render_params|, returning true if the family provides
+  // all the glyphs needed for |run|, and false otherwise. Additionally updates
+  // |best_family|, |best_render_params|, and |best_missing_glyphs| if |family|
+  // has fewer than |best_missing_glyphs| missing glyphs.
+  bool CompareFamily(const base::string16& text,
                      const std::string& family,
                      const gfx::FontRenderParams& render_params,
+                     internal::TextRunHarfBuzz* run,
                      std::string* best_family,
                      gfx::FontRenderParams* best_render_params,
                      size_t* best_missing_glyphs);
 
-  // Shape the glyphs needed for the text |run|.
-  void ShapeRun(internal::TextRunHarfBuzz* run);
-  bool ShapeRunWithFont(internal::TextRunHarfBuzz* run,
+  // Shape the glyphs of all runs in |run_list| using |text|.
+  void ShapeRunList(const base::string16& text,
+                    internal::TextRunList* run_list);
+
+  // Shape the glyphs needed for the |run| within the |text|.
+  void ShapeRun(const base::string16& text,
+                internal::TextRunHarfBuzz* run);
+  bool ShapeRunWithFont(const base::string16& text,
                         const std::string& font_family,
-                        const FontRenderParams& params);
+                        const FontRenderParams& params,
+                        internal::TextRunHarfBuzz* run);
 
-  // Text runs in logical order.
-  ScopedVector<internal::TextRunHarfBuzz> runs_;
+  // Makes sure that text runs for layout text are shaped.
+  void EnsureLayoutRunList();
 
-  // Maps visual run indices to logical run indices and vice versa.
-  std::vector<int32_t> visual_to_logical_;
-  std::vector<int32_t> logical_to_visual_;
+  // ICU grapheme iterator for the layout text. Can be NULL in case of an error.
+  base::i18n::BreakIterator* GetGraphemeIterator();
 
-  bool needs_layout_;
+  // Convert an index in |text_| to the index in |given_text|. The
+  // |given_text| should be either |display_text_| or |layout_text_|
+  // depending on the elide state.
+  size_t TextIndexToGivenTextIndex(const base::string16& given_text,
+                                   size_t index);
 
-  // ICU grapheme iterator for the layout text. Valid when |!needs_layout_|. Can
-  // be NULL in case of an error.
+  // Returns the current run list, |display_run_list_| if the text is
+  // elided, or |layout_run_list_| otherwise.
+  internal::TextRunList* GetRunList();
+  const internal::TextRunList* GetRunList() const;
+
+  // Text run list for |layout_text_| and |display_text_|.
+  // |display_run_list_| is created only when the text is elided.
+  internal::TextRunList layout_run_list_;
+  scoped_ptr<internal::TextRunList> display_run_list_;
+
+  bool update_layout_run_list_ : 1;
+  bool update_display_run_list_ : 1;
+  bool update_grapheme_iterator_ : 1;
+  bool update_display_text_ : 1;
+
+  // ICU grapheme iterator for the layout text. Use GetGraphemeIterator()
+  // to access the iterator.
   scoped_ptr<base::i18n::BreakIterator> grapheme_iterator_;
 
   // The total size of the layouted text.

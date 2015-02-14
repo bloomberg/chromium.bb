@@ -136,7 +136,7 @@ class StyleIterator {
   DISALLOW_COPY_AND_ASSIGN(StyleIterator);
 };
 
-// Line segments are slices of the layout text to be rendered on a single line.
+// Line segments are slices of the display text to be rendered on a single line.
 struct LineSegment {
   LineSegment();
   ~LineSegment();
@@ -156,7 +156,7 @@ struct LineSegment {
   size_t run;
 };
 
-// A line of layout text, comprised of a line segment list and some metrics.
+// A line of display text, comprised of a line segment list and some metrics.
 struct Line {
   Line();
   ~Line();
@@ -251,9 +251,6 @@ class GFX_EXPORT RenderText {
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
 
-  // Set whether newline characters should be replaced with newline symbols.
-  void SetReplaceNewlineCharsWithSymbols(bool replace);
-
   // TODO(ckocagil): Multiline text rendering is currently only supported on
   // Windows. Support other platforms.
   bool multiline() const { return multiline_; }
@@ -263,18 +260,15 @@ class GFX_EXPORT RenderText {
   int min_line_height() const { return min_line_height_; }
   void SetMinLineHeight(int line_height);
 
-  // Set the maximum length of the displayed layout text, not the actual text.
+  // Set the maximum length of the layout text, not the actual text.
   // A |length| of 0 forgoes a hard limit, but does not guarantee proper
   // functionality of very long strings. Applies to subsequent SetText calls.
   // WARNING: Only use this for system limits, it lacks complex text support.
   void set_truncate_length(size_t length) { truncate_length_ = length; }
 
   // The layout text will be elided to fit |display_rect| using this behavior.
-  // The layout text may be shortened further by the truncate length.
   void SetElideBehavior(ElideBehavior elide_behavior);
   ElideBehavior elide_behavior() const { return elide_behavior_; }
-
-  const base::string16& layout_text() const { return layout_text_; }
 
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
@@ -351,12 +345,17 @@ class GFX_EXPORT RenderText {
   DirectionalityMode directionality_mode() const {
       return directionality_mode_;
   }
-  base::i18n::TextDirection GetTextDirection();
+  base::i18n::TextDirection GetDisplayTextDirection();
 
   // Returns the visual movement direction corresponding to the logical end
   // of the text, considering only the dominant direction returned by
-  // |GetTextDirection()|, not the direction of a particular run.
+  // |GetDisplayTextDirection()|, not the direction of a particular run.
   VisualCursorDirection GetVisualDirectionOfLogicalEnd();
+
+  // Returns the text used to display, which may be obscured, truncated or
+  // elided. The subclass may compute elided text on the fly, or use
+  // precomputed the elided text.
+  virtual const base::string16& GetDisplayText() = 0;
 
   // Returns the size required to display the current string (which is the
   // wrapped size in multiline mode). The returned size does not include space
@@ -448,6 +447,12 @@ class GFX_EXPORT RenderText {
  protected:
   RenderText();
 
+  // NOTE: The value of these accessors may be stale. Please make sure
+  // that these fields are up-to-date before accessing them.
+  const base::string16& layout_text() const { return layout_text_; }
+  const base::string16& display_text() const { return display_text_; }
+  bool text_elided() const { return text_elided_; }
+
   const BreakList<SkColor>& colors() const { return colors_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
 
@@ -473,10 +478,10 @@ class GFX_EXPORT RenderText {
   // be returned.
   //
   // GetBaseline() returns the fixed baseline regardless of the text.
-  // GetLayoutTextBaseline() returns the baseline determined by the underlying
+  // GetDisplayTextBaseline() returns the baseline determined by the underlying
   // layout engine, and it changes depending on the text.  GetAlignmentOffset()
   // returns the difference between them.
-  virtual int GetLayoutTextBaseline() = 0;
+  virtual int GetDisplayTextBaseline() = 0;
 
   void set_cached_bounds_and_offset_valid(bool valid) {
     cached_bounds_and_offset_valid_ = valid;
@@ -515,14 +520,20 @@ class GFX_EXPORT RenderText {
   // or bounds changes may invalidate returned values.
   virtual std::vector<Rect> GetSubstringBounds(const Range& range) = 0;
 
-  // Convert between indices into |text_| and indices into |obscured_text_|,
-  // which differ when the text is obscured. Regardless of whether or not the
-  // text is obscured, the character (code point) offsets always match.
-  virtual size_t TextIndexToLayoutIndex(size_t index) const = 0;
-  virtual size_t LayoutIndexToTextIndex(size_t index) const = 0;
+  // Convert between indices into |text_| and indices into
+  // GetDisplayText(), which differ when the text is obscured,
+  // truncated or elided. Regardless of whether or not the text is
+  // obscured, the character (code point) offsets always match.
+  virtual size_t TextIndexToDisplayIndex(size_t index) = 0;
+  virtual size_t DisplayIndexToTextIndex(size_t index) = 0;
 
-  // Reset the layout to be invalid.
-  virtual void ResetLayout() = 0;
+  // Notifies that layout text, or attributes that affect the layout text
+  // shape have changed. |text_changed| is true if the content of the
+  // |layout_text_| has changed, not just attributes.
+  virtual void OnLayoutTextAttributeChanged(bool text_changed) = 0;
+
+  // Notifies that attributes that affect the display text shape have changed.
+  virtual void OnDisplayTextAttributeChanged() = 0;
 
   // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
@@ -530,10 +541,10 @@ class GFX_EXPORT RenderText {
   // Draw the text.
   virtual void DrawVisualText(Canvas* canvas) = 0;
 
-  // Returns the text used for layout, which may be obscured or truncated.
-  const base::string16& GetLayoutText() const;
+  // Update the display text.
+  void UpdateDisplayText(float text_width);
 
-  // Returns layout text positions that are suitable for breaking lines.
+  // Returns display text positions that are suitable for breaking lines.
   const BreakList<size_t>& GetLineBreaks();
 
   // Apply (and undo) temporary composition underlines and selection colors.
@@ -563,6 +574,10 @@ class GFX_EXPORT RenderText {
 
   // Applies text shadows to |renderer|.
   void ApplyTextShadows(internal::SkiaTextRenderer* renderer);
+
+  // Get the text direction for the current directionality mode and given
+  // |text|.
+  base::i18n::TextDirection GetTextDirection(const base::string16& text);
 
   // A convenience function to check whether the glyph attached to the caret
   // is within the given range.
@@ -608,11 +623,14 @@ class GFX_EXPORT RenderText {
   // it is a NO-OP.
   void MoveCursorTo(size_t position, bool select);
 
-  // Updates |layout_text_| if the text is obscured or truncated.
-  void UpdateLayoutText();
+  // Updates |layout_text_| and |display_text_| as needed (or marks them dirty).
+  void OnTextAttributeChanged();
 
   // Elides |text| as needed to fit in the |available_width| using |behavior|.
+  // |text_width| is the pre-calculated width of the text shaped by this render
+  // text, or pass 0 if the width is unknown.
   base::string16 Elide(const base::string16& text,
+                       float text_width,
                        float available_width,
                        ElideBehavior behavior);
 
@@ -673,7 +691,7 @@ class GFX_EXPORT RenderText {
   Range composition_range_;
 
   // Color and style breaks, used to color and stylize ranges of text.
-  // BreakList positions are stored with text indices, not layout indices.
+  // BreakList positions are stored with text indices, not display indices.
   // TODO(msw): Expand to support cursor, selection, background, etc. colors.
   BreakList<SkColor> colors_;
   std::vector<BreakList<bool> > styles_;
@@ -691,14 +709,21 @@ class GFX_EXPORT RenderText {
   // The maximum length of text to display, 0 forgoes a hard limit.
   size_t truncate_length_;
 
+  // The obscured and/or truncated text used to layout the text to display.
+  base::string16 layout_text_;
+
+  // The elided text displayed visually. This is empty if the text
+  // does not have to be elided, or became empty as a result of eliding.
+  // TODO(oshima): When the text is elided, painting can be done only with
+  // display text info, so it should be able to clear the |layout_text_| and
+  // associated information.
+  base::string16 display_text_;
+
   // The behavior for eliding, fading, or truncating.
   ElideBehavior elide_behavior_;
 
-  // The obscured and/or truncated text that will be displayed.
-  base::string16 layout_text_;
-
-  // Whether newline characters should be replaced with newline symbols.
-  bool replace_newline_chars_with_symbols_;
+  // True if the text is elided given the current behavior and display area.
+  bool text_elided_;
 
   // The minimum height a line should have.
   int min_line_height_;
@@ -735,11 +760,11 @@ class GFX_EXPORT RenderText {
   // Text shadows to be drawn.
   ShadowValues shadows_;
 
-  // A list of valid layout text line break positions.
+  // A list of valid display text line break positions.
   BreakList<size_t> line_breaks_;
 
-  // Lines computed by EnsureLayout. These should be invalidated with
-  // ResetLayout and on |display_rect_| changes.
+  // Lines computed by EnsureLayout. These should be invalidated upon
+  // OnLayoutTextAttributeChanged and OnDisplayTextAttributeChanged calls.
   std::vector<internal::Line> lines_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);

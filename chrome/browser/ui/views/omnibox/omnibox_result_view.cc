@@ -279,7 +279,7 @@ int OmniboxResultView::DrawRenderText(
     // vertically stack the ellipsis by restricting the end edge (right_x).
     const bool is_ui_rtl = base::i18n::IsRTL();
     const bool is_match_contents_rtl =
-        (render_text->GetTextDirection() == base::i18n::RIGHT_TO_LEFT);
+        (render_text->GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT);
     const int offset =
         GetDisplayOffset(match, is_ui_rtl, is_match_contents_rtl);
 

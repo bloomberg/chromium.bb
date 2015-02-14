@@ -292,7 +292,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
     // for LTR text. RTL text is still elided (on the left) with "...".
     if (elide_text) {
       render_text->SetText(adjusted_text);
-      if (render_text->GetTextDirection() == base::i18n::LEFT_TO_RIGHT) {
+      if (render_text->GetDisplayTextDirection() == base::i18n::LEFT_TO_RIGHT) {
         render_text->SetElideBehavior(FADE_TAIL);
         elide_text = false;
       }

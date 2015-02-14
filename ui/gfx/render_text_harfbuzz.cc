@@ -10,6 +10,8 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -574,11 +576,48 @@ RangeF TextRunHarfBuzz::GetGraphemeBounds(
                 preceding_run_widths + cluster_end_x);
 }
 
+TextRunList::TextRunList() : width_(0.0f) {}
+
+TextRunList::~TextRunList() {}
+
+void TextRunList::Reset() {
+  runs_.clear();
+  width_ = 0.0f;
+}
+
+void TextRunList::InitIndexMap() {
+  if (runs_.size() == 1) {
+    visual_to_logical_ = logical_to_visual_ = std::vector<int32_t>(1, 0);
+    return;
+  }
+  const size_t num_runs = runs_.size();
+  std::vector<UBiDiLevel> levels(num_runs);
+  for (size_t i = 0; i < num_runs; ++i)
+    levels[i] = runs_[i]->level;
+  visual_to_logical_.resize(num_runs);
+  ubidi_reorderVisual(&levels[0], num_runs, &visual_to_logical_[0]);
+  logical_to_visual_.resize(num_runs);
+  ubidi_reorderLogical(&levels[0], num_runs, &logical_to_visual_[0]);
+}
+
+void TextRunList::ComputePrecedingRunWidths() {
+  // Precalculate run width information.
+  width_ = 0.0f;
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    TextRunHarfBuzz* run = runs_[visual_to_logical_[i]];
+    run->preceding_run_widths = width_;
+    width_ += run->width;
+  }
+}
+
 }  // namespace internal
 
 RenderTextHarfBuzz::RenderTextHarfBuzz()
     : RenderText(),
-      needs_layout_(false),
+      update_layout_run_list_(false),
+      update_display_run_list_(false),
+      update_grapheme_iterator_(false),
+      update_display_text_(false),
       glyph_width_for_test_(0u) {
   set_truncate_length(kMaxTextLength);
 }
@@ -587,6 +626,25 @@ RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
 scoped_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType() const {
   return scoped_ptr<RenderTextHarfBuzz>(new RenderTextHarfBuzz);
+}
+
+const base::string16& RenderTextHarfBuzz::GetDisplayText() {
+  // TODO(oshima): Consider supporting eliding multi-line text.
+  // This requires max_line support first.
+  if (multiline() ||
+      elide_behavior() == NO_ELIDE ||
+      elide_behavior() == FADE_TAIL) {
+    // Call UpdateDisplayText to clear |display_text_| and |text_elided_|
+    // on the RenderText class.
+    UpdateDisplayText(0);
+    update_display_text_ = false;
+    display_run_list_.reset();
+    return layout_text();
+  }
+
+  EnsureLayoutRunList();
+  DCHECK(!update_display_text_);
+  return text_elided() ? display_text() : layout_text();
 }
 
 Size RenderTextHarfBuzz::GetStringSize() {
@@ -605,22 +663,23 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& point) {
   int x = ToTextPoint(point).x();
   float offset = 0;
   size_t run_index = GetRunContainingXCoord(x, &offset);
-  if (run_index >= runs_.size())
-    return EdgeSelectionModel((x < 0) ? CURSOR_LEFT : CURSOR_RIGHT);
-  const internal::TextRunHarfBuzz& run = *runs_[run_index];
 
+  internal::TextRunList* run_list = GetRunList();
+  if (run_index >= run_list->size())
+    return EdgeSelectionModel((x < 0) ? CURSOR_LEFT : CURSOR_RIGHT);
+  const internal::TextRunHarfBuzz& run = *run_list->runs()[run_index];
   for (size_t i = 0; i < run.glyph_count; ++i) {
     const SkScalar end =
         i + 1 == run.glyph_count ? run.width : run.positions[i + 1].x();
     const SkScalar middle = (end + run.positions[i].x()) / 2;
 
     if (offset < middle) {
-      return SelectionModel(LayoutIndexToTextIndex(
+      return SelectionModel(DisplayIndexToTextIndex(
           run.glyph_to_char[i] + (run.is_rtl ? 1 : 0)),
           (run.is_rtl ? CURSOR_BACKWARD : CURSOR_FORWARD));
     }
     if (offset < end) {
-      return SelectionModel(LayoutIndexToTextIndex(
+      return SelectionModel(DisplayIndexToTextIndex(
           run.glyph_to_char[i] + (run.is_rtl ? 0 : 1)),
           (run.is_rtl ? CURSOR_FORWARD : CURSOR_BACKWARD));
     }
@@ -631,14 +690,16 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& point) {
 std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
   EnsureLayout();
 
+  internal::TextRunList* run_list = GetRunList();
   std::vector<RenderText::FontSpan> spans;
-  for (size_t i = 0; i < runs_.size(); ++i) {
+  for (auto* run : run_list->runs()) {
     SkString family_name;
-    runs_[i]->skia_face->getFamilyName(&family_name);
-    Font font(family_name.c_str(), runs_[i]->font_size);
-    spans.push_back(RenderText::FontSpan(font,
-        Range(LayoutIndexToTextIndex(runs_[i]->range.start()),
-              LayoutIndexToTextIndex(runs_[i]->range.end()))));
+    run->skia_face->getFamilyName(&family_name);
+    Font font(family_name.c_str(), run->font_size);
+    spans.push_back(RenderText::FontSpan(
+        font,
+        Range(DisplayIndexToTextIndex(run->range.start()),
+              DisplayIndexToTextIndex(run->range.end()))));
   }
 
   return spans;
@@ -648,23 +709,24 @@ Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
   EnsureLayout();
   const size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
+  internal::TextRunList* run_list = GetRunList();
   // Return edge bounds if the index is invalid or beyond the layout text size.
-  if (run_index >= runs_.size())
+  if (run_index >= run_list->size())
     return Range(GetStringSize().width());
-  const size_t layout_index = TextIndexToLayoutIndex(index);
-  internal::TextRunHarfBuzz* run = runs_[run_index];
+  const size_t layout_index = TextIndexToDisplayIndex(index);
+  internal::TextRunHarfBuzz* run = run_list->runs()[run_index];
   RangeF bounds =
-      run->GetGraphemeBounds(grapheme_iterator_.get(), layout_index);
+      run->GetGraphemeBounds(GetGraphemeIterator(), layout_index);
   // If cursor is enabled, extend the last glyph up to the rightmost cursor
   // position since clients expect them to be contiguous.
-  if (cursor_enabled() && run_index == runs_.size() - 1 &&
+  if (cursor_enabled() && run_index == run_list->size() - 1 &&
       index == (run->is_rtl ? run->range.start() : run->range.end() - 1))
     bounds.second = std::ceil(bounds.second);
   return RoundRangeF(run->is_rtl ?
       RangeF(bounds.second, bounds.first) : bounds);
 }
 
-int RenderTextHarfBuzz::GetLayoutTextBaseline() {
+int RenderTextHarfBuzz::GetDisplayTextBaseline() {
   EnsureLayout();
   return lines()[0].baseline;
 }
@@ -672,39 +734,42 @@ int RenderTextHarfBuzz::GetLayoutTextBaseline() {
 SelectionModel RenderTextHarfBuzz::AdjacentCharSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
-  DCHECK(!needs_layout_);
+  DCHECK(!update_display_run_list_);
+
+  internal::TextRunList* run_list = GetRunList();
   internal::TextRunHarfBuzz* run;
+
   size_t run_index = GetRunContainingCaret(selection);
-  if (run_index >= runs_.size()) {
+  if (run_index >= run_list->size()) {
     // The cursor is not in any run: we're at the visual and logical edge.
     SelectionModel edge = EdgeSelectionModel(direction);
     if (edge.caret_pos() == selection.caret_pos())
       return edge;
-    int visual_index = (direction == CURSOR_RIGHT) ? 0 : runs_.size() - 1;
-    run = runs_[visual_to_logical_[visual_index]];
+    int visual_index = (direction == CURSOR_RIGHT) ? 0 : run_list->size() - 1;
+    run = run_list->runs()[run_list->visual_to_logical(visual_index)];
   } else {
     // If the cursor is moving within the current run, just move it by one
     // grapheme in the appropriate direction.
-    run = runs_[run_index];
+    run = run_list->runs()[run_index];
     size_t caret = selection.caret_pos();
     bool forward_motion = run->is_rtl == (direction == CURSOR_LEFT);
     if (forward_motion) {
-      if (caret < LayoutIndexToTextIndex(run->range.end())) {
+      if (caret < DisplayIndexToTextIndex(run->range.end())) {
         caret = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
         return SelectionModel(caret, CURSOR_BACKWARD);
       }
     } else {
-      if (caret > LayoutIndexToTextIndex(run->range.start())) {
+      if (caret > DisplayIndexToTextIndex(run->range.start())) {
         caret = IndexOfAdjacentGrapheme(caret, CURSOR_BACKWARD);
         return SelectionModel(caret, CURSOR_FORWARD);
       }
     }
     // The cursor is at the edge of a run; move to the visually adjacent run.
-    int visual_index = logical_to_visual_[run_index];
+    int visual_index = run_list->logical_to_visual(run_index);
     visual_index += (direction == CURSOR_LEFT) ? -1 : 1;
-    if (visual_index < 0 || visual_index >= static_cast<int>(runs_.size()))
+    if (visual_index < 0 || visual_index >= static_cast<int>(run_list->size()))
       return EdgeSelectionModel(direction);
-    run = runs_[visual_to_logical_[visual_index]];
+    run = run_list->runs()[run_list->visual_to_logical(visual_index)];
   }
   bool forward_motion = run->is_rtl == (direction == CURSOR_LEFT);
   return forward_motion ? FirstSelectionModelInsideRun(run) :
@@ -758,13 +823,15 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
   }
   return SelectionModel(pos, CURSOR_FORWARD);
 #else
+  internal::TextRunList* run_list = GetRunList();
   SelectionModel cur(selection);
   for (;;) {
     cur = AdjacentCharSelectionModel(cur, direction);
     size_t run = GetRunContainingCaret(cur);
-    if (run == runs_.size())
+    if (run == run_list->size())
       break;
-    const bool is_forward = runs_[run]->is_rtl == (direction == CURSOR_LEFT);
+    const bool is_forward =
+        run_list->runs()[run]->is_rtl == (direction == CURSOR_LEFT);
     size_t cursor = cur.caret_pos();
     if (is_forward ? iter.IsEndOfWord(cursor) : iter.IsStartOfWord(cursor))
       break;
@@ -774,29 +841,32 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
-  DCHECK(!needs_layout_);
+  DCHECK(!update_display_run_list_);
   DCHECK(Range(0, text().length()).Contains(range));
-  Range layout_range(TextIndexToLayoutIndex(range.start()),
-                     TextIndexToLayoutIndex(range.end()));
-  DCHECK(Range(0, GetLayoutText().length()).Contains(layout_range));
+  Range layout_range(TextIndexToDisplayIndex(range.start()),
+                     TextIndexToDisplayIndex(range.end()));
+  DCHECK(Range(0, GetDisplayText().length()).Contains(layout_range));
 
   std::vector<Rect> rects;
   if (layout_range.is_empty())
     return rects;
   std::vector<Range> bounds;
 
+  internal::TextRunList* run_list = GetRunList();
+
   // Add a Range for each run/selection intersection.
-  for (size_t i = 0; i < runs_.size(); ++i) {
-    internal::TextRunHarfBuzz* run = runs_[visual_to_logical_[i]];
+  for (size_t i = 0; i < run_list->size(); ++i) {
+    internal::TextRunHarfBuzz* run =
+        run_list->runs()[run_list->visual_to_logical(i)];
     Range intersection = run->range.Intersect(layout_range);
     if (!intersection.IsValid())
       continue;
     DCHECK(!intersection.is_reversed());
     const Range leftmost_character_x = RoundRangeF(run->GetGraphemeBounds(
-        grapheme_iterator_.get(),
+        GetGraphemeIterator(),
         run->is_rtl ? intersection.end() - 1 : intersection.start()));
     const Range rightmost_character_x = RoundRangeF(run->GetGraphemeBounds(
-        grapheme_iterator_.get(),
+        GetGraphemeIterator(),
         run->is_rtl ? intersection.start() : intersection.end() - 1));
     Range range_x(leftmost_character_x.start(), rightmost_character_x.end());
     DCHECK(!range_x.is_reversed());
@@ -811,26 +881,20 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
     }
     bounds.push_back(range_x);
   }
-  for (size_t i = 0; i < bounds.size(); ++i) {
-    std::vector<Rect> current_rects = TextBoundsToViewBounds(bounds[i]);
+  for (Range& bound : bounds) {
+    std::vector<Rect> current_rects = TextBoundsToViewBounds(bound);
     rects.insert(rects.end(), current_rects.begin(), current_rects.end());
   }
   return rects;
 }
 
-size_t RenderTextHarfBuzz::TextIndexToLayoutIndex(size_t index) const {
-  DCHECK_LE(index, text().length());
-  ptrdiff_t i = obscured() ? UTF16IndexToOffset(text(), 0, index) : index;
-  CHECK_GE(i, 0);
-  // Clamp layout indices to the length of the text actually used for layout.
-  return std::min<size_t>(GetLayoutText().length(), i);
+size_t RenderTextHarfBuzz::TextIndexToDisplayIndex(size_t index) {
+  return TextIndexToGivenTextIndex(GetDisplayText(), index);
 }
 
-size_t RenderTextHarfBuzz::LayoutIndexToTextIndex(size_t index) const {
+size_t RenderTextHarfBuzz::DisplayIndexToTextIndex(size_t index) {
   if (!obscured())
     return index;
-
-  DCHECK_LE(index, GetLayoutText().length());
   const size_t text_index = UTF16OffsetToIndex(text(), 0, index);
   DCHECK_LE(text_index, text().length());
   return text_index;
@@ -841,12 +905,18 @@ bool RenderTextHarfBuzz::IsValidCursorIndex(size_t index) {
     return true;
   if (!IsValidLogicalIndex(index))
     return false;
-  EnsureLayout();
-  return !grapheme_iterator_ || grapheme_iterator_->IsGraphemeBoundary(index);
+  base::i18n::BreakIterator* grapheme_iterator = GetGraphemeIterator();
+  return !grapheme_iterator || grapheme_iterator->IsGraphemeBoundary(index);
 }
 
-void RenderTextHarfBuzz::ResetLayout() {
-  needs_layout_ = true;
+void RenderTextHarfBuzz::OnLayoutTextAttributeChanged(bool text_changed) {
+  update_layout_run_list_ = true;
+  OnDisplayTextAttributeChanged();
+}
+
+void RenderTextHarfBuzz::OnDisplayTextAttributeChanged() {
+  update_display_text_ = true;
+  update_grapheme_iterator_ = true;
 }
 
 void RenderTextHarfBuzz::EnsureLayout() {
@@ -855,61 +925,37 @@ void RenderTextHarfBuzz::EnsureLayout() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "431326 RenderTextHarfBuzz::EnsureLayout"));
 
-  if (needs_layout_) {
-    runs_.clear();
-    grapheme_iterator_.reset();
+  EnsureLayoutRunList();
 
-    if (!GetLayoutText().empty()) {
+  if (update_display_run_list_) {
+    DCHECK(text_elided());
+    const base::string16& display_text = GetDisplayText();
+    display_run_list_.reset(new internal::TextRunList);
+
+    if (!display_text.empty()) {
+      TRACE_EVENT0("ui", "RenderTextHarfBuzz:EnsureLayout1");
+
       // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
       // fixed.
       tracked_objects::ScopedTracker tracking_profile1(
           FROM_HERE_WITH_EXPLICIT_FUNCTION(
               "431326 RenderTextHarfBuzz::EnsureLayout1"));
-
-      grapheme_iterator_.reset(new base::i18n::BreakIterator(GetLayoutText(),
-          base::i18n::BreakIterator::BREAK_CHARACTER));
-      if (!grapheme_iterator_->Init())
-        grapheme_iterator_.reset();
+      ItemizeTextToRuns(display_text, display_run_list_.get());
 
       // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
       // fixed.
-      tracked_objects::ScopedTracker tracking_profile11(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "431326 RenderTextHarfBuzz::EnsureLayout11"));
-
-      ItemizeText();
-
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile12(
+      tracked_objects::ScopedTracker tracking_profile2(
           FROM_HERE_WITH_EXPLICIT_FUNCTION(
               "431326 RenderTextHarfBuzz::EnsureLayout12"));
-
-      for (size_t i = 0; i < runs_.size(); ++i)
-        ShapeRun(runs_[i]);
-
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile13(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "431326 RenderTextHarfBuzz::EnsureLayout13"));
-
-      // Precalculate run width information.
-      float preceding_run_widths = 0.0f;
-      for (size_t i = 0; i < runs_.size(); ++i) {
-        internal::TextRunHarfBuzz* run = runs_[visual_to_logical_[i]];
-        run->preceding_run_widths = preceding_run_widths;
-        preceding_run_widths += run->width;
-      }
+      ShapeRunList(display_text, display_run_list_.get());
     }
+    update_display_run_list_ = false;
 
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
     // fixed.
     tracked_objects::ScopedTracker tracking_profile14(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "431326 RenderTextHarfBuzz::EnsureLayout14"));
-
-    needs_layout_ = false;
     std::vector<internal::Line> empty_lines;
     set_lines(&empty_lines);
   }
@@ -920,18 +966,21 @@ void RenderTextHarfBuzz::EnsureLayout() {
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "431326 RenderTextHarfBuzz::EnsureLayout2"));
 
+    internal::TextRunList* run_list = GetRunList();
     HarfBuzzLineBreaker line_breaker(
         display_rect().width(), font_list().GetBaseline(),
         std::max(font_list().GetHeight(), min_line_height()), multiline(),
-        GetLayoutText(), multiline() ? &GetLineBreaks() : nullptr, runs_);
+        GetDisplayText(), multiline() ? &GetLineBreaks() : nullptr,
+        run_list->runs());
 
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
     tracked_objects::ScopedTracker tracking_profile3(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "431326 RenderTextHarfBuzz::EnsureLayout3"));
 
-    for (size_t i = 0; i < runs_.size(); ++i)
-      line_breaker.AddRun(visual_to_logical_[i]);
+    for (size_t i = 0; i < run_list->size(); ++i)
+      line_breaker.AddRun(run_list->visual_to_logical(i));
+
     std::vector<internal::Line> lines;
     line_breaker.Finalize(&lines, &total_size_);
     set_lines(&lines);
@@ -939,7 +988,9 @@ void RenderTextHarfBuzz::EnsureLayout() {
 }
 
 void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
-  DCHECK(!needs_layout_);
+  DCHECK(!update_layout_run_list_);
+  DCHECK(!update_display_run_list_);
+  DCHECK(!update_display_text_);
   if (lines().empty())
     return;
 
@@ -948,12 +999,13 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
   ApplyTextShadows(&renderer);
   ApplyCompositionAndSelectionStyles();
 
+  internal::TextRunList* run_list = GetRunList();
   for (size_t i = 0; i < lines().size(); ++i) {
     const internal::Line& line = lines()[i];
     const Vector2d origin = GetLineOffset(i) + Vector2d(0, line.baseline);
     SkScalar preceding_segment_widths = 0;
     for (const internal::LineSegment& segment : line.segments) {
-      const internal::TextRunHarfBuzz& run = *runs_[segment.run];
+      const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
       renderer.SetTypeface(run.skia_face.get());
       renderer.SetTextSize(SkIntToScalar(run.font_size));
       renderer.SetFontRenderParams(run.render_params,
@@ -1009,52 +1061,56 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
 }
 
 size_t RenderTextHarfBuzz::GetRunContainingCaret(
-    const SelectionModel& caret) const {
-  DCHECK(!needs_layout_);
-  size_t layout_position = TextIndexToLayoutIndex(caret.caret_pos());
+    const SelectionModel& caret) {
+  DCHECK(!update_display_run_list_);
+  size_t layout_position = TextIndexToDisplayIndex(caret.caret_pos());
   LogicalCursorDirection affinity = caret.caret_affinity();
-  for (size_t run = 0; run < runs_.size(); ++run) {
-    if (RangeContainsCaret(runs_[run]->range, layout_position, affinity))
-      return run;
+  internal::TextRunList* run_list = GetRunList();
+  for (size_t i = 0; i < run_list->size(); ++i) {
+    internal::TextRunHarfBuzz* run = run_list->runs()[i];
+    if (RangeContainsCaret(run->range, layout_position, affinity))
+      return i;
   }
-  return runs_.size();
+  return run_list->size();
 }
 
 size_t RenderTextHarfBuzz::GetRunContainingXCoord(float x,
                                                   float* offset) const {
-  DCHECK(!needs_layout_);
+  DCHECK(!update_display_run_list_);
+  const internal::TextRunList* run_list = GetRunList();
   if (x < 0)
-    return runs_.size();
+    return run_list->size();
   // Find the text run containing the argument point (assumed already offset).
   float current_x = 0;
-  for (size_t i = 0; i < runs_.size(); ++i) {
-    size_t run = visual_to_logical_[i];
-    current_x += runs_[run]->width;
+  for (size_t i = 0; i < run_list->size(); ++i) {
+    size_t run = run_list->visual_to_logical(i);
+    current_x += run_list->runs()[run]->width;
     if (x < current_x) {
-      *offset = x - (current_x - runs_[run]->width);
+      *offset = x - (current_x - run_list->runs()[run]->width);
       return run;
     }
   }
-  return runs_.size();
+  return run_list->size();
 }
 
 SelectionModel RenderTextHarfBuzz::FirstSelectionModelInsideRun(
     const internal::TextRunHarfBuzz* run) {
-  size_t position = LayoutIndexToTextIndex(run->range.start());
+  size_t position = DisplayIndexToTextIndex(run->range.start());
   position = IndexOfAdjacentGrapheme(position, CURSOR_FORWARD);
   return SelectionModel(position, CURSOR_BACKWARD);
 }
 
 SelectionModel RenderTextHarfBuzz::LastSelectionModelInsideRun(
     const internal::TextRunHarfBuzz* run) {
-  size_t position = LayoutIndexToTextIndex(run->range.end());
+  size_t position = DisplayIndexToTextIndex(run->range.end());
   position = IndexOfAdjacentGrapheme(position, CURSOR_BACKWARD);
   return SelectionModel(position, CURSOR_FORWARD);
 }
 
-void RenderTextHarfBuzz::ItemizeText() {
-  const base::string16& text = GetLayoutText();
-  const bool is_text_rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
+void RenderTextHarfBuzz::ItemizeTextToRuns(
+    const base::string16& text,
+    internal::TextRunList* run_list_out) {
+  const bool is_text_rtl = GetTextDirection(text) == base::i18n::RIGHT_TO_LEFT;
   DCHECK_NE(0U, text.length());
 
   // If ICU fails to itemize the text, we create a run that spans the entire
@@ -1064,8 +1120,8 @@ void RenderTextHarfBuzz::ItemizeText() {
   if (!bidi_iterator.Open(text, is_text_rtl, false)) {
     internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
     run->range = Range(0, text.length());
-    runs_.push_back(run);
-    visual_to_logical_ = logical_to_visual_ = std::vector<int32_t>(1, 0);
+    run_list_out->add(run);
+    run_list_out->InitIndexMap();
     return;
   }
 
@@ -1086,7 +1142,6 @@ void RenderTextHarfBuzz::ItemizeText() {
     run->strike = style.style(STRIKE);
     run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
-
     int32 script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
     // Odd BiDi embedding levels correspond to RTL runs.
@@ -1096,8 +1151,9 @@ void RenderTextHarfBuzz::ItemizeText() {
         script_item_break - run_break, &run->script) + run_break;
 
     // Find the next break and advance the iterators as needed.
-    run_break = std::min(static_cast<size_t>(script_item_break),
-                         TextIndexToLayoutIndex(style.GetRange().end()));
+    run_break = std::min(
+        static_cast<size_t>(script_item_break),
+        TextIndexToGivenTextIndex(text, style.GetRange().end()));
 
     // Break runs at certain characters that need to be rendered separately to
     // prevent either an unusual character from forcing a fallback font on the
@@ -1107,33 +1163,27 @@ void RenderTextHarfBuzz::ItemizeText() {
       run_break = FindRunBreakingCharacter(text, run->range.start(), run_break);
 
     DCHECK(IsValidCodePointIndex(text, run_break));
-    style.UpdatePosition(LayoutIndexToTextIndex(run_break));
+    style.UpdatePosition(DisplayIndexToTextIndex(run_break));
     run->range.set_end(run_break);
 
-    runs_.push_back(run);
+    run_list_out->add(run);
   }
 
   // Undo the temporarily applied composition underlines and selection colors.
   UndoCompositionAndSelectionStyles();
 
-  const size_t num_runs = runs_.size();
-  std::vector<UBiDiLevel> levels(num_runs);
-  for (size_t i = 0; i < num_runs; ++i)
-    levels[i] = runs_[i]->level;
-  visual_to_logical_.resize(num_runs);
-  ubidi_reorderVisual(&levels[0], num_runs, &visual_to_logical_[0]);
-  logical_to_visual_.resize(num_runs);
-  ubidi_reorderLogical(&levels[0], num_runs, &logical_to_visual_[0]);
+  run_list_out->InitIndexMap();
 }
 
 bool RenderTextHarfBuzz::CompareFamily(
-    internal::TextRunHarfBuzz* run,
+    const base::string16& text,
     const std::string& family,
     const gfx::FontRenderParams& render_params,
+    internal::TextRunHarfBuzz* run,
     std::string* best_family,
     gfx::FontRenderParams* best_render_params,
     size_t* best_missing_glyphs) {
-  if (!ShapeRunWithFont(run, family, render_params))
+  if (!ShapeRunWithFont(text, family, render_params, run))
     return false;
 
   const size_t missing_glyphs = run->CountMissingGlyphs();
@@ -1145,7 +1195,15 @@ bool RenderTextHarfBuzz::CompareFamily(
   return missing_glyphs == 0;
 }
 
-void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
+void RenderTextHarfBuzz::ShapeRunList(const base::string16& text,
+                                      internal::TextRunList* run_list) {
+  for (auto* run : run_list->runs())
+    ShapeRun(text, run);
+  run_list->ComputePrecedingRunWidths();
+}
+
+void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
+                                  internal::TextRunHarfBuzz* run) {
   const Font& primary_font = font_list().GetPrimaryFont();
   const std::string primary_family = primary_font.GetFontName();
   run->font_size = primary_font.GetFontSize();
@@ -1155,20 +1213,21 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   size_t best_missing_glyphs = std::numeric_limits<size_t>::max();
 
   for (const Font& font : font_list().GetFonts()) {
-    if (CompareFamily(run, font.GetFontName(), font.GetFontRenderParams(),
-                      &best_family, &best_render_params, &best_missing_glyphs))
+    if (CompareFamily(text, font.GetFontName(), font.GetFontRenderParams(),
+                      run, &best_family, &best_render_params,
+                      &best_missing_glyphs))
       return;
   }
 
 #if defined(OS_WIN)
   Font uniscribe_font;
   std::string uniscribe_family;
-  const base::char16* run_text = &(GetLayoutText()[run->range.start()]);
+  const base::char16* run_text = &(text[run->range.start()]);
   if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
                                &uniscribe_font)) {
     uniscribe_family = uniscribe_font.GetFontName();
-    if (CompareFamily(run, uniscribe_family,
-                      uniscribe_font.GetFontRenderParams(),
+    if (CompareFamily(text, uniscribe_family,
+                      uniscribe_font.GetFontRenderParams(), run,
                       &best_family, &best_render_params, &best_missing_glyphs))
       return;
   }
@@ -1200,29 +1259,29 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
     query.pixel_size = run->font_size;
     query.style = run->font_style;
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
-    if (CompareFamily(run, family, fallback_render_params, &best_family,
+    if (CompareFamily(text, family, fallback_render_params, run, &best_family,
                       &best_render_params, &best_missing_glyphs))
       return;
   }
 
   if (!best_family.empty() &&
       (best_family == run->family ||
-       ShapeRunWithFont(run, best_family, best_render_params)))
+       ShapeRunWithFont(text, best_family, best_render_params, run)))
     return;
 
   run->glyph_count = 0;
   run->width = 0.0f;
 }
 
-bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
+bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
                                           const std::string& font_family,
-                                          const FontRenderParams& params) {
+                                          const FontRenderParams& params,
+                                          internal::TextRunHarfBuzz* run) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
   tracked_objects::ScopedTracker tracking_profile0(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "431326 RenderTextHarfBuzz::ShapeRunWithFont0"));
 
-  const base::string16& text = GetLayoutText();
   skia::RefPtr<SkTypeface> skia_face =
       internal::CreateSkiaTypeface(font_family, run->font_style);
   if (skia_face == NULL)
@@ -1328,6 +1387,80 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   hb_buffer_destroy(buffer);
   hb_font_destroy(harfbuzz_font);
   return true;
+}
+
+void RenderTextHarfBuzz::EnsureLayoutRunList() {
+  if (update_layout_run_list_) {
+    layout_run_list_.Reset();
+
+    const base::string16& text = layout_text();
+    if (!text.empty()) {
+      TRACE_EVENT0("ui", "RenderTextHarfBuzz:EnsureLayoutRunList");
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile1(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "431326 RenderTextHarfBuzz::EnsureLayout1"));
+      ItemizeTextToRuns(text, &layout_run_list_);
+
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "431326 RenderTextHarfBuzz::EnsureLayout12"));
+      ShapeRunList(text, &layout_run_list_);
+    }
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile14(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "431326 RenderTextHarfBuzz::EnsureLayout14"));
+
+    std::vector<internal::Line> empty_lines;
+    set_lines(&empty_lines);
+    display_run_list_.reset();
+    update_display_text_ = true;
+    update_layout_run_list_ = false;
+  }
+  if (update_display_text_) {
+    UpdateDisplayText(multiline() ? 0 : layout_run_list_.width());
+    update_display_text_ = false;
+    update_display_run_list_ = text_elided();
+  }
+}
+
+base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
+  if (update_grapheme_iterator_) {
+    update_grapheme_iterator_ = false;
+    grapheme_iterator_.reset(new base::i18n::BreakIterator(
+        GetDisplayText(),
+        base::i18n::BreakIterator::BREAK_CHARACTER));
+    if (!grapheme_iterator_->Init())
+      grapheme_iterator_.reset();
+  }
+  return grapheme_iterator_.get();
+}
+
+size_t RenderTextHarfBuzz::TextIndexToGivenTextIndex(
+    const base::string16& given_text,
+    size_t index) {
+  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK_LE(index, text().length());
+  ptrdiff_t i = obscured() ? UTF16IndexToOffset(text(), 0, index) : index;
+  CHECK_GE(i, 0);
+  // Clamp indices to the length of the given layout or display text.
+  return std::min<size_t>(given_text.length(), i);
+}
+
+internal::TextRunList* RenderTextHarfBuzz::GetRunList() {
+  DCHECK(!update_layout_run_list_);
+  DCHECK(!update_display_run_list_);
+  return text_elided() ? display_run_list_.get() : &layout_run_list_;
+}
+
+const internal::TextRunList* RenderTextHarfBuzz::GetRunList() const {
+  return const_cast<RenderTextHarfBuzz*>(this)->GetRunList();
 }
 
 }  // namespace gfx

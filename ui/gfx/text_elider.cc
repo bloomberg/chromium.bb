@@ -221,7 +221,7 @@ base::string16 ElideText(const base::string16& text,
       gfx::ToEnclosingRect(gfx::RectF(gfx::SizeF(available_pixel_width, 1))));
   render_text->SetElideBehavior(behavior);
   render_text->SetText(text);
-  return render_text->layout_text();
+  return render_text->GetDisplayText();
 #else
   DCHECK_NE(behavior, FADE_TAIL);
   if (text.empty() || behavior == FADE_TAIL || behavior == NO_ELIDE ||

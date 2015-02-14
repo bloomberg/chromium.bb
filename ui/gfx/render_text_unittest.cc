@@ -250,30 +250,30 @@ TEST_F(RenderTextTest, ObscuredText) {
   render_text->SetText(seuss);
   render_text->SetObscured(true);
   EXPECT_EQ(seuss, render_text->text());
-  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
   render_text->SetObscured(false);
   EXPECT_EQ(seuss, render_text->text());
-  EXPECT_EQ(seuss, render_text->GetLayoutText());
+  EXPECT_EQ(seuss, render_text->GetDisplayText());
 
   render_text->SetObscured(true);
 
   // Surrogate pairs are counted as one code point.
   const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 0};
   render_text->SetText(invalid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetDisplayText());
   const base::char16 valid_surrogates[] = {0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetDisplayText());
   EXPECT_EQ(0U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
   EXPECT_EQ(2U, render_text->cursor_position());
 
   // Test index conversion and cursor validity with a valid surrogate pair.
-  EXPECT_EQ(0U, render_text->TextIndexToLayoutIndex(0U));
-  EXPECT_EQ(1U, render_text->TextIndexToLayoutIndex(1U));
-  EXPECT_EQ(1U, render_text->TextIndexToLayoutIndex(2U));
-  EXPECT_EQ(0U, render_text->LayoutIndexToTextIndex(0U));
-  EXPECT_EQ(2U, render_text->LayoutIndexToTextIndex(1U));
+  EXPECT_EQ(0U, render_text->TextIndexToDisplayIndex(0U));
+  EXPECT_EQ(1U, render_text->TextIndexToDisplayIndex(1U));
+  EXPECT_EQ(1U, render_text->TextIndexToDisplayIndex(2U));
+  EXPECT_EQ(0U, render_text->DisplayIndexToTextIndex(0U));
+  EXPECT_EQ(2U, render_text->DisplayIndexToTextIndex(1U));
   EXPECT_TRUE(render_text->IsValidCursorIndex(0U));
   EXPECT_FALSE(render_text->IsValidCursorIndex(1U));
   EXPECT_TRUE(render_text->IsValidCursorIndex(2U));
@@ -312,70 +312,70 @@ TEST_F(RenderTextTest, RevealObscuredText) {
   render_text->SetText(seuss);
   render_text->SetObscured(true);
   EXPECT_EQ(seuss, render_text->text());
-  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
 
   // Valid reveal index and new revealed index clears previous one.
   render_text->RenderText::SetObscuredRevealIndex(0);
-  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
-  EXPECT_EQ(ASCIIToUTF16("*o********"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("*o********"), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("**p*******"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("**p*******"), render_text->GetDisplayText());
 
   // Invalid reveal index.
   render_text->RenderText::SetObscuredRevealIndex(-1);
-  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(seuss.length() + 1);
-  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
 
   // SetObscured clears the revealed index.
   render_text->RenderText::SetObscuredRevealIndex(0);
-  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("h*********"), render_text->GetDisplayText());
   render_text->SetObscured(false);
-  EXPECT_EQ(seuss, render_text->GetLayoutText());
+  EXPECT_EQ(seuss, render_text->GetDisplayText());
   render_text->SetObscured(true);
-  EXPECT_EQ(no_seuss, render_text->GetLayoutText());
+  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
 
   // SetText clears the revealed index.
   render_text->SetText(ASCIIToUTF16("new"));
-  EXPECT_EQ(ASCIIToUTF16("***"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("***"), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("**w"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("**w"), render_text->GetDisplayText());
   render_text->SetText(ASCIIToUTF16("new longer"));
-  EXPECT_EQ(ASCIIToUTF16("**********"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("**********"), render_text->GetDisplayText());
 
   // Text with invalid surrogates.
   const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 'h', 'o', 'p', 0};
   render_text->SetText(invalid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(0);
   const base::char16 invalid_expect_0[] = {0xDC00, '*', '*', '*', '*', 0};
-  EXPECT_EQ(invalid_expect_0, render_text->GetLayoutText());
+  EXPECT_EQ(invalid_expect_0, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
   const base::char16 invalid_expect_1[] = {'*', 0xD800, '*', '*', '*', 0};
-  EXPECT_EQ(invalid_expect_1, render_text->GetLayoutText());
+  EXPECT_EQ(invalid_expect_1, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("**h**"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("**h**"), render_text->GetDisplayText());
 
   // Text with valid surrogates before and after the reveal index.
   const base::char16 valid_surrogates[] =
       {0xD800, 0xDC00, 'h', 'o', 'p', 0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
-  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(0);
   const base::char16 valid_expect_0_and_1[] =
       {0xD800, 0xDC00, '*', '*', '*', '*', 0};
-  EXPECT_EQ(valid_expect_0_and_1, render_text->GetLayoutText());
+  EXPECT_EQ(valid_expect_0_and_1, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
-  EXPECT_EQ(valid_expect_0_and_1, render_text->GetLayoutText());
+  EXPECT_EQ(valid_expect_0_and_1, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
-  EXPECT_EQ(ASCIIToUTF16("*h***"), render_text->GetLayoutText());
+  EXPECT_EQ(ASCIIToUTF16("*h***"), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(5);
   const base::char16 valid_expect_5_and_6[] =
       {'*', '*', '*', '*', 0xD800, 0xDC00, 0};
-  EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
+  EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(6);
-  EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
+  EXPECT_EQ(valid_expect_5_and_6, render_text->GetDisplayText());
 }
 
 TEST_F(RenderTextTest, ElidedText) {
@@ -385,7 +385,7 @@ TEST_F(RenderTextTest, ElidedText) {
   // - ElideText tests from text_elider.cc.
   struct {
     const wchar_t* text;
-    const wchar_t* layout_text;
+    const wchar_t* display_text;
     const bool elision_expected;
   } cases[] = {
     // Strings shorter than the elision width should be laid out in full.
@@ -429,22 +429,23 @@ TEST_F(RenderTextTest, ElidedText) {
   render_text->SetElideBehavior(ELIDE_TAIL);
 
   for (size_t i = 0; i < arraysize(cases); i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "] '%ls'", i,
+                                    cases[i].text));
+
     // Compute expected width
-    expected_render_text->SetText(WideToUTF16(cases[i].layout_text));
+    expected_render_text->SetText(WideToUTF16(cases[i].display_text));
     int expected_width = expected_render_text->GetContentWidth();
 
     base::string16 input = WideToUTF16(cases[i].text);
-    // Extend the input text to ensure that it is wider than the layout_text,
+    // Extend the input text to ensure that it is wider than the display_text,
     // and so it will get elided.
     if (cases[i].elision_expected)
       input.append(WideToUTF16(L" MMMMMMMMMMM"));
-
     render_text->SetText(input);
     render_text->SetDisplayRect(Rect(0, 0, expected_width, 100));
-    EXPECT_EQ(input, render_text->text())
-        << "->For case " << i << ": " << cases[i].text << "\n";
-    EXPECT_EQ(WideToUTF16(cases[i].layout_text), render_text->GetLayoutText())
-        << "->For case " << i << ": " << cases[i].text << "\n";
+    EXPECT_EQ(input, render_text->text());
+    EXPECT_EQ(WideToUTF16(cases[i].display_text),
+              render_text->GetDisplayText());
     expected_render_text->SetText(base::string16());
   }
 }
@@ -463,13 +464,13 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   render_text->SetObscured(true);
   render_text->SetText(WideToUTF16(L"abcdef"));
   EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
-  EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetLayoutText());
+  EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
 }
 
 TEST_F(RenderTextTest, TruncatedText) {
   struct {
     const wchar_t* text;
-    const wchar_t* layout_text;
+    const wchar_t* display_text;
   } cases[] = {
     // Strings shorter than the truncation length should be laid out in full.
     { L"",        L""        },
@@ -506,7 +507,7 @@ TEST_F(RenderTextTest, TruncatedText) {
   for (size_t i = 0; i < arraysize(cases); i++) {
     render_text->SetText(WideToUTF16(cases[i].text));
     EXPECT_EQ(WideToUTF16(cases[i].text), render_text->text());
-    EXPECT_EQ(WideToUTF16(cases[i].layout_text), render_text->GetLayoutText())
+    EXPECT_EQ(WideToUTF16(cases[i].display_text), render_text->GetDisplayText())
         << "For case " << i << ": " << cases[i].text;
   }
 }
@@ -517,7 +518,7 @@ TEST_F(RenderTextTest, TruncatedObscuredText) {
   render_text->SetObscured(true);
   render_text->SetText(WideToUTF16(L"abcdef"));
   EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
-  EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetLayoutText());
+  EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
 }
 
 TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
@@ -576,7 +577,7 @@ TEST_F(RenderTextTest, TruncatedCursorMovementRTL) {
   RunMoveCursorLeftRightTest(render_text.get(), expected, CURSOR_RIGHT);
 }
 
-TEST_F(RenderTextTest, GetTextDirection) {
+TEST_F(RenderTextTest, GetDisplayTextDirection) {
   struct {
     const wchar_t* text;
     const base::i18n::TextDirection text_direction;
@@ -607,13 +608,15 @@ TEST_F(RenderTextTest, GetTextDirection) {
     for (size_t j = 0; j < arraysize(cases); j++) {
       render_text->SetText(WideToUTF16(cases[j].text));
       render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
-      EXPECT_EQ(render_text->GetTextDirection(), cases[j].text_direction);
+      EXPECT_EQ(render_text->GetDisplayTextDirection(),cases[j].text_direction);
       render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_UI);
-      EXPECT_EQ(render_text->GetTextDirection(), ui_direction);
+      EXPECT_EQ(render_text->GetDisplayTextDirection(), ui_direction);
       render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
-      EXPECT_EQ(render_text->GetTextDirection(), base::i18n::LEFT_TO_RIGHT);
+      EXPECT_EQ(render_text->GetDisplayTextDirection(),
+                base::i18n::LEFT_TO_RIGHT);
       render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
-      EXPECT_EQ(render_text->GetTextDirection(), base::i18n::RIGHT_TO_LEFT);
+      EXPECT_EQ(render_text->GetDisplayTextDirection(),
+                base::i18n::RIGHT_TO_LEFT);
     }
   }
 
@@ -622,9 +625,9 @@ TEST_F(RenderTextTest, GetTextDirection) {
   // Ensure that text changes update the direction for DIRECTIONALITY_FROM_TEXT.
   render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
   render_text->SetText(WideToUTF16(kLtr));
-  EXPECT_EQ(render_text->GetTextDirection(), base::i18n::LEFT_TO_RIGHT);
+  EXPECT_EQ(render_text->GetDisplayTextDirection(), base::i18n::LEFT_TO_RIGHT);
   render_text->SetText(WideToUTF16(kRtl));
-  EXPECT_EQ(render_text->GetTextDirection(), base::i18n::RIGHT_TO_LEFT);
+  EXPECT_EQ(render_text->GetDisplayTextDirection(), base::i18n::RIGHT_TO_LEFT);
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtr) {
@@ -1367,14 +1370,9 @@ TEST_F(RenderTextTest, MinLineHeight) {
   ASSERT_NE(0, default_size.width());
 
   render_text->SetMinLineHeight(default_size.height() / 2);
-  // MacOSX does not recompute the bounds properly, so invoke ResetLayout()
-  // explicitly.
-  // TODO(mukai): fix this.
-  render_text->ResetLayout();
   EXPECT_EQ(default_size.ToString(), render_text->GetStringSizeF().ToString());
 
   render_text->SetMinLineHeight(default_size.height() * 2);
-  render_text->ResetLayout();
   SizeF taller_size = render_text->GetStringSizeF();
   EXPECT_EQ(default_size.height() * 2, taller_size.height());
   EXPECT_EQ(default_size.width(), taller_size.width());
@@ -2003,6 +2001,24 @@ TEST_F(RenderTextTest, Multiline_Newline) {
   }
 }
 
+// Make sure that multiline mode ignores elide behavior.
+TEST_F(RenderTextTest, Multiline_IgnoreElide) {
+  const wchar_t kTestString[] =
+      L"very very very long string xxxxxxxxxxxxxxxxxxxxxxxxxx";
+  const wchar_t kEllipsis[] = L"\x2026";
+
+  RenderTextHarfBuzz render_text;
+  render_text.SetElideBehavior(ELIDE_TAIL);
+  render_text.SetDisplayRect(Rect(20, 1000));
+  render_text.SetText(base::WideToUTF16(kTestString));
+  EXPECT_NE(base::string16::npos,
+            render_text.GetDisplayText().find(base::WideToUTF16(kEllipsis)));
+
+  render_text.SetMultiline(true);
+  EXPECT_EQ(base::string16::npos,
+            render_text.GetDisplayText().find(base::WideToUTF16(kEllipsis)));
+}
+
 TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
   const wchar_t* kTestStrings[] = {
     L"abc\ndef", L"a \n b ", L"ab\n", L"a\n\nb", L"\nab", L"\n",
@@ -2097,8 +2113,9 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemeCases) {
     base::string16 text = WideToUTF16(cases[i]);
     render_text.SetText(text);
     render_text.EnsureLayout();
-    ASSERT_EQ(1U, render_text.runs_.size());
-    internal::TextRunHarfBuzz* run = render_text.runs_[0];
+    internal::TextRunList* run_list = render_text.GetRunList();
+    ASSERT_EQ(1U, run_list->size());
+    internal::TextRunHarfBuzz* run = run_list->runs()[0];
 
     base::i18n::BreakIterator* iter = render_text.grapheme_iterator_.get();
     auto first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
@@ -2170,10 +2187,11 @@ TEST_F(RenderTextTest, HarfBuzz_RunDirection) {
       WideToUTF16(L"\x05D0\x05D1" L"1234" L"\x05D2\x05D3");
   render_text.SetText(mixed);
   render_text.EnsureLayout();
-  ASSERT_EQ(3U, render_text.runs_.size());
-  EXPECT_TRUE(render_text.runs_[0]->is_rtl);
-  EXPECT_FALSE(render_text.runs_[1]->is_rtl);
-  EXPECT_TRUE(render_text.runs_[2]->is_rtl);
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(3U, run_list->size());
+  EXPECT_TRUE(run_list->runs()[0]->is_rtl);
+  EXPECT_FALSE(run_list->runs()[1]->is_rtl);
+  EXPECT_TRUE(run_list->runs()[2]->is_rtl);
 }
 
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
@@ -2182,17 +2200,19 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
   // The '\x25B6' "play character" should break runs. http://crbug.com/278913
   render_text.SetText(WideToUTF16(L"x\x25B6y"));
   render_text.EnsureLayout();
-  ASSERT_EQ(3U, render_text.runs_.size());
-  EXPECT_EQ(Range(0, 1), render_text.runs_[0]->range);
-  EXPECT_EQ(Range(1, 2), render_text.runs_[1]->range);
-  EXPECT_EQ(Range(2, 3), render_text.runs_[2]->range);
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(3U, run_list->size());
+  EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
+  EXPECT_EQ(Range(1, 2), run_list->runs()[1]->range);
+  EXPECT_EQ(Range(2, 3), run_list->runs()[2]->range);
 
   render_text.SetText(WideToUTF16(L"x \x25B6 y"));
   render_text.EnsureLayout();
-  ASSERT_EQ(3U, render_text.runs_.size());
-  EXPECT_EQ(Range(0, 2), render_text.runs_[0]->range);
-  EXPECT_EQ(Range(2, 3), render_text.runs_[1]->range);
-  EXPECT_EQ(Range(3, 5), render_text.runs_[2]->range);
+  run_list = render_text.GetRunList();
+  ASSERT_EQ(3U, run_list->size());
+  EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
+  EXPECT_EQ(Range(2, 3), run_list->runs()[1]->range);
+  EXPECT_EQ(Range(3, 5), run_list->runs()[2]->range);
 }
 
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
@@ -2203,12 +2223,13 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
   // separated. See crbug.com/448909
   render_text.SetText(UTF8ToUTF16("x\xF0\x9F\x98\x81y\xE2\x9C\xA8"));
   render_text.EnsureLayout();
-  ASSERT_EQ(4U, render_text.runs_.size());
-  EXPECT_EQ(Range(0, 1), render_text.runs_[0]->range);
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(4U, run_list->size());
+  EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
   // The length is 2 since U+1F601 is represented as a surrogate pair in UTF16.
-  EXPECT_EQ(Range(1, 3), render_text.runs_[1]->range);
-  EXPECT_EQ(Range(3, 4), render_text.runs_[2]->range);
-  EXPECT_EQ(Range(4, 5), render_text.runs_[3]->range);
+  EXPECT_EQ(Range(1, 3), run_list->runs()[1]->range);
+  EXPECT_EQ(Range(3, 4), run_list->runs()[2]->range);
+  EXPECT_EQ(Range(4, 5), run_list->runs()[3]->range);
 }
 
 TEST_F(RenderTextTest, GlyphBounds) {
@@ -2231,10 +2252,11 @@ TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
   RenderTextHarfBuzz render_text;
   render_text.SetText(ASCIIToUTF16("test"));
   render_text.EnsureLayout();
-  ASSERT_EQ(1U, render_text.runs_.size());
-  internal::TextRunHarfBuzz* run = render_text.runs_[0];
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(1U, run_list->size());
+  internal::TextRunHarfBuzz* run = run_list->runs()[0];
   render_text.ShapeRunWithFont(
-      run, "TheFontThatDoesntExist", FontRenderParams());
+      render_text.text(), "TheFontThatDoesntExist", FontRenderParams(), run);
 }
 
 // Ensure an empty run returns sane values to queries.
@@ -2267,9 +2289,9 @@ TEST_F(RenderTextTest, StringFitsOwnWidth) {
   render_text->SetElideBehavior(ELIDE_TAIL);
 
   render_text->SetDisplayRect(Rect(0, 0, 500, 100));
-  EXPECT_EQ(kString, render_text->GetLayoutText());
+  EXPECT_EQ(kString, render_text->GetDisplayText());
   render_text->SetDisplayRect(Rect(0, 0, render_text->GetContentWidth(), 100));
-  EXPECT_EQ(kString, render_text->GetLayoutText());
+  EXPECT_EQ(kString, render_text->GetDisplayText());
 }
 
 // TODO(derat): Figure out why this fails on Windows: http://crbug.com/427184
@@ -2312,8 +2334,9 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
   // Korean character "han".
   render_text.SetText(WideToUTF16(L"\xd55c"));
   render_text.EnsureLayout();
-  ASSERT_EQ(1U, render_text.runs_.size());
-  EXPECT_EQ(0U, render_text.runs_[0]->CountMissingGlyphs());
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(1U, run_list->size());
+  EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
 #endif  // defined(OS_WIN)
 

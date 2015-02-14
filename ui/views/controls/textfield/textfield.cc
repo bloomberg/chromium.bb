@@ -331,7 +331,7 @@ void Textfield::InsertOrReplaceText(const base::string16& new_text) {
 }
 
 base::i18n::TextDirection Textfield::GetTextDirection() const {
-  return GetRenderText()->GetTextDirection();
+  return GetRenderText()->GetDisplayTextDirection();
 }
 
 base::string16 Textfield::GetSelectedText() const {
