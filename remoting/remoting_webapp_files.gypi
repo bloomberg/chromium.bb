@@ -179,6 +179,7 @@
       'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/apps_v2_migration_unittest.js',
       'webapp/unittests/base_unittest.js',
+      'webapp/unittests/desktop_connected_view_unittest.js',
       'webapp/unittests/dns_blackhole_checker_unittest.js',
       'webapp/unittests/event_hook_unittest.js',
       'webapp/unittests/fallback_signal_strategy_unittest.js',

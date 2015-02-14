@@ -739,43 +739,126 @@ remoting.DesktopConnectedView.prototype.updateDimensions = function() {
     return;
   }
 
-  var clientArea = this.getClientArea_();
-  var desktopWidth = this.plugin_.getDesktopWidth();
-  var desktopHeight = this.plugin_.getDesktopHeight();
+  var desktopSize = { width: this.plugin_.getDesktopWidth(),
+                      height: this.plugin_.getDesktopHeight() };
+  var desktopDpi = { x: this.plugin_.getDesktopXDpi(),
+                     y: this.plugin_.getDesktopYDpi() };
+  var newSize = remoting.DesktopConnectedView.choosePluginSize(
+      this.getClientArea_(), window.devicePixelRatio,
+      desktopSize, desktopDpi, this.desktopScale_,
+      remoting.fullscreen.isActive(), this.shrinkToFit_);
 
-  // When configured to display a host at its original size, we aim to display
-  // it as close to its physical size as possible, without losing data:
-  // - If client and host have matching DPI, render the host pixel-for-pixel.
-  // - If the host has higher DPI then still render pixel-for-pixel.
-  // - If the host has lower DPI then let Chrome up-scale it to natural size.
+  // Resize the plugin if necessary.
+  console.log('plugin dimensions:' + newSize.width + 'x' + newSize.height);
+  this.plugin_.element().style.width = newSize.width + 'px';
+  this.plugin_.element().style.height = newSize.height + 'px';
 
-  // We specify the plugin dimensions in Density-Independent Pixels, so to
-  // render pixel-for-pixel we need to down-scale the host dimensions by the
-  // devicePixelRatio of the client. To match the host pixel density, we choose
-  // an initial scale factor based on the client devicePixelRatio and host DPI.
+  // When we receive the first plugin dimensions from the host, we know that
+  // remote host has started.
+  remoting.app.onVideoStreamingStarted();
+}
 
-  // Determine the effective device pixel ratio of the host, based on DPI.
-  var hostPixelRatioX = Math.ceil(this.plugin_.getDesktopXDpi() / 96);
-  var hostPixelRatioY = Math.ceil(this.plugin_.getDesktopYDpi() / 96);
+/**
+ * Helper function accepting client and host dimensions, and returning a chosen
+ * size for the plugin element, in DIPs.
+ *
+ * @param {{width: number, height: number}} clientSizeDips Available client
+ *     dimensions, in DIPs.
+ * @param {number} clientPixelRatio Number of physical pixels per client DIP.
+ * @param {{width: number, height: number}} desktopSize Size of the host desktop
+ *     in physical pixels.
+ * @param {{x: number, y: number}} desktopDpi DPI of the host desktop in both
+ *     dimensions.
+ * @param {number} desktopScale The scale factor configured for the host.
+ * @param {boolean} isFullscreen True if full-screen mode is active.
+ * @param {boolean} shrinkToFit True if shrink-to-fit should be applied.
+ * @return {{width: number, height: number}} Chosen plugin dimensions, in DIPs.
+ */
+remoting.DesktopConnectedView.choosePluginSize = function(
+    clientSizeDips, clientPixelRatio, desktopSize, desktopDpi, desktopScale,
+    isFullscreen, shrinkToFit) {
+  base.debug.assert(clientSizeDips.width > 0);
+  base.debug.assert(clientSizeDips.height > 0);
+  base.debug.assert(clientPixelRatio >= 1.0);
+  base.debug.assert(desktopSize.width > 0);
+  base.debug.assert(desktopSize.height > 0);
+  base.debug.assert(desktopDpi.x > 0);
+  base.debug.assert(desktopDpi.y > 0);
+  base.debug.assert(desktopScale > 0);
+
+  // We have the following goals in sizing the desktop display at the client:
+  //  1. Avoid losing detail by down-scaling beyond 1:1 host:device pixels.
+  //  2. Avoid up-scaling if that will cause the client to need scrollbars.
+  //  3. Avoid introducing blurriness with non-integer up-scaling factors.
+  //  4. Avoid having huge "letterboxes" around the desktop, if it's really
+  //     small.
+  //  5. Compensate for mismatched DPIs, so that the behaviour of features like
+  //     shrink-to-fit matches their "natural" rather than their pixel size.
+  //     e.g. with shrink-to-fit active a 1024x768 low-DPI host on a 640x480
+  //     high-DPI client will be up-scaled to 1280x960, rather than displayed
+  //     at 1:1 host:physical client pixels.
+  //
+  // To determine the ideal size we follow a four-stage process:
+  //  1. Determine the "natural" size at which to display the desktop.
+  //    a. Initially assume 1:1 mapping of desktop to client device pixels.
+  //    b. If host DPI is less than the client's then up-scale accordingly.
+  //    c. If desktopScale is configured for the host then allow that to
+  //       reduce the amount of up-scaling from (b). e.g. if the client:host
+  //       DPIs are 2:1 then a desktopScale of 1.5 would reduce the up-scale
+  //       to 4:3, while a desktopScale of 3.0 would result in no up-scaling.
+  //  2. If the natural size of the desktop is smaller than the client device
+  //     then apply up-scaling by an integer scale factor to avoid excessive
+  //     letterboxing.
+  //  3. If shrink-to-fit is configured then:
+  //     a. If the natural size exceeds the client size then apply down-scaling
+  //        by an arbitrary scale factor.
+  //     b. If we're in full-screen mode and the client & host aspect-ratios
+  //        are radically different (e.g. the host is actually multi-monitor)
+  //        then shrink-to-fit to the shorter dimension, rather than leaving
+  //        huge letterboxes; the user can then bump-scroll around the desktop.
+  //  4. If the overall scale factor is fractionally over an integer factor
+  //     then reduce it to that integer factor, to avoid blurring.
+
+  // All calculations are performed in device pixels.
+  var clientWidth = clientSizeDips.width * clientPixelRatio;
+  var clientHeight = clientSizeDips.height * clientPixelRatio;
+
+  // 1. Determine a "natural" size at which to display the desktop.
+  var scale = 1.0;
+
+  // Determine the effective host device pixel ratio.
+  // Note that we round up or down to the closest integer pixel ratio.
+  var hostPixelRatioX = Math.round(desktopDpi.x / 96);
+  var hostPixelRatioY = Math.round(desktopDpi.y / 96);
   var hostPixelRatio = Math.min(hostPixelRatioX, hostPixelRatioY);
 
-  // Include the desktopScale in the hostPixelRatio before comparing it with
-  // the client devicePixelRatio to determine the "natural" scale to use.
-  hostPixelRatio *= this.desktopScale_;
+  // Allow up-scaling to account for DPI.
+  scale = Math.max(scale, clientPixelRatio / hostPixelRatio);
 
-  // Down-scale by the smaller of the client and host ratios.
-  var scale = 1.0 / Math.min(window.devicePixelRatio, hostPixelRatio);
+  // Allow some or all of the up-scaling to be cancelled by the desktopScale.
+  if (desktopScale > 1.0) {
+    scale = Math.max(1.0, scale / desktopScale);
+  }
 
-  if (this.shrinkToFit_) {
-    // Reduce the scale, if necessary, to fit the whole desktop in the window.
-    var scaleFitWidth = Math.min(scale, 1.0 * clientArea.width / desktopWidth);
-    var scaleFitHeight =
-        Math.min(scale, 1.0 * clientArea.height / desktopHeight);
+  // 2. If the host is still much smaller than the client, then up-scale to
+  //    avoid wasting space, but only by an integer factor, to avoid blurring.
+  if (desktopSize.width * scale <= clientWidth &&
+      desktopSize.height * scale <= clientHeight) {
+    var scaleX = Math.floor(clientWidth / desktopSize.width);
+    var scaleY = Math.floor(clientHeight / desktopSize.height);
+    scale = Math.min(scaleX, scaleY);
+    base.debug.assert(scale >= 1.0);
+  }
+
+  // 3. Apply shrink-to-fit, if configured.
+  if (shrinkToFit) {
+    var scaleFitWidth = Math.min(scale, clientWidth / desktopSize.width);
+    var scaleFitHeight = Math.min(scale, clientHeight / desktopSize.height);
     scale = Math.min(scaleFitHeight, scaleFitWidth);
 
     // If we're running full-screen then try to handle common side-by-side
     // multi-monitor combinations more intelligently.
-    if (remoting.fullscreen.isActive()) {
+    if (isFullscreen) {
       // If the host has two monitors each the same size as the client then
       // scale-to-fit will have the desktop occupy only 50% of the client area,
       // in which case it would be preferable to down-scale less and let the
@@ -793,29 +876,20 @@ remoting.DesktopConnectedView.prototype.updateDimensions = function() {
     }
   }
 
-  var pluginWidth = Math.round(desktopWidth * scale);
-  var pluginHeight = Math.round(desktopHeight * scale);
+  // 4. Avoid blurring for close-to-integer up-scaling factors.
+  if (scale > 1.0) {
+    var scaleBlurriness = scale / Math.floor(scale);
+    if (scaleBlurriness < 1.1) {
+      scale = Math.floor(scale);
+    }
+  }
 
-  // Resize the plugin if necessary.
-  // TODO(wez): Handle high-DPI to high-DPI properly (crbug.com/135089).
-  this.plugin_.element().style.width = pluginWidth + 'px';
-  this.plugin_.element().style.height = pluginHeight + 'px';
-
-  // Position the container.
-  // Note that clientWidth/Height take into account scrollbars.
-  var clientWidth = document.documentElement.clientWidth;
-  var clientHeight = document.documentElement.clientHeight;
-  var parentNode = this.plugin_.element().parentNode;
-
-  console.log('plugin dimensions: ' +
-              parentNode.style.left + ',' +
-              parentNode.style.top + '-' +
-              pluginWidth + 'x' + pluginHeight + '.');
-
-  // When we receive the first plugin dimensions from the host, we know that
-  // remote host has started.
-  remoting.app.onVideoStreamingStarted();
-};
+  // Return the necessary plugin dimensions in DIPs.
+  scale = scale / clientPixelRatio;
+  var pluginWidth = Math.round(desktopSize.width * scale);
+  var pluginHeight = Math.round(desktopSize.height * scale);
+  return { width: pluginWidth, height: pluginHeight };
+}
 
 /**
  * Called when the window or desktop size or the scaling settings change,
