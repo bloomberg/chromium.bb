@@ -81,6 +81,7 @@ int FileStream::Context::Read(IOBuffer* buf,
   IOCompletionIsPending(callback, buf);
 
   async_read_initiated_ = true;
+  result_ = 0;
 
   task_runner_->PostTask(
       FROM_HERE,
@@ -95,6 +96,8 @@ int FileStream::Context::Write(IOBuffer* buf,
                                int buf_len,
                                const CompletionCallback& callback) {
   CHECK(!async_in_progress_);
+
+  result_ = 0;
 
   DWORD bytes_written = 0;
   if (!WriteFile(file_.GetPlatformFile(), buf->data(), buf_len,
@@ -150,10 +153,12 @@ void FileStream::Context::OnIOCompleted(
     async_in_progress_ = false;
 
   if (orphaned_) {
-    async_in_progress_ = false;
-    callback_.Reset();
-    in_flight_buf_ = NULL;
-    CloseAndDelete();
+    io_complete_for_read_received_ = true;
+    // If we are called due to a pending read and the asynchronous read task
+    // has not completed we have to keep the context around until it completes.
+    if (async_read_initiated_ && !async_read_completed_)
+      return;
+    DeleteOrphanedContext();
     return;
   }
 
@@ -163,6 +168,8 @@ void FileStream::Context::OnIOCompleted(
     IOResult error_result = IOResult::FromOSError(error);
     result_ = static_cast<int>(error_result.result);
   } else {
+    if (result_)
+      DCHECK_EQ(result_, static_cast<int>(bytes_read));
     result_ = bytes_read;
     IncrementOffset(&io_context_.overlapped, bytes_read);
   }
@@ -192,6 +199,13 @@ void FileStream::Context::InvokeUserCallback() {
   temp_callback.Run(result_);
 }
 
+void FileStream::Context::DeleteOrphanedContext() {
+  async_in_progress_ = false;
+  callback_.Reset();
+  in_flight_buf_ = NULL;
+  CloseAndDelete();
+}
+
 // static
 void FileStream::Context::ReadAsync(
     FileStream::Context* context,
@@ -203,29 +217,34 @@ void FileStream::Context::ReadAsync(
   DWORD bytes_read = 0;
   BOOL ret = ::ReadFile(file, buf->data(), buf_len, &bytes_read, overlapped);
   origin_thread_loop->PostTask(
-      FROM_HERE, base::Bind(&FileStream::Context::ReadAsyncResult,
-                            base::Unretained(context), ret ? bytes_read : 0,
-                            ret ? 0 : ::GetLastError()));
+      FROM_HERE,
+      base::Bind(&FileStream::Context::ReadAsyncResult,
+                 base::Unretained(context), ret, bytes_read, ::GetLastError()));
 }
 
-void FileStream::Context::ReadAsyncResult(DWORD bytes_read, DWORD os_error) {
-  if (!os_error)
+void FileStream::Context::ReadAsyncResult(BOOL read_file_ret,
+                                          DWORD bytes_read,
+                                          DWORD os_error) {
+  // If the context is orphaned and we already received the io completion
+  // notification then we should delete the context and get out.
+  if (orphaned_ && io_complete_for_read_received_) {
+    DeleteOrphanedContext();
+    return;
+  }
+
+  async_read_completed_ = true;
+  if (read_file_ret) {
     result_ = bytes_read;
+    InvokeUserCallback();
+    return;
+  }
 
   IOResult error = IOResult::FromOSError(os_error);
-  if (error.os_error == ERROR_HANDLE_EOF) {
-    // Report EOF by returning 0 bytes read.
+  if (error.os_error == ERROR_IO_PENDING) {
+    InvokeUserCallback();
+  } else {
     OnIOCompleted(&io_context_, 0, error.os_error);
-  } else if (error.os_error != ERROR_IO_PENDING) {
-    // We don't need to inform the caller about ERROR_PENDING_IO as that was
-    // already done when the ReadFile call was queued to the worker pool.
-    if (error.os_error) {
-      LOG(WARNING) << "ReadFile failed: " << error.os_error;
-      OnIOCompleted(&io_context_, 0, error.os_error);
-    }
   }
-  async_read_completed_ = true;
-  InvokeUserCallback();
 }
 
 }  // namespace net

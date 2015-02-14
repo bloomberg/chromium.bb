@@ -164,6 +164,9 @@ class FileStream::Context {
   // Invokes the user callback.
   void InvokeUserCallback();
 
+  // Deletes an orphaned context.
+  void DeleteOrphanedContext();
+
   // The ReadFile call on Windows can execute synchonously at times.
   // http://support.microsoft.com/kb/156932. This ends up blocking the calling
   // thread which is undesirable. To avoid this we execute the ReadFile call
@@ -189,11 +192,13 @@ class FileStream::Context {
 
   // This callback executes on the main calling thread. It informs the caller
   // about the result of the ReadFile call.
+  // The |read_file_ret| parameter contains the return value of the ReadFile
+  // call.
   // The |bytes_read| contains the number of bytes read from the file, if
   // ReadFile succeeds.
   // The |os_error| parameter contains the value of the last error returned by
   // the ReadFile API.
-  void ReadAsyncResult(DWORD bytes_read, DWORD os_error);
+  void ReadAsyncResult(BOOL read_file_ret, DWORD bytes_read, DWORD os_error);
 
 #elif defined(OS_POSIX)
   // ReadFileImpl() is a simple wrapper around read() that handles EINTR
