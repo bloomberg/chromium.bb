@@ -12,7 +12,6 @@
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
     'libpeer_target_type%': 'static_library',
-    'libpeer_allocator_shim%': 0,
     'webrtc_p2p': "../webrtc/p2p",
     'webrtc_xmpp': "../webrtc/libjingle/xmpp",
   },
@@ -482,13 +481,6 @@
             '<(libjingle_source)/talk/session/media/voicechannel.h',
           ],
           'conditions': [
-            ['libpeer_allocator_shim==1 and '
-             'libpeer_target_type!="static_library" and OS!="mac"', {
-              'sources': [
-                'overrides/allocator_shim/allocator_stub.cc',
-                'overrides/allocator_shim/allocator_stub.h',
-              ],
-            }],
             # TODO(mallinath) - Enable SCTP for iOS.
             ['OS!="ios"', {
               'defines': [
