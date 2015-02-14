@@ -2364,6 +2364,8 @@
       'browser/ui/app_list/extension_uninstaller.h',
       'browser/ui/app_list/fast_show_pickler.cc',
       'browser/ui/app_list/fast_show_pickler.h',
+      'browser/ui/app_list/google_now_extension.cc',
+      'browser/ui/app_list/google_now_extension.h',
       'browser/ui/app_list/launcher_page_event_dispatcher.cc',
       'browser/ui/app_list/launcher_page_event_dispatcher.h',
       'browser/ui/app_list/model_pref_updater.cc',

@@ -21,6 +21,10 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/google_now_extension.h"
+#endif
+
 namespace extensions {
 
 ExternalComponentLoader::ExternalComponentLoader(Profile* profile)
@@ -82,6 +86,14 @@ void ExternalComponentLoader::StartLoading() {
       prefs_->SetString(extension_id + ".external_update_url",
                         extension_urls::GetWebstoreUpdateUrl().spec());
     }
+  }
+#endif
+
+#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+  std::string google_now_extension_id;
+  if (GetGoogleNowExtensionId(&google_now_extension_id)) {
+    prefs_->SetString(google_now_extension_id + ".external_update_url",
+                      extension_urls::GetWebstoreUpdateUrl().spec());
   }
 #endif
 
