@@ -27,7 +27,7 @@ DataReductionProxyDebugResourceThrottle::MaybeCreate(
     const net::URLRequest* request,
     content::ResourceType resource_type,
     const DataReductionProxyIOData* io_data) {
-  if (io_data->IsEnabled() &&
+  if (io_data && io_data->IsEnabled() &&
       data_reduction_proxy::DataReductionProxyParams::
           WarnIfNoDataReductionProxy()) {
     DCHECK(io_data->params());
