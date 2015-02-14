@@ -67,8 +67,7 @@ void RealPanWalletClient::UnmaskCard(const CreditCard& card,
   request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
   request_dict.SetString("credit_card_id", card.server_id());
   request_dict.SetString("risk_data_base64", risk_data);
-  request_dict.Set("client_context",
-                   make_scoped_ptr(new base::DictionaryValue()));
+  request_dict.Set("context", make_scoped_ptr(new base::DictionaryValue()));
 
   std::string json_request;
   base::JSONWriter::Write(&request_dict, &json_request);
@@ -76,6 +75,9 @@ void RealPanWalletClient::UnmaskCard(const CreditCard& card,
       net::EscapeUrlEncodedData(json_request, true).c_str(),
       net::EscapeUrlEncodedData(cvc, true).c_str());
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
+  // TODO(estade): remove this when possible.
+  request_->AddExtraRequestHeader(
+      net::HttpRequestHeaders::kAcceptEncoding + std::string(": chunked;q=0"));
 
   if (access_token_.empty())
     StartTokenFetch();
@@ -183,7 +185,9 @@ void RealPanWalletClient::StartTokenFetch() {
 }
 
 void RealPanWalletClient::SetOAuth2TokenAndStartRequest() {
-  request_->AddExtraRequestHeader("Authorization: Bearer " + access_token_);
+  request_->AddExtraRequestHeader(net::HttpRequestHeaders::kAuthorization +
+      std::string(": Bearer ") + access_token_);
+
   request_->Start();
 }
 
