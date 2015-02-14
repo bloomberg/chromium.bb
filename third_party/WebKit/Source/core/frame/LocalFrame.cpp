@@ -270,10 +270,10 @@ void LocalFrame::detach()
     // will trigger the unload event handlers of any child frames, and those event
     // handlers might start a new subresource load in this frame.
     m_loader.stopAllLoaders();
+    m_loader.detach();
     if (!client())
         return;
 
-    m_loader.detach();
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
     // back to FrameLoaderClient via WindowProxy.
     script().clearForClose();

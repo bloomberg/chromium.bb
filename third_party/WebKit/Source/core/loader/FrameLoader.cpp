@@ -1065,8 +1065,10 @@ void FrameLoader::detach()
     Frame* parent = m_frame->tree().parent();
     if (parent && parent->isLocalFrame())
         toLocalFrame(parent)->loader().scheduleCheckCompleted();
-    m_progressTracker->dispose();
-    m_progressTracker.clear();
+    if (m_progressTracker) {
+        m_progressTracker->dispose();
+        m_progressTracker.clear();
+    }
     setOpener(0);
 }
 
