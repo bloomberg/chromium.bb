@@ -64,6 +64,9 @@ class LayerControlView : public views::View {
     views::View* child = child_at(0);
     child->SetBounds(0, 0, rounded_size.width(), rounded_size.height());
     gfx::Transform transform;
+    // Apply RTL transform explicitly becacuse Views layer code
+    // doesn't handle RTL.  crbug.com/458753.
+    transform.Translate(-child->GetMirroredX(), 0);
     transform.Scale(ui_scale, ui_scale);
     child->SetTransform(transform);
   }
