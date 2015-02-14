@@ -13,6 +13,7 @@ import android.util.Log;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
@@ -62,11 +63,11 @@ public class CastBrowserHelper {
         DeviceUtils.addDeviceSpecificUserAgentSwitch(context);
 
         try {
-            LibraryLoader.ensureInitialized();
+            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
 
             Log.d(TAG, "Loading BrowserStartupController...");
-            BrowserStartupController.get(context).startBrowserProcessesSync(false);
-
+            BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
+                    .startBrowserProcessesSync(false);
             sIsBrowserInitialized = true;
             return true;
         } catch (ProcessInitException e) {
