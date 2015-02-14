@@ -2299,7 +2299,10 @@ void HTMLMediaElement::playInternal()
     if (!m_player || m_networkState == NETWORK_EMPTY)
         scheduleDelayedAction(LoadMediaResource);
 
-    if (endedPlayback())
+    // Generally "ended" and "looping" are exclusive. Here, the loop attribute
+    // is ignored to seek back to start in case loop was set after playback
+    // ended. See http://crbug.com/364442
+    if (endedPlayback(LoopCondition::Ignored))
         seek(0);
 
     if (m_mediaController)
@@ -3242,7 +3245,7 @@ PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::seekable() const
 bool HTMLMediaElement::potentiallyPlaying() const
 {
     // "pausedToBuffer" means the media engine's rate is 0, but only because it had to stop playing
-    // when it ran out of buffered data. A movie is this state is "potentially playing", modulo the
+    // when it ran out of buffered data. A movie in this state is "potentially playing", modulo the
     // checks in couldPlayIfEnoughData().
     bool pausedToBuffer = m_readyStateMaximum >= HAVE_FUTURE_DATA && m_readyState < HAVE_FUTURE_DATA;
     return (pausedToBuffer || m_readyState >= HAVE_FUTURE_DATA) && couldPlayIfEnoughData() && !isBlockedOnMediaController();
@@ -3253,7 +3256,7 @@ bool HTMLMediaElement::couldPlayIfEnoughData() const
     return !paused() && !endedPlayback() && !stoppedDueToErrors();
 }
 
-bool HTMLMediaElement::endedPlayback() const
+bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
 {
     double dur = duration();
     if (!m_player || std::isnan(dur))
@@ -3271,7 +3274,7 @@ bool HTMLMediaElement::endedPlayback() const
     // or the media element has a current media controller.
     double now = currentTime();
     if (directionOfPlayback() == Forward)
-        return dur > 0 && now >= dur && (!loop() || m_mediaController);
+        return dur > 0 && now >= dur && (loopCondition == LoopCondition::Ignored || !loop() || m_mediaController);
 
     // or the current playback position is the earliest possible position and the direction
     // of playback is backwards

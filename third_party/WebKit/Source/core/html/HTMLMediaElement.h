@@ -411,9 +411,14 @@ private:
     void updateVolume();
     void updatePlayState();
     bool potentiallyPlaying() const;
-    bool endedPlayback() const;
     bool stoppedDueToErrors() const;
     bool couldPlayIfEnoughData() const;
+
+    // Generally the presence of the loop attribute should be considered to mean playback
+    // has not "ended", as "ended" and "looping" are mutually exclusive. See
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#ended-playback
+    enum class LoopCondition { Included, Ignored };
+    bool endedPlayback(LoopCondition = LoopCondition::Included) const;
 
     void setShouldDelayLoadEvent(bool);
     void invalidateCachedTime();
