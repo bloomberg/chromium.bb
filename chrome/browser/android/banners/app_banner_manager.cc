@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/threading/worker_pool.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/android/banners/app_banner_metrics_ids.h"
 #include "chrome/browser/android/banners/app_banner_utilities.h"
@@ -60,97 +59,6 @@ void AppBannerManager::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-void AppBannerManager::BlockBanner(JNIEnv* env,
-                                   jobject obj,
-                                   jstring jurl,
-                                   jstring jpackage) {
-  if (!web_contents())
-    return;
-
-  GURL url(ConvertJavaStringToUTF8(env, jurl));
-  std::string package_name = ConvertJavaStringToUTF8(env, jpackage);
-  AppBannerSettingsHelper::RecordBannerEvent(
-      web_contents(), url, package_name,
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
-}
-
-void AppBannerManager::Block() const {
-  if (!web_contents())
-    return;
-
-  if (!native_app_data_.is_null()) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents(), web_contents()->GetURL(),
-        native_app_package_,
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
-  } else if (!web_app_data_.IsEmpty()) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents(), web_contents()->GetURL(),
-        web_app_data_.start_url.spec(),
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
-  }
-}
-
-void AppBannerManager::OnInfoBarDestroyed() {
-  weak_infobar_ptr_ = nullptr;
-}
-
-bool AppBannerManager::OnButtonClicked() const {
-  if (!web_contents())
-    return true;
-
-  if (!native_app_data_.is_null()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-    if (jobj.is_null())
-      return true;
-
-    return Java_AppBannerManager_installOrOpenNativeApp(env,
-                                                        jobj.obj(),
-                                                        native_app_data_.obj());
-  } else if (!web_app_data_.IsEmpty()) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents(), web_contents()->GetURL(),
-        web_app_data_.start_url.spec(),
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-        base::Time::Now());
-
-    InstallManifestApp(web_app_data_, *app_icon_.get());
-    return true;
-  }
-
-  return true;
-}
-
-bool AppBannerManager::OnLinkClicked() const {
-  if (!web_contents())
-    return true;
-
-  if (!native_app_data_.is_null()) {
-    // Try to show the details for the native app.
-    JNIEnv* env = base::android::AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-    if (jobj.is_null())
-      return true;
-
-    Java_AppBannerManager_showAppDetails(env,
-                                         jobj.obj(),
-                                         native_app_data_.obj());
-    return true;
-  } else {
-    // Nothing should happen if the user is installing a web app.
-    return false;
-  }
-}
-
-base::string16 AppBannerManager::GetTitle() const {
-  return app_title_;
-}
-
-gfx::Image AppBannerManager::GetIcon() const {
-  return gfx::Image::CreateFrom1xBitmap(*app_icon_.get());
-}
-
 void AppBannerManager::ReplaceWebContents(JNIEnv* env,
                                           jobject obj,
                                           jobject jweb_contents) {
@@ -165,7 +73,6 @@ void AppBannerManager::DidNavigateMainFrame(
   // Clear current state.
   fetcher_.reset();
   app_title_ = base::string16();
-  app_icon_.reset();
   web_app_data_ = content::Manifest();
   native_app_data_.Reset();
   native_app_package_ = std::string();
@@ -276,31 +183,33 @@ void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
   if (jobj.is_null())
     return;
 
-  app_icon_.reset(new SkBitmap(*bitmap));
   InfoBarService* service = InfoBarService::FromWebContents(web_contents());
 
-  weak_infobar_ptr_ = nullptr;
+  AppBannerInfoBar* weak_infobar_ptr = nullptr;
   if (!native_app_data_.is_null()) {
     RecordCouldShowBanner(native_app_package_);
     if (!CheckIfShouldShow(native_app_package_))
       return;
 
-    weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForNativeApp(
+    weak_infobar_ptr = AppBannerInfoBarDelegate::CreateForNativeApp(
         service,
-        this,
-        native_app_data_);
+        app_title_,
+        new SkBitmap(*bitmap),
+        native_app_data_,
+        native_app_package_);
   } else if (!web_app_data_.IsEmpty()){
     RecordCouldShowBanner(web_app_data_.start_url.spec());
     if (!CheckIfShouldShow(web_app_data_.start_url.spec()))
       return;
 
-    weak_infobar_ptr_ = AppBannerInfoBarDelegate::CreateForWebApp(
+    weak_infobar_ptr = AppBannerInfoBarDelegate::CreateForWebApp(
         service,
-        this,
-        web_app_data_.start_url);
+        app_title_,
+        new SkBitmap(*bitmap),
+        web_app_data_);
   }
 
-  if (weak_infobar_ptr_ != nullptr)
+  if (weak_infobar_ptr != nullptr)
     banners::TrackDisplayEvent(DISPLAY_CREATED);
 }
 
@@ -349,53 +258,6 @@ bool AppBannerManager::OnAppDetailsRetrieved(JNIEnv* env,
   return FetchIcon(GURL(image_url));
 }
 
-void AppBannerManager::OnInstallIntentReturned(JNIEnv* env,
-                                               jobject obj,
-                                               jboolean jis_installing) {
-  if (!weak_infobar_ptr_)
-    return;
-
-  if (jis_installing) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents(),
-        web_contents()->GetURL(),
-        native_app_package_,
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-        base::Time::Now());
-  }
-
-  UpdateInstallState(env, obj);
-}
-
-void AppBannerManager::OnInstallFinished(JNIEnv* env,
-                                         jobject obj,
-                                         jboolean success) {
-  if (!weak_infobar_ptr_)
-    return;
-
-  if (success) {
-    UpdateInstallState(env, obj);
-  } else {
-    InfoBarService* service = InfoBarService::FromWebContents(web_contents());
-    service->RemoveInfoBar(weak_infobar_ptr_);
-  }
-}
-
-void AppBannerManager::UpdateInstallState(JNIEnv* env, jobject obj) {
-  if (!weak_infobar_ptr_ || native_app_data_.is_null())
-    return;
-
-  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-  if (jobj.is_null())
-    return;
-
-  int newState = Java_AppBannerManager_determineInstallState(
-      env,
-      jobj.obj(),
-      native_app_data_.obj());
-  weak_infobar_ptr_->OnInstallStateChanged(newState);
-}
-
 bool AppBannerManager::FetchIcon(const GURL& image_url) {
   if (!web_contents())
     return false;
@@ -420,20 +282,6 @@ int AppBannerManager::GetPreferredIconSize() {
     return 0;
 
   return Java_AppBannerManager_getPreferredIconSize(env, jobj.obj());
-}
-
-// static
-void AppBannerManager::InstallManifestApp(const content::Manifest& manifest,
-                                          const SkBitmap& icon) {
-  ShortcutInfo info;
-  info.UpdateFromManifest(manifest);
-
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
-                 info,
-                 icon),
-      true);
 }
 
 void RecordDismissEvent(JNIEnv* env, jclass clazz, jint metric) {

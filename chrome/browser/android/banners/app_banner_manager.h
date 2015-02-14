@@ -20,7 +20,6 @@
 namespace content {
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
-struct Manifest;
 }  // namespace content
 
 namespace infobars {
@@ -68,17 +67,13 @@ class InfoBar;
 namespace banners {
 
 class AppBannerManager : public chrome::BitmapFetcherDelegate,
-                         public content::WebContentsObserver,
-                         public AppBannerInfoBarDelegate::AppDelegate {
+                         public content::WebContentsObserver {
  public:
   AppBannerManager(JNIEnv* env, jobject obj);
   ~AppBannerManager() override;
 
   // Destroys the AppBannerManager.
   void Destroy(JNIEnv* env, jobject obj);
-
-  // Blocks a banner for |package_name| from appearing on the domain for |url|.
-  void BlockBanner(JNIEnv* env, jobject obj, jstring jurl, jstring jpackage);
 
   // Observes a new WebContents, if necessary.
   void ReplaceWebContents(JNIEnv* env,
@@ -94,28 +89,9 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
                              jstring japp_package,
                              jstring jicon_url);
 
-  // Called when the installation Intent has been handled and focus has been
-  // returned to Chrome.
-  void OnInstallIntentReturned(JNIEnv* env,
-                               jobject obj,
-                               jboolean jis_installing);
-
-  // Called when the InstallerDelegate task has finished.
-  void OnInstallFinished(JNIEnv* env,
-                         jobject obj,
-                         jboolean success);
-
   // Fetches the icon at the given URL asynchronously.
   // Returns |false| if this couldn't be kicked off.
   bool FetchIcon(const GURL& image_url);
-
-  // Installs the app defined by the manifest.
-  // TODO(dfalcantara): Fold into Install() when more CLs land.
-  static void InstallManifestApp(const content::Manifest& manifest,
-                                 const SkBitmap& icon);
-
-  // Called when the AppBannerInfoBar's button needs to be updated.
-  void UpdateInstallState(JNIEnv* env, jobject obj);
 
   // WebContentsObserver overrides.
   void DidNavigateMainFrame(
@@ -127,14 +103,6 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
 
   // BitmapFetcherDelegate overrides.
   void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
-
-  // AppBannerInfoBarDelegate::AppDelegate overrides.
-  void Block() const override;
-  bool OnButtonClicked() const override;
-  bool OnLinkClicked() const override;
-  void OnInfoBarDestroyed() override;
-  base::string16 GetTitle() const override;
-  gfx::Image GetIcon() const override;
 
  private:
   // Gets the preferred icon size for the banner icons.
@@ -169,15 +137,11 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   GURL app_icon_url_;
 
   base::string16 app_title_;
-  scoped_ptr<SkBitmap> app_icon_;
 
   content::Manifest web_app_data_;
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
   std::string native_app_package_;
-
-  // Weak pointer to the InfoBar that is being managed.
-  AppBannerInfoBar* weak_infobar_ptr_;
 
   // AppBannerManager on the Java side.
   JavaObjectWeakGlobalRef weak_java_banner_view_manager_;

@@ -8,6 +8,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "content/public/common/manifest.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -19,49 +20,41 @@ class AppBannerInfoBar;
 
 namespace banners {
 
-// Displays information about an app being promoted by a webpage.
+// Manages installation of an app being promoted by a webpage.
 class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Handles calls dealing with blocking, promoting, or grabbing info about an
-  // app.
-  class AppDelegate {
-   public:
-    // User has elected to block the banner from being displayed.
-    virtual void Block() const = 0;
-
-    // User has clicked the button.
-    // Returns true if the infobar should be dismissed.
-    virtual bool OnButtonClicked() const = 0;
-
-    // User has clicked the link.
-    // Returns true if the infobar should be dismissed.
-    virtual bool OnLinkClicked() const = 0;
-
-    // Called when the infobar has been destroyed.
-    virtual void OnInfoBarDestroyed() = 0;
-
-    // Returns the title of the app.
-    virtual base::string16 GetTitle() const = 0;
-
-    // Returns the icon to display for the app.
-    virtual gfx::Image GetIcon() const = 0;
-  };
-
   // Creates a banner for the current page that promotes a native app.
   // May return nullptr if the the infobar couldn't be created.
   static AppBannerInfoBar* CreateForNativeApp(
       infobars::InfoBarManager* infobar_manager,
-      AppDelegate* delegate,
-      const base::android::ScopedJavaGlobalRef<jobject>& japp_data);
+      const base::string16& app_title,
+      SkBitmap* app_icon,
+      const base::android::ScopedJavaGlobalRef<jobject>& app_data,
+      const std::string& app_package);
 
   // Creates a banner for the current page that promotes a web app.
   // May return nullptr if the the infobar couldn't be created.
   static AppBannerInfoBar* CreateForWebApp(
       infobars::InfoBarManager* infobar_manager,
-      AppDelegate* delegate,
-      const GURL& url);
+      const base::string16& app_title,
+      SkBitmap* app_icon,
+      const content::Manifest& web_app_data);
 
   ~AppBannerInfoBarDelegate() override;
+
+  // Called when the AppBannerInfoBar's button needs to be updated.
+  void UpdateInstallState(JNIEnv* env, jobject obj);
+
+  // Called when the installation Intent has been handled and focus has been
+  // returned to Chrome.
+  void OnInstallIntentReturned(JNIEnv* env,
+                               jobject obj,
+                               jboolean jis_installing);
+
+  // Called when the InstallerDelegate task has finished.
+  void OnInstallFinished(JNIEnv* env,
+                         jobject obj,
+                         jboolean success);
 
   // InfoBarDelegate overrides.
   gfx::Image GetIcon() const override;
@@ -74,15 +67,29 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
  private:
-  explicit AppBannerInfoBarDelegate(AppDelegate* delegate);
+  AppBannerInfoBarDelegate(
+      const base::string16& app_title,
+      SkBitmap* app_icon,
+      const content::Manifest& web_app_data,
+      const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
+      const std::string& native_app_package);
 
-  AppDelegate* delegate_;
+  base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
+
+  base::string16 app_title_;
+  scoped_ptr<SkBitmap> app_icon_;
+
+  content::Manifest web_app_data_;
+
+  base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
+  std::string native_app_package_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegate);
 };  // AppBannerInfoBarDelegate
 
-}  // namespace banners
-
+// Register native methods.
 bool RegisterAppBannerInfoBarDelegate(JNIEnv* env);
+
+}  // namespace banners
 
 #endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_

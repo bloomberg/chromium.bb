@@ -94,7 +94,7 @@ public class AppData {
      * The IntentSender stored inside dictates what package needs to be launched.
      * @return PendingIntent used to trigger the install.
      */
-    PendingIntent installIntent() {
+    public PendingIntent installIntent() {
         return mInstallIntent;
     }
 

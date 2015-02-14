@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/android/autofill/password_generation_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
+#include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
@@ -127,7 +128,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AndroidProfileOAuth2TokenService",
      AndroidProfileOAuth2TokenService::Register},
     {"AnswersImageBridge", RegisterAnswersImageBridge},
-    {"AppBannerInfoBarDelegate", RegisterAppBannerInfoBarDelegate},
+    {"AppBannerInfoBar", RegisterAppBannerInfoBar},
+    {"AppBannerInfoBarDelegate", banners::RegisterAppBannerInfoBarDelegate},
     {"AppBannerManager", banners::RegisterAppBannerManager},
     {"ApplicationLifetime", RegisterApplicationLifetimeAndroid},
     {"AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid},

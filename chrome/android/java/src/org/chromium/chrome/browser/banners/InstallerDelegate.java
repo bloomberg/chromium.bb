@@ -123,7 +123,7 @@ public class InstallerDelegate implements Runnable {
     /**
      * Prevent rescheduling the Runnable.
      */
-    void cancel() {
+    public void cancel() {
         mIsRunning = false;
     }
 

@@ -50,4 +50,7 @@ class AppBannerInfoBar : public ConfirmInfoBar {
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBar);
 };
 
+// Register native methods.
+bool RegisterAppBannerInfoBar(JNIEnv* env);
+
 #endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_H_

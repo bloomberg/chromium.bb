@@ -84,6 +84,6 @@ void AppBannerInfoBar::OnInstallStateChanged(int new_state) {
 
 // Native JNI methods ---------------------------------------------------------
 
-bool RegisterAppBannerInfoBarDelegate(JNIEnv* env) {
+bool RegisterAppBannerInfoBar(JNIEnv* env) {
  return RegisterNativesImpl(env);
 }
