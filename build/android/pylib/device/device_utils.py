@@ -847,7 +847,7 @@ class DeviceUtils(object):
         self.RunShellCommand(
             ['unzip', zip_on_device],
             as_root=True,
-            env={'PATH': '$PATH:%s' % install_commands.BIN_DIR},
+            env={'PATH': '%s:$PATH' % install_commands.BIN_DIR},
             check_return=True)
       finally:
         if zip_proc.is_alive():

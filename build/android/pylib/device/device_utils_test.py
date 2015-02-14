@@ -1045,7 +1045,7 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsNewImplTest):
         self.call.device.RunShellCommand(
             ['unzip', '/test/device/external_dir/tmp.zip'],
             as_root=True,
-            env={'PATH': '$PATH:/data/local/tmp/bin'},
+            env={'PATH': '/data/local/tmp/bin:$PATH'},
             check_return=True),
         (self.call.device.IsOnline(), True),
         self.call.device.RunShellCommand(
