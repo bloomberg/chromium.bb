@@ -113,13 +113,11 @@ class LoginTest : public chromeos::LoginManagerTest {
       "var frame = $('signin-frame');"
       "var onload= function() {"
         "frame.removeEventListener('load', onload);"
-        "console.error('#### onload frame.src=' + frame.src);"
         "window.domAutomationController.setAutomationId(0);"
         "window.domAutomationController.send('frameLoaded');"
       "};"
       "frame.addEventListener('load', onload);"
       "$('error-offline-login-link').onclick();"
-      "console.error('#### original frame.src=' + frame.src);"
     "})();";
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
 
