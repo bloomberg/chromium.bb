@@ -588,15 +588,6 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
   }
 }
 
-static void AppendQuadsForLayer(
-    RenderPass* target_render_pass,
-    LayerImpl* layer,
-    AppendQuadsData* append_quads_data) {
-  layer->AppendQuads(target_render_pass,
-                     layer->draw_properties().occlusion_in_content_space,
-                     append_quads_data);
-}
-
 static void AppendQuadsForRenderSurfaceLayer(
     RenderPass* target_render_pass,
     LayerImpl* layer,
@@ -818,18 +809,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
             RenderPass* render_pass =
                 frame->render_passes_by_id[contributing_render_pass_id];
 
-            AppendQuadsForLayer(render_pass,
-                                *it,
-                                &append_quads_data);
+            it->AppendQuads(render_pass, &append_quads_data);
 
             contributing_render_pass_id =
                 it->NextContributingRenderPassId(contributing_render_pass_id);
           }
         }
 
-        AppendQuadsForLayer(target_render_pass,
-                            *it,
-                            &append_quads_data);
+        it->AppendQuads(target_render_pass, &append_quads_data);
 
         // For layers that represent themselves, add composite frame timing
         // requests if the visible rect intersects the requested rect.

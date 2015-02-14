@@ -208,7 +208,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
   virtual void AppendQuads(RenderPass* render_pass,
-                           const Occlusion& occlusion_in_content_space,
                            AppendQuadsData* append_quads_data) {}
   virtual void DidDraw(ResourceProvider* resource_provider);
 

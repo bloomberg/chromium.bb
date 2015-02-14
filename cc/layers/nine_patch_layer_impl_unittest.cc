@@ -62,7 +62,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   layer->SetImageBounds(bitmap_size);
   layer->SetLayout(aperture_rect, border, fill_center);
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+  layer->AppendQuads(render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;

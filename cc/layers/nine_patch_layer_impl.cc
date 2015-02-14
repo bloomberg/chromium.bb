@@ -82,7 +82,6 @@ void NinePatchLayerImpl::CheckGeometryLimitations() {
 
 void NinePatchLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   CheckGeometryLimitations();
   SharedQuadState* shared_quad_state =
@@ -214,7 +213,8 @@ void NinePatchLayerImpl::AppendQuads(
   const bool opaque = layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_);
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_top_left);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_top_left);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -234,7 +234,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_top_right);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_top_right);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -254,7 +255,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_bottom_left);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_bottom_left);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -274,7 +276,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_bottom_right);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_bottom_right);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -293,7 +296,9 @@ void NinePatchLayerImpl::AppendQuads(
                  nearest_neighbor);
   }
 
-  visible_rect = occlusion_in_content_space.GetUnoccludedContentRect(layer_top);
+  visible_rect =
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_top);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -313,7 +318,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_left);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_left);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -333,7 +339,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_right);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_right);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -353,7 +360,8 @@ void NinePatchLayerImpl::AppendQuads(
   }
 
   visible_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(layer_bottom);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          layer_bottom);
   opaque_rect = opaque ? visible_rect : gfx::Rect();
   if (!visible_rect.IsEmpty()) {
     TextureDrawQuad* quad =
@@ -374,7 +382,8 @@ void NinePatchLayerImpl::AppendQuads(
 
   if (fill_center_) {
     visible_rect =
-        occlusion_in_content_space.GetUnoccludedContentRect(layer_center);
+        draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+            layer_center);
     opaque_rect = opaque ? visible_rect : gfx::Rect();
     if (!visible_rect.IsEmpty()) {
       TextureDrawQuad* quad =

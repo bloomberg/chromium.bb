@@ -38,7 +38,6 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 }
 
 void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
-                                   const Occlusion& occlusion_in_content_space,
                                    AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
@@ -52,7 +51,8 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
 
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect visible_quad_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(quad_rect);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          quad_rect);
   if (visible_quad_rect.IsEmpty())
     return;
   SurfaceDrawQuad* quad =

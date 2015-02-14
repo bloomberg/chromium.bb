@@ -42,7 +42,7 @@ class LayerTreeHostOnDemandRasterPixelTest : public LayerTreePixelTest {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    picture_layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    picture_layer->AppendQuads(render_pass.get(), &data);
 
     for (const auto& quad : render_pass->quad_list)
       EXPECT_EQ(quad->material, DrawQuad::PICTURE_CONTENT);

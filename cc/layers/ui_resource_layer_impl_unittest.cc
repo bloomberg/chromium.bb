@@ -48,7 +48,7 @@ void QuadSizeTest(scoped_ptr<UIResourceLayerImpl> layer,
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+  layer->AppendQuads(render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;
@@ -88,7 +88,7 @@ void OpaqueBoundsTest(scoped_ptr<UIResourceLayerImpl> layer,
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+  layer->AppendQuads(render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;

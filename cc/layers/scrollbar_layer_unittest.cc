@@ -402,7 +402,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -416,7 +416,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -432,7 +432,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -446,7 +446,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
@@ -501,7 +501,7 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    scrollbar_layer_impl->AppendQuads(render_pass.get(), Occlusion(), &data);
+    scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());

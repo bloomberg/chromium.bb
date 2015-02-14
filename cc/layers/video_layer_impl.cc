@@ -132,7 +132,6 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
 }
 
 void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
-                                 const Occlusion& occlusion_in_content_space,
                                  AppendQuadsData* append_quads_data) {
   DCHECK(frame_.get());
 
@@ -172,7 +171,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
   gfx::Size coded_size = frame_->coded_size();
 
   Occlusion occlusion_in_video_space =
-      occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(transform);
+      draw_properties()
+          .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+              transform);
   gfx::Rect visible_quad_rect =
       occlusion_in_video_space.GetUnoccludedContentRect(quad_rect);
   if (visible_quad_rect.IsEmpty())

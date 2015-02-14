@@ -53,7 +53,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer_impl) override;
   void AppendQuads(RenderPass* render_pass,
-                   const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
 

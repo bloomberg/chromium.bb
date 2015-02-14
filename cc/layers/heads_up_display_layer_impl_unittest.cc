@@ -20,7 +20,7 @@ void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
   AppendQuadsData data;
   bool will_draw = layer->WillDraw(draw_mode, resource_provider);
   if (will_draw)
-    layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    layer->AppendQuads(render_pass.get(), &data);
   layer->UpdateHudTexture(draw_mode, resource_provider);
   if (will_draw)
     layer->DidDraw(resource_provider);

@@ -35,7 +35,6 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   bool WillDraw(DrawMode draw_mode,
                 ResourceProvider* resource_provider) override;
   void AppendQuads(RenderPass* render_pass,
-                   const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
   void DidDraw(ResourceProvider* resource_provider) override;
   void DidBecomeActive() override;

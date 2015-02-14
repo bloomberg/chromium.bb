@@ -72,7 +72,6 @@ bool PaintedScrollbarLayerImpl::WillDraw(DrawMode draw_mode,
 
 void PaintedScrollbarLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   bool premultipled_alpha = true;
   bool flipped = false;
@@ -91,7 +90,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   gfx::Rect scaled_thumb_quad_rect =
       gfx::ScaleToEnclosingRect(thumb_quad_rect, internal_contents_scale_);
   gfx::Rect visible_thumb_quad_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(thumb_quad_rect);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          thumb_quad_rect);
   gfx::Rect scaled_visible_thumb_quad_rect = gfx::ScaleToEnclosingRect(
       visible_thumb_quad_rect, internal_contents_scale_);
 
@@ -114,7 +114,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   gfx::Rect track_quad_rect(bounds());
   gfx::Rect scaled_track_quad_rect(internal_content_bounds_);
   gfx::Rect visible_track_quad_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(track_quad_rect);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          track_quad_rect);
   gfx::Rect scaled_visible_track_quad_rect = gfx::ScaleToEnclosingRect(
       visible_track_quad_rect, internal_contents_scale_);
   if (track_resource_id && !visible_track_quad_rect.IsEmpty()) {

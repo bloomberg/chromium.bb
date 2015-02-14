@@ -166,7 +166,6 @@ bool TiledLayerImpl::WillDraw(DrawMode draw_mode,
 }
 
 void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
-                                 const Occlusion& occlusion_in_content_space,
                                  AppendQuadsData* append_quads_data) {
   DCHECK(tiler_);
   DCHECK(!tiler_->has_empty_bounds());
@@ -225,7 +224,8 @@ void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
         continue;
 
       gfx::Rect visible_tile_rect =
-          occlusion_in_content_space.GetUnoccludedContentRect(tile_rect);
+          draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+              tile_rect);
       if (visible_tile_rect.IsEmpty())
         continue;
 

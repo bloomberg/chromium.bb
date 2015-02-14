@@ -34,7 +34,6 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   bool WillDraw(DrawMode draw_mode,
                 ResourceProvider* resource_provider) override;
   void AppendQuads(RenderPass* render_pass,
-                   const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
@@ -77,7 +76,6 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
                                     RenderPassId* output_render_pass_id) const;
 
   void AppendRenderPassQuads(RenderPass* render_pass,
-                             const Occlusion& occlusion_in_content_space,
                              const RenderPass* delegated_render_pass,
                              const gfx::Size& frame_size) const;
 

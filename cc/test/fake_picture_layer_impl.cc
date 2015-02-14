@@ -86,10 +86,8 @@ void FakePictureLayerImpl::PushPropertiesTo(LayerImpl* layer_impl) {
 
 void FakePictureLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
-  PictureLayerImpl::AppendQuads(
-      render_pass, occlusion_in_content_space, append_quads_data);
+  PictureLayerImpl::AppendQuads(render_pass, append_quads_data);
   ++append_quads_count_;
 }
 

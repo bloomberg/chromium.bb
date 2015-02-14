@@ -95,7 +95,6 @@ bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
 
 void SolidColorScrollbarLayerImpl::AppendQuads(
     RenderPass* render_pass,
-    const Occlusion& occlusion_in_content_space,
     AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
@@ -106,7 +105,8 @@ void SolidColorScrollbarLayerImpl::AppendQuads(
 
   gfx::Rect thumb_quad_rect(ComputeThumbQuadRect());
   gfx::Rect visible_quad_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(thumb_quad_rect);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          thumb_quad_rect);
   if (visible_quad_rect.IsEmpty())
     return;
 

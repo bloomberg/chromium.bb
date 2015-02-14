@@ -61,7 +61,6 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   void PushPropertiesTo(LayerImpl* layer) override;
 
   void AppendQuads(RenderPass* render_pass,
-                   const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
 
   base::DictionaryValue* LayerTreeAsJson() const override;

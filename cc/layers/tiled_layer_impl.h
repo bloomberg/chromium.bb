@@ -36,7 +36,6 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
   bool WillDraw(DrawMode draw_mode,
                 ResourceProvider* resource_provider) override;
   void AppendQuads(RenderPass* render_pass,
-                   const Occlusion& occlusion_in_content_space,
                    AppendQuadsData* append_quads_data) override;
 
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,

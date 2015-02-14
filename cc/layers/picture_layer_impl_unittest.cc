@@ -1616,7 +1616,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_RESOURCELESS_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   ASSERT_EQ(1U, render_pass->quad_list.size());
@@ -1645,7 +1645,7 @@ TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {
 
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   Region remaining = visible_rect;
@@ -1811,7 +1811,7 @@ TEST_F(NoLowResPictureLayerImplTest,
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   // All tiles in activation rect is ready to draw.
@@ -1843,7 +1843,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   // All high res tiles drew, nothing was incomplete.
@@ -1870,7 +1870,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncomplete) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   EXPECT_EQ(1u, render_pass->quad_list.size());
@@ -1900,7 +1900,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncompleteLowResComplete) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   EXPECT_EQ(1u, render_pass->quad_list.size());
@@ -1937,7 +1937,7 @@ TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   // The missing high res tile was replaced by a low res tile.
@@ -1995,7 +1995,7 @@ TEST_F(PictureLayerImplTest,
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   // All high res tiles drew, and the one ideal res tile drew.
@@ -3801,7 +3801,7 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
                               SK_MScalar1 / max_contents_scale);
 
   AppendQuadsData data;
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
 
   // SharedQuadState should have be of size 1, as we are doing AppenQuad once.
   EXPECT_EQ(1u, render_pass->shared_quad_state_list.size());
@@ -3867,7 +3867,7 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_HARDWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   // Even when OOM, quads should be produced, and should be different material
@@ -4682,7 +4682,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer_->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
-  active_layer_->AppendQuads(render_pass.get(), Occlusion(), &data);
+  active_layer_->AppendQuads(render_pass.get(), &data);
   active_layer_->DidDraw(nullptr);
 
   DrawQuad::Material expected = test_for_solid

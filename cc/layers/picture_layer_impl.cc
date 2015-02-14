@@ -153,7 +153,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 }
 
 void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
-                                   const Occlusion& occlusion_in_content_space,
                                    AppendQuadsData* append_quads_data) {
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
@@ -172,17 +171,18 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         render_pass, bounds(), shared_quad_state, append_quads_data);
 
     SolidColorLayerImpl::AppendSolidQuads(
-        render_pass, occlusion_in_content_space, shared_quad_state,
-        visible_content_rect(), raster_source_->GetSolidColor(),
-        append_quads_data);
+        render_pass, draw_properties().occlusion_in_content_space,
+        shared_quad_state, visible_content_rect(),
+        raster_source_->GetSolidColor(), append_quads_data);
     return;
   }
 
   float max_contents_scale = MaximumTilingContentsScale();
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale);
   Occlusion scaled_occlusion =
-      occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
-          shared_quad_state->content_to_target_transform);
+      draw_properties()
+          .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+              shared_quad_state->content_to_target_transform);
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(

@@ -141,7 +141,6 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
 }
 
 void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
-                                   const Occlusion& occlusion_in_content_space,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(external_texture_resource_ || valid_texture_copy_);
 
@@ -159,7 +158,8 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect opaque_rect = opaque ? quad_rect : gfx::Rect();
   gfx::Rect visible_quad_rect =
-      occlusion_in_content_space.GetUnoccludedContentRect(quad_rect);
+      draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
+          quad_rect);
   if (visible_quad_rect.IsEmpty())
     return;
 

@@ -71,7 +71,7 @@ class TiledLayerImplTest : public testing::Test {
     layer->SetBounds(layer_size);
 
     AppendQuadsData data;
-    layer->AppendQuads(render_pass, Occlusion(), &data);
+    layer->AppendQuads(render_pass, &data);
   }
 
  protected:
@@ -95,7 +95,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
 
     AppendQuadsData data;
     EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, nullptr));
-    layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    layer->AppendQuads(render_pass.get(), &data);
     layer->DidDraw(nullptr);
     unsigned num_tiles = num_tiles_x * num_tiles_y;
     EXPECT_EQ(render_pass->quad_list.size(), num_tiles);
@@ -124,7 +124,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
 
     AppendQuadsData data;
     EXPECT_TRUE(layer->WillDraw(DRAW_MODE_HARDWARE, nullptr));
-    layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    layer->AppendQuads(render_pass.get(), &data);
     layer->DidDraw(nullptr);
     EXPECT_EQ(render_pass->quad_list.size(), 0u);
   }
@@ -138,7 +138,7 @@ TEST_F(TiledLayerImplTest, EmptyQuadList) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    layer->AppendQuads(render_pass.get(), &data);
     EXPECT_EQ(render_pass->quad_list.size(), 0u);
   }
 }
@@ -158,7 +158,7 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    layer->AppendQuads(render_pass.get(), &data);
     EXPECT_EQ(render_pass->quad_list.size(), 4u);
     EXPECT_EQ(0u, data.num_missing_tiles);
 
@@ -175,7 +175,7 @@ TEST_F(TiledLayerImplTest, Checkerboarding) {
     scoped_ptr<RenderPass> render_pass = RenderPass::Create();
 
     AppendQuadsData data;
-    layer->AppendQuads(render_pass.get(), Occlusion(), &data);
+    layer->AppendQuads(render_pass.get(), &data);
     EXPECT_LT(0u, data.num_missing_tiles);
     EXPECT_EQ(render_pass->quad_list.size(), 4u);
     for (const auto& quad : render_pass->quad_list)

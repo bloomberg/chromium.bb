@@ -137,9 +137,10 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
   Occlusion occlusion(layer_impl->draw_transform(),
                       SimpleEnclosedRegion(occluded),
                       SimpleEnclosedRegion());
+  layer_impl->draw_properties().occlusion_in_content_space = occlusion;
 
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(render_pass_.get(), occlusion, &data);
+  layer_impl->AppendQuads(render_pass_.get(), &data);
   layer_impl->DidDraw(resource_provider());
 }
 
@@ -155,9 +156,10 @@ void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
   Occlusion occlusion(layer_impl->draw_transform(),
                       SimpleEnclosedRegion(occluded),
                       SimpleEnclosedRegion());
+  layer_impl->draw_properties().occlusion_in_content_space = occlusion;
 
   layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(given_render_pass, occlusion, &data);
+  layer_impl->AppendQuads(given_render_pass, &data);
   layer_impl->DidDraw(resource_provider());
 }
 
