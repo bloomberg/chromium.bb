@@ -506,6 +506,7 @@
         'i18n/time_formatting_unittest.cc',
         'i18n/timezone_unittest.cc',
         'id_map_unittest.cc',
+        'ios/crb_protocol_observers_unittest.mm',
         'ios/device_util_unittest.mm',
         'ios/weak_nsobject_unittest.mm',
         'json/json_parser_unittest.cc',

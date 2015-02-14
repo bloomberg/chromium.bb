@@ -230,6 +230,8 @@
           'hash.h',
           'id_map.h',
           'ios/block_types.h',
+          'ios/crb_protocol_observers.h',
+          'ios/crb_protocol_observers.mm',
           'ios/device_util.h',
           'ios/device_util.mm',
           'ios/ios_util.h',
