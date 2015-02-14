@@ -65,6 +65,13 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
   // Copy over tilings that are shared with the |twin_set| tiling set (if it
   // exists).
   if (twin_set) {
+    if (twin_set->tilings_.empty()) {
+      // If the twin (pending) tiling set is empty, it was not updated for the
+      // current frame. So we drop tilings from our set as well, instead of
+      // leaving behind unshared tilings that are all non-ideal.
+      RemoveAllTilings();
+    }
+
     for (PictureLayerTiling* twin_tiling : twin_set->tilings_) {
       float contents_scale = twin_tiling->contents_scale();
       DCHECK_GE(contents_scale, minimum_contents_scale);

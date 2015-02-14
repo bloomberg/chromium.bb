@@ -657,7 +657,6 @@ bool LayerTreeImpl::UpdateDrawProperties() {
     size_t layers_updated_count = 0;
     bool tile_priorities_updated = false;
     for (PictureLayerImpl* layer : picture_layers_) {
-      // TODO(danakj): Remove this to fix crbug.com/446751
       if (!layer->IsDrawnRenderSurfaceLayerListMember())
         continue;
       ++layers_updated_count;
