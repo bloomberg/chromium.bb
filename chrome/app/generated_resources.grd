@@ -15549,6 +15549,12 @@ Do you accept?
         Learn more
       </message>
 
+      <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
+        Allow invalid certificates for resources loaded from localhost.
+      </message>
+      <message name="IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION" desc="Description of the 'Allow insecure localhost' flag.">
+        Allows requests to localhost over HTTPS even when an invalid certificate is presented.
+      </message>
     </messages>
   </release>
 </grit>

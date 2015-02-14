@@ -22,6 +22,7 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
  private:
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void DidFinishDocumentLoad() override;
 
   // IPC handlers
   void OnSetIsPrerendering(bool is_prerendering);

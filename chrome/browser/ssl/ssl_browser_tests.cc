@@ -380,6 +380,16 @@ class SSLUITestIgnoreCertErrors : public SSLUITest {
   }
 };
 
+class SSLUITestIgnoreLocalhostCertErrors : public SSLUITest {
+ public:
+  SSLUITestIgnoreLocalhostCertErrors() : SSLUITest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Browser will ignore certificate errors on localhost.
+    command_line->AppendSwitch(switches::kAllowInsecureLocalhost);
+  }
+};
+
 // Visits a regular page over http.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
   ASSERT_TRUE(test_server()->Start());
@@ -531,6 +541,35 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL("files/ssl/google.html"));
   CheckUnauthenticatedState(tab, AuthState::NONE);
+}
+
+// Test that localhost pages don't show an interstitial.
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
+                       TestNoInterstitialOnLocalhost) {
+  ASSERT_TRUE(https_server_.Start());
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a localhost page.
+  GURL url = https_server_.GetURL("files/ssl/page_with_subresource.html");
+  GURL::Replacements replacements;
+  std::string new_host("localhost");
+  replacements.SetHostStr(new_host);
+  url = url.ReplaceComponents(replacements);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // We should see no interstitial, but we should have an error
+  // (red-crossed-out-https) in the URL bar.
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
+                                 AuthState::NONE);
+
+  // We should see that the script tag in the page loaded and ran (and
+  // wasn't blocked by the certificate error).
+  base::string16 title;
+  base::string16 expected_title = base::ASCIIToUTF16("This script has loaded");
+  ui_test_utils::GetCurrentTabTitle(browser(), &title);
+  EXPECT_EQ(title, expected_title);
 }
 
 // Visits a page with https error and then goes back using Browser::GoBack.

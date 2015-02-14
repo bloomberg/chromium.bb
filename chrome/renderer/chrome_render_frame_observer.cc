@@ -8,22 +8,31 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
+#include "net/base/net_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
+using blink::WebDataSource;
 using blink::WebElement;
 using blink::WebNode;
+using content::SSLStatus;
 
 namespace {
 
@@ -150,4 +159,34 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
       printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)
     helper->PrintNode(render_frame()->GetContextMenuNode());
+}
+
+void ChromeRenderFrameObserver::DidFinishDocumentLoad() {
+  // If the navigation is to a localhost URL (and the flag is set to
+  // allow localhost SSL misconfigurations), print a warning to the
+  // console telling the developer to check their SSL configuration
+  // before going to production.
+  bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowInsecureLocalhost);
+  WebDataSource* ds = render_frame()->GetWebFrame()->dataSource();
+
+  if (allow_localhost) {
+    SSLStatus ssl_status = render_frame()->GetRenderView()->GetSSLStatusOfFrame(
+        render_frame()->GetWebFrame());
+    bool is_cert_error = net::IsCertStatusError(ssl_status.cert_status) &&
+                         !net::IsCertStatusMinorError(ssl_status.cert_status);
+    bool is_localhost = net::IsLocalhost(GURL(ds->request().url()).host());
+
+    if (is_cert_error && is_localhost) {
+      render_frame()->GetWebFrame()->addMessageToConsole(
+          blink::WebConsoleMessage(
+              blink::WebConsoleMessage::LevelWarning,
+              base::ASCIIToUTF16(
+                  "This site does not have a valid SSL "
+                  "certificate! Without SSL, your site's and "
+                  "visitors' data is vulnerable to theft and "
+                  "tampering. Get a valid SSL certificate before"
+                  " releasing your website to the public.")));
+    }
+  }
 }

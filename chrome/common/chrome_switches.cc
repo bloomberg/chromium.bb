@@ -38,6 +38,10 @@ const char kAllowFileAccess[]               = "allow-file-access";
 // extension API.
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 
+// Enables TLS/SSL errors on localhost to be ignored (no interstitial,
+// no blocking of requests).
+const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
+
 #if defined(ENABLE_PLUGINS)
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to CRX file system APIs.

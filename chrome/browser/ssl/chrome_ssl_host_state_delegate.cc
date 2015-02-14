@@ -23,6 +23,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/hash_value.h"
+#include "net/base/net_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -330,6 +331,15 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
   // Set a default value in case this method is short circuited and doesn't do a
   // full query.
   *expired_previous_decision = false;
+
+  // If the appropriate flag is set, let requests on localhost go
+  // through even if there are certificate errors. Errors on localhost
+  // are unlikely to indicate actual security problems.
+  bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowInsecureLocalhost);
+  if (allow_localhost && net::IsLocalhost(url.host()))
+    return ALLOWED;
+
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return DENIED;
 

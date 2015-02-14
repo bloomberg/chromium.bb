@@ -2181,6 +2181,13 @@ const Experiment kExperiments[] = {
                       kEnableDataReductionProxyBypassWarning)
   },
 #endif
+  {
+    "allow-insecure-localhost",
+    IDS_ALLOW_INSECURE_LOCALHOST,
+    IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

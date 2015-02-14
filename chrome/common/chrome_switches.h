@@ -31,6 +31,7 @@ extern const char kActivateExistingProfileBrowser[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowHttpScreenCapture[];
+extern const char kAllowInsecureLocalhost[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAlternateProtocolProbabilityThreshold[];
