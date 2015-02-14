@@ -1432,7 +1432,7 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   } else {
     // Another DesktopWindowTreeHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
-    event->ConvertLocationToTarget(window(), g_current_capture->window());
+    ConvertEventToDifferentHost(event, g_current_capture);
     g_current_capture->SendEventToProcessor(event);
   }
 }
@@ -1440,11 +1440,27 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
 void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
   if (g_current_capture && g_current_capture != this &&
       event->type() == ui::ET_TOUCH_PRESSED) {
-    event->ConvertLocationToTarget(window(), g_current_capture->window());
+    ConvertEventToDifferentHost(event, g_current_capture);
     g_current_capture->SendEventToProcessor(event);
   } else {
     SendEventToProcessor(event);
   }
+}
+
+void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
+    ui::LocatedEvent* located_event,
+    DesktopWindowTreeHostX11* host) {
+  DCHECK_NE(this, host);
+  const gfx::Display display_src =
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(window());
+  const gfx::Display display_dest =
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(host->window());
+  DCHECK_EQ(display_src.device_scale_factor(),
+            display_dest.device_scale_factor());
+  gfx::Vector2d offset = GetLocationOnNativeScreen() -
+                         host->GetLocationOnNativeScreen();
+  gfx::Point location_in_pixel_in_host = located_event->location() + offset;
+  located_event->set_location(location_in_pixel_in_host);
 }
 
 void DesktopWindowTreeHostX11::ResetWindowRegion() {

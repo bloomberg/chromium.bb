@@ -164,6 +164,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   ui::EventProcessor* GetEventProcessor() override;
 
  private:
+  friend class DesktopWindowTreeHostX11HighDPITest;
   // Initializes our X11 surface to draw on. This method performs all
   // initialization related to talking to the X11 server.
   void InitX11Window(const Widget::InitParams& params);
@@ -208,6 +209,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // has capture, then touch-press events are translated to its coordinate space
   // and dispatched to that host instead.
   void DispatchTouchEvent(ui::TouchEvent* event);
+
+  // Updates the location of |located_event| to be in |host|'s coordinate system
+  // so that it can be dispatched to |host|.
+  void ConvertEventToDifferentHost(ui::LocatedEvent* located_event,
+                                   DesktopWindowTreeHostX11* host);
 
   // Resets the window region for the current widget bounds if necessary.
   void ResetWindowRegion();
