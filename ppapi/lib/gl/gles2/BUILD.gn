@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+config("gles2_config") {
+  include_dirs = [ "//ppapi/lib/gl/include" ]
+}
+
 source_set("gles2") {
   sources = [
     "gl2ext_ppapi.c",
@@ -9,9 +13,9 @@ source_set("gles2") {
     "gles2.c",
   ]
 
-  include_dirs = [ "lib/gl/include" ]
+  public_configs = [ ":gles2_config" ]
 
-  deps = [
+  public_deps = [
     "//ppapi/c",
   ]
 }

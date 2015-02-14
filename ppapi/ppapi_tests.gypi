@@ -228,6 +228,7 @@
       },
     },
     {
+      # GN version: //ppapi/examples/mouse_cursor
       'target_name': 'ppapi_example_mouse_cursor',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -238,6 +239,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/mouse_lock
       'target_name': 'ppapi_example_mouse_lock',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -249,6 +251,7 @@
     },
 
     {
+      # GN version: //ppapi/examples/gamepad
       'target_name': 'ppapi_example_gamepad',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -260,6 +263,7 @@
     },
 
     {
+      # GN version: //ppapi/examples/stub:c_stub
       'target_name': 'ppapi_example_c_stub',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -270,6 +274,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/stub:cc_stub
       'target_name': 'ppapi_example_cc_stub',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -280,6 +285,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/crxfs
       'target_name': 'ppapi_example_crxfs',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -290,6 +296,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/audio
       'target_name': 'ppapi_example_audio',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -300,6 +307,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/audio_input
       'target_name': 'ppapi_example_audio_input',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -310,6 +318,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/file_chooser
       'target_name': 'ppapi_example_file_chooser',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -320,6 +329,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/2d:graphics_2d
       'target_name': 'ppapi_example_graphics_2d',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -330,6 +340,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/ime
       'target_name': 'ppapi_example_ime',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -340,6 +351,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/2d:paint_manager
       'target_name': 'ppapi_example_paint_manager',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -350,6 +362,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/input
       'target_name': 'ppapi_example_input',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -360,6 +373,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/scripting
       'target_name': 'ppapi_example_post_message',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -370,6 +384,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/scaling
       'target_name': 'ppapi_example_scaling',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -380,6 +395,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/2d:scroll
       'target_name': 'ppapi_example_scroll',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -390,6 +406,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/font
       'target_name': 'ppapi_example_simple_font',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -400,6 +417,18 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/threading
+      'target_name': 'ppapi_example_threading',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/threading/threading.cc',
+      ],
+    },
+    {
+      # GN version: //ppapi/examples/url_loader:streaming
       'target_name': 'ppapi_example_url_loader',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -410,6 +439,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/url_loader:file
       'target_name': 'ppapi_example_url_loader_file',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -420,6 +450,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/gles2
       'target_name': 'ppapi_example_gles2',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -434,6 +465,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/video_decode:stable
       'target_name': 'ppapi_example_video_decode',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -449,6 +481,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/video_decode:dev
       'target_name': 'ppapi_example_video_decode_dev',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -464,6 +497,7 @@
       ],
     },
     {
+      # GN version: //ppapi/example/video_capture
       'target_name': 'ppapi_example_vc',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -478,6 +512,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/video_effects
       'target_name': 'ppapi_example_video_effects',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -488,6 +523,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/enumerate_devices
       'target_name': 'ppapi_example_enumerate_devices',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -498,6 +534,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/flash_topmost
       'target_name': 'ppapi_example_flash_topmost',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -508,6 +545,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/printing
       'target_name': 'ppapi_example_printing',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -518,6 +556,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/media_stream_audio
       'target_name': 'ppapi_example_media_stream_audio',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -528,6 +567,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/media_stream_video
       'target_name': 'ppapi_example_media_stream_video',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -542,6 +582,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/gles2_spinning_cube
       'target_name': 'ppapi_example_gles2_spinning_cube',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -558,6 +599,7 @@
       ],
     },
     {
+      # GN version: //ppapi/examples/compositor
       'target_name': 'ppapi_example_compositor',
       'dependencies': [
         'ppapi_example_skeleton',
@@ -573,5 +615,7 @@
         'examples/compositor/spinning_cube.h',
       ],
     },
+    # Adding a new PPAPI example? Don't forget to update the GN build.
+    # See //ppapi/examples/BUILD.gn
   ],
 }
