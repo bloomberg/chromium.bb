@@ -117,6 +117,15 @@ RenderFrameProxy::RenderFrameProxy(int routing_id, int frame_routing_id)
 }
 
 RenderFrameProxy::~RenderFrameProxy() {
+  // TODO(nasko): Set the render_frame_proxy to null to avoid a double deletion
+  // when detaching the main frame. This can be removed once RenderFrameImpl and
+  // RenderFrameProxy have been completely decoupled. See
+  // https://crbug.com/357747.
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(frame_routing_id_);
+  if (render_frame)
+    render_frame->set_render_frame_proxy(nullptr);
+
   render_view()->UnregisterRenderFrameProxy(this);
 
   FrameMap::iterator it = g_frame_map.Get().find(web_frame_);
