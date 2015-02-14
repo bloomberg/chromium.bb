@@ -413,7 +413,7 @@ OptionsWebUIExtendedTest.prototype = {
 
   /**
    * Verifies that the correct pages are currently open/visible.
-   * @param {!Array.<string>} expectedPages An array of page names expected to
+   * @param {!Array<string>} expectedPages An array of page names expected to
    *     be open, with the topmost listed last.
    * @param {string=} opt_expectedUrl The URL path, including hash, expected to
    *     be open. If undefined, the topmost (last) page name in |expectedPages|
@@ -457,7 +457,7 @@ OptionsWebUIExtendedTest.prototype = {
 
   /*
    * Verifies that the correct URLs are listed in the history. Asynchronous.
-   * @param {!Array.<string>} expectedHistory An array of URL paths expected to
+   * @param {!Array<string>} expectedHistory An array of URL paths expected to
    *     be in the tab navigation history, sorted by visit time, including the
    *     current page as the last entry. The base URL (chrome://settings-frame/)
    *     will be prepended to each. An initial 'about:blank' history entry is

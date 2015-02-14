@@ -35,7 +35,7 @@ cr.define('print_preview', function() {
     /** @private {print_preview.Destination} */
     this.destination_ = null;
 
-    /** @private {!Array.<!print_preview.AdvancedSettingsItem>} */
+    /** @private {!Array<!print_preview.AdvancedSettingsItem>} */
     this.items_ = [];
   };
 

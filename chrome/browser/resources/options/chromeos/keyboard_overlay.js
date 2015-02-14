@@ -8,7 +8,7 @@ cr.define('options', function() {
    * Auto-repeat delays (in ms) for the corresponding slider values, from
    * long to short. The values were chosen to provide a large range while giving
    * several options near the defaults.
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @const
    */
   var AUTO_REPEAT_DELAYS =
@@ -18,7 +18,7 @@ cr.define('options', function() {
    * Auto-repeat intervals (in ms) for the corresponding slider values, from
    * long to short. The slider itself is labeled "rate", the inverse of
    * interval, and goes from slow (long interval) to fast (short interval).
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @const
    */
   var AUTO_REPEAT_INTERVALS =
@@ -138,7 +138,7 @@ cr.define('options', function() {
      * |value|.
      * @param {string} id The slider's ID.
      * @param {number} value The value to find.
-     * @param {!Array.<number>} values The array to search.
+     * @param {!Array<number>} values The array to search.
      * @private
      */
     updateSliderFromValue_: function(id, value, values) {

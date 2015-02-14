@@ -68,7 +68,7 @@ remoting.MessageWindow = function(options) {
   /** @type {number} */
   this.timer_ = 0;
 
-  /** @type {Array.<function():void>} */
+  /** @type {Array<function():void>} */
   this.pendingWindowOperations_ = [];
 
   /**

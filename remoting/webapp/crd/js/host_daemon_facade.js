@@ -23,7 +23,7 @@ remoting.HostDaemonFacade = function() {
   this.nextId_ = 0;
 
   /**
-   * @type {Object.<number, remoting.HostDaemonFacade.PendingReply>}
+   * @type {Object<number, remoting.HostDaemonFacade.PendingReply>}
    * @private
    */
   this.pendingReplies_ = {};
@@ -34,10 +34,10 @@ remoting.HostDaemonFacade = function() {
   /** @type {string} @private */
   this.version_ = '';
 
-  /** @type {Array.<remoting.HostController.Feature>} @private */
+  /** @type {Array<remoting.HostController.Feature>} @private */
   this.supportedFeatures_ = [];
 
-  /** @type {Array.<function(boolean):void>} @private */
+  /** @type {Array<function(boolean):void>} @private */
   this.afterInitializationTasks_ = [];
 
   /**
@@ -504,7 +504,7 @@ remoting.HostDaemonFacade.prototype.getDaemonState =
 /**
  * Retrieves the list of paired clients.
  *
- * @param {function(Array.<remoting.PairedClient>):void} onDone Callback to
+ * @param {function(Array<remoting.PairedClient>):void} onDone Callback to
  *     return result.
  * @param {function(remoting.Error):void} onError Callback to call on error.
  */

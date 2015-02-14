@@ -36,7 +36,7 @@ cr.define('bmm', function() {
    * Promise version of chrome.bookmarkManagerPrivate.getSubtree.
    * @param {string} id .
    * @param {boolean} foldersOnly .
-   * @return {!Promise.<!Array.<!BookmarkTreeNode>>} .
+   * @return {!Promise<!Array<!BookmarkTreeNode>>} .
    */
   function getSubtreePromise(id, foldersOnly) {
     return new Promise(function(resolve) {
@@ -48,7 +48,7 @@ cr.define('bmm', function() {
    * Loads a subtree of the bookmark tree and returns a {@code Promise} that
    * will be fulfilled when done. This reuses multiple loads so that we do not
    * load the same subtree more than once at the same time.
-   * @return {!Promise.<!BookmarkTreeNode>} The future promise for the load.
+   * @return {!Promise<!BookmarkTreeNode>} The future promise for the load.
    */
   function loadSubtree(id) {
     if (!loadingPromises[id]) {
@@ -64,7 +64,7 @@ cr.define('bmm', function() {
    * Loads the entire bookmark tree and returns a {@code Promise} that will
    * be fulfilled when done. This reuses multiple loads so that we do not load
    * the same tree more than once at the same time.
-   * @return {!Promise.<!BookmarkTreeNode>} The future promise for the load.
+   * @return {!Promise<!BookmarkTreeNode>} The future promise for the load.
    */
   function loadTree() {
     return loadSubtree('');

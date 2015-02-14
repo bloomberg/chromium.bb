@@ -83,7 +83,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {?print_preview.Destination.Origin.<string>} Origin of the
+     * @return {?print_preview.Destination.Origin<string>} Origin of the
      *     selected destination.
      */
     get selectedDestinationOrigin() {

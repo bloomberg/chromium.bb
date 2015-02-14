@@ -37,7 +37,7 @@ var DismissalData;
  *
  * @typedef {{
  *   messageUrl: (string|undefined),
- *   buttonUrls: (Array.<string>|undefined)
+ *   buttonUrls: (Array<string>|undefined)
  * }}
  */
 var ActionUrls;
@@ -82,7 +82,7 @@ var UncombinedNotification;
 /**
  * Card combined from potentially multiple groups.
  *
- * @typedef {Array.<UncombinedNotification>}
+ * @typedef {Array<UncombinedNotification>}
  */
 var CombinedCard;
 
@@ -192,7 +192,7 @@ function buildCardSet() {
    *     of the card.
    * @param {CombinedCard} combinedCard Combined cards with
    *     |chromeNotificationId|.
-   * @param {Object.<string, StoredNotificationGroup>} notificationGroups
+   * @param {Object<string, StoredNotificationGroup>} notificationGroups
    *     Map from group name to group information.
    * @param {function(ReceivedNotification)=} onCardShown Optional parameter
    *     called when each card is shown.
@@ -283,18 +283,18 @@ function buildCardSet() {
    *     of the card.
    * @param {NotificationDataEntry} notificationData Stored notification entry
    *     for this card.
-   * @param {Object.<string, StoredNotificationGroup>} notificationGroups
+   * @param {Object<string, StoredNotificationGroup>} notificationGroups
    *     Map from group name to group information.
    * @return {{
-   *   dismissals: Array.<DismissalData>,
+   *   dismissals: Array<DismissalData>,
    *   notificationData: (NotificationDataEntry|undefined)
    * }}
    */
   function onDismissal(
       chromeNotificationId, notificationData, notificationGroups) {
-    /** @type {Array.<DismissalData>} */
+    /** @type {Array<DismissalData>} */
     var dismissals = [];
-    /** @type {Array.<UncombinedNotification>} */
+    /** @type {Array<UncombinedNotification>} */
     var newCombinedCard = [];
 
     // Determine which parts of the combined card need to be dismissed or to be
@@ -325,7 +325,7 @@ function buildCardSet() {
    * Removes card information from |notificationGroups|.
    * @param {ChromeNotificationId} chromeNotificationId chrome.notifications ID
    *     of the card.
-   * @param {Object.<string, StoredNotificationGroup>} notificationGroups
+   * @param {Object<string, StoredNotificationGroup>} notificationGroups
    *     Map from group name to group information.
    */
   function clearCardFromGroups(chromeNotificationId, notificationGroups) {
@@ -350,9 +350,9 @@ function buildCardSet() {
         /** @type {ChromeNotificationId} */
         var chromeNotificationId = alarm.name.substring(alarmPrefix.length);
         fillFromChromeLocalStorage({
-          /** @type {Object.<ChromeNotificationId, NotificationDataEntry>} */
+          /** @type {Object<ChromeNotificationId, NotificationDataEntry>} */
           notificationsData: {},
-          /** @type {Object.<string, StoredNotificationGroup>} */
+          /** @type {Object<string, StoredNotificationGroup>} */
           notificationGroups: {}
         }).then(function(items) {
           console.log('cardManager.onAlarm.get ' + JSON.stringify(items));

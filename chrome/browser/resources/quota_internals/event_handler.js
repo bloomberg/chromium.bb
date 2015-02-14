@@ -74,7 +74,7 @@ function stringToText_(value) {
  * e.g. separateBackward_('abcdefghijk', 4) == ['abc','defg','hijk'];
  * @param {string} value String to be separated.
  * @param {number} maxLength Max length of segments.
- * @return {Array.<string>} Array of segments.
+ * @return {Array<string>} Array of segments.
  * @private
  */
 function separateBackward_(value, maxLength) {
@@ -399,7 +399,7 @@ function handlePerOriginInfo(event) {
  */
 function handleStatistics(event) {
   /**
-   * @type {Object.<string>}
+   * @type {Object<string>}
    */
   var data = event.detail;
   for (var key in data) {

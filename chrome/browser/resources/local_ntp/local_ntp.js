@@ -148,7 +148,7 @@ var ntpContents;
 
 /**
  * The array of rendered tiles, ordered by appearance.
- * @type {!Array.<Tile>}
+ * @type {!Array<Tile>}
  */
 var tiles = [];
 
@@ -462,7 +462,7 @@ function setAttributionVisibility_(show) {
 
  /**
  * Converts an Array of color components into RRGGBBAA format.
- * @param {Array.<number>} color Array of rgba color components.
+ * @param {Array<number>} color Array of rgba color components.
  * @return {string} Color string in RRGGBBAA format.
  * @private
  */
@@ -475,7 +475,7 @@ function convertToRRGGBBAAColor(color) {
 
  /**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
- * @param {Array.<number>} color Array of rgba color components.
+ * @param {Array<number>} color Array of rgba color components.
  * @return {string} CSS color in RGBA format.
  * @private
  */

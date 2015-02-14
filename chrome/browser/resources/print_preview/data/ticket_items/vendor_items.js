@@ -37,7 +37,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /**
      * Vendor ticket items store, maps item id to the item value.
-     * @private {!Object.<string, string>}
+     * @private {!Object<string, string>}
      */
     this.items_ = {};
   };
@@ -78,14 +78,14 @@ cr.define('print_preview.ticket_items', function() {
 
     /**
      * Vendor ticket items store, maps item id to the item value.
-     * @return {!Object.<string, string>}
+     * @return {!Object<string, string>}
      */
     get ticketItems() {
       return this.items_;
     },
 
     /**
-     * @param {!Object.<string, string>} values Values to set as the values of
+     * @param {!Object<string, string>} values Values to set as the values of
      *     vendor ticket items. Maps vendor item id to the value.
      */
     updateValue: function(values) {

@@ -52,7 +52,7 @@ function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
-  /** @private {Array.<SignHelperChallenge>} */
+  /** @private {Array<SignHelperChallenge>} */
   this.challenges_ = [];
   /** @private {boolean} */
   this.challengesSet_ = false;
@@ -60,7 +60,7 @@ function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
   this.complete_ = false;
   /** @private {number} */
   this.numComplete_ = 0;
-  /** @private {!Object.<string, GnubbyTracker>} */
+  /** @private {!Object<string, GnubbyTracker>} */
   this.gnubbies_ = {};
   /** @private {Countdown} */
   this.timer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
@@ -96,7 +96,7 @@ MultipleGnubbySigner.prototype.close = function() {
 
 /**
  * Begins signing the given challenges.
- * @param {Array.<SignHelperChallenge>} challenges The challenges to sign.
+ * @param {Array<SignHelperChallenge>} challenges The challenges to sign.
  * @return {boolean} whether the challenges were successfully added.
  */
 MultipleGnubbySigner.prototype.doSign = function(challenges) {
@@ -148,7 +148,7 @@ MultipleGnubbySigner.prototype.enumerateGnubbies_ = function() {
 /**
  * Called with the result of enumerating gnubbies.
  * @param {number} rc The return code from enumerating.
- * @param {Array.<GnubbyDeviceId>} ids The gnubbies enumerated.
+ * @param {Array<GnubbyDeviceId>} ids The gnubbies enumerated.
  * @private
  */
 MultipleGnubbySigner.prototype.enumerateCallback_ = function(rc, ids) {

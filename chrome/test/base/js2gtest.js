@@ -75,14 +75,14 @@ var testF;
 /**
  * Keeps track of whether a typedef has been generated for each test
  * fixture.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 var typedeffedCppFixtures = {};
 
 /**
  * Maintains a list of relative file paths to add to each gtest body
  * for inclusion at runtime before running each JavaScript test.
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 var genIncludes = [];
 
@@ -181,14 +181,14 @@ function includeFileToPaths(includeFile) {
 /**
  * Maps object names to the path to the file that provides them.
  * Populated from the |depsFile| if any.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 var dependencyProvidesToPaths = {};
 
 /**
  * Maps dependency path names to object names required by the file.
  * Populated from the |depsFile| if any.
- * @type {Object.<string, Array.<string>>}
+ * @type {Object<string, Array<string>>}
  */
 var dependencyPathsToRequires = {};
 
@@ -198,8 +198,8 @@ if (depsFile) {
    * Called by the javascript in the deps file to add modules and their
    * dependencies.
    * @param {string} path Relative path to the file.
-   * @param Array.<string> provides Objects provided by this file.
-   * @param Array.<string> requires Objects required by this file.
+   * @param Array<string> provides Objects provided by this file.
+   * @param Array<string> requires Objects required by this file.
    */
   goog.addDependency = function(path, provides, requires) {
     provides.forEach(function(provide) {
@@ -219,8 +219,8 @@ if (depsFile) {
  * by the deps file.  Dependencies will be resolved and included in the
  * correct order, meaning that the returned array may contain more entries
  * than the input.
- * @param {Array.<string>} deps List of dependencies.
- * @return {Array.<string>} List of paths to load.
+ * @param {Array<string>} deps List of dependencies.
+ * @return {Array<string>} List of paths to load.
  */
 function resolveClosureModuleDeps(deps) {
   if (!depsFile && deps.length > 0) {
@@ -302,7 +302,7 @@ function GEN_BLOCK(commentEncodedCode) {
  * The paths are allowed to be:
  *   1. relative to the root src directory (i.e. similar to #include's).
  *   2. relative to the directory specified in the GYP rule for the file.
- * @param {Array.<string>} includes Paths to JavaScript files to
+ * @param {Array<string>} includes Paths to JavaScript files to
  *     include immediately and at runtime.
  */
 function GEN_INCLUDE(includes) {

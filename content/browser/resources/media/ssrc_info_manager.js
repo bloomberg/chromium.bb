@@ -48,7 +48,7 @@ var SsrcInfoManager = (function() {
   function SsrcInfoManager() {
     /**
      * Map from ssrc id to an object containing all the stream properties.
-     * @type {!Object.<string, !Object.<string>>}
+     * @type {!Object<string, !Object<string>>}
      * @private
      */
     this.streamInfoContainer_ = {};
@@ -133,7 +133,7 @@ var SsrcInfoManager = (function() {
 
     /**
      * @param {string} sdp The ssrc id.
-     * @return {!Object.<string>} The object containing the ssrc infomation.
+     * @return {!Object<string>} The object containing the ssrc infomation.
      */
     getStreamInfo: function(ssrc) {
       return this.streamInfoContainer_[ssrc];

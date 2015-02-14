@@ -65,14 +65,14 @@ function SingleGnubbySigner(gnubbyId, forEnroll, completeCb, timer,
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
-  /** @private {!Array.<!SignHelperChallenge>} */
+  /** @private {!Array<!SignHelperChallenge>} */
   this.challenges_ = [];
   /** @private {number} */
   this.challengeIndex_ = 0;
   /** @private {boolean} */
   this.challengesSet_ = false;
 
-  /** @private {!Object.<string, number>} */
+  /** @private {!Object<string, number>} */
   this.cachedError_ = [];
 }
 
@@ -138,7 +138,7 @@ SingleGnubbySigner.prototype.closed_ = function() {
 
 /**
  * Begins signing the given challenges.
- * @param {Array.<SignHelperChallenge>} challenges The challenges to sign.
+ * @param {Array<SignHelperChallenge>} challenges The challenges to sign.
  * @return {boolean} Whether the challenges were accepted.
  */
 SingleGnubbySigner.prototype.doSign = function(challenges) {

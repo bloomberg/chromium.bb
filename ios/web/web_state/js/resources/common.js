@@ -90,7 +90,7 @@ new function() {
    *
    * @param {Element} form A form element for which the control elements are
    *   returned.
-   * @return {Array.<Element>}
+   * @return {Array<Element>}
    */
   __gCrWeb.common.getFormControlElements = function(form) {
     if (!form) {

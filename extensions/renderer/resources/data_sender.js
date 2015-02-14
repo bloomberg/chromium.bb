@@ -35,7 +35,7 @@ define('data_sender', [
     /**
      * The promise that will be resolved or rejected when this send completes
      * or fails, respectively.
-     * @type {!Promise.<number>}
+     * @type {!Promise<number>}
      * @private
      */
     this.promise_ = new Promise(function(resolve, reject) {
@@ -57,7 +57,7 @@ define('data_sender', [
   /**
    * Returns the promise that will be resolved when this operation completes or
    * rejected if an error occurs.
-   * @return {!Promise.<number>} A promise to the number of bytes sent.
+   * @return {!Promise<number>} A promise to the number of bytes sent.
    */
   PendingSend.prototype.getPromise = function() {
     return this.promise_;
@@ -188,7 +188,7 @@ define('data_sender', [
    * Serializes this DataSender.
    * This will cancel any sends in progress before the returned promise
    * resolves.
-   * @return {!Promise.<SerializedDataSender>} A promise that will resolve to
+   * @return {!Promise<SerializedDataSender>} A promise that will resolve to
    *     the serialization of this DataSender. If this DataSender has shut down,
    *     the promise will resolve to null.
    */
@@ -241,7 +241,7 @@ define('data_sender', [
 
   /**
    * Sends data to the DataSink.
-   * @return {!Promise.<number>} A promise to the number of bytes sent. If an
+   * @return {!Promise<number>} A promise to the number of bytes sent. If an
    *     error occurs, the promise will reject with an Error object with a
    *     property error containing the error code.
    * @throws Will throw if this has encountered a fatal error or a cancel is in

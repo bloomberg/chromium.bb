@@ -76,7 +76,7 @@ cr.define('options', function() {
 
   /**
    * Sets the list of handlers shown by the view.
-   * @param {Array.<Handlers>} handlers Handlers to be shown in the view.
+   * @param {Array<Handlers>} handlers Handlers to be shown in the view.
    */
   HandlerOptions.setHandlers = function(handlers) {
     $('handlers-list').setHandlers(handlers);

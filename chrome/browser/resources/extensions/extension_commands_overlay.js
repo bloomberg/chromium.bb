@@ -51,7 +51,7 @@ cr.define('extensions', function() {
   /**
    * Called by the dom_ui_ to re-populate the page with data representing
    * the current state of extension commands.
-   * @param {!{commands: Array.<{name: string, id: string, commands: ?Array}>}}
+   * @param {!{commands: Array<{name: string, id: string, commands: ?Array}>}}
    *     extensionsData
    */
   ExtensionCommandsOverlay.returnExtensionsData = function(extensionsData) {

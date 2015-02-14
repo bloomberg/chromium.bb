@@ -261,7 +261,7 @@ remoting.ClientSession.Capability = {
 
 /**
  * The set of capabilities negotiated between the client and host.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @private
  */
 remoting.ClientSession.prototype.capabilities_ = null;
@@ -285,7 +285,7 @@ remoting.ClientSession.prototype.hasCapability = function(capability) {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {Array.<string>} requiredCapabilities A list of capabilities
+ * @param {Array<string>} requiredCapabilities A list of capabilities
  *     required by this application.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
@@ -604,7 +604,7 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
 /**
  * Called when the client-host capabilities negotiation is complete.
  *
- * @param {!Array.<string>} capabilities The set of capabilities negotiated
+ * @param {!Array<string>} capabilities The set of capabilities negotiated
  *     between the client and host.
  * @return {void} Nothing.
  * @private

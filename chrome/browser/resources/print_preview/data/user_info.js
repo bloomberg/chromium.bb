@@ -24,7 +24,7 @@ cr.define('print_preview', function() {
     /**
      * Email addresses of the logged in users or empty array if no user is
      * logged in. {@code null} if not known yet.
-     * @private {?Array.<string>}
+     * @private {?Array<string>}
      */
     this.users_ = null;
   };
@@ -68,7 +68,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {?Array.<string>} Email addresses of the logged in users or
+     * @return {?Array<string>} Email addresses of the logged in users or
      *     empty array if no user is logged in. {@code null} if not known yet.
      */
     get users() {
@@ -78,7 +78,7 @@ cr.define('print_preview', function() {
     /**
      * Sets logged in user accounts info.
      * @param {string} activeUser Active user account (email).
-     * @param {!Array.<string>} users List of currently logged in accounts.
+     * @param {!Array<string>} users List of currently logged in accounts.
      */
     setUsers: function(activeUser, users) {
       this.activeUser_ = activeUser;

@@ -20,7 +20,7 @@ cr.define('options', function() {
 
   /**
    * Receives a list of supervised users and resolves the promise.
-   * @param {Array.<Object>} supervisedUsers Array of supervised user objects.
+   * @param {Array<Object>} supervisedUsers Array of supervised user objects.
    *     Each object is of the form:
    *       supervisedUser = {
    *         id: "Supervised User ID",
@@ -97,7 +97,7 @@ cr.define('options', function() {
   /**
    * Initializes |promise| with the new data and also passes the new data to
    * observers.
-   * @param {Array.<Object>} supervisedUsers Array of supervised user objects.
+   * @param {Array<Object>} supervisedUsers Array of supervised user objects.
    *     For the format of the objects, see receiveExistingSupervisedUsers_().
    * @private
    */

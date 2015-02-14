@@ -21,7 +21,7 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.ServerLogEntry = function() {
-  /** @type Object.<string, string> */ this.dict = {};
+  /** @type Object<string, string> */ this.dict = {};
 };
 
 /** @private */
@@ -209,7 +209,7 @@ remoting.ServerLogEntry.prototype.toStanza = function() {
  * @param {number} indentLevel the indentation level
  */
 remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
-  /** @type Array.<string> */ var fields = [];
+  /** @type Array<string> */ var fields = [];
   for (var key in this.dict) {
     fields.push(key + ': ' + this.dict[key]);
   }

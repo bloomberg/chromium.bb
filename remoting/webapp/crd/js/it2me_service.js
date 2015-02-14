@@ -28,7 +28,7 @@ remoting.It2MeService = function(appLauncher) {
   this.appLauncher_ = appLauncher;
 
   /**
-   * @type {Array.<remoting.It2MeHelperChannel>}
+   * @type {Array<remoting.It2MeHelperChannel>}
    * @private
    */
   this.helpers_ = [];

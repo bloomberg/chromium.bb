@@ -161,7 +161,7 @@ remoting.It2MeHelpeeChannel.prototype.dispose = function() {
 /**
  * Message Handler for incoming runtime messages from Hangouts.
  *
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelpeeChannel.prototype.onHangoutMessage_ = function(message) {
@@ -197,7 +197,7 @@ remoting.It2MeHelpeeChannel.prototype.onHangoutMessage_ = function(message) {
 /**
  * Queries the |hostInstaller| for the installation status.
  *
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelpeeChannel.prototype.handleIsHostInstalled_ =
@@ -221,7 +221,7 @@ remoting.It2MeHelpeeChannel.prototype.handleIsHostInstalled_ =
 };
 
 /**
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelpeeChannel.prototype.handleDownloadHost_ = function(message) {
@@ -244,7 +244,7 @@ remoting.It2MeHelpeeChannel.prototype.onHangoutDisconnect_ = function() {
 /**
  * Connects to the It2Me Native messaging Host and retrieves the access code.
  *
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
@@ -473,7 +473,7 @@ remoting.It2MeHelpeeChannel.prototype.onHostStateChanged_ = function(state) {
 };
 
 /**
- * @param {?{method:string, data:Object.<string,*>}} incomingMessage
+ * @param {?{method:string, data:Object<string,*>}} incomingMessage
  * @param {string|Error} error
  * @private
  */

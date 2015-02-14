@@ -87,7 +87,7 @@ define('stash_client', [
 
   /**
    * The registered stash clients.
-   * @type {!Array.<!Registration>}
+   * @type {!Array<!Registration>}
    */
   var clients = [];
 
@@ -128,7 +128,7 @@ define('stash_client', [
    *     client and should be passed as the id to registerClient().
    * @param {!Object} type The mojo struct type that was serialized into the
    *     each stashed object.
-   * @return {!Promise.<!Array<!Object>>} The stashed objects. The exact type of
+   * @return {!Promise<!Array<!Object>>} The stashed objects. The exact type of
    *     each object is that of the |type| parameter.
    * @alias module:stash_client.retrieve
    */

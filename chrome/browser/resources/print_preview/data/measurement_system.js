@@ -24,7 +24,7 @@ cr.define('print_preview', function() {
    * Parses |numberFormat| and extracts the symbols used for the thousands point
    * and decimal point.
    * @param {string} numberFormat The formatted version of the number 12345678.
-   * @return {!Array.<string>} The extracted symbols in the order
+   * @return {!Array<string>} The extracted symbols in the order
    *     [thousandsSymbol, decimalSymbol]. For example,
    *     parseNumberFormat("123,456.78") returns [",", "."].
    */
@@ -48,7 +48,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maximum resolution of local unit values.
-   * @type {!Object.<!print_preview.MeasurementSystem.UnitType, number>}
+   * @type {!Object<!print_preview.MeasurementSystem.UnitType, number>}
    * @private
    */
   MeasurementSystem.Precision_ = {};
@@ -57,7 +57,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maximum number of decimal places to keep for local unit.
-   * @type {!Object.<!print_preview.MeasurementSystem.UnitType, number>}
+   * @type {!Object<!print_preview.MeasurementSystem.UnitType, number>}
    * @private
    */
   MeasurementSystem.DecimalPlaces_ = {};

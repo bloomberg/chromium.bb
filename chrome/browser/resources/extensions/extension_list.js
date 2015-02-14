@@ -38,7 +38,7 @@
  *            kioskOnly: boolean,
  *            locationText: string,
  *            managedInstall: boolean,
- *            manifestErrors: (Array.<RuntimeError>|undefined),
+ *            manifestErrors: (Array<RuntimeError>|undefined),
  *            name: string,
  *            offlineEnabled: boolean,
  *            optionsOpenInTab: boolean,
@@ -50,13 +50,13 @@
  *            policyText: (string|undefined),
  *            prettifiedPath: (string|undefined),
  *            recommendedInstall: boolean,
- *            runtimeErrors: (Array.<RuntimeError>|undefined),
+ *            runtimeErrors: (Array<RuntimeError>|undefined),
  *            showAllUrls: boolean,
  *            suspiciousInstall: boolean,
  *            terminated: boolean,
  *            updateRequiredByPolicy: boolean,
  *            version: string,
- *            views: Array.<{renderViewId: number, renderProcessId: number,
+ *            views: Array<{renderViewId: number, renderProcessId: number,
  *                path: string, incognito: boolean,
  *                generatedBackgroundPage: boolean}>,
  *            wantsErrorCollection: boolean,
@@ -77,7 +77,7 @@ cr.define('options', function() {
   var ExtensionsList = cr.ui.define('div');
 
   /**
-   * @type {Object.<string, number>} A map from extension id to last reloaded
+   * @type {Object<string, number>} A map from extension id to last reloaded
    *     timestamp. The timestamp is recorded when the user click the 'Reload'
    *     link. It is used to refresh the icon of an unpacked extension.
    *     This persists between calls to decorate.

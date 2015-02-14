@@ -26,7 +26,7 @@ var StackTrace;
  *            renderProcessId: (number|undefined),
  *            renderViewId: (number|undefined),
  *            source: string,
- *            stackTrace: (Array.<StackTrace>|undefined),
+ *            stackTrace: (Array<StackTrace>|undefined),
  *            type: number}}
  */
 var RuntimeError;

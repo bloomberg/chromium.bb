@@ -1474,7 +1474,7 @@ cr.define('options', function() {
 
     /**
      * Adds all |profiles| to the list.
-     * @param {Array.<!options.Profile>} profiles An array of profile info
+     * @param {Array<!options.Profile>} profiles An array of profile info
      *     objects.
      * @private
      */

@@ -7,14 +7,14 @@ cr.define('print_preview', function() {
 
   /**
    * An immutable ordered set of page numbers.
-   * @param {!Array.<number>} pageNumberList A list of page numbers to include
+   * @param {!Array<number>} pageNumberList A list of page numbers to include
    *     in the set.
    * @constructor
    */
   function PageNumberSet(pageNumberList) {
     /**
      * Internal data store for the page number set.
-     * @type {!Array.<number>}
+     * @type {!Array<number>}
      * @private
      */
     this.pageNumberSet_ = pageListToPageSet(pageNumberList);
@@ -51,7 +51,7 @@ cr.define('print_preview', function() {
       return this.pageNumberSet_.indexOf(pageNumber);
     },
 
-    /** @return {!Array.<number>} Array representation of the set. */
+    /** @return {!Array<number>} Array representation of the set. */
     asArray: function() {
       return this.pageNumberSet_.slice(0);
     },

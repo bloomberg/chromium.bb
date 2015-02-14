@@ -48,14 +48,14 @@ cr.define('print_preview', function() {
 
     /**
      * Internal backing store for the data store.
-     * @type {!Array.<!print_preview.Destination>}
+     * @type {!Array<!print_preview.Destination>}
      * @private
      */
     this.destinations_ = [];
 
     /**
      * Cache used for constant lookup of destinations by origin and id.
-     * @type {Object.<string, !print_preview.Destination>}
+     * @type {Object<string, !print_preview.Destination>}
      * @private
      */
     this.destinationMap_ = {};
@@ -100,7 +100,7 @@ cr.define('print_preview', function() {
     /**
      * Maps user account to the list of origins for which destinations are
      * already loaded.
-     * @type {!Object.<string, Array.<print_preview.Destination.Origin>>}
+     * @type {!Object<string, Array<print_preview.Destination.Origin>>}
      * @private
      */
     this.loadedCloudOrigins_ = {};
@@ -267,7 +267,7 @@ cr.define('print_preview', function() {
     /**
      * @param {string=} opt_account Account to filter destinations by. When
      *     omitted, all destinations are returned.
-     * @return {!Array.<!print_preview.Destination>} List of destinations
+     * @return {!Array<!print_preview.Destination>} List of destinations
      *     accessible by the {@code account}.
      */
     destinations: function(opt_account) {
@@ -629,7 +629,7 @@ cr.define('print_preview', function() {
     /**
      * Inserts multiple {@code destinations} to the data store and dispatches
      * single DESTINATIONS_INSERTED event.
-     * @param {!Array.<print_preview.Destination>} destinations Print
+     * @param {!Array<print_preview.Destination>} destinations Print
      *     destinations to insert.
      * @private
      */

@@ -151,7 +151,7 @@ PDFScriptingAPI.prototype = {
    * Resets the PDF viewer into print preview mode.
    * @param {string} url the url of the PDF to load.
    * @param {boolean} grayscale whether or not to display the PDF in grayscale.
-   * @param {Array.<number>} pageNumbers an array of the page numbers.
+   * @param {Array<number>} pageNumbers an array of the page numbers.
    * @param {boolean} modifiable whether or not the document is modifiable.
    */
   resetPrintPreviewMode: function(url, grayscale, pageNumbers, modifiable) {

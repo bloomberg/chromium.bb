@@ -80,7 +80,7 @@ cr.define('extensions', function() {
 
       /**
        * An array of Failures for keeping track of multiple active failures.
-       * @type {Array.<Failure>}
+       * @type {Array<Failure>}
        * @private
        */
       this.failures_ = [];
@@ -103,7 +103,7 @@ cr.define('extensions', function() {
     /**
      * Add a failure to failures_ array. If there is already a displayed
      * failure, display the additional failures element.
-     * @param {Array.<Object>} failures Array of failures containing paths,
+     * @param {Array<Object>} failures Array of failures containing paths,
      *     errors, and manifests.
      * @private
      */
@@ -196,7 +196,7 @@ cr.define('extensions', function() {
     /**
      * Notify the ExtensionLoader that loading an unpacked extension failed.
      * Add the failure to failures_ and show the ExtensionLoadError.
-     * @param {Array.<Object>} failures Array of failures containing paths,
+     * @param {Array<Object>} failures Array of failures containing paths,
      *     errors, and manifests.
      */
     notifyFailed: function(failures) {
@@ -206,7 +206,7 @@ cr.define('extensions', function() {
 
   /**
    * A static forwarding function for ExtensionLoader.notifyFailed.
-   * @param {Array.<Object>} failures Array of failures containing paths,
+   * @param {Array<Object>} failures Array of failures containing paths,
    *     errors, and manifests.
    * @see ExtensionLoader.notifyFailed
    */

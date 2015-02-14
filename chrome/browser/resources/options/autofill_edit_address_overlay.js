@@ -360,7 +360,7 @@ cr.define('options', function() {
      * Takes a snapshot of the input values, clears the input values, loads the
      * address input layout from |input.components|, restores the input values
      * from snapshot, and stores the |input.languageCode| for the address.
-     * @param {{languageCode: string, components: Array.<Array.<Object>>}} input
+     * @param {{languageCode: string, components: Array<Array<Object>>}} input
      *     Info about how to layout inputs fields in this dialog.
      * @private
      */
@@ -380,7 +380,7 @@ cr.define('options', function() {
     /**
      * Clears address inputs and rebuilds the input fields according to
      * |components|.
-     * @param {Array.<Array.<Object>>} components A list of information about
+     * @param {Array<Array<Object>>} components A list of information about
      *     each input field.
      * @private
      */

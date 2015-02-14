@@ -144,7 +144,7 @@ remoting.It2MeHelperChannel.prototype.instanceId = function() {
 };
 
 /**
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @return {boolean} whether the message is handled or not.
  * @private
  */
@@ -176,7 +176,7 @@ remoting.It2MeHelperChannel.prototype.onHangoutMessage_ = function(message) {
 /**
  * Disconnect the existing connection to the helpee.
  *
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelperChannel.prototype.closeWebapp_ =
@@ -194,7 +194,7 @@ remoting.It2MeHelperChannel.prototype.closeWebapp_ =
 /**
  * Launches the web app.
  *
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelperChannel.prototype.launchWebapp_ =
@@ -259,7 +259,7 @@ remoting.It2MeHelperChannel.prototype.onWebappDisconnect_ = function(port) {
 };
 
 /**
- * @param {{method:string, data:Object.<string,*>}} message
+ * @param {{method:string, data:Object<string,*>}} message
  * @private
  */
 remoting.It2MeHelperChannel.prototype.onWebappMessage_ = function(message) {
@@ -307,7 +307,7 @@ remoting.It2MeHelperChannel.prototype.unhookPorts_ = function() {
 /**
  * @param {chrome.runtime.Port} port
  * @param {string|Error} error
- * @param {?{method:string, data:Object.<string,*>}=} opt_incomingMessage
+ * @param {?{method:string, data:Object<string,*>}=} opt_incomingMessage
  * @private
  */
 remoting.It2MeHelperChannel.prototype.sendErrorResponse_ =

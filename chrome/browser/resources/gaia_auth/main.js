@@ -37,7 +37,7 @@ Authenticator.API_KEY_TYPES = [
 
 /**
  * Allowed origins of the hosting page.
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 Authenticator.ALLOWED_PARENT_ORIGINS = [
   'chrome://oobe',

@@ -764,7 +764,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {Array.<!{extensionId: string,
+     * @param {Array<!{extensionId: string,
      *                  id: string,
      *                  name: string,
      *                  description: (string|undefined)}>} printers The list

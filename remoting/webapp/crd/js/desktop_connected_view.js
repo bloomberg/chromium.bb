@@ -205,7 +205,7 @@ remoting.DesktopConnectedView.prototype.notifyClientResolution_ = function() {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {Array.<string>} requiredCapabilities A list of capabilities
+ * @param {Array<string>} requiredCapabilities A list of capabilities
  *     required by this application.
  */
 remoting.DesktopConnectedView.prototype.createPluginAndConnect =
@@ -218,7 +218,7 @@ remoting.DesktopConnectedView.prototype.createPluginAndConnect =
 };
 
 /**
- * @param {Object.<string|boolean|number>} options The current options for the
+ * @param {Object<string|boolean|number>} options The current options for the
  *     host, or {} if this client has no saved settings for the host.
  * @private
  */
@@ -323,7 +323,7 @@ remoting.DesktopConnectedView.prototype.onDesktopSizeChanged_ = function() {
  * Sets the non-click-through area of the client in response to notifications
  * from the plugin of desktop shape changes.
  *
- * @param {Array.<Array.<number>>} rects List of rectangles comprising the
+ * @param {Array<Array<number>>} rects List of rectangles comprising the
  *     desktop shape.
  * @return {void} Nothing.
  * @private
@@ -993,7 +993,7 @@ remoting.DesktopConnectedView.prototype.applyRemapKeys_ = function(apply) {
  * Sends a key combination to the remoting client, by sending down events for
  * the given keys, followed by up events in reverse order.
  *
- * @param {Array.<number>} keys Key codes to be sent.
+ * @param {Array<number>} keys Key codes to be sent.
  * @return {void} Nothing.
  * @private
  */

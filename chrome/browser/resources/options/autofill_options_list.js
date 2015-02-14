@@ -235,7 +235,7 @@ cr.define('options.autofillOptions', function() {
    * Creates a new name value list item.
    * @param {options.autofillOptions.AutofillNameValuesList} list The parent
    *     list of this item.
-   * @param {Array.<string>} entry An array of [first, middle, last] names.
+   * @param {Array<string>} entry An array of [first, middle, last] names.
    * @constructor
    * @extends {options.autofillOptions.ValuesListItem}
    */
@@ -469,7 +469,7 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * @override
-     * @param {Array.<string>} entry
+     * @param {Array<string>} entry
      */
     createItem: function(entry) {
       return new NameListItem(this, entry);
@@ -508,7 +508,7 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * Pending Promise resolver functions.
-     * @type {Array.<!Function>}
+     * @type {Array<!Function>}
      * @private
      */
     validationPromiseResolvers_: [],

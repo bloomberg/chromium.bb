@@ -10,7 +10,7 @@ cr.define('options', function() {
 
   /**
    * Array of button URLs used on this page.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @const
    */
   var ButtonImageUrls = [
@@ -303,7 +303,7 @@ cr.define('options', function() {
 
     /**
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<{url: string, author: string, website: string}>}
+     * @param {Array<{url: string, author: string, website: string}>}
      *   imagesData An array of default images data, including URL, author and
      *   website.
      * @private

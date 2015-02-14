@@ -100,7 +100,7 @@ cr.define('extensions', function() {
 
   /**
    * Sets apps to be displayed in kiosk-app-list.
-   * @param {!Object.<{apps: !Array.<AppDict>, disableBailout: boolean,
+   * @param {!Object<{apps: !Array<AppDict>, disableBailout: boolean,
    *     hasAutoLaunchApp: boolean}>} settings An object containing an array of
    *     app info objects and disable bailout shortcut flag.
    */

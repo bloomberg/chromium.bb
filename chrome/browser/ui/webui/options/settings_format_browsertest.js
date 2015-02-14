@@ -46,7 +46,7 @@ SettingsFormatWebUITest.prototype = {
    * to suppress verbosity. The implementation of errorsToMessage in the
    * testing API generates a call stack for each error produced which greatly
    * reduces readability.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   errors: null,
 
@@ -99,7 +99,7 @@ SettingsFormatWebUITest.prototype = {
   /**
    * Checks if the node is exempt from following the formatting rule.
    * @param {!Element} element The candidate element.
-   * @param {Array.<string>} filters List of exemptions.
+   * @param {Array<string>} filters List of exemptions.
    * @return {boolean} True if the element is exempt.
    */
   isExempt: function(element, filters) {

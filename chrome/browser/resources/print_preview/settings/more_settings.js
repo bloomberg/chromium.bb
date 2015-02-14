@@ -9,7 +9,7 @@ cr.define('print_preview', function() {
    * Toggles visibility of the specified printing options sections.
    * @param {!print_preview.DestinationStore} destinationStore To listen for
    *     destination changes.
-   * @param {!Array.<print_preview.SettingsSection>} settingsSections Sections
+   * @param {!Array<print_preview.SettingsSection>} settingsSections Sections
    *     to toggle by this component.
    * @constructor
    * @extends {print_preview.Component}
@@ -20,7 +20,7 @@ cr.define('print_preview', function() {
     /** @private {!print_preview.DestinationStore} */
     this.destinationStore_ = destinationStore;
 
-    /** @private {!Array.<print_preview.SettingsSection>} */
+    /** @private {!Array<print_preview.SettingsSection>} */
     this.settingsSections_ = settingsSections;
 
     /** @private {MoreSettings.SettingsToShow} */

@@ -6,7 +6,7 @@
  * @typedef {{
  *   id: string,
  *   name: string,
- *   subnodes: Array.<{id: string, name: string, readonly: boolean,
+ *   subnodes: Array<{id: string, name: string, readonly: boolean,
  *                     untrusted: boolean, extractable: boolean,
  *                     policy: boolean}>
  * }}
@@ -143,7 +143,7 @@ cr.define('options', function() {
 
     /**
      * Populate the tree.
-     * @param {Array.<CertificateData>} nodesData Nodes data array.
+     * @param {Array<CertificateData>} nodesData Nodes data array.
      */
     populate: function(nodesData) {
       this.clear();

@@ -141,7 +141,7 @@ Runner.classes = {
 
 /**
  * Image source urls.
- * @enum {array.<object>}
+ * @enum {array<object>}
  */
 Runner.imageSources = {
   LDPI: [
@@ -969,7 +969,7 @@ GameOverPanel.prototype = {
  * @param {!Trex} tRex T-rex object.
  * @param {HTMLCanvasContext} opt_canvasCtx Optional canvas context for drawing
  *    collision boxes.
- * @return {Array.<CollisionBox>}
+ * @return {Array<CollisionBox>}
  */
 function checkForCollision(obstacle, tRex, opt_canvasCtx) {
   var obstacleBoxXPos = Runner.defaultDimensions.WIDTH + obstacle.xPos;
@@ -1344,7 +1344,7 @@ Trex.config = {
 
 /**
  * Used in collision detection.
- * @type {Array.<CollisionBox>}
+ * @type {Array<CollisionBox>}
  */
 Trex.collisionBoxes = [
   new CollisionBox(1, -1, 30, 26),
@@ -1641,7 +1641,7 @@ DistanceMeter.dimensions = {
 /**
  * Y positioning of the digits in the sprite sheet.
  * X position is always 0.
- * @type {array.<number>}
+ * @type {array<number>}
  */
 DistanceMeter.yPos = [0, 13, 27, 40, 53, 67, 80, 93, 107, 120];
 
@@ -2070,7 +2070,7 @@ HorizonLine.prototype = {
 /**
  * Horizon background class.
  * @param {HTMLCanvasElement} canvas
- * @param {Array.<HTMLImageElement>} images
+ * @param {Array<HTMLImageElement>} images
  * @param {object} dimensions Canvas dimensions.
  * @param {number} gapCoefficient
  * @constructor

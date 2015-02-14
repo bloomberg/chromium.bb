@@ -68,7 +68,7 @@ cr.define('chrome.invalidations', function() {
 
   /**
    * Adds to the log the latest invalidations received
-   * @param {!Array.<!Object>} allInvalidations The array of ObjectId
+   * @param {!Array<!Object>} allInvalidations The array of ObjectId
    *     that contains the invalidations received by the InvalidatorService.
    */
   function logInvalidations(allInvalidations) {
@@ -139,7 +139,7 @@ cr.define('chrome.invalidations', function() {
   /**
    * Shows the handlers that are currently registered for invalidations
    * (but might not have objects ids registered yet).
-   * @param {!Array.<string>} allHandlers An array of Strings that are
+   * @param {!Array<string>} allHandlers An array of Strings that are
    *     the names of all the handlers currently registered in the
    *     InvalidatorService.
    */

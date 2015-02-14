@@ -148,7 +148,7 @@ remoting.IdleDetector.prototype.showIdleWarning_ = function(show) {
 }
 
 /**
- * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ * @param {Array<{left: number, top: number, width: number, height: number}>}
  *     rects List of rectangles.
  */
 remoting.IdleDetector.prototype.addToRegion = function(rects) {

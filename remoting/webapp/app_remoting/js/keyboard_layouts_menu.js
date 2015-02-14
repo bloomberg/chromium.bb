@@ -42,7 +42,7 @@ remoting.KeyboardLayoutsMenu = function(adapter) {
 };
 
 /**
- * @param {Array.<string>} layouts The keyboard layouts available on the host,
+ * @param {Array<string>} layouts The keyboard layouts available on the host,
  *   for example en-US, de-DE
  * @param {string} currentLayout The layout currently active on the host.
  */
@@ -98,7 +98,7 @@ remoting.KeyboardLayoutsMenu.prototype.setLayout_ =
  *     will match either en-US or en-GB, whichever appears first).
  *   - Otherwise, use the host's current layout.
  *
- * @param {Array.<string>} layouts
+ * @param {Array<string>} layouts
  * @param {string} currentHostLayout
  * @param {function(string):void} onDone
  * @private
@@ -123,7 +123,7 @@ remoting.KeyboardLayoutsMenu.prototype.getBestLayout_ =
     }
   };
 
-  /** @param {Object.<string>} storage */
+  /** @param {Object<string>} storage */
   var chooseLayout = function(storage) {
     var configuredLayout = storage[remoting.KeyboardLayoutsMenu.KEY_];
     var tryLayouts = [ chrome.i18n.getUILanguage() ];
@@ -170,7 +170,7 @@ remoting.KeyboardLayoutsMenu.prototype.makeMenuId_ = function(layout) {
  * @private
  */
 remoting.KeyboardLayoutsMenu.prototype.onContextMenu_ = function(info) {
-  /** @type {Array.<string>} */
+  /** @type {Array<string>} */
   var components = info.menuItemId.split('@');
   if (components.length == 2 &&
       this.makeMenuId_(components[1]) == info.menuItemId) {

@@ -38,7 +38,7 @@ remoting.CastExtensionHandler = function(clientSession) {
   /** @type {string} @private */
   this.kApplicationId_ = "8A1211E3";
 
-  /** @type {Array.<Object>} @private */
+  /** @type {Array<Object>} @private */
   this.messageQueue_ = [];
 
   this.start_();

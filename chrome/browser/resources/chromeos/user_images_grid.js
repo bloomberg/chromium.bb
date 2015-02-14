@@ -639,7 +639,7 @@ cr.define('options', function() {
 
     /**
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<{url: string, author: string,
+     * @param {Array<{url: string, author: string,
      *                website: string, title: string}>} imagesData
      *   An array of default images data, including URL, author, title and
      *   website.

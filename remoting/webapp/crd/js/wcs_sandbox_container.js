@@ -31,7 +31,7 @@ remoting.WcsSandboxContainer = function(sandbox) {
   /** @type {?function(string):void}
     * @private */
   this.onIq_ = null;
-  /** @type {Object.<number, XMLHttpRequest>}
+  /** @type {Object<number, XMLHttpRequest>}
     * @private */
   this.pendingXhrs_ = {};
   /** @private */

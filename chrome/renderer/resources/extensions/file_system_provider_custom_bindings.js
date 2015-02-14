@@ -74,8 +74,8 @@ function annotateMetadata(metadata) {
 
 /**
  * Massages arguments of an event raised by the File System Provider API.
- * @param {Array.<*>} args Input arguments.
- * @param {function(Array.<*>)} dispatch Closure to be called with massaged
+ * @param {Array<*>} args Input arguments.
+ * @param {function(Array<*>)} dispatch Closure to be called with massaged
  *     arguments.
  */
 function massageArgumentsDefault(args, dispatch) {

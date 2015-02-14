@@ -16,13 +16,13 @@ var remoting = remoting || {};
 /** @constructor */
 remoting.WindowShape = function() {
   /**
-   * @type {Array.<{left: number, top: number, width: number, height: number}>}
+   * @type {Array<{left: number, top: number, width: number, height: number}>}
    * @private
    */
   this.desktopRects_ = [];
 
   /**
-   * @type {Array.<remoting.WindowShape.ClientUI>}
+   * @type {Array<remoting.WindowShape.ClientUI>}
    * @private
    */
   this.clientUICallbacks_ = [];
@@ -49,7 +49,7 @@ remoting.WindowShape.prototype.addCallback = function(callback) {
 /**
  * Set the region associated with the remote desktop windows.
  *
- * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ * @param {Array<{left: number, top: number, width: number, height: number}>}
  *     rects
  */
 remoting.WindowShape.prototype.setDesktopRects = function(rects) {
@@ -93,7 +93,7 @@ remoting.WindowShape.ClientUI = function () {
 /**
  * Add the context menu's bounding rectangle to the specified region.
  *
- * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ * @param {Array<{left: number, top: number, width: number, height: number}>}
  *     rects
  */
 remoting.WindowShape.ClientUI.prototype.addToRegion = function(rects) {};

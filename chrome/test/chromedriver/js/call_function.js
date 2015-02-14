@@ -196,10 +196,10 @@ function unwrap(value, cache) {
  * between cached object reference IDs and actual JS objects. The cache will
  * automatically be pruned each call to remove stale references.
  *
- * @param  {Array.<string>} shadowHostIds The host ids of the nested shadow
+ * @param  {Array<string>} shadowHostIds The host ids of the nested shadow
  *     DOMs the function should be executed in the context of.
  * @param {function(...[*]) : *} func The function to invoke.
- * @param {!Array.<*>} args The array of arguments to supply to the function,
+ * @param {!Array<*>} args The array of arguments to supply to the function,
  *     which will be unwrapped before invoking the function.
  * @param {boolean=} opt_unwrappedReturn Whether the function's return value
  *     should be left unwrapped.

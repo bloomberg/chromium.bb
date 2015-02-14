@@ -175,7 +175,7 @@ cr.define('options', function() {
 
     /**
      * Sets the data model of the supervised user list to |supervisedUsers|.
-     * @param {Array.<{id: string, name: string, iconURL: string,
+     * @param {Array<{id: string, name: string, iconURL: string,
      *     onCurrentDevice: boolean, needAvatar: boolean}>} supervisedUsers
      *     Array of supervised user objects.
      * @private

@@ -17,7 +17,7 @@ var remoting = remoting || {};
  * @implements {remoting.HostListApi}
  */
 remoting.MockHostListApi = function() {
-  /** @type {Array.<remoting.Host>} */
+  /** @type {Array<remoting.Host>} */
   this.hosts = [
     {
       'hostName': 'Online host',
@@ -41,7 +41,7 @@ remoting.MockHostListApi = function() {
 };
 
 /**
- * @param {function(Array.<remoting.Host>):void} onDone
+ * @param {function(Array<remoting.Host>):void} onDone
  * @param {function(remoting.Error):void} onError
  */
 remoting.MockHostListApi.prototype.get = function(onDone, onError) {

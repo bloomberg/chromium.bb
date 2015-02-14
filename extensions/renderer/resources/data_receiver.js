@@ -22,7 +22,7 @@ define('data_receiver', [
     /**
      * The promise that will be resolved or rejected when this receive completes
      * or fails, respectively.
-     * @type {!Promise.<ArrayBuffer>}
+     * @type {!Promise<ArrayBuffer>}
      * @private
      */
     this.promise_ = new Promise(function(resolve, reject) {
@@ -44,7 +44,7 @@ define('data_receiver', [
   /**
    * Returns the promise that will be resolved when this operation completes or
    * rejected if an error occurs.
-   * @return {Promise.<ArrayBuffer>} A promise to the data received.
+   * @return {Promise<ArrayBuffer>} A promise to the data received.
    */
   PendingReceive.prototype.getPromise = function() {
     return this.promise_;
@@ -126,7 +126,7 @@ define('data_receiver', [
    * @param {number} bytesReceived The number of bytes already received.
    * @param {PendingReceiveError} pendingError The pending error if there is
    *     one.
-   * @param {!Array.<!ArrayBuffer>} pendingData Data received from the
+   * @param {!Array<!ArrayBuffer>} pendingData Data received from the
    *     DataSource not yet requested by the client.
    * @param {boolean} paused Whether the DataSource is paused.
    * @private
@@ -195,7 +195,7 @@ define('data_receiver', [
   /**
    * Serializes this DataReceiver.
    * This will cancel a receive if one is in progress.
-   * @return {!Promise.<SerializedDataReceiver>} A promise that will resolve to
+   * @return {!Promise<SerializedDataReceiver>} A promise that will resolve to
    *     the serialization of this DataReceiver. If this DataReceiver has shut
    *     down, the promise will resolve to null.
    */
@@ -259,7 +259,7 @@ define('data_receiver', [
 
   /**
    * Receive data from the DataSource.
-   * @return {Promise.<ArrayBuffer>} A promise to the received data. If an error
+   * @return {Promise<ArrayBuffer>} A promise to the received data. If an error
    *     occurs, the promise will reject with an Error object with a property
    *     error containing the error code.
    * @throws Will throw if this has encountered a fatal error or another receive

@@ -19,7 +19,7 @@ remoting.HostListApi = function() {
 /**
  * Fetch the list of hosts for a user.
  *
- * @param {function(Array.<remoting.Host>):void} onDone
+ * @param {function(Array<remoting.Host>):void} onDone
  * @param {function(remoting.Error):void} onError
  */
 remoting.HostListApi.prototype.get = function(onDone, onError) {

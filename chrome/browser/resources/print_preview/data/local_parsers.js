@@ -37,7 +37,7 @@ cr.define('print_preview', function() {
   /**
    * Parses a privet destination as one or more local printers.
    * @param {!Object} destinationInfo Object that describes a privet printer.
-   * @return {!Array.<!print_preview.Destination>} Parsed destination info.
+   * @return {!Array<!print_preview.Destination>} Parsed destination info.
    */
   PrivetDestinationParser.parse = function(destinationInfo) {
     var returnedPrinters = [];

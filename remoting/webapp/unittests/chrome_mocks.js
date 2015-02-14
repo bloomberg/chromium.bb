@@ -118,7 +118,7 @@ var originals_ = null;
 
 /**
  * Activates a list of Chrome components to mock
- * @param {Array.<string>} components
+ * @param {Array<string>} components
  */
 chromeMocks.activate = function(components) {
   if (originals_) {

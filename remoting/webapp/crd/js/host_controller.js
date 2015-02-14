@@ -130,7 +130,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
   function generateUuid() {
     var random = new Uint16Array(8);
     window.crypto.getRandomValues(random);
-    /** @type {Array.<string>} */
+    /** @type {Array<string>} */
     var e = new Array();
     for (var i = 0; i < 8; i++) {
       e[i] = (/** @type {number} */ (random[i]) + 0x10000).
@@ -487,7 +487,7 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
 /**
  * Fetch the list of paired clients for this host.
  *
- * @param {function(Array.<remoting.PairedClient>):void} onDone
+ * @param {function(Array<remoting.PairedClient>):void} onDone
  * @param {function(remoting.Error):void} onError
  * @return {void}
  */

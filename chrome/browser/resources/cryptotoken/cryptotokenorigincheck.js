@@ -22,8 +22,8 @@ function CryptoTokenOriginChecker() {
 /**
  * Checks whether the origin is allowed to claim the app ids.
  * @param {string} origin The origin claiming the app id.
- * @param {!Array.<string>} appIds The app ids being claimed.
- * @return {Promise.<boolean>} A promise for the result of the check.
+ * @param {!Array<string>} appIds The app ids being claimed.
+ * @return {Promise<boolean>} A promise for the result of the check.
  */
 CryptoTokenOriginChecker.prototype.canClaimAppIds = function(origin, appIds) {
   var appIdChecks = appIds.map(this.checkAppId_.bind(this, origin));
@@ -38,7 +38,7 @@ CryptoTokenOriginChecker.prototype.canClaimAppIds = function(origin, appIds) {
  * Checks if a single appId can be asserted by the given origin.
  * @param {string} origin The origin.
  * @param {string} appId The appId to check
- * @return {Promise.<boolean>} A promise for the result of the check
+ * @return {Promise<boolean>} A promise for the result of the check
  * @private
  */
 CryptoTokenOriginChecker.prototype.checkAppId_ =

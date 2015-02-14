@@ -43,7 +43,7 @@ chrome.app.window = {
    */
   get: function(id) {},
   /**
-   * @return {Array.<AppWindow>}
+   * @return {Array<AppWindow>}
    */
   getAll: function() {}
 };
@@ -150,7 +150,7 @@ chrome.i18n = {};
 
 /**
  * @param {string} messageName
- * @param {(string|Array.<string>)=} opt_args
+ * @param {(string|Array<string>)=} opt_args
  * @return {string}
  */
 chrome.i18n.getMessage = function(messageName, opt_args) {};
@@ -174,21 +174,21 @@ chrome.storage.sync;
 chrome.Storage = function() {};
 
 /**
- * @param {string|Array.<string>|Object.<string>} items
- * @param {function(Object.<string>):void} callback
+ * @param {string|Array<string>|Object<string>} items
+ * @param {function(Object<string>):void} callback
  * @return {void}
  */
 chrome.Storage.prototype.get = function(items, callback) {};
 
 /**
- * @param {Object.<string>} items
+ * @param {Object<string>} items
  * @param {function():void=} opt_callback
  * @return {void}
  */
 chrome.Storage.prototype.set = function(items, opt_callback) {};
 
 /**
- * @param {string|Array.<string>} items
+ * @param {string|Array<string>} items
  * @param {function():void=} opt_callback
  * @return {void}
  */
@@ -258,8 +258,8 @@ OnClickData.prototype.checked;
 /** @type {Object} */
 chrome.fileSystem = {
   /**
-   * @param {Object.<string>?} options
-   * @param {function(Entry, Array.<FileEntry>):void} callback
+   * @param {Object<string>?} options
+   * @param {function(Entry, Array<FileEntry>):void} callback
    */
   chooseEntry: function(options, callback) {},
   /**
@@ -275,17 +275,17 @@ Entry.prototype.createWriter = function(callback) {};
 /** @type {Object} */
 chrome.identity = {
   /**
-   * @param {Object.<string>} parameters
+   * @param {Object<string>} parameters
    * @param {function(string):void} callback
    */
   getAuthToken: function(parameters, callback) {},
   /**
-   * @param {Object.<string>} parameters
+   * @param {Object<string>} parameters
    * @param {function():void} callback
    */
   removeCachedAuthToken: function(parameters, callback) {},
   /**
-   * @param {Object.<string>} parameters
+   * @param {Object<string>} parameters
    * @param {function(string):void} callback
    */
   launchWebAuthFlow: function(parameters, callback) {}
@@ -295,12 +295,12 @@ chrome.identity = {
 /** @type {Object} */
 chrome.permissions = {
   /**
-   * @param {Object.<string>} permissions
+   * @param {Object<string>} permissions
    * @param {function(boolean):void} callback
    */
   contains: function(permissions, callback) {},
   /**
-   * @param {Object.<string>} permissions
+   * @param {Object<string>} permissions
    * @param {function(boolean):void} callback
    */
   request: function(permissions, callback) {}
@@ -408,12 +408,12 @@ AppWindow.prototype.isFullscreen = function() {};
 AppWindow.prototype.isMaximized = function() {};
 
 /**
- * @param {{rects: Array.<ClientRect>}} rects
+ * @param {{rects: Array<ClientRect>}} rects
  */
 AppWindow.prototype.setShape = function(rects) {};
 
 /**
- * @param {{rects: Array.<ClientRect>}} rects
+ * @param {{rects: Array<ClientRect>}} rects
  */
 AppWindow.prototype.setInputRegion = function(rects) {};
 
@@ -421,7 +421,7 @@ AppWindow.prototype.setInputRegion = function(rects) {};
 var LaunchData = function() {
   /** @type {string} */
   this.id = '';
-  /** @type {Array.<{type: string, entry: FileEntry}>} */
+  /** @type {Array<{type: string, entry: FileEntry}>} */
   this.items = [];
 };
 
@@ -484,7 +484,7 @@ chrome.cast.media.Media = function() {
 
 /** @constructor */
 chrome.cast.Session = function() {
-  /** @type {Array.<chrome.cast.media.Media>} */
+  /** @type {Array<chrome.cast.media.Media>} */
   this.media = [];
 
   /** @type {string} */

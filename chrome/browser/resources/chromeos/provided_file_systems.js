@@ -46,7 +46,7 @@ Polymer('file-systems', {
 
   /**
    * List of provided file system information maps.
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    */
   model: []
 });
@@ -106,7 +106,7 @@ Polymer('request-events', {
 
   /**
    * List of events.
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    */
   model: []
 });
@@ -129,7 +129,7 @@ Polymer('request-timeline', {
 
   /**
    * Observes changes in the model.
-   * @type {Object.<string, string>}
+   * @type {Object<string, string>}
    */
   observe: {
     'model.length': 'chartUpdate'
@@ -317,26 +317,26 @@ Polymer('request-timeline', {
 
   /**
    * Map of selected requests.
-   * @type {Object.<number, boolean>}
+   * @type {Object<number, boolean>}
    */
   selected: {},
 
   /**
    * Map of requests which has started, but are not completed yet, from
    * a request id to the chart element index.
-   * @type {Object.<number, number>}}
+   * @type {Object<number, number>}}
    */
   active: {},
 
   /**
    * List of chart elements, calculated from the model.
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    */
   chart: [],
 
   /**
    * List of rows in the chart, with the last endTime value on it.
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    */
   rows: [],
 
@@ -367,14 +367,14 @@ Polymer('request-timeline', {
 
   /**
    * List of requests information maps.
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    */
   model: []
 });
 
 /*
  * Updates the mounted file system list.
- * @param {Array.<Object>} fileSystems Array containing provided file system
+ * @param {Array<Object>} fileSystems Array containing provided file system
  *     information.
  */
 function updateFileSystems(fileSystems) {

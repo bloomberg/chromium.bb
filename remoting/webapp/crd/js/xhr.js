@@ -19,7 +19,7 @@ remoting.xhr = remoting.xhr || {};
 /**
  * Takes an associative array of parameters and urlencodes it.
  *
- * @param {Object.<string>} paramHash The parameter key/value pairs.
+ * @param {Object<string>} paramHash The parameter key/value pairs.
  * @return {string} URLEncoded version of paramHash.
  */
 remoting.xhr.urlencodeParamHash = function(paramHash) {
@@ -40,10 +40,10 @@ remoting.xhr.urlencodeParamHash = function(paramHash) {
  * @param {string} url The base URL to GET, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ * @param {(string|Object<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, do
  *     not include the ? and be sure it is correctly URLEncoded.
- * @param {Object.<string>=} opt_headers Additional headers to include on the
+ * @param {Object<string>=} opt_headers Additional headers to include on the
  *     request.
  * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
@@ -61,10 +61,10 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
  * @param {string} url The base URL to POST, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ * @param {(string|Object<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, be
  *     sure it is correctly URLEncoded.
- * @param {Object.<string>=} opt_headers Additional headers to include on the
+ * @param {Object<string>=} opt_headers Additional headers to include on the
  *     request.
  * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
@@ -82,10 +82,10 @@ remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
  * @param {string} url The base URL to DELETE, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ * @param {(string|Object<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, be
  *     sure it is correctly URLEncoded.
- * @param {Object.<string>=} opt_headers Additional headers to include on the
+ * @param {Object<string>=} opt_headers Additional headers to include on the
  *     request.
  * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
@@ -103,10 +103,10 @@ remoting.xhr.remove = function(url, onDone, opt_parameters, opt_headers,
  * @param {string} url The base URL to PUT, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ * @param {(string|Object<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, be
  *     sure it is correctly URLEncoded.
- * @param {Object.<string>=} opt_headers Additional headers to include on the
+ * @param {Object<string>=} opt_headers Additional headers to include on the
  *     request.
  * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
@@ -125,10 +125,10 @@ remoting.xhr.put = function(url, onDone, opt_parameters, opt_headers,
  * @param {string} url The base URL, excluding parameters.
  * @param {function(XMLHttpRequest):void} onDone The function to call on
  *     completion.
- * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ * @param {(string|Object<string>)=} opt_parameters The request parameters,
  *     either as an associative array, or a string.  If it is a string, be
  *     sure it is correctly URLEncoded.
- * @param {Object.<string>=} opt_headers Additional headers to include on the
+ * @param {Object<string>=} opt_headers Additional headers to include on the
  *     request.
  * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.

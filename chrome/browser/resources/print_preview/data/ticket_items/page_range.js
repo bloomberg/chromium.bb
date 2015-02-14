@@ -65,7 +65,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @return {!Array.<Object.<{from: number, to: number}>>} A list of page
+     * @return {!Array<Object<{from: number, to: number}>>} A list of page
      *     ranges.
      */
     getPageRanges: function() {
@@ -73,7 +73,7 @@ cr.define('print_preview.ticket_items', function() {
     },
 
     /**
-     * @return {!Array.<object.<{from: number, to: number}>>} A list of page
+     * @return {!Array<object<{from: number, to: number}>>} A list of page
      *     ranges suitable for use in the native layer.
      * TODO(vitalybuka): this should be removed when native layer switched to
      *     page ranges.

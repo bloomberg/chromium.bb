@@ -50,7 +50,7 @@ var SupervisedUserFilteringBehavior = {
  * The type of the history result object. The definition is based on
  * chrome/browser/ui/webui/history_ui.cc:
  *     BrowsingHistoryHandler::HistoryEntry::ToValue()
- * @typedef {{allTimestamps: Array.<number>,
+ * @typedef {{allTimestamps: Array<number>,
  *            blockedVisit: (boolean|undefined),
  *            dateRelativeDay: (string|undefined),
  *            dateShort: string,
@@ -631,7 +631,7 @@ HistoryModel.prototype.requestPage = function(page) {
 /**
  * Receiver for history query.
  * @param {HistoryQuery} info An object containing information about the query.
- * @param {Array.<HistoryEntry>} results A list of results.
+ * @param {Array<HistoryEntry>} results A list of results.
  */
 HistoryModel.prototype.addResults = function(info, results) {
   // If no requests are in flight then this was an old request so we drop the
@@ -675,7 +675,7 @@ HistoryModel.prototype.getSize = function() {
  * Get a list of visits between specified index positions.
  * @param {number} start The start index.
  * @param {number} end The end index.
- * @return {Array.<Visit>} A list of visits.
+ * @return {Array<Visit>} A list of visits.
  */
 HistoryModel.prototype.getNumberedRange = function(start, end) {
   return this.visits_.slice(start, end);
@@ -693,7 +693,7 @@ HistoryModel.prototype.hasMoreResults = function() {
 /**
  * Removes a list of visits from the history, and calls |callback| when the
  * removal has successfully completed.
- * @param {Array.<Visit>} visits The visits to remove.
+ * @param {Array<Visit>} visits The visits to remove.
  * @param {Function} callback The function to call after removal succeeds.
  */
 HistoryModel.prototype.removeVisitsFromHistory = function(visits, callback) {
@@ -1022,7 +1022,7 @@ function HistoryView(model) {
 
   $('timeframe-controls').onchange = function(e) {
     var value = parseInt(e.target.value, 10);
-    self.setRangeInDays(/** @type {HistoryModel.Range.<number>} */(value));
+    self.setRangeInDays(/** @type {HistoryModel.Range<number>} */(value));
   };
 
   $('range-previous').addEventListener('click', function(e) {
@@ -2003,7 +2003,7 @@ function load() {
     $('history-page').appendChild($('clear-browsing-data'));
   } else {
     window.addEventListener('message', function(e) {
-      e = /** @type {!MessageEvent.<!{method: string}>} */(e);
+      e = /** @type {!MessageEvent<!{method: string}>} */(e);
       if (e.data.method == 'frameSelected')
         searchField.focus();
     });
@@ -2364,7 +2364,7 @@ function getFilteringStatusDOM(filteringBehavior) {
 /**
  * Our history system calls this function with results from searches.
  * @param {HistoryQuery} info An object containing information about the query.
- * @param {Array.<HistoryEntry>} results A list of results.
+ * @param {Array<HistoryEntry>} results A list of results.
  */
 function historyResult(info, results) {
   historyModel.addResults(info, results);

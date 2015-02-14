@@ -306,7 +306,7 @@ TEST_F('BluetoothWebUITest', 'testMaliciousInput', function() {
       '>\'>\\"><SCRIPT>alert(1)</SCRIPT>',
       '<IMG SRC=\\"javascript:alert(1)\\">',
       '<A HREF=\\"data:text/html;base64,' +
-          'PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pgo=\\">...</A>',
+          'PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pgo=\\">..</A>',
       '<div>',
       '<textarea>',
       '<style>',

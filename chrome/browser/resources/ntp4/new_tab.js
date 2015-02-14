@@ -438,7 +438,7 @@ cr.define('ntp', function() {
    * Shows the notification bubble.
    * @param {string|Node} message The notification message or node to use as
    *     message.
-   * @param {Array.<{text: string, action: function()}>} links An array of
+   * @param {Array<{text: string, action: function()}>} links An array of
    *     records describing the links in the notification. Each record should
    *     have a 'text' attribute (the display string) and an 'action' attribute
    *     (a function to run when the link is activated).
@@ -553,7 +553,7 @@ cr.define('ntp', function() {
   }
 
   /**
-   * @param {Array.<PageData>} data
+   * @param {Array<PageData>} data
    * @param {boolean} hasBlacklistedUrls
    */
   function setMostVisitedPages(data, hasBlacklistedUrls) {

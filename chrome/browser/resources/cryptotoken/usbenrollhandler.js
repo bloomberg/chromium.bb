@@ -16,7 +16,7 @@ function UsbEnrollHandler(request) {
   /** @private {!EnrollHelperRequest} */
   this.request_ = request;
 
-  /** @private {Array.<Gnubby>} */
+  /** @private {Array<Gnubby>} */
   this.waitingForTouchGnubbies_ = [];
 
   /** @private {boolean} */

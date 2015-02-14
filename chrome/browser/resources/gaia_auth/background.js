@@ -416,7 +416,7 @@ BackgroundBridge.prototype = {
 
   /**
    * Handler for 'getScrapedPasswords' request sent from the main script.
-   * @return {Array.<string>} The array with de-duped scraped passwords.
+   * @return {Array<string>} The array with de-duped scraped passwords.
    */
   onGetScrapedPasswords_: function() {
     var passwords = {};

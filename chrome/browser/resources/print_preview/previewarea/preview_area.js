@@ -232,7 +232,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maps message IDs to the CSS class that contains them.
-   * @type {Object.<print_preview.PreviewArea.MessageId_, string>}
+   * @type {Object<print_preview.PreviewArea.MessageId_, string>}
    * @private
    */
   PreviewArea.MessageIdClassMap_ = {};

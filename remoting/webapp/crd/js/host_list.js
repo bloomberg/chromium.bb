@@ -57,12 +57,12 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
    */
   this.loadingIndicator_ = loadingIndicator;
   /**
-   * @type {Array.<remoting.HostTableEntry>}
+   * @type {Array<remoting.HostTableEntry>}
    * @private
    */
   this.hostTableEntries_ = [];
   /**
-   * @type {Array.<remoting.Host>}
+   * @type {Array<remoting.Host>}
    * @private
    */
   this.hosts_ = [];
@@ -111,12 +111,12 @@ remoting.HostList.prototype.load = function(onDone) {
   // Load the cache of the last host-list, if present.
   /** @type {remoting.HostList} */
   var that = this;
-  /** @param {Object.<string>} items */
+  /** @param {Object<string>} items */
   var storeHostList = function(items) {
     if (items[remoting.HostList.HOSTS_KEY]) {
       var cached = base.jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
       if (cached) {
-        that.hosts_ = /** @type {Array.<remoting.Host>} */ (cached);
+        that.hosts_ = /** @type {Array<remoting.Host>} */ (cached);
       } else {
         console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
       }
@@ -182,7 +182,7 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * able to successfully parse it.
  *
  * @param {function(boolean):void} onDone The callback passed to |refresh|.
- * @param {Array.<remoting.Host>} hosts The list of hosts for the user.
+ * @param {Array<remoting.Host>} hosts The list of hosts for the user.
  * @return {void} Nothing.
  * @private
  */

@@ -72,7 +72,7 @@ cr.define('hotword', function() {
 
     /**
      * Currently active hotwording sessions.
-     * @private {!Array.<Session_>}
+     * @private {!Array<Session_>}
      */
     this.sessions_ = [];
 

@@ -60,7 +60,7 @@ function mockChromeEvent(topLevelContainer, eventIdentifier) {
  * Gets the array of event handlers added by a mocked 'addListener' function.
  * @param {string} eventIdentifier Event identifier, such as
  *     'runtime.onSuspend'.
- * @return {Array.<Function>} Array of handlers.
+ * @return {Array<Function>} Array of handlers.
  */
 function getMockHandlerContainer(eventIdentifier) {
   var eventIdentifierParts = eventIdentifier.split('.');

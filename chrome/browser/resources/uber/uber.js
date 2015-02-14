@@ -156,7 +156,7 @@ cr.define('uber', function() {
    * @param {Event} e The posted object.
    */
   function handleWindowMessage(e) {
-    e = /** @type{!MessageEvent.<!{method: string, params: *}>} */(e);
+    e = /** @type{!MessageEvent<!{method: string, params: *}>} */(e);
     if (e.data.method === 'beginInterceptingEvents') {
       backgroundNavigation();
     } else if (e.data.method === 'stopInterceptingEvents') {

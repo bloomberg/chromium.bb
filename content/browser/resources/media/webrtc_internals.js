@@ -117,7 +117,7 @@ function requestStats() {
 /**
  * A helper function for getting a peer connection element id.
  *
- * @param {!Object.<string, number>} data The object containing the pid and lid
+ * @param {!Object<string, number>} data The object containing the pid and lid
  *     of the peer connection.
  * @return {string} The peer connection element id.
  */
@@ -174,7 +174,7 @@ function addPeerConnectionUpdate(peerConnectionElement, update) {
 /**
  * Removes all information about a peer connection.
  *
- * @param {!Object.<string, number>} data The object containing the pid and lid
+ * @param {!Object<string, number>} data The object containing the pid and lid
  *     of a peer connection.
  */
 function removePeerConnection(data) {
@@ -227,7 +227,7 @@ function updatePeerConnection(data) {
 /**
  * Adds the information of all peer connections created so far.
  *
- * @param {Array.<!Object>} data An array of the information of all peer
+ * @param {Array<!Object>} data An array of the information of all peer
  *     connections. Each array item contains pid, lid, url, rtcConfiguration,
  *     constraints, and an array of updates as the log.
  */

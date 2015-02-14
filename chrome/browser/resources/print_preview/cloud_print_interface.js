@@ -52,7 +52,7 @@ cr.define('cloudprint', function() {
     /**
      * Currently logged in users (identified by email) mapped to the Google
      * session index.
-     * @type {!Object.<string, number>}
+     * @type {!Object<string, number>}
      * @private
      */
     this.userSessionIndex_ = {};
@@ -60,21 +60,21 @@ cr.define('cloudprint', function() {
     /**
      * Stores last received XSRF tokens for each user account. Sent as
      * a parameter with every request.
-     * @type {!Object.<string, string>}
+     * @type {!Object<string, string>}
      * @private
      */
     this.xsrfTokens_ = {};
 
     /**
      * Pending requests delayed until we get access token.
-     * @type {!Array.<!CloudPrintRequest>}
+     * @type {!Array<!CloudPrintRequest>}
      * @private
      */
     this.requestQueue_ = [];
 
     /**
      * Outstanding cloud destination search requests.
-     * @type {!Array.<!CloudPrintRequest>}
+     * @type {!Array<!CloudPrintRequest>}
      * @private
      */
     this.outstandingCloudSearchRequests_ = [];
@@ -157,7 +157,7 @@ cr.define('cloudprint', function() {
 
   /**
    * Could Print origins used to search printers.
-   * @type {!Array.<!print_preview.Destination.Origin>}
+   * @type {!Array<!print_preview.Destination.Origin>}
    * @const
    * @private
    */
@@ -212,7 +212,7 @@ cr.define('cloudprint', function() {
      * @param {string} account Account the search is sent for. It matters for
      *     COOKIES origin only, and can be empty (sent on behalf of the primary
      *     user in this case).
-     * @param {!Array.<!print_preview.Destination.Origin>} origins Origins to
+     * @param {!Array<!print_preview.Destination.Origin>} origins Origins to
      *     search printers for.
      * @private
      */
@@ -374,7 +374,7 @@ cr.define('cloudprint', function() {
      * Builds request to the Google Cloud Print API.
      * @param {string} method HTTP method of the request.
      * @param {string} action Google Cloud Print action to perform.
-     * @param {Array.<!HttpParam>} params HTTP parameters to include in the
+     * @param {Array<!HttpParam>} params HTTP parameters to include in the
      *     request.
      * @param {!print_preview.Destination.Origin} origin Origin for destination.
      * @param {?string} account Account the request is sent for. Can be
@@ -502,7 +502,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Terminates search requests for requested {@code origins}.
-     * @param {!Array.<print_preview.Destination.Origin>} origins Origins
+     * @param {!Array<print_preview.Destination.Origin>} origins Origins
      *     to terminate search requests for.
      * @private
      */

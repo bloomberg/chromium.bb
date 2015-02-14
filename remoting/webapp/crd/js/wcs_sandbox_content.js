@@ -27,7 +27,7 @@ remoting.WcsSandboxContent = function() {
    */
   this.nextXhrId_ = 0;
   /**
-   * @type {Object.<number, XMLHttpRequest>}
+   * @type {Object<number, XMLHttpRequest>}
    * @private
    */
   this.pendingXhrs_ = {};

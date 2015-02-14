@@ -62,7 +62,7 @@ cr.define('print_preview', function() {
 
     /**
      * Convenience array that contains all of the margin controls.
-     * @type {!Object.<
+     * @type {!Object<
      *     !print_preview.ticket_items.CustomMargins.Orientation,
      *     !print_preview.MarginControl>}
      * @private

@@ -350,7 +350,7 @@ cr.define('ntp', function() {
      * Note that calls to this function can occur at any time, not just in
      * response to a getApps request. For example, when a user
      * installs/uninstalls an app on another synchronized devices.
-     * @param {{apps: Array.<AppInfo>, appPageNames: Array.<string>}} data
+     * @param {{apps: Array<AppInfo>, appPageNames: Array<string>}} data
      *     An object with all the data on available applications.
      */
     getAppsCallback: function(data) {

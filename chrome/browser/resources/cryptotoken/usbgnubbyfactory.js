@@ -43,7 +43,7 @@ UsbGnubbyFactory.prototype.openGnubby =
 
 /**
  * Enumerates gnubbies.
- * @param {function(number, Array.<GnubbyDeviceId>)} cb Enumerate callback
+ * @param {function(number, Array<GnubbyDeviceId>)} cb Enumerate callback
  */
 UsbGnubbyFactory.prototype.enumerate = function(cb) {
   this.gnubbies_.enumerate(cb);

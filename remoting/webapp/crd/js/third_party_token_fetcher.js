@@ -30,7 +30,7 @@ var remoting = remoting || {};
  * @param {string} tokenUrl Token-issue URL received from the host.
  * @param {string} hostPublicKey Host public key (DER and Base64 encoded).
  * @param {string} scope OAuth scope to request the token for.
- * @param {Array.<string>} tokenUrlPatterns Token URL patterns allowed for the
+ * @param {Array<string>} tokenUrlPatterns Token URL patterns allowed for the
  *     domain, received from the directory server.
  * @param {function(string, string):void} onThirdPartyTokenFetched Callback.
  */
@@ -97,7 +97,7 @@ remoting.ThirdPartyTokenFetcher.prototype.parseRedirectUrl_ =
   if (responseUrl && responseUrl.search('#') >= 0) {
     var query = responseUrl.substring(responseUrl.search('#') + 1);
     var parts = query.split('&');
-    /** @type {Object.<string>} */
+    /** @type {Object<string>} */
     var queryArgs = {};
     for (var i = 0; i < parts.length; i++) {
       var pair = parts[i].split('=');

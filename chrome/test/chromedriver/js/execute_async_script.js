@@ -22,7 +22,7 @@ var ASYNC_INFO_KEY = '$chrome_asyncScriptInfo';
 /**
 * Return the information of asynchronous script execution.
 *
-* @return {Object.<string, ?>} Information of asynchronous script execution.
+* @return {Object<string, ?>} Information of asynchronous script execution.
 */
 function getAsyncScriptInfo() {
   if (!(ASYNC_INFO_KEY in document))
@@ -40,7 +40,7 @@ function getAsyncScriptInfo() {
 *     should be a proper function body. It will be wrapped in a function and
 *     invoked with the given arguments and, as the final argument, a callback
 *     function to invoke to report the asynchronous result.
-* @param {!Array.<*>} args Arguments to be passed to the script.
+* @param {!Array<*>} args Arguments to be passed to the script.
 * @param {boolean} isUserSupplied Whether the script is supplied by the user.
 *     If not, UnknownError will be used instead of JavaScriptError if an
 *     exception occurs during the script, and an additional error callback will

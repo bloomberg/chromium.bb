@@ -15,7 +15,7 @@ function GnubbyFactory() {}
 
 /**
  * Enumerates gnubbies.
- * @param {function(number, Array.<GnubbyDeviceId>)} cb Enumerate callback
+ * @param {function(number, Array<GnubbyDeviceId>)} cb Enumerate callback
  */
 GnubbyFactory.prototype.enumerate = function(cb) {
 };

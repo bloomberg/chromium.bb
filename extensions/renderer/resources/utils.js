@@ -27,7 +27,7 @@ function forEach(obj, f, self) {
  * Assuming |array_of_dictionaries| is structured like this:
  * [{id: 1, ... }, {id: 2, ...}, ...], you can use
  * lookup(array_of_dictionaries, 'id', 2) to get the dictionary with id == 2.
- * @param {Array.<Object.<string, ?>>} array_of_dictionaries
+ * @param {Array<Object<string, ?>>} array_of_dictionaries
  * @param {string} field
  * @param {?} value
  */
@@ -75,9 +75,9 @@ function loadTypeSchema(typeName, defaultSchema) {
  * @param {string} name The name of the exposed wrapper class.
  * @param {Object} cls The class implementation.
  * @param {{superclass: ?Function,
- *          functions: ?Array.<string>,
- *          properties: ?Array.<string>,
- *          readonly: ?Array.<string>}} exposed The names of properties on the
+ *          functions: ?Array<string>,
+ *          properties: ?Array<string>,
+ *          readonly: ?Array<string>}} exposed The names of properties on the
  *     implementation class to be exposed. |superclass| represents the
  *     constructor of the class to be used as the superclass of the exposed
  *     class; |functions| represents the names of functions which should be

@@ -12,7 +12,7 @@ var ChordTracker = function(parentDiv) {
   this.parentDiv_ = parentDiv;
   /** @type {HTMLElement} */
   this.currentDiv_ = null;
-  /** @type {Object.<HTMLElement>} */
+  /** @type {Object<HTMLElement>} */
   this.pressedKeys_ = {};
 };
 

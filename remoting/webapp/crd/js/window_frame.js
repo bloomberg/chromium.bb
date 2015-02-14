@@ -61,7 +61,7 @@ remoting.WindowFrame = function(titleBar) {
   base.debug.assert(this.optionsMenuList_ != null);
 
   /**
-   * @type {Array.<{cls:string, fn: function()}>}
+   * @type {Array<{cls:string, fn: function()}>}
    */
   var handlers = [
     { cls: 'window-disconnect', fn: this.disconnectSession_.bind(this) },

@@ -238,7 +238,7 @@ NaClManager.prototype.fileExists_ = function(path) {
 /**
  * Creates and returns a list of possible languages to check for hotword
  * support.
- * @return {!Array.<string>} Array of languages.
+ * @return {!Array<string>} Array of languages.
  * @private
  */
 NaClManager.prototype.getPossibleLanguages_ = function() {

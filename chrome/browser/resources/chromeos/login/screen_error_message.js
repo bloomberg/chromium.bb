@@ -204,7 +204,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       var ellipsis = '';
       for (var i = 1; i <= 3; ++i) {
         ellipsis +=
-            '<span id="connecting-indicator-ellipsis-' + i + '">.</span>';
+            '<span id="connecting-indicator-ellipsis-' + i + '"></span>';
       }
       $('connecting-indicator').innerHTML =
           loadTimeData.getStringF('connectingIndicatorText', ellipsis);

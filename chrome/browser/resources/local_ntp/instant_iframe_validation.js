@@ -38,7 +38,7 @@ function isValidRBGAComponent(component) {
 
 /**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
- * @param {Array.<number>} rgbaColor Array of rgba color components.
+ * @param {Array<number>} rgbaColor Array of rgba color components.
  * @return {?string} CSS color in RGBA format or null if invalid.
  */
 function convertArrayToRGBAColor(rgbaColor) {

@@ -383,7 +383,7 @@ cr.define('options', function() {
     },
 
     /**
-     * @return {!Array.<HTMLElement>} all the associated controls for |subpage|,
+     * @return {!Array<HTMLElement>} all the associated controls for |subpage|,
      * including |subpage.associatedControls| as well as any controls on parent
      * pages that are indirectly necessary to get to the subpage.
      * @private

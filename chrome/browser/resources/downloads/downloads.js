@@ -182,7 +182,7 @@ DownloadFocusRow.prototype = {
  */
 function Downloads() {
   /**
-   * @type {!Object.<string, Download>}
+   * @type {!Object<string, Download>}
    * @private
    */
   this.downloads_ = {};
@@ -1060,7 +1060,7 @@ function clearAll() {
 /**
  * Our history system calls this function with results from searches or when
  * downloads are added or removed.
- * @param {Array.<Object>} results List of updates.
+ * @param {Array<Object>} results List of updates.
  */
 function downloadsList(results) {
   if (downloads && downloads.isUpdateNeeded(results)) {
@@ -1076,7 +1076,7 @@ function downloadsList(results) {
 
 /**
  * When a download is updated (progress, state change), this is called.
- * @param {Array.<Object>} results List of updates for the download process.
+ * @param {Array<Object>} results List of updates for the download process.
  */
 function downloadUpdated(results) {
   // Sometimes this can get called too early.

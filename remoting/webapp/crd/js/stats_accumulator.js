@@ -23,7 +23,7 @@ remoting.StatsAccumulator = function() {
   /**
    * A map from names to lists of values.
    * @private
-   * @type Object.<string, Array.<number>>
+   * @type Object<string, Array<number>>
    */
   this.valueLists_ = {};
 
@@ -39,7 +39,7 @@ remoting.StatsAccumulator = function() {
 /**
  * Adds values to this object.
  *
- * @param {Object.<string, number>} newValues
+ * @param {Object<string, number>} newValues
  */
 remoting.StatsAccumulator.prototype.add = function(newValues) {
   for (var key in newValues) {
@@ -79,7 +79,7 @@ remoting.StatsAccumulator.prototype.getTimeSinceFirstValue = function() {
  */
 remoting.StatsAccumulator.prototype.calcMean = function(key) {
   /**
-   * @param {Array.<number>} values
+   * @param {Array<number>} values
    * @return {number}
    */
   var calcMean = function(values) {
@@ -99,7 +99,7 @@ remoting.StatsAccumulator.prototype.calcMean = function(key) {
  * Applies a given map to the list of values for a given key.
  *
  * @param {string} key
- * @param {function(Array.<number>): number} map
+ * @param {function(Array<number>): number} map
  * @return {number} the result of applying that map to the list of values for
  *     that key
  */
@@ -114,7 +114,7 @@ remoting.StatsAccumulator.prototype.map = function(key, map) {
  *
  * @private
  * @param {string} key
- * @return {Array.<number>} the list of values for that key
+ * @return {Array<number>} the list of values for that key
  */
 remoting.StatsAccumulator.prototype.getValueList = function(key) {
   var valueList = this.valueLists_[key];

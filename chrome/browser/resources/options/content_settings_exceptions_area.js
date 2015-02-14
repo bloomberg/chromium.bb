@@ -499,7 +499,7 @@ cr.define('options.contentSettings', function() {
     /**
      * Sets the exceptions in the js model.
      *
-     * @param {Array.<options.Exception>} entries A list of dictionaries of
+     * @param {Array<options.Exception>} entries A list of dictionaries of
      *     values, each dictionary represents an exception.
      */
     setExceptions: function(entries) {

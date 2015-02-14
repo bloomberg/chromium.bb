@@ -41,7 +41,7 @@ cr.define('suggestionsInternals', function() {
 
   /**
    * A list of columns that we do not want to display.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @const
    */
   var IGNORED_COLUMNS = [
@@ -52,7 +52,7 @@ cr.define('suggestionsInternals', function() {
    * A list specifying the name of the first columns to be displayed. If
    * present, they will be displayed in this order, followed by the remaining
    * columns.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @const
    */
   var PREFERRED_COLUMN_ORDER = [
@@ -160,8 +160,8 @@ cr.define('suggestionsInternals', function() {
         } else if (columnName == 'screenshot') {
           var thumbnailUrl = 'chrome://thumb/' + entry.url;
           var img = document.createElement('img');
-          img.onload = function() { setBooleanColumn(column, true); }
-          img.onerror = function() { setBooleanColumn(column, false); }
+          img.onload = function() { setBooleanColumn(column, true); };
+          img.onerror = function() { setBooleanColumn(column, false); };
           img.src = thumbnailUrl;
         } else if (columnName == 'favicon') {
           var faviconUrl = 'chrome://favicon/size/16@1x/' + entry.url;

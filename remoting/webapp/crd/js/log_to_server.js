@@ -160,7 +160,7 @@ remoting.LogToServer.shouldAddDuration_ = function(state) {
 
 /**
  * Logs connection statistics.
- * @param {Object.<string, number>} stats The connection statistics
+ * @param {Object<string, number>} stats The connection statistics
  */
 remoting.LogToServer.prototype.logStatistics = function(stats) {
   this.maybeExpireSessionId_();

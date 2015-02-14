@@ -25,7 +25,7 @@ function CryptoTokenApprovedOrigin() {}
  * @param {number=} opt_tabId A tab id to display approval prompt in.
  *     For this implementation, the tabId is always necessary, even though
  *     the type allows undefined.
- * @return {Promise.<boolean>} A promise for the result of the check.
+ * @return {Promise<boolean>} A promise for the result of the check.
  */
 CryptoTokenApprovedOrigin.prototype.isApprovedOrigin =
     function(origin, opt_tabId) {

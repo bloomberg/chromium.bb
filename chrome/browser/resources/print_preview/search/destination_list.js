@@ -45,14 +45,14 @@ cr.define('print_preview', function() {
 
     /**
      * Backing store for the destination list.
-     * @type {!Array.<print_preview.Destination>}
+     * @type {!Array<print_preview.Destination>}
      * @private
      */
     this.destinations_ = [];
 
     /**
      * Set of destination ids.
-     * @type {!Object.<string, boolean>}
+     * @type {!Object<string, boolean>}
      * @private
      */
     this.destinationIds_ = {};
@@ -80,7 +80,7 @@ cr.define('print_preview', function() {
 
     /**
      * List items representing destinations.
-     * @type {!Array.<!print_preview.DestinationListItem>}
+     * @type {!Array<!print_preview.DestinationListItem>}
      * @private
      */
     this.listItems_ = [];
@@ -198,7 +198,7 @@ cr.define('print_preview', function() {
 
     /**
      * Updates the destinations to render in the destination list.
-     * @param {!Array.<print_preview.Destination>} destinations Destinations to
+     * @param {!Array<print_preview.Destination>} destinations Destinations to
      *     render.
      */
     updateDestinations: function(destinations) {
@@ -251,7 +251,7 @@ cr.define('print_preview', function() {
 
     /**
      * Renders all destinations in the given list.
-     * @param {!Array.<print_preview.Destination>} destinations List of
+     * @param {!Array<print_preview.Destination>} destinations List of
      *     destinations to render.
      * @private
      */

@@ -215,7 +215,7 @@ function isValidEnrollRequest(request, enrollChallengesName,
 var EnrollChallenge;
 
 /**
- * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges to
+ * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges to
  *     validate.
  * @param {boolean} appIdRequired Whether the appId property is required on
  *     each challenge.
@@ -253,7 +253,7 @@ function isValidEnrollChallengeArray(enrollChallenges, appIdRequired) {
 /**
  * Finds the enroll challenge of the given version in the enroll challlenge
  * array.
- * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges to
+ * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges to
  *     search.
  * @param {string} version Version to search for.
  * @return {?EnrollChallenge} The enroll challenge with the given versions, or
@@ -307,7 +307,7 @@ function makeEnrollResponseData(enrollChallenge, u2fVersion, enrollDataName,
  *     the request.
  * @param {string=} opt_registeredKeysName The name of the registered keys
  *     value in the request.
- * @return {Array.<SignChallenge>}
+ * @return {Array<SignChallenge>}
  */
 function getSignRequestsFromEnrollRequest(request, signChallengesName,
     opt_registeredKeysName) {
@@ -356,11 +356,11 @@ function Enroller(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.done_ = false;
 
-  /** @private {Object.<string, string>} */
+  /** @private {Object<string, string>} */
   this.browserData_ = {};
-  /** @private {Array.<EnrollHelperChallenge>} */
+  /** @private {Array<EnrollHelperChallenge>} */
   this.encodedEnrollChallenges_ = [];
-  /** @private {Array.<SignHelperChallenge>} */
+  /** @private {Array<SignHelperChallenge>} */
   this.encodedSignChallenges_ = [];
   // Allow http appIds for http origins. (Broken, but the caller deserves
   // what they get.)
@@ -378,16 +378,16 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
 
 /**
  * Performs an enroll request with the given enroll and sign challenges.
- * @param {Array.<EnrollChallenge>} enrollChallenges A set of enroll challenges.
- * @param {Array.<SignChallenge>} signChallenges A set of sign challenges for
+ * @param {Array<EnrollChallenge>} enrollChallenges A set of enroll challenges.
+ * @param {Array<SignChallenge>} signChallenges A set of sign challenges for
  *     existing enrollments for this user and appId.
  * @param {string=} opt_appId The app id for the entire request.
  */
 Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
     opt_appId) {
-  /** @private {Array.<EnrollChallenge>} */
+  /** @private {Array<EnrollChallenge>} */
   this.enrollChallenges_ = enrollChallenges;
-  /** @private {Array.<SignChallenge>} */
+  /** @private {Array<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {(string|undefined)} */
   this.appId_ = opt_appId;
@@ -531,9 +531,9 @@ Enroller.encodeEnrollChallenge_ = function(enrollChallenge, opt_appId) {
 
 /**
  * Encodes the given enroll challenges using this enroller's state.
- * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges.
+ * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges.
  * @param {string=} opt_appId The app id for the entire request.
- * @return {!Array.<EnrollHelperChallenge>} The encoded enroll challenges.
+ * @return {!Array<EnrollHelperChallenge>} The encoded enroll challenges.
  * @private
  */
 Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
@@ -576,7 +576,7 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
 /**
  * Checks the app ids associated with this enroll request, and calls a callback
  * with the result of the check.
- * @param {!Array.<string>} enrollAppIds The app ids in the enroll challenge
+ * @param {!Array<string>} enrollAppIds The app ids in the enroll challenge
  *     portion of the enroll request.
  * @param {function(boolean)} cb Called with the result of the check.
  * @private
@@ -593,7 +593,7 @@ Enroller.prototype.checkAppIds_ = function(enrollAppIds, cb) {
  * Called with the result of checking the origin. When the origin is allowed
  * to claim the app ids, begins checking whether the app ids also list the
  * origin.
- * @param {!Array.<string>} appIds The app ids.
+ * @param {!Array<string>} appIds The app ids.
  * @param {function(boolean)} cb Called with the result of the check.
  * @param {boolean} result Whether the origin could claim the app ids.
  * @private

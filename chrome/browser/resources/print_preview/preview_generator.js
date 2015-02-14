@@ -94,7 +94,7 @@ cr.define('print_preview', function() {
 
     /**
      * Page ranges setting used used to generate the last preview.
-     * @type {!Array.<object.<{from: number, to: number}>>}
+     * @type {!Array<object<{from: number, to: number}>>}
      * @private
      */
     this.pageRanges_ = null;

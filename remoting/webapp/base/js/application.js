@@ -13,7 +13,7 @@
 var remoting = remoting || {};
 
 /**
- * @param {Array.<string>} app_capabilities Array of application capabilities.
+ * @param {Array<string>} app_capabilities Array of application capabilities.
  * @constructor
  */
 remoting.Application = function(app_capabilities) {
@@ -24,7 +24,7 @@ remoting.Application = function(app_capabilities) {
   this.delegate_ = null;
 
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.app_capabilities_ = [
@@ -58,7 +58,7 @@ remoting.Application.prototype.getApplicationName = function() {
 };
 
 /**
- * @return {Array.<string>} A list of |ClientSession.Capability|s required
+ * @return {Array<string>} A list of |ClientSession.Capability|s required
  *     by this application.
  */
 remoting.Application.prototype.getRequiredCapabilities_ = function() {

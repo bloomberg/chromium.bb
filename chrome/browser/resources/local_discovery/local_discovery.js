@@ -35,7 +35,7 @@ cr.define('local_discovery', function() {
 
   /**
    * Map of service names to corresponding service objects.
-   * @type {Object.<string,Service>}
+   * @type {Object<string,Service>}
    */
   var devices = {};
 
@@ -341,7 +341,7 @@ cr.define('local_discovery', function() {
 
   /**
    * Create the DOM for a cloud device described by the device section.
-   * @param {Array.<Object>} devices_list List of devices.
+   * @param {Array<Object>} devices_list List of devices.
    */
   function createCloudDeviceDOM(device) {
     var devicesDomElement = document.createElement('div');
@@ -366,7 +366,7 @@ cr.define('local_discovery', function() {
 
   /**
    * Handle a list of cloud devices available to the user globally.
-   * @param {Array.<Object>} devices_list List of devices.
+   * @param {Array<Object>} devices_list List of devices.
    */
   function onCloudDeviceListAvailable(devices_list) {
     var devicesListLength = devices_list.length;

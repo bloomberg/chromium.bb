@@ -6,13 +6,13 @@
 // WebKit- and Chrome-specific properties and methods. It is used only with
 // JSCompiler to verify the type-correctness of our code.
 
-/** @type {Array.<string>} */
+/** @type {Array<string>} */
 ClipboardData.prototype.types;
 
 /** @type {HTMLElement} */
 Document.prototype.activeElement;
 
-/** @type {Array.<HTMLElement>} */
+/** @type {Array<HTMLElement>} */
 Document.prototype.all;
 
 /** @type {boolean} */

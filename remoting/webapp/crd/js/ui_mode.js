@@ -60,7 +60,7 @@ remoting.kMe2MeVisitedStorageKey = 'me2me-visited';
 /**
  * @param {Element} element The element to check.
  * @param {string} attrName The attribute on the element to check.
- * @param {Array.<string>} modes The modes to check for.
+ * @param {Array<string>} modes The modes to check for.
  * @return {boolean} True if any mode in |modes| is found within the attribute.
  */
 remoting.hasModeAttribute = function(element, attrName, modes) {
@@ -239,15 +239,15 @@ remoting.initModalDialogs = function() {
 };
 
 /**
- * @param {Array.<MutationRecord>} mutations The set of mutations affecting
+ * @param {Array<MutationRecord>} mutations The set of mutations affecting
  *     an observed node.
  */
 function confineOrRestoreFocus_(mutations) {
   // The list of mutations can include duplicates, so reduce it to a canonical
   // show/hide list.
-  /** @type {Array.<Node>} */
+  /** @type {Array<Node>} */
   var shown = [];
-  /** @type {Array.<Node>} */
+  /** @type {Array<Node>} */
   var hidden = [];
   for (var i = 0; i < mutations.length; ++i) {
     var mutation = mutations[i];

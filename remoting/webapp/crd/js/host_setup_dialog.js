@@ -8,7 +8,7 @@
 var remoting = remoting || {};
 
 /**
- * @param {Array.<remoting.HostSetupFlow.State>} sequence Sequence of
+ * @param {Array<remoting.HostSetupFlow.State>} sequence Sequence of
  *     steps for the flow.
  * @constructor
  */
@@ -273,7 +273,7 @@ remoting.HostSetupDialog.prototype.hide = function() {
 
 /**
  * Starts new flow with the specified sequence of steps.
- * @param {Array.<remoting.HostSetupFlow.State>} sequence Sequence of steps.
+ * @param {Array<remoting.HostSetupFlow.State>} sequence Sequence of steps.
  * @private
  */
 remoting.HostSetupDialog.prototype.startNewFlow_ = function(sequence) {

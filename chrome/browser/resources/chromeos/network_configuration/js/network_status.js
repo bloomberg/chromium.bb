@@ -24,10 +24,10 @@ cr.define('network.status', function() {
   /**
    * Calculates both set difference of |a| and |b| and returns them in an array:
    * [ a - b, b - a ].
-   * @param {Array.<T>} a .
-   * @param {Array.<T>} b .
+   * @param {Array<T>} a .
+   * @param {Array<T>} b .
    * @param {function(T): K} toKey .
-   * @return {Array.<Array.<T>>} .
+   * @return {Array<Array<T>>} .
    */
   function differenceBy(a, b, toKey) {
     var inA = {};
@@ -72,9 +72,9 @@ cr.define('network.status', function() {
   /**
    * Creates a map of the entries of |array|. Each entry is associated to the
    * key getKey(entry).
-   * @param {Array.<T>} array .
+   * @param {Array<T>} array .
    * @param {function(T): K} getKey .
-   * @return {Object.<K, T>} .
+   * @return {Object<K, T>} .
    */
   function createMapFromList(array, getKey) {
     var result = {};
@@ -87,8 +87,8 @@ cr.define('network.status', function() {
   /**
    * Wraps each entry in |array| into an array. The result contains rows with
    * one entry each.
-   * @param {Array.<T>} array .
-   * @return {Array.<Array.<T>>} .
+   * @param {Array<T>} array .
+   * @return {Array<Array<T>>} .
    */
   function arrayToTable(array) {
     return array.map(function(e) {
@@ -232,7 +232,7 @@ cr.define('network.status', function() {
     /**
      * Returns the list of identifiers for which nested buttons will be created.
      * To be overridden by subclasses.
-     * @return {Array.<string>} .
+     * @return {Array<string>} .
      */
     getEntries: function() {
       return [];
@@ -410,9 +410,9 @@ cr.define('network.status', function() {
 
   /**
    * Groups networks by type.
-   * @param {Object.<string, Object>} networkByID A map from network ID to
+   * @param {Object<string, Object>} networkByID A map from network ID to
    * network properties.
-   * @return {Object.<string, Array.<string>>} A map from network type to the
+   * @return {Object<string, Array<string>>} A map from network type to the
    * list of IDs of networks of that type.
    */
   function createNetworkIDsByType(networkByID) {
@@ -454,26 +454,26 @@ cr.define('network.status', function() {
 
       /**
        * The set of technologies shown to the user.
-       * @type {Object.<string, boolean>}
+       * @type {Object<string, boolean>}
        */
       this.technologies_ = {};
 
       /**
        * A map from network type to the array of IDs of network of that type.
-       * @type {Object.<string, Array.<string>>}
+       * @type {Object<string, Array<string>>}
        */
       this.networkIDsByType_ = {};
 
       /**
        * A map from network ID to the network's properties.
-       * @type {Object.<string, Object>}
+       * @type {Object<string, Object>}
        */
       this.networkByID_ = {};
 
       /**
        * A map from network ID to the network's position in the last received
        * network list.
-       * @type {Object.<string, number>}
+       * @type {Object<string, number>}
        */
       this.networkIndexByID_ = {};
 
@@ -533,7 +533,7 @@ cr.define('network.status', function() {
 
     /**
      * @param {string} technology .
-     * @return {Array.<string>} Array of network IDs.
+     * @return {Array<string>} Array of network IDs.
      */
     getNetworkIDsOfType: function(technology) {
       var networkIDs = this.networkIDsByType_[technology];
@@ -599,7 +599,7 @@ cr.define('network.status', function() {
     },
 
     /**
-     * @param {Array.<string>} networkIDs .
+     * @param {Array<string>} networkIDs .
      */
     updateIndexes_: function(networkIDs) {
       var newNetworkIndexByID = {};
@@ -610,7 +610,7 @@ cr.define('network.status', function() {
     },
 
     /**
-     * @param {Array.<string>} networkIDs .
+     * @param {Array<string>} networkIDs .
      */
     onNetworkListChanged_: function(networkIDs) {
       var diff = differenceBy(Object.keys(this.networkByID_),
@@ -635,7 +635,7 @@ cr.define('network.status', function() {
     },
 
     /**
-     * @param {Array.<string>} networkIDs .
+     * @param {Array<string>} networkIDs .
      */
     onNetworksChanged_: function(networkIDs) {
       var updateCallback = this.updateNetworkCallback_.bind(this);
@@ -662,7 +662,7 @@ cr.define('network.status', function() {
     },
 
     /**
-     * @param {Array.<Object>} networks .
+     * @param {Array<Object>} networks .
      */
     setVisibleNetworks: function(networks) {
       this.networkByID_ = createMapFromList(

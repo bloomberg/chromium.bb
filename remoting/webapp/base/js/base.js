@@ -68,7 +68,7 @@ base.Disposable.prototype.dispose = function() {};
  */
 base.Disposables = function(var_args) {
   /**
-   * @type {Array.<base.Disposable>}
+   * @type {Array<base.Disposable>}
    * @private
    */
   this.disposables_ = Array.prototype.slice.call(arguments, 0);
@@ -165,7 +165,7 @@ base.isAppsV2 = function() {
  * Joins the |url| with optional query parameters defined in |opt_params|
  * See unit test for usage.
  * @param {string} url
- * @param {Object.<string>=} opt_params
+ * @param {Object<string>=} opt_params
  * @return {string}
  */
 base.urlJoin = function(url, opt_params) {
@@ -182,7 +182,7 @@ base.urlJoin = function(url, opt_params) {
 
 
 /**
- * @return {Object.<string, string>} The URL parameters.
+ * @return {Object<string, string>} The URL parameters.
  */
 base.getUrlParameters = function() {
   var result = {};
@@ -364,7 +364,7 @@ base.Promise.as = function(method, params, opt_context, opt_hasErrorHandler) {
   * @constructor
   */
 base.EventEntry = function() {
-  /** @type {Array.<function():void>} */
+  /** @type {Array<function():void>} */
   this.listeners = [];
 };
 
@@ -394,7 +394,7 @@ base.EventSource.prototype.removeEventListener = function(type, fn) {};
   * @implements {base.EventSource}
   */
 base.EventSourceImpl = function() {
-  /** @type {Object.<string, base.EventEntry>} */
+  /** @type {Object<string, base.EventEntry>} */
   this.eventMap_;
 };
 
@@ -412,7 +412,7 @@ base.EventSourceImpl.isDefined = function(obj, type) {
 base.EventSourceImpl.prototype = {
   /**
     * Define |events| for this event source.
-    * @param {Array.<string>} events
+    * @param {Array<string>} events
     */
   defineEvents: function(events) {
     base.debug.assert(!Boolean(this.eventMap_),

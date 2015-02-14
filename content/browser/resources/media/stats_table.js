@@ -110,7 +110,7 @@ var StatsTable = (function(ssrcInfoManager) {
      *
      * @param {!Element} statsTable Which table to update.
      * @param {number} time The number of miliseconds since epoch.
-     * @param {Array.<string>} statsData An array of stats name and value pairs.
+     * @param {Array<string>} statsData An array of stats name and value pairs.
      * @private
      */
     addStatsToTable_: function(statsTable, time, statsData) {

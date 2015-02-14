@@ -6,7 +6,7 @@
 //            that handles the loading and the events from the bookmark backend.
 
 /**
- * @typedef {{childIds: Array.<string>}}
+ * @typedef {{childIds: Array<string>}}
  *
  * @see chrome/common/extensions/api/bookmarks.json
  */
@@ -30,7 +30,7 @@ cr.define('bmm', function() {
 
   /**
    * Basic array data model for use with bookmarks.
-   * @param {!Array.<!BookmarkTreeNode>} items The bookmark items.
+   * @param {!Array<!BookmarkTreeNode>} items The bookmark items.
    * @constructor
    * @extends {ArrayDataModel}
    */
@@ -128,7 +128,7 @@ cr.define('bmm', function() {
 
     /**
      * Callback function for loading items.
-     * @param {Array.<!BookmarkTreeNode>} items The loaded items.
+     * @param {Array<!BookmarkTreeNode>} items The loaded items.
      * @private
      */
     handleBookmarkCallback_: function(items) {

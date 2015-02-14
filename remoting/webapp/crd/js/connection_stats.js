@@ -58,7 +58,7 @@ remoting.ConnectionStats.prototype.show = function(show) {
 /**
  * If the stats panel is visible, add its bounding rectangle to the specified
  * region.
- * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ * @param {Array<{left: number, top: number, width: number, height: number}>}
  *     rects List of rectangles.
  */
 

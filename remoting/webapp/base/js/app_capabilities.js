@@ -11,7 +11,7 @@ var remoting = remoting || {};
  * Note that this needs to be a function because it gets expanded at
  * compile-time into remoting.ClientSession.Capability enums and these
  * are not guaranteed to be present yet when this file is loaded.
- * @return {Array.<remoting.ClientSession.Capability>}
+ * @return {Array<remoting.ClientSession.Capability>}
  */
 remoting.app_capabilities = function() {
   return ['APPLICATION_CAPABILITIES'];

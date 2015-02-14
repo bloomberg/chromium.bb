@@ -23,7 +23,7 @@ cr.define('hotword', function() {
     /**
      * Mapping between tab ID and port that is connected from the injected
      * content script.
-     * @private {!Object.<number, Port>}
+     * @private {!Object<number, Port>}
      */
     this.portMap_ = {};
 

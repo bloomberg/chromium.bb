@@ -197,7 +197,7 @@ cr.define('identity_internals', function() {
 
   /**
    * Callback function that removes a token from UI once it has been revoked.
-   * @param {!Array.<string>} accessTokens Array with a single element, which is
+   * @param {!Array<string>} accessTokens Array with a single element, which is
    * an access token to be removed.
    */
   function tokenRevokeDone(accessTokens) {

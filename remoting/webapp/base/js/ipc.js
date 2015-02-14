@@ -50,7 +50,7 @@ var base = base || {};
 base.Ipc = function() {
   base.debug.assert(instance_ === null);
   /**
-   * @type {!Object.<Function>}
+   * @type {!Object<Function>}
    * @private
    */
   this.handlers_ = {};

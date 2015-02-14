@@ -21,7 +21,7 @@ remoting.ClientPluginMessage = function() {
   /** @type {string} */
   this.method = '';
 
-  /** @type {Object.<string,*>} */
+  /** @type {Object<string,*>} */
   this.data = {};
 };
 
@@ -30,7 +30,7 @@ remoting.ClientPluginMessage = function() {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {Array.<string>} requiredCapabilities The set of capabilties that the
+ * @param {Array<string>} requiredCapabilities The set of capabilties that the
  *     session must support for this application.
  * @constructor
  * @implements {remoting.ClientPlugin}
@@ -43,7 +43,7 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
 
   this.onExtensionMessage_ = onExtensionMessage;
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.requiredCapabilities_ = requiredCapabilities;
@@ -98,12 +98,12 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   /** @private */
   this.onDesktopSizeUpdateHandler_ = function () {};
   /**
-   * @param {Array.<Array.<number>>} rects
+   * @param {Array<Array<number>>} rects
    * @private
    */
   this.onDesktopShapeUpdateHandler_ = function (rects) {};
   /**
-   * @param {!Array.<string>} capabilities The negotiated capabilities.
+   * @param {!Array<string>} capabilities The negotiated capabilities.
    * @private
    */
   this.onSetCapabilitiesHandler_ = function (capabilities) {};
@@ -134,7 +134,7 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
    */
   this.pluginApiVersion_ = -1;
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.pluginApiFeatures_ = [];
@@ -144,7 +144,7 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
    */
   this.pluginApiMinVersion_ = -1;
   /**
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @private
    */
   this.capabilities_ = [];
@@ -273,7 +273,7 @@ remoting.ClientPluginImpl.prototype.setDesktopSizeUpdateHandler =
 };
 
 /**
- * @param {function(Array.<Array.<number>>):void} handler
+ * @param {function(Array<Array<number>>):void} handler
  */
 remoting.ClientPluginImpl.prototype.setDesktopShapeUpdateHandler =
     function(handler) {
@@ -281,7 +281,7 @@ remoting.ClientPluginImpl.prototype.setDesktopShapeUpdateHandler =
 };
 
 /**
- * @param {function(!Array.<string>):void} handler
+ * @param {function(!Array<string>):void} handler
  */
 remoting.ClientPluginImpl.prototype.setCapabilitiesHandler = function(handler) {
   this.onSetCapabilitiesHandler_ = handler;
@@ -355,10 +355,10 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
   /**
    * Splits a string into a list of words delimited by spaces.
    * @param {string} str String that should be split.
-   * @return {!Array.<string>} List of words.
+   * @return {!Array<string>} List of words.
    */
   var tokenize = function(str) {
-    /** @type {Array.<string>} */
+    /** @type {Array<string>} */
     var tokens = str.match(/\S+/g);
     return tokens ? tokens : [];
   };
@@ -375,14 +375,14 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
 
       // Negotiate capabilities.
 
-      /** @type {!Array.<string>} */
+      /** @type {!Array<string>} */
       var requestedCapabilities = [];
       if ('requestedCapabilities' in message.data) {
         requestedCapabilities =
             tokenize(getStringAttr(message.data, 'requestedCapabilities'));
       }
 
-      /** @type {!Array.<string>} */
+      /** @type {!Array<string>} */
       var supportedCapabilities = [];
       if ('supportedCapabilities' in message.data) {
         supportedCapabilities =
@@ -434,7 +434,7 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
   } else if (message.method == 'onDesktopShape') {
     var rects = getArrayAttr(message.data, 'rects');
     for (var i = 0; i < rects.length; ++i) {
-      /** @type {Array.<number>} */
+      /** @type {Array<number>} */
       var rect = rects[i];
       if (typeof rect != 'object' || rect.length != 4) {
         throw 'Received invalid onDesktopShape message';
@@ -480,7 +480,7 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     this.fetchPinHandler_(pairingSupported);
 
   } else if (message.method == 'setCapabilities') {
-    /** @type {!Array.<string>} */
+    /** @type {!Array<string>} */
     var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
     this.onSetCapabilitiesHandler_(capabilities);
 
@@ -966,7 +966,7 @@ remoting.DefaultClientPluginFactory = function() {};
 /**
  * @param {Element} container
  * @param {function(string, string):boolean} onExtensionMessage
- * @param {Array.<string>} requiredCapabilities
+ * @param {Array<string>} requiredCapabilities
  * @return {remoting.ClientPlugin}
  */
 remoting.DefaultClientPluginFactory.prototype.createPlugin =

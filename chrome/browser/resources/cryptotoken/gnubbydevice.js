@@ -121,7 +121,7 @@ var UsbDeviceSpec;
 
 /**
  * Gets the list of USB devices permitted by this app.
- * @param {function(!Array.<!UsbDeviceSpec>)} cb Called back with a list of USB
+ * @param {function(!Array<!UsbDeviceSpec>)} cb Called back with a list of USB
  *     device specifiers.
  */
 GnubbyDevice.getPermittedUsbDevices = function(cb) {

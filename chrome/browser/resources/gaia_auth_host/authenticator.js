@@ -52,7 +52,7 @@ cr.define('cr.login', function() {
 
   /**
    * Supported Authenticator params.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @const
    */
   var SUPPORTED_PARAMS = [

@@ -116,7 +116,7 @@ define('main', [
    * properties to output in what order.  This is an array of
    * PresentationInfoRecord() objects; for details see that
    * function.
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    * @const
    */
   var PROPERTY_OUTPUT_ORDER = [

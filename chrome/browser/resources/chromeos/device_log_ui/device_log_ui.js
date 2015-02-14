@@ -76,7 +76,7 @@ var DeviceLogUI = (function() {
   /**
    * Creates event log entries.
    *
-   * @param {Array.<string>} logEntries An array of strings that represent log
+   * @param {Array<string>} logEntries An array of strings that represent log
    *     log events in JSON format.
    */
   var createEventLog = function(logEntries) {

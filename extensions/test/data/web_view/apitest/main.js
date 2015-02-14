@@ -725,16 +725,16 @@ function testExecuteScriptIsAbortedWhenWebViewSourceIsChanged() {
 
 function testFindAPI() {
   var webview = new WebView();
-  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br><br>' +
       '<a href="about:blank">Click here!</a>';
 
   var loadstopListener2 = function(e) {
@@ -800,16 +800,16 @@ function testFindAPI() {
 
 function testFindAPI_findupdate() {
   var webview = new WebView();
-  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
-      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog<br><br>' +
       '<a href="about:blank">Click here!</a>';
   var canceledTest = false;
   webview.addEventListener('loadstop', function(e) {

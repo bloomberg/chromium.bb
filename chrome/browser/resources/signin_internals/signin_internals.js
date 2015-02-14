@@ -46,7 +46,7 @@ function setClassFromValue(value) {
 }
 
 // Allow signin_index.html to access the functions above using the
-// corresponding chrome.signin.<method> calls.
+// corresponding chrome.signin<method> calls.
 chrome.signin['highlightIfChanged'] = highlightIfChanged;
 chrome.signin['highlightIfAnyChanged'] = highlightIfAnyChanged;
 chrome.signin['setClassFromValue'] = setClassFromValue;

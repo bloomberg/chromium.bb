@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
 
     /**
      * Child components of the component.
-     * @type {!Array.<!print_preview.Component>}
+     * @type {!Array<!print_preview.Component>}
      * @private
      */
     this.children_ = [];
@@ -119,7 +119,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {!Array.<!print_preview.Component>} Child components of this
+     * @return {!Array<!print_preview.Component>} Child components of this
      *     component.
      */
     get children() {

@@ -458,7 +458,7 @@ Gnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
 
 /** Default callback for commands. Simply logs to console.
  * @param {number} rc Result status code
- * @param {(ArrayBuffer|Uint8Array|Array.<number>|null)} data Result data
+ * @param {(ArrayBuffer|Uint8Array|Array<number>|null)} data Result data
  */
 Gnubby.defaultCallback = function(rc, data) {
   var msg = 'defaultCallback(' + rc;

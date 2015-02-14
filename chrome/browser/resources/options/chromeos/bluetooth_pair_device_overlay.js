@@ -27,7 +27,7 @@ cr.define('options', function() {
 
   /**
    * List of IDs for conditionally visible elements in the dialog.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @const
    */
   var ELEMENTS = ['bluetooth-pairing-passkey-display',
@@ -233,7 +233,7 @@ cr.define('options', function() {
 
     /**
      * Updates the visibility of elements in the dialog.
-     * @param {Array.<string>} list List of conditionally visible elements that
+     * @param {Array<string>} list List of conditionally visible elements that
      *     are to be made visible.
      * @private
      */

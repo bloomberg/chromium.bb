@@ -91,7 +91,7 @@ remoting.PairedClient.prototype.isValid = function() {
  * the input object is incorrectly formatted.
  *
  * @param {*} pairedClients The object to convert.
- * @return {Array.<remoting.PairedClient>} The converted result.
+ * @return {Array<remoting.PairedClient>} The converted result.
  */
 remoting.PairedClient.convertToPairedClientArray = function(pairedClients) {
   if (!(pairedClients instanceof Array)) {
@@ -168,7 +168,7 @@ remoting.PairedClientManager = function(hostController, listContainer, message,
    */
   this.clientRows_ = listContainer.querySelector('tbody');
   /**
-   * @type {Array.<remoting.PairedClient>}
+   * @type {Array<remoting.PairedClient>}
    */
   this.pairedClients_ = [];
 

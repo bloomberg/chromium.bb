@@ -16,7 +16,7 @@ cr.define('print_preview', function() {
   function Margins(top, right, bottom, left) {
     /**
      * Backing store for the margin values in points.
-     * @type {!Object.<
+     * @type {!Object<
      *     !print_preview.ticket_items.CustomMargins.Orientation, number>}
      * @private
      */

@@ -75,7 +75,7 @@ remoting.HostSettings.save = function(hostId, options, opt_callback) {
  */
 remoting.HostSettings.loadInternal_ = function(hostId, callback) {
   /**
-   * @param {Object.<string>} allHosts The current options for all hosts.
+   * @param {Object<string>} allHosts The current options for all hosts.
    * @return {void} Nothing.
    */
   var onDone = function(allHosts) {

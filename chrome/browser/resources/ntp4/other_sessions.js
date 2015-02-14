@@ -12,7 +12,7 @@
  *            modifiedTime: string,
  *            name: string,
  *            tag: string,
- *            windows: Array.<WindowData>}}
+ *            windows: Array<WindowData>}}
  * @see chrome/browser/ui/webui/ntp/foreign_session_handler.cc
  */
 var SessionData;
@@ -257,7 +257,7 @@ cr.define('ntp', function() {
      * foreign sessions, or tab sync is disabled for this profile.
      * |isTabSyncEnabled| makes it possible to distinguish between the cases.
      *
-     * @param {Array.<SessionData>} sessionList Array of objects describing the
+     * @param {Array<SessionData>} sessionList Array of objects describing the
      *     sessions from other devices.
      * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
      */

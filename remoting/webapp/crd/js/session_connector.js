@@ -124,7 +124,7 @@ remoting.SessionConnectorFactory = function() {};
  *     false otherwise.
  * @param {function(remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
- * @param {Array.<string>} requiredCapabilities Connector capabilities
+ * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings to use
  *     in the client session.

@@ -48,7 +48,7 @@ remoting.AuthDialog = function(rootElement) {
 };
 
 /**
- * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ * @param {Array<{left: number, top: number, width: number, height: number}>}
  *     rects List of rectangles.
  */
 remoting.AuthDialog.prototype.addToRegion = function(rects) {

@@ -37,7 +37,7 @@ cr.define('print_preview.ticket_items', function() {
 
   /**
    * Mapping of a margin orientation to its opposite.
-   * @type {!Object.<!print_preview.ticket_items.CustomMargins.Orientation,
+   * @type {!Object<!print_preview.ticket_items.CustomMargins.Orientation,
    *                 !print_preview.ticket_items.CustomMargins.Orientation>}
    * @private
    */

@@ -31,7 +31,7 @@ remoting.Identity = function(opt_consentDialog) {
   this.email_ = '';
   /** @type {string} @private */
   this.fullName_ = '';
-  /** @type {Array.<remoting.Identity.Callbacks>} */
+  /** @type {Array<remoting.Identity.Callbacks>} */
   this.pendingCallbacks_ = [];
 };
 

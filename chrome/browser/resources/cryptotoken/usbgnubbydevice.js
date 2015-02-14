@@ -436,7 +436,7 @@ var InterfaceEndpoint;
  *   interfaceSubclass: number,
  *   interfaceProtocol: number,
  *   description: (string|undefined),
- *   endpoints: !Array.<!InterfaceEndpoint>
+ *   endpoints: !Array<!InterfaceEndpoint>
  * }}
  * @see http://developer.chrome.com/apps/usb.html#method-listInterfaces
  */

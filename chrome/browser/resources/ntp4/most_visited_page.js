@@ -370,7 +370,7 @@ cr.define('ntp', function() {
 
     /**
      * Array of most visited data objects.
-     * @type {Array.<PageData>}
+     * @type {Array<PageData>}
      */
     get data() {
       return this.data_;

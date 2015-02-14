@@ -6,7 +6,7 @@
  * Callback from the backend with the list of variations to display.
  * This call will build the variations section of the version page, or hide that
  * section if there are none to display.
- * @param {!Array.<string>} variationsList The list of variations.
+ * @param {!Array<string>} variationsList The list of variations.
  */
 function returnVariationInfo(variationsList) {
   $('variations-section').hidden = !variationsList.length;

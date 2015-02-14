@@ -202,7 +202,7 @@ var DnsView = (function() {
    * Takes a last of strings and adds them all to a DOM node, displaying them
    * on separate lines.
    * @param {DomNode} node The parent node.
-   * @param {Array.<string>} list List of strings to add to the node.
+   * @param {Array<string>} list List of strings to add to the node.
    */
   function addListToNode_(node, list) {
     for (var i = 0; i < list.length; ++i)

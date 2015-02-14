@@ -144,7 +144,7 @@ cr.define('login', function() {
 
   /**
    * Sets apps to be displayed in the apps menu.
-   * @param {!Array.<!Object>} apps An array of app info objects.
+   * @param {!Array<!Object>} apps An array of app info objects.
    */
   AppsMenuButton.setApps = function(apps) {
     $('show-apps-button').data = apps;

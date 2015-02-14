@@ -32,7 +32,7 @@ var DumpCreator = (function() {
         'Download the PeerConnection updates and stats data' +
         '</button></a></div>' +
         '<p><label><input type=checkbox>' +
-        'Enable diagnostic audio recordings.</label></p>' +
+        'Enable diagnostic audio recordings</label></p>' +
         '<p>A diagnostic audio recording is used for analyzing audio' +
         ' problems. It contains the audio played out from the speaker and' +
         ' recorded from the microphone and is saved to the local disk.' +
@@ -52,7 +52,7 @@ var DumpCreator = (function() {
         ' disabled (--disable-audio-track-processing): (1) Only one recording' +
         ' per render process is supported. (2) When the box is unchecked or' +
         ' this page is closed, ongoing recordings will continue until the' +
-        ' call ends or the page with the recording is closed.</p>';
+        ' call ends or the page with the recording is closed</p>';
 
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));

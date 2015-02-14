@@ -223,14 +223,14 @@ remoting.ClientPlugin.prototype.setDesktopSizeUpdateHandler =
     function(handler) {};
 
 /**
- * @param {function(Array.<Array.<number>>):void} handler Callback for desktop
+ * @param {function(Array<Array<number>>):void} handler Callback for desktop
  *     shape change notifications.
  */
 remoting.ClientPlugin.prototype.setDesktopShapeUpdateHandler =
     function(handler) {};
 
 /**
- * @param {function(!Array.<string>):void} handler Callback to inform of
+ * @param {function(!Array<string>):void} handler Callback to inform of
  *     capabilities negotiated between host and client.
  */
 remoting.ClientPlugin.prototype.setCapabilitiesHandler =
@@ -309,7 +309,7 @@ remoting.ClientPluginFactory = function() {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
- * @param {Array.<string>} requiredCapabilities
+ * @param {Array<string>} requiredCapabilities
  * @return {remoting.ClientPlugin} A new client plugin instance.
  */
 remoting.ClientPluginFactory.prototype.createPlugin =

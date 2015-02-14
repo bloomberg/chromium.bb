@@ -266,7 +266,7 @@ var wrapper = (function() {
    * callbacks. This is a map from unique callback id to the stack at the moment
    * when the callback was wrapped. This stack identifies the callback.
    * Used only for diagnostics.
-   * @type {Object.<number, string>}
+   * @type {Object<number, string>}
    */
   var pendingCallbacks = {};
 
@@ -345,7 +345,7 @@ var wrapper = (function() {
 
   /**
    * Returns an instrumented function.
-   * @param {!Array.<string>} functionIdentifierParts Path to the chrome.*
+   * @param {!Array<string>} functionIdentifierParts Path to the chrome.*
    *     function.
    * @param {string} functionName Name of the chrome API function.
    * @param {number} callbackParameter Index of the callback parameter to this
@@ -515,7 +515,7 @@ function registerPromiseAdapter() {
      * The indirection allows quick checks against the array and clearing the
      * array without ugly splicing and copying.
      * @typedef {{
-     *   callback: array.<Function>=
+     *   callback: array<Function>=
      * }}
      */
     var CallbackTracker;
@@ -696,7 +696,7 @@ function buildTaskManager(areConflicting) {
   /**
    * Queue of scheduled tasks. The first element, if present, corresponds to the
    * currently running task.
-   * @type {Array.<Object.<string, function()>>}
+   * @type {Array<Object<string, function()>>}
    */
   var queue = [];
 

@@ -22,7 +22,7 @@ remoting.HostListApiImpl = function() {
 /**
  * Fetch the list of hosts for a user.
  *
- * @param {function(Array.<remoting.Host>):void} onDone
+ * @param {function(Array<remoting.Host>):void} onDone
  * @param {function(remoting.Error):void} onError
  */
 remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
@@ -95,7 +95,7 @@ remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
  * include a JSON-encoded list of host descriptions, which is parsed and
  * passed to the callback.
  *
- * @param {function(Array.<remoting.Host>):void} onDone
+ * @param {function(Array<remoting.Host>):void} onDone
  * @param {function(remoting.Error):void} onError
  * @param {XMLHttpRequest} xhr
  * @private

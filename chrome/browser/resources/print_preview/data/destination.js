@@ -11,10 +11,10 @@ cr.exportPath('print_preview');
  * @typedef {{
  *   version: string,
  *   printer: {
- *     vendor_capability: !Array.<{Object}>,
+ *     vendor_capability: !Array<{Object}>,
  *     collate: ({default: (boolean|undefined)}|undefined),
  *     color: ({
- *       option: !Array.<{
+ *       option: !Array<{
  *         type: (string|undefined),
  *         vendor_id: (string|undefined),
  *         custom_display_name: (string|undefined),
@@ -23,10 +23,10 @@ cr.exportPath('print_preview');
  *     }|undefined),
  *     copies: ({default: (number|undefined),
  *               max: (number|undefined)}|undefined),
- *     duplex: ({option: !Array.<{type: (string|undefined),
+ *     duplex: ({option: !Array<{type: (string|undefined),
  *                               is_default: (boolean|undefined)}>}|undefined),
  *     page_orientation: ({
- *       option: !Array.<{type: (string|undefined),
+ *       option: !Array<{type: (string|undefined),
  *                        is_default: (boolean|undefined)}>
  *     }|undefined)
  *   }
@@ -48,7 +48,7 @@ cr.define('print_preview', function() {
    * @param {boolean} isRecent Whether the destination has been used recently.
    * @param {!print_preview.Destination.ConnectionStatus} connectionStatus
    *     Connection status of the print destination.
-   * @param {{tags: (Array.<string>|undefined),
+   * @param {{tags: (Array<string>|undefined),
    *          isOwned: (boolean|undefined),
    *          account: (string|undefined),
    *          lastAccessTime: (number|undefined),
@@ -93,7 +93,7 @@ cr.define('print_preview', function() {
 
     /**
      * Tags associated with the destination.
-     * @private {!Array.<string>}
+     * @private {!Array<string>}
      */
     this.tags_ = (opt_params && opt_params.tags) || [];
 
@@ -164,7 +164,7 @@ cr.define('print_preview', function() {
 
   /**
    * Prefix of the location destination tag.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @const
    */
   Destination.LOCATION_TAG_PREFIXES = [
@@ -346,7 +346,7 @@ cr.define('print_preview', function() {
       return this.location || this.description;
     },
 
-    /** @return {!Array.<string>} Tags associated with the destination. */
+    /** @return {!Array<string>} Tags associated with the destination. */
     get tags() {
       return this.tags_.slice(0);
     },
@@ -471,7 +471,7 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {!Array.<string>} Properties (besides display name) to match
+     * @return {!Array<string>} Properties (besides display name) to match
      *     search queries against.
      */
     get extraPropertiesToMatch() {

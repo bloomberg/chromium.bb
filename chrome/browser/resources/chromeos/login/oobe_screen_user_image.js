@@ -305,7 +305,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
 
     /**
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<{url: string, author: string, website: string}>} images
+     * @param {Array<{url: string, author: string, website: string}>} images
      *   An array of default images data, including URL, author and website.
      */
     setDefaultImages: function(imagesData) {

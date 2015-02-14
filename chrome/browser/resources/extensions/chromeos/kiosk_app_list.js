@@ -53,7 +53,7 @@ cr.define('extensions', function() {
 
     /**
      * Loads the given list of apps.
-     * @param {!Array.<!Object>} apps An array of app info objects.
+     * @param {!Array<!Object>} apps An array of app info objects.
      */
     setApps: function(apps) {
       this.dataModel = new ArrayDataModel(apps);

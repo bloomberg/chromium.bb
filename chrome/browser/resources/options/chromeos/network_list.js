@@ -110,7 +110,7 @@ cr.define('options.network', function() {
 
   /**
    * Icon to use when not connected to a particular type of network.
-   * @type {!Object.<string, string>} Mapping of network type to icon data url.
+   * @type {!Object<string, string>} Mapping of network type to icon data url.
    * @private
    */
   var defaultIcons_ = {};
@@ -172,7 +172,7 @@ cr.define('options.network', function() {
 
     /**
      * Description of the network group or control.
-     * @type {Object.<string,Object>}
+     * @type {Object<string,Object>}
      * @private
      */
     data_: null,
@@ -413,7 +413,7 @@ cr.define('options.network', function() {
   /**
    * Creates a control for selecting or configuring a network connection based
    * on the type of connection (e.g. wifi versus vpn).
-   * @param {{key: string, networkList: Array.<NetworkInfo>}} data Description
+   * @param {{key: string, networkList: Array<NetworkInfo>}} data Description
    *     of the network.
    * @constructor
    * @extends {NetworkMenuItem}
@@ -687,7 +687,7 @@ cr.define('options.network', function() {
     /**
      * Extracts a mapping of network names to menu element and position.
      * @param {!Element} menu The menu to process.
-     * @return {Object.<string, ?{index: number, button: Element}>}
+     * @return {Object<string, ?{index: number, button: Element}>}
      *     Network mapping.
      * @private
      */
@@ -908,7 +908,7 @@ cr.define('options.network', function() {
 
     /**
      * Updates a network control.
-     * @param {Object.<string,string>} data Description of the entry.
+     * @param {Object<string,string>} data Description of the entry.
      */
     update: function(data) {
       this.startBatchUpdates();
@@ -956,7 +956,7 @@ cr.define('options.network', function() {
     createItem: function(entry) {
       if (entry.networkList)
         return new NetworkSelectorItem(
-            /** @type {{key: string, networkList: Array.<NetworkInfo>}} */(
+            /** @type {{key: string, networkList: Array<NetworkInfo>}} */(
                 entry));
       if (entry.command)
         return new NetworkButtonItem(
@@ -995,7 +995,7 @@ cr.define('options.network', function() {
 
   /**
    * Sets the default icon to use for each network type if disconnected.
-   * @param {!Object.<string, string>} data Mapping of network type to icon
+   * @param {!Object<string, string>} data Mapping of network type to icon
    *     data url.
    */
   NetworkList.setDefaultNetworkIcons = function(data) {
@@ -1009,14 +1009,14 @@ cr.define('options.network', function() {
    *          cellularSimAbsent: boolean,
    *          cellularSimLockType: string,
    *          cellularSupportsScan: boolean,
-   *          rememberedList: Array.<NetworkInfo>,
-   *          vpnList: Array.<NetworkInfo>,
+   *          rememberedList: Array<NetworkInfo>,
+   *          vpnList: Array<NetworkInfo>,
    *          wifiAvailable: boolean,
    *          wifiEnabled: boolean,
    *          wimaxAvailable: boolean,
    *          wimaxEnabled: boolean,
-   *          wiredList: Array.<NetworkInfo>,
-   *          wirelessList: Array.<NetworkInfo>}} data Description of available
+   *          wiredList: Array<NetworkInfo>,
+   *          wirelessList: Array<NetworkInfo>}} data Description of available
    *     network devices and their corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
@@ -1209,7 +1209,7 @@ cr.define('options.network', function() {
 
   /**
    * Fetches the active connection.
-   * @param {Array.<Object>} networkList List of networks.
+   * @param {Array<Object>} networkList List of networks.
    * @return {Object}
    * @private
    */

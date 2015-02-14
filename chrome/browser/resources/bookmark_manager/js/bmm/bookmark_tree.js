@@ -139,7 +139,7 @@ cr.define('bmm', function() {
     chrome.bookmarks.getChildren(parent.bookmarkNode.id, function(children) {
       var isFolder = /**
                       * @type {function (BookmarkTreeNode, number,
-                      *                  Array.<(BookmarkTreeNode)>)}
+                      *                  Array<(BookmarkTreeNode)>)}
                       */(bmm.isFolder);
       var index = children.filter(isFolder).map(function(item) {
         return item.id;
@@ -264,7 +264,7 @@ cr.define('bmm', function() {
        * parentTreeItem.
        * @param {!cr.ui.Tree|!cr.ui.TreeItem} parentTreeItem The parent tree
        *     element to append to.
-       * @param {!Array.<BookmarkTreeNode>} bookmarkNodes A list of bookmark
+       * @param {!Array<BookmarkTreeNode>} bookmarkNodes A list of bookmark
        *     nodes to be added.
        * @return {boolean} Whether any directories where added.
        */

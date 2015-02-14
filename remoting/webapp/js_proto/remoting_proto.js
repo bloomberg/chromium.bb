@@ -13,7 +13,7 @@ var remoting = remoting || {};
  */
 remoting.WcsIqClient = function() {};
 
-/** @param {function(Array.<string>): void} onMsg The function called when a
+/** @param {function(Array<string>): void} onMsg The function called when a
  *      message is received.
  *  @return {void} Nothing. */
 remoting.WcsIqClient.prototype.setOnMessage = function(onMsg) {};

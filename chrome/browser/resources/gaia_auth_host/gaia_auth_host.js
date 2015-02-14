@@ -43,7 +43,7 @@ cr.define('cr.login', function() {
   /**
    * Supported params of auth extension. For a complete list, check out the
    * auth extension's main.js.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @const
    */
   var SUPPORTED_PARAMS = [
@@ -60,7 +60,7 @@ cr.define('cr.login', function() {
   /**
    * Supported localized strings. For a complete list, check out the auth
    * extension's offline.js
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @const
    */
   var LOCALIZED_STRING_PARAMS = [

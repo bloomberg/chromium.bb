@@ -36,6 +36,6 @@ function handleMessage(message_event) {
     common.updateStatus('READY TO RUN');
     var window = document.getElementById('result').contentWindow;
     window.document.writeln('</table>');
-    window.document.writeln('Finished.<br><br></samp>');
+    window.document.writeln('Finished<br><br></samp>');
   }
 }

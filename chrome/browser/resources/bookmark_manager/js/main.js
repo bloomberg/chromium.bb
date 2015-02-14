@@ -16,7 +16,7 @@
 /**
  * An array containing the BookmarkTreeNodes that were deleted in the last
  * deletion action. This is used for implementing undo.
- * @type {?{nodes: Array.<Array.<BookmarkTreeNode>>, target: EventTarget}}
+ * @type {?{nodes: Array<Array<BookmarkTreeNode>>, target: EventTarget}}
  */
 var lastDeleted;
 
@@ -308,8 +308,8 @@ function handleLoadForTree(e) {
 /**
  * Returns a promise for all the URLs in the {@code nodes} and the direct
  * children of {@code nodes}.
- * @param {!Array.<BookmarkTreeNode>} nodes .
- * @return {!Promise.<Array.<string>>} .
+ * @param {!Array<BookmarkTreeNode>} nodes .
+ * @return {!Promise<Array<string>>} .
  */
 function getAllUrls(nodes) {
   var urls = [];
@@ -346,7 +346,7 @@ function getAllUrls(nodes) {
 /**
  * Returns the nodes (non recursive) to use for the open commands.
  * @param {HTMLElement} target
- * @return {!Array.<BookmarkTreeNode>}
+ * @return {!Array<BookmarkTreeNode>}
  */
 function getNodesForOpen(target) {
   if (target == bmm.tree) {
@@ -371,7 +371,7 @@ function getNodesForOpen(target) {
  * Returns a promise that will contain all URLs of all the selected bookmarks
  * and the nested bookmarks for use with the open commands.
  * @param {HTMLElement} target The target list or tree.
- * @return {Promise.<Array.<string>>} .
+ * @return {Promise<Array<string>>} .
  */
 function getUrlsForOpenCommands(target) {
   return getAllUrls(getNodesForOpen(target));
@@ -847,7 +847,7 @@ function getSelectedBookmarkNodes(opt_target) {
 
 /**
  * @param {EventTarget=} opt_target The target list or tree.
- * @return {!Array.<string>} An array of the selected bookmark IDs.
+ * @return {!Array<string>} An array of the selected bookmark IDs.
  */
 function getSelectedBookmarkIds(opt_target) {
   var selectedNodes = getSelectedBookmarkNodes(opt_target);
@@ -866,7 +866,7 @@ function isUnmodifiable(node) {
 }
 
 /**
- * @param {Array.<BookmarkTreeNode>} nodes A list of BookmarkTreeNodes.
+ * @param {Array<BookmarkTreeNode>} nodes A list of BookmarkTreeNodes.
  * @return {boolean} Whether any of the nodes is managed.
  */
 function hasUnmodifiable(nodes) {
@@ -1225,7 +1225,7 @@ function hasSelectedAncestor(parentNode) {
 
 /**
  * @param {EventTarget=} opt_target A target to get bookmark IDs from.
- * @return {Array.<string>} An array of bookmarks IDs.
+ * @return {Array<string>} An array of bookmarks IDs.
  */
 function getFilteredSelectedBookmarkIds(opt_target) {
   // Remove duplicates from filteredIds and return.

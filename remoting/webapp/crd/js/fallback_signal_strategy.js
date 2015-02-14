@@ -111,7 +111,7 @@ remoting.FallbackSignalStrategy = function(primary,
   this.logToServer_ = null;
 
   /**
-   * @type {Array.<{strategyType: remoting.SignalStrategy.Type,
+   * @type {Array<{strategyType: remoting.SignalStrategy.Type,
                     progress: remoting.FallbackSignalStrategy.Progress,
    *                elapsed: number}>}
    */

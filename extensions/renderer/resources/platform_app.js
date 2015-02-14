@@ -61,7 +61,7 @@ function generateThrowingMethodStub(messagePrefix, opt_messageSuffix) {
  * @param {string} objectName The display name to use in the error message
  *     thrown by the stub (this is the name that the object is commonly referred
  *     to by web developers, e.g. "document" instead of "HTMLDocument").
- * @param {Array.<string>} methodNames names of methods to disable.
+ * @param {Array<string>} methodNames names of methods to disable.
  * @param {Boolean} useThrowingStubs if true, the replaced methods will throw
  *     an error instead of silently returning undefined
  */
@@ -86,7 +86,7 @@ function disableMethods(object, objectName, methodNames, useThrowingStubs) {
  *     thrown by the getter stub (this is the name that the object is commonly
  *     referred to by web developers, e.g. "document" instead of
  *     "HTMLDocument").
- * @param {Array.<string>} propertyNames names of properties to disable.
+ * @param {Array<string>} propertyNames names of properties to disable.
  */
 function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
   $Array.forEach(propertyNames, function(propertyName) {
@@ -128,7 +128,7 @@ function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
  *     thrown by the setter stub (this is the name that the object is commonly
  *     referred to by web developers, e.g. "document" instead of
  *     "HTMLDocument").
- * @param {Array.<string>} propertyNames names of properties to disable.
+ * @param {Array<string>} propertyNames names of properties to disable.
  */
 function disableSetters(object, objectName, propertyNames, opt_messageSuffix) {
   $Array.forEach(propertyNames, function(propertyName) {

@@ -67,7 +67,7 @@ cr.define('uber', function() {
    * @param {Event} e The message event.
    */
   function handleWindowMessage(e) {
-    e = /** @type {!MessageEvent.<!{method: string, params: *}>} */(e);
+    e = /** @type {!MessageEvent<!{method: string, params: *}>} */(e);
     if (e.data.method === 'frameSelected') {
       handleFrameSelected();
     } else if (e.data.method === 'mouseWheel') {

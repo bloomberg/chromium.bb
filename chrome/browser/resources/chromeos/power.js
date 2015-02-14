@@ -9,9 +9,9 @@
  *     drawn.
  * @param {HTMLCanvasElement} legendCanvas The canvas on which the legend for
  *     the line graph is drawn.
- * @param {Array.<number>} tData The time (in seconds) in the past when the
+ * @param {Array<number>} tData The time (in seconds) in the past when the
  *     corresponding data in plots was sampled.
- * @param {Array.<{data: Array.<number>, color: string}>} plots An
+ * @param {Array<{data: Array<number>, color: string}>} plots An
  *     array of plots to plot on the canvas. The field 'data' of a plot is an
  *     array of samples to be plotted as a line graph with color speficied by
  *     the field 'color'. The elements in the 'data' array are ordered
@@ -397,7 +397,7 @@ var plotColors = ['Red', 'Blue', 'Green', 'Gold', 'CadetBlue', 'LightCoral',
  * Add canvases for plotting to |plotsDiv|. For every header in |headerArray|,
  * one canvas for the plot and one for its legend are added.
  *
- * @param {Array.<string>} headerArray Headers for the different plots to be
+ * @param {Array<string>} headerArray Headers for the different plots to be
  *     added to |plotsDiv|.
  * @param {HTMLDivElement} plotsDiv The div element into which the canvases
  *     are added.
@@ -443,22 +443,23 @@ function addCanvases(headerArray, plotsDiv) {
  * resumed from a sleep/suspend, then "suspended" sleep samples are added to
  * the plot for the sleep duration.
  *
- * @param {Array.<{data: Array.<number>, color: string}>} plots An
+ * @param {Array<{data: Array<number>, color: string}>} plots An
  *     array of plots to plot on the canvas. The field 'data' of a plot is an
  *     array of samples to be plotted as a line graph with color speficied by
  *     the field 'color'. The elements in the 'data' array are ordered
  *     corresponding to their sampling time in the argument 'tData'. Also, the
  *     number of elements in the 'data' array should be the same as in the time
  *     array 'tData' below.
- * @param {Array.<number>} tData The time (in seconds) in the past when the
+ * @param {Array<number>} tData The time (in seconds) in the past when the
  *     corresponding data in plots was sampled.
- * @param {Array.<number>} sampleArray The array of samples wherein each
+ * @param {Array<number>} absTime
+ * @param {Array<number>} sampleArray The array of samples wherein each
  *     element corresponds to the individual plot in |plots|.
  * @param {number} sampleTime Time in milliseconds since the epoch when the
  *     samples in |sampleArray| were captured.
  * @param {number} previousSampleTime Time in milliseconds since the epoch
  *     when the sample prior to the current sample was captured.
- * @param {Array.<{time: number, sleepDuration: number}>} systemResumedArray An
+ * @param {Array<{time: number, sleepDuration: number}>} systemResumedArray An
  *     array objects corresponding to system resume events. The 'time' field is
  *     for the time in milliseconds since the epoch when the system resumed. The
  *     'sleepDuration' field is for the time in milliseconds the system spent
@@ -519,14 +520,14 @@ function addTimeDataSample(plots, tData, absTime, sampleArray,
 /**
  * Display the battery charge vs time on a line graph.
  *
- * @param {Array.<{time: number,
+ * @param {Array<{time: number,
  *                 batteryPercent: number,
  *                 batteryDischargeRate: number,
  *                 externalPower: number}>} powerSupplyArray An array of objects
  *     with fields representing the battery charge, time when the charge
  *     measurement was taken, and whether there was external power connected at
  *     that time.
- * @param {Array.<{time: ?, sleepDuration: ?}>} systemResumedArray An array
+ * @param {Array<{time: ?, sleepDuration: ?}>} systemResumedArray An array
  *     objects with fields 'time' and 'sleepDuration'. Each object corresponds
  *     to a system resume event. The 'time' field is for the time in
  *     milliseconds since the epoch when the system resumed. The 'sleepDuration'
@@ -649,13 +650,13 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
  * Shows state occupancy data (CPU idle or CPU freq state occupancy) on a set of
  * plots on the about:power UI.
  *
- * @param {Array.<{Array.<{
+ * @param {Array<Array<{
  *     time: number,
- *     cpuOnline:boolean,
- *     timeInState: {<string>: number}>}>} timeInStateData Array of arrays
+ *     cpuOnline: boolean,
+ *     timeInState: Object<number>}>} timeInStateData Array of arrays
  *     where each array corresponds to a CPU on the system. The elements of the
  *     individual arrays contain state occupancy samples.
- * @param {Array.<{time: ?, sleepDuration: ?}>} systemResumedArray An array
+ * @param {Array<{time: ?, sleepDuration: ?}>} systemResumedArray An array
  *     objects with fields 'time' and 'sleepDuration'. Each object corresponds
  *     to a system resume event. The 'time' field is for the time in
  *     milliseconds since the epoch when the system resumed. The 'sleepDuration'

@@ -81,7 +81,7 @@ remoting.Wcs.prototype.updateAccessToken = function(tokenNew) {
 /**
  * Handles a message coming from the WcsIqClient.
  *
- * @param {Array.<string>} msg The message.
+ * @param {Array<string>} msg The message.
  * @return {void} Nothing.
  * @private
  */

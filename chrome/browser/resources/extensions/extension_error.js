@@ -85,7 +85,7 @@ cr.define('extensions', function() {
 
   /**
    * A variable length list of runtime or manifest errors for a given extension.
-   * @param {Array.<Object>} errors The list of extension errors with which
+   * @param {Array<Object>} errors The list of extension errors with which
    *     to populate the list.
    * @constructor
    * @extends {HTMLDivElement}

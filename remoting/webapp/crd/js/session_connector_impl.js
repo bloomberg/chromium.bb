@@ -22,7 +22,7 @@ var remoting = remoting || {};
  *     false otherwise.
  * @param {function(remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
- * @param {Array.<string>} requiredCapabilities Connector capabilities
+ * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings for the
  *     client session to use.
@@ -65,7 +65,7 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   this.onConnectionFailed_ = onConnectionFailed;
 
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.requiredCapabilities_ = requiredCapabilities;
@@ -647,7 +647,7 @@ remoting.DefaultSessionConnectorFactory = function() {
  *     false otherwise.
  * @param {function(remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
- * @param {Array.<string>} requiredCapabilities Connector capabilities
+ * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
  * @param {string} defaultRemapKeys The default set of key mappings to use
  *     in the client session.

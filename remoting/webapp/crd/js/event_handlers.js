@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * @param {Array.<{event: string, id: string,
+ * @param {Array<{event: string, id: string,
  *     fn: function(Event):void}>} actions Array of actions to register.
  */
 function registerEventListeners(actions) {

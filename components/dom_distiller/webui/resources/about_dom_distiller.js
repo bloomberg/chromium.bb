@@ -7,7 +7,7 @@ var domDistiller = {
    * Callback from the backend with the list of entries to display.
    * This call will build the entries section of the DOM distiller page, or hide
    * that section if there are none to display.
-   * @param {!Array.<string>} entries The entries.
+   * @param {!Array<string>} entries The entries.
    */
   onReceivedEntries: function(entries) {
     $('entries-list-loading').classList.add('hidden');

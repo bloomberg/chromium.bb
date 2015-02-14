@@ -30,7 +30,7 @@
     /**
      * Keeps track of the effects of different commands. Used to verify that
      * proper UIs are shown to the user.
-     * @private {Object.<AudioClient.CommandToPage, Object>}
+     * @private {Object<AudioClient.CommandToPage, Object>}
      */
     this.uiStatus_ = null;
 
