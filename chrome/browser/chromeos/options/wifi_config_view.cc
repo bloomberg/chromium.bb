@@ -401,17 +401,18 @@ views::View* WifiConfigView::GetInitiallyFocusedView() {
 }
 
 bool WifiConfigView::CanLogin() {
-  static const size_t kMinWirelessPasswordLen = 5;
+  static const size_t kMinPSKPasswordLen = 5;
 
   // We either have an existing network or the user entered an SSID.
   if (service_path_.empty() && GetSsid().empty())
     return false;
 
-  // If the network requires a passphrase, make sure it is the right length.
+  // If a non-EAP network requires a passphrase, ensure it is the right length.
   if (passphrase_textfield_ != NULL &&
       passphrase_textfield_->enabled() &&
       !passphrase_textfield_->show_fake() &&
-      passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
+      !eap_method_combobox_ &&
+      passphrase_textfield_->text().length() < kMinPSKPasswordLen)
     return false;
 
   // If we're using EAP, we must have a method.
