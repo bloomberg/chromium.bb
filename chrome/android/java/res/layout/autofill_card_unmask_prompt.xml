@@ -74,6 +74,15 @@
             android:gravity="start"
             android:textColor="@color/input_underline_error_color"
             android:visibility="gone" />
+
+        <CheckBox
+            android:id="@+id/store_locally_checkbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/autofill_card_unmask_prompt_store_locally" />
     </LinearLayout>
 
     <LinearLayout

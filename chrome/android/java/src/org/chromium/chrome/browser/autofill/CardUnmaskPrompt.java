@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -42,6 +43,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private final Spinner mMonthSpinner;
     private final Spinner mYearSpinner;
     private final TextView mErrorMessage;
+    private final CheckBox mStoreLocallyCheckbox;
     private final View mMainContents;
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
@@ -65,12 +67,16 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
          * Called when the user has entered a value and pressed "verify".
          * @param userResponse The value the user entered (a CVC), or an empty string if the
          *        user canceled.
+         * @param month The value the user selected for expiration month, if any.
+         * @param year The value the user selected for expiration month, if any.
+         * @param shouldStoreLocally The state of the "Save locally?" checkbox at the time.
          */
-        void onUserInput(String cvc, String month, String year);
+        void onUserInput(String cvc, String month, String year, boolean shouldStoreLocally);
     }
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
-            String instructions, int drawableId, boolean shouldRequestExpirationDate) {
+            String instructions, int drawableId, boolean shouldRequestExpirationDate,
+            boolean defaultToStoringLocally) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -81,6 +87,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mMonthSpinner = (Spinner) v.findViewById(R.id.expiration_month);
         mYearSpinner = (Spinner) v.findViewById(R.id.expiration_year);
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
+        mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
+        mStoreLocallyCheckbox.setChecked(defaultToStoringLocally);
         mMainContents = v.findViewById(R.id.main_contents);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
@@ -112,7 +120,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
             public void onClick(View view) {
                 mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
                         (String) mMonthSpinner.getSelectedItem(),
-                        (String) mYearSpinner.getSelectedItem());
+                        (String) mYearSpinner.getSelectedItem(),
+                        mStoreLocallyCheckbox.isChecked());
             }
         });
 
@@ -232,6 +241,7 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         mCardUnmaskInput.setEnabled(enabled);
         mMonthSpinner.setEnabled(enabled);
         mYearSpinner.setEnabled(enabled);
+        mStoreLocallyCheckbox.setEnabled(enabled);
         mMainContents.setAlpha(enabled ? 1.0f : 0.15f);
         mMainContents.setImportantForAccessibility(
                 enabled ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO

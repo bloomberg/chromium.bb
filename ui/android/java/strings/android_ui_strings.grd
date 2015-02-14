@@ -224,13 +224,6 @@
         Clear
       </message>
 
-      <!-- Autofill Wallet card unmasking prompt strings -->
-      <message desc="Text for button that confirms the credit card CVC entry dialog." name="IDS_CARD_UNMASK_CONFIRM_BUTTON">
-        Verify
-      </message>
-      <message desc="Hint text for an input field containing the user's credit card CVC (card verification code)." name="IDS_CARD_UNMASK_INPUT_HINT">
-        CVC
-      </message>
     </messages>
   </release>
 </grit>

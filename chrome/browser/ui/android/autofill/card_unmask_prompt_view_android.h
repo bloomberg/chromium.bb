@@ -25,7 +25,8 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
                    jobject obj,
                    jstring cvc,
                    jstring month,
-                   jstring year);
+                   jstring year,
+                   jboolean should_store_locally);
   void PromptDismissed(JNIEnv* env, jobject obj);
 
   // CardUnmaskPromptView implementation.

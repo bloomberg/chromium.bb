@@ -47,6 +47,7 @@ void CardUnmaskPromptViewAndroid::Show() {
       instructions.obj(),
       ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
       controller_->ShouldRequestExpirationDate(),
+      controller_->GetStoreLocallyStartState(),
       view_android->GetWindowAndroid()->GetJavaObject().obj()));
 
   Java_CardUnmaskBridge_show(env, java_object_.obj());
@@ -63,12 +64,13 @@ void CardUnmaskPromptViewAndroid::OnUserInput(JNIEnv* env,
                                               jobject obj,
                                               jstring cvc,
                                               jstring month,
-                                              jstring year) {
+                                              jstring year,
+                                              jboolean should_store_locally) {
   controller_->OnUnmaskResponse(
       base::android::ConvertJavaStringToUTF16(env, cvc),
       base::android::ConvertJavaStringToUTF16(env, month),
       base::android::ConvertJavaStringToUTF16(env, year),
-      false);
+      should_store_locally);
 }
 
 void CardUnmaskPromptViewAndroid::PromptDismissed(JNIEnv* env, jobject obj) {

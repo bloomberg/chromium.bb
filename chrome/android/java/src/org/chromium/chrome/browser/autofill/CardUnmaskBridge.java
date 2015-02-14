@@ -23,7 +23,7 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
 
     public CardUnmaskBridge(long nativeCardUnmaskPromptViewAndroid, String title,
             String instructions, int iconId, boolean shouldRequestExpirationDate,
-            WindowAndroid windowAndroid) {
+            boolean defaultToStoringLocally, WindowAndroid windowAndroid) {
         mNativeCardUnmaskPromptViewAndroid = nativeCardUnmaskPromptViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
@@ -38,16 +38,17 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
             });
         } else {
             mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this, title, instructions,
-                    ResourceId.mapToDrawableId(iconId), shouldRequestExpirationDate);
+                    ResourceId.mapToDrawableId(iconId), shouldRequestExpirationDate,
+                    defaultToStoringLocally);
         }
     }
 
     @CalledByNative
     private static CardUnmaskBridge create(long nativeUnmaskPrompt, String title,
             String instructions, int iconId, boolean shouldRequestExpirationDate,
-            WindowAndroid windowAndroid) {
+            boolean defaultToStoringLocally, WindowAndroid windowAndroid) {
         return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions, iconId,
-                shouldRequestExpirationDate, windowAndroid);
+                shouldRequestExpirationDate, defaultToStoringLocally, windowAndroid);
     }
 
     @Override
@@ -61,8 +62,8 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     }
 
     @Override
-    public void onUserInput(String cvc, String month, String year) {
-        nativeOnUserInput(mNativeCardUnmaskPromptViewAndroid, cvc, month, year);
+    public void onUserInput(String cvc, String month, String year, boolean shouldStoreLocally) {
+        nativeOnUserInput(mNativeCardUnmaskPromptViewAndroid, cvc, month, year, shouldStoreLocally);
     }
 
     /**
@@ -101,5 +102,6 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     private native boolean nativeCheckUserInputValidity(
             long nativeCardUnmaskPromptViewAndroid, String userResponse);
     private native void nativeOnUserInput(
-            long nativeCardUnmaskPromptViewAndroid, String cvc, String month, String year);
+            long nativeCardUnmaskPromptViewAndroid, String cvc, String month, String year,
+            boolean shouldStoreLocally);
 }
