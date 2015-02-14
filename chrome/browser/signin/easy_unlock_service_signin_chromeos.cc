@@ -261,6 +261,8 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
   if (screen_type != ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
+  DisableAppWithoutResettingScreenlockState();
+
   Shutdown();
 }
 

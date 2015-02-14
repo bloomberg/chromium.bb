@@ -522,8 +522,6 @@ void  EasyUnlockService::Shutdown() {
 
   ShutdownInternal();
 
-  app_manager_->DisableAppIfLoaded();
-
   ResetScreenlockState();
   bluetooth_detector_.reset();
 #if defined(OS_CHROMEOS)
