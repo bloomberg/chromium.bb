@@ -133,7 +133,10 @@ bool IsOriginForCasting(const GURL& origin) {
       // Google Cast Beta
       origin.spec() == "chrome-extension://dliochdbjfkdbacpmhlcpmleaejidimm/" ||
       // Google Cast Stable
-      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/";
+      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/" ||
+      // http://crbug.com/457908
+      origin.spec() == "chrome-extension://ekpaaapppgpmolpcldedioblbkmijaca/" ||
+      origin.spec() == "chrome-extension://fjhoaacokmgbjemoflkofnenfaiekifl/";
 }
 
 bool IsExtensionWhitelistedForScreenCapture(
