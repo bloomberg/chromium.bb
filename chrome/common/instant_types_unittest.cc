@@ -49,6 +49,13 @@ TEST(EmbeddedSearchRequestParams, ExtractParams) {
      "utf-8",
      "chrome.2.65.j04"
     },
+    {"https://foo/search?q=google#q=fun&oq=f&ie=utf-8&aqs=chrome.0.1",
+     "fun",
+     "f",
+     "",
+     "utf-8",
+     "chrome.0.1"
+    },
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {

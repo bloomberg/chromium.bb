@@ -92,7 +92,7 @@ EmbeddedSearchRequestParams::EmbeddedSearchRequestParams() {
 }
 
 EmbeddedSearchRequestParams::EmbeddedSearchRequestParams(const GURL& url) {
-  const std::string& url_params(url.query());
+  const std::string& url_params(url.ref().empty()? url.query() : url.ref());
   url::Component query, key, value;
   query.len = static_cast<int>(url_params.size());
 
