@@ -108,6 +108,35 @@ enum PushDeliveryStatus {
   PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED
 };
 
+// Push message user visible tracking for reporting in UMA.
+enum PushUserVisibleStatus {
+  // A notification was required and one (or more) were shown.
+  PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN = 0,
+
+  // A notification was not required, but one (or more) were shown anyway.
+  PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_BUT_SHOWN = 1,
+
+  // A notification was not required and none were shown.
+  PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_AND_NOT_SHOWN = 2,
+
+  // A notification was required, but none were shown. Fortunately, the site has
+  // been well behaved recently so it was glossed over.
+  PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE = 3,
+
+  // A notification was required, but none were shown. Unfortunately, the site
+  // has run out of grace, so we had to show the user a generic notification.
+  PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED = 4,
+
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
+  // update PUSH_USER_VISIBLE_STATUS_LAST below.
+
+  // Used for IPC message range checks.
+  PUSH_USER_VISIBLE_STATUS_LAST =
+      PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED
+};
+
 const char* PushRegistrationStatusToString(PushRegistrationStatus status);
 
 }  // namespace content

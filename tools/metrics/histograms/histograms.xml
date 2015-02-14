@@ -28816,6 +28816,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PushMessaging.UserVisibleStatus" enum="PushUserVisibleStatus">
+  <owner>johnme@google.com</owner>
+  <owner>mvanouwerkerk@google.com</owner>
+  <summary>
+    When a Service Worker receives a push message, this records whether it
+    showed user-visible UX (like a notification), or whether we showed a forced
+    notification on its behalf.
+  </summary>
+</histogram>
+
 <histogram name="Quickoffice.csvFormattedCellCount">
   <owner>dskelton@google.com</owner>
   <summary>
@@ -56150,6 +56160,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="No sender id provided"/>
   <int value="7" label="Storage error"/>
   <int value="8" label="Successful - from cache"/>
+</enum>
+
+<enum name="PushUserVisibleStatus" type="int">
+  <int value="0" label="Required and shown"/>
+  <int value="1" label="Not required but shown"/>
+  <int value="2" label="Not required and not shown"/>
+  <int value="3" label="Required but not shown - used grace"/>
+  <int value="4" label="Required but not shown - grace exceeded"/>
 </enum>
 
 <enum name="QuicAddressMismatch" type="int">

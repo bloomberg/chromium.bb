@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,6 +38,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/platform_notification_data.h"
+#include "content/public/common/push_messaging_status.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,6 +56,12 @@ namespace gcm {
 
 namespace {
 const int kMaxRegistrations = 1000000;
+
+void RecordUserVisibleStatus(content::PushUserVisibleStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus",
+                            status,
+                            content::PUSH_USER_VISIBLE_STATUS_LAST + 1);
+}
 
 blink::WebPushPermissionStatus ToPushPermission(ContentSetting setting) {
   switch (setting) {
@@ -272,58 +281,56 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
   bool notification_shown = notification_count > 0;
 
   bool notification_needed = true;
-  if (!notification_shown) {
-    // Sites with a currently visible tab don't need to show notifications.
+  // Sites with a currently visible tab don't need to show notifications.
 #if defined(OS_ANDROID)
-    for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
-      Profile* profile = (*it)->GetProfile();
-      content::WebContents* active_web_contents =
-          (*it)->GetActiveWebContents();
+  for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
+    Profile* profile = (*it)->GetProfile();
+    content::WebContents* active_web_contents =
+        (*it)->GetActiveWebContents();
 #else
-    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-      Profile* profile = it->profile();
-      content::WebContents* active_web_contents =
-          it->tab_strip_model()->GetActiveWebContents();
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Profile* profile = it->profile();
+    content::WebContents* active_web_contents =
+        it->tab_strip_model()->GetActiveWebContents();
 #endif
-      if (!active_web_contents)
-        continue;
+    if (!active_web_contents)
+      continue;
 
-      // Don't leak information from other profiles.
-      if (profile != profile_)
-        continue;
+    // Don't leak information from other profiles.
+    if (profile != profile_)
+      continue;
 
-      // Ignore minimized windows etc.
-      switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
-       case blink::WebPageVisibilityStateHidden:
-       case blink::WebPageVisibilityStatePrerender:
-        continue;
-       case blink::WebPageVisibilityStateVisible:
-        break;
-      }
+    // Ignore minimized windows etc.
+    switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
+     case blink::WebPageVisibilityStateHidden:
+     case blink::WebPageVisibilityStatePrerender:
+      continue;
+     case blink::WebPageVisibilityStateVisible:
+      break;
+    }
 
-      // Use the visible URL since that's the one the user is aware of (and it
-      // doesn't matter whether the page loaded successfully).
-      const GURL& active_url = active_web_contents->GetVisibleURL();
+    // Use the visible URL since that's the one the user is aware of (and it
+    // doesn't matter whether the page loaded successfully).
+    const GURL& active_url = active_web_contents->GetVisibleURL();
 
-      // Allow https://foo.example.com Service Worker to not show notification
-      // if an https://bar.example.com tab is visible (and hence might
-      // conceivably be showing UI in response to the push message); but http://
-      // doesn't count as the Service Worker can't talk to it, even with
-      // navigator.connect.
-      if (application_id.origin.scheme() != active_url.scheme())
-        continue;
-      if (net::registry_controlled_domains::SameDomainOrHost(
-          application_id.origin, active_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-        notification_needed = false;
-        break;
-      }
+    // Allow https://foo.example.com Service Worker to not show notification
+    // if an https://bar.example.com tab is visible (and hence might
+    // conceivably be showing UI in response to the push message); but http://
+    // doesn't count as the Service Worker can't talk to it, even with
+    // navigator.connect.
+    if (application_id.origin.scheme() != active_url.scheme())
+      continue;
+    if (net::registry_controlled_domains::SameDomainOrHost(
+        application_id.origin, active_url,
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      notification_needed = false;
+      break;
+    }
 #if defined(OS_ANDROID)
-    }
-#else
-    }
-#endif
   }
+#else
+  }
+#endif
 
   // Don't track push messages that didn't show a notification but were exempt
   // from needing to do so.
@@ -337,6 +344,9 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
         base::Bind(&PushMessagingServiceImpl::DidGetNotificationsShown,
                    weak_factory_.GetWeakPtr(),
                    application_id, notification_shown, notification_needed));
+  } else {
+    RecordUserVisibleStatus(
+        content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_AND_NOT_SHOWN);
   }
 #endif  // defined(ENABLE_NOTIFICATIONS)
 }
@@ -371,7 +381,22 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
       application_id.origin, updated_data,
       base::Bind(&IgnoreResult));  // This is a heuristic; ignore failure.
 
-  if (needed_but_not_shown && missed_notifications.count() >= 2) {
+  if (notification_shown) {
+    RecordUserVisibleStatus(
+        notification_needed
+        ? content::PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN
+        : content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_BUT_SHOWN);
+    return;
+  }
+  if (needed_but_not_shown) {
+    if (missed_notifications.count() <= 1) {
+      RecordUserVisibleStatus(
+        content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
+      return;
+    }
+    RecordUserVisibleStatus(
+        content::
+            PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
     // The site failed to show a notification when one was needed, and they have
     // already failed once in the previous 10 push messages, so we will show a
     // generic notification. See https://crbug.com/437277.
