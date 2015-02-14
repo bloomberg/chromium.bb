@@ -118,7 +118,7 @@ class KeyMobileSitesSmoothPageSet(page_set_module.PageSet):
   def __init__(self):
     super(KeyMobileSitesSmoothPageSet, self).__init__(
       user_agent_type='mobile',
-      archive_data_file='data/key_mobile_sites.json',
+      archive_data_file='data/key_mobile_sites_smooth.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
 

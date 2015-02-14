@@ -7,11 +7,11 @@ from telemetry.page import page_set as page_set_module
 from page_sets import key_mobile_sites_pages
 
 
-class KeyMobileSitesCyclerPage(page_module.Page):
+class KeyMobileSitesPage(page_module.Page):
 
   def __init__(self, url, page_set, name='', labels=None,
                action_on_load_complete=False):
-    super(KeyMobileSitesCyclerPage, self).__init__(
+    super(KeyMobileSitesPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json', labels=labels)
     self.user_agent_type = 'mobile'
@@ -19,14 +19,14 @@ class KeyMobileSitesCyclerPage(page_module.Page):
     self.action_on_load_complete = action_on_load_complete
 
 
-class KeyMobileSitesCyclerPageSet(page_set_module.PageSet):
+class KeyMobileSitesPageSet(page_set_module.PageSet):
 
   """ Key mobile sites with smooth interactions. """
 
   def __init__(self):
-    super(KeyMobileSitesCyclerPageSet, self).__init__(
+    super(KeyMobileSitesPageSet, self).__init__(
       user_agent_type='mobile',
-      archive_data_file='data/key_mobile_sites_cycler.json',
+      archive_data_file='data/key_mobile_sites.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
 
@@ -58,34 +58,34 @@ class KeyMobileSitesCyclerPageSet(page_set_module.PageSet):
     # Add pages with custom labels.
 
     # Why: Top news site.
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://nytimes.com/', page_set=self, labels=['fastpath']))
 
     # Why: Image-heavy site.
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://cuteoverload.com', page_set=self, labels=['fastpath']))
 
     # Why: #11 (Alexa global), google property; some blogger layouts
     # have infinite scroll but more interesting.
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://googlewebmastercentral.blogspot.com/',
       page_set=self, name='Blogger'))
 
     # Why: #18 (Alexa global), Picked an interesting post """
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       # pylint: disable=line-too-long
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=self,
       name='Wordpress'))
 
     # Why: #6 (Alexa) most visited worldwide, picked an interesting page
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab)'))
 
     # Why: Wikipedia page with a delayed scroll start
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab) - delayed scroll start',
@@ -93,35 +93,35 @@ class KeyMobileSitesCyclerPageSet(page_set_module.PageSet):
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
-    # self.AddUserStory(KeyMobileSitesCyclerPage(
+    # self.AddUserStory(KeyMobileSitesPage(
     #  url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
 
     # Why: #37 (Alexa global) """
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
         url='http://pinterest.com',
         page_set=self,
         name='Pinterest'))
 
     # Why: #1 sports.
     # Fails often; crbug.com/249722'
-    # self.AddUserStory(KeyMobileSitesCyclerPage(
+    # self.AddUserStory(KeyMobileSitesPage(
     # url='http://espn.go.com', page_set=self, name='ESPN'))
     # Why: crbug.com/231413
     # Doesn't scroll; crbug.com/249736
-    # self.AddUserStory(KeyMobileSitesCyclerPage(
+    # self.AddUserStory(KeyMobileSitesPage(
     #                 url='http://forecast.io', page_set=self))
     # Why: crbug.com/169827
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://slashdot.org/', page_set=self, labels=['fastpath']))
 
     # Why: #5 Alexa news """
 
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://www.reddit.com/r/programming/comments/1g96ve',
       page_set=self, labels=['fastpath']))
 
     # Why: Problematic use of fixed position elements """
-    self.AddUserStory(KeyMobileSitesCyclerPage(
+    self.AddUserStory(KeyMobileSitesPage(
       url='http://www.boingboing.net', page_set=self, labels=['fastpath']))
 
     # Add simple pages with no custom navigation logic or labels.
@@ -176,4 +176,4 @@ class KeyMobileSitesCyclerPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(KeyMobileSitesCyclerPage(url, self))
+      self.AddUserStory(KeyMobileSitesPage(url, self))

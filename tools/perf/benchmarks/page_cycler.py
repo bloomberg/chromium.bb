@@ -175,7 +175,7 @@ class PageCyclerTop10Mobile(_PageCycler):
 @benchmark.Disabled
 class PageCyclerKeyMobileSites(_PageCycler):
   """Page load time benchmark for key mobile sites."""
-  page_set = page_sets.KeyMobileSitesCyclerPageSet
+  page_set = page_sets.KeyMobileSitesPageSet
 
   @classmethod
   def Name(cls):
