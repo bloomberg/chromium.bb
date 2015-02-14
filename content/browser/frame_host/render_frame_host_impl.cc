@@ -1716,7 +1716,7 @@ void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(
 
     FrameTree* frame_tree = frame_tree_node()->frame_tree();
     FrameTreeNode* child_frame_tree_node = frame_tree->FindByRoutingID(
-        frame_routing_id, GetProcess()->GetID());
+        GetProcess()->GetID(), frame_routing_id);
 
     if (child_frame_tree_node) {
       FrameAccessibility::GetInstance()->AddChildFrame(

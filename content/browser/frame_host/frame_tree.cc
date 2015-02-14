@@ -97,7 +97,7 @@ FrameTreeNode* FrameTree::FindByID(int64 frame_tree_node_id) {
   return node;
 }
 
-FrameTreeNode* FrameTree::FindByRoutingID(int routing_id, int process_id) {
+FrameTreeNode* FrameTree::FindByRoutingID(int process_id, int routing_id) {
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, routing_id);
   if (render_frame_host) {

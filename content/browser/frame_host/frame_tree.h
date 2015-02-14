@@ -60,7 +60,7 @@ class CONTENT_EXPORT FrameTree {
   FrameTreeNode* FindByID(int64 frame_tree_node_id);
 
   // Returns the FrameTreeNode with the given renderer-specific |routing_id|.
-  FrameTreeNode* FindByRoutingID(int routing_id, int process_id);
+  FrameTreeNode* FindByRoutingID(int process_id, int routing_id);
 
   // Executes |on_node| on each node in the frame tree.  If |on_node| returns
   // false, terminates the iteration immediately. Returning false is useful
