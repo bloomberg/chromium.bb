@@ -34,6 +34,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/quota/quota_manager.h"
 
@@ -402,6 +403,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   EXPECT_GT(size, kQuotaKilobytes * 1024);
   SetQuota(kQuotaKilobytes);
   SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAck) {
+  SimpleTest(GetTestUrl("indexeddb", "blob_did_ack.html"));
+  content::ChromeBlobStorageContext* blob_context =
+      ChromeBlobStorageContext::GetFor(
+          shell()->web_contents()->GetBrowserContext());
+  EXPECT_EQ(0UL, blob_context->context()->blob_count());
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {

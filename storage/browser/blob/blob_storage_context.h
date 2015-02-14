@@ -62,6 +62,7 @@ class STORAGE_EXPORT BlobStorageContext
   void RevokePublicBlobURL(const GURL& url);
 
   size_t memory_usage() const { return memory_usage_; }
+  size_t blob_count() const { return blob_map_.size(); }
 
  private:
   friend class content::BlobStorageHost;
