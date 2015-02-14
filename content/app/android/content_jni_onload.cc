@@ -9,7 +9,7 @@
 #include "base/android/base_jni_onload.h"
 #include "base/android/jni_onload_delegate.h"
 #include "base/android/library_loader/library_loader_hooks.h"
-#include "content/public/app/android_library_loader_hooks.h"
+#include "content/app/android/library_loader_hooks.h"
 #include "content/public/app/content_main.h"
 
 namespace content {
@@ -25,9 +25,6 @@ class ContentJNIOnLoadDelegate
 };
 
 bool ContentJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
-  // TODO(michaelbai): Remove the EnsureJniRegistered from
-  // content::LibraryLoaded and move android_library_loader_hooks.h to
-  // content/app/android/.
   return content::EnsureJniRegistered(env);
 }
 

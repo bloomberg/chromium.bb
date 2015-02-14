@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/app/android_library_loader_hooks.h"
+#include "content/app/android/library_loader_hooks.h"
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/command_line_android.h"
@@ -112,7 +112,7 @@ bool LibraryLoaded(JNIEnv* env, jclass clazz) {
   VLOG(0) << "Chromium logging enabled: level = " << logging::GetMinLogLevel()
           << ", default verbosity = " << logging::GetVlogVerbosity();
 
-  return EnsureJniRegistered(env);
+  return true;
 }
 
 }  // namespace content

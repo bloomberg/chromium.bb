@@ -16,7 +16,6 @@
 #include "content/common/android/surface_texture_manager.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
-#include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/common/content_descriptors.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessService_jni.h"
