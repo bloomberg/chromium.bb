@@ -6,9 +6,6 @@
 #include "platform/graphics/paint/FilterDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
@@ -20,16 +17,12 @@ BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRef
 {
 }
 
-BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, const FilterOperations& filterOperations)
+BeginFilterDisplayItem::BeginFilterDisplayItem(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, PassOwnPtr<WebFilterOperations> webFilterOperations)
     : PairedBeginDisplayItem(client, BeginFilter)
     , m_imageFilter(imageFilter)
+    , m_webFilterOperations(webFilterOperations)
     , m_bounds(bounds)
 {
-    SkiaImageFilterBuilder builder;
-    m_webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-    FilterOutsets outsets = filterOperations.outsets();
-    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
-    builder.buildFilterOperations(filterOperations, m_webFilterOperations.get());
 }
 
 void BeginFilterDisplayItem::replay(GraphicsContext* context)
@@ -44,7 +37,7 @@ void BeginFilterDisplayItem::replay(GraphicsContext* context)
 
 void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    list->appendFilterItem(m_imageFilter.get(), FloatRect(m_bounds));
+    list->appendFilterItem(*m_webFilterOperations, FloatRect(m_bounds));
 }
 
 #ifndef NDEBUG

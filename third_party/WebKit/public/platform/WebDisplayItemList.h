@@ -16,11 +16,15 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 
+// FIXME: Remove this once references to this macro in chromium are removed.
+#define FILTER_DISPLAY_ITEM_USES_FILTER_OPERATIONS 1
+
 class SkImageFilter;
 class SkMatrix44;
 class SkPicture;
 
 namespace blink {
+class WebFilterOperations;
 
 // An ordered list of items representing content to be rendered (stored in
 // 'drawing' items) and operations to be performed when rendering this content
@@ -44,8 +48,7 @@ public:
     virtual void appendTransparencyItem(float opacity, WebBlendMode) = 0;
     virtual void appendEndTransparencyItem() = 0;
 
-    // This grabs a ref on the passed-in filter.
-    virtual void appendFilterItem(SkImageFilter*, const WebFloatRect& bounds) = 0;
+    virtual void appendFilterItem(const WebFilterOperations&, const WebFloatRect& bounds) = 0;
     virtual void appendEndFilterItem() = 0;
 
     // Scroll containers are identified by an opaque pointer.

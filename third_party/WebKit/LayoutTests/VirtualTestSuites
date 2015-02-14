@@ -246,5 +246,10 @@
     "prefix": "slimmingpaint",
     "base": "fast/scrolling",
     "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "css3/filters",
+    "args": ["--enable-slimming-paint"]
   }
 ]

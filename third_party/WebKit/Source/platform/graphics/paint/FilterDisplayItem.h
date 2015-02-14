@@ -7,7 +7,6 @@
 
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/ImageFilter.h"
-#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebFilterOperations.h"
 #include "wtf/PassOwnPtr.h"
@@ -26,7 +25,7 @@ public:
         return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds));
     }
 
-    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, const FilterOperations& filterOperations)
+    static PassOwnPtr<BeginFilterDisplayItem> create(DisplayItemClient client, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations)
     {
         return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds, filterOperations));
     }
@@ -36,7 +35,7 @@ public:
 
 private:
     BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds);
-    BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds, const FilterOperations&);
+    BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds, PassOwnPtr<WebFilterOperations>);
 
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;

@@ -1527,6 +1527,17 @@ crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-b
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
 
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-brightness.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-brightness-clamping.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-combined.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-contrast.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-invert.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/multiple-filters-invalidation.html [ NeedsRebaseline ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-reference-image.html [ ImageOnlyFailure ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-reference-image-lazy-attach.html [ ImageOnlyFailure ]
+crbug.com/458601 virtual/slimmingpaint/css3/filters/root-renderer-with-opacity-filter.html [ ImageOnlyFailure ]
+
 # Updating Javascript spec.
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-1.html [ NeedsManualRebaseline ]
 crbug.com/422199 ietestcenter/Javascript/15.2.3.14-1-2.html [ NeedsManualRebaseline ]

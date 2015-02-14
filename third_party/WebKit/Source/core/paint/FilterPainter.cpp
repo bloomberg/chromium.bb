@@ -17,6 +17,9 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/FilterDisplayItem.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFilterOperations.h"
 
 namespace blink {
 
@@ -57,9 +60,10 @@ FilterPainter::FilterPainter(Layer& renderLayer, GraphicsContext* context, const
 
     ASSERT(m_renderer);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // FIXME: verify whether this FilterOperations object and the ImageFilter object constructed above represent the same effect.
         FilterOperations filterOperations(renderLayer.computeFilterOperations(m_renderer->styleRef()));
-        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), imageFilter, rootRelativeBounds, filterOperations);
+        OwnPtr<WebFilterOperations> webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+        builder.buildFilterOperations(filterOperations, webFilterOperations.get());
+        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(m_renderer->displayItemClient(), imageFilter, rootRelativeBounds, webFilterOperations.release());
 
         ASSERT(context->displayItemList());
         context->displayItemList()->add(filterDisplayItem.release());
