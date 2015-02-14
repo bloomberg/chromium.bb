@@ -23,6 +23,11 @@ rm -rf components/{core-component-page,core-field,font-roboto,webcomponentsjs}
 # Make checkperms.py happy.
 find components/{core-list,core-resizable} -type f -exec chmod -x {} \;
 
+# Remove carriage returns to make CQ happy.
+find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
+  -o -name \*.md -o -name \*.sh -o -name \*.json -o -name \*.gitignore \)\
+  -print0 | xargs -0 sed -i -e $'s/\r$//g'
+
 # TODO(dzhioev): remove when
 # https://code.google.com/p/grit-i18n/issues/detail?id=30 is fixed
 patch -p1 < chromium.patch
