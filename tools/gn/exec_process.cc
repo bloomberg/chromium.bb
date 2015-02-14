@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -235,7 +236,8 @@ bool ExecProcess(const base::CommandLine& cmdline,
             err_open = ReadFromPipe(err_read.get(), std_err);
         }
 
-        return base::WaitForExitCode(pid, exit_code);
+        base::Process process(pid);
+        return process.WaitForExit(exit_code);
       }
   }
 
