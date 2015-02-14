@@ -1956,29 +1956,38 @@ TEST_F(TextfieldTest, DISABLED_SelectionClipboard) {
   EXPECT_EQ(ui::CLIPBOARD_TYPE_LAST, GetAndResetCopiedToClipboard());
 
   // Middle clicking should paste at the mouse (not cursor) location.
+  // The cursor should be placed at the end of the pasted text.
   ui::MouseEvent middle(ui::ET_MOUSE_PRESSED, point_4, point_4,
                         ui::EF_MIDDLE_MOUSE_BUTTON, ui::EF_MIDDLE_MOUSE_BUTTON);
   textfield_->OnMousePressed(middle);
   EXPECT_STR_EQ("01230123", textfield_->text());
-  EXPECT_EQ(gfx::Range(0, 0), textfield_->GetSelectedRange());
+  EXPECT_EQ(gfx::Range(8, 8), textfield_->GetSelectedRange());
   EXPECT_STR_EQ("0123", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 
-  // Middle click pasting should adjust trailing cursors.
-  textfield_->SelectRange(gfx::Range(5, 5));
+  // Middle clicking on an unfocused textfield should focus it and paste.
+  textfield_->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(textfield_->HasFocus());
   textfield_->OnMousePressed(middle);
+  EXPECT_TRUE(textfield_->HasFocus());
   EXPECT_STR_EQ("012301230123", textfield_->text());
-  EXPECT_EQ(gfx::Range(9, 9), textfield_->GetSelectedRange());
+  EXPECT_EQ(gfx::Range(8, 8), textfield_->GetSelectedRange());
+  EXPECT_STR_EQ("0123", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 
-  // Middle click pasting should adjust trailing selections.
-  textfield_->SelectRange(gfx::Range(7, 9));
+  // Middle clicking with an empty selection clipboard should still focus.
+  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, std::string());
+  textfield_->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(textfield_->HasFocus());
   textfield_->OnMousePressed(middle);
-  EXPECT_STR_EQ("0123012301230123", textfield_->text());
-  EXPECT_EQ(gfx::Range(11, 13), textfield_->GetSelectedRange());
+  EXPECT_TRUE(textfield_->HasFocus());
+  EXPECT_STR_EQ("012301230123", textfield_->text());
+  EXPECT_EQ(gfx::Range(4, 4), textfield_->GetSelectedRange());
+  EXPECT_TRUE(GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION).empty());
 
   // Middle clicking in the selection should clear the clipboard and selection.
+  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "foo");
   textfield_->SelectRange(gfx::Range(2, 6));
   textfield_->OnMousePressed(middle);
-  EXPECT_STR_EQ("0123012301230123", textfield_->text());
+  EXPECT_STR_EQ("012301230123", textfield_->text());
   EXPECT_EQ(gfx::Range(6, 6), textfield_->GetSelectedRange());
   EXPECT_TRUE(GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION).empty());
 

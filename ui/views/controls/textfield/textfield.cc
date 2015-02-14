@@ -1858,23 +1858,17 @@ void Textfield::PasteSelectionClipboard(const ui::MouseEvent& event) {
   DCHECK(event.IsOnlyMiddleMouseButton());
   DCHECK(!read_only());
   base::string16 selection_clipboard_text = GetSelectionClipboardText();
+  OnBeforeUserAction();
+  const gfx::SelectionModel mouse =
+      GetRenderText()->FindCursorPosition(event.location());
+  if (!HasFocus())
+    RequestFocus();
+  model_->MoveCursorTo(mouse);
   if (!selection_clipboard_text.empty()) {
-    OnBeforeUserAction();
-    gfx::Range range = GetSelectionModel().selection();
-    gfx::LogicalCursorDirection affinity = GetSelectionModel().caret_affinity();
-    const gfx::SelectionModel mouse =
-        GetRenderText()->FindCursorPosition(event.location());
-    model_->MoveCursorTo(mouse);
     model_->InsertText(selection_clipboard_text);
-    // Update the new selection range as needed.
-    if (range.GetMin() >= mouse.caret_pos()) {
-      const size_t length = selection_clipboard_text.length();
-      range = gfx::Range(range.start() + length, range.end() + length);
-    }
-    model_->MoveCursorTo(gfx::SelectionModel(range, affinity));
     UpdateAfterChange(true, true);
-    OnAfterUserAction();
   }
+  OnAfterUserAction();
 }
 
 }  // namespace views

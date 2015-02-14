@@ -28,6 +28,14 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
+namespace {
+
+void SetClipboardText(ui::ClipboardType type, const std::string& text) {
+  ui::ScopedClipboardWriter(type).WriteText(base::ASCIIToUTF16(text));
+}
+
+}  // namespace
+
 class OmniboxViewViewsTest : public InProcessBrowserTest {
  protected:
   OmniboxViewViewsTest() {}
@@ -106,10 +114,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
 
   // Put an URL on the clipboard.
-  {
-    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteURL(base::ASCIIToUTF16("http://www.example.com/"));
-  }
+  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "http://www.example.com/");
 
   // Paste and go.
   omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
@@ -165,13 +170,64 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 
-  // Middle-clicking should not be handled by the omnibox.
+  // Middle-click is only handled on Linux, by pasting the selection clipboard
+  // and moving the cursor after the pasted text instead of selecting-all.
   ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
   ASSERT_NO_FATAL_FAILURE(Click(ui_controls::MIDDLE,
                                 click_location, click_location));
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+#else
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
+#endif  // OS_LINUX && !OS_CHROMEOS
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectionClipboard) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));
+  OmniboxViewViews* omnibox_view_views =
+      static_cast<OmniboxViewViews*>(omnibox_view);
+  ASSERT_TRUE(omnibox_view_views);
+  gfx::RenderText* render_text = omnibox_view_views->GetRenderText();
+
+  // Take the focus away from the omnibox.
+  ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+
+  size_t cursor_position = 14;
+  int cursor_x = render_text->GetCursorBounds(
+      gfx::SelectionModel(cursor_position, gfx::CURSOR_FORWARD), false).x();
+  gfx::Point click_location = omnibox_view_views->GetBoundsInScreen().origin();
+  click_location.Offset(cursor_x + render_text->display_rect().x(),
+                        omnibox_view_views->height() / 2);
+
+  // Middle click focuses the omnibox, pastes, and sets a trailing cursor.
+  // Select-all on focus shouldn't alter the selection clipboard or cursor.
+  SetClipboardText(ui::CLIPBOARD_TYPE_SELECTION, "123");
+  ASSERT_NO_FATAL_FAILURE(Click(ui_controls::MIDDLE,
+                                click_location, click_location));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_EQ(base::ASCIIToUTF16("http://www.goo123gle.com/"),
+            omnibox_view->GetText());
+  EXPECT_EQ(17U, omnibox_view_views->GetCursorPosition());
+
+  // Middle clicking again, with focus, pastes and updates the cursor.
+  SetClipboardText(ui::CLIPBOARD_TYPE_SELECTION, "4567");
+  ASSERT_NO_FATAL_FAILURE(Click(ui_controls::MIDDLE,
+                                click_location, click_location));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_EQ(base::ASCIIToUTF16("http://www.goo4567123gle.com/"),
+            omnibox_view->GetText());
+  EXPECT_EQ(18U, omnibox_view_views->GetCursorPosition());
+}
+#endif  // OS_LINUX && !OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   OmniboxView* omnibox_view = NULL;
@@ -302,13 +358,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
   views::TextfieldTestApi textfield_test_api(omnibox_view_views);
 
-  // Put a URL on the clipboard. It is written to the clipboard upon destruction
-  // of the writer.
-  {
-    ui::ScopedClipboardWriter clipboard_writer(
-        ui::CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteURL(base::ASCIIToUTF16("http://www.example.com/"));
-  }
+  // Put a URL on the clipboard.
+  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "http://www.example.com/");
 
   // Tap to activate touch editing.
   gfx::Point omnibox_center =
