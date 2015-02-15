@@ -31,8 +31,6 @@ function audioConfig(audioParams) {
   whisperDecoder = new WhisperDecoder(audioParams.paramData, whispernetNacl);
   whisperDecoder.setReceiveCallback(chrome.copresencePrivate.sendFound);
   whisperDecoder.onDetectBroadcast(chrome.copresencePrivate.sendDetect);
-
-  chrome.copresencePrivate.sendInitialized(true);
 }
 
 /**

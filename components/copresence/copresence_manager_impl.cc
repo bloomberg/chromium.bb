@@ -82,6 +82,10 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
                                     directive_handler_.get(),
                                     gcm_handler_.get(),
                                     messages_callback));
+
+  directive_handler_->Start(delegate_->GetWhispernetClient(),
+                            base::Bind(&CopresenceManagerImpl::ReceivedTokens,
+                                       base::Unretained(this)));
 }
 
 CopresenceManagerImpl::~CopresenceManagerImpl() {
@@ -116,12 +120,6 @@ void CopresenceManagerImpl::ExecuteReportRequest(
 void CopresenceManagerImpl::WhispernetInitComplete(bool success) {
   if (success) {
     DVLOG(3) << "Whispernet initialized successfully.";
-
-    directive_handler_->Start(delegate_->GetWhispernetClient(),
-                              base::Bind(&CopresenceManagerImpl::ReceivedTokens,
-                                         base::Unretained(this)));
-
-    // Start up timers.
     poll_timer_->Start(FROM_HERE,
                        base::TimeDelta::FromMilliseconds(kPollTimerIntervalMs),
                        base::Bind(&CopresenceManagerImpl::PollForMessages,

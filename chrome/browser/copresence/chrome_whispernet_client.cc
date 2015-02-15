@@ -44,7 +44,11 @@ const char ChromeWhispernetClient::kWhispernetProxyExtensionId[] =
 
 ChromeWhispernetClient::ChromeWhispernetClient(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context), extension_loaded_(false) {
+    : browser_context_(browser_context),
+      event_router_(extensions::EventRouter::Get(browser_context)),
+      extension_loaded_(false) {
+  DCHECK(browser_context_);
+  DCHECK(event_router_);
 }
 
 ChromeWhispernetClient::~ChromeWhispernetClient() {
@@ -74,6 +78,8 @@ void ChromeWhispernetClient::Initialize(
   } else {
     init_callback_.Run(true);
   }
+
+  AudioConfiguration(GetDefaultAudioConfig());
 }
 
 void ChromeWhispernetClient::Shutdown() {
@@ -84,16 +90,8 @@ void ChromeWhispernetClient::Shutdown() {
   db_callback_.Reset();
 }
 
-void AudioConfiguration(const copresence::config::AudioParamData& data,
-                        const copresence::SuccessCallback& init_callback) {
-}
-
 void ChromeWhispernetClient::EncodeToken(const std::string& token_str,
                                          copresence::AudioType type) {
-  DCHECK(extension_loaded_);
-  DCHECK(browser_context_);
-  DCHECK(extensions::EventRouter::Get(browser_context_));
-
   extensions::api::copresence_private::EncodeTokenParameters params;
   params.token.token = token_str;
   params.token.audible = type == copresence::AUDIBLE;
@@ -102,17 +100,12 @@ void ChromeWhispernetClient::EncodeToken(const std::string& token_str,
       extensions::api::copresence_private::OnEncodeTokenRequest::Create(params),
       browser_context_));
 
-  extensions::EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(kWhispernetProxyExtensionId, event.Pass());
+  SendEventIfLoaded(event.Pass());
 }
 
 void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
                                            const std::string& samples,
                                            const size_t token_length[2]) {
-  DCHECK(extension_loaded_);
-  DCHECK(browser_context_);
-  DCHECK(extensions::EventRouter::Get(browser_context_));
-
   extensions::api::copresence_private::DecodeSamplesParameters params;
   params.samples.assign(samples.begin(), samples.end());
   params.decode_audible =
@@ -128,22 +121,16 @@ void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
           params),
       browser_context_));
 
-  extensions::EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(kWhispernetProxyExtensionId, event.Pass());
+  SendEventIfLoaded(event.Pass());
 }
 
 void ChromeWhispernetClient::DetectBroadcast() {
-  DCHECK(extension_loaded_);
-  DCHECK(browser_context_);
-  DCHECK(extensions::EventRouter::Get(browser_context_));
-
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::api::copresence_private::OnDetectBroadcastRequest::kEventName,
       make_scoped_ptr(new base::ListValue()),
       browser_context_));
 
-  extensions::EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(kWhispernetProxyExtensionId, event.Pass());
+  SendEventIfLoaded(event.Pass());
 }
 
 void ChromeWhispernetClient::RegisterTokensCallback(
@@ -182,9 +169,6 @@ copresence::SuccessCallback ChromeWhispernetClient::GetInitializedCallback() {
 
 void ChromeWhispernetClient::AudioConfiguration(
     const copresence::config::AudioParamData& params) {
-  DCHECK(browser_context_);
-  DCHECK(extensions::EventRouter::Get(browser_context_));
-
   extensions::api::copresence_private::AudioParameters audio_params;
 
   // We serialize AudioConfigData to a string and send it to the whispernet
@@ -198,23 +182,34 @@ void ChromeWhispernetClient::AudioConfiguration(
       extensions::api::copresence_private::OnConfigAudio::Create(audio_params),
       browser_context_));
 
-  extensions::EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(kWhispernetProxyExtensionId, event.Pass());
+  SendEventIfLoaded(event.Pass());
+}
+
+void ChromeWhispernetClient::SendEventIfLoaded(
+    scoped_ptr<extensions::Event> event) {
+  if (extension_loaded_) {
+    event_router_->DispatchEventToExtension(kWhispernetProxyExtensionId,
+                                            event.Pass());
+  } else {
+    DVLOG(2) << "Queueing event: " << event->event_name;
+    queued_events_.push_back(event.release());
+  }
 }
 
 void ChromeWhispernetClient::OnExtensionLoaded(bool success) {
-  if (extension_loaded_) {
-    if (!init_callback_.is_null())
-      init_callback_.Run(success);
-    return;
+  if (!init_callback_.is_null())
+    init_callback_.Run(success);
+
+  DVLOG(3) << "Sending " << queued_events_.size()
+           << " queued requests to whispernet";
+
+  // In this loop, ownership of each Event is passed to a scoped_ptr instead.
+  // Thus we can just discard the pointers at the end.
+  for (extensions::Event* event : queued_events_) {
+    event_router_->DispatchEventToExtension(kWhispernetProxyExtensionId,
+                                            make_scoped_ptr(event));
   }
+  queued_events_.weak_clear();
 
-  // Our extension just got loaded, initialize whispernet.
   extension_loaded_ = true;
-
-  // This will fire another OnExtensionLoaded call once the initialization is
-  // done, which means we've initialized for realz, hence call the init
-  // callback.
-
-  AudioConfiguration(GetDefaultAudioConfig());
 }

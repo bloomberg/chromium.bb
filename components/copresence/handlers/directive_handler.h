@@ -26,6 +26,7 @@ class DirectiveHandler {
   // |whispernet_client| is owned by the caller and must outlive the
   // DirectiveHandler.
   // |tokens_cb| is called for all audio tokens found in recorded audio.
+  // TODO(ckehoe): This is no longer needed. Merge into the constructor.
   virtual void Start(WhispernetClient* whispernet_client,
                      const TokensCallback& tokens_cb) = 0;
 

@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_COPRESENCE_CHROME_WHISPERNET_CLIENT_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/whispernet_client.h"
 
@@ -18,12 +18,17 @@ class BrowserContext;
 }
 
 namespace extensions {
+
+struct Event;
+class EventRouter;
+
 namespace api {
 namespace copresence_private {
 struct AudioParameters;
 }
 }
-}
+
+}  // namespace extensions
 
 namespace media {
 class AudioBusRefCounted;
@@ -64,11 +69,14 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
   // Fire an event to configure whispernet with the given audio parameters.
   void AudioConfiguration(const copresence::config::AudioParamData& params);
 
+  void SendEventIfLoaded(scoped_ptr<extensions::Event> event);
+
   // This gets called twice; once when the proxy extension loads, the second
   // time when we have initialized the proxy extension's encoder and decoder.
   void OnExtensionLoaded(bool success);
 
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
+  extensions::EventRouter* const event_router_;
 
   copresence::SuccessCallback extension_loaded_callback_;
   copresence::SuccessCallback init_callback_;
@@ -77,6 +85,7 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
   copresence::SamplesCallback samples_callback_;
   copresence::SuccessCallback db_callback_;
 
+  ScopedVector<extensions::Event> queued_events_;
   bool extension_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWhispernetClient);

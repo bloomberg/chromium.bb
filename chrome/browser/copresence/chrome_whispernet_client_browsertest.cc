@@ -54,7 +54,7 @@ std::string AudioBusToString(scoped_refptr<media::AudioBusRefCounted> source) {
 }  // namespace
 
 class ChromeWhispernetClientTest : public ExtensionBrowserTest {
- public:
+ protected:
   ChromeWhispernetClientTest()
       : context_(NULL), expected_audible_(false), initialized_(false) {}
 
@@ -130,7 +130,6 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     run_loop_->Run();
   }
 
- protected:
   void InitCallback(bool success) {
     EXPECT_TRUE(success);
     initialized_ = true;
