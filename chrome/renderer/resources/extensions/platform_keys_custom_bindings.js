@@ -6,7 +6,23 @@
 
 var binding = require('binding').Binding.create('platformKeys');
 var SubtleCrypto = require('platformKeys.SubtleCrypto').SubtleCrypto;
+var getPublicKey = require('platformKeys.getPublicKey').getPublicKey;
 var internalAPI = require('platformKeys.internalAPI');
+
+var keyModule = require('platformKeys.Key');
+var Key = keyModule.Key;
+var KeyType = keyModule.KeyType;
+var KeyUsage = keyModule.KeyUsage;
+
+function createPublicKey(publicKeySpki, algorithm) {
+  return new Key(KeyType.public, publicKeySpki, algorithm, [KeyUsage.verify],
+                 true /* extractable */);
+}
+
+function createPrivateKey(publicKeySpki, algorithm) {
+  return new Key(KeyType.private, publicKeySpki, algorithm, [KeyUsage.sign],
+                 false /* not extractable */);
+}
 
 binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
@@ -14,11 +30,29 @@ binding.registerCustomHook(function(api) {
 
   apiFunctions.setHandleRequest(
       'selectClientCertificates', function(details, callback) {
-        internalAPI.selectClientCertificates(details, callback);
+        internalAPI.selectClientCertificates(details, function(matches) {
+          callback($Array.map(matches, function(match) {
+            // internalAPI.selectClientCertificates returns publicExponent as
+            // ArrayBuffer, but it should be a Uint8Array.
+            if (match.keyAlgorithm.publicExponent) {
+              match.keyAlgorithm.publicExponent =
+                  new Uint8Array(match.keyAlgorithm.publicExponent);
+            }
+            return match;
+          }));
+        });
       });
 
   apiFunctions.setHandleRequest(
       'subtleCrypto', function() { return subtleCrypto });
+
+  apiFunctions.setHandleRequest(
+      'getKeyPair', function(cert, params, callback) {
+        getPublicKey(cert, params, function(publicKey, algorithm) {
+          callback(createPublicKey(publicKey, algorithm),
+                   createPrivateKey(publicKey, algorithm));
+        });
+      });
 });
 
 exports.binding = binding.generate();

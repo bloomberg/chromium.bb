@@ -25,6 +25,10 @@ bool StringToWebCryptoOperation(const std::string& str,
     *op = blink::WebCryptoOperationGenerateKey;
     return true;
   }
+  if (str == "ImportKey") {
+    *op = blink::WebCryptoOperationImportKey;
+    return true;
+  }
   if (str == "Sign") {
     *op = blink::WebCryptoOperationSign;
     return true;
@@ -44,6 +48,9 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
   const blink::WebCryptoAlgorithmInfo* info =
       blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id());
   dict->SetStringWithoutPathExpansion("name", info->name);
+
+  const blink::WebCryptoAlgorithm* hash = nullptr;
+
   const blink::WebCryptoRsaHashedKeyGenParams* rsaHashedKeyGen =
       algorithm.rsaHashedKeyGenParams();
   if (rsaHashedKeyGen) {
@@ -57,10 +64,20 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
             reinterpret_cast<const char*>(public_exponent.data()),
             public_exponent.size()));
 
-    const blink::WebCryptoAlgorithm& hash = rsaHashedKeyGen->hash();
-    DCHECK(!hash.isNull());
+    hash = &rsaHashedKeyGen->hash();
+    DCHECK(!hash->isNull());
+  }
+
+  const blink::WebCryptoRsaHashedImportParams* rsaHashedImport =
+      algorithm.rsaHashedImportParams();
+  if (rsaHashedImport) {
+    hash = &rsaHashedImport->hash();
+    DCHECK(!hash->isNull());
+  }
+
+  if (hash) {
     const blink::WebCryptoAlgorithmInfo* hash_info =
-        blink::WebCryptoAlgorithm::lookupAlgorithmInfo(hash.id());
+        blink::WebCryptoAlgorithm::lookupAlgorithmInfo(hash->id());
 
     scoped_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
     hash_dict->SetStringWithoutPathExpansion("name", hash_info->name);
