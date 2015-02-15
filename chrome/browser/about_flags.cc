@@ -1287,11 +1287,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableNewMDInputView)
   },
   {
-    "disable-physical-keyboard-autocorrect",
-    IDS_FLAGS_DISABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME,
-    IDS_FLAGS_DISABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION,
+    "enable-physical-keyboard-autocorrect",
+    IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME,
+    IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisablePhysicalKeyboardAutocorrect)
+    ENABLE_DISABLE_VALUE_TYPE(
+        chromeos::switches::kEnablePhysicalKeyboardAutocorrect,
+        chromeos::switches::kDisablePhysicalKeyboardAutocorrect)
   },
   {
     "disable-voice-input",

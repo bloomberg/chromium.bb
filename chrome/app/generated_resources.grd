@@ -14287,11 +14287,11 @@ Do you accept?
           Enable new Korean IME, which is based on Google Input Tools' HMM engine.
         </message>
 
-        <message name="IDS_FLAGS_DISABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME" desc="Name of about::flags option to disable physical keyboard autocorrect for US keyboard">
-          Disable physical keyboard autocorrect.
+        <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_NAME" desc="Name of about::flags option to enable physical keyboard autocorrect for US keyboard">
+          Enable physical keyboard autocorrect.
         </message>
-        <message name="IDS_FLAGS_DISABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION" desc="Description of about::flags option to disable physical keyboard autocorrect for US keyboard">
-          Disable physical keyboard autocorrect for US keyboard, which can provide suggestions as typing on physical keyboard.
+        <message name="IDS_FLAGS_ENABLE_PHYSICAL_KEYBOARD_AUTOCORRECT_DESCRIPTION" desc="Description of about::flags option to enable physical keyboard autocorrect for US keyboard">
+          Enable physical keyboard autocorrect for US keyboard, which can provide suggestions as typing on physical keyboard.
         </message>
 
         <message name="IDS_FLAGS_DISABLE_VOICE_INPUT_NAME" desc="Name of about::flags option to disable voice input on virtual keyboard">

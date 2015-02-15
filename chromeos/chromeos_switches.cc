@@ -120,6 +120,11 @@ const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
 const char kEnableNewMDInputView[] = "enable-new-md-input-view";
 
 // If this switch is set, the options for suggestions as typing on physical
+// keyboard will be enabled.
+const char kEnablePhysicalKeyboardAutocorrect[] =
+    "enable-physical-keyboard-autocorrect";
+
+// If this switch is set, the options for suggestions as typing on physical
 // keyboard will be disabled.
 const char kDisablePhysicalKeyboardAutocorrect[] =
     "disable-physical-keyboard-autocorrect";
