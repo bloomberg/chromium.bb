@@ -128,5 +128,82 @@
       "views_unittests",
       "wm_unittests"
     ]
+  },
+  "Linux TSan Tests": {
+    "gtest_tests": [
+      "accessibility_unittests",
+      "app_list_unittests",
+      "aura_unittests",
+      {
+        "test": "base_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "cacheinvalidation_unittests",
+      "cast_unittests",
+      "chromedriver_unittests",
+      "components_unittests",
+      {
+        "test": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "test": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      "crypto_unittests",
+      "dbus_unittests",
+      "device_unittests",
+      "display_unittests",
+      "events_unittests",
+      "extensions_unittests",
+      "gcm_unit_tests",
+      "gfx_unittests",
+      "google_apis_unittests",
+      "gpu_unittests",
+      "ipc_mojo_unittests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "mojo_common_unittests",
+      {
+        "test": "net_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
+        }
+      },
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "skia_unittests",
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_base_unittests",
+      "ui_touch_selection_unittests",
+      {
+        "test": "unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        }
+      },
+      "url_unittests",
+      "views_unittests",
+      "wm_unittests"
+    ],
+    "disabled_tests": {
+      "app_shell_browsertests": "http://crbug.com/455633",
+      "cc_unittests": "http://crbug.com/437454",
+      "browser_tests":
+        "Too many errors, clean content_browsertests first. http://crbug.com/368525",
+      "interactive_ui_tests": "http://crbug.com/455679"
+    }
   }
 }
