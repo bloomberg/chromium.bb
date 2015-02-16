@@ -33,23 +33,25 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& rect,
                 float scale) override {
     TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
-
     ContextProvider* context_provider = rasterizer_->resource_provider()
                                             ->output_surface()
                                             ->worker_context_provider();
 
-    // We must hold the context lock while accessing the context on the
+    // The context lock must be held while accessing the context on a
     // worker thread.
-    scoped_ptr<base::AutoLock> scoped_auto_lock;
-    base::Lock* lock = context_provider->GetLock();
-    if (lock)
-      scoped_auto_lock.reset(new base::AutoLock(*lock));
+    base::AutoLock context_lock(*context_provider->GetLock());
+
+    // Allow this worker thread to bind to context_provider.
+    context_provider->DetachFromThread();
 
     // Rasterize source into resource.
     rasterizer_->RasterizeSource(true, &lock_, raster_source, rect, scale);
 
     // Barrier to sync worker context output to cc context.
     context_provider->ContextGL()->OrderingBarrierCHROMIUM();
+
+    // Allow compositor thread to bind to context_provider.
+    context_provider->DetachFromThread();
   }
 
  private:
@@ -81,20 +83,10 @@ GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
       rasterizer_(rasterizer),
       task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  // Allow |worker_context_provider| to bind to the worker thread.
-  rasterizer_->resource_provider()
-      ->output_surface()
-      ->worker_context_provider()
-      ->DetachFromThread();
 }
 
 GpuTileTaskWorkerPool::~GpuTileTaskWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
-  // Allow |worker_context_provider| to bind to the cc thread.
-  rasterizer_->resource_provider()
-      ->output_surface()
-      ->worker_context_provider()
-      ->DetachFromThread();
 }
 
 TileTaskRunner* GpuTileTaskWorkerPool::AsTileTaskRunner() {
