@@ -50,7 +50,7 @@ public:
     }
 
 private:
-    static SizeSpecificPartitionAllocator<3072> m_objectModelAllocator;
+    static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
     static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
 };
 

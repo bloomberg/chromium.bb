@@ -28,9 +28,9 @@
 #ifndef ExecutionContext_h
 #define ExecutionContext_h
 
+#include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/AccessControlStatus.h"
-#include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -41,7 +41,6 @@ namespace blink {
 
 class ActiveDOMObject;
 class ConsoleMessage;
-class ContextLifecycleNotifier;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventQueue;
@@ -53,8 +52,7 @@ class SecurityOrigin;
 class ScriptCallStack;
 
 class ExecutionContext
-    : public LifecycleContext<ExecutionContext>
-    , public WillBeHeapSupplementable<ExecutionContext> {
+    : public ContextLifecycleNotifier, public WillBeHeapSupplementable<ExecutionContext> {
 public:
     virtual void trace(Visitor*) override;
 
@@ -93,9 +91,6 @@ public:
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) = 0;
 
     PublicURLManager& publicURLManager();
-
-    // Active objects are not garbage collected even if inaccessible, e.g. because their activity may result in callbacks being invoked.
-    bool hasPendingActivity();
 
     void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();

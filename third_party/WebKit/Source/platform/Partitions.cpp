@@ -33,7 +33,7 @@
 
 namespace blink {
 
-SizeSpecificPartitionAllocator<3072> Partitions::m_objectModelAllocator;
+SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
 SizeSpecificPartitionAllocator<1024> Partitions::m_renderingAllocator;
 
 void Partitions::init()

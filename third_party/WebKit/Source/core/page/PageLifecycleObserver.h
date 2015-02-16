@@ -34,8 +34,8 @@ namespace blink {
 
 class LocalFrame;
 
-template<> void observerContext(Page*, LifecycleObserver<Page>*);
-template<> void unobserverContext(Page*, LifecycleObserver<Page>*);
+template<> void observeContext(Page*, LifecycleObserver<Page>*);
+template<> void unobserveContext(Page*, LifecycleObserver<Page>*);
 
 class PageLifecycleObserver : public LifecycleObserver<Page> {
 public:
