@@ -173,13 +173,8 @@ div.splitter {
   color: rgb(90, 90, 90);
   cursor: pointer;
   display: flex;
-  line-height: 29px;
+  line-height: 40px;
   padding: 0 3px;
-}
-
-/* For rows of subitems (non-top items) */
-#directory-tree .tree-children .tree-row {
-  line-height: 29px;
 }
 
 #directory-tree .tree-row > .expand-icon {
@@ -218,11 +213,7 @@ div.splitter {
   color: rgb(27, 168, 243);
 }
 
-/* Make top-level items thicker and Drive volume's expand-icon invisible */
-#directory-tree > .tree-item > .tree-row {
-  line-height: 40px;
-}
-
+/* Make Drive volume's expand-icon invisible */
 #directory-tree > .tree-item.drive-volume > .tree-row > .expand-icon {
   visibility: hidden;
 }
