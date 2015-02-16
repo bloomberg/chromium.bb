@@ -61,10 +61,11 @@ int SQLiteStatement::prepare()
 
     CString query = m_query.stripWhiteSpace().utf8();
 
-    const char* tail = nullptr;
-    // Need to pass non-stack sqlite3_stmt* to avoid race with Oilpan stack
-    // scanning.
+    // Need to pass non-stack |const char*| and |sqlite3_stmt*| to avoid race
+    // with Oilpan stack scanning.
+    OwnPtr<const char*> tail = adoptPtr(new const char*);
     OwnPtr<sqlite3_stmt*> statement = adoptPtr(new sqlite3_stmt*);
+    *tail = nullptr;
     *statement = nullptr;
     int error;
     {
@@ -76,13 +77,13 @@ int SQLiteStatement::prepare()
         // this lets SQLite avoid an extra string copy.
         size_t lengthIncludingNullCharacter = query.length() + 1;
 
-        error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, statement.get(), &tail);
+        error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, statement.get(), tail.get());
     }
     m_statement = *statement;
 
     if (error != SQLITE_OK)
         WTF_LOG(SQLDatabase, "sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
-    else if (tail && *tail)
+    else if (*tail && **tail)
         error = SQLITE_ERROR;
 
 #if ENABLE(ASSERT)
