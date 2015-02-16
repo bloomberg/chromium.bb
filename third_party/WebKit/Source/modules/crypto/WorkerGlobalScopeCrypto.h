@@ -47,7 +47,7 @@ public:
     static Crypto* crypto(WillBeHeapSupplementable<WorkerGlobalScope>&);
     Crypto* crypto() const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WorkerGlobalScopeCrypto();

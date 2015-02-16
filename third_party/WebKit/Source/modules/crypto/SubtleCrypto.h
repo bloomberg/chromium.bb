@@ -70,7 +70,7 @@ public:
     ScriptPromise deriveBits(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, unsigned);
     ScriptPromise deriveKey(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const AlgorithmIdentifier&, bool extractable, const Vector<String>&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     SubtleCrypto();

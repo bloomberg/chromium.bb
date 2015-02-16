@@ -48,7 +48,7 @@ public:
     static Crypto* crypto(DOMWindow&);
     Crypto* crypto() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowCrypto(LocalDOMWindow&);

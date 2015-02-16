@@ -78,7 +78,7 @@ SubtleCrypto* Crypto::subtle()
     return m_subtleCrypto.get();
 }
 
-void Crypto::trace(Visitor* visitor)
+DEFINE_TRACE(Crypto)
 {
     visitor->trace(m_subtleCrypto);
 }

@@ -50,7 +50,7 @@ public:
 
     SubtleCrypto* subtle();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Crypto() { }

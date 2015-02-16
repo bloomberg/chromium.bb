@@ -52,7 +52,7 @@ public:
     bool isHmacKeyAlgorithm() const;
     bool isRsaHashedKeyAlgorithm() const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit KeyAlgorithm(const WebCryptoKeyAlgorithm&);

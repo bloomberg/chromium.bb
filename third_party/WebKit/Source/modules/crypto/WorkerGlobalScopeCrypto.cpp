@@ -67,7 +67,7 @@ Crypto* WorkerGlobalScopeCrypto::crypto() const
     return m_crypto.get();
 }
 
-void WorkerGlobalScopeCrypto::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerGlobalScopeCrypto)
 {
     visitor->trace(m_crypto);
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);

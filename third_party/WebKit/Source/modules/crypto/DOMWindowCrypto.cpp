@@ -70,7 +70,7 @@ Crypto* DOMWindowCrypto::crypto() const
     return m_crypto.get();
 }
 
-void DOMWindowCrypto::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowCrypto)
 {
     visitor->trace(m_crypto);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
