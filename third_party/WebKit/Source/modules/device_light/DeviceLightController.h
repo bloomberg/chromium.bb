@@ -20,7 +20,7 @@ public:
     static const char* supplementName();
     static DeviceLightController& from(Document&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit DeviceLightController(Document&);

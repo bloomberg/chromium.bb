@@ -23,7 +23,7 @@ public:
     // Inherited from WebDeviceLightListener.
     virtual void didChangeDeviceLight(double) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DeviceLightDispatcher();

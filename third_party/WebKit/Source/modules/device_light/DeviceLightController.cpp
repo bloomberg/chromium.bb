@@ -72,7 +72,7 @@ const AtomicString& DeviceLightController::eventTypeName() const
     return EventTypeNames::devicelight;
 }
 
-void DeviceLightController::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceLightController)
 {
     DeviceSingleWindowEventController::trace(visitor);
     DocumentSupplement::trace(visitor);

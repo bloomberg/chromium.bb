@@ -25,7 +25,7 @@ DeviceLightDispatcher::~DeviceLightDispatcher()
 {
 }
 
-void DeviceLightDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceLightDispatcher)
 {
     PlatformEventDispatcher::trace(visitor);
 }
