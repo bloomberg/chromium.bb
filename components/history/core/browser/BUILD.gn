@@ -41,6 +41,8 @@ static_library("browser") {
     "keyword_search_term.h",
     "page_usage_data.cc",
     "page_usage_data.h",
+    "scored_history_match.cc",
+    "scored_history_match.h",
     "thumbnail_database.cc",
     "thumbnail_database.h",
     "top_sites.cc",

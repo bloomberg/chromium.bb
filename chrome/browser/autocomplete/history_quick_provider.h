@@ -18,8 +18,8 @@
 class Profile;
 
 namespace history {
-class ScoredHistoryMatch;
-}  // namespace history
+struct ScoredHistoryMatch;
+}
 
 // This class is an autocomplete provider (a pseudo-internal component of
 // the history system) which quickly (and synchronously) provides matching

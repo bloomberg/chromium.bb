@@ -216,8 +216,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Querying ------------------------------------------------------------------
 
   // Run the |callback| on the History thread.
-  // history_url_provider.h has the temporal ordering for
-  // the call sequence.
   // |callback| should handle the NULL database case.
   void ScheduleAutocomplete(const base::Callback<
       void(history::HistoryBackend*, history::URLDatabase*)>& callback);

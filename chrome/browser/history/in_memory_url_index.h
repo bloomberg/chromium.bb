@@ -18,10 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/history/scored_history_match.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/scored_history_match.h"
 #include "sql/connection.h"
 
 class HistoryService;
@@ -39,7 +39,6 @@ namespace history {
 
 namespace imui = in_memory_url_index;
 
-class HistoryClient;
 class HistoryDatabase;
 class URLIndexPrivateData;
 
@@ -97,8 +96,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // characters.
   InMemoryURLIndex(HistoryService* history_service,
                    const base::FilePath& history_dir,
-                   const std::string& languages,
-                   HistoryClient* client);
+                   const std::string& languages);
   ~InMemoryURLIndex() override;
 
   // Opens and prepares the index of historical URL visits. If the index private
@@ -117,9 +115,11 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // function doesn't do anything special with the cursor; this is equivalent
   // to the cursor being at the end.  In total, |max_matches| of items will be
   // returned in the |ScoredHistoryMatches| vector.
-  ScoredHistoryMatches HistoryItemsForTerms(const base::string16& term_string,
-                                            size_t cursor_position,
-                                            size_t max_matches);
+  ScoredHistoryMatches HistoryItemsForTerms(
+      const base::string16& term_string,
+      size_t cursor_position,
+      size_t max_matches,
+      const ScoredHistoryMatch::Builder& builder);
 
   // Deletes the index entry, if any, for the given |url|.
   void DeleteURL(const GURL& url);
@@ -260,9 +260,6 @@ class InMemoryURLIndex : public HistoryServiceObserver,
 
   // The HistoryService; may be null when testing.
   HistoryService* history_service_;
-
-  // The HistoryClient; may be null when testing.
-  HistoryClient* history_client_;
 
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the history database is found. It should never

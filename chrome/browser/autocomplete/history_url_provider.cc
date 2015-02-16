@@ -16,10 +16,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
+#include "chrome/browser/autocomplete/scored_history_match_builder_impl.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/scored_history_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -714,7 +714,7 @@ ACMatchClassifications HistoryURLProvider::ClassifyDescription(
   // are guaranteed that the beginning of input_text must be a word break.
   history::WordStarts offsets(1, 0u);
   description_matches =
-      history::ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      ScoredHistoryMatchBuilderImpl::FilterTermMatchesByWordStarts(
           description_matches, offsets, description_word_starts, 0,
           std::string::npos);
   return SpansFromTermMatch(

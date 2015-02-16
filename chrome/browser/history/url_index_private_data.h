@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/scored_history_match.h"
 #include "components/history/core/browser/in_memory_url_index_cache.pb.h"
 #include "components/history/core/browser/in_memory_url_index_types.h"
+#include "components/history/core/browser/scored_history_match.h"
 
 class HistoryQuickProviderTest;
 
@@ -26,7 +26,6 @@ namespace history {
 
 namespace imui = in_memory_url_index;
 
-class HistoryClient;
 class HistoryDatabase;
 class InMemoryURLIndex;
 class RefCountedBool;
@@ -62,16 +61,15 @@ class URLIndexPrivateData
   // will be found in nearly all history candidates. Results are sorted by
   // descending score. The full results set (i.e. beyond the
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
-  // to this function. |history_client| is used to boost a result's score if
-  // its URL is referenced by one or more of the user's bookmarks.  |languages|
-  // is used to help parse/format the URLs in the history index.  In total,
-  // |max_matches| of items will be returned in the |ScoredHistoryMatches|
-  // vector.
-  ScoredHistoryMatches HistoryItemsForTerms(base::string16 term_string,
-                                            size_t cursor_position,
-                                            size_t max_matches,
-                                            const std::string& languages,
-                                            HistoryClient* history_client);
+  // to this function. |languages| is used to help parse/format the URLs in the
+  // history index.  In total, |max_matches| of items will be returned in the
+  // |ScoredHistoryMatches| vector.
+  ScoredHistoryMatches HistoryItemsForTerms(
+      base::string16 term_string,
+      size_t cursor_position,
+      size_t max_matches,
+      const std::string& languages,
+      const ScoredHistoryMatch::Builder& builder);
 
   // Adds the history item in |row| to the index if it does not already already
   // exist and it meets the minimum 'quick' criteria. If the row already exists
@@ -196,10 +194,10 @@ class URLIndexPrivateData
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
                     const std::string& languages,
-                    HistoryClient* history_client,
                     const base::string16& lower_string,
                     const String16Vector& lower_terms,
-                    const base::Time now);
+                    const base::Time now,
+                    const ScoredHistoryMatch::Builder& builder);
     ~AddHistoryMatch();
 
     void operator()(const HistoryID history_id);
@@ -209,7 +207,7 @@ class URLIndexPrivateData
    private:
     const URLIndexPrivateData& private_data_;
     const std::string& languages_;
-    HistoryClient* history_client_;
+    const ScoredHistoryMatch::Builder& builder_;
     ScoredHistoryMatches scored_matches_;
     const base::string16& lower_string_;
     const String16Vector& lower_terms_;

@@ -62,6 +62,8 @@
         'history/core/browser/keyword_search_term.h',
         'history/core/browser/page_usage_data.cc',
         'history/core/browser/page_usage_data.h',
+        'history/core/browser/scored_history_match.cc',
+        'history/core/browser/scored_history_match.h',
         'history/core/browser/thumbnail_database.cc',
         'history/core/browser/thumbnail_database.h',
         'history/core/browser/top_sites.cc',

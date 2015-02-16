@@ -27,7 +27,6 @@
 #include "chrome/browser/history/typed_url_syncable_service.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_usage_data.h"
-#include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
@@ -502,9 +501,6 @@ class HistoryService : public syncer::SyncableService,
   // Returns true if this looks like the type of URL we want to add to the
   // history. We filter out some URLs such as JavaScript.
   static bool CanAddURL(const GURL& url);
-
-  // Returns the HistoryClient.
-  history::HistoryClient* history_client() { return history_client_; }
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 

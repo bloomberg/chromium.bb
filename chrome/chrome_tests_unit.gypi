@@ -111,7 +111,7 @@
       'browser/history/history_querying_unittest.cc',
       'browser/history/history_unittest.cc',
       'browser/history/in_memory_url_index_unittest.cc',
-      'browser/history/scored_history_match_unittest.cc',
+      'browser/autocomplete/scored_history_match_builder_impl_unittest.cc',
       'browser/history/thumbnail_database_unittest.cc',
       'browser/history/top_sites_impl_unittest.cc',
       'browser/history/typed_url_syncable_service_unittest.cc',

@@ -975,8 +975,8 @@ bool HistoryService::Init(
   if (!languages.empty()) {
     // Do not create |in_memory_url_index_| when languages is empty (which
     // should only happens during testing).
-    in_memory_url_index_.reset(new history::InMemoryURLIndex(
-        this, history_dir_, languages, history_client_));
+    in_memory_url_index_.reset(
+        new history::InMemoryURLIndex(this, history_dir_, languages));
     in_memory_url_index_->Init();
   }
 

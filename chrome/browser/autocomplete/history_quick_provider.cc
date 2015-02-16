@@ -19,15 +19,17 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
+#include "chrome/browser/autocomplete/scored_history_match_builder_impl.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "chrome/browser/history/scored_history_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/in_memory_url_index_types.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -47,6 +49,16 @@
 using history::InMemoryURLIndex;
 using history::ScoredHistoryMatch;
 using history::ScoredHistoryMatches;
+
+namespace {
+
+// Returns whether |url| is bookmarked in |bookmark_model| (which can be null
+// during testing). Used for ScoredHistoryMatchBuilderImpl.
+bool IsBookmarked(bookmarks::BookmarkModel* bookmark_model, const GURL& url) {
+  return bookmark_model && bookmark_model->IsBookmarked(url);
+}
+
+}  // namespace
 
 bool HistoryQuickProvider::disabled_ = false;
 
@@ -90,10 +102,15 @@ HistoryQuickProvider::~HistoryQuickProvider() {}
 
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
-  ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(
-      autocomplete_input_.text(),
-      autocomplete_input_.cursor_position(),
-      AutocompleteProvider::kMaxMatches);
+  ScoredHistoryMatches matches;
+  {
+    ScoredHistoryMatchBuilderImpl builder(base::Bind(
+        &IsBookmarked,
+        base::Unretained(BookmarkModelFactory::GetForProfile(profile_))));
+    matches = GetIndex()->HistoryItemsForTerms(
+        autocomplete_input_.text(), autocomplete_input_.cursor_position(),
+        AutocompleteProvider::kMaxMatches, builder);
+  }
   if (matches.empty())
     return;
 
@@ -199,7 +216,7 @@ void HistoryQuickProvider::DoAutocomplete() {
       TemplateURLServiceFactory::GetForProfile(profile_);
   TemplateURL* template_url = template_url_service ?
       template_url_service->GetDefaultSearchProvider() : NULL;
-  int max_match_score = matches.begin()->raw_score();
+  int max_match_score = matches.begin()->raw_score;
   if (will_have_url_what_you_typed_match_first) {
     max_match_score = std::min(max_match_score,
         url_what_you_typed_match_score - 1);
@@ -214,7 +231,7 @@ void HistoryQuickProvider::DoAutocomplete() {
         !template_url->IsSearchURL(history_match.url_info.url(),
                                    template_url_service->search_terms_data())) {
       // Set max_match_score to the score we'll assign this result:
-      max_match_score = std::min(max_match_score, history_match.raw_score());
+      max_match_score = std::min(max_match_score, history_match.raw_score);
       matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
       // Mark this max_match_score as being used:
       max_match_score--;
@@ -228,7 +245,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(
       this, score, !!info.visit_count(),
-      history_match.url_matches().empty() ?
+      history_match.url_matches.empty() ?
           AutocompleteMatchType::HISTORY_TITLE :
           AutocompleteMatchType::HISTORY_URL);
   match.typed_count = info.typed_count();
@@ -245,19 +262,19 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
                          net::UnescapeRule::SPACES, NULL, NULL, NULL),
           ChromeAutocompleteSchemeClassifier(profile_));
   std::vector<size_t> offsets =
-      OffsetsFromTermMatches(history_match.url_matches());
+      OffsetsFromTermMatches(history_match.url_matches);
   base::OffsetAdjuster::Adjustments adjustments;
   match.contents = net::FormatUrlWithAdjustments(
       info.url(), languages_, format_types, net::UnescapeRule::SPACES, NULL,
       NULL, &adjustments);
   base::OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
   history::TermMatches new_matches =
-      ReplaceOffsetsInTermMatches(history_match.url_matches(), offsets);
+      ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
-  if (history_match.can_inline()) {
+  if (history_match.can_inline) {
     DCHECK(!new_matches.empty());
     size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
@@ -279,7 +296,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   // Format the description autocomplete presentation.
   match.description = info.title();
   match.description_class = SpansFromTermMatch(
-      history_match.title_matches(), match.description.length(), false);
+      history_match.title_matches, match.description.length(), false);
 
   match.RecordAdditionalInfo("typed count", info.typed_count());
   match.RecordAdditionalInfo("visit count", info.visit_count());

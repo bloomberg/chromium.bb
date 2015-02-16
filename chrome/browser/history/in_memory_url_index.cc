@@ -81,10 +81,8 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 InMemoryURLIndex::InMemoryURLIndex(HistoryService* history_service,
                                    const base::FilePath& history_dir,
-                                   const std::string& languages,
-                                   HistoryClient* history_client)
+                                   const std::string& languages)
     : history_service_(history_service),
-      history_client_(history_client),
       history_dir_(history_dir),
       languages_(languages),
       private_data_(new URLIndexPrivateData),
@@ -142,13 +140,10 @@ bool InMemoryURLIndex::GetCacheFilePath(base::FilePath* file_path) {
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     const base::string16& term_string,
     size_t cursor_position,
-    size_t max_matches) {
-  return private_data_->HistoryItemsForTerms(
-      term_string,
-      cursor_position,
-      max_matches,
-      languages_,
-      history_client_);
+    size_t max_matches,
+    const ScoredHistoryMatch::Builder& builder) {
+  return private_data_->HistoryItemsForTerms(term_string, cursor_position,
+                                             max_matches, languages_, builder);
 }
 
 // Updating --------------------------------------------------------------------

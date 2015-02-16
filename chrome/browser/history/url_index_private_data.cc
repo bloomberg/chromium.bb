@@ -22,7 +22,6 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "net/base/net_util.h"
@@ -151,7 +150,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     size_t max_matches,
     const std::string& languages,
-    HistoryClient* history_client) {
+    const history::ScoredHistoryMatch::Builder& builder) {
   // If cursor position is set and useful (not at either end of the
   // string), allow the search string to be broken at cursor position.
   // We do this by pretending there's a space where the cursor is.
@@ -242,9 +241,11 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     // but this is such a rare edge case that it's not worth the time.
     return scored_items;
   }
-  scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-      AddHistoryMatch(*this, languages, history_client, lower_raw_string,
-                      lower_raw_terms, base::Time::Now())).ScoredMatches();
+  scored_items =
+      std::for_each(
+          history_id_set.begin(), history_id_set.end(),
+          AddHistoryMatch(*this, languages, lower_raw_string, lower_raw_terms,
+                          base::Time::Now(), builder)).ScoredMatches();
 
   // Select and sort only the top |max_matches| results.
   if (scored_items.size() > max_matches) {
@@ -1266,13 +1267,13 @@ URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {}
 URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     const URLIndexPrivateData& private_data,
     const std::string& languages,
-    HistoryClient* history_client,
     const base::string16& lower_string,
     const String16Vector& lower_terms,
-    const base::Time now)
+    const base::Time now,
+    const ScoredHistoryMatch::Builder& builder)
     : private_data_(private_data),
       languages_(languages),
-      history_client_(history_client),
+      builder_(builder),
       lower_string_(lower_string),
       lower_terms_(lower_terms),
       now_(now) {
@@ -1306,10 +1307,10 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
     WordStartsMap::const_iterator starts_pos =
         private_data_.word_starts_map_.find(history_id);
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
-    ScoredHistoryMatch match(hist_item, visits, languages_, lower_string_,
-                             lower_terms_, lower_terms_to_word_starts_offsets_,
-                             starts_pos->second, now_, history_client_);
-    if (match.raw_score() > 0)
+    ScoredHistoryMatch match = builder_.Build(
+        hist_item, visits, languages_, lower_string_, lower_terms_,
+        lower_terms_to_word_starts_offsets_, starts_pos->second, now_);
+    if (match.raw_score > 0)
       scored_matches_.push_back(match);
   }
 }
