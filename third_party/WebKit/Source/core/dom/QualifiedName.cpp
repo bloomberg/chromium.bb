@@ -113,16 +113,17 @@ String QualifiedName::toString() const
 
 // Global init routines
 DEFINE_GLOBAL(QualifiedName, anyName, nullAtom, starAtom, starAtom)
+DEFINE_GLOBAL(QualifiedName, nullName, nullAtom, nullAtom, nullAtom)
 
 void QualifiedName::init()
 {
     ASSERT(starAtom.impl());
     new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom, true );
+    new ((void*)&nullName) QualifiedName(nullAtom, nullAtom, nullAtom, true );
 }
 
 const QualifiedName& QualifiedName::null()
 {
-    DEFINE_STATIC_LOCAL(QualifiedName, nullName, (nullAtom, nullAtom, nullAtom, true));
     return nullName;
 }
 
