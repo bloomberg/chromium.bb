@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service.h"
@@ -670,6 +671,9 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
     activity_log->RemoveURLs(it->urls);
   }
 #endif
+
+  for (const history::ExpireHistoryArgs& expire_entry : expire_list)
+    AppBannerSettingsHelper::ClearHistoryForURLs(profile, expire_entry.urls);
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(

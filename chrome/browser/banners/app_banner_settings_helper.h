@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_SETTINGS_HELPER_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_SETTINGS_HELPER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,7 @@ class WebContents;
 }  // namespace content
 
 class GURL;
+class Profile;
 
 // Utility class to record banner events for the given package or start url.
 //
@@ -43,6 +45,13 @@ class AppBannerSettingsHelper {
     APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
     APP_BANNER_EVENT_NUM_EVENTS,
   };
+
+  // The content setting basically records a simplified subset of history.
+  // For privacy reasons this needs to be cleared. The ClearHistoryForURLs
+  // function removes any information from the banner content settings for the
+  // given URls.
+  static void ClearHistoryForURLs(Profile* profile,
+                                  const std::set<GURL>& origin_urls);
 
   static void RecordBannerEvent(content::WebContents* web_contents,
                                 const GURL& origin_url,

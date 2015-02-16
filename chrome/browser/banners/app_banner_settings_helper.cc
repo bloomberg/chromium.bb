@@ -79,6 +79,21 @@ base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
 
 }  // namespace
 
+void AppBannerSettingsHelper::ClearHistoryForURLs(
+    Profile* profile,
+    const std::set<GURL>& origin_urls) {
+  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  for (const GURL& origin_url : origin_urls) {
+    ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
+    if (!pattern.IsValid())
+      continue;
+
+    settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
+                                CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+                                nullptr);
+  }
+}
+
 void AppBannerSettingsHelper::RecordBannerEvent(
     content::WebContents* web_contents,
     const GURL& origin_url,
