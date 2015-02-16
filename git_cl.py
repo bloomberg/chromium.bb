@@ -18,6 +18,7 @@ import Queue
 import re
 import stat
 import sys
+import tempfile
 import textwrap
 import threading
 import urllib2
@@ -111,6 +112,11 @@ def RunGitWithCode(args, suppress_stderr=False):
     # When the subprocess fails, it returns None.  That triggers a ValueError
     # when trying to unpack the return value into (out, code).
     return 1, ''
+
+
+def RunGitSilent(args):
+  """Returns stdout, suppresses stderr and ingores the return code."""
+  return RunGitWithCode(args, suppress_stderr=True)[1]
 
 
 def IsGitVersionAtLeast(min_version):
@@ -1633,7 +1639,7 @@ def GerritUpload(options, args, cl, change):
   """upload the current branch to gerrit."""
   # We assume the remote called "origin" is the one we want.
   # It is probably not worthwhile to support different workflows.
-  remote = 'origin'
+  gerrit_remote = 'origin'
   branch = 'master'
   if options.target_branch:
     branch = options.target_branch
@@ -1643,15 +1649,72 @@ def GerritUpload(options, args, cl, change):
   if not change_desc.description:
     print "Description is empty; aborting."
     return 1
-  if CHANGE_ID not in change_desc.description:
-    AddChangeIdToCommitMessage(options, args)
 
-  commits = RunGit(['rev-list', '%s/%s..' % (remote, branch)]).splitlines()
+  if options.squash:
+    # Try to get the message from a previous upload.
+    shadow_branch = 'refs/heads/git_cl_uploads/' + cl.GetBranch()
+    message = RunGitSilent(['show', '--format=%s\n\n%b', '-s', shadow_branch])
+    if not message:
+      if not options.force:
+        change_desc.prompt()
+
+      if CHANGE_ID not in change_desc.description:
+        # Run the commit-msg hook without modifying the head commit by writing
+        # the commit message to a temporary file and running the hook over it,
+        # then reading the file back in.
+        commit_msg_hook = os.path.join(settings.GetRoot(), '.git', 'hooks',
+                                       'commit-msg')
+        file_handle, msg_file = tempfile.mkstemp(text=True,
+                                                 prefix='commit_msg')
+        try:
+          try:
+            with os.fdopen(file_handle, 'w') as fileobj:
+              fileobj.write(change_desc.description)
+          finally:
+            os.close(file_handle)
+            RunCommand([commit_msg_hook, msg_file])
+            change_desc.set_description(gclient_utils.FileRead(msg_file))
+        finally:
+          os.remove(msg_file)
+
+      if not change_desc.description:
+        print "Description is empty; aborting."
+        return 1
+
+      message = change_desc.description
+
+    remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
+    if remote is '.':
+      # If our upstream branch is local, we base our squashed commit on its
+      # squashed version.
+      parent = ('refs/heads/git_cl_uploads/' +
+                scm.GIT.ShortBranchName(upstream_branch))
+
+      # Verify that the upstream branch has been uploaded too, otherwise Gerrit
+      # will create additional CLs when uploading.
+      if (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
+          RunGitSilent(['rev-parse', parent + ':'])):
+        print 'Upload upstream branch ' + upstream_branch + ' first.'
+        return 1
+    else:
+      parent = cl.GetCommonAncestorWithUpstream()
+
+    tree = RunGit(['rev-parse', 'HEAD:']).strip()
+    ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
+                          '-m', message]).strip()
+  else:
+    if CHANGE_ID not in change_desc.description:
+      AddChangeIdToCommitMessage(options, args)
+    ref_to_push = 'HEAD'
+    parent = '%s/%s' % (gerrit_remote, branch)
+
+  commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
+                                                  ref_to_push)]).splitlines()
   if len(commits) > 1:
     print('WARNING: This will upload %d commits. Run the following command '
           'to see which commits will be uploaded: ' % len(commits))
-    print('git log %s/%s..' % (remote, branch))
-    print('You can also use `git squash-branch` to squash these into a single'
+    print('git log %s..%s' % (parent, ref_to_push))
+    print('You can also use `git squash-branch` to squash these into a single '
           'commit.')
     ask_for_data('About to upload; enter to confirm.')
 
@@ -1673,8 +1736,13 @@ def GerritUpload(options, args, cl, change):
   if receive_options:
     git_command.append('--receive-pack=git receive-pack %s' %
                        ' '.join(receive_options))
-  git_command += [remote, 'HEAD:refs/for/' + branch]
+  git_command += [gerrit_remote, ref_to_push + ':refs/for/' + branch]
   RunGit(git_command)
+
+  if options.squash:
+    head = RunGit(['rev-parse', 'HEAD']).strip()
+    RunGit(['update-ref', '-m', 'Uploaded ' + head, shadow_branch, ref_to_push])
+
   # TODO(ukai): parse Change-Id: and set issue number?
   return 0
 
@@ -1690,7 +1758,7 @@ def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
   """
   if not (remote and remote_branch):
     return None
-  
+
   if target_branch:
     # Cannonicalize branch references to the equivalent local full symbolic
     # refs, which are then translated into the remote full symbolic refs
@@ -1716,7 +1784,7 @@ def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
         not remote_branch.startswith('refs/remotes/%s/refs' % remote)):
     # Default to master for refs that are not branches.
     remote_branch = 'refs/remotes/%s/master' % remote
-    
+
   # Create the true path to the remote branch.
   # Does the following translation:
   # * refs/remotes/origin/refs/diff/test -> refs/diff/test
@@ -1896,6 +1964,8 @@ def CMDupload(parser, args):
                     metavar='TARGET',
                     help='Apply CL to remote ref TARGET.  ' +
                          'Default: remote branch head, or master')
+  parser.add_option('--squash', action='store_true',
+                    help='Squash multiple commits into one (Gerrit only)')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
   parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',

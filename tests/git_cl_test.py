@@ -571,7 +571,7 @@ class TestGitCl(TestCase):
         ]
 
   @staticmethod
-  def _gerrit_upload_calls(description, reviewers):
+  def _gerrit_upload_calls(description, reviewers, squash):
     calls = [
         ((['git', 'config', 'gerrit.host'],),
          'gerrit.example.com'),
@@ -590,8 +590,29 @@ class TestGitCl(TestCase):
              'fake_ancestor_sha..HEAD'],),
            description)
           ]
+    if squash:
+      ref_to_push = 'abcdef0123456789'
+      calls += [
+          ((['git', 'show', '--format=%s\n\n%b', '-s',
+            'refs/heads/git_cl_uploads/master'],),
+           (description, 0)),
+          ((['git', 'config', 'branch.master.merge'],),
+           'refs/heads/master'),
+          ((['git', 'config', 'branch.master.remote'],),
+           'origin'),
+          ((['get_or_create_merge_base', 'master', 'master'],),
+           'origin/master'),
+          ((['git', 'rev-parse', 'HEAD:'],),
+           '0123456789abcdef'),
+          ((['git', 'commit-tree', '0123456789abcdef', '-p',
+             'origin/master', '-m', 'd'],),
+           ref_to_push),
+          ]
+    else:
+      ref_to_push = 'HEAD'
+
     calls += [
-        ((['git', 'rev-list', 'origin/master..'],), ''),
+        ((['git', 'rev-list', 'origin/master..' + ref_to_push],), ''),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
     receive_pack = '--receive-pack=git receive-pack '
@@ -603,19 +624,28 @@ class TestGitCl(TestCase):
     receive_pack += ''
     calls += [
         ((['git',
-           'push', receive_pack, 'origin', 'HEAD:refs/for/master'],),
+           'push', receive_pack, 'origin', ref_to_push + ':refs/for/master'],),
          '')
         ]
+    if squash:
+      calls += [
+          ((['git', 'rev-parse', 'HEAD'],), 'abcdef0123456789'),
+          ((['git', 'update-ref', '-m', 'Uploaded abcdef0123456789',
+            'refs/heads/git_cl_uploads/master', 'abcdef0123456789'],),
+           '')
+          ]
+
     return calls
 
   def _run_gerrit_upload_test(
       self,
       upload_args,
       description,
-      reviewers):
+      reviewers,
+      squash=False):
     """Generic gerrit upload test framework."""
     self.calls = self._gerrit_base_calls()
-    self.calls += self._gerrit_upload_calls(description, reviewers)
+    self.calls += self._gerrit_upload_calls(description, reviewers, squash)
     git_cl.main(['upload'] + upload_args)
 
   def test_gerrit_upload_without_change_id(self):
@@ -643,6 +673,12 @@ class TestGitCl(TestCase):
         'Change-Id:123456789\n',
         ['reviewer@example.com', 'another@example.com'])
 
+  def test_gerrit_upload_squash(self):
+    self._run_gerrit_upload_test(
+        ['--squash'],
+        'desc\n\nBUG=\nChange-Id:123456789\n',
+        [],
+        squash=True)
 
   def test_config_gerrit_download_hook(self):
     self.mock(git_cl, 'FindCodereviewSettingsFile', CodereviewSettingsFileMock)
@@ -762,7 +798,7 @@ class TestGitCl(TestCase):
     self.assertEqual(None, git_cl.GetTargetRef(None,
                                                'refs/remotes/origin/master',
                                                'master', None))
-    
+
     # Check default target refs for branches.
     self.assertEqual('refs/heads/master',
                      git_cl.GetTargetRef('origin', 'refs/remotes/origin/master',
