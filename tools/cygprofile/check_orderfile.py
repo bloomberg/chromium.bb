@@ -71,9 +71,9 @@ def main():
   symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
   # Missing symbols is not an error since some of them can be eliminated through
   # inlining.
-  (misordered_pairs_count, _, _) = _CountMisorderedSymbols(
+  (misordered_pairs_count, matched_symbols, _) = _CountMisorderedSymbols(
       symbols, symbol_infos)
-  return misordered_pairs_count > threshold
+  return (misordered_pairs_count > threshold) or (matched_symbols == 0)
 
 
 if __name__ == '__main__':
