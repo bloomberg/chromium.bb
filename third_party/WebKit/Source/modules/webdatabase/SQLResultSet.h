@@ -41,7 +41,7 @@ class SQLResultSet final : public GarbageCollected<SQLResultSet>, public ScriptW
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SQLResultSet* create() { return new SQLResultSet; }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     SQLResultSetRowList* rows() const;
 

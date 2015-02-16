@@ -400,7 +400,7 @@ bool SQLiteDatabase::turnOnIncrementalAutoVacuum()
     }
 }
 
-void SQLiteDatabase::trace(Visitor* visitor)
+DEFINE_TRACE(SQLiteDatabase)
 {
     visitor->trace(m_authorizer);
 }

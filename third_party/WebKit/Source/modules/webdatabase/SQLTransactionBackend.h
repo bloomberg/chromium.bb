@@ -49,7 +49,7 @@ class SQLValue;
 class SQLTransactionWrapper : public GarbageCollectedFinalized<SQLTransactionWrapper> {
 public:
     virtual ~SQLTransactionWrapper() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual bool performPreflight(SQLTransactionBackend*) = 0;
     virtual bool performPostflight(SQLTransactionBackend*) = 0;
     virtual SQLErrorData* sqlError() const = 0;
@@ -61,7 +61,7 @@ public:
     static SQLTransactionBackend* create(Database*, SQLTransaction*, SQLTransactionWrapper*, bool readOnly);
 
     virtual ~SQLTransactionBackend();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void lockAcquired();
     void performNextStep();

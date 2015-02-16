@@ -44,7 +44,7 @@ SQLResultSet::SQLResultSet()
 {
 }
 
-void SQLResultSet::trace(Visitor* visitor)
+DEFINE_TRACE(SQLResultSet)
 {
     visitor->trace(m_rows);
 }

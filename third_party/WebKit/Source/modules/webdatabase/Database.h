@@ -52,7 +52,7 @@ class Database final : public GarbageCollectedFinalized<Database>, public Script
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Database();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
     void close();

@@ -51,7 +51,7 @@ InspectorDatabaseResource::InspectorDatabaseResource(Database* database, const S
 {
 }
 
-void InspectorDatabaseResource::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorDatabaseResource)
 {
     visitor->trace(m_database);
 }

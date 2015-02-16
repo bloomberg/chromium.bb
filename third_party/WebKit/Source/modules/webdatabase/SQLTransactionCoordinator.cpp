@@ -49,7 +49,7 @@ SQLTransactionCoordinator::SQLTransactionCoordinator()
 {
 }
 
-void SQLTransactionCoordinator::trace(Visitor* visitor)
+DEFINE_TRACE(SQLTransactionCoordinator)
 {
     visitor->trace(m_coordinationInfoMap);
 }

@@ -45,7 +45,7 @@ class SQLStatementBackend final : public GarbageCollectedFinalized<SQLStatementB
 public:
     static SQLStatementBackend* create(SQLStatement*,
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool execute(Database*);
     bool lastExecutionFailedDueToQuota() const;

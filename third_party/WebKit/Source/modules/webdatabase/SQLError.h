@@ -67,7 +67,7 @@ class SQLError : public GarbageCollectedFinalized<SQLError>, public ScriptWrappa
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SQLError* create(const SQLErrorData& data) { return new SQLError(data); }
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     unsigned code() const { return m_data.code(); }
     String message() const { return m_data.message(); }

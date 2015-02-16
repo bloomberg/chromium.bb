@@ -116,7 +116,7 @@ DatabaseContext::~DatabaseContext()
     DatabaseManager::manager().didDestructDatabaseContext();
 }
 
-void DatabaseContext::trace(Visitor* visitor)
+DEFINE_TRACE(DatabaseContext)
 {
     visitor->trace(m_databaseThread);
     ActiveDOMObject::trace(visitor);

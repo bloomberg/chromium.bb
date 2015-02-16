@@ -45,7 +45,7 @@ class SQLStatement final : public GarbageCollectedFinalized<SQLStatement> {
 public:
     static SQLStatement* create(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
     ~SQLStatement();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool performCallback(SQLTransaction*);
 

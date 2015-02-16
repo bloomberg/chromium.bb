@@ -73,7 +73,7 @@ SQLTransaction::~SQLTransaction()
 {
 }
 
-void SQLTransaction::trace(Visitor* visitor)
+DEFINE_TRACE(SQLTransaction)
 {
     visitor->trace(m_database);
     visitor->trace(m_backend);

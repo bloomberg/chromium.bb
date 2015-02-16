@@ -40,7 +40,7 @@ class Database;
 class DatabaseCallback : public GarbageCollectedFinalized<DatabaseCallback> {
 public:
     virtual ~DatabaseCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual bool handleEvent(Database*) = 0;
 };
 

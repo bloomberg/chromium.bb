@@ -54,7 +54,7 @@ DatabaseThread::~DatabaseThread()
     ASSERT(!m_thread);
 }
 
-void DatabaseThread::trace(Visitor* visitor)
+DEFINE_TRACE(DatabaseThread)
 {
     visitor->trace(m_openDatabaseSet);
     visitor->trace(m_transactionCoordinator);

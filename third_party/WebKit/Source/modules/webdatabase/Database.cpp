@@ -250,7 +250,7 @@ Database::~Database()
     ASSERT(!m_opened);
 }
 
-void Database::trace(Visitor* visitor)
+DEFINE_TRACE(Database)
 {
     visitor->trace(m_databaseContext);
     visitor->trace(m_sqliteDatabase);

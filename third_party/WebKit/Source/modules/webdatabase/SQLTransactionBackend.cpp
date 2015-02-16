@@ -367,7 +367,7 @@ SQLTransactionBackend::~SQLTransactionBackend()
     ASSERT(!m_sqliteTransaction);
 }
 
-void SQLTransactionBackend::trace(Visitor* visitor)
+DEFINE_TRACE(SQLTransactionBackend)
 {
     visitor->trace(m_frontend);
     visitor->trace(m_currentStatementBackend);

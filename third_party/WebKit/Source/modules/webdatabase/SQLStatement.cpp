@@ -63,7 +63,7 @@ SQLStatement::~SQLStatement()
 {
 }
 
-void SQLStatement::trace(Visitor* visitor)
+DEFINE_TRACE(SQLStatement)
 {
     visitor->trace(m_backend);
     visitor->trace(m_statementCallback);

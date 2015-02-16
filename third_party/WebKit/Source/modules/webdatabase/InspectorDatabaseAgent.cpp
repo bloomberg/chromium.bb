@@ -77,7 +77,7 @@ public:
 
     virtual ~StatementCallback() { }
 
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_requestCallback);
         SQLStatementCallback::trace(visitor);
@@ -121,7 +121,7 @@ public:
 
     virtual ~StatementErrorCallback() { }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_requestCallback);
         SQLStatementErrorCallback::trace(visitor);
@@ -148,7 +148,7 @@ public:
 
     virtual ~TransactionCallback() { }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_requestCallback);
         SQLTransactionCallback::trace(visitor);
@@ -182,7 +182,7 @@ public:
 
     virtual ~TransactionErrorCallback() { }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_requestCallback);
         SQLTransactionErrorCallback::trace(visitor);
@@ -339,7 +339,7 @@ Database* InspectorDatabaseAgent::databaseForId(const String& databaseId)
     return it->value->database();
 }
 
-void InspectorDatabaseAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorDatabaseAgent)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_resources);

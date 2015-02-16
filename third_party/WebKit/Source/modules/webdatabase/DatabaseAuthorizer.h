@@ -49,7 +49,7 @@ public:
     };
 
     static DatabaseAuthorizer* create(const String& databaseInfoTableName);
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     int createTable(const String& tableName);
     int createTempTable(const String& tableName);

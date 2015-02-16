@@ -56,7 +56,7 @@ public:
     static SQLTransaction* create(Database*, SQLTransactionCallback*,
         VoidCallback* successCallback, SQLTransactionErrorCallback*, bool readOnly);
     ~SQLTransaction();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void performPendingCallback();
 

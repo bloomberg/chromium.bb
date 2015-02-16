@@ -40,7 +40,7 @@ class SQLResultSetRowList : public GarbageCollectedFinalized<SQLResultSetRowList
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SQLResultSetRowList* create() { return new SQLResultSetRowList; }
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     const Vector<String>& columnNames() const { return m_columns; }
     const Vector<SQLValue>& values() const { return m_result; }

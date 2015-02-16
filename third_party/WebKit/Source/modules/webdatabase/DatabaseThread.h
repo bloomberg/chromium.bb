@@ -49,7 +49,7 @@ class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
 public:
     static DatabaseThread* create() { return new DatabaseThread; }
     ~DatabaseThread();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void start();
     void terminate();

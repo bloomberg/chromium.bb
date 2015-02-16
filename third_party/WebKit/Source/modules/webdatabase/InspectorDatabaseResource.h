@@ -42,7 +42,7 @@ class Database;
 class InspectorDatabaseResource : public GarbageCollectedFinalized<InspectorDatabaseResource> {
 public:
     static InspectorDatabaseResource* create(Database*, const String& domain, const String& name, const String& version);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void bind(InspectorFrontend::Database*);
     Database* database() { return m_database.get(); }

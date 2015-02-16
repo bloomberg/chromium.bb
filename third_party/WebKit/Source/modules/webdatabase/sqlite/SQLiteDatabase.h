@@ -112,7 +112,7 @@ public:
     enum AutoVacuumPragma { AutoVacuumNone = 0, AutoVacuumFull = 1, AutoVacuumIncremental = 2 };
     bool turnOnIncrementalAutoVacuum();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     static int authorizerFunction(void*, int, const char*, const char*, const char*, const char*);

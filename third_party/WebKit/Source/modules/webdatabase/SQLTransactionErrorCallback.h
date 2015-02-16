@@ -38,7 +38,7 @@ class SQLError;
 class SQLTransactionErrorCallback : public GarbageCollectedFinalized<SQLTransactionErrorCallback> {
 public:
     virtual ~SQLTransactionErrorCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual bool handleEvent(SQLError*) = 0;
 };
 

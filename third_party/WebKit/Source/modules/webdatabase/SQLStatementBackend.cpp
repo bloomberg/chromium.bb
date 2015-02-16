@@ -90,7 +90,7 @@ SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
     m_frontend->setBackend(this);
 }
 
-void SQLStatementBackend::trace(Visitor* visitor)
+DEFINE_TRACE(SQLStatementBackend)
 {
     visitor->trace(m_frontend);
     visitor->trace(m_resultSet);
