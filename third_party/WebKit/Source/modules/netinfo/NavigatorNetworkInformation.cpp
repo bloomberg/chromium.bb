@@ -53,7 +53,7 @@ NetworkInformation* NavigatorNetworkInformation::connection()
     return m_connection.get();
 }
 
-void NavigatorNetworkInformation::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorNetworkInformation)
 {
     visitor->trace(m_connection);
     WillBeHeapSupplement<Navigator>::trace(visitor);

@@ -26,7 +26,7 @@ public:
 
     static NetworkInformation* connection(ExecutionContext*, WorkerNavigator&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);

@@ -26,7 +26,7 @@ public:
 
     static NetworkInformation* connection(Navigator&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit NavigatorNetworkInformation(Navigator&);

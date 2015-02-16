@@ -43,7 +43,7 @@ NetworkInformation* WorkerNavigatorNetworkInformation::connection(ExecutionConte
     return WorkerNavigatorNetworkInformation::from(navigator, context).connection(context);
 }
 
-void WorkerNavigatorNetworkInformation::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerNavigatorNetworkInformation)
 {
     visitor->trace(m_connection);
     WillBeHeapSupplement<WorkerNavigator>::trace(visitor);
