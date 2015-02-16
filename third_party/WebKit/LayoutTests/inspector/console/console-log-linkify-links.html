@@ -7,10 +7,23 @@ console.log("http://www.chromium.org/");
 console.log("follow http://www.chromium.org/");
 console.log("string", "http://www.chromium.org/");
 console.log(123, "http://www.chromium.org/");
+console.log("http://www.chromium.org/some?v=114:56:57");
+
 
 function test()
 {
     InspectorTest.dumpConsoleMessages(false, true);
+
+    InspectorTest.addResult("Dump urls in messages");
+    var consoleView = WebInspector.ConsolePanel._view();
+    var viewMessages = consoleView._visibleViewMessages;
+    for (var i = 0; i < viewMessages.length; ++i) {
+        var uiMessage = viewMessages[i];
+        var element = uiMessage.contentElement();
+        var href = element.querySelector(".webkit-html-external-link");
+        InspectorTest.addResult("linked url:" + href.href);
+    }
+
     InspectorTest.completeTest();
 }
 </script>
