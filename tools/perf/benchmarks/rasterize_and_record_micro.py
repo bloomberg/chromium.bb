@@ -84,8 +84,10 @@ class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the Polymer cases.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  page_set = page_sets.PolymerPageSet
+
   @classmethod
   def Name(cls):
     return 'rasterize_and_record_micro.polymer'
 
+  def CreatePageSet(self, options):
+    return page_sets.PolymerPageSet(run_no_page_interactions=True)

@@ -6,7 +6,13 @@ from telemetry.page import page_set as page_set_module
 
 class PolymerPage(page_module.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, url, page_set, run_no_page_interactions):
+    """ Base class for all polymer pages.
+
+    Args:
+      run_no_page_interactions: whether the page will run any interactions after
+        navigate steps.
+    """
     super(PolymerPage, self).__init__(
       url=url,
       page_set=page_set)
@@ -15,6 +21,18 @@ class PolymerPage(page_module.Page):
         window.__polymer_ready = true;
       });
     '''
+    self._run_no_page_interactions = run_no_page_interactions
+
+  def RunPageInteraction(self, action_runner):
+    # If a polymer page wants to customize it actions, it should
+    # overrides the PerformPageInteractions method instead of this method.
+    if self._run_no_page_interactions:
+      return
+    self.PerformPageInteractions(action_runner)
+
+  def PerformPageInteractions(self, action_runner):
+    """ Override this to perform actions after the page has navigated. """
+    pass
 
   def RunNavigateSteps(self, action_runner):
     super(PolymerPage, self).RunNavigateSteps(action_runner)
@@ -24,13 +42,13 @@ class PolymerPage(page_module.Page):
 
 class PolymerCalculatorPage(PolymerPage):
 
-  def __init__(self, page_set):
+  def __init__(self, page_set, run_no_page_interactions):
     super(PolymerCalculatorPage, self).__init__(
       url=('http://www.polymer-project.org/components/paper-calculator/'
           'demo.html'),
-      page_set=page_set)
+      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
-  def RunPageInteractions(self, action_runner):
+  def PerformPageInteractions(self, action_runner):
     self.TapButton(action_runner)
     self.SlidePanel(action_runner)
 
@@ -77,12 +95,12 @@ class PolymerCalculatorPage(PolymerPage):
 
 class PolymerShadowPage(PolymerPage):
 
-  def __init__(self, page_set):
+  def __init__(self, page_set, run_no_page_interactions):
     super(PolymerShadowPage, self).__init__(
       url='http://www.polymer-project.org/components/paper-shadow/demo.html',
-      page_set=page_set)
+      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
-  def RunPageInteractions(self, action_runner):
+  def PerformPageInteractions(self, action_runner):
     action_runner.ExecuteJavaScript(
         "document.getElementById('fab').scrollIntoView()")
     action_runner.Wait(5)
@@ -100,7 +118,8 @@ class PolymerShadowPage(PolymerPage):
 
 class PolymerSampler(PolymerPage):
 
-  def __init__(self, page_set, anchor, scrolling_page=False):
+  def __init__(self, page_set, anchor, run_no_page_interactions,
+               scrolling_page=False):
     """Page exercising interactions with a single Paper Sampler subpage.
 
     Args:
@@ -112,7 +131,7 @@ class PolymerSampler(PolymerPage):
     """
     super(PolymerSampler, self).__init__(
       url=('http://www.polymer-project.org/components/%s/demo.html' % anchor),
-      page_set=page_set)
+      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
     self.scrolling_page = scrolling_page
     self.iframe_js = 'document'
 
@@ -129,7 +148,7 @@ class PolymerSampler(PolymerPage):
     action_runner.WaitForJavaScriptCondition(
         'window.__polymer_ready')
 
-  def RunPageInteractions(self, action_runner):
+  def PerformPageInteractions(self, action_runner):
     #TODO(wiltzius) Add interactions for input elements and shadow pages
     if self.scrolling_page:
       # Only bother scrolling the page if its been marked as worthwhile
@@ -204,14 +223,14 @@ class PolymerSampler(PolymerPage):
 
 class PolymerPageSet(page_set_module.PageSet):
 
-  def __init__(self):
+  def __init__(self, run_no_page_interactions=False):
     super(PolymerPageSet, self).__init__(
       user_agent_type='mobile',
       archive_data_file='data/polymer.json',
       bucket=page_set_module.PUBLIC_BUCKET)
 
-    self.AddUserStory(PolymerCalculatorPage(self))
-    self.AddUserStory(PolymerShadowPage(self))
+    self.AddUserStory(PolymerCalculatorPage(self, run_no_page_interactions))
+    self.AddUserStory(PolymerShadowPage(self, run_no_page_interactions))
 
     # Polymer Sampler subpages that are interesting to tap / swipe elements on
     TAPPABLE_PAGES = [
@@ -228,11 +247,20 @@ class PolymerPageSet(page_set_module.PageSet):
         'paper-toggle-button',
         ]
     for p in TAPPABLE_PAGES:
-      self.AddUserStory(PolymerSampler(self, p))
+      self.AddUserStory(PolymerSampler(
+          self, p, run_no_page_interactions=run_no_page_interactions))
 
     # Polymer Sampler subpages that are interesting to scroll
     SCROLLABLE_PAGES = [
         'core-scroll-header-panel',
         ]
     for p in SCROLLABLE_PAGES:
-      self.AddUserStory(PolymerSampler(self, p, scrolling_page=True))
+      self.AddUserStory(PolymerSampler(
+          self, p, run_no_page_interactions=run_no_page_interactions,
+          scrolling_page=True))
+
+    for page in self:
+      assert (page.__class__.RunPageInteractions ==
+              PolymerPage.RunPageInteractions), (
+              'Pages in this page set must not override PolymerPage\' '
+              'RunPageInteractions method.')
