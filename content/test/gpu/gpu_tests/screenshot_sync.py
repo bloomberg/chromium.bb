@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import random
 
 import screenshot_sync_expectations as expectations
 
 from telemetry import benchmark
 from telemetry.core import util
+from telemetry.image_processing import image_util
 from telemetry.page import page
 from telemetry.page import page_set
 from telemetry.page import page_test
@@ -17,14 +19,29 @@ data_path = os.path.join(
 @benchmark.Disabled('mac')
 class _ScreenshotSyncValidator(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArgs('--force-gpu-rasterization')
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    test_success = tab.EvaluateJavaScript('window.__testSuccess')
-    if not test_success:
-      message = tab.EvaluateJavaScript('window.__testMessage')
-      raise page_test.Failure(message)
+    if not tab.screenshot_supported:
+      raise page_test.Failure('Browser does not support screenshot capture')
 
+    def CheckColorMatch(canvasRGB, screenshotRGB):
+      for i in range(0, 3):
+        if abs(canvasRGB[i] - screenshotRGB[i]) > 1:
+          raise page_test.Failure('Color mismatch in component #%d: %d vs %d' %
+              (i, canvasRGB[i], screenshotRGB[i]))
+
+    def CheckScreenshot():
+      canvasRGB = [];
+      for i in range(0, 3):
+        canvasRGB.append(random.randint(0, 255))
+      tab.EvaluateJavaScript("window.draw(%d, %d, %d);" % tuple(canvasRGB))
+      screenshot = tab.Screenshot(5)
+      CheckColorMatch(canvasRGB, image_util.Pixels(screenshot))
+
+    repetitions = 50
+    for n in range(0, repetitions):
+      CheckScreenshot()
 
 @benchmark.Disabled('mac')
 class ScreenshotSyncPage(page.Page):
@@ -38,8 +55,6 @@ class ScreenshotSyncPage(page.Page):
 
   def RunNavigateSteps(self, action_runner):
     super(ScreenshotSyncPage, self).RunNavigateSteps(action_runner)
-    action_runner.WaitForJavaScriptCondition(
-        'window.__testComplete', timeout_in_seconds=120)
 
 
 @benchmark.Disabled('mac')
