@@ -11,8 +11,6 @@
       'app/shell_main_delegate.h',
       'browser/api/identity/identity_api.cc',
       'browser/api/identity/identity_api.h',
-      'browser/shell_browser_context_keyed_service_factories.cc',
-      'browser/shell_browser_context_keyed_service_factories.h',
       'browser/default_shell_browser_main_delegate.cc',
       'browser/default_shell_browser_main_delegate.h',
       'browser/desktop_controller.cc',
@@ -30,6 +28,8 @@
       'browser/shell_audio_controller_chromeos.h',
       'browser/shell_browser_context.cc',
       'browser/shell_browser_context.h',
+      'browser/shell_browser_context_keyed_service_factories.cc',
+      'browser/shell_browser_context_keyed_service_factories.h',
       'browser/shell_browser_main_delegate.h',
       'browser/shell_browser_main_parts.cc',
       'browser/shell_browser_main_parts.h',
@@ -113,8 +113,8 @@
       'app/shell_main.cc',
     ],
     'app_shell_sources_mac': [
-      'app/shell_main_mac.h',
       'app/shell_main_mac.cc',
+      'app/shell_main_mac.h',
     ],
     'app_shell_unittests_sources': [
       '../test/extensions_unittests_main.cc',
