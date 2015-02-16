@@ -26,3 +26,7 @@ BrowserViewTest.DevToolsUpdatesBrowserWindow
 
 # http://crbug.com/451992
 ExtensionLoadingTest.UpgradeAfterNavigatingFromOverriddenNewTabPage
+
+# http://crbug.com/459000
+ClipboardApiTest.HostedAppNoPermission
+
