@@ -348,8 +348,18 @@ inline bool isPageHeaderAddress(Address address)
 }
 #endif
 
-// FIXME: Add a good comment about the heap layout once heap relayout work
-// is done.
+// BasePage is a base class for NormalPage and LargeObjectPage.
+//
+// - NormalPage is a page whose size is |blinkPageSize|. NormalPage can contain
+//   multiple objects in the page. An object whose size is smaller than
+//   |largeObjectSizeThreshold| is stored in NormalPage.
+//
+// - LargeObjectPage is a page that contains only one object. The object size
+//   is arbitrary. An object whose size is larger than |blinkPageSize| is stored
+//   as a single project in LargeObjectPage.
+//
+// Note: An object whose size is between |largeObjectSizeThreshold| and
+// |blinkPageSize| can go to either of NormalPage or LargeObjectPage.
 class BasePage {
 public:
     BasePage(PageMemory*, BaseHeap*);
@@ -715,16 +725,13 @@ private:
     friend class NormalPageHeap;
 };
 
-// Thread heaps represent a part of the per-thread Blink heap.
+// Each thread has a number of thread heaps (e.g., Generic heaps,
+// typed heaps for Node, heaps for collection backings etc)
+// and BaseHeap represents each thread heap.
 //
-// Each Blink thread has a number of thread heaps: one general heap
-// that contains any type of object and a number of heaps specialized
-// for specific object types (such as Node).
-//
-// Each thread heap contains the functionality to allocate new objects
-// (potentially adding new pages to the heap), to find and mark
-// objects during conservative stack scanning and to sweep the set of
-// pages after a GC.
+// BaseHeap is a parent class of NormalPageHeap and LargeObjectHeap.
+// NormalPageHeap represents a heap that contains NormalPages
+// and LargeObjectHeap represents a heap that contains LargeObjectPages.
 class PLATFORM_EXPORT BaseHeap {
 public:
     BaseHeap(ThreadState*, int);
