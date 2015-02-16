@@ -35,46 +35,25 @@
 
 namespace blink {
 
-class AutoReplayer {
-public:
-    explicit AutoReplayer(ReplayingCanvas*);
-    ~AutoReplayer();
-
-private:
-    ReplayingCanvas* m_canvas;
-};
-
-AutoReplayer::AutoReplayer(ReplayingCanvas* replayingCanvas) : m_canvas(replayingCanvas)
+CanvasInterceptor<ReplayingCanvas>::~CanvasInterceptor()
 {
-    replayingCanvas->m_depthCount++;
-}
-
-AutoReplayer::~AutoReplayer()
-{
-    m_canvas->m_depthCount--;
-    if (m_canvas->m_depthCount)
-        return;
-    m_canvas->m_stepCount++;
-    m_canvas->updateInRange();
+    if (topLevelCall())
+        canvas()->updateInRange();
 }
 
 ReplayingCanvas::ReplayingCanvas(SkBitmap bitmap, unsigned fromStep, unsigned toStep)
-    : InterceptingCanvas(bitmap), m_fromStep(fromStep), m_toStep(toStep), m_stepCount(0), m_abortDrawing(false)
+    : InterceptingCanvas(bitmap), m_fromStep(fromStep), m_toStep(toStep), m_abortDrawing(false)
 {
-}
-
-void ReplayingCanvas::resetStepCount()
-{
-    m_stepCount = 0;
 }
 
 void ReplayingCanvas::updateInRange()
 {
     if (m_abortDrawing)
         return;
-    if (m_toStep && m_stepCount > m_toStep)
+    unsigned step = callCount() + 1;
+    if (m_toStep && step > m_toStep)
         m_abortDrawing = true;
-    if (m_stepCount == m_fromStep)
+    if (step == m_fromStep)
         this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
 }
 
@@ -83,191 +62,14 @@ bool ReplayingCanvas::abortDrawing()
     return m_abortDrawing;
 }
 
-void ReplayingCanvas::onDrawPaint(const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPaint(paint);
-}
-
-void ReplayingCanvas::onDrawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPoints(mode, count, pts, paint);
-}
-
-void ReplayingCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawRect(rect, paint);
-}
-
-void ReplayingCanvas::onDrawOval(const SkRect& rect, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawOval(rect, paint);
-}
-
-void ReplayingCanvas::onDrawRRect(const SkRRect& rrect, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawRRect(rrect, paint);
-}
-
-void ReplayingCanvas::onDrawPath(const SkPath& path, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPath(path, paint);
-}
-
-void ReplayingCanvas::onDrawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
-}
-
-void ReplayingCanvas::onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst,
-    const SkPaint* paint, DrawBitmapRectFlags flags)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
-}
-
-void ReplayingCanvas::onDrawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
-}
-
-void ReplayingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawSprite(bitmap, left, top, paint);
-}
-
-void ReplayingCanvas::onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
-    const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
-}
-
-void ReplayingCanvas::beginCommentGroup(const char* description)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::beginCommentGroup(description);
-}
-
-void ReplayingCanvas::addComment(const char* keyword, const char* value)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::addComment(keyword, value);
-}
-
-void ReplayingCanvas::endCommentGroup()
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::endCommentGroup();
-}
-
-void ReplayingCanvas::onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawDRRect(outer, inner, paint);
-}
-
-void ReplayingCanvas::onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawText(text, byteLength, x, y, paint);
-}
-
-void ReplayingCanvas::onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPosText(text, byteLength, pos, paint);
-}
-
-void ReplayingCanvas::onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPosTextH(text, byteLength, xpos, constY, paint);
-}
-
-void ReplayingCanvas::onDrawTextOnPath(const void* text, size_t byteLength, const SkPath& path, const SkMatrix* matrix, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
-}
-
-void ReplayingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y, const SkPaint& paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
-}
-
-void ReplayingCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, ClipEdgeStyle edgeStyle)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onClipRect(rect, op, edgeStyle);
-}
-
-void ReplayingCanvas::onClipRRect(const SkRRect& rrect, SkRegion::Op op, ClipEdgeStyle edgeStyle)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onClipRRect(rrect, op, edgeStyle);
-}
-
-void ReplayingCanvas::onClipPath(const SkPath& path, SkRegion::Op op, ClipEdgeStyle edgeStyle)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onClipPath(path, op, edgeStyle);
-}
-
-void ReplayingCanvas::onClipRegion(const SkRegion& region, SkRegion::Op op)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onClipRegion(region, op);
-}
-
-void ReplayingCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::onDrawPicture(picture, matrix, paint);
-}
-
-void ReplayingCanvas::didSetMatrix(const SkMatrix& matrix)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::didSetMatrix(matrix);
-}
-
-void ReplayingCanvas::didConcat(const SkMatrix& matrix)
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::didConcat(matrix);
-}
-
-void ReplayingCanvas::willSave()
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::willSave();
-}
-
 SkCanvas::SaveLayerStrategy ReplayingCanvas::willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags)
 {
-    AutoReplayer replayer(this);
     // We're about to create a layer and we have not cleared the device yet.
     // Let's clear now, so it has effect on all layers.
-    if (m_stepCount < m_fromStep)
+    if (callCount() <= m_fromStep)
         this->SkCanvas::clear(SkColorSetARGB(255, 255, 255, 255)); // FIXME: fill with nine patch instead.
 
-    return this->SkCanvas::willSaveLayer(bounds, paint, flags);
-}
-
-void ReplayingCanvas::willRestore()
-{
-    AutoReplayer replayer(this);
-    this->SkCanvas::willRestore();
+    return this->InterceptingCanvas<ReplayingCanvas>::willSaveLayer(bounds, paint, flags);
 }
 
 } // namespace blink

@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class LoggingCanvas : public InterceptingCanvas {
+class LoggingCanvas : public InterceptingCanvasBase {
 public:
     LoggingCanvas(int width, int height);
     PassRefPtr<JSONArray> log();
@@ -75,8 +75,9 @@ public:
     virtual void willRestore() override;
 
 private:
-    RefPtr<JSONArray> m_log;
     friend class AutoLogger;
+
+    RefPtr<JSONArray> m_log;
 
     struct VerbParams {
         String name;

@@ -32,49 +32,270 @@
 #define InterceptingCanvas_h
 
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "wtf/Assertions.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class InterceptingCanvas : public SkCanvas {
+class InterceptingCanvasBase : public SkCanvas {
+    WTF_MAKE_NONCOPYABLE(InterceptingCanvasBase);
 public:
-    InterceptingCanvas(SkBitmap bitmap) : SkCanvas(bitmap), m_depthCount(0) { };
-    InterceptingCanvas(int width, int height) : SkCanvas(width, height), m_depthCount(0) { };
+    template<typename DerivedCanvas> class CanvasInterceptorBase {
+        WTF_MAKE_NONCOPYABLE(CanvasInterceptorBase);
+    protected:
+        CanvasInterceptorBase(InterceptingCanvasBase* canvas)
+            : m_canvas(canvas)
+        {
+            ++m_canvas->m_callNestingDepth;
+        }
 
-    virtual void onDrawPaint(const SkPaint&) override = 0;
-    virtual void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override = 0;
-    virtual void onDrawRect(const SkRect&, const SkPaint&) override = 0;
-    virtual void onDrawOval(const SkRect&, const SkPaint&) override = 0;
-    virtual void onDrawRRect(const SkRRect&, const SkPaint&) override = 0;
-    virtual void onDrawPath(const SkPath&, const SkPaint&) override = 0;
-    virtual void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override = 0;
-    virtual void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override = 0;
-    virtual void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override = 0;
-    virtual void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override = 0;
-    virtual void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
-        const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override = 0;
-    virtual void beginCommentGroup(const char* description) override = 0;
-    virtual void addComment(const char* keyword, const char* value) override = 0;
-    virtual void endCommentGroup() override = 0;
+        ~CanvasInterceptorBase()
+        {
+            ASSERT(m_canvas->m_callNestingDepth > 0);
+            if (!--m_canvas->m_callNestingDepth)
+                m_canvas->m_callCount++;
+        }
 
-    virtual void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override = 0;
-    virtual void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override = 0;
-    virtual void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&) override = 0;
-    virtual void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&) override = 0;
-    virtual void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&) override = 0;
-    virtual void onDrawTextBlob(const SkTextBlob*, SkScalar x, SkScalar y, const SkPaint&) override = 0;
-    virtual void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override = 0;
-    virtual void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override = 0;
-    virtual void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override = 0;
-    virtual void onClipRegion(const SkRegion&, SkRegion::Op) override = 0;
-    virtual void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override = 0;
-    virtual void didSetMatrix(const SkMatrix&) override = 0;
-    virtual void didConcat(const SkMatrix&) override = 0;
-    virtual void willSave() override = 0;
-    SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override = 0;
-    virtual void willRestore() override = 0;
+        DerivedCanvas* canvas() { return static_cast<DerivedCanvas*>(m_canvas); }
+        bool topLevelCall() const { return m_canvas->callNestingDepth() == 1; }
+        InterceptingCanvasBase* m_canvas;
+    };
+
+    void resetStepCount() { m_callCount = 0; }
 
 protected:
-    unsigned m_depthCount;
+    explicit InterceptingCanvasBase(SkBitmap bitmap) : SkCanvas(bitmap), m_callNestingDepth(0), m_callCount(0) { };
+    InterceptingCanvasBase(int width, int height) : SkCanvas(width, height), m_callNestingDepth(0), m_callCount(0) { };
+
+    void onDrawPaint(const SkPaint&) override = 0;
+    void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override = 0;
+    void onDrawRect(const SkRect&, const SkPaint&) override = 0;
+    void onDrawOval(const SkRect&, const SkPaint&) override = 0;
+    void onDrawRRect(const SkRRect&, const SkPaint&) override = 0;
+    void onDrawPath(const SkPath&, const SkPaint&) override = 0;
+    void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override = 0;
+    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override = 0;
+    void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override = 0;
+    void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override = 0;
+    void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
+        const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override = 0;
+    void beginCommentGroup(const char* description) override = 0;
+    void addComment(const char* keyword, const char* value) override = 0;
+    void endCommentGroup() override = 0;
+
+    void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override = 0;
+    void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override = 0;
+    void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&) override = 0;
+    void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&) override = 0;
+    void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&) override = 0;
+    void onDrawTextBlob(const SkTextBlob*, SkScalar x, SkScalar y, const SkPaint&) override = 0;
+    void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override = 0;
+    void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override = 0;
+    void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override = 0;
+    void onClipRegion(const SkRegion&, SkRegion::Op) override = 0;
+    void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override = 0;
+    void didSetMatrix(const SkMatrix&) override = 0;
+    void didConcat(const SkMatrix&) override = 0;
+    void willSave() override = 0;
+    SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override = 0;
+    void willRestore() override = 0;
+
+    unsigned callNestingDepth() const { return m_callNestingDepth; }
+    unsigned callCount() const { return m_callCount; }
+
+private:
+    unsigned m_callNestingDepth;
+    unsigned m_callCount;
+};
+
+template<typename DerivedCanvas> class CanvasInterceptor { };
+
+template<typename DerivedCanvas, typename Interceptor = CanvasInterceptor<DerivedCanvas>>
+    class InterceptingCanvas : public InterceptingCanvasBase {
+protected:
+    explicit InterceptingCanvas(SkBitmap bitmap) : InterceptingCanvasBase(bitmap) { };
+    InterceptingCanvas(int width, int height) : InterceptingCanvasBase(width, height) { };
+
+    void onDrawPaint(const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawPaint(paint);
+    }
+
+    void onDrawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawPoints(mode, count, pts, paint);
+    }
+
+    void onDrawRect(const SkRect& rect, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawRect(rect, paint);
+    }
+
+    void onDrawOval(const SkRect& rect, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawOval(rect, paint);
+    }
+
+    void onDrawRRect(const SkRRect& rrect, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawRRect(rrect, paint);
+    }
+
+    void onDrawPath(const SkPath& path, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawPath(path, paint);
+    }
+
+    void onDrawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top, const SkPaint* paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
+    }
+
+    void onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, DrawBitmapRectFlags flags) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
+    }
+
+    void onDrawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
+    }
+
+    void onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawSprite(bitmap, left, top, paint);
+    }
+
+    void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
+        const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors, xmode, indices, indexCount, paint);
+    }
+
+    void beginCommentGroup(const char* description) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::beginCommentGroup(description);
+    }
+
+    void addComment(const char* keyword, const char* value) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::addComment(keyword, value);
+    }
+
+    void endCommentGroup() override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::endCommentGroup();
+    }
+
+    void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawDRRect(outer, inner, paint);
+    }
+
+    void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawText(text, byteLength, x, y, paint);
+    }
+
+    void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawPosText(text, byteLength, pos, paint);
+    }
+
+    void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawPosTextH(text, byteLength, xpos, constY, paint);
+    }
+
+    void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath& path, const SkMatrix* matrix, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
+    }
+
+    void onDrawTextBlob(const SkTextBlob *blob, SkScalar x, SkScalar y, const SkPaint& paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
+    }
+
+    void onClipRect(const SkRect& rect, SkRegion::Op op, ClipEdgeStyle edgeStyle) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onClipRect(rect, op, edgeStyle);
+    }
+
+    void onClipRRect(const SkRRect& rrect, SkRegion::Op op, ClipEdgeStyle edgeStyle) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onClipRRect(rrect, op, edgeStyle);
+    }
+
+    void onClipPath(const SkPath& path, SkRegion::Op op, ClipEdgeStyle edgeStyle) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onClipPath(path, op, edgeStyle);
+    }
+
+    void onClipRegion(const SkRegion& region, SkRegion::Op op) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onClipRegion(region, op);
+    }
+
+    void onDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::onDrawPicture(picture, matrix, paint);
+    }
+
+    void didSetMatrix(const SkMatrix& matrix) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::didSetMatrix(matrix);
+    }
+
+    void didConcat(const SkMatrix& matrix) override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::didConcat(matrix);
+    }
+
+    void willSave() override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::willSave();
+    }
+
+    SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint* paint, SaveFlags flags) override
+    {
+        Interceptor interceptor(this);
+        return this->SkCanvas::willSaveLayer(bounds, paint, flags);
+    }
+
+    void willRestore() override
+    {
+        Interceptor interceptor(this);
+        this->SkCanvas::willRestore();
+    }
 };
 
 } // namespace blink

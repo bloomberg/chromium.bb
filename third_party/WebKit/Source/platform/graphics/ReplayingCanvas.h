@@ -36,53 +36,29 @@
 
 namespace blink {
 
-class ReplayingCanvas : public InterceptingCanvas, public SkDrawPictureCallback {
+class ReplayingCanvas;
+
+template<> class CanvasInterceptor<ReplayingCanvas> : protected InterceptingCanvasBase::CanvasInterceptorBase<ReplayingCanvas> {
+public:
+    CanvasInterceptor(InterceptingCanvasBase* canvas) : InterceptingCanvasBase::CanvasInterceptorBase<ReplayingCanvas>(canvas) { }
+    ~CanvasInterceptor();
+};
+
+class ReplayingCanvas : public InterceptingCanvas<ReplayingCanvas>, public SkDrawPictureCallback {
 public:
     ReplayingCanvas(SkBitmap, unsigned fromStep, unsigned toStep);
-    void resetStepCount();
 
     virtual bool abortDrawing() override;
-
-    virtual void onDrawPaint(const SkPaint&) override;
-    virtual void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override;
-    virtual void onDrawRect(const SkRect&, const SkPaint&) override;
-    virtual void onDrawOval(const SkRect&, const SkPaint&) override;
-    virtual void onDrawRRect(const SkRRect&, const SkPaint&) override;
-    virtual void onDrawPath(const SkPath&, const SkPaint&) override;
-    virtual void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint* = 0) override;
-    virtual void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override;
-    virtual void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override;
-    virtual void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint* = 0) override;
-    virtual void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
-        const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override;
-    virtual void beginCommentGroup(const char* description) override;
-    virtual void addComment(const char* keyword, const char* value) override;
-    virtual void endCommentGroup() override;
-
-    virtual void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override;
-    virtual void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override;
-    virtual void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&) override;
-    virtual void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&) override;
-    virtual void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&) override;
-    virtual void onDrawTextBlob(const SkTextBlob*, SkScalar x, SkScalar y, const SkPaint&) override;
-    virtual void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override;
-    virtual void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override;
-    virtual void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override;
-    virtual void onClipRegion(const SkRegion&, SkRegion::Op) override;
-    virtual void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*);
-    virtual void didSetMatrix(const SkMatrix&) override;
-    virtual void didConcat(const SkMatrix&) override;
-    virtual void willSave() override;
-    SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
-    virtual void willRestore() override;
+    virtual SkCanvas::SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
 
 private:
+    friend class CanvasInterceptor<ReplayingCanvas>;
+
+    void updateInRange();
+
     unsigned m_fromStep;
     unsigned m_toStep;
-    unsigned m_stepCount;
     bool m_abortDrawing;
-    void updateInRange();
-    friend class AutoReplayer;
 };
 
 } // namespace blink

@@ -39,22 +39,21 @@
 
 namespace blink {
 
-class AutoLogger {
+class AutoLogger : InterceptingCanvasBase::CanvasInterceptorBase<LoggingCanvas> {
 public:
-    explicit AutoLogger(LoggingCanvas*);
+    explicit AutoLogger(LoggingCanvas* canvas) : InterceptingCanvasBase::CanvasInterceptorBase<LoggingCanvas>(canvas) { }
+
     PassRefPtr<JSONObject> logItem(const String& name);
     PassRefPtr<JSONObject> logItemWithParams(const String& name);
-    ~AutoLogger();
+    ~AutoLogger()
+    {
+        if (topLevelCall())
+            canvas()->m_log->pushObject(m_logItem);
+    }
 
 private:
-    LoggingCanvas* m_canvas;
     RefPtr<JSONObject> m_logItem;
 };
-
-AutoLogger::AutoLogger(LoggingCanvas* loggingCanvas) : m_canvas(loggingCanvas)
-{
-    loggingCanvas->m_depthCount++;
-}
 
 PassRefPtr<JSONObject> AutoLogger::logItem(const String& name)
 {
@@ -72,15 +71,9 @@ PassRefPtr<JSONObject> AutoLogger::logItemWithParams(const String& name)
     return params.release();
 }
 
-AutoLogger::~AutoLogger()
-{
-    m_canvas->m_depthCount--;
-    if (!m_canvas->m_depthCount)
-        m_canvas->m_log->pushObject(m_logItem);
-}
 
 LoggingCanvas::LoggingCanvas(int width, int height)
-    : InterceptingCanvas(width, height)
+    : InterceptingCanvasBase(width, height)
     , m_log(JSONArray::create())
 {
 }
