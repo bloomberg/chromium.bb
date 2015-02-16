@@ -50,7 +50,6 @@ class TestSyncMessageFilter : public IPC::SyncMessageFilter {
 
 struct QueueMessageData {
   MessageDeliveryPolicy policy;
-  bool commit_requested;
   int source_frame_number;
 };
 
@@ -64,13 +63,11 @@ class QueueMessageSwapPromiseTest : public testing::Test {
 
   scoped_ptr<cc::SwapPromise> QueueMessageImpl(IPC::Message* msg,
                                                MessageDeliveryPolicy policy,
-                                               bool commit_requested,
                                                int source_frame_number) {
     return TestRenderWidget::QueueMessageImpl(msg,
                                               policy,
                                               frame_swap_message_queue_.get(),
                                               sync_message_filter_,
-                                              commit_requested,
                                               source_frame_number).Pass();
   }
 
@@ -110,7 +107,6 @@ class QueueMessageSwapPromiseTest : public testing::Test {
       promises_.push_back(
           QueueMessageImpl(new IPC::Message(messages_[i]),
                            data[i].policy,
-                           data[i].commit_requested,
                            data[i].source_frame_number).release());
     }
   }
@@ -141,8 +137,8 @@ class QueueMessageSwapPromiseTest : public testing::Test {
 
 TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySchedulesMessageForNextSwap) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, false, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -156,9 +152,9 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySchedulesMessageForNextSwap) {
 
 TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicyNeedsAtMostOnePromise) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, false, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, false, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 1},
+    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -170,8 +166,8 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicyNeedsAtMostOnePromise) {
 
 TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySendsMessageOnNoUpdate) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, false, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -183,8 +179,8 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySendsMessageOnNoUpdate) {
 
 TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySendsMessageOnSwapFails) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, false, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -196,8 +192,8 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicySendsMessageOnSwapFails) {
 
 TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicyRetainsMessageOnCommitFails) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, false, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_NEXT_SWAP, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -207,24 +203,11 @@ TEST_F(QueueMessageSwapPromiseTest, NextSwapPolicyRetainsMessageOnCommitFails) {
   EXPECT_TRUE(NextSwapHasMessage(messages_[0]));
 }
 
-TEST_F(QueueMessageSwapPromiseTest, VisualStateDirectSend) {
-  QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, false, 1},
-  };
-  QueueMessages(data, arraysize(data));
-
-  ASSERT_FALSE(promises_[0]);
-  EXPECT_FALSE(DirectSendMessages().empty());
-  EXPECT_TRUE(frame_swap_message_queue_->Empty());
-  EXPECT_TRUE(NextSwapMessages().empty());
-}
-
 TEST_F(QueueMessageSwapPromiseTest,
        VisualStateQueuesMessageWhenCommitRequested) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, true, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -239,9 +222,9 @@ TEST_F(QueueMessageSwapPromiseTest,
 TEST_F(QueueMessageSwapPromiseTest,
        VisualStateQueuesMessageWhenOtherMessageAlreadyQueued) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, true, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, true, 1},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
   };
   QueueMessages(data, arraysize(data));
 
@@ -254,10 +237,10 @@ TEST_F(QueueMessageSwapPromiseTest,
 
 TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidSwap) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, true, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, false, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, false, 2},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 2},
   };
   QueueMessages(data, arraysize(data));
 
@@ -283,10 +266,10 @@ TEST_F(QueueMessageSwapPromiseTest, VisualStateSwapPromiseDidSwap) {
 void QueueMessageSwapPromiseTest::VisualStateSwapPromiseDidNotSwap(
     cc::SwapPromise::DidNotSwapReason reason) {
   QueueMessageData data[] = {
-    /* { policy, commit_requested, source_frame_number } */
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, true, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, false, 1},
-    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, false, 2},
+    /* { policy, source_frame_number } */
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 1},
+    {MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE, 2},
   };
   QueueMessages(data, arraysize(data));
 

@@ -1409,18 +1409,7 @@ scoped_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
     MessageDeliveryPolicy policy,
     FrameSwapMessageQueue* frame_swap_message_queue,
     scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
-    bool commit_requested,
     int source_frame_number) {
-  if (policy == MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE &&
-      // No need for lock: this gets changed only on this thread.
-      !commit_requested &&
-      // No need for lock: Messages are only enqueued from this thread, if we
-      // don't have any now, no other thread will add any.
-      frame_swap_message_queue->Empty()) {
-    sync_message_filter->Send(msg);
-    return nullptr;
-  }
-
   bool first_message_for_frame = false;
   frame_swap_message_queue->QueueMessageForFrame(policy,
                                                  source_frame_number,
@@ -1447,7 +1436,6 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
                        policy,
                        frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
-                       compositor_->BeginMainFrameRequested(),
                        compositor_->GetSourceFrameNumber());
 
   if (swap_promise) {

@@ -499,7 +499,6 @@ class CONTENT_EXPORT RenderWidget
       MessageDeliveryPolicy policy,
       FrameSwapMessageQueue* frame_swap_message_queue,
       scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
-      bool commit_requested,
       int source_frame_number);
 
   // Override point to obtain that the current input method state and caret
