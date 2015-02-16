@@ -10,16 +10,9 @@
 #include "base/logging.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
-#include "base/time/time.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 
 namespace policy {
-
-namespace {
-
-const int kCommandTimeoutInMinutes = 3;
-
-}  // namespace
 
 RemoteCommandsQueue::RemoteCommandsQueue() : clock_(new base::DefaultClock()) {
 }
@@ -77,9 +70,9 @@ void RemoteCommandsQueue::ScheduleNextJob() {
   running_command_.reset(incoming_commands_.front().release());
   incoming_commands_.pop();
 
-  execution_timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMinutes(kCommandTimeoutInMinutes), this,
-      &RemoteCommandsQueue::OnCommandTimeout);
+  execution_timeout_timer_.Start(FROM_HERE,
+                                 running_command_->GetCommmandTimeout(), this,
+                                 &RemoteCommandsQueue::OnCommandTimeout);
 
   if (running_command_->Run(clock_->Now(),
                             base::Bind(&RemoteCommandsQueue::CurrentJobFinished,

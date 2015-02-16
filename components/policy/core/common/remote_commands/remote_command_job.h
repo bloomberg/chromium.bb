@@ -67,6 +67,10 @@ class POLICY_EXPORT RemoteCommandJob {
   // Returns the remote command type that this class is able to handle.
   virtual enterprise_management::RemoteCommand_Type GetType() const = 0;
 
+  // Returns the remote command timeout. If the command takes longer than the
+  // returned time interval to execute, the command queue will kill it.
+  virtual base::TimeDelta GetCommmandTimeout() const;
+
   // Helpful accessors.
   UniqueIDType unique_id() const { return unique_id_; }
   base::Time issued_time() const { return issued_time_; }

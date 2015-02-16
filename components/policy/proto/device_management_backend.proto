@@ -410,6 +410,9 @@ message RemoteCommand {
   enum Type {
     // Simple echo command for testing, will be ignored in production code.
     COMMAND_ECHO_TEST = -1;
+
+    // Reboot the device.
+    DEVICE_REBOOT = 0;
   }
 
   // The command type.

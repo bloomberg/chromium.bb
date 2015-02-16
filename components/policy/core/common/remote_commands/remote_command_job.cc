@@ -9,6 +9,12 @@
 
 namespace policy {
 
+namespace {
+
+const int kDefaultCommandTimeoutInMinutes = 3;
+
+}  // namespace
+
 namespace em = enterprise_management;
 
 RemoteCommandJob::~RemoteCommandJob() {
@@ -88,6 +94,10 @@ void RemoteCommandJob::Terminate() {
 
   if (!finished_callback_.is_null())
     finished_callback_.Run();
+}
+
+base::TimeDelta RemoteCommandJob::GetCommmandTimeout() const {
+  return base::TimeDelta::FromMinutes(kDefaultCommandTimeoutInMinutes);
 }
 
 bool RemoteCommandJob::IsExecutionFinished() const {
