@@ -3,9 +3,14 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+// TODO(mazda): Remove this file once NaCl has been rolled to the revision
+// that includes the definition of nacl_irt_icache.
+// https://code.google.com/p/nativeclient/issues/detail?id=4033
 
 #ifndef PPAPI_NACL_IRT_PUBLIC_IRT_NONSFI_H_
 #define PPAPI_NACL_IRT_PUBLIC_IRT_NONSFI_H_
+
+#if !defined(NACL_IRT_ICACHE_v0_1)
 
 #include <stddef.h>
 
@@ -20,5 +25,7 @@ struct nacl_irt_icache {
    */
   int (*clear_cache)(void* addr, size_t size);
 };
+
+#endif
 
 #endif  // PPAPI_NACL_IRT_PUBLIC_IRT_NONSFI_H_
