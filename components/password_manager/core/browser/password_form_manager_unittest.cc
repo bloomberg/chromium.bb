@@ -102,7 +102,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   PrefService* GetPrefs() override { return &prefs_; }
-  PasswordStore* GetPasswordStore() override { return password_store_; }
+  PasswordStore* GetPasswordStore() const override { return password_store_; }
 
   void SetFormToFilter(const autofill::PasswordForm& form) {
     form_to_filter_ = form;

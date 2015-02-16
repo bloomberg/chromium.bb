@@ -51,7 +51,7 @@ PrefService* StubPasswordManagerClient::GetPrefs() {
   return NULL;
 }
 
-PasswordStore* StubPasswordManagerClient::GetPasswordStore() {
+PasswordStore* StubPasswordManagerClient::GetPasswordStore() const {
   return NULL;
 }
 

@@ -258,7 +258,7 @@ PrefService* ChromePasswordManagerClient::GetPrefs() {
 }
 
 password_manager::PasswordStore*
-ChromePasswordManagerClient::GetPasswordStore() {
+ChromePasswordManagerClient::GetPasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
   // itself when it shouldn't access the PasswordStore.
   // TODO(gcasto): Is is safe to change this to
@@ -269,7 +269,7 @@ ChromePasswordManagerClient::GetPasswordStore() {
 
 base::FieldTrial::Probability
 ChromePasswordManagerClient::GetProbabilityForExperiment(
-    const std::string& experiment_name) {
+    const std::string& experiment_name) const {
   base::FieldTrial::Probability enabled_probability = 0;
   if (experiment_name ==
       password_manager::PasswordManager::kOtherPossibleUsernamesExperiment) {
@@ -286,7 +286,7 @@ ChromePasswordManagerClient::GetProbabilityForExperiment(
 }
 
 bool ChromePasswordManagerClient::IsPasswordSyncEnabled(
-    password_manager::CustomPassphraseState state) {
+    password_manager::CustomPassphraseState state) const {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service && sync_service->HasSyncSetupCompleted() &&
@@ -350,7 +350,7 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   return false;
 }
 
-bool ChromePasswordManagerClient::DidLastPageLoadEncounterSSLErrors() {
+bool ChromePasswordManagerClient::DidLastPageLoadEncounterSSLErrors() const {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
@@ -359,7 +359,7 @@ bool ChromePasswordManagerClient::DidLastPageLoadEncounterSSLErrors() {
   return net::IsCertStatusError(entry->GetSSL().cert_status);
 }
 
-bool ChromePasswordManagerClient::IsOffTheRecord() {
+bool ChromePasswordManagerClient::IsOffTheRecord() const {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
@@ -563,6 +563,6 @@ void ChromePasswordManagerClient::SetUpAutofillSyncState() {
   }
 }
 
-const GURL& ChromePasswordManagerClient::GetMainFrameURL() {
+const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {
   return web_contents()->GetVisibleURL();
 }

@@ -40,12 +40,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsPasswordManagerEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD2(IsSyncAccountCredential,
                      bool(const std::string&, const std::string&));
+  MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
+  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD1(PromptUserToSavePasswordPtr, void(PasswordFormManager*));
   MOCK_METHOD1(AutomaticPasswordSavePtr, void(PasswordFormManager*));
-  MOCK_METHOD0(GetPasswordStore, PasswordStore*());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
-  MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 
   // Workaround for scoped_ptr<> lacking a copy constructor.
   virtual bool PromptUserToSavePassword(

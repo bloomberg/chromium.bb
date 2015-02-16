@@ -72,7 +72,7 @@ class PasswordManagerClient {
 
   // Called when all autofill results have been computed. Client can use
   // this signal to report statistics. Default implementation is a noop.
-  virtual void AutofillResultsComputed() {}
+  virtual void AutofillResultsComputed();
 
   // Informs the embedder of a password form that can be saved if the user
   // allows it. The embedder is not required to prompt the user if it decides
@@ -101,30 +101,30 @@ class PasswordManagerClient {
   // save this to the PasswordStore, for example. Default implementation is a
   // noop.
   virtual void PasswordWasAutofilled(
-      const autofill::PasswordFormMap& best_matches) const {}
+      const autofill::PasswordFormMap& best_matches) const;
 
   // Called when password autofill is blocked by the blacklist. |best_matches|
   // contains the PasswordForm that flags the current site as being on the
   // blacklist. The client may choose to remove this from the PasswordStore in
   // order to unblacklist a site, for example. Default implementation is a noop.
   virtual void PasswordAutofillWasBlocked(
-      const autofill::PasswordFormMap& best_matches) const {}
+      const autofill::PasswordFormMap& best_matches) const;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() = 0;
 
   // Returns the PasswordStore associated with this instance.
-  virtual PasswordStore* GetPasswordStore() = 0;
+  virtual PasswordStore* GetPasswordStore() const = 0;
 
   // Returns the probability that the experiment identified by |experiment_name|
   // should be enabled. The default implementation returns 0.
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
-      const std::string& experiment_name);
+      const std::string& experiment_name) const;
 
   // Returns true if password sync is enabled in the embedder. Return value for
   // custom passphrase users depends on |state|. The default implementation
   // always returns false.
-  virtual bool IsPasswordSyncEnabled(CustomPassphraseState state);
+  virtual bool IsPasswordSyncEnabled(CustomPassphraseState state) const;
 
   // Only for clients which registered with a LogRouter: If called with
   // |router_can_be_used| set to false, the client may no longer use the
@@ -149,10 +149,10 @@ class PasswordManagerClient {
 
   // Returns whether any SSL certificate errors were encountered as a result of
   // the last page load.
-  virtual bool DidLastPageLoadEncounterSSLErrors();
+  virtual bool DidLastPageLoadEncounterSSLErrors() const;
 
   // If this browsing session should not be persisted.
-  virtual bool IsOffTheRecord();
+  virtual bool IsOffTheRecord() const;
 
   // Returns the PasswordManager associated with this client.
   virtual PasswordManager* GetPasswordManager();
@@ -161,7 +161,7 @@ class PasswordManagerClient {
   virtual autofill::AutofillManager* GetAutofillManagerForMainFrame();
 
   // Returns the main frame URL.
-  virtual const GURL& GetMainFrameURL();
+  virtual const GURL& GetMainFrameURL() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

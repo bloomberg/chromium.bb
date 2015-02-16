@@ -45,7 +45,7 @@ class TestPasswordManagerClient
   }
   ~TestPasswordManagerClient() override {}
 
-  password_manager::PasswordStore* GetPasswordStore() override {
+  password_manager::PasswordStore* GetPasswordStore() const override {
     return store_;
   }
 
@@ -76,7 +76,7 @@ class TestPasswordManagerClient
     return true;
   }
 
-  bool IsOffTheRecord() override { return is_off_the_record_; }
+  bool IsOffTheRecord() const override { return is_off_the_record_; }
 
   bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
   bool did_prompt_user_to_choose() const { return did_prompt_user_to_choose_; }

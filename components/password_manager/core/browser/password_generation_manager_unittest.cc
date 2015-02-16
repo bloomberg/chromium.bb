@@ -73,10 +73,10 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   ~TestPasswordManagerClient() override { store_->Shutdown(); }
 
-  bool IsOffTheRecord() override { return is_off_the_record_; }
-  PasswordStore* GetPasswordStore() override { return store_.get(); }
+  bool IsOffTheRecord() const override { return is_off_the_record_; }
+  PasswordStore* GetPasswordStore() const override { return store_.get(); }
   PrefService* GetPrefs() override { return prefs_.get(); }
-  bool IsPasswordSyncEnabled(CustomPassphraseState state) override {
+  bool IsPasswordSyncEnabled(CustomPassphraseState state) const override {
     return is_sync_enabled_;
   }
 

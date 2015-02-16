@@ -33,7 +33,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;
-  PasswordStore* GetPasswordStore() override;
+  PasswordStore* GetPasswordStore() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

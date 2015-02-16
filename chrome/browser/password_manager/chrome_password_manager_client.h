@@ -65,20 +65,20 @@ class ChromePasswordManagerClient
   void PasswordAutofillWasBlocked(
       const autofill::PasswordFormMap& best_matches) const override;
   PrefService* GetPrefs() override;
-  password_manager::PasswordStore* GetPasswordStore() override;
+  password_manager::PasswordStore* GetPasswordStore() const override;
   base::FieldTrial::Probability GetProbabilityForExperiment(
-      const std::string& experiment_name) override;
+      const std::string& experiment_name) const override;
   bool IsPasswordSyncEnabled(
-      password_manager::CustomPassphraseState state) override;
+      password_manager::CustomPassphraseState state) const override;
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void LogSavePasswordProgress(const std::string& text) const override;
   bool IsLoggingActive() const override;
   bool WasLastNavigationHTTPError() const override;
-  bool DidLastPageLoadEncounterSSLErrors() override;
-  bool IsOffTheRecord() override;
+  bool DidLastPageLoadEncounterSSLErrors() const override;
+  bool IsOffTheRecord() const override;
   password_manager::PasswordManager* GetPasswordManager() override;
   autofill::AutofillManager* GetAutofillManagerForMainFrame() override;
-  const GURL& GetMainFrameURL() override;
+  const GURL& GetMainFrameURL() const override;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();
