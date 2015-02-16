@@ -24,10 +24,8 @@ ServiceTabLauncher* ServiceTabLauncher::GetInstance() {
 
 ServiceTabLauncher::ServiceTabLauncher() {
   java_object_.Reset(
-      Java_ServiceTabLauncher_create(
-          AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this),
-          GetApplicationContext()));
+      Java_ServiceTabLauncher_getInstance(AttachCurrentThread(),
+                                          GetApplicationContext()));
 }
 
 ServiceTabLauncher::~ServiceTabLauncher() {}
@@ -36,15 +34,41 @@ void ServiceTabLauncher::LaunchTab(
     content::BrowserContext* browser_context,
     const content::OpenURLParams& params,
     const base::Callback<void(content::WebContents*)>& callback) {
+  if (!java_object_.obj()) {
+    LOG(ERROR) << "No ServiceTabLauncher is available to launch a new tab.";
+    callback.Run(nullptr);
+    return;
+  }
+
+  WindowOpenDisposition disposition = params.disposition;
+  if (disposition != NEW_WINDOW && disposition != NEW_POPUP &&
+      disposition != NEW_FOREGROUND_TAB && disposition != NEW_BACKGROUND_TAB) {
+    // ServiceTabLauncher can currently only launch new tabs.
+    NOTIMPLEMENTED();
+    return;
+  }
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> url = ConvertUTF8ToJavaString(
       env, params.url.spec());
+  ScopedJavaLocalRef<jstring> referrer_url =
+      ConvertUTF8ToJavaString(env, params.referrer.url.spec());
+  ScopedJavaLocalRef<jstring> headers = ConvertUTF8ToJavaString(
+      env, params.extra_headers);
+
+  ScopedJavaLocalRef<jbyteArray> post_data;
 
   Java_ServiceTabLauncher_launchTab(env,
                                     java_object_.obj(),
+                                    GetApplicationContext(),
+                                    0 /* request_id */,
+                                    browser_context->IsOffTheRecord(),
                                     url.obj(),
-                                    params.disposition,
-                                    browser_context->IsOffTheRecord());
+                                    disposition,
+                                    referrer_url.obj(),
+                                    params.referrer.policy,
+                                    headers.obj(),
+                                    post_data.obj());
 
   // TODO(peter): We need to wait for the Android Activity to reply to the
   // launch intent with the ID of the launched Web Contents, so that the Java

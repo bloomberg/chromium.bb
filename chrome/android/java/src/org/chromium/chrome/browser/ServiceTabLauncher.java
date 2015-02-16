@@ -5,16 +5,12 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
-import android.provider.Browser;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.ui.WindowOpenDisposition;
 
 /**
  * Tab Launcher to be used to launch new tabs from background Android Services, when it is not
@@ -22,78 +18,72 @@ import org.chromium.ui.WindowOpenDisposition;
  *
  * TODO(peter): Have the activity confirm that the tab has been launched.
  */
-public class ServiceTabLauncher {
+public abstract class ServiceTabLauncher {
     private static final String TAG = ServiceTabLauncher.class.getSimpleName();
+    private static final String SERVICE_TAB_LAUNCHER_KEY =
+            "org.chromium.chrome.browser.SERVICE_TAB_LAUNCHER";
 
-    private static final String BROWSER_ACTIVITY_KEY =
-            "org.chromium.chrome.browser.BROWSER_ACTIVITY";
-    private static final String EXTRA_OPEN_NEW_INCOGNITO_TAB =
-            "com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB";
-
-    private final long mNativeServiceTabLauncher;
-    private final Context mContext;
-
-    @CalledByNative
-    private static ServiceTabLauncher create(long nativeServiceTabLauncher, Context context) {
-        return new ServiceTabLauncher(nativeServiceTabLauncher, context);
-    }
-
-    private ServiceTabLauncher(long nativeServiceTabLauncher, Context context) {
-        mNativeServiceTabLauncher = nativeServiceTabLauncher;
-        mContext = context;
-    }
+    private static ServiceTabLauncher sInstance;
 
     /**
      * Launches the browser activity and launches a tab for |url|.
      *
+     * @param context The context using which the URL is being loaded.
+     * @param requestId Id of the request for launching this tab.
+     * @param incognito Whether the tab should be launched in incognito mode.
      * @param url The URL which should be launched in a tab.
      * @param disposition The disposition requested by the navigation source.
-     * @param incognito Whether the tab should be launched in incognito mode.
+     * @param referrerUrl URL of the referrer which is opening the page.
+     * @param referrerPolicy The referrer policy to consider when applying the referrer.
+     * @param extraHeaders Extra headers to apply when requesting the tab's URL.
+     * @param postData Post-data to include in the tab URL's request body.
      */
     @CalledByNative
-    private void launchTab(String url, int disposition, boolean incognito) {
-        Intent intent = new Intent(mContext, getBrowserActivityClassFromManifest());
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setData(Uri.parse(url));
+    public abstract void launchTab(Context context, int requestId, boolean incognito, String url,
+                                   int disposition, String referrerUrl, int referrerPolicy,
+                                   String extraHeaders, byte[] postData);
 
-        switch (disposition) {
-            case WindowOpenDisposition.NEW_WINDOW:
-            case WindowOpenDisposition.NEW_POPUP:
-            case WindowOpenDisposition.NEW_FOREGROUND_TAB:
-            case WindowOpenDisposition.NEW_BACKGROUND_TAB:
-                // The browser should attempt to create a new tab.
-                intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-                break;
-            default:
-                // The browser should attempt to re-use an existing tab.
-                break;
+    /**
+     * Returns the active instance of the ServiceTabLauncher. If none exists, a meta-data key will
+     * be read from the AndroidManifest.xml file to determine the class which implements the
+     * service tab launcher activity. If that fails, NULL will be returned instead.
+     *
+     * We need to do this run-around because the ServiceTabLauncher must be available from
+     * background services, where no activity may be alive. Furthermore, no browser shell code has
+     * to be involved in the process at all, which means that there's no common location where we
+     * can inject a delegate in the start-up paths.
+     *
+     * @param Context The application context for the running service.
+     */
+    @CalledByNative
+    private static ServiceTabLauncher getInstance(Context context) throws Exception {
+        if (sInstance == null) {
+            Class<?> implementation = getServiceTabLauncherClassFromManifest(context);
+            if (implementation != null) {
+                sInstance = (ServiceTabLauncher) implementation.newInstance();
+            }
         }
 
-        if (incognito) intent.putExtra(EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-
-        // TODO(peter): Add the referrer information when applicable.
-
-        mContext.startActivity(intent);
+        return sInstance;
     }
 
     /**
-     * Reads the BROWSER_ACTIVITY name from the meta data in the Android Manifest file.
+     * Reads the SERVICE_TAB_LAUNCHER_KEY from the manifest and returns the Class it
+     * refers to. If the class cannot be found, NULL will be returned instead.
      *
-     * @return Class for the browser activity to use when launching tabs.
+     * @param context The application context used to get the package name and manager.
      */
-    private Class<?> getBrowserActivityClassFromManifest() {
+    private static Class<?> getServiceTabLauncherClassFromManifest(Context context) {
         try {
-            ApplicationInfo info = mContext.getPackageManager().getApplicationInfo(
-                    mContext.getPackageName(), PackageManager.GET_META_DATA);
-            String className = info.metaData.getString(BROWSER_ACTIVITY_KEY);
+            ApplicationInfo info = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(), PackageManager.GET_META_DATA);
+            String className = info.metaData.getString(SERVICE_TAB_LAUNCHER_KEY);
 
             return Class.forName(className);
         } catch (NameNotFoundException e) {
             Log.e(TAG, "Context.getPackage() refers to an invalid package name.");
         } catch (ClassNotFoundException e) {
-            Log.e(TAG, "Invalid value for BROWSER_ACTIVITY in the Android manifest file.");
+            Log.e(TAG, "Invalid value for SERVICE_TAB_LAUNCHER in the Android manifest file.");
         }
 
         return null;
