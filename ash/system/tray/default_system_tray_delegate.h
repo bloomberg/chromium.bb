@@ -69,6 +69,7 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;
   void ChangeProxySettings() override;
+  NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   VolumeControlDelegate* GetVolumeControlDelegate() const override;
   void SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate> delegate) override;

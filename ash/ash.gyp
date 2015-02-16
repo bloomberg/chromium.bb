@@ -159,6 +159,8 @@
       'metrics/user_metrics_recorder.h',
       'multi_profile_uma.cc',
       'multi_profile_uma.h',
+      'networking_config_delegate.cc',
+      'networking_config_delegate.h',
       'popup_message.cc',
       'popup_message.h',
       'root_window_controller.cc',

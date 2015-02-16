@@ -79,6 +79,7 @@ class SystemTrayDelegateCommon : public ash::SystemTrayDelegate,
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;
   void ChangeProxySettings() override;
+  ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   ash::VolumeControlDelegate* GetVolumeControlDelegate() const override;
   void SetVolumeControlDelegate(
       scoped_ptr<ash::VolumeControlDelegate> delegate) override;

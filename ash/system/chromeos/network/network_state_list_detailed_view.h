@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H
+#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
+#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_
 
 #include <string>
 
@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/chromeos/network/network_list.h"
 #include "ui/chromeos/network/network_list_delegate.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
 
 namespace chromeos {
@@ -85,6 +86,12 @@ class NetworkStateListDetailedView
   bool ResetInfoBubble();
   void OnInfoBubbleDestroyed();
   views::View* CreateNetworkInfoView();
+  const gfx::ImageSkia* GetControlledByExtensionIcon();
+
+  // Creates the view of an extra icon appearing next to the network name
+  // indicating that the network is controlled by an extension. If no extension
+  // is registered for this network, returns |nullptr|.
+  views::View* CreateControlledByExtensionView(const ui::NetworkInfo& info);
 
   // Periodically request a network scan.
   void CallRequestScan();
@@ -121,6 +128,8 @@ class NetworkStateListDetailedView
   // A small bubble for displaying network info.
   views::BubbleDelegateView* info_bubble_;
 
+  gfx::Image controlled_by_extension_icon_;
+
   ui::NetworkListView network_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
@@ -129,4 +138,4 @@ class NetworkStateListDetailedView
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW
+#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW_H_

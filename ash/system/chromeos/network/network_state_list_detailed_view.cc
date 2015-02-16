@@ -4,13 +4,17 @@
 
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 
+#include <vector>
+
 #include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/networking_config_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -21,6 +25,7 @@
 #include "ash/system/tray/tray_popup_label_button.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_switches.h"
@@ -40,6 +45,7 @@
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/chromeos/network/network_info.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -547,6 +553,45 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   return container;
 }
 
+const gfx::ImageSkia*
+NetworkStateListDetailedView::GetControlledByExtensionIcon() {
+  // Lazily load the icon from the resource bundle.
+  if (controlled_by_extension_icon_.IsEmpty()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    controlled_by_extension_icon_ =
+        rb.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_CONTROLLED);
+  }
+  DCHECK(!controlled_by_extension_icon_.IsEmpty());
+  return controlled_by_extension_icon_.ToImageSkia();
+}
+
+views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
+    const ui::NetworkInfo& info) {
+  NetworkingConfigDelegate* networking_config_delegate =
+      Shell::GetInstance()
+          ->system_tray_delegate()
+          ->GetNetworkingConfigDelegate();
+  if (!networking_config_delegate)
+    return nullptr;
+  scoped_ptr<const ash::NetworkingConfigDelegate::ExtensionInfo>
+      extension_info = networking_config_delegate->LookUpExtensionForNetwork(
+          info.service_path);
+  if (!extension_info)
+    return nullptr;
+
+  // Get the tooltip text.
+  base::string16 tooltip_text = l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
+      base::UTF8ToUTF16(extension_info->extension_name));
+
+  views::ImageView* controlled_icon =
+      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
+
+  controlled_icon->SetImage(GetControlledByExtensionIcon());
+  controlled_icon->SetTooltipText(tooltip_text);
+  return controlled_icon;
+}
+
 void NetworkStateListDetailedView::CallRequestScan() {
   VLOG(1) << "Requesting Network Scan.";
   NetworkHandler::Get()->network_state_handler()->RequestScan();
@@ -570,6 +615,9 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
   view->AddIconAndLabel(info.image, info.label, info.highlight);
   view->SetBorder(
       views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+  views::View* controlled_icon = CreateControlledByExtensionView(info);
+  if (controlled_icon)
+    view->AddChildView(controlled_icon);
   return view;
 }
 
@@ -587,6 +635,9 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
     const NetworkInfo& info) {
   HoverHighlightView* highlight = static_cast<HoverHighlightView*>(view);
   highlight->AddIconAndLabel(info.image, info.label, info.highlight);
+  views::View* controlled_icon = CreateControlledByExtensionView(info);
+  if (controlled_icon)
+    view->AddChildView(controlled_icon);
 }
 
 views::Label* NetworkStateListDetailedView::CreateInfoLabel() {

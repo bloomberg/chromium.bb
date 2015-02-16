@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
+#include <string>
 #include <vector>
 
 #include "ash/session/session_state_observer.h"
@@ -120,6 +121,7 @@ class SystemTrayDelegateChromeOS
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;
   void ChangeProxySettings() override;
+  ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   ash::VolumeControlDelegate* GetVolumeControlDelegate() const override;
   void SetVolumeControlDelegate(
       scoped_ptr<ash::VolumeControlDelegate> delegate) override;
@@ -284,6 +286,7 @@ class SystemTrayDelegateChromeOS
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   scoped_ptr<device::BluetoothDiscoverySession> bluetooth_discovery_session_;
+  scoped_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;

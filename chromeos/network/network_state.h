@@ -103,6 +103,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if the network properties are stored in a user profile.
   bool IsPrivate() const;
 
+  // Returns the |raw_ssid| as a hex-encoded string
+  std::string GetHexSsid() const;
+
   // Returns a comma separated string of name servers.
   std::string GetDnsServersAsString() const;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/system_tray_delegate_common.h"
 
+#include "ash/networking_config_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -224,9 +225,14 @@ bool SystemTrayDelegateCommon::GetBluetoothDiscovering() {
 void SystemTrayDelegateCommon::ChangeProxySettings() {
 }
 
+ash::NetworkingConfigDelegate*
+SystemTrayDelegateCommon::GetNetworkingConfigDelegate() const {
+  return nullptr;
+}
+
 ash::VolumeControlDelegate* SystemTrayDelegateCommon::GetVolumeControlDelegate()
     const {
-  return NULL;
+  return nullptr;
 }
 
 void SystemTrayDelegateCommon::SetVolumeControlDelegate(

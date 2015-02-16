@@ -4,6 +4,7 @@
 
 #include "chromeos/network/network_state.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/device_event_log.h"
@@ -308,6 +309,10 @@ bool NetworkState::IsInProfile() const {
 bool NetworkState::IsPrivate() const {
   return !profile_path_.empty() &&
          profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
+}
+
+std::string NetworkState::GetHexSsid() const {
+  return base::HexEncode(vector_as_array(&raw_ssid()), raw_ssid().size());
 }
 
 std::string NetworkState::GetDnsServersAsString() const {

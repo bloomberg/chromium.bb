@@ -69,6 +69,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/ash/user_accounts_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
@@ -197,6 +198,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       have_session_length_limit_(false),
       should_run_bluetooth_discovery_(false),
       session_started_(false),
+      networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
       volume_control_delegate_(new VolumeController()),
       device_settings_observer_(CrosSettings::Get()->AddSettingsObserver(
           kSystemUse24HourClock,
@@ -776,6 +778,11 @@ bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
 void SystemTrayDelegateChromeOS::ChangeProxySettings() {
   CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
   LoginDisplayHostImpl::default_host()->OpenProxySettings();
+}
+
+ash::NetworkingConfigDelegate*
+SystemTrayDelegateChromeOS::GetNetworkingConfigDelegate() const {
+  return networking_config_delegate_.get();
 }
 
 ash::VolumeControlDelegate*

@@ -52,6 +52,9 @@
   <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
     Join other...
   </message>
+  <message name="IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI" desc="The accessible text for the badge in the detailed network list indicating that the respective network's configuration may be controlled by an extension.">
+    The extension "<ph name="EXTENSION_NAME">$1<ex>Nexus S</ex></ph>" can configure this network.
+  </message>
   <message name="IDS_ASH_STATUS_TRAY_OTHER_VPN" desc="The label used for the item to configure other private networks.">
     Join other...
   </message>

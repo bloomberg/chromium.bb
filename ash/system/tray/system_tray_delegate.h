@@ -97,6 +97,7 @@ struct ASH_EXPORT UpdateInfo {
 
 using IMEInfoList = std::vector<IMEInfo>;
 
+class NetworkingConfigDelegate;
 class VolumeControlDelegate;
 
 using RebootOnShutdownCallback = base::Callback<void(bool)>;
@@ -268,6 +269,9 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;
+
+  // Returns NetworkingConfigDelegate.
+  virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const = 0;
 
   // Returns VolumeControlDelegate.
   virtual VolumeControlDelegate* GetVolumeControlDelegate() const = 0;
