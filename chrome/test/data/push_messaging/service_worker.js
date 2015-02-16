@@ -3,18 +3,13 @@
 // found in the LICENSE file.
 
 this.onpush = function(event) {
-  // TODO(peter): Remove this check once Blink supports PushMessageData.json().
-  var data = event.data;
-  if (typeof data !== 'string')
-    data = data.text();
-
+  var data = event.data.text();
   if (data !== 'shownotification') {
     sendMessageToClients('push', data);
     return;
   }
 
-  // TODO(peter): Switch to self.registration.showNotification once implemented.
-  event.waitUntil(showLegacyNonPersistentNotification('Push test title', {
+  event.waitUntil(registration.showNotification('Push test title', {
     body: 'Push test body',
     tag: 'push_test_tag'
   }).then(function(notification) {
@@ -35,13 +30,5 @@ function sendMessageToClients(type, data) {
     });
   }, function(error) {
     console.log(error);
-  });
-}
-
-function showLegacyNonPersistentNotification(title, options) {
-  return new Promise(function(resolve, reject) {
-    var notification = new Notification(title, options);
-    notification.onshow = function() { resolve(notification); };
-    notification.onerror = function() { reject(new Error('Failed to show')); };
   });
 }
