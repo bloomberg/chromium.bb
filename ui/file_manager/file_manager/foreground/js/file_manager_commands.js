@@ -831,6 +831,10 @@ CommandHandler.COMMANDS_['search'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
+    // Cancel item selection.
+    fileManager.directoryModel.clearSelection();
+
+    // Focus the search box.
     var element = fileManager.document.querySelector('#search-box input');
     element.focus();
     element.select();
