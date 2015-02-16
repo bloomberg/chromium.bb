@@ -6,7 +6,7 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSTransformValue.h"
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSParserValues.h"
@@ -490,7 +490,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseKeywordValue(CSSPropertyID property
 }
 
 template <typename CharType>
-static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsigned expectedCount, CSSTransformValue* transformValue)
+static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsigned expectedCount, CSSFunctionValue* transformValue)
 {
     while (expectedCount) {
         size_t delimiter = WTF::find(pos, end - pos, expectedCount == 1 ? ')' : ',');
@@ -511,7 +511,7 @@ static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsi
 }
 
 template <typename CharType>
-static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigned expectedCount, CSSTransformValue* transformValue)
+static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigned expectedCount, CSSFunctionValue* transformValue)
 {
     while (expectedCount) {
         size_t delimiter = WTF::find(pos, end - pos, expectedCount == 1 ? ')' : ',');
@@ -530,7 +530,7 @@ static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigne
 }
 
 template <typename CharType>
-static PassRefPtrWillBeRawPtr<CSSTransformValue> parseSimpleTransformValue(CharType*& pos, CharType* end)
+static PassRefPtrWillBeRawPtr<CSSFunctionValue> parseSimpleTransformValue(CharType*& pos, CharType* end)
 {
     static const int shortestValidTransformStringLength = 12;
 
@@ -548,29 +548,29 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> parseSimpleTransformValue(CharT
         && toASCIILower(pos[8]) == 'e';
 
     if (isTranslate) {
-        CSSTransformValue::TransformOperationType transformType;
+        CSSValueID transformType;
         unsigned expectedArgumentCount = 1;
         unsigned argumentStart = 11;
         CharType c9 = toASCIILower(pos[9]);
         if (c9 == 'x' && pos[10] == '(') {
-            transformType = CSSTransformValue::TranslateXTransformOperation;
+            transformType = CSSValueTranslateX;
         } else if (c9 == 'y' && pos[10] == '(') {
-            transformType = CSSTransformValue::TranslateYTransformOperation;
+            transformType = CSSValueTranslateY;
         } else if (c9 == 'z' && pos[10] == '(') {
-            transformType = CSSTransformValue::TranslateZTransformOperation;
+            transformType = CSSValueTranslateZ;
         } else if (c9 == '(') {
-            transformType = CSSTransformValue::TranslateTransformOperation;
+            transformType = CSSValueTranslate;
             expectedArgumentCount = 2;
             argumentStart = 10;
         } else if (c9 == '3' && toASCIILower(pos[10]) == 'd' && pos[11] == '(') {
-            transformType = CSSTransformValue::Translate3DTransformOperation;
+            transformType = CSSValueTranslate3d;
             expectedArgumentCount = 3;
             argumentStart = 12;
         } else {
             return nullptr;
         }
         pos += argumentStart;
-        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
+        RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(transformType);
         if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue.get()))
             return nullptr;
         return transformValue.release();
@@ -588,7 +588,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> parseSimpleTransformValue(CharT
 
     if (isMatrix3d) {
         pos += 9;
-        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(CSSTransformValue::Matrix3DTransformOperation);
+        RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(CSSValueMatrix3d);
         if (!parseTransformNumberArguments(pos, end, 16, transformValue.get()))
             return nullptr;
         return transformValue.release();
@@ -605,7 +605,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> parseSimpleTransformValue(CharT
 
     if (isScale3d) {
         pos += 8;
-        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(CSSTransformValue::Scale3DTransformOperation);
+        RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(CSSValueScale3d);
         if (!parseTransformNumberArguments(pos, end, 3, transformValue.get()))
             return nullptr;
         return transformValue.release();
@@ -621,7 +621,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> parseSimpleTransformList(CharType*& 
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
             ++pos;
-        RefPtrWillBeRawPtr<CSSTransformValue> transformValue = parseSimpleTransformValue(pos, end);
+        RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = parseSimpleTransformValue(pos, end);
         if (!transformValue)
             return nullptr;
         if (!transformList)

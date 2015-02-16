@@ -1107,7 +1107,6 @@
             'css/CSSTimingFunctionValue.h',
             'css/CSSToLengthConversionData.cpp',
             'css/CSSToLengthConversionData.h',
-            'css/CSSTransformValue.cpp',
             'css/CSSUnicodeRangeValue.cpp',
             'css/CSSUnicodeRangeValue.h',
             'css/CSSUnknownRule.h',

@@ -49,7 +49,6 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/Counter.h"
@@ -8235,124 +8234,102 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
 class TransformOperationInfo {
 public:
     TransformOperationInfo(CSSValueID id)
-        : m_type(CSSTransformValue::UnknownTransformOperation)
-        , m_argCount(1)
+        : m_validID(true)
         , m_allowSingleArgument(false)
+        , m_argCount(1)
         , m_unit(CSSPropertyParser::FUnknown)
     {
         switch (id) {
         case CSSValueSkew:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::SkewTransformOperation;
             m_allowSingleArgument = true;
             m_argCount = 3;
             break;
         case CSSValueScale:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::ScaleTransformOperation;
             m_allowSingleArgument = true;
             m_argCount = 3;
             break;
-        case CSSValueSkewx:
+        case CSSValueSkewX:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::SkewXTransformOperation;
             break;
-        case CSSValueSkewy:
+        case CSSValueSkewY:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::SkewYTransformOperation;
             break;
         case CSSValueMatrix:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::MatrixTransformOperation;
             m_argCount = 11;
             break;
         case CSSValueRotate:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::RotateTransformOperation;
             break;
-        case CSSValueScalex:
+        case CSSValueScaleX:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::ScaleXTransformOperation;
             break;
-        case CSSValueScaley:
+        case CSSValueScaleY:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::ScaleYTransformOperation;
             break;
-        case CSSValueScalez:
+        case CSSValueScaleZ:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::ScaleZTransformOperation;
             break;
         case CSSValueScale3d:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::Scale3DTransformOperation;
             m_argCount = 5;
             break;
-        case CSSValueRotatex:
+        case CSSValueRotateX:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::RotateXTransformOperation;
             break;
-        case CSSValueRotatey:
+        case CSSValueRotateY:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::RotateYTransformOperation;
             break;
-        case CSSValueRotatez:
+        case CSSValueRotateZ:
             m_unit = CSSPropertyParser::FAngle;
-            m_type = CSSTransformValue::RotateZTransformOperation;
             break;
         case CSSValueMatrix3d:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::Matrix3DTransformOperation;
             m_argCount = 31;
             break;
         case CSSValueRotate3d:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::Rotate3DTransformOperation;
             m_argCount = 7;
             break;
         case CSSValueTranslate:
             m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_type = CSSTransformValue::TranslateTransformOperation;
             m_allowSingleArgument = true;
             m_argCount = 3;
             break;
-        case CSSValueTranslatex:
+        case CSSValueTranslateX:
             m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_type = CSSTransformValue::TranslateXTransformOperation;
             break;
-        case CSSValueTranslatey:
+        case CSSValueTranslateY:
             m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_type = CSSTransformValue::TranslateYTransformOperation;
             break;
-        case CSSValueTranslatez:
+        case CSSValueTranslateZ:
             m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_type = CSSTransformValue::TranslateZTransformOperation;
             break;
         case CSSValuePerspective:
             m_unit = CSSPropertyParser::FNumber;
-            m_type = CSSTransformValue::PerspectiveTransformOperation;
             break;
         case CSSValueTranslate3d:
             m_unit = CSSPropertyParser::FLength | CSSPropertyParser::FPercent;
-            m_type = CSSTransformValue::Translate3DTransformOperation;
             m_argCount = 5;
             break;
         default:
-            m_type = CSSTransformValue::UnknownTransformOperation;
+            m_validID = false;
             break;
         }
     }
 
-    CSSTransformValue::TransformOperationType type() const { return m_type; }
+    bool validID() const { return m_validID; }
     unsigned argCount() const { return m_argCount; }
     CSSPropertyParser::Units unit() const { return m_unit; }
 
-    bool unknown() const { return m_type == CSSTransformValue::UnknownTransformOperation; }
     bool hasCorrectArgCount(unsigned argCount) { return m_argCount == argCount || (m_allowSingleArgument && argCount == 1); }
 
 private:
-    CSSTransformValue::TransformOperationType m_type;
-    unsigned m_argCount;
+    bool m_validID;
     bool m_allowSingleArgument;
+    unsigned m_argCount;
     CSSPropertyParser::Units m_unit;
 };
 
@@ -8384,18 +8361,19 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPrope
         return nullptr;
 
     // See if the specified primitive is one we understand.
-    TransformOperationInfo info(value->function->id);
-    if (info.unknown())
+    CSSValueID type = value->function->id;
+    TransformOperationInfo info(type);
+    if (!info.validID())
         return nullptr;
 
     if (!info.hasCorrectArgCount(args->size()))
         return nullptr;
 
     // The transform is a list of functional primitives that specify transform operations.
-    // We collect a list of CSSTransformValues, where each value specifies a single operation.
+    // We collect a list of CSSFunctionValues, where each value specifies a single operation.
 
-    // Create the new CSSTransformValue for this operation and add it to our list.
-    RefPtrWillBeRawPtr<CSSTransformValue> transformValue = CSSTransformValue::create(info.type());
+    // Create the new CSSFunctionValue for this operation and add it to our list.
+    RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = CSSFunctionValue::create(type);
 
     // Snag our values.
     CSSParserValue* a = args->current();
@@ -8403,19 +8381,19 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPrope
     while (a) {
         CSSPropertyParser::Units unit = info.unit();
 
-        if (info.type() == CSSTransformValue::Rotate3DTransformOperation && argNumber == 3) {
+        if (type == CSSValueRotate3d && argNumber == 3) {
             // 4th param of rotate3d() is an angle rather than a bare number, validate it as such
             if (!validUnit(a, FAngle, HTMLStandardMode))
                 return nullptr;
-        } else if (info.type() == CSSTransformValue::Translate3DTransformOperation && argNumber == 2) {
+        } else if (type == CSSValueTranslate3d && argNumber == 2) {
             // 3rd param of translate3d() cannot be a percentage
             if (!validUnit(a, FLength, HTMLStandardMode))
                 return nullptr;
-        } else if (info.type() == CSSTransformValue::TranslateZTransformOperation && !argNumber) {
+        } else if (type == CSSValueTranslateZ && !argNumber) {
             // 1st param of translateZ() cannot be a percentage
             if (!validUnit(a, FLength, HTMLStandardMode))
                 return nullptr;
-        } else if (info.type() == CSSTransformValue::PerspectiveTransformOperation && !argNumber) {
+        } else if (type == CSSValuePerspective && !argNumber) {
             // 1st param of perspective() must be a non-negative number (deprecated) or length.
             if ((propId == CSSPropertyWebkitTransform && !validUnit(a, FNumber | FLength | FNonNeg, HTMLStandardMode))
                 || (propId == CSSPropertyTransform && !validUnit(a, FLength | FNonNeg, HTMLStandardMode)))

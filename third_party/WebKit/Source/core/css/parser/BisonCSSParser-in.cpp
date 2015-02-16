@@ -55,7 +55,6 @@
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"

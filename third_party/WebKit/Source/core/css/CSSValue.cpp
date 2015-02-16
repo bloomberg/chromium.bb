@@ -51,7 +51,6 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
@@ -144,8 +143,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSUnicodeRangeValue>(*this, other);
         case ValueListClass:
             return compareCSSValues<CSSValueList>(*this, other);
-        case CSSTransformClass:
-            return compareCSSValues<CSSTransformValue>(*this, other);
         case LineBoxContainClass:
             return compareCSSValues<CSSLineBoxContainValue>(*this, other);
         case CalculationClass:
@@ -218,8 +215,6 @@ String CSSValue::cssText() const
         return toCSSUnicodeRangeValue(this)->customCSSText();
     case ValueListClass:
         return toCSSValueList(this)->customCSSText();
-    case CSSTransformClass:
-        return toCSSTransformValue(this)->customCSSText();
     case LineBoxContainClass:
         return toCSSLineBoxContainValue(this)->customCSSText();
     case CalculationClass:
@@ -309,9 +304,6 @@ void CSSValue::destroy()
         return;
     case ValueListClass:
         delete toCSSValueList(this);
-        return;
-    case CSSTransformClass:
-        delete toCSSTransformValue(this);
         return;
     case LineBoxContainClass:
         delete toCSSLineBoxContainValue(this);
@@ -407,9 +399,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case ValueListClass:
         toCSSValueList(this)->~CSSValueList();
         return;
-    case CSSTransformClass:
-        toCSSTransformValue(this)->~CSSTransformValue();
-        return;
     case LineBoxContainClass:
         toCSSLineBoxContainValue(this)->~CSSLineBoxContainValue();
         return;
@@ -503,9 +492,6 @@ void CSSValue::trace(Visitor* visitor)
         return;
     case ValueListClass:
         toCSSValueList(this)->traceAfterDispatch(visitor);
-        return;
-    case CSSTransformClass:
-        toCSSTransformValue(this)->traceAfterDispatch(visitor);
         return;
     case LineBoxContainClass:
         toCSSLineBoxContainValue(this)->traceAfterDispatch(visitor);

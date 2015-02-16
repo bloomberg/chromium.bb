@@ -39,7 +39,6 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSTransformValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
@@ -882,11 +881,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForBorderRadiusCorner(LengthSize ra
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const TransformationMatrix& transform, const LayoutStyle& style)
+static PassRefPtrWillBeRawPtr<CSSFunctionValue> valueForMatrixTransform(const TransformationMatrix& transform, const LayoutStyle& style)
 {
-    RefPtrWillBeRawPtr<CSSTransformValue> transformValue = nullptr;
+    RefPtrWillBeRawPtr<CSSFunctionValue> transformValue = nullptr;
     if (transform.isAffine()) {
-        transformValue = CSSTransformValue::create(CSSTransformValue::MatrixTransformOperation);
+        transformValue = CSSFunctionValue::create(CSSValueMatrix);
 
         transformValue->append(cssValuePool().createValue(transform.a(), CSSPrimitiveValue::CSS_NUMBER));
         transformValue->append(cssValuePool().createValue(transform.b(), CSSPrimitiveValue::CSS_NUMBER));
@@ -895,7 +894,7 @@ static PassRefPtrWillBeRawPtr<CSSTransformValue> valueForMatrixTransform(const T
         transformValue->append(zoomAdjustedNumberValue(transform.e(), style));
         transformValue->append(zoomAdjustedNumberValue(transform.f(), style));
     } else {
-        transformValue = CSSTransformValue::create(CSSTransformValue::Matrix3DTransformOperation);
+        transformValue = CSSFunctionValue::create(CSSValueMatrix3d);
 
         transformValue->append(cssValuePool().createValue(transform.m11(), CSSPrimitiveValue::CSS_NUMBER));
         transformValue->append(cssValuePool().createValue(transform.m12(), CSSPrimitiveValue::CSS_NUMBER));

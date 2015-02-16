@@ -1047,22 +1047,22 @@ matrix
 matrix3d
 perspective
 rotate
-rotatex
-rotatey
-rotatez
+rotateX
+rotateY
+rotateZ
 rotate3d
 scale
-scalex
-scaley
-scalez
+scaleX
+scaleY
+scaleZ
 scale3d
 skew
-skewx
-skewy
+skewX
+skewY
 translate
-translatex
-translatey
-translatez
+translateX
+translateY
+translateZ
 translate3d
 
 // motion path
