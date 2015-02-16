@@ -1383,22 +1383,6 @@ class DeviceUtilsTakeScreenshotTest(DeviceUtilsNewImplTest):
       self.device.TakeScreenshot('/test/host/screenshot.png')
 
 
-class DeviceUtilsGetIOStatsTest(DeviceUtilsOldImplTest):
-
-  def testGetIOStats(self):
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'cat \"/proc/diskstats\" 2>/dev/null'",
-        '179 0 mmcblk0 1 2 3 4 5 6 7 8 9 10 11\r\n'):
-      self.assertEqual(
-          {
-            'num_reads': 1,
-            'num_writes': 5,
-            'read_ms': 4,
-            'write_ms': 8,
-          },
-          self.device.GetIOStats())
-
-
 class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsOldImplTest):
 
   def setUp(self):

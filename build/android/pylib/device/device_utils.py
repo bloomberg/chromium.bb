@@ -1297,23 +1297,6 @@ class DeviceUtils(object):
     return host_path
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def GetIOStats(self, timeout=None, retries=None):
-    """Gets cumulative disk IO stats since boot for all processes.
-
-    Args:
-      timeout: timeout in seconds
-      retries: number of retries
-
-    Returns:
-      A dict containing |num_reads|, |num_writes|, |read_ms|, and |write_ms|.
-
-    Raises:
-      CommandTimeoutError on timeout.
-      DeviceUnreachableError on missing device.
-    """
-    return self.old_interface.GetIoStats()
-
-  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetMemoryUsageForPid(self, pid, timeout=None, retries=None):
     """Gets the memory usage for the given PID.
 
