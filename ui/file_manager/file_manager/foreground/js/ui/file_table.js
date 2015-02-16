@@ -519,7 +519,7 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
  *
  * Invoked by cr.ui.Table when a file needs to be rendered.
  *
- * @param {Entry} entry The Entry object to render.
+ * @param {!Entry} entry The Entry object to render.
  * @param {string} columnId The id of the column to be rendered.
  * @param {cr.ui.Table} table The table doing the rendering.
  * @return {!HTMLDivElement} Created element.
@@ -529,7 +529,7 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
   var label = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
 
-  var icon = this.renderIconType_(entry, columnId, table);
+  var icon = filelist.renderFileTypeIcon(this.ownerDocument, entry);
   if (FileType.isImage(entry) || FileType.isVideo(entry))
     icon.appendChild(this.renderThumbnail_(entry));
   icon.appendChild(this.renderCheckmark_());
@@ -802,25 +802,6 @@ FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
 };
 
 /**
- * Render the type column of the detail table.
- *
- * Invoked by cr.ui.Table when a file needs to be rendered.
- *
- * @param {Entry} entry The Entry object to render.
- * @param {string} columnId The id of the column to be rendered.
- * @param {cr.ui.Table} table The table doing the rendering.
- * @return {!HTMLDivElement} Created element.
- * @private
- */
-FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
-  var icon = /** @type {!HTMLDivElement} */
-      (this.ownerDocument.createElement('div'));
-  icon.className = 'detail-icon';
-  icon.setAttribute('file-type-icon', FileType.getIcon(entry));
-  return icon;
-};
-
-/**
  * Renders the file thumbnail in the detail table.
  * @param {Entry} entry The Entry object to render.
  * @return {!HTMLDivElement} Created element.
@@ -924,9 +905,22 @@ filelist.decorateListItem = function(li, entry, fileSystemMetadata) {
 };
 
 /**
+ * Render the type column of the detail table.
+ * @param {!Document} doc Owner document.
+ * @param {!Entry} entry The Entry object to render.
+ * @return {!HTMLDivElement} Created element.
+ */
+filelist.renderFileTypeIcon = function(doc, entry) {
+  var icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  icon.className = 'detail-icon';
+  icon.setAttribute('file-type-icon', FileType.getIcon(entry));
+  return icon;
+};
+
+/**
  * Render filename label for grid and list view.
- * @param {Document} doc Owner document.
- * @param {Entry} entry The Entry object to render.
+ * @param {!Document} doc Owner document.
+ * @param {!Entry} entry The Entry object to render.
  * @return {!HTMLDivElement} The label.
  */
 filelist.renderFileNameLabel = function(doc, entry) {

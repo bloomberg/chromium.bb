@@ -800,8 +800,15 @@ body[type='full-page'] .detail-name .detail-icon {
   right: 0;
 }
 
+.thumbnail-bottom .detail-icon {
+  flex: none;
+  height: 16px;
+  width: 16px;
+}
+
 .thumbnail-bottom .filename-label {
   flex: auto;
+  padding: 12px;
 }
 
 /* Styles specific for the grid view. */
@@ -809,12 +816,17 @@ body[type='full-page'] .detail-name .detail-icon {
 .thumbnail-grid .thumbnail-item {
   -webkit-margin-start: 12px;
   background-color: rgb(245, 245, 245);
+  border-radius: 2px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
   height: 180px;
   margin-top: 8px;
   overflow: hidden;
   position: relative;
   width: 180px;
+}
+
+.thumbnail-grid .thumbnail-item .thumbnail {
+  border-radius: 2px;
 }
 
 .thumbnail-grid .thumbnail-frame {
@@ -872,16 +884,21 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
 }
 
 .thumbnail-grid .thumbnail-bottom {
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
-  height: 30px;
+  background-color: white;
+  border-radius: 0 0 2px 2px;
+  color: rgb(51, 51, 51);
+  height: 40px;
+}
+
+.thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom {
+  background-color: rgb(221, 242, 253);
 }
 
 .badge {
   height: 16px;
   position: absolute;
   right: 7px;
-  top: 7px;
+  top: 12px;
   width: 16px;
 }
 
@@ -898,7 +915,7 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
   height: 16px;
   position: absolute;
   right: 7px;
-  top: 7px;
+  top: 12px;
   width: 16px;
 }
 
@@ -991,7 +1008,9 @@ input.rename {
   flex: auto;
 }
 
-li[renaming=''] .filename-label {
+li[renaming=''] .filename-label,
+li[renaming=''] .detail-icon,
+li[renaming=''] .badge {
   display: none;
 }
 
@@ -1000,7 +1019,7 @@ li[renaming=''] .filename-label {
   -webkit-margin-start: -1px;
   box-sizing: border-box;
   height: 20px;
-  width: 114px;
+  width: 156px;
 }
 
 /* The cr.ui.Table representing the detailed file list. */

@@ -186,7 +186,7 @@ FileGrid.prototype.relayoutImmediately_ = function() {
 /**
  * Decorates thumbnail.
  * @param {cr.ui.ListItem} li List item.
- * @param {Entry} entry Entry to render a thumbnail for.
+ * @param {!Entry} entry Entry to render a thumbnail for.
  * @param {MetadataCache} metadataCache To retrieve thumbnail.
  * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
@@ -257,6 +257,7 @@ FileGrid.decorateThumbnail_ = function(
   var badge = li.ownerDocument.createElement('div');
   badge.className = 'badge';
   bottom.appendChild(badge);
+  bottom.appendChild(filelist.renderFileTypeIcon(li.ownerDocument, entry));
   bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
   frame.appendChild(bottom);
 };
@@ -389,7 +390,7 @@ Object.defineProperty(FileGrid.Item.prototype, 'label', {
 
 /**
  * @param {Element} li List item element.
- * @param {Entry} entry File entry.
+ * @param {!Entry} entry File entry.
  * @param {FileGrid} grid Owner.
  * @param {FileGrid.Item} previousItem Existing grid item. Usually it is the
  *     item used for the same entry before calling redraw() method. If it is
