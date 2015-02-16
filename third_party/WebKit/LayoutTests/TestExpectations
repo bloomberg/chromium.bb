@@ -1914,13 +1914,6 @@ crbug.com/458420 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/overflow-
 
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
 crbug.com/458417 [ XP ] http/tests/fetch/workers/fetch.html [ Pass Timeout ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-brightness-clamping.html [ NeedsRebaseline ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-brightness.html [ NeedsRebaseline ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-combined.html [ NeedsRebaseline ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-contrast.html [ NeedsRebaseline ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-invert.html [ NeedsRebaseline ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
-crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/multiple-filters-invalidation.html [ NeedsRebaseline ]
 
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
