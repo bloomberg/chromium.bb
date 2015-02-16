@@ -45,7 +45,7 @@ Geofencing* WorkerNavigatorGeofencing::geofencing()
     return m_geofencing.get();
 }
 
-void WorkerNavigatorGeofencing::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerNavigatorGeofencing)
 {
     visitor->trace(m_geofencing);
     WillBeHeapSupplement<WorkerNavigator>::trace(visitor);

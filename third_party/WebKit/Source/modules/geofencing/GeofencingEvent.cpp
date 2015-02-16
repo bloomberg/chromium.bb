@@ -22,7 +22,7 @@ GeofencingEvent::~GeofencingEvent()
 {
 }
 
-void GeofencingEvent::trace(Visitor* visitor)
+DEFINE_TRACE(GeofencingEvent)
 {
     visitor->trace(m_region);
     Event::trace(visitor);

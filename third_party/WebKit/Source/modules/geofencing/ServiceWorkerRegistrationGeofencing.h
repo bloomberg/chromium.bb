@@ -23,7 +23,7 @@ public:
     static Geofencing* geofencing(ServiceWorkerRegistration&);
     Geofencing* geofencing();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ServiceWorkerRegistrationGeofencing(ServiceWorkerRegistration*);

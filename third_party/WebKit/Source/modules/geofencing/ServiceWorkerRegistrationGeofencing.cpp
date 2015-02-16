@@ -46,7 +46,7 @@ Geofencing* ServiceWorkerRegistrationGeofencing::geofencing()
     return m_geofencing.get();
 }
 
-void ServiceWorkerRegistrationGeofencing::trace(Visitor* visitor)
+DEFINE_TRACE(ServiceWorkerRegistrationGeofencing)
 {
     visitor->trace(m_registration);
     visitor->trace(m_geofencing);

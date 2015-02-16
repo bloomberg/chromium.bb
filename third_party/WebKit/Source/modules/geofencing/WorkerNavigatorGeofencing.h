@@ -24,7 +24,7 @@ public:
     static Geofencing* geofencing(WorkerNavigator&);
     Geofencing* geofencing();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WorkerNavigatorGeofencing();

@@ -100,7 +100,7 @@ ScriptPromise Geofencing::getRegisteredRegions(ScriptState* scriptState) const
     return promise;
 }
 
-void Geofencing::trace(Visitor* visitor)
+DEFINE_TRACE(Geofencing)
 {
     visitor->trace(m_registration);
 }

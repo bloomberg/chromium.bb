@@ -19,7 +19,7 @@ public:
 
     String id() const { return m_id; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     // For SpecialWrapFor
     virtual bool isCircularGeofencingRegion() const { return false; }

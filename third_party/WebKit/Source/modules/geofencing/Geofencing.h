@@ -28,7 +28,7 @@ public:
     ScriptPromise unregisterRegion(ScriptState*, const String& regionId);
     ScriptPromise getRegisteredRegions(ScriptState*) const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit Geofencing(ServiceWorkerRegistration*);

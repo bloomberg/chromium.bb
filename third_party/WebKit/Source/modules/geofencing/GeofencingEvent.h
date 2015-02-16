@@ -30,7 +30,7 @@ public:
     }
 
     virtual ~GeofencingEvent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual const AtomicString& interfaceName() const override;
 

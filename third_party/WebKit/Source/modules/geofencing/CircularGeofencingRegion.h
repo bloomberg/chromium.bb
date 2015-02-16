@@ -26,7 +26,7 @@ public:
 
     WebCircularGeofencingRegion webRegion() const;
 
-    virtual void trace(Visitor* visitor) override { GeofencingRegion::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { GeofencingRegion::trace(visitor); }
 
     virtual bool isCircularGeofencingRegion() const override { return true; }
 
