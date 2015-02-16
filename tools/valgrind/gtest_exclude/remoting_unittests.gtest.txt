@@ -1,2 +1,5 @@
 # http://crbug.com/241856
 VideoSchedulerTest.StartAndStop
+
+# crbug.com/458691
+ClientSessionTest.ClipboardStubFilter
