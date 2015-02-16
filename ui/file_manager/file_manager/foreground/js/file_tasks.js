@@ -69,6 +69,16 @@ FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
 FileTasks.ZIP_UNPACKER_TASK_ID = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
 
 /**
+ * Available actions in task menu button.
+ * @enum {string}
+ */
+FileTasks.TaskMenuButtonActions = {
+  ShowMenu: 'ShowMenu',
+  RunTask: 'RunTask',
+  ChangeDefaultAction: 'ChangeDefaultAction'
+};
+
+/**
  * Returns URL of the Chrome Web Store which show apps supporting the given
  * file-extension and mime-type.
  *
@@ -651,7 +661,8 @@ FileTasks.prototype.display_ = function(combobutton) {
         str('ACTION_OPEN'));
   } else {
     combobutton.defaultItem = {
-      label: loadTimeData.getString('MORE_ACTIONS')
+      action: FileTasks.TaskMenuButtonActions.ShowMenu,
+      label: str('OPEN_WITH_BUTTON_LABEL')
     };
   }
 
@@ -670,6 +681,7 @@ FileTasks.prototype.display_ = function(combobutton) {
     if (this.defaultTask_) {
       combobutton.addSeparator();
       var changeDefaultMenuItem = combobutton.addDropDownItem({
+        action: FileTasks.TaskMenuButtonActions.ChangeDefaultAction,
         label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
       });
       changeDefaultMenuItem.classList.add('change-default');
@@ -732,6 +744,7 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
                                                       opt_bold,
                                                       opt_isDefault) {
   return {
+    action: FileTasks.TaskMenuButtonActions.RunTask,
     label: opt_title || task.title,
     iconUrl: task.iconUrl,
     iconType: task.iconType,

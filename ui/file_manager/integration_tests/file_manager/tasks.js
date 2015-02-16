@@ -121,7 +121,9 @@ function defaultActionDialog(expectedTaskId, windowId) {
       }).
       then(function() {
         return remoteCall.callRemoteTestUtil(
-            'fakeEvent', windowId, ['#tasks', 'select', {item: {}}]);
+            'fakeEvent', windowId, ['#tasks', 'select', {
+              item: { action: 'ChangeDefaultAction' }
+            }]);
       }).
       then(function(result) {
         chrome.test.assertTrue(result);

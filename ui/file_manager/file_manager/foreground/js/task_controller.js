@@ -134,35 +134,42 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
   if (!selection.tasks)
     return;
 
-  if (event.item.task) {
-    // Task field doesn't exist on change-default dropdown item.
-    selection.tasks.execute(event.item.task.taskId);
-  } else {
-    var extensions = [];
+  switch (event.item.action) {
+    case FileTasks.TaskMenuButtonActions.ShowMenu:
+      this.ui_.taskMenuButton.showMenu(false);
+      break;
+    case FileTasks.TaskMenuButtonActions.RunTask:
+      selection.tasks.execute(event.item.task.taskId);
+      break;
+    case FileTasks.TaskMenuButtonActions.ChangeDefaultAction:
+      var extensions = [];
 
-    for (var i = 0; i < selection.entries.length; i++) {
-      var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
-      if (match) {
-        var ext = match[1].toUpperCase();
-        if (extensions.indexOf(ext) == -1) {
-          extensions.push(ext);
+      for (var i = 0; i < selection.entries.length; i++) {
+        var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
+        if (match) {
+          var ext = match[1].toUpperCase();
+          if (extensions.indexOf(ext) == -1) {
+            extensions.push(ext);
+          }
         }
       }
-    }
 
-    var format = '';
+      var format = '';
 
-    if (extensions.length == 1) {
-      format = extensions[0];
-    }
+      if (extensions.length == 1) {
+        format = extensions[0];
+      }
 
-    // Change default was clicked. We should open "change default" dialog.
-    selection.tasks.showTaskPicker(
-        this.ui_.defaultTaskPicker,
-        loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
-        strf('CHANGE_DEFAULT_CAPTION', format),
-        this.changeDefaultTask_.bind(this, selection),
-        true);
+      // Change default was clicked. We should open "change default" dialog.
+      selection.tasks.showTaskPicker(
+          this.ui_.defaultTaskPicker,
+          loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
+          strf('CHANGE_DEFAULT_CAPTION', format),
+          this.changeDefaultTask_.bind(this, selection),
+          true);
+      break;
+    default:
+      assertNotReached('Unknown action.');
   }
 };
 
