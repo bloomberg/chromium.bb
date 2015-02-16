@@ -69,27 +69,11 @@ def token_type(i):
 
 
 class MakeCSSTokenizerCodePointsWriter(in_generator.Writer):
-    defaults = {
-        'Conditional': None,
-        'RuntimeEnabled': None,
-        'ImplementedAs': None,
-    }
-    filters = {
-    }
-    default_parameters = {
-        'namespace': '',
-        'export': '',
-    }
-
     def __init__(self, in_file_path):
         super(MakeCSSTokenizerCodePointsWriter, self).__init__(in_file_path)
 
         self._outputs = {
             ('CSSTokenizerCodepoints.cpp'): self.generate,
-        }
-        self._template_context = {
-            'namespace': '',
-            'export': '',
         }
 
     def generate(self):
