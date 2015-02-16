@@ -58,11 +58,31 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
   // Reloads accounts from the provider. Fires |OnRefreshTokenAvailable| for
   // each new account. Fires |OnRefreshTokenRevoked| for each account that was
   // removed.
+  // It expects that there is already a primary account id.
   void ReloadCredentials();
+
+  // Sets the primary account and then reloads the accounts from the provider.
+  // Should be called when the user signs in to a new account.
+  // |primary_account_id| must not be an empty string.
+  void ReloadCredentials(const std::string& primary_account_id);
+
+  // Sets the account that should be ignored by this token service.
+  // |ReloadCredentials| needs to be called for this change to be effective.
+  void ExcludeSecondaryAccount(const std::string& account_id);
+  void IncludeSecondaryAccount(const std::string& account_id);
+  void ExcludeSecondaryAccounts(const std::vector<std::string>& account_ids);
+
+  // Excludes all secondary accounts. |ReloadCredentials| needs to be called for
+  // this change to be effective.
+  void ExcludeAllSecondaryAccounts();
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
   friend class ProfileOAuth2TokenServiceIOSTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSTest,
+                           ExcludeSecondaryAccounts);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSTest,
+                           LoadRevokeCredentialsClearsExcludedAccounts);
 
   ProfileOAuth2TokenServiceIOS();
   ~ProfileOAuth2TokenServiceIOS() override;
@@ -97,10 +117,16 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
     std::string GetUsername() const override;
     GoogleServiceAuthError GetAuthStatus() const override;
 
+    bool marked_for_removal() const { return marked_for_removal_; }
+    void set_marked_for_removal(bool marked_for_removal) {
+      marked_for_removal_ = marked_for_removal;
+    }
+
    private:
     SigninErrorController* signin_error_controller_;
     std::string account_id_;
     GoogleServiceAuthError last_auth_error_;
+    bool marked_for_removal_;
 
     DISALLOW_COPY_AND_ASSIGN(AccountInfo);
   };
@@ -111,6 +137,18 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
 
   // Returns the iOS provider;
   ios::ProfileOAuth2TokenServiceIOSProvider* GetProvider();
+
+  // Returns the account ids that should be ignored by this token service.
+  std::set<std::string> GetExcludedSecondaryAccounts();
+
+  // Returns true if this token service should exclude all secondary accounts.
+  bool GetExcludeAllSecondaryAccounts();
+
+  // Clears exclude secondary accounts preferences.
+  void ClearExcludedSecondaryAccounts();
+
+  // The primary account id.
+  std::string primary_account_id_;
 
   // Info about the existing accounts.
   AccountInfoMap accounts_;

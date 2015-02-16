@@ -64,4 +64,14 @@ const char kSignedInTime[] = "signin.signedin_time";
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";
 
+// Boolean which stores if the OAuth2TokenService should ignore secondary
+// accounts.
+const char kTokenServiceExcludeAllSecondaryAccounts[] =
+    "token_service.exclude_all_secondary_accounts";
+
+// List that identifies the account id that should be ignored by the token
+// service.
+const char kTokenServiceExcludedSecondaryAccounts[] =
+    "token_service.excluded_secondary_accounts";
+
 }  // namespace prefs

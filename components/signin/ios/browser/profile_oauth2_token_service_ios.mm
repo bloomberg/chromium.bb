@@ -11,9 +11,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "ios/public/provider/components/signin/browser/profile_oauth2_token_service_ios_provider.h"
 #include "net/url_request/url_request_status.h"
@@ -134,7 +139,8 @@ ProfileOAuth2TokenServiceIOS::AccountInfo::AccountInfo(
     const std::string& account_id)
     : signin_error_controller_(signin_error_controller),
       account_id_(account_id),
-      last_auth_error_(GoogleServiceAuthError::NONE) {
+      last_auth_error_(GoogleServiceAuthError::NONE),
+      marked_for_removal_(false) {
   DCHECK(signin_error_controller_);
   DCHECK(!account_id_.empty());
   signin_error_controller_->AddProvider(this);
@@ -206,19 +212,61 @@ void ProfileOAuth2TokenServiceIOS::LoadCredentials(
   DCHECK(!primary_account_id.empty());
 
   GetProvider()->InitializeSharedAuthentication();
-  ReloadCredentials();
+  ReloadCredentials(primary_account_id);
   FireRefreshTokensLoaded();
+}
+
+void ProfileOAuth2TokenServiceIOS::ReloadCredentials(
+    const std::string& primary_account_id) {
+  DCHECK(!primary_account_id.empty());
+  DCHECK(primary_account_id_.empty() ||
+         primary_account_id_ == primary_account_id);
+  primary_account_id_ = primary_account_id;
+  ReloadCredentials();
 }
 
 void ProfileOAuth2TokenServiceIOS::ReloadCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (primary_account_id_.empty()) {
+    // Avoid loading the credentials if there is no primary account id.
+    return;
+  }
 
-  ScopedBatchChange batch(this);
+  std::vector<std::string> new_accounts(GetProvider()->GetAllAccountIds());
+  if (GetExcludeAllSecondaryAccounts()) {
+    // Only keep the |primary_account_id| in the list of new accounts.
+    if (std::find(new_accounts.begin(),
+                  new_accounts.end(),
+                  primary_account_id_) != new_accounts.end()) {
+      new_accounts.clear();
+      new_accounts.push_back(primary_account_id_);
+    }
+  } else {
+    std::set<std::string> exclude_secondary_accounts =
+        GetExcludedSecondaryAccounts();
+    DCHECK(std::find(exclude_secondary_accounts.begin(),
+                     exclude_secondary_accounts.end(),
+                     primary_account_id_) == exclude_secondary_accounts.end());
+    for (const auto& excluded_account_id : exclude_secondary_accounts) {
+      DCHECK(!excluded_account_id.empty());
+      auto account_id_to_remove_position = std::remove(
+          new_accounts.begin(), new_accounts.end(), excluded_account_id);
+      new_accounts.erase(account_id_to_remove_position, new_accounts.end());
+    }
+  }
+
+  std::vector<std::string> old_accounts(GetAccounts());
+  std::sort(new_accounts.begin(), new_accounts.end());
+  std::sort(old_accounts.begin(), old_accounts.end());
+  if (new_accounts == old_accounts) {
+    // Avoid starting a batch change if there are no changes in the list of
+    // account.
+    return;
+  }
 
   // Remove all old accounts that do not appear in |new_accounts| and then
   // load |new_accounts|.
-  std::vector<std::string> new_accounts(GetProvider()->GetAllAccountIds());
-  std::vector<std::string> old_accounts(GetAccounts());
+  ScopedBatchChange batch(this);
   for (auto i = old_accounts.begin(); i != old_accounts.end(); ++i) {
     if (std::find(new_accounts.begin(), new_accounts.end(), *i) ==
         new_accounts.end()) {
@@ -244,13 +292,19 @@ void ProfileOAuth2TokenServiceIOS::RevokeAllCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ScopedBatchChange batch(this);
-  CancelAllRequests();
-  ClearCache();
   AccountInfoMap toRemove = accounts_;
   for (AccountInfoMap::iterator i = toRemove.begin(); i != toRemove.end(); ++i)
     RemoveAccount(i->first);
 
   DCHECK_EQ(0u, accounts_.size());
+  primary_account_id_.clear();
+  ClearExcludedSecondaryAccounts();
+  // |RemoveAccount| should have cancelled all the requests and cleared the
+  // cache, account-by-account. This extra-cleaning should do nothing unless
+  // something went wrong and some cache values and/or pending requests were not
+  // linked to any valid account.
+  CancelAllRequests();
+  ClearCache();
 }
 
 OAuth2AccessTokenFetcher*
@@ -291,7 +345,8 @@ bool ProfileOAuth2TokenServiceIOS::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return accounts_.count(account_id) > 0;
+  AccountInfoMap::const_iterator iter = accounts_.find(account_id);
+  return iter != accounts_.end() && !iter->second->marked_for_removal();
 }
 
 void ProfileOAuth2TokenServiceIOS::UpdateAuthError(
@@ -346,9 +401,105 @@ void ProfileOAuth2TokenServiceIOS::RemoveAccount(
   DCHECK(!account_id.empty());
 
   if (accounts_.count(account_id) > 0) {
+    // This is needed to ensure that refresh token for |acccount_id| is not
+    // available while the account is removed. Thus all access token requests
+    // for |account_id| triggered while an account is being removed will get a
+    // user not signed up error response.
+    accounts_[account_id]->set_marked_for_removal(true);
     CancelRequestsForAccount(account_id);
     ClearCacheForAccount(account_id);
     accounts_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
   }
+}
+
+std::set<std::string>
+ProfileOAuth2TokenServiceIOS::GetExcludedSecondaryAccounts() {
+  const base::ListValue* excluded_secondary_accounts_pref =
+      client()->GetPrefs()->GetList(
+          prefs::kTokenServiceExcludedSecondaryAccounts);
+  std::set<std::string> excluded_secondary_accounts;
+  for (base::Value* pref_value : *excluded_secondary_accounts_pref) {
+    std::string value;
+    if (pref_value->GetAsString(&value))
+      excluded_secondary_accounts.insert(value);
+  }
+  return excluded_secondary_accounts;
+}
+
+void ProfileOAuth2TokenServiceIOS::ExcludeSecondaryAccounts(
+    const std::vector<std::string>& account_ids) {
+  for (const auto& account_id : account_ids)
+    ExcludeSecondaryAccount(account_id);
+}
+
+void ProfileOAuth2TokenServiceIOS::ExcludeSecondaryAccount(
+    const std::string& account_id) {
+  if (GetExcludeAllSecondaryAccounts()) {
+    // Avoid excluding individual secondary accounts when all secondary
+    // accounts are excluded.
+    return;
+  }
+
+  DCHECK(!account_id.empty());
+  ListPrefUpdate update(client()->GetPrefs(),
+                        prefs::kTokenServiceExcludedSecondaryAccounts);
+  base::ListValue* excluded_secondary_accounts = update.Get();
+  for (base::Value* pref_value : *excluded_secondary_accounts) {
+    std::string value_at_it;
+    if (pref_value->GetAsString(&value_at_it) && (value_at_it == account_id)) {
+      // |account_id| is already excluded.
+      return;
+    }
+  }
+  excluded_secondary_accounts->AppendString(account_id);
+}
+
+void ProfileOAuth2TokenServiceIOS::IncludeSecondaryAccount(
+    const std::string& account_id) {
+  if (GetExcludeAllSecondaryAccounts()) {
+    // Avoid including individual secondary accounts when all secondary
+    // accounts are excluded.
+    return;
+  }
+
+  DCHECK_NE(account_id, primary_account_id_);
+  DCHECK(!primary_account_id_.empty());
+
+  // Excluded secondary account ids is a logical set (not a list) of accounts.
+  // As the value stored in the excluded account ids preference is a list,
+  // the code below removes all occurences of |account_id| from this list. This
+  // ensures that |account_id| is actually included even in cases when the
+  // preference value was corrupted (see bug http://crbug.com/453470 as
+  // example).
+  ListPrefUpdate update(client()->GetPrefs(),
+                        prefs::kTokenServiceExcludedSecondaryAccounts);
+  base::ListValue* excluded_secondary_accounts = update.Get();
+  base::ListValue::iterator it = excluded_secondary_accounts->begin();
+  while (it != excluded_secondary_accounts->end()) {
+    base::Value* pref_value = *it;
+    std::string value_at_it;
+    if (pref_value->GetAsString(&value_at_it) && (value_at_it == account_id)) {
+      it = excluded_secondary_accounts->Erase(it, nullptr);
+      continue;
+    }
+    ++it;
+  }
+}
+
+bool ProfileOAuth2TokenServiceIOS::GetExcludeAllSecondaryAccounts() {
+  return client()->GetPrefs()->GetBoolean(
+      prefs::kTokenServiceExcludeAllSecondaryAccounts);
+}
+
+void ProfileOAuth2TokenServiceIOS::ExcludeAllSecondaryAccounts() {
+  client()->GetPrefs()->SetBoolean(
+      prefs::kTokenServiceExcludeAllSecondaryAccounts, true);
+}
+
+void ProfileOAuth2TokenServiceIOS::ClearExcludedSecondaryAccounts() {
+  client()->GetPrefs()->ClearPref(
+      prefs::kTokenServiceExcludeAllSecondaryAccounts);
+  client()->GetPrefs()->ClearPref(
+      prefs::kTokenServiceExcludedSecondaryAccounts);
 }
