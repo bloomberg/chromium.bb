@@ -52,9 +52,10 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
+    DOMMimeType(PassRefPtr<PluginData>, LocalFrame*, unsigned index);
+
     const MimeClassInfo& mimeClassInfo() const { return m_pluginData->mimes()[m_index]; }
 
-    DOMMimeType(PassRefPtr<PluginData>, LocalFrame*, unsigned index);
     RefPtr<PluginData> m_pluginData;
     unsigned m_index;
 };

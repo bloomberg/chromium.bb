@@ -70,11 +70,11 @@ PassRefPtrWillBeRawPtr<DOMPlugin> DOMMimeType::enabledPlugin() const
 {
     // FIXME: allowPlugins is just a client call. We should not need
     // to bounce through the loader to get there.
-    // Something like: m_frame->host()->client()->allowPlugins().
-    if (!m_frame || !m_frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
+    // Something like: frame()->host()->client()->allowPlugins().
+    if (!frame() || !frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return nullptr;
 
-    return DOMPlugin::create(m_pluginData.get(), m_frame, m_pluginData->mimePluginIndices()[m_index]);
+    return DOMPlugin::create(m_pluginData.get(), frame(), m_pluginData->mimePluginIndices()[m_index]);
 }
 
 } // namespace blink

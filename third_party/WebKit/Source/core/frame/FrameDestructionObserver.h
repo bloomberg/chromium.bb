@@ -34,8 +34,6 @@ class LocalFrame;
 
 class FrameDestructionObserver : public WillBeGarbageCollectedMixin {
 public:
-    explicit FrameDestructionObserver(LocalFrame*);
-
     virtual void frameDestroyed();
     virtual void willDetachFrameHost();
 
@@ -44,15 +42,18 @@ public:
     virtual void trace(Visitor*);
 
 protected:
+    explicit FrameDestructionObserver(LocalFrame*);
+
 #if !ENABLE(OILPAN)
     virtual ~FrameDestructionObserver();
 #endif
 
     void observeFrame(LocalFrame*);
 
+private:
     RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // FrameDestructionObserver_h

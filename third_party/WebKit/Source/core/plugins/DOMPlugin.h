@@ -55,13 +55,14 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
+    DOMPlugin(PluginData*, LocalFrame*, unsigned index);
+
     const PluginInfo& pluginInfo() const { return m_pluginData->plugins()[m_index]; }
 
-    DOMPlugin(PluginData*, LocalFrame*, unsigned index);
     RefPtr<PluginData> m_pluginData;
     unsigned m_index;
 };
 
 } // namespace blink
 
-#endif // Plugin_h
+#endif // DOMPlugin_h

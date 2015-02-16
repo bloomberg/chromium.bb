@@ -69,4 +69,4 @@ void FrameDestructionObserver::trace(Visitor* visitor)
     visitor->trace(m_frame);
 }
 
-}
+} // namespace blink

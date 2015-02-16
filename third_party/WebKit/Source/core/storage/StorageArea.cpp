@@ -143,7 +143,7 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
     // FrameDestructionObserver is used to safely keep the cached
     // reference to the LocalFrame. Should the LocalFrame die before
     // this StorageArea does, that cached reference will be cleared.
-    if (m_frame == frame)
+    if (this->frame() == frame)
         return m_canAccessStorageCachedResult;
     StorageNamespaceController* controller = StorageNamespaceController::from(frame->page());
     if (!controller)
