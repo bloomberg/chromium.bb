@@ -1,44 +1,20 @@
-var client = null;
+// This helper will setup a small test framework that will use TESTS and run
+// them iteratively and call self.postMessage('quit') when done.
+// This helper also exposes |client|, |postMessage()|, |runNextTestOrQuit()|,
+// |synthesizeNotificationClick()| and |initialize()|.
+importScripts('sw-test-helpers.js');
 
-function initialize() {
-    return self.clients.getAll().then(function(clients) {
-        client = clients[0];
-    });
-}
-
-function synthesizeNotificationClick() {
-    var promise = new Promise(function(resolve) {
-        var title = "fake notification";
-
-        registration.showNotification(title).then(function() {
-            client.postMessage({type: 'click', title: title});
-        });
-
-        var handler = function(e) {
-            self.removeEventListener('notificationclick', handler);
-            e.notification.close();
-
-            resolve(e);
-        };
-
-        self.addEventListener('notificationclick', handler);
-    });
-
-    return promise;
-}
-
-var currentTest = -1;
 var TESTS = [
     function testWithNoNotificationClick() {
         client.focus().catch(function() {
-            client.postMessage('focus() outside of a notificationclick event failed');
+            self.postMessage('focus() outside of a notificationclick event failed');
         }).then(runNextTestOrQuit);
     },
 
     function testInStackOutOfWaitUntil() {
         synthesizeNotificationClick().then(function() {
             client.focus().then(function() {
-                client.postMessage('focus() in notificationclick outside of waitUntil but in stack succeeded');
+                self.postMessage('focus() in notificationclick outside of waitUntil but in stack succeeded');
             }).then(runNextTestOrQuit);
         });
     },
@@ -47,7 +23,7 @@ var TESTS = [
         synthesizeNotificationClick().then(function() {
             self.clients.getAll().then(function() {
                 client.focus().catch(function() {
-                    client.postMessage('focus() in notificationclick outside of waitUntil not in stack failed');
+                    self.postMessage('focus() in notificationclick outside of waitUntil not in stack failed');
                 }).then(runNextTestOrQuit);
             });
         });
@@ -57,7 +33,7 @@ var TESTS = [
         synthesizeNotificationClick().then(function(e) {
             e.waitUntil(self.clients.getAll().then(function() {
                 return client.focus().then(function() {
-                    client.postMessage('focus() in notificationclick\'s waitUntil suceeded');
+                    self.postMessage('focus() in notificationclick\'s waitUntil suceeded');
                 }).then(runNextTestOrQuit);
             }));
         });
@@ -69,7 +45,7 @@ var TESTS = [
                 return client.focus().then(function() {
                     return client.focus();
                 }).catch(function() {
-                    client.postMessage('focus() called twice failed');
+                    self.postMessage('focus() called twice failed');
                 }).then(runNextTestOrQuit);
             }));
         });
@@ -85,7 +61,7 @@ var TESTS = [
         synthesizeNotificationClick().then(function(e) {
             e.waitUntil(p.then(function() {
                 return client.focus().catch(function() {
-                    client.postMessage('focus() failed after timeout');
+                    self.postMessage('focus() failed after timeout');
                 }).then(runNextTestOrQuit);
             }));
         });
@@ -95,29 +71,20 @@ var TESTS = [
         synthesizeNotificationClick().then(function(e) {
             e.waitUntil(clients.openWindow('/foo.html').then(function() {
                 client.focus().catch(function() {
-                    client.postMessage('focus() failed because a window was opened before');
+                    self.postMessage('focus() failed because a window was opened before');
                 }).then(runNextTestOrQuit);
             }));
         });
     },
 ];
 
-function runNextTestOrQuit() {
-    ++currentTest;
-    if (currentTest >= TESTS.length) {
-        client.postMessage('quit');
-        return;
-    }
-    TESTS[currentTest]();
-}
-
 self.onmessage = function(e) {
     if (e.data == "start") {
         initialize().then(runNextTestOrQuit);
     } else {
         initialize().then(function() {
-            client.postMessage('received unexpected message');
-            client.postMessage('quit');
+            self.postMessage('received unexpected message');
+            self.postMessage('quit');
         });
     }
 }
