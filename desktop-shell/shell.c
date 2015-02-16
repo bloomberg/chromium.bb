@@ -2641,7 +2641,7 @@ unset_maximized(struct shell_surface *shsurf)
 }
 
 static void
-set_minimized(struct weston_surface *surface, uint32_t is_true)
+set_minimized(struct weston_surface *surface)
 {
 	struct shell_surface *shsurf;
 	struct workspace *current_ws;
@@ -2659,31 +2659,18 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 	current_ws = get_current_workspace(shsurf->shell);
 
 	weston_layer_entry_remove(&view->layer_link);
-	 /* hide or show, depending on the state */
-	if (is_true) {
-		weston_layer_entry_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
+	weston_layer_entry_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
 
-		drop_focus_state(shsurf->shell, current_ws, view->surface);
-		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
-			if (!seat->keyboard)
-				continue;
-			focus = weston_surface_get_main_surface(seat->keyboard->focus);
-			if (focus == view->surface)
-				weston_keyboard_set_focus(seat->keyboard, NULL);
-		}
-	}
-	else {
-		weston_layer_entry_insert(&current_ws->layer.view_list, &view->layer_link);
-
-		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
-			if (!seat->keyboard)
-				continue;
-			activate(shsurf->shell, view->surface, seat, true);
-		}
+	drop_focus_state(shsurf->shell, current_ws, view->surface);
+	wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
+		if (!seat->keyboard)
+			continue;
+		focus = weston_surface_get_main_surface(seat->keyboard->focus);
+		if (focus == view->surface)
+			weston_keyboard_set_focus(seat->keyboard, NULL);
 	}
 
 	shell_surface_update_child_surface_layers(shsurf);
-
 	weston_view_damage_below(view);
 }
 
@@ -3927,7 +3914,7 @@ xdg_surface_set_minimized(struct wl_client *client,
 		return;
 
 	 /* apply compositor's own minimization logic (hide) */
-	set_minimized(shsurf->surface, 1);
+	set_minimized(shsurf->surface);
 }
 
 static const struct xdg_surface_interface xdg_surface_implementation = {
