@@ -55,14 +55,14 @@ class ComponentsTestSuite : public base::TestSuite {
 
     ui::RegisterPathProvider();
 
-    base::FilePath resources_pack_path;
+    base::FilePath pak_path;
 #if defined(OS_ANDROID)
-    PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &resources_pack_path);
+    PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
 #else
-    PathService::Get(base::DIR_MODULE, &resources_pack_path);
+    PathService::Get(base::DIR_MODULE, &pak_path);
 #endif
     ui::ResourceBundle::InitSharedInstanceWithPakPath(
-        resources_pack_path.AppendASCII("components_tests_resources.pak"));
+        pak_path.AppendASCII("components_tests_resources.pak"));
 
     // These schemes need to be added globally to pass tests of
     // autocomplete_input_unittest.cc and content_settings_pattern*
