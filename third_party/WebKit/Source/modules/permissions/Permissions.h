@@ -24,7 +24,7 @@ class Permissions final
 public:
     virtual ~Permissions();
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     static ScriptPromise query(ScriptState*, const AtomicString&);
 };

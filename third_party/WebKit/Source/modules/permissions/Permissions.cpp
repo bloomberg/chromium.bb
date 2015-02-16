@@ -15,7 +15,7 @@ Permissions::~Permissions()
 {
 }
 
-void Permissions::trace(Visitor*)
+DEFINE_TRACE(Permissions)
 {
 }
 

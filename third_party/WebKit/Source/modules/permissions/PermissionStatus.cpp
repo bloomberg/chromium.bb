@@ -34,7 +34,7 @@ ExecutionContext* PermissionStatus::executionContext() const
     return ContextLifecycleObserver::executionContext();
 }
 
-void PermissionStatus::trace(Visitor* visitor)
+DEFINE_TRACE(PermissionStatus)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<PermissionStatus>::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
