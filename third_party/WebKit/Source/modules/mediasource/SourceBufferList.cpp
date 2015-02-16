@@ -98,7 +98,7 @@ ExecutionContext* SourceBufferList::executionContext() const
     return m_executionContext;
 }
 
-void SourceBufferList::trace(Visitor* visitor)
+DEFINE_TRACE(SourceBufferList)
 {
     visitor->trace(m_executionContext);
     visitor->trace(m_asyncEventQueue);

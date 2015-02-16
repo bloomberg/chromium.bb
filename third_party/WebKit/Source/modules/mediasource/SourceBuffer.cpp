@@ -759,7 +759,7 @@ void SourceBuffer::didFail(FileError::ErrorCode errorCode)
     appendStreamDone(false);
 }
 
-void SourceBuffer::trace(Visitor* visitor)
+DEFINE_TRACE(SourceBuffer)
 {
     visitor->trace(m_source);
     visitor->trace(m_stream);

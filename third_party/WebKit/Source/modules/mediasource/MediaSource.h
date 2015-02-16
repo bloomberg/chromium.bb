@@ -106,7 +106,7 @@ public:
     void addedToRegistry();
     void removedFromRegistry();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     void clearWeakMembers(Visitor*);
 
 private:

@@ -70,7 +70,7 @@ TrackDefaultList::TrackDefaultList(const HeapVector<Member<TrackDefault>>& track
 {
 }
 
-void TrackDefaultList::trace(Visitor* visitor)
+DEFINE_TRACE(TrackDefaultList)
 {
     visitor->trace(m_trackDefaults);
 }

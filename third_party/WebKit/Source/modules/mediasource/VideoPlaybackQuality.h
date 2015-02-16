@@ -48,7 +48,7 @@ public:
     unsigned droppedVideoFrames() const { return m_droppedVideoFrames; }
     unsigned corruptedVideoFrames() const { return m_corruptedVideoFrames; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     VideoPlaybackQuality(const Document&, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames);

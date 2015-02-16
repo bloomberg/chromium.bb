@@ -24,7 +24,7 @@ public:
     unsigned length() const { return m_trackDefaults.size(); }
     TrackDefault* item(unsigned) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     TrackDefaultList();

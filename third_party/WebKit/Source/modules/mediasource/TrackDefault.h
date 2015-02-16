@@ -26,7 +26,7 @@ public:
     String label() const { return m_label; }
     const Vector<String>& kinds() const { return m_kinds; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     TrackDefault(const AtomicString& type, const String& language, const String& label, const Vector<String>& kinds, const String& byteStreamTrackID);

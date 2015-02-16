@@ -104,7 +104,7 @@ public:
     // WebSourceBufferClient interface
     virtual void initializationSegmentReceived() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SourceBuffer(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);

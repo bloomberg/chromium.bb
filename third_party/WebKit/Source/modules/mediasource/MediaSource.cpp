@@ -276,14 +276,14 @@ void MediaSource::clearWeakMembers(Visitor* visitor)
 #endif
 }
 
-void MediaSource::trace(Visitor* visitor)
+DEFINE_TRACE(MediaSource)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_asyncEventQueue);
 #endif
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);
-    visitor->registerWeakMembers<MediaSource, &MediaSource::clearWeakMembers>(this);
+    visitor->template registerWeakMembers<MediaSource, &MediaSource::clearWeakMembers>(this);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
