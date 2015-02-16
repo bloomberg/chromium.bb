@@ -83,6 +83,8 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
+  content::JavaScriptDialogManager* GetJavaScriptDialogManager(
+      content::WebContents* source) override;
   void FindReply(content::WebContents* web_contents,
                  int request_id,
                  int number_of_matches,

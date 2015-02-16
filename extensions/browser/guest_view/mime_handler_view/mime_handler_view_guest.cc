@@ -210,6 +210,13 @@ bool MimeHandlerViewGuest::PreHandleGestureEvent(
   return false;
 }
 
+content::JavaScriptDialogManager*
+MimeHandlerViewGuest::GetJavaScriptDialogManager(
+    WebContents* source) {
+  return owner_web_contents()->GetDelegate()->GetJavaScriptDialogManager(
+      web_contents());
+}
+
 void MimeHandlerViewGuest::FindReply(content::WebContents* web_contents,
                                      int request_id,
                                      int number_of_matches,
