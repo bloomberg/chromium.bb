@@ -22,43 +22,18 @@ class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
  public:
   virtual ~WebThreadBase();
 
-  // blink::WebThread implementation.
-  virtual bool isCurrentThread() const;
-  virtual blink::PlatformThreadId threadId() const = 0;
-
-  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
-  virtual void postDelayedTask(const blink::WebTraceLocation& location,
-                               Task* task,
-                               long long delay_ms);
-
-  virtual void enterRunLoop();
-  virtual void exitRunLoop();
-
   virtual void addTaskObserver(TaskObserver* observer);
   virtual void removeTaskObserver(TaskObserver* observer);
 
-  // Returns the base::Bind-compatible task runner for posting tasks to this
-  // thread. Can be called from any thread.
-  virtual base::SingleThreadTaskRunner* TaskRunner() const = 0;
+  virtual bool isCurrentThread() const = 0;
+  virtual blink::PlatformThreadId threadId() const = 0;
 
  protected:
-  class TaskObserverAdapter;
-
   WebThreadBase();
 
-  // Returns the underlying MessageLoop for this thread. Only used for entering
-  // and exiting a nested run loop. Only called on the thread that the
-  // WebThread belongs to.
-  virtual base::MessageLoop* MessageLoop() const = 0;
-
-  virtual void AddTaskObserverInternal(
-      base::MessageLoop::TaskObserver* observer);
-  virtual void RemoveTaskObserverInternal(
-      base::MessageLoop::TaskObserver* observer);
-
-  static void RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task);
-
  private:
+  class TaskObserverAdapter;
+
   typedef std::map<TaskObserver*, TaskObserverAdapter*> TaskObserverMap;
   TaskObserverMap task_observer_map_;
 };
@@ -68,15 +43,24 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
   explicit WebThreadImpl(const char* name);
   virtual ~WebThreadImpl();
 
-  // blink::WebThread implementation.
-  blink::PlatformThreadId threadId() const override;
+  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
+  virtual void postDelayedTask(const blink::WebTraceLocation& location,
+                               Task* task,
+                               long long delay_ms);
 
-  // WebThreadBase implementation.
-  base::SingleThreadTaskRunner* TaskRunner() const override;
+  // TODO(skyostil): Remove once blink has migrated.
+  virtual void postTask(Task* task);
+  virtual void postDelayedTask(Task* task, long long delay_ms);
+
+  virtual void enterRunLoop();
+  virtual void exitRunLoop();
+
+  base::MessageLoop* message_loop() const { return thread_->message_loop(); }
+
+  virtual bool isCurrentThread() const override;
+  virtual blink::PlatformThreadId threadId() const override;
 
  private:
-  base::MessageLoop* MessageLoop() const override;
-
   scoped_ptr<base::Thread> thread_;
 };
 
@@ -86,14 +70,21 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
       scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner);
   CONTENT_EXPORT virtual ~WebThreadImplForMessageLoop();
 
-  // blink::WebThread implementation.
-  blink::PlatformThreadId threadId() const override;
+  virtual void postTask(const blink::WebTraceLocation& location, Task* task);
+  virtual void postDelayedTask(const blink::WebTraceLocation& location,
+                               Task* task,
+                               long long delay_ms);
 
-  // WebThreadBase implementation.
-  base::MessageLoop* MessageLoop() const override;
+  // TODO(skyostil): Remove once blink has migrated.
+  virtual void postTask(Task* task);
+  virtual void postDelayedTask(Task* task, long long delay_ms);
+
+  virtual void enterRunLoop() override;
+  virtual void exitRunLoop() override;
 
  private:
-  base::SingleThreadTaskRunner* TaskRunner() const override;
+  virtual bool isCurrentThread() const override;
+  virtual blink::PlatformThreadId threadId() const override;
 
   scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
   blink::PlatformThreadId thread_id_;

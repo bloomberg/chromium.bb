@@ -52,7 +52,6 @@
 #include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/web_scheduler_impl.h"
-#include "content/renderer/scheduler/webthread_impl_for_scheduler.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -229,7 +228,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     RendererScheduler* renderer_scheduler)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
       web_scheduler_(new WebSchedulerImpl(renderer_scheduler)),
-      main_thread_(new WebThreadImplForScheduler(renderer_scheduler)),
       clipboard_delegate_(new RendererClipboardDelegate),
       clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),
       mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),
@@ -263,12 +261,6 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
 
 blink::WebScheduler* RendererBlinkPlatformImpl::scheduler() {
   return web_scheduler_.get();
-}
-
-blink::WebThread* RendererBlinkPlatformImpl::currentThread() {
-  if (main_thread_->isCurrentThread())
-    return main_thread_.get();
-  return BlinkPlatformImpl::currentThread();
 }
 
 blink::WebClipboard* RendererBlinkPlatformImpl::clipboard() {

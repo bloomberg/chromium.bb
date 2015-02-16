@@ -50,7 +50,6 @@ class ThreadSafeSender;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
-class WebThreadImplForScheduler;
 class WebSchedulerImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
@@ -154,7 +153,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
   virtual blink::WebScheduler* scheduler();
-  virtual blink::WebThread* currentThread();
 
   // Set the PlatformEventObserverBase in |platform_event_observers_| associated
   // with |type| to |observer|. If there was already an observer associated to
@@ -205,7 +203,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
   scoped_ptr<WebSchedulerImpl> web_scheduler_;
-  scoped_ptr<WebThreadImplForScheduler> main_thread_;
 
   scoped_ptr<RendererClipboardDelegate> clipboard_delegate_;
   scoped_ptr<WebClipboardImpl> clipboard_;

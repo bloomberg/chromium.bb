@@ -108,11 +108,10 @@ void DataProviderMessageFilter::OnReceivedData(int request_id,
                                                int data_length,
                                                int encoded_data_length) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  background_thread_.TaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadedDataProvider::OnReceivedDataOnBackgroundThread,
-                 background_thread_resource_provider_, data_offset, data_length,
-                 encoded_data_length));
+  background_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &ThreadedDataProvider::OnReceivedDataOnBackgroundThread,
+      background_thread_resource_provider_,
+      data_offset, data_length, encoded_data_length));
 }
 
 }  // anonymous namespace
@@ -187,9 +186,9 @@ void ThreadedDataProvider::Stop() {
     // ThreadedDataProvider gets created.
     DCHECK(current_background_thread ==
         static_cast<WebThreadImpl*>(&background_thread_));
-    background_thread_.TaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&ThreadedDataProvider::StopOnBackgroundThread,
-                              base::Unretained(this)));
+    background_thread_.message_loop()->PostTask(FROM_HERE,
+        base::Bind(&ThreadedDataProvider::StopOnBackgroundThread,
+                   base::Unretained(this)));
   }
 }
 
@@ -214,8 +213,7 @@ void ThreadedDataProvider::OnRequestCompleteForegroundThread(
       const base::TimeTicks& renderer_completion_time) {
   DCHECK(ChildThreadImpl::current());
 
-  background_thread_.TaskRunner()->PostTask(
-      FROM_HERE,
+  background_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&ThreadedDataProvider::OnRequestCompleteBackgroundThread,
                  base::Unretained(this), resource_dispatcher,
                  request_complete_data, renderer_completion_time));
@@ -243,8 +241,7 @@ void ThreadedDataProvider::OnResourceMessageFilterAddedMainThread() {
   // We bounce this message from the I/O thread via the main thread and then
   // to our background thread, following the same path as incoming data before
   // our filter gets added, to make sure there's nothing still incoming.
-  background_thread_.TaskRunner()->PostTask(
-      FROM_HERE,
+  background_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(
           &ThreadedDataProvider::OnResourceMessageFilterAddedBackgroundThread,
           background_thread_weak_factory_->GetWeakPtr()));
@@ -298,10 +295,10 @@ void ThreadedDataProvider::OnReceivedDataOnForegroundThread(
     const char* data, int data_length, int encoded_data_length) {
   DCHECK(ChildThreadImpl::current());
 
-  background_thread_.TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ThreadedDataProvider::ForwardAndACKData,
-                            base::Unretained(this), data, data_length,
-                            encoded_data_length));
+  background_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&ThreadedDataProvider::ForwardAndACKData,
+                 base::Unretained(this),
+                 data, data_length, encoded_data_length));
 }
 
 void ThreadedDataProvider::ForwardAndACKData(const char* data,

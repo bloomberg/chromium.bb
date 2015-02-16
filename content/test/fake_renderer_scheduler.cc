@@ -53,14 +53,6 @@ bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
-void FakeRendererScheduler::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-}
-
-void FakeRendererScheduler::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-}
-
 void FakeRendererScheduler::Shutdown() {
 }
 
