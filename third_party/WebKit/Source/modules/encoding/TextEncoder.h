@@ -52,7 +52,7 @@ public:
     String encoding() const;
     PassRefPtr<DOMUint8Array> encode(const String&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     TextEncoder(const WTF::TextEncoding&);

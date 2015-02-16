@@ -59,7 +59,7 @@ public:
     String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
     String decode(ExceptionState&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignoreBOM);
