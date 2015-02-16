@@ -20,6 +20,7 @@ from pylib import constants
 from pylib import flag_changer
 from pylib.device import device_errors
 from pylib.device import device_utils
+from pylib.device import intent
 
 # Browser Constants
 DEFAULT_BROWSER = 'chrome'
