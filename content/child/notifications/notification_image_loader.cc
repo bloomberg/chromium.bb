@@ -5,6 +5,7 @@
 #include "content/child/notifications/notification_image_loader.h"
 
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/image_decoder.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -24,7 +25,12 @@ NotificationImageLoader::NotificationImageLoader(
     : callback_(callback),
       completed_(false) {}
 
-NotificationImageLoader::~NotificationImageLoader() {}
+NotificationImageLoader::~NotificationImageLoader() {
+  // The WebURLLoader instance must be destroyed on the same thread it was
+  // created on, being the main thread.
+  if (!main_thread_task_runner_->RunsTasksOnCurrentThread())
+    main_thread_task_runner_->DeleteSoon(FROM_HERE, url_loader_.release());
+}
 
 void NotificationImageLoader::StartOnMainThread(
     const WebURL& image_url,
@@ -34,6 +40,7 @@ void NotificationImageLoader::StartOnMainThread(
   DCHECK(worker_task_runner);
 
   worker_task_runner_ = worker_task_runner;
+  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   WebURLRequest request(image_url);
   request.setRequestContext(WebURLRequest::RequestContextImage);

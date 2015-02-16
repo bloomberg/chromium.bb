@@ -78,6 +78,7 @@ class NotificationImageLoader
 
   scoped_ptr<blink::WebURLLoader> url_loader_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   bool completed_;
 
   std::vector<uint8_t> buffer_;

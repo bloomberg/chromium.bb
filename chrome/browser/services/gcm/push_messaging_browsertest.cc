@@ -106,6 +106,33 @@ class UnregistrationCallback {
   std::string app_id_;
 };
 
+// Class to instantiate on the stack that is meant to be used with
+// StubNotificationUIManager::SetNotificationAddedCallback. Mind that Run()
+// might be invoked prior to WaitUntilSatisfied() being called.
+class NotificationAddedCallback {
+ public:
+  NotificationAddedCallback() : done_(false), waiting_(false) {}
+
+  void Run() {
+    done_ = true;
+    if (waiting_)
+      base::MessageLoop::current()->Quit();
+  }
+
+  void WaitUntilSatisfied() {
+    if (done_)
+      return;
+
+    waiting_ = true;
+    while (!done_)
+      content::RunMessageLoop();
+  }
+
+ private:
+  bool done_;
+  bool waiting_;
+};
+
 }  // namespace
 
 class PushMessagingBrowserTest : public InProcessBrowserTest {
@@ -570,6 +597,47 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
   EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       PushEventNotificationWithoutEventWaitUntil) {
+  std::string script_result;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  PushMessagingApplicationId app_id = GetServiceWorkerAppId(0LL);
+  EXPECT_EQ(app_id.app_id_guid, gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  NotificationAddedCallback callback;
+  notification_manager()->SetNotificationAddedCallback(
+      base::Bind(&NotificationAddedCallback::Run, base::Unretained(&callback)));
+
+  GCMClient::IncomingMessage message;
+  message.data["data"] = "shownotification-without-waituntil";
+  push_service()->OnMessage(app_id.app_id_guid, message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("immediate:shownotification-without-waituntil", script_result);
+
+  callback.WaitUntilSatisfied();
+
+  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  EXPECT_EQ(base::ASCIIToUTF16("push_test_tag"),
+            notification_manager()->GetNotificationAt(0).replace_id());
+
+  // Verify that the renderer process hasn't crashed.
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
 }
 #endif
 

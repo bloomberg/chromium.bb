@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
@@ -43,6 +44,10 @@ class StubNotificationUIManager : public NotificationUIManager {
   // Returns a reference to the notification at index |index|.
   const Notification& GetNotificationAt(unsigned int index) const;
 
+  // Sets a one-shot callback that will be invoked when a notification has been
+  // added to the Notification UI manager. Will be invoked on the UI thread.
+  void SetNotificationAddedCallback(const base::Closure& callback);
+
   // NotificationUIManager implementation.
   void Add(const Notification& notification, Profile* profile) override;
   bool Update(const Notification& notification, Profile* profile) override;
@@ -60,6 +65,8 @@ class StubNotificationUIManager : public NotificationUIManager {
  private:
   using NotificationPair = std::pair<Notification, ProfileID>;
   std::vector<NotificationPair> notifications_;
+
+  base::Closure notification_added_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
 };

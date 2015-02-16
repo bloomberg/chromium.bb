@@ -27,9 +27,19 @@ const Notification& StubNotificationUIManager::GetNotificationAt(
   return notifications_[index].first;
 }
 
+void StubNotificationUIManager::SetNotificationAddedCallback(
+    const base::Closure& callback) {
+  notification_added_callback_ = callback;
+}
+
 void StubNotificationUIManager::Add(const Notification& notification,
                                     Profile* profile) {
   notifications_.push_back(std::make_pair(notification, profile));
+
+  if (!notification_added_callback_.is_null()) {
+    notification_added_callback_.Run();
+    notification_added_callback_.Reset();
+  }
 
   // Fire the Display() event on the delegate.
   notification.delegate()->Display();
