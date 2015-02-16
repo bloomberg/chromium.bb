@@ -44,8 +44,6 @@ class ShadowList;
 class StyleColor;
 class StylePropertyShorthand;
 
-enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
-
 class CSSComputedStyleDeclaration final : public CSSStyleDeclaration {
 public:
     static PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> create(PassRefPtrWillBeRawPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
@@ -64,10 +62,9 @@ public:
 
     virtual PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const override;
 
-    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID, EUpdateLayout = UpdateLayout) const;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     FixedPitchFontType fixedPitchFontType() const;
-    PassRefPtrWillBeRawPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 
     PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 

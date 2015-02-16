@@ -529,7 +529,7 @@ Node* CSSComputedStyleDeclaration::styledNode() const
     return m_node.get();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID, EUpdateLayout updateLayout) const
+PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propertyID) const
 {
     Node* styledNode = this->styledNode();
     if (!styledNode)
@@ -537,33 +537,29 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     LayoutObject* renderer = styledNode->renderer();
     RefPtr<LayoutStyle> style;
 
-    if (updateLayout) {
-        Document& document = styledNode->document();
+    Document& document = styledNode->document();
 
-        // A timing update may be required if a compositor animation is running.
-        DocumentAnimations::updateAnimationTimingForGetComputedStyle(*styledNode, propertyID);
+    // A timing update may be required if a compositor animation is running.
+    DocumentAnimations::updateAnimationTimingForGetComputedStyle(*styledNode, propertyID);
 
-        document.updateRenderTreeForNodeIfNeeded(styledNode);
+    document.updateRenderTreeForNodeIfNeeded(styledNode);
 
-        // The style recalc could have caused the styled node to be discarded or replaced
-        // if it was a PseudoElement so we need to update it.
+    // The style recalc could have caused the styled node to be discarded or replaced
+    // if it was a PseudoElement so we need to update it.
+    styledNode = this->styledNode();
+    renderer = styledNode->renderer();
+
+    style = computeLayoutStyle();
+
+    bool forceFullLayout = isLayoutDependent(propertyID, style, renderer)
+        || styledNode->isInShadowTree()
+        || (document.ownerElement() && document.ensureStyleResolver().hasViewportDependentMediaQueries());
+
+    if (forceFullLayout) {
+        document.updateLayoutIgnorePendingStylesheets();
         styledNode = this->styledNode();
+        style = computeLayoutStyle();
         renderer = styledNode->renderer();
-
-        style = computeLayoutStyle();
-
-        bool forceFullLayout = isLayoutDependent(propertyID, style, renderer)
-            || styledNode->isInShadowTree()
-            || (document.ownerElement() && document.ensureStyleResolver().hasViewportDependentMediaQueries());
-
-        if (forceFullLayout) {
-            document.updateLayoutIgnorePendingStylesheets();
-            styledNode = this->styledNode();
-            style = computeLayoutStyle();
-            renderer = styledNode->renderer();
-        }
-    } else {
-        style = computeLayoutStyle();
     }
 
     if (!style)
