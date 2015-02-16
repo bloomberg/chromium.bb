@@ -48,7 +48,7 @@ public:
     const String& message() const { return m_message; }
     const String& constraintName() const { return m_constraintName; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     NavigatorUserMediaError(const String& name, const String& message, const String& constraintName)

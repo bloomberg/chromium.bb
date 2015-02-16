@@ -34,7 +34,7 @@ class RTCStatsResponse;
 class RTCStatsCallback : public GarbageCollectedFinalized<RTCStatsCallback> {
 public:
     virtual ~RTCStatsCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(RTCStatsResponse*) = 0;
 };
 

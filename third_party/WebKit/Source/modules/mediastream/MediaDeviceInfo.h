@@ -42,7 +42,7 @@ public:
     String label() const;
     String groupId() const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit MediaDeviceInfo(const WebMediaDeviceInfo&);

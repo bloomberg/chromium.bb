@@ -164,7 +164,7 @@ void RTCDTMFSender::scheduledEventTimerFired(Timer<RTCDTMFSender>*)
         dispatchEvent((*it).release());
 }
 
-void RTCDTMFSender::trace(Visitor* visitor)
+DEFINE_TRACE(RTCDTMFSender)
 {
     visitor->trace(m_track);
     visitor->trace(m_scheduledEvents);

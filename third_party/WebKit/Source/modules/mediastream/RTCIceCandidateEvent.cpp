@@ -63,7 +63,7 @@ const AtomicString& RTCIceCandidateEvent::interfaceName() const
     return EventNames::RTCIceCandidateEvent;
 }
 
-void RTCIceCandidateEvent::trace(Visitor* visitor)
+DEFINE_TRACE(RTCIceCandidateEvent)
 {
     visitor->trace(m_candidate);
     Event::trace(visitor);

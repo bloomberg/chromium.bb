@@ -72,7 +72,7 @@ public:
     // ContextLifecycleObserver
     virtual void contextDestroyed() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     UserMediaRequest(ExecutionContext*, UserMediaController*, WebMediaConstraints audio, WebMediaConstraints video, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*);

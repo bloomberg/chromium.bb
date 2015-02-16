@@ -87,7 +87,7 @@ public:
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);

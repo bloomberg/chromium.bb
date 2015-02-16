@@ -80,7 +80,7 @@ void MediaDevicesRequest::stop()
     m_controller.clear();
 }
 
-void MediaDevicesRequest::trace(Visitor* visitor)
+DEFINE_TRACE(MediaDevicesRequest)
 {
     visitor->trace(m_controller);
     visitor->trace(m_callback);

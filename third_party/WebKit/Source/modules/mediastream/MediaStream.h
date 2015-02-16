@@ -90,7 +90,7 @@ public:
     // URLRegistrable
     virtual URLRegistry& registry() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);

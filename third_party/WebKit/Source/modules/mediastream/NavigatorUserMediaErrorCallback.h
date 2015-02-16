@@ -33,7 +33,7 @@ namespace blink {
 class NavigatorUserMediaErrorCallback : public GarbageCollectedFinalized<NavigatorUserMediaErrorCallback> {
 public:
     virtual ~NavigatorUserMediaErrorCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(NavigatorUserMediaError*) = 0;
 };
 

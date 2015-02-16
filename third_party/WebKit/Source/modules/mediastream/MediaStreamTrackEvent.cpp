@@ -64,7 +64,7 @@ const AtomicString& MediaStreamTrackEvent::interfaceName() const
     return EventNames::MediaStreamTrackEvent;
 }
 
-void MediaStreamTrackEvent::trace(Visitor* visitor)
+DEFINE_TRACE(MediaStreamTrackEvent)
 {
     visitor->trace(m_track);
     Event::trace(visitor);

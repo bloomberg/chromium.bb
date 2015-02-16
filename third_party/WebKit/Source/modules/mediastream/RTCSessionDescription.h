@@ -53,7 +53,7 @@ public:
 
     WebRTCSessionDescription webSessionDescription();
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit RTCSessionDescription(WebRTCSessionDescription);

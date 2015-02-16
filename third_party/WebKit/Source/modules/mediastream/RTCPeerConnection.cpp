@@ -819,7 +819,7 @@ void RTCPeerConnection::dispatchScheduledEvent()
     events.clear();
 }
 
-void RTCPeerConnection::trace(Visitor* visitor)
+DEFINE_TRACE(RTCPeerConnection)
 {
     visitor->trace(m_localStreams);
     visitor->trace(m_remoteStreams);

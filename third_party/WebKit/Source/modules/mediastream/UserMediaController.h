@@ -40,7 +40,7 @@ class UserMediaController final : public NoBaseWillBeGarbageCollected<UserMediaC
 public:
     static PassOwnPtrWillBeRawPtr<UserMediaController> create(UserMediaClient*);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     UserMediaClient* client() const { return m_client; }
 

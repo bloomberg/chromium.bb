@@ -40,7 +40,7 @@ class RTCSessionDescription;
 class RTCSessionDescriptionCallback : public GarbageCollectedFinalized<RTCSessionDescriptionCallback> {
 public:
     virtual ~RTCSessionDescriptionCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(RTCSessionDescription*) = 0;
 };
 

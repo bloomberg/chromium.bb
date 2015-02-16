@@ -39,7 +39,7 @@ namespace blink {
 class RTCErrorCallback : public GarbageCollectedFinalized<RTCErrorCallback> {
 public:
     virtual ~RTCErrorCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(const String& errorInformation) = 0;
 };
 

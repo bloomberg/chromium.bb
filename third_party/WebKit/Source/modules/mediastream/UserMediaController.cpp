@@ -39,7 +39,7 @@ UserMediaController::UserMediaController(UserMediaClient* client)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController)
 
-void UserMediaController::trace(Visitor* visitor)
+DEFINE_TRACE(UserMediaController)
 {
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }

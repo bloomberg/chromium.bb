@@ -71,7 +71,7 @@ void MediaStreamTrackSourcesRequestImpl::performCallback()
     m_callback.clear();
 }
 
-void MediaStreamTrackSourcesRequestImpl::trace(Visitor* visitor)
+DEFINE_TRACE(MediaStreamTrackSourcesRequestImpl)
 {
     visitor->trace(m_callback);
     visitor->trace(m_executionContext);

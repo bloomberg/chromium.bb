@@ -90,7 +90,7 @@ public:
     virtual ExecutionContext* executionContext() const override;
 
     void clearWeakMembers(Visitor*);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // WebRTCDataChannelHandlerClient
     virtual void didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;

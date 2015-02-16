@@ -423,7 +423,7 @@ URLRegistry& MediaStream::registry() const
     return MediaStreamRegistry::registry();
 }
 
-void MediaStream::trace(Visitor* visitor)
+DEFINE_TRACE(MediaStream)
 {
     visitor->trace(m_audioTracks);
     visitor->trace(m_videoTracks);

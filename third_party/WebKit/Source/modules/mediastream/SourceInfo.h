@@ -42,7 +42,7 @@ public:
     String label() const;
     String facing() const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit SourceInfo(const WebSourceInfo&);

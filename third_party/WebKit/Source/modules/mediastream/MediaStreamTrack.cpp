@@ -245,7 +245,7 @@ ExecutionContext* MediaStreamTrack::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-void MediaStreamTrack::trace(Visitor* visitor)
+DEFINE_TRACE(MediaStreamTrack)
 {
     visitor->trace(m_registeredMediaStreams);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>::trace(visitor);

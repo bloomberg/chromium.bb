@@ -68,7 +68,7 @@ public:
     // ActiveDOMObject
     virtual void stop() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<WebRTCDTMFSenderHandler>);

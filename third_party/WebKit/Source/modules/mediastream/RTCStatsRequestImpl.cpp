@@ -85,7 +85,7 @@ void RTCStatsRequestImpl::clear()
     m_requester.clear();
 }
 
-void RTCStatsRequestImpl::trace(Visitor* visitor)
+DEFINE_TRACE(RTCStatsRequestImpl)
 {
     visitor->trace(m_successCallback);
     visitor->trace(m_requester);

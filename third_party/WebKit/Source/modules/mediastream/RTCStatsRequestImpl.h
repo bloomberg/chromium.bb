@@ -53,7 +53,7 @@ public:
     // ActiveDOMObject
     virtual void stop() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);

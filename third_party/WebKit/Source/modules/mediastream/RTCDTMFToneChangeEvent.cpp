@@ -75,7 +75,7 @@ const AtomicString& RTCDTMFToneChangeEvent::interfaceName() const
     return EventNames::RTCDTMFToneChangeEvent;
 }
 
-void RTCDTMFToneChangeEvent::trace(Visitor* visitor)
+DEFINE_TRACE(RTCDTMFToneChangeEvent)
 {
     Event::trace(visitor);
 }

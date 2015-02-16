@@ -56,7 +56,7 @@ void RTCStatsResponse::addStatistic(size_t report, const String& name, const Str
     m_result[report]->addStatistic(name, value);
 }
 
-void RTCStatsResponse::trace(Visitor* visitor)
+DEFINE_TRACE(RTCStatsResponse)
 {
     visitor->trace(m_result);
     RTCStatsResponseBase::trace(visitor);

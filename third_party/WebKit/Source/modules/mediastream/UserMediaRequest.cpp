@@ -185,7 +185,7 @@ void UserMediaRequest::contextDestroyed()
     ContextLifecycleObserver::contextDestroyed();
 }
 
-void UserMediaRequest::trace(Visitor* visitor)
+DEFINE_TRACE(UserMediaRequest)
 {
     visitor->trace(m_controller);
     visitor->trace(m_successCallback);

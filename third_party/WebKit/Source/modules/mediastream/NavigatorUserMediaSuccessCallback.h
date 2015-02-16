@@ -34,7 +34,7 @@ class MediaStream;
 class NavigatorUserMediaSuccessCallback : public GarbageCollectedFinalized<NavigatorUserMediaSuccessCallback> {
 public:
     virtual ~NavigatorUserMediaSuccessCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(MediaStream*) = 0;
 };
 

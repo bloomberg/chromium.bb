@@ -51,7 +51,7 @@ public:
 
     void addStatistic(const String& name, const String& value);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     RTCStatsReport(const String& id, const String& type, double timestamp);

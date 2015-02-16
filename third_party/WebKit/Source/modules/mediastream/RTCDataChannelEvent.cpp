@@ -62,7 +62,7 @@ const AtomicString& RTCDataChannelEvent::interfaceName() const
     return EventNames::RTCDataChannelEvent;
 }
 
-void RTCDataChannelEvent::trace(Visitor* visitor)
+DEFINE_TRACE(RTCDataChannelEvent)
 {
     visitor->trace(m_channel);
     Event::trace(visitor);
