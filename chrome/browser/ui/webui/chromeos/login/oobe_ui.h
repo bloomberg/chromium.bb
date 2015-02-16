@@ -117,7 +117,7 @@ class OobeUI : public OobeDisplay,
       override;
   AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() override;
   bool IsJSReady(const base::Closure& display_is_ready_callback) override;
-  HIDDetectionScreenActor* GetHIDDetectionScreenActor() override;
+  HIDDetectionView* GetHIDDetectionView() override;
   ControllerPairingScreenActor* GetControllerPairingScreenActor() override;
   HostPairingScreenActor* GetHostPairingScreenActor() override;
   DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() override;
@@ -193,8 +193,8 @@ class OobeUI : public OobeDisplay,
   EnableDebuggingScreenActor* debugging_screen_actor_;
   EulaView* eula_view_;
   EnrollmentScreenActor* enrollment_screen_actor_;
-  HIDDetectionScreenActor* hid_detection_screen_actor_;
   ResetView* reset_view_;
+  HIDDetectionView* hid_detection_view_;
   KioskAutolaunchScreenActor* autolaunch_screen_actor_;
   KioskEnableScreenActor* kiosk_enable_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;

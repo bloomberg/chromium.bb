@@ -34,7 +34,7 @@
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -219,6 +219,7 @@ WizardController::WizardController(LoginDisplayHost* host,
       user_image_screen_return_to_previous_hack_(false),
       timezone_resolved_(false),
       shark_controller_detected_(false),
+      hid_screen_(nullptr),
       weak_factory_(this) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
@@ -334,8 +335,10 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new SupervisedUserCreationScreen(
         this, oobe_display_->GetSupervisedUserCreationScreenActor());
   } else if (screen_name == kHIDDetectionScreenName) {
-    return new HIDDetectionScreen(this,
-                                  oobe_display_->GetHIDDetectionScreenActor());
+    scoped_ptr<HIDDetectionScreen> screen(new chromeos::HIDDetectionScreen(
+        this, oobe_display_->GetHIDDetectionView()));
+    screen->Initialize(nullptr /* context */);
+    return screen.release();
   } else if (screen_name == kAutoEnrollmentCheckScreenName) {
     return new AutoEnrollmentCheckScreen(
         this, oobe_display_->GetAutoEnrollmentCheckScreenActor());
@@ -919,11 +922,11 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
       if (IsHostPairingOobe()) {
         ShowHostPairingScreen();
       } else if (CanShowHIDDetectionScreen()) {
+        hid_screen_ = GetScreen(kHIDDetectionScreenName);
         base::Callback<void(bool)> on_check = base::Bind(
             &WizardController::OnHIDScreenNecessityCheck,
             weak_factory_.GetWeakPtr());
-        oobe_display_->GetHIDDetectionScreenActor()->CheckIsScreenRequired(
-            on_check);
+        oobe_display_->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
       } else {
         ShowNetworkScreen();
       }

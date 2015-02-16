@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
@@ -60,7 +61,8 @@ class WizardController : public BaseScreenDelegate,
                          public EulaScreen::Delegate,
                          public ControllerPairingScreen::Delegate,
                          public HostPairingScreen::Delegate,
-                         public NetworkScreen::Delegate {
+                         public NetworkScreen::Delegate,
+                         public HIDDetectionScreen::Delegate {
  public:
   // Observes screen changes.
   class Observer {
@@ -182,9 +184,6 @@ class WizardController : public BaseScreenDelegate,
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
 
-  // Invokes corresponding first OOBE screen.
-  void OnHIDScreenNecessityCheck(bool screen_needed);
-
   // Exit handlers:
   void OnHIDDetectionCompleted();
   void OnNetworkConnected();
@@ -257,6 +256,9 @@ class WizardController : public BaseScreenDelegate,
 
   // Override from NetworkScreen::Delegate:
   void OnEnableDebuggingScreenRequested() override;
+
+  // Override from HIDDetectionScreen::Delegate
+  void OnHIDScreenNecessityCheck(bool screen_needed) override;
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(
@@ -420,6 +422,8 @@ class WizardController : public BaseScreenDelegate,
   // conroller swithces to a pairing OOBE.
   scoped_ptr<pairing_chromeos::SharkConnectionListener>
       shark_connection_listener_;
+
+  BaseScreen* hid_screen_;
 
   base::WeakPtrFactory<WizardController> weak_factory_;
 
