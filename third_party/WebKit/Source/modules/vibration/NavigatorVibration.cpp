@@ -173,7 +173,7 @@ const char* NavigatorVibration::supplementName()
     return "NavigatorVibration";
 }
 
-void NavigatorVibration::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorVibration)
 {
     WillBeHeapSupplement<Page>::trace(visitor);
     PageLifecycleObserver::trace(visitor);
