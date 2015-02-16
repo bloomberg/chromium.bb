@@ -229,6 +229,7 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onFocus_ = function(e) {
+    this.webview_.focus();
     var currentUrl = this.webview_.src;
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
       var msg = {
@@ -357,6 +358,7 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadStop_ = function(e) {
+    this.webview_.focus();
     if (!this.loaded_) {
       this.loaded_ = true;
       this.dispatchEvent(new Event('ready'));
