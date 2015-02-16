@@ -688,7 +688,10 @@ dist_westondata_DATA =				\
 	data/icon_window.png			\
 	data/sign_close.png			\
 	data/sign_maximize.png			\
-	data/sign_minimize.png			\
+	data/sign_minimize.png
+
+if ENABLE_IVI_SHELL
+dist_westondata_DATA +=				\
 	data/background.png                     \
 	data/tiling.png                         \
 	data/fullscreen.png                     \
@@ -701,6 +704,7 @@ dist_westondata_DATA =				\
 	data/icon_ivi_simple-egl.png            \
 	data/icon_ivi_simple-shm.png            \
 	data/icon_ivi_smoke.png
+endif
 
 
 if BUILD_WCAP_TOOLS
