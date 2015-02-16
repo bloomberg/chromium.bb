@@ -116,7 +116,9 @@ public class DropdownPopupWindow extends ListPopupWindow {
         int contentWidth = measureContentWidth();
         float contentWidthInDip = contentWidth
                 / mContext.getResources().getDisplayMetrics().density;
-        if (contentWidthInDip > mAnchorWidth) {
+        Rect padding = new Rect();
+        getBackground().getPadding(padding);
+        if (contentWidthInDip + padding.left + padding.right > mAnchorWidth) {
             setContentWidth(contentWidth);
             final Rect displayFrame = new Rect();
             mAnchorView.getWindowVisibleDisplayFrame(displayFrame);
