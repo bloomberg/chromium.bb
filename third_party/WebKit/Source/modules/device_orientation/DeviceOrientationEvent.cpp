@@ -95,7 +95,7 @@ const AtomicString& DeviceOrientationEvent::interfaceName() const
     return EventNames::DeviceOrientationEvent;
 }
 
-void DeviceOrientationEvent::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceOrientationEvent)
 {
     visitor->trace(m_orientation);
     Event::trace(visitor);

@@ -90,7 +90,7 @@ const AtomicString& DeviceMotionController::eventTypeName() const
     return EventTypeNames::devicemotion;
 }
 
-void DeviceMotionController::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceMotionController)
 {
     DeviceSingleWindowEventController::trace(visitor);
     DocumentSupplement::trace(visitor);

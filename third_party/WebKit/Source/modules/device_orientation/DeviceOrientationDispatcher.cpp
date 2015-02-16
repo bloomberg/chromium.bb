@@ -51,7 +51,7 @@ DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
 {
 }
 
-void DeviceOrientationDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceOrientationDispatcher)
 {
     visitor->trace(m_lastDeviceOrientationData);
     PlatformEventDispatcher::trace(visitor);

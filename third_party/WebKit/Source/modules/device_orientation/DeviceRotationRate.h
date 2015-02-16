@@ -39,7 +39,7 @@ public:
     {
         return new DeviceRotationRate(rotationRate);
     }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     double alpha(bool& isNull) const;
     double beta(bool& isNull) const;

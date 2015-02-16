@@ -115,7 +115,7 @@ DeviceMotionData::DeviceMotionData(
 {
 }
 
-void DeviceMotionData::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceMotionData)
 {
     visitor->trace(m_acceleration);
     visitor->trace(m_accelerationIncludingGravity);

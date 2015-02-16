@@ -51,7 +51,7 @@ DeviceMotionDispatcher::~DeviceMotionDispatcher()
 {
 }
 
-void DeviceMotionDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceMotionDispatcher)
 {
     visitor->trace(m_lastDeviceMotionData);
     PlatformEventDispatcher::trace(visitor);

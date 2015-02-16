@@ -33,7 +33,7 @@ DeviceRotationRate::DeviceRotationRate(DeviceMotionData::RotationRate* rotationR
 {
 }
 
-void DeviceRotationRate::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceRotationRate)
 {
     visitor->trace(m_rotationRate);
 }

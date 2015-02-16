@@ -39,7 +39,7 @@ public:
     {
         return new DeviceAcceleration(acceleration);
     }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     double x(bool& isNull) const;
     double y(bool& isNull) const;

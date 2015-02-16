@@ -23,7 +23,7 @@ public:
     // DeviceSingleWindowEventController
     void didAddEventListener(LocalDOMWindow*, const AtomicString& eventType) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit DeviceMotionController(Document&);

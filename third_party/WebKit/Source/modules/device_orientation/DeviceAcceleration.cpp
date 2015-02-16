@@ -33,7 +33,7 @@ DeviceAcceleration::DeviceAcceleration(DeviceMotionData::Acceleration* accelerat
 {
 }
 
-void DeviceAcceleration::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceAcceleration)
 {
     visitor->trace(m_acceleration);
 }

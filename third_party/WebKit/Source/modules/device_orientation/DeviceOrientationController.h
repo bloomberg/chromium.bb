@@ -28,7 +28,7 @@ public:
     void setOverride(DeviceOrientationData*);
     void clearOverride();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit DeviceOrientationController(Document&);

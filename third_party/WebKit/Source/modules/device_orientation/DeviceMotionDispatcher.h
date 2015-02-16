@@ -55,7 +55,7 @@ public:
     // Inherited from WebDeviceMotionListener.
     virtual void didChangeDeviceMotion(const WebDeviceMotionData&) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DeviceMotionDispatcher();

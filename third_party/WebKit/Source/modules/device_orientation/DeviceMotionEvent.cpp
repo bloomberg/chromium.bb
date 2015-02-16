@@ -107,7 +107,7 @@ const AtomicString& DeviceMotionEvent::interfaceName() const
     return EventNames::DeviceMotionEvent;
 }
 
-void DeviceMotionEvent::trace(Visitor* visitor)
+DEFINE_TRACE(DeviceMotionEvent)
 {
     visitor->trace(m_deviceMotionData);
     visitor->trace(m_acceleration);

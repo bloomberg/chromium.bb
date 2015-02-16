@@ -38,7 +38,7 @@ public:
     class Acceleration final : public GarbageCollected<DeviceMotionData::Acceleration> {
     public:
         static Acceleration* create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
-        void trace(Visitor*) { }
+        DEFINE_INLINE_TRACE() { }
 
         bool canProvideX() const { return m_canProvideX; }
         bool canProvideY() const { return m_canProvideY; }
@@ -63,7 +63,7 @@ public:
     class RotationRate final : public GarbageCollected<DeviceMotionData::RotationRate> {
     public:
         static RotationRate* create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
-        void trace(Visitor*) { }
+        DEFINE_INLINE_TRACE() { }
 
         bool canProvideAlpha() const { return m_canProvideAlpha; }
         bool canProvideBeta() const { return m_canProvideBeta; }
@@ -93,7 +93,7 @@ public:
         bool canProvideInterval,
         double interval);
     static DeviceMotionData* create(const WebDeviceMotionData&);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     Acceleration* acceleration() const { return m_acceleration.get(); }
     Acceleration* accelerationIncludingGravity() const { return m_accelerationIncludingGravity.get(); }

@@ -55,7 +55,7 @@ public:
     // Inherited from WebDeviceOrientationListener.
     virtual void didChangeDeviceOrientation(const WebDeviceOrientationData&) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DeviceOrientationDispatcher();
