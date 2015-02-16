@@ -296,7 +296,14 @@ body.selecting button:hover {
 .dialog-header .icon-button:focus,
 .dialog-header .combobutton:hover,
 .dialog-header .combobutton:focus {
-  background: rgba(204, 204, 204, 0.15);
+  background: rgba(204, 204, 204, 0.20);
+}
+
+body.selecting .dialog-header .icon-button:hover,
+body.selecting .dialog-header .icon-button:focus,
+body.selecting .dialog-header .combobutton:hover,
+body.selecting .dialog-header .combobutton:focus {
+  background: rgba(153, 153, 153, 0.20);
 }
 
 .dialog-header .icon-button[disabled]:not(.manual-display) {
