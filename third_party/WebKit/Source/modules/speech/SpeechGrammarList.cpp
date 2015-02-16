@@ -60,7 +60,7 @@ SpeechGrammarList::SpeechGrammarList()
 {
 }
 
-void SpeechGrammarList::trace(Visitor* visitor)
+DEFINE_TRACE(SpeechGrammarList)
 {
     visitor->trace(m_grammars);
 }

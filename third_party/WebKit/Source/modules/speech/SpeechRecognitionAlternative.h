@@ -41,7 +41,7 @@ public:
     const String& transcript() const { return m_transcript; }
     double confidence() const { return m_confidence; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     SpeechRecognitionAlternative(const String&, double);

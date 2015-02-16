@@ -193,7 +193,7 @@ SpeechRecognition::~SpeechRecognition()
 {
 }
 
-void SpeechRecognition::trace(Visitor* visitor)
+DEFINE_TRACE(SpeechRecognition)
 {
     visitor->trace(m_grammars);
     visitor->trace(m_audioTrack);

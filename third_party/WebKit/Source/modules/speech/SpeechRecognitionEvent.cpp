@@ -86,7 +86,7 @@ SpeechRecognitionEvent::~SpeechRecognitionEvent()
 {
 }
 
-void SpeechRecognitionEvent::trace(Visitor* visitor)
+DEFINE_TRACE(SpeechRecognitionEvent)
 {
     visitor->trace(m_results);
     Event::trace(visitor);

@@ -41,7 +41,7 @@ public:
     SpeechRecognitionAlternative* item(unsigned index);
     bool isFinal() { return m_final; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative>>&, bool final);

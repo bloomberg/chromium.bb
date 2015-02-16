@@ -103,7 +103,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SpeechRecognition(ExecutionContext*);

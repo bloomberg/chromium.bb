@@ -42,7 +42,7 @@ public:
     static SpeechSynthesis* speechSynthesis(DOMWindow&);
     static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);

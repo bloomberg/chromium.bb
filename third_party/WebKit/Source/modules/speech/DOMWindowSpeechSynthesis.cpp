@@ -73,7 +73,7 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
     return m_speechSynthesis;
 }
 
-void DOMWindowSpeechSynthesis::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowSpeechSynthesis)
 {
     visitor->trace(m_speechSynthesis);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);

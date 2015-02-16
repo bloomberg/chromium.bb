@@ -38,7 +38,7 @@ SpeechSynthesisVoice::SpeechSynthesisVoice(PlatformSpeechSynthesisVoice* voice)
 {
 }
 
-void SpeechSynthesisVoice::trace(Visitor* visitor)
+DEFINE_TRACE(SpeechSynthesisVoice)
 {
     visitor->trace(m_platformVoice);
 }

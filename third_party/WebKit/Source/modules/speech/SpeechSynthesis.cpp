@@ -233,7 +233,7 @@ const AtomicString& SpeechSynthesis::interfaceName() const
     return EventTargetNames::SpeechSynthesis;
 }
 
-void SpeechSynthesis::trace(Visitor* visitor)
+DEFINE_TRACE(SpeechSynthesis)
 {
     visitor->trace(m_platformSpeechSynthesizer);
     visitor->trace(m_voiceList);

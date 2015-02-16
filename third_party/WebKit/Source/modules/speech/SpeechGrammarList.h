@@ -45,7 +45,7 @@ public:
     void addFromUri(ExecutionContext*, const String& src, double weight = 1.0);
     void addFromString(const String&, double weight = 1.0);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     SpeechGrammarList();

@@ -131,7 +131,7 @@ void PlatformSpeechSynthesizerMock::resume()
     client()->didResumeSpeaking(m_currentUtterance);
 }
 
-void PlatformSpeechSynthesizerMock::trace(Visitor* visitor)
+DEFINE_TRACE(PlatformSpeechSynthesizerMock)
 {
     visitor->trace(m_currentUtterance);
     visitor->trace(m_queuedUtterances);

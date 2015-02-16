@@ -48,7 +48,7 @@ public:
     double weight() const { return m_weight; }
     void setWeight(double weight) { m_weight = weight; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     SpeechGrammar();

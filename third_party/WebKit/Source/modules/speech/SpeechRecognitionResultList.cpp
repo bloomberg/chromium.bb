@@ -47,7 +47,7 @@ SpeechRecognitionResultList::SpeechRecognitionResultList(const HeapVector<Member
 {
 }
 
-void SpeechRecognitionResultList::trace(Visitor* visitor)
+DEFINE_TRACE(SpeechRecognitionResultList)
 {
     visitor->trace(m_results);
 }

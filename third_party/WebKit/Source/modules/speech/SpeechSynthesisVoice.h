@@ -46,7 +46,7 @@ public:
 
     PlatformSpeechSynthesisVoice* platformVoice() const { return m_platformVoice; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit SpeechSynthesisVoice(PlatformSpeechSynthesisVoice*);

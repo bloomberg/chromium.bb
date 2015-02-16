@@ -76,7 +76,7 @@ public:
 
     PlatformSpeechSynthesisUtterance* platformUtterance() const { return m_platformUtterance; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SpeechSynthesisUtterance(ExecutionContext*, const String&);

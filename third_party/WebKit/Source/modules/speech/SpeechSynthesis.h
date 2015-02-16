@@ -64,7 +64,7 @@ public:
 
     virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SpeechSynthesis(ExecutionContext*);

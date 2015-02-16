@@ -40,7 +40,7 @@ public:
     unsigned length() { return m_results.size(); }
     SpeechRecognitionResult* item(unsigned index);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit SpeechRecognitionResultList(const HeapVector<Member<SpeechRecognitionResult>>&);
