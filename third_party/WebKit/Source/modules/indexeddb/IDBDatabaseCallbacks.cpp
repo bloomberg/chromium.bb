@@ -44,7 +44,7 @@ IDBDatabaseCallbacks::~IDBDatabaseCallbacks()
 {
 }
 
-void IDBDatabaseCallbacks::trace(Visitor* visitor)
+DEFINE_TRACE(IDBDatabaseCallbacks)
 {
     visitor->trace(m_database);
 }

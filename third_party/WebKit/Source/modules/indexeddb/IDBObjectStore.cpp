@@ -64,7 +64,7 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     ASSERT(m_transaction);
 }
 
-void IDBObjectStore::trace(Visitor* visitor)
+DEFINE_TRACE(IDBObjectStore)
 {
     visitor->trace(m_transaction);
     visitor->trace(m_indexMap);

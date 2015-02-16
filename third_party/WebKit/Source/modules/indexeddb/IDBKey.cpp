@@ -32,7 +32,7 @@ IDBKey::~IDBKey()
 {
 }
 
-void IDBKey::trace(Visitor* visitor)
+DEFINE_TRACE(IDBKey)
 {
     visitor->trace(m_array);
 }

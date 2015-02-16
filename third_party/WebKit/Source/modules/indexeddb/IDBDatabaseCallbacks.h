@@ -38,7 +38,7 @@ class IDBDatabaseCallbacks : public GarbageCollectedFinalized<IDBDatabaseCallbac
 public:
     static IDBDatabaseCallbacks* create();
     virtual ~IDBDatabaseCallbacks();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // IDBDatabaseCallbacks
     virtual void onForcedClose();

@@ -70,7 +70,7 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
     return m_idbFactory.get();
 }
 
-void WorkerGlobalScopeIndexedDatabase::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerGlobalScopeIndexedDatabase)
 {
     visitor->trace(m_idbFactory);
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);

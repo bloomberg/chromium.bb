@@ -91,7 +91,7 @@ IDBDatabase::~IDBDatabase()
         m_backend->close();
 }
 
-void IDBDatabase::trace(Visitor* visitor)
+DEFINE_TRACE(IDBDatabase)
 {
     visitor->trace(m_versionChangeTransaction);
     visitor->trace(m_transactions);

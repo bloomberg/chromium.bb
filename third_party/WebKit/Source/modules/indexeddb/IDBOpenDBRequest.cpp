@@ -58,7 +58,7 @@ IDBOpenDBRequest::~IDBOpenDBRequest()
 {
 }
 
-void IDBOpenDBRequest::trace(Visitor* visitor)
+DEFINE_TRACE(IDBOpenDBRequest)
 {
     visitor->trace(m_databaseCallbacks);
     IDBRequest::trace(visitor);

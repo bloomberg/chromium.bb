@@ -62,7 +62,7 @@ class IDBRequest
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     virtual ~IDBRequest();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     ScriptState* scriptState() { return m_scriptState.get(); }
     ScriptValue result(ExceptionState&);

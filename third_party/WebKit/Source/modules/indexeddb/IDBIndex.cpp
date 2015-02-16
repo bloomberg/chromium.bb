@@ -59,7 +59,7 @@ IDBIndex::~IDBIndex()
 {
 }
 
-void IDBIndex::trace(Visitor* visitor)
+DEFINE_TRACE(IDBIndex)
 {
     visitor->trace(m_objectStore);
     visitor->trace(m_transaction);

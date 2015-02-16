@@ -58,7 +58,7 @@ public:
         return new IDBObjectStore(metadata, transaction);
     }
     ~IDBObjectStore() { }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // Implement the IDBObjectStore IDL
     int64_t id() const { return m_metadata.id; }

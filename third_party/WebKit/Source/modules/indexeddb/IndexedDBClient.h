@@ -38,7 +38,7 @@ class ExecutionContext;
 class IndexedDBClient : public GarbageCollected<IndexedDBClient> {
 public:
     static IndexedDBClient* create();
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
 };

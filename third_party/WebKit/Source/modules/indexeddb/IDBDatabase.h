@@ -60,7 +60,7 @@ class IDBDatabase final
 public:
     static IDBDatabase* create(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);
     virtual ~IDBDatabase();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);

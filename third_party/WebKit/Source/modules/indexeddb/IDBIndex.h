@@ -51,7 +51,7 @@ public:
         return new IDBIndex(metadata, objectStore, transaction);
     }
     ~IDBIndex();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }

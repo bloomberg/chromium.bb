@@ -41,7 +41,7 @@ DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(LocalDOMWindow& window)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
 
-void DOMWindowIndexedDatabase::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowIndexedDatabase)
 {
     visitor->trace(m_idbFactory);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);

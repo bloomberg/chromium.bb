@@ -46,7 +46,7 @@ public:
     virtual void willDestroyGlobalObjectInFrame() override;
     virtual void willDetachGlobalObjectFromFrame() override;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowIndexedDatabase(LocalDOMWindow&);

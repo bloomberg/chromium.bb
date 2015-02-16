@@ -51,7 +51,7 @@ public:
 
     static IDBCursor* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void contextWillBeDestroyed() { m_backend.clear(); }
 
     // Implement the IDL

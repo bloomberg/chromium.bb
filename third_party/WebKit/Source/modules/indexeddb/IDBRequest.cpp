@@ -79,7 +79,7 @@ IDBRequest::~IDBRequest()
     ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
 }
 
-void IDBRequest::trace(Visitor* visitor)
+DEFINE_TRACE(IDBRequest)
 {
     visitor->trace(m_transaction);
     visitor->trace(m_source);

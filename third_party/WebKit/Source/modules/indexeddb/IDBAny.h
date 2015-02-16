@@ -81,7 +81,7 @@ public:
         return new IDBAny(value, blobInfo, key, keyPath);
     }
     ~IDBAny();
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void contextWillBeDestroyed();
 
     enum Type {

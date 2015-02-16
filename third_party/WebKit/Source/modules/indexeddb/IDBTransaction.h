@@ -58,7 +58,7 @@ public:
     static IDBTransaction* create(ScriptState*, int64_t, const Vector<String>& objectStoreNames, WebIDBTransactionMode, IDBDatabase*);
     static IDBTransaction* create(ScriptState*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
     virtual ~IDBTransaction();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     static WebIDBTransactionMode stringToMode(const String&, ExceptionState&);
 

@@ -46,7 +46,7 @@ public:
     {
         return new IDBFactory(client);
     }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     IDBRequest* getDatabaseNames(ScriptState*, ExceptionState&);
 

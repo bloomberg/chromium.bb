@@ -111,7 +111,7 @@ IDBTransaction::~IDBTransaction()
     ASSERT(m_requestList.isEmpty() || m_contextStopped);
 }
 
-void IDBTransaction::trace(Visitor* visitor)
+DEFINE_TRACE(IDBTransaction)
 {
     visitor->trace(m_database);
     visitor->trace(m_openDBRequest);

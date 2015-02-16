@@ -93,7 +93,7 @@ public:
     }
 
     ~IDBKey();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // In order of the least to the highest precedent in terms of sort order.
     enum Type {

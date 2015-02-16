@@ -55,7 +55,7 @@ IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
 {
 }
 
-void IDBFactory::trace(Visitor* visitor)
+DEFINE_TRACE(IDBFactory)
 {
     visitor->trace(m_permissionClient);
 }

@@ -786,7 +786,7 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-void InspectorIndexedDBAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorIndexedDBAgent)
 {
     visitor->trace(m_page);
     InspectorBaseAgent::trace(visitor);

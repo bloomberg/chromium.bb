@@ -195,7 +195,7 @@ IDBAny::IDBAny(int64_t value)
 {
 }
 
-void IDBAny::trace(Visitor* visitor)
+DEFINE_TRACE(IDBAny)
 {
     visitor->trace(m_domStringList);
     visitor->trace(m_idbCursor);

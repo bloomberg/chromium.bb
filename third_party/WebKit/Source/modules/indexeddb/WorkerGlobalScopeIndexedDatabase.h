@@ -42,7 +42,7 @@ public:
 
     static IDBFactory* indexedDB(WillBeHeapSupplementable<WorkerGlobalScope>&);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WorkerGlobalScopeIndexedDatabase();

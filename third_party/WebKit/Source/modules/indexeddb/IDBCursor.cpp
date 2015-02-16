@@ -73,7 +73,7 @@ IDBCursor::~IDBCursor()
 {
 }
 
-void IDBCursor::trace(Visitor* visitor)
+DEFINE_TRACE(IDBCursor)
 {
     visitor->trace(m_request);
     visitor->trace(m_source);

@@ -46,7 +46,7 @@ public:
     static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(Page*);
 
     virtual ~InspectorIndexedDBAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void clearFrontend() override;
     virtual void restore() override;

@@ -55,7 +55,7 @@ public:
     // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
     static IDBKeyRange* fromScriptValue(ExecutionContext*, const ScriptValue&, ExceptionState&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // Implement the IDBKeyRange IDL
     IDBKey* lower() const { return m_lower.get(); }

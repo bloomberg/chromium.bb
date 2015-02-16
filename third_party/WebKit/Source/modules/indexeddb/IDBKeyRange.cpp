@@ -59,7 +59,7 @@ IDBKeyRange::IDBKeyRange(IDBKey* lower, IDBKey* upper, LowerBoundType lowerType,
 {
 }
 
-void IDBKeyRange::trace(Visitor* visitor)
+DEFINE_TRACE(IDBKeyRange)
 {
     visitor->trace(m_lower);
     visitor->trace(m_upper);
