@@ -486,9 +486,9 @@ nouveau_bo_name_ref(struct nouveau_device *dev, uint32_t name,
 	if (ret == 0) {
 		ret = nouveau_bo_wrap_locked(dev, req.handle, pbo);
 		nouveau_bo((*pbo))->name = name;
-		pthread_mutex_unlock(&nvdev->lock);
 	}
 
+	pthread_mutex_unlock(&nvdev->lock);
 	return ret;
 }
 
