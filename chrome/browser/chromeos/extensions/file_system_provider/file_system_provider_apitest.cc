@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, ReadFile) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, DISABLED_BigFile) {
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, BigFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/big_file",
                                           kFlagLoadAsComponent))
       << message_;
