@@ -130,7 +130,7 @@ void FontBuilder::setStretch(FontStretch fontStretch)
     m_fontDescription.setStretch(fontStretch);
 }
 
-void FontBuilder::setScript(const String& locale)
+void FontBuilder::setScript(const AtomicString& locale)
 {
     set(PropertySetFlag::Script);
 

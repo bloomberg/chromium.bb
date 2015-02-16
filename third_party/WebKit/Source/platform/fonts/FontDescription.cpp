@@ -39,7 +39,7 @@ namespace blink {
 struct SameSizeAsFontDescription {
     FontFamily familyList;
     RefPtr<FontFeatureSettings> m_featureSettings;
-    String locale;
+    AtomicString locale;
     float sizes[4];
     // FXIME: Make them fit into one word.
     uint32_t bitfields;
@@ -121,6 +121,21 @@ FontDescription::VariantLigatures FontDescription::variantLigatures() const
     ligatures.contextual = contextualLigaturesState();
 
     return ligatures;
+}
+
+static const AtomicString& defaultLocale()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, locale, ());
+    if (locale.isNull())
+        locale = AtomicString("en");
+    return locale;
+}
+
+const AtomicString& FontDescription::locale() const
+{
+    if (m_locale.isNull())
+        return defaultLocale();
+    return m_locale;
 }
 
 void FontDescription::setTraits(FontTraits traits)

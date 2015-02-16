@@ -56,7 +56,7 @@ public:
     void setStretch(FontStretch);
     void setFamilyDescription(const FontDescription::FamilyDescription&);
     void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
-    void setScript(const String& locale);
+    void setScript(const AtomicString& locale);
     void setStyle(FontStyle);
     void setVariant(FontVariant);
     void setVariantLigatures(const FontDescription::VariantLigatures&);
