@@ -77,6 +77,7 @@ class CONTENT_EXPORT PushMessagingService {
   // the push service.
   virtual void Unregister(const GURL& requesting_origin,
                           int64 service_worker_registration_id,
+                          bool retry_on_failure,
                           const UnregisterCallback& callback) = 0;
 
   // Checks the permission status for the requesting origin. Permission is only

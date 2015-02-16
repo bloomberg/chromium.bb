@@ -22,7 +22,7 @@ class PrefRegistrySyncable;
 namespace gcm {
 
 class GCMProfileService;
-struct PushMessagingApplicationId;
+class PushMessagingApplicationId;
 
 class PushMessagingServiceImpl : public content::PushMessagingService,
                                  public GCMAppHandler {
@@ -67,6 +67,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void Unregister(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
+      bool retry_on_failure,
       const content::PushMessagingService::UnregisterCallback&) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
@@ -79,7 +80,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void IncreasePushRegistrationCount(int add, bool is_pending);
   void DecreasePushRegistrationCount(int subtract, bool was_pending);
 
-  void DeliverMessageCallback(const PushMessagingApplicationId& application_id,
+  void DeliverMessageCallback(const std::string& app_id_guid,
+                              const GURL& requesting_origin,
+                              int64 service_worker_registration_id,
                               const GCMClient::IncomingMessage& message,
                               content::PushDeliveryStatus status);
 
@@ -87,9 +90,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // incoming push message in order to clarify to the user that something has
   // happened in the background. When they forget to do so, display a default
   // notification on their behalf.
-  void RequireUserVisibleUX(const PushMessagingApplicationId& application_id);
+  void RequireUserVisibleUX(const GURL& requesting_origin,
+                            int64 service_worker_registration_id);
   void DidGetNotificationsShown(
-      const PushMessagingApplicationId& application_id,
+      const GURL& requesting_origin,
+      int64 service_worker_registration_id,
       bool notification_shown,
       bool notification_needed,
       const std::string& data,
@@ -102,6 +107,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       content::PushRegistrationStatus status);
 
   void DidRegister(
+      const PushMessagingApplicationId& application_id,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
       GCMClient::Result result);
@@ -112,10 +118,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       bool allow);
 
-  void Unregister(const PushMessagingApplicationId& application_id,
+  void Unregister(const std::string& app_id_guid,
+                  bool retry_on_failure,
                   const content::PushMessagingService::UnregisterCallback&);
 
-  void DidUnregister(const content::PushMessagingService::UnregisterCallback&,
+  void DidUnregister(const std::string& app_id_guid,
+                     bool retry_on_failure,
+                     const content::PushMessagingService::UnregisterCallback&,
                      GCMClient::Result result);
 
   // Helper method that checks if a given origin is allowed to use Push.

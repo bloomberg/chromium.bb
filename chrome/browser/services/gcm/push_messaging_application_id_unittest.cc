@@ -5,46 +5,37 @@
 #include "chrome/browser/services/gcm/push_messaging_application_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(PushMessagingApplicationIdTest, ConstructorValidity) {
-  EXPECT_TRUE(gcm::PushMessagingApplicationId(GURL("https://www.example.com/"),
-                                              1).IsValid());
-  EXPECT_TRUE(gcm::PushMessagingApplicationId(GURL("https://www.example.com"),
-                                              1).IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId(GURL(""), 1).IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId(GURL("foo"), 1).IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId(
-                   GURL("https://www.example.com/foo"), 1).IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId(
-                   GURL("https://www.example.com/#foo"), 1).IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId(GURL("https://www.example.com/"),
-                                               -1).IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId().IsValid());
+namespace gcm {
+
+class PushMessagingApplicationIdTest : public testing::Test {
+ protected:
+  PushMessagingApplicationId GenerateId(
+      const GURL& origin,
+      int64 service_worker_registration_id) {
+    // To bypass DCHECK in PushMessagingApplicationId::Generate, we just use it
+    // to generate app_id_guid, and then use private constructor.
+    std::string app_id_guid = gcm::PushMessagingApplicationId::Generate(
+        GURL("https://www.example.com/"), 1).app_id_guid;
+    return PushMessagingApplicationId(app_id_guid, origin,
+                                      service_worker_registration_id);
+  }
+};
+
+TEST_F(PushMessagingApplicationIdTest, ConstructorValidity) {
+  EXPECT_TRUE(GenerateId(GURL("https://www.example.com/"), 1).IsValid());
+  EXPECT_TRUE(GenerateId(GURL("https://www.example.com"), 1).IsValid());
+  EXPECT_FALSE(GenerateId(GURL(""), 1).IsValid());
+  EXPECT_FALSE(GenerateId(GURL("foo"), 1).IsValid());
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/foo"), 1).IsValid());
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/#foo"), 1).IsValid());
+  EXPECT_FALSE(GenerateId(GURL("https://www.example.com/"), -1).IsValid());
 }
 
-TEST(PushMessagingApplicationIdTest, ToString) {
-  EXPECT_EQ(gcm::PushMessagingApplicationId(GURL("https://www.example.com/"), 1)
-                .ToString(),
-            "push#https://www.example.com/#1");
-  EXPECT_EQ(gcm::PushMessagingApplicationId(GURL("https://www.example.com"), 1)
-                .ToString(),
-            "push#https://www.example.com/#1");
+TEST_F(PushMessagingApplicationIdTest, UniqueGuids) {
+  EXPECT_NE(gcm::PushMessagingApplicationId::Generate(
+                GURL("https://www.example.com/"), 1).app_id_guid,
+            gcm::PushMessagingApplicationId::Generate(
+                GURL("https://www.example.com/"), 1).app_id_guid);
 }
 
-TEST(PushMessagingApplicationIdTest, ParseValidity) {
-  EXPECT_TRUE(gcm::PushMessagingApplicationId::Parse(
-                  "push#https://www.example.com/#1").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse("").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse(
-                   "sync#https://www.example.com/#1").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse("push#foo#1").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse(
-                   "push#https://www.example.com/foo#1").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse(
-                   "push#https://www.example.com/#one").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse(
-                   "push#https://www.example.com/#foo#1").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse(
-                   "push#https://www.example.com/#1#1").IsValid());
-  EXPECT_FALSE(gcm::PushMessagingApplicationId::Parse(
-                   "push#https://www.example.com/#-1").IsValid());
-}
+}  // namespace gcm

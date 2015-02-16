@@ -1210,6 +1210,10 @@ const char kPreferenceResetTime[] = "prefs.preference_reset_time";
 const char kPushMessagingRegistrationCount[] =
     "gcm.push_messaging_registration_count";
 
+// Maps from app ids to origin + Service Worker registration ID.
+const char kPushMessagingApplicationIdMap[] =
+    "gcm.push_messaging_application_id_map";
+
 // Whether a user is allowed to use Easy Unlock.
 const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 

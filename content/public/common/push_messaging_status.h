@@ -56,6 +56,10 @@ enum PushUnregistrationStatus {
   // The unregistration was successful.
   PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER,
 
+  // The registration did not happen because of a network error, but will be
+  // retried until it succeeds.
+  PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR,
+
   // The registration was not registered.
   PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED,
 
@@ -91,6 +95,12 @@ enum PushDeliveryStatus {
 
   // The message could not be delivered because it was invalid.
   PUSH_DELIVERY_STATUS_INVALID_MESSAGE,
+
+  // The message could not be delivered because the app id was unknown.
+  PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID,
+
+  // The message could not be delivered because origin no longer has permission.
+  PUSH_DELIVERY_STATUS_PERMISSION_DENIED,
 
   // The message could not be delivered because no service worker was found.
   PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER,

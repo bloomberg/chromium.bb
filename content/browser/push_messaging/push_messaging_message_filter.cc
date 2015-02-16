@@ -430,7 +430,9 @@ void PushMessagingMessageFilter::UnregisterFromService(
     return;
   }
 
-  service()->Unregister(requesting_origin, service_worker_registration_id,
+  service()->Unregister(
+      requesting_origin, service_worker_registration_id,
+      false /* retry_on_failure */,
       base::Bind(&PushMessagingMessageFilter::DidUnregisterFromService,
                  weak_factory_ui_to_ui_.GetWeakPtr(),
                  request_id,
@@ -443,9 +445,17 @@ void PushMessagingMessageFilter::DidUnregisterFromService(
     PushUnregistrationStatus unregistration_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (unregistration_status != PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER) {
-    DidUnregister(request_id, unregistration_status);
-    return;
+  switch (unregistration_status) {
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
+      break;
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR:
+      NOTREACHED();
+      break;
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
+    case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
+      DidUnregister(request_id, unregistration_status);
+      return;
   }
 
   BrowserThread::PostTask(
@@ -463,24 +473,25 @@ void PushMessagingMessageFilter::DidUnregister(
     int request_id,
     PushUnregistrationStatus unregistration_status) {
   switch (unregistration_status) {
-  case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
-    Send(new PushMessagingMsg_UnregisterSuccess(request_id, true));
-    return;
-  case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
-    Send(new PushMessagingMsg_UnregisterSuccess(request_id, false));
-    return;
-  case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
-    Send(new PushMessagingMsg_UnregisterError(
-        request_id,
-        blink::WebPushError::ErrorTypeNetwork,
-        "Failed to connect to the push server."));
-    return;
-  case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
-    Send(new PushMessagingMsg_UnregisterError(
-        request_id,
-        blink::WebPushError::ErrorTypeUnknown,
-        "Unexpected error while trying to unregister from the push server."));
-    return;
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR:
+      Send(new PushMessagingMsg_UnregisterSuccess(request_id, true));
+      return;
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
+      Send(new PushMessagingMsg_UnregisterSuccess(request_id, false));
+      return;
+    case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
+      Send(new PushMessagingMsg_UnregisterError(
+          request_id,
+          blink::WebPushError::ErrorTypeNetwork,
+          "Failed to connect to the push server."));
+      return;
+    case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
+      Send(new PushMessagingMsg_UnregisterError(
+          request_id,
+          blink::WebPushError::ErrorTypeUnknown,
+          "Unexpected error while trying to unregister from the push server."));
+      return;
   }
 }
 
