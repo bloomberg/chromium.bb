@@ -653,6 +653,10 @@ Gallery.prototype.onSelection_ = function() {
   */
 Gallery.prototype.onSplice_ = function() {
   this.selectionModel_.adjustLength(this.dataModel_.length);
+  this.selectionModel_.selectedIndexes =
+      this.selectionModel_.selectedIndexes.filter(function(index) {
+    return 0 <= index && index < this.dataModel_.length;
+  }.bind(this));
 };
 
 /**
