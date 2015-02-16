@@ -20,13 +20,16 @@
         'chromeos_flag': ['--chromeos=0'],
       }],
     ],
+    'repack_extra_flags%': [],
+    'repack_shared_dir%': '<(SHARED_INTERMEDIATE_DIR)',
+    'repack_output_dir%': '<(SHARED_INTERMEDIATE_DIR)',
   },
   'inputs': [
     '<(repack_locales_path)',
-    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) --use-ash <(use_ash) <(chromeos_flag) --enable-autofill-dialog <(enable_autofill_dialog) --enable-extensions <(enable_extensions) <(pak_locales))'
+    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(repack_shared_dir) -x <(repack_output_dir) --use-ash <(use_ash) <(repack_extra_flags) <(chromeos_flag) --enable-autofill-dialog <(enable_autofill_dialog) --enable-extensions <(enable_extensions) <(pak_locales))'
   ],
   'outputs': [
-    '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(pak_locales))'
+    '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(repack_shared_dir) -x <(repack_output_dir) <(pak_locales))'
   ],
   'action': [
     'python',
@@ -34,9 +37,10 @@
     '<@(branding_flag)',
     '-p', '<(OS)',
     '-g', '<(grit_out_dir)',
-    '-s', '<(SHARED_INTERMEDIATE_DIR)',
-    '-x', '<(SHARED_INTERMEDIATE_DIR)/.',
+    '-s<(repack_shared_dir)',
+    '-x<(repack_output_dir)/.',
     '--use-ash=<(use_ash)',
+    '<@(repack_extra_flags)',
     '<@(chromeos_flag)',
     '--enable-autofill-dialog=<(enable_autofill_dialog)',
     '--enable-extensions=<(enable_extensions)',
