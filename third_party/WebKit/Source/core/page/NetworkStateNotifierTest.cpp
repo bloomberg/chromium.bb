@@ -118,7 +118,7 @@ protected:
         m_notifier.setWebConnectionType(type);
 
         blink::WebThread* thread = blink::Platform::current()->currentThread();
-        thread->postTask(new ExitTask(thread));
+        thread->postTask(FROM_HERE, new ExitTask(thread));
         thread->enterRunLoop();
     }
 

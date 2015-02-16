@@ -328,6 +328,10 @@ if (!is_mac) {
       "//third_party/WebKit/Source:config",
     ]
 
+    defines = [
+      "INSIDE_BLINK",
+    ]
+
     deps = [
       ":platform",
       "//base",

@@ -60,7 +60,7 @@ void ScriptStreamerThread::postTask(WebThread::Task* task)
     MutexLocker locker(m_mutex);
     ASSERT(!m_runningTask);
     m_runningTask = true;
-    platformThread().postTask(task);
+    platformThread().postTask(FROM_HERE, task);
 }
 
 void ScriptStreamerThread::taskDone()
