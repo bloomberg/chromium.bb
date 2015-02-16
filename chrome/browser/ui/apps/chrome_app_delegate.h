@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_delegate.h"
@@ -26,6 +27,9 @@ class ChromeAppDelegate : public extensions::AppDelegate,
   static void DisableExternalOpenForTesting();
 
  private:
+  static void RelinquishKeepAliveAfterTimeout(
+      const base::WeakPtr<ChromeAppDelegate>& chrome_app_delegate);
+
   class NewWindowContentsDelegate;
 
   // extensions::AppDelegate:
@@ -62,16 +66,21 @@ class ChromeAppDelegate : public extensions::AppDelegate,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
   void SetTerminatingCallback(const base::Closure& callback) override;
+  void OnHide() override;
+  void OnShow() override;
 
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  bool has_been_shown_;
+  bool is_hidden_;
   scoped_ptr<ScopedKeepAlive> keep_alive_;
   scoped_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;
   base::Closure terminating_callback_;
   content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<ChromeAppDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppDelegate);
 };

@@ -78,6 +78,10 @@ class AppDelegate {
 
   // |callback| will be called when the process is about to terminate.
   virtual void SetTerminatingCallback(const base::Closure& callback) = 0;
+
+  // Called when the app is hidden or shown.
+  virtual void OnHide() = 0;
+  virtual void OnShow() = 0;
 };
 
 }  // namespace extensions

@@ -50,6 +50,8 @@ class ShellAppDelegate : public AppDelegate {
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
   void SetTerminatingCallback(const base::Closure& callback) override;
+  void OnHide() override {}
+  void OnShow() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAppDelegate);

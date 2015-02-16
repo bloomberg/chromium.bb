@@ -5,7 +5,12 @@
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('empty.html', {
     hidden: true,
-  }, function () {
-    chrome.test.sendMessage('Launched');
+  }, function (win) {
+    chrome.test.sendMessage('Launched', function () {
+      setTimeout(function () {
+        win.show();
+        chrome.test.sendMessage('Shown');
+      }, 3000);
+    });
   });
 });

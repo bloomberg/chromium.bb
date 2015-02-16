@@ -660,6 +660,7 @@ void AppWindow::SetContentSizeConstraints(const gfx::Size& min_size,
 }
 
 void AppWindow::Show(ShowType show_type) {
+  app_delegate_->OnShow();
   bool was_hidden = is_hidden_ || !has_been_shown_;
   is_hidden_ = false;
 
@@ -696,6 +697,7 @@ void AppWindow::Hide() {
   show_on_first_paint_ = false;
   GetBaseWindow()->Hide();
   AppWindowRegistry::Get(browser_context_)->AppWindowHidden(this);
+  app_delegate_->OnHide();
 }
 
 void AppWindow::SetAlwaysOnTop(bool always_on_top) {
