@@ -30,7 +30,7 @@ public:
         return self->bindToV8Function();
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_observer);
         ScriptFunction::trace(visitor);
@@ -117,7 +117,7 @@ AcceptConnectionObserver::AcceptConnectionObserver(ExecutionContext* context, in
 {
 }
 
-void AcceptConnectionObserver::trace(Visitor* visitor)
+DEFINE_TRACE(AcceptConnectionObserver)
 {
     ContextLifecycleObserver::trace(visitor);
 }

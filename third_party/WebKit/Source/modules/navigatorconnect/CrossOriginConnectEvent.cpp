@@ -48,7 +48,7 @@ CrossOriginConnectEvent::CrossOriginConnectEvent(AcceptConnectionObserver* obser
 {
 }
 
-void CrossOriginConnectEvent::trace(Visitor* visitor)
+DEFINE_TRACE(CrossOriginConnectEvent)
 {
     visitor->trace(m_client);
     visitor->trace(m_observer);

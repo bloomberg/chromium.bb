@@ -25,7 +25,7 @@ public:
     String targetUrl() const;
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 private:
     explicit CrossOriginServiceWorkerClient(const WebCrossOriginServiceWorkerClient&);
