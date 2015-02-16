@@ -13,11 +13,12 @@
   Deleted files are not included.  Neither are untracked files.
 
 Synopsis:
-  %prog [-b BRANCH] [-d] [-x EXTENSIONS|-c] [-t TOKEN] QUOTED_COMMAND
+  %prog [-b BRANCH] [-d] [-x EXTENSIONS|-c|-g] [-t TOKEN] QUOTED_COMMAND
 
 Examples:
   %prog -x gyp,gypi "tools/format_xml.py [[FILENAME]]"
   %prog -c "tools/sort-headers.py [[FILENAME]]"
+  %prog -g "tools/sort_sources.py [[FILENAME]]"
   %prog -t "~~BINGO~~" "echo I modified ~~BINGO~~"
 """
 
@@ -29,6 +30,8 @@ import sys
 
 # List of C++-like source file extensions.
 _CPP_EXTENSIONS = ('h', 'hh', 'hpp', 'c', 'cc', 'cpp', 'cxx', 'mm',)
+# List of build file extensions.
+_BUILD_EXTENSIONS = ('gyp', 'gypi', 'gn',)
 
 
 def GitShell(args, ignore_return=False):
@@ -91,6 +94,10 @@ def main():
   parser.add_option('-c', '--cpp', default=False, action='store_true',
                     dest='cpp_only',
                     help='Runs your command only on C++-like source files.')
+  # -g stands for GYP and GN.
+  parser.add_option('-g', '--build', default=False, action='store_true',
+                    dest='build_only',
+                    help='Runs your command only on build files.')
   parser.add_option('-t', '--token', default='[[FILENAME]]', dest='token',
                     help='Sets the token to be replaced for each file '
                     'in your command (default [[FILENAME]]).')
@@ -103,9 +110,14 @@ def main():
     parser.print_help()
     sys.exit(1)
 
+  if opts.cpp_only and opts.build_only:
+    parser.error("--cpp and --build are mutually exclusive")
+
   extensions = opts.extensions
   if opts.cpp_only:
     extensions = _CPP_EXTENSIONS
+  if opts.build_only:
+    extensions = _BUILD_EXTENSIONS
 
   ForAllTouchedFiles(opts.branch, extensions, opts.token, args[0])
 
