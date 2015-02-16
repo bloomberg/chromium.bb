@@ -299,7 +299,7 @@ void ScriptProcessorNode::setChannelCountMode(const String& mode, ExceptionState
     }
 }
 
-void ScriptProcessorNode::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptProcessorNode)
 {
     visitor->trace(m_inputBuffers);
     visitor->trace(m_outputBuffers);

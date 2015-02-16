@@ -58,7 +58,7 @@ BiquadProcessor::~BiquadProcessor()
         uninitialize();
 }
 
-void BiquadProcessor::trace(Visitor* visitor)
+DEFINE_TRACE(BiquadProcessor)
 {
     visitor->trace(m_parameter1);
     visitor->trace(m_parameter2);

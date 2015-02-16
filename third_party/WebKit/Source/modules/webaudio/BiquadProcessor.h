@@ -51,7 +51,7 @@ public:
 
     BiquadProcessor(AudioContext*, float sampleRate, size_t numberOfChannels, bool autoInitialize);
     virtual ~BiquadProcessor();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 

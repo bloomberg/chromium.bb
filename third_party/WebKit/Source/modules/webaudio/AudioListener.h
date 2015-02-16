@@ -85,7 +85,7 @@ public:
     bool isHRTFDatabaseLoaded();
     void waitForHRTFDatabaseLoaderThreadCompletion();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     AudioListener();

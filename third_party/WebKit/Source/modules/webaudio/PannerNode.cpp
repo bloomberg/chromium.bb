@@ -583,7 +583,7 @@ void PannerNode::setChannelCountMode(const String& mode, ExceptionState& excepti
         context()->addChangedChannelCountMode(this);
 }
 
-void PannerNode::trace(Visitor* visitor)
+DEFINE_TRACE(PannerNode)
 {
     visitor->trace(m_panner);
     AudioNode::trace(visitor);

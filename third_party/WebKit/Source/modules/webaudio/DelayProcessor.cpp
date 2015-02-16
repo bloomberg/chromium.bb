@@ -45,7 +45,7 @@ DelayProcessor::~DelayProcessor()
         uninitialize();
 }
 
-void DelayProcessor::trace(Visitor* visitor)
+DEFINE_TRACE(DelayProcessor)
 {
     visitor->trace(m_delayTime);
     AudioDSPKernelProcessor::trace(visitor);

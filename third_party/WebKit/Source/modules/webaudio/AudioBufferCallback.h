@@ -36,7 +36,7 @@ class AudioBuffer;
 class AudioBufferCallback : public GarbageCollectedFinalized<AudioBufferCallback> {
 public:
     virtual ~AudioBufferCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(AudioBuffer*) = 0;
 };
 

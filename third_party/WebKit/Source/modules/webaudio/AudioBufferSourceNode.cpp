@@ -554,7 +554,7 @@ void AudioBufferSourceNode::finish()
     AudioScheduledSourceNode::finish();
 }
 
-void AudioBufferSourceNode::trace(Visitor* visitor)
+DEFINE_TRACE(AudioBufferSourceNode)
 {
     visitor->trace(m_buffer);
     visitor->trace(m_playbackRate);

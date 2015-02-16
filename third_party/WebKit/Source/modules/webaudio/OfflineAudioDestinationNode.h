@@ -56,7 +56,7 @@ public:
 
     virtual float sampleRate()  const override { return m_renderTarget->sampleRate(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     OfflineAudioDestinationNode(AudioContext*, AudioBuffer* renderTarget);

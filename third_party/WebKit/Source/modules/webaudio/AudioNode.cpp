@@ -593,7 +593,7 @@ void AudioNode::printNodeCounts()
 
 #endif // DEBUG_AUDIONODE_REFERENCES
 
-void AudioNode::trace(Visitor* visitor)
+DEFINE_TRACE(AudioNode)
 {
     visitor->trace(m_context);
     visitor->trace(m_inputs);

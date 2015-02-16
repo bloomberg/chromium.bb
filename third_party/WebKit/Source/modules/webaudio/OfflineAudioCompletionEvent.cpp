@@ -59,7 +59,7 @@ const AtomicString& OfflineAudioCompletionEvent::interfaceName() const
     return EventNames::OfflineAudioCompletionEvent;
 }
 
-void OfflineAudioCompletionEvent::trace(Visitor* visitor)
+DEFINE_TRACE(OfflineAudioCompletionEvent)
 {
     visitor->trace(m_renderedBuffer);
     Event::trace(visitor);

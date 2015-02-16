@@ -50,7 +50,7 @@ AudioBasicProcessorNode::~AudioBasicProcessorNode()
     ASSERT(!isInitialized());
 }
 
-void AudioBasicProcessorNode::trace(Visitor* visitor)
+DEFINE_TRACE(AudioBasicProcessorNode)
 {
     visitor->trace(m_processor);
     AudioNode::trace(visitor);

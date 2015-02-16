@@ -60,7 +60,7 @@ public:
     // Amount by which the compressor is currently compressing the signal in decibels.
     AudioParam* reduction() { return m_reduction.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual double tailTime() const override;

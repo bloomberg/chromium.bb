@@ -159,7 +159,7 @@ void OfflineAudioDestinationNode::notifyComplete()
     context()->fireCompletionEvent();
 }
 
-void OfflineAudioDestinationNode::trace(Visitor* visitor)
+DEFINE_TRACE(OfflineAudioDestinationNode)
 {
     visitor->trace(m_renderTarget);
     AudioDestinationNode::trace(visitor);

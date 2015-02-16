@@ -183,7 +183,7 @@ double ConvolverNode::latencyTime() const
     return std::numeric_limits<double>::infinity();
 }
 
-void ConvolverNode::trace(Visitor* visitor)
+DEFINE_TRACE(ConvolverNode)
 {
     visitor->trace(m_buffer);
     AudioNode::trace(visitor);

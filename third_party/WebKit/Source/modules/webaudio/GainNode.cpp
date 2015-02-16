@@ -105,7 +105,7 @@ void GainNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
     AudioNode::checkNumberOfChannelsForInput(input);
 }
 
-void GainNode::trace(Visitor* visitor)
+DEFINE_TRACE(GainNode)
 {
     visitor->trace(m_gain);
     AudioNode::trace(visitor);

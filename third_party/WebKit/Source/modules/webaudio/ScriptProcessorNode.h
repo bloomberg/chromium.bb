@@ -67,7 +67,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     virtual double tailTime() const override;

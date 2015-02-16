@@ -43,7 +43,7 @@ public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.
     static AudioNodeOutput* create(AudioNode*, unsigned numberOfChannels);
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void dispose();
 
     // Can be called from any thread.

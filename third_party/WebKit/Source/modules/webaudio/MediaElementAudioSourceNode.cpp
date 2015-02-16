@@ -150,7 +150,7 @@ void MediaElementAudioSourceNode::unlock()
     m_processLock.unlock();
 }
 
-void MediaElementAudioSourceNode::trace(Visitor* visitor)
+DEFINE_TRACE(MediaElementAudioSourceNode)
 {
     visitor->trace(m_mediaElement);
     AudioSourceNode::trace(visitor);

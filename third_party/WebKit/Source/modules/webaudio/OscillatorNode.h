@@ -70,7 +70,7 @@ public:
 
     void setPeriodicWave(PeriodicWave*);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     OscillatorNode(AudioContext*, float sampleRate);

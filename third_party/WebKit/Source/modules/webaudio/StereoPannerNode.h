@@ -35,7 +35,7 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&) final;
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     AudioParam* pan() { return m_pan.get(); }
 

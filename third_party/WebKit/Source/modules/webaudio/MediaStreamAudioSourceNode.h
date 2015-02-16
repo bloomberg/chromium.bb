@@ -58,7 +58,7 @@ public:
 
     AudioSourceProvider* audioSourceProvider() const { return m_audioSourceProvider.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaStreamAudioSourceNode(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);

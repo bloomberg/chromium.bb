@@ -53,7 +53,7 @@ AudioListener::~AudioListener()
 {
 }
 
-void AudioListener::trace(Visitor* visitor)
+DEFINE_TRACE(AudioListener)
 {
     visitor->trace(m_panners);
     visitor->trace(m_hrtfDatabaseLoader);

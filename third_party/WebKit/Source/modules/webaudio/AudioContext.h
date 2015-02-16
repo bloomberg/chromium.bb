@@ -99,7 +99,7 @@ public:
 
     virtual ~AudioContext();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool isInitialized() const { return m_isInitialized; }
     bool isOfflineContext() { return m_isOfflineContext; }

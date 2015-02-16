@@ -56,7 +56,7 @@ AudioNodeOutput* AudioNodeOutput::create(AudioNode* node, unsigned numberOfChann
     return new AudioNodeOutput(node, numberOfChannels);
 }
 
-void AudioNodeOutput::trace(Visitor* visitor)
+DEFINE_TRACE(AudioNodeOutput)
 {
     visitor->trace(m_node);
     visitor->trace(m_inputs);

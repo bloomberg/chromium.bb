@@ -44,7 +44,7 @@ public:
     static AudioNodeInput* create(AudioNode&);
 
     // AudioSummingJunction
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void didUpdate() override;
 
     // Can be called from any thread.

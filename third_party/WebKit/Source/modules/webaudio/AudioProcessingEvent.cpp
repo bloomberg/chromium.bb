@@ -61,7 +61,7 @@ const AtomicString& AudioProcessingEvent::interfaceName() const
     return EventNames::AudioProcessingEvent;
 }
 
-void AudioProcessingEvent::trace(Visitor* visitor)
+DEFINE_TRACE(AudioProcessingEvent)
 {
     visitor->trace(m_inputBuffer);
     visitor->trace(m_outputBuffer);

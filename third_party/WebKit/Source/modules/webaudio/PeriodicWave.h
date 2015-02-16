@@ -63,7 +63,7 @@ public:
 
     unsigned periodicWaveSize() const { return m_periodicWaveSize; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit PeriodicWave(float sampleRate);

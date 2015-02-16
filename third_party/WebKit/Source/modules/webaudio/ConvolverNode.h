@@ -59,7 +59,7 @@ public:
     bool normalize() const { return m_normalize; }
     void setNormalize(bool normalize) { m_normalize = normalize; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ConvolverNode(AudioContext*, float sampleRate);

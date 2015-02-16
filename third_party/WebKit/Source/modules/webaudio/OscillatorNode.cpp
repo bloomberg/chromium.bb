@@ -342,7 +342,7 @@ bool OscillatorNode::propagatesSilence() const
     return !isPlayingOrScheduled() || hasFinished() || !m_periodicWave.get();
 }
 
-void OscillatorNode::trace(Visitor* visitor)
+DEFINE_TRACE(OscillatorNode)
 {
     visitor->trace(m_frequency);
     visitor->trace(m_detune);

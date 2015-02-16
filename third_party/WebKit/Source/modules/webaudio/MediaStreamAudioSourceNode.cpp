@@ -117,7 +117,7 @@ void MediaStreamAudioSourceNode::process(size_t numberOfFrames)
     }
 }
 
-void MediaStreamAudioSourceNode::trace(Visitor* visitor)
+DEFINE_TRACE(MediaStreamAudioSourceNode)
 {
     visitor->trace(m_mediaStream);
     visitor->trace(m_audioTrack);

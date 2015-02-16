@@ -93,7 +93,7 @@ public:
 
     void handleStoppableSourceNode();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);

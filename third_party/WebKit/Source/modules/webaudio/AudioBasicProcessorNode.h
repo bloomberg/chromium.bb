@@ -39,7 +39,7 @@ class AudioBasicProcessorNode : public AudioNode {
 public:
     AudioBasicProcessorNode(NodeType, AudioContext*, float sampleRate);
     virtual ~AudioBasicProcessorNode();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // AudioNode
     virtual void dispose() override final;

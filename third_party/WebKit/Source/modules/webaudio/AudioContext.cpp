@@ -1274,7 +1274,7 @@ void AudioContext::fireCompletionEvent()
     }
 }
 
-void AudioContext::trace(Visitor* visitor)
+DEFINE_TRACE(AudioContext)
 {
     visitor->trace(m_closeResolver);
     visitor->trace(m_offlineResolver);

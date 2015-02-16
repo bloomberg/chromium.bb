@@ -42,7 +42,7 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
 public:
     static MediaStreamAudioDestinationNode* create(AudioContext*, size_t numberOfChannels);
     virtual ~MediaStreamAudioDestinationNode();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     MediaStream* stream() { return m_stream.get(); }
 

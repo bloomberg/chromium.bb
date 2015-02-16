@@ -121,7 +121,7 @@ double DynamicsCompressorNode::latencyTime() const
     return m_dynamicsCompressor->latencyTime();
 }
 
-void DynamicsCompressorNode::trace(Visitor* visitor)
+DEFINE_TRACE(DynamicsCompressorNode)
 {
     visitor->trace(m_threshold);
     visitor->trace(m_knee);

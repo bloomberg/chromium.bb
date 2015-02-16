@@ -40,7 +40,7 @@ class AudioNodeOutput;
 class AudioSummingJunction : public GarbageCollectedFinalized<AudioSummingJunction> {
 public:
     virtual ~AudioSummingJunction();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
     void dispose();
 
     // Can be called from any thread.

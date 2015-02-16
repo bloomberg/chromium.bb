@@ -54,7 +54,7 @@ public:
     // JavaScript interface
     AudioParam* gain() { return m_gain.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual double tailTime() const override { return 0; }

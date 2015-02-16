@@ -47,7 +47,7 @@ AudioNodeInput* AudioNodeInput::create(AudioNode& node)
     return new AudioNodeInput(node);
 }
 
-void AudioNodeInput::trace(Visitor* visitor)
+DEFINE_TRACE(AudioNodeInput)
 {
     visitor->trace(m_node);
     AudioSummingJunction::trace(visitor);

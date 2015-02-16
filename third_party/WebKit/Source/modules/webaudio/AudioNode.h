@@ -195,7 +195,7 @@ public:
 
     void updateChannelCountMode();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.

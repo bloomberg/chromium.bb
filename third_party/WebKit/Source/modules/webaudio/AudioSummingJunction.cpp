@@ -53,7 +53,7 @@ AudioSummingJunction::~AudioSummingJunction()
 {
 }
 
-void AudioSummingJunction::trace(Visitor* visitor)
+DEFINE_TRACE(AudioSummingJunction)
 {
     visitor->trace(m_context);
     // FIXME: Oilpan: m_renderingOutputs should not be strong references.  This

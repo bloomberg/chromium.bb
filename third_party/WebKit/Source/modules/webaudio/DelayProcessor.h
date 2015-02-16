@@ -38,7 +38,7 @@ class DelayProcessor final : public AudioDSPKernelProcessor {
 public:
     DelayProcessor(AudioContext*, float sampleRate, unsigned numberOfChannels, double maxDelayTime);
     virtual ~DelayProcessor();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
 

@@ -62,7 +62,7 @@ public:
     DOMFloat32Array* getChannelData(unsigned channelIndex);
     void zero();
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;
 
