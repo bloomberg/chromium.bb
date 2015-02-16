@@ -132,8 +132,8 @@ source_set("renderer") {
     ]
   } else {
     sources += [
-      "media/webrtc_logging_noop.cc",
       "media/webrtc_logging.h",
+      "media/webrtc_logging_noop.cc",
     ]
   }
 

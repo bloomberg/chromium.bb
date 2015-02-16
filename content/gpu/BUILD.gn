@@ -9,11 +9,11 @@ source_set("gpu") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "gpu_child_thread.cc",
+    "gpu_child_thread.h",
     "gpu_main.cc",
     "gpu_process.cc",
     "gpu_process.h",
-    "gpu_child_thread.cc",
-    "gpu_child_thread.h",
     "gpu_watchdog_thread.cc",
     "gpu_watchdog_thread.h",
     "in_process_gpu_thread.cc",

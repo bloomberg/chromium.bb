@@ -14,8 +14,8 @@ if (enable_plugins && !is_linux) {
     sources = [
       "plugin_channel.cc",
       "plugin_channel.h",
-      "plugin_interpose_util_mac.mm",
       "plugin_interpose_util_mac.h",
+      "plugin_interpose_util_mac.mm",
       "plugin_main.cc",
       "plugin_main_mac.mm",
       "plugin_thread.cc",
