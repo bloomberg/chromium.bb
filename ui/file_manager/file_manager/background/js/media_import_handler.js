@@ -13,17 +13,11 @@ var importer = importer || {};
 importer.ImportRunner = function() {};
 
 /**
- * @typedef {function():(!Promise<!DirectoryEntry>)}
- */
-importer.ImportRunner.DestinationFactory;
-
-/**
  * Imports all media identified by scanResult.
  *
  * @param {!importer.ScanResult} scanResult
  * @param {!importer.Destination} destination
- * @param {!importer.ImportRunner.DestinationFactory=} opt_destinationDirectory
- *     A function that returns the directory into which media will be imported.
+ * @param {!Promise<!DirectoryEntry>} directoryPromise
  *
  * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
  */
@@ -60,15 +54,13 @@ importer.MediaImportHandler =
 
 /** @override */
 importer.MediaImportHandler.prototype.importFromScanResult =
-    function(scanResult, destination, opt_destinationDirectory) {
-  var destinationDirectory = opt_destinationDirectory ||
-      importer.MediaImportHandler.defaultDestination.getImportDestination;
+    function(scanResult, destination, directoryPromise) {
 
   var task = new importer.MediaImportHandler.ImportTask(
       this.generateTaskId_(),
       this.historyLoader_,
       scanResult,
-      destinationDirectory,
+      directoryPromise,
       this.duplicateFinder_,
       destination);
 
@@ -149,8 +141,7 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
  * @param {string} taskId
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!importer.ScanResult} scanResult
- * @param {!importer.ImportRunner.DestinationFactory} destinationFactory A
- *     function that returns the directory into which media will be imported.
+ * @param {!Promise<!DirectoryEntry>} directoryPromise
  * @param {!importer.DuplicateFinder} duplicateFinder A duplicate-finder linked
  *     to the import destination, that will be used to deduplicate imports.
  * @param {!importer.Destination} destination The logical destination.
@@ -159,7 +150,7 @@ importer.MediaImportHandler.ImportTask = function(
     taskId,
     historyLoader,
     scanResult,
-    destinationFactory,
+    directoryPromise,
     duplicateFinder,
     destination) {
 
@@ -170,8 +161,8 @@ importer.MediaImportHandler.ImportTask = function(
   /** @private {!importer.Destination} */
   this.destination_ = destination;
 
-  /** @private {!importer.ImportRunner.DestinationFactory} */
-  this.destinationFactory_ = destinationFactory;
+  /** @private {!Promise<!DirectoryEntry>} */
+  this.directoryPromise_ = directoryPromise;
 
   /** @private {!importer.DuplicateFinder} */
   this.deduplicator_ = duplicateFinder;
@@ -181,9 +172,6 @@ importer.MediaImportHandler.ImportTask = function(
 
   /** @private {!importer.HistoryLoader} */
   this.historyLoader_ = historyLoader;
-
-  /** @private {Promise<!DirectoryEntry>} */
-  this.destinationPromise_ = null;
 
   /** @private {number} */
   this.totalBytes_ = 0;
@@ -243,8 +231,7 @@ importer.MediaImportHandler.ImportTask.prototype.run = function() {
   // import.
   this.scanResult_.whenFinal()
       .then(this.initialize_.bind(this))
-      .then(this.getDestination.bind(this))
-      .then(this.importTo_.bind(this))
+      .then(this.importScanEntries_.bind(this))
       .catch(importer.getLogger().catcher('import-task-chain'));
 };
 
@@ -271,41 +258,32 @@ importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
 };
 
 /**
- * Returns a DirectoryEntry for the destination.  The destination is guaranteed
- * to have been created when the promise resolves.
- * @return {!Promise<!DirectoryEntry>}
- */
-importer.MediaImportHandler.ImportTask.prototype.getDestination =
-    function() {
-  if (!this.destinationPromise_) {
-    this.destinationPromise_ = this.destinationFactory_();
-  }
-  return this.destinationPromise_;
-};
-
-/**
  * Initiates an import to the given location.  This should only be called once
  * the scan result indicates that it is ready.
- * @param {!DirectoryEntry} destination
+ *
  * @private
  */
-importer.MediaImportHandler.ImportTask.prototype.importTo_ =
-    function(destination) {
-  AsyncUtil.forEach(
-      this.scanResult_.getFileEntries(),
-      this.importOne_.bind(this, destination),
-      this.onSuccess_.bind(this));
+importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
+    function() {
+  this.directoryPromise_.then(
+      /** @this {importer.MediaImportHandler.ImportTask} */
+      function(destinationDirectory) {
+        AsyncUtil.forEach(
+            this.scanResult_.getFileEntries(),
+            this.importOne_.bind(this, destinationDirectory),
+            this.onSuccess_.bind(this));
+      }.bind(this));
 };
 
 /**
- * @param {!DirectoryEntry} destination
+ * @param {!DirectoryEntry} destinationDirectory
  * @param {function()} completionCallback Called after this operation is
  *     complete.
  * @param {!FileEntry} entry The entry to import.
  * @private
  */
 importer.MediaImportHandler.ImportTask.prototype.importOne_ =
-    function(destination, completionCallback, entry) {
+    function(destinationDirectory, completionCallback, entry) {
   if (this.canceled_) {
     this.notify(importer.TaskQueue.UpdateType.CANCELED);
     return;
@@ -323,7 +301,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
               this.notify(importer.TaskQueue.UpdateType.PROGRESS);
               return Promise.resolve();
             } else {
-              return this.copy_(entry, destination);
+              return this.copy_(entry, destinationDirectory);
             }
           }.bind(this))
       .then(completionCallback);
@@ -331,13 +309,13 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
 
 /**
  * @param {!FileEntry} entry The file to copy.
- * @param {!DirectoryEntry} destination The destination directory.
+ * @param {!DirectoryEntry} destinationDirectory The destination directory.
  * @return {!Promise<!FileEntry>} Resolves to the destination file when the copy
  *     is complete.
  * @private
  */
 importer.MediaImportHandler.ImportTask.prototype.copy_ =
-    function(entry, destination) {
+    function(entry, destinationDirectory) {
   // A count of the current number of processed bytes for this entry.
   var currentBytes = 0;
 
@@ -382,7 +360,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
    */
   var onComplete = function(destinationEntry) {
     this.cancelCallback_ = null;
-    this.markAsCopied_(entry, destination);
+    this.markAsCopied_(entry, destinationDirectory);
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
     resolver.resolve(destinationEntry);
   };
@@ -396,7 +374,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
 
   this.cancelCallback_ = fileOperationUtil.copyTo(
       entry,
-      destination,
+      destinationDirectory,
       entry.name,  // TODO(kenobi): account for duplicate filenames
       onEntryChanged.bind(this),
       onProgress.bind(this),
@@ -418,20 +396,23 @@ importer.MediaImportHandler.ImportTask.prototype.onEntryChanged_ =
 
 /**
  * @param {!FileEntry} entry
- * @param {!DirectoryEntry} destination
+ * @param {!DirectoryEntry} destinationDirectory
  */
 importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
-    function(entry, destination) {
+    function(entry, destinationDirectory) {
   this.remainingFilesCount_--;
-  var destinationUrl = destination.toURL() + '/' + entry.name;
+  var destinationUrl = destinationDirectory.toURL() + '/' + entry.name;
   this.historyLoader_.getHistory().then(
-      /** @param {!importer.ImportHistory} history */
+      /**
+       * @param {!importer.ImportHistory} history
+       * @this {importer.MediaImportHandler.ImportTask}
+       */
       function(history) {
         history.markCopied(
             entry,
-            importer.Destination.GOOGLE_DRIVE,
+            this.destination_,
             destinationUrl);
-      });
+      }.bind(this));
 };
 
 /**
@@ -459,85 +440,4 @@ importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.onError_ = function(error) {
   this.notify(importer.TaskQueue.UpdateType.ERROR);
-};
-
-/**
- * Namespace for a default import destination factory. The
- * defaultDestination.getImportDestination function creates and returns the
- * directory /photos/YYYY-MM-DD in the user's Google Drive.  YYYY-MM-DD is the
- * current date.
- */
-importer.MediaImportHandler.defaultDestination = {};
-
-/**
- * Retrieves the user's drive root.
- * @return {!Promise<!DirectoryEntry>}
- * @private
- */
-importer.MediaImportHandler.defaultDestination.getDriveRoot_ = function() {
-  return VolumeManager.getInstance()
-      .then(
-          function(volumeManager) {
-            var drive = volumeManager.getCurrentProfileVolumeInfo(
-                VolumeManagerCommon.VolumeType.DRIVE);
-            return drive.resolveDisplayRoot();
-          });
-};
-
-/**
- * Fetches (creating if necessary) the import destination subdirectory.
- * @param {!DirectoryEntry} root The drive root.
- * @return {!Promise<!DirectoryEntry>}
- * @private
- */
-importer.MediaImportHandler.defaultDestination.getOrCreateImportDestination_ =
-    function(root) {
-  /**
-   * @param {string} name The name of the new directory.
-   * @param {!DirectoryEntry} entry The parent directory.
-   * @return {!Promise<!DirectoryEntry>} The created directory.
-   */
-  var mkdir_ = function(name, entry) {
-    /** @const {Object} */
-    var CREATE_OPTIONS = {
-      create: true,
-      exclusive: false
-    };
-    return new Promise(function(resolve, reject) {
-      entry.getDirectory(name, CREATE_OPTIONS, resolve, reject);
-    });
-  };
-
-  /**
-   * @return {string} The current date, in YYYY-MM-DD format.
-   */
-  var getDateString = function() {
-    var padAndConvert = function(i) {
-      return (i < 10 ? '0' : '') + i.toString();
-    };
-    var date = new Date();
-    var year = date.getFullYear().toString();
-    // Months are 0-based, but days aren't.
-    var month = padAndConvert(date.getMonth() + 1);
-    var day = padAndConvert(date.getDate());
-
-    return year + '-' + month + '-' + day;
-  };
-
-  return Promise.resolve(root)
-      .then(mkdir_.bind(this, 'photos'))
-      .then(mkdir_.bind(this, getDateString()));
-};
-
-/**
- * Returns the destination directory for media imports.  Creates the
- * destination, if it doesn't exist.
- * @return {!Promise<!DirectoryEntry>}
- */
-importer.MediaImportHandler.defaultDestination.getImportDestination =
-    function() {
-  var defaultDestination = importer.MediaImportHandler.defaultDestination;
-  return defaultDestination.getDriveRoot_()
-      .then(defaultDestination.getOrCreateImportDestination_)
-      .catch(importer.getLogger().catcher('import-destination-provision'));
 };

@@ -135,6 +135,26 @@ importer.importEnabled = function() {
 };
 
 /**
+ * @param {!Date} date
+ * @return {string} The current date, in YYYY-MM-DD format.
+ */
+importer.getDirectoryNameForDate = function(date) {
+  var padAndConvert = function(i) {
+    return (i < 10 ? '0' : '') + i.toString();
+  };
+
+  var year = date.getFullYear().toString();
+  // Months are 0-based, but days aren't.
+  var month = padAndConvert(date.getMonth() + 1);
+  var day = padAndConvert(date.getDate());
+
+  // NOTE: We use YYYY-MM-DD since it sorts numerically.
+  // Ideally this would be localized and appropriate sorting would
+  // be done behind the scenes.
+  return year + '-' + month + '-' + day;
+};
+
+/**
  * Local storage key for machine id.
  * @const {string}
  */
@@ -265,6 +285,28 @@ importer.Resolver.prototype = /** @struct */ {
   get settled() {
     return this.settled_;
   }
+};
+
+/**
+ * Returns the directory, creating it if necessary.
+ *
+ * @param {!DirectoryEntry} parent
+ * @param {string} name
+ *
+ * @return {!Promise<!DirectoryEntry>}
+ */
+importer.demandChildDirectory = function(parent, name) {
+  return new Promise(
+      function(resolve, reject) {
+        parent.getDirectory(
+            name,
+            {
+              create: true,
+              exclusive: false
+            },
+            resolve,
+            reject);
+      });
 };
 
 /**

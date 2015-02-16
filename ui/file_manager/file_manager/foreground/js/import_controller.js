@@ -5,8 +5,8 @@
 // Namespace
 var importer = importer || {};
 
-/** @enum {string} */
-importer.ResponseId = {
+/** @private @enum {string} */
+importer.ActivityState = {
   READY: 'ready',
   HIDDEN: 'hidden',
   IMPORTING: 'importing',
@@ -49,12 +49,20 @@ importer.ImportController =
 
   /**
    * The active import task, if any.
-   * @private {?{
-   *   scan: !importer.ScanResult,
-   *   task: !importer.MediaImportHandler.ImportTask
-   * }}
+   * @private {?importer.TaskDetails_}
    */
   this.activeImport_ = null;
+
+  /**
+   * The previous import task, if any.
+   * @private {?importer.TaskDetails_}
+   */
+  this.previousImport_ = null;
+
+  /**
+   * @private {!importer.ActivityState}
+   */
+  this.lastActivityState_ = importer.ActivityState.HIDDEN;
 
   var listener = this.onScanEvent_.bind(this);
   this.scanner_.addObserver(listener);
@@ -74,12 +82,21 @@ importer.ImportController =
   this.environment_.addSelectionChangedListener(
       this.onSelectionChanged_.bind(this));
 
-  this.commandWidget_.addImportClickedListener(
-      this.execute.bind(this));
-
-  this.commandWidget_.addDestinationClickedListener(
-      this.showDestination.bind(this));
+  this.commandWidget_.addClickListener(
+      this.onClick_.bind(this));
 };
+
+/**
+ * Collection of import task related details.
+ *
+ * @typedef {{
+ *   scan: !importer.ScanResult,
+ *   task: !importer.MediaImportHandler.ImportTask,
+ *   started: !Date
+ * }}
+ * @private
+ */
+importer.TaskDetails_;
 
 /**
  * @param {!importer.ScanEvent} event Command event.
@@ -145,9 +162,46 @@ importer.ImportController.prototype.onSelectionChanged_ = function() {
  * @private
  */
 importer.ImportController.prototype.onImportFinished_ = function(task) {
+  console.assert(!!this.activeImport_,
+      'Cannot finish import when none is running.');
+  this.previousImport_ = this.activeImport_;
   this.activeImport_ = null;
   this.scanManager_.reset();
   this.checkState_();
+};
+
+/**
+ * Handles button clicks emenating from the panel or toolbar.
+ * @param {!importer.ClickSource} source
+ */
+importer.ImportController.prototype.onClick_ =
+     function(source) {
+  switch (source) {
+    case importer.ClickSource.MAIN:
+      if (this.lastActivityState_ === importer.ActivityState.READY) {
+        this.execute();
+      } else {
+        this.commandWidget_.toggleDetails();
+      }
+      break;
+    case importer.ClickSource.PANEL:
+      this.execute();
+      break;
+    case importer.ClickSource.DESTINATION:
+      if (this.activeImport_) {
+        this.environment_.showImportDestination(this.activeImport_.started);
+      } else if (this.previousImport_) {
+        this.environment_.showImportDestination(this.previousImport_.started);
+      } else {
+        this.environment_.showImportRoot();
+      }
+      break;
+    case importer.ClickSource.SIDE:
+      // Intentionally unhandled...panel controls toggling of details panel.
+      break;
+    default:
+      assertNotReached('Unhandled click source: ' + source);
+  }
 };
 
 /**
@@ -163,24 +217,20 @@ importer.ImportController.prototype.execute = function() {
   var scan = this.scanManager_.getActiveScan();
   assert(scan != null);
 
+  var startDate = new Date();
   var importTask = this.importRunner_.importFromScanResult(
       scan,
-      importer.Destination.GOOGLE_DRIVE);
+      importer.Destination.GOOGLE_DRIVE,
+      this.environment_.getImportDestination(startDate));
 
   this.activeImport_ = {
     scan: scan,
-    task: importTask
+    task: importTask,
+    started: startDate
   };
   var taskFinished = this.onImportFinished_.bind(this, importTask);
   importTask.whenFinished.then(taskFinished).catch(taskFinished);
   this.checkState_();
-};
-
-/**
- * Shows the import destination folder.
- */
-importer.ImportController.prototype.showDestination = function() {
-  console.log('SET THE CURRENT DIRECTORY TO THE DESTINATION');
 };
 
 /**
@@ -192,12 +242,12 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
   // If there is no Google Drive mount, Drive may be disabled
   // or the machine may be running in guest mode.
   if (!this.environment_.isGoogleDriveMounted()) {
-    this.updateUi_(importer.ResponseId.HIDDEN);
+    this.updateUi_(importer.ActivityState.HIDDEN);
     return;
   }
 
   if (!!this.activeImport_) {
-    this.updateUi_(importer.ResponseId.IMPORTING, this.activeImport_.scan);
+    this.updateUi_(importer.ActivityState.IMPORTING, this.activeImport_.scan);
     return;
   }
 
@@ -218,7 +268,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
     // If no scan is created, then no scan is possible in
     // the current context...so hide the UI.
     if (!scan) {
-      this.updateUi_(importer.ResponseId.HIDDEN);
+      this.updateUi_(importer.ActivityState.HIDDEN);
     }
     return;
   }
@@ -227,12 +277,12 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
   // validate environment for an import...so we'll proceed
   // with making updates to the UI.
   if (!opt_scan.isFinal()) {
-    this.updateUi_(importer.ResponseId.SCANNING, opt_scan);
+    this.updateUi_(importer.ActivityState.SCANNING, opt_scan);
     return;
   }
 
   if (opt_scan.getFileEntries().length === 0) {
-    this.updateUi_(importer.ResponseId.NO_MEDIA);
+    this.updateUi_(importer.ActivityState.NO_MEDIA);
     return;
   }
 
@@ -242,25 +292,26 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
       function(fits) {
           if (!fits) {
             this.updateUi_(
-                importer.ResponseId.INSUFFICIENT_SPACE,
+                importer.ActivityState.INSUFFICIENT_SPACE,
                 opt_scan);
             return;
           }
 
         this.updateUi_(
-            importer.ResponseId.READY,  // to import...
+            importer.ActivityState.READY,  // to import...
             opt_scan);
       }.bind(this));
 };
 
 /**
- * @param {importer.ResponseId} responseId
+ * @param {importer.ActivityState} activityState
  * @param {importer.ScanResult=} opt_scan
  * @private
  */
 importer.ImportController.prototype.updateUi_ =
-    function(responseId, opt_scan) {
-  this.commandWidget_.update(responseId, opt_scan);
+    function(activityState, opt_scan) {
+  this.lastActivityState_ = activityState
+  this.commandWidget_.update(activityState, opt_scan);
 };
 
 /**
@@ -276,7 +327,7 @@ importer.ImportController.prototype.isCurrentDirectoryScannable_ =
 
 /**
  * @param {!importer.ScanResult} scanResult
- * @return {!Promise.<boolean>} True if the files in scan will fit
+ * @return {!Promise<boolean>} True if the files in scan will fit
  *     in available local storage space.
  * @private
  */
@@ -316,175 +367,6 @@ importer.ImportController.prototype.tryScan_ = function() {
 };
 
 /**
- * Interface abstracting away the concrete file manager available
- * to commands. By hiding file manager we make it easy to test
- * ImportController.
- *
- * @interface
- * @extends {VolumeManagerCommon.VolumeInfoProvider}
- */
-importer.ControllerEnvironment = function() {};
-
-/**
- * Returns the current file selection, if any. May be empty.
- * @return {!Array.<!Entry>}
- */
-importer.ControllerEnvironment.prototype.getSelection;
-
-/**
- * Returns the directory entry for the current directory.
- * @return {!DirectoryEntry}
- */
-importer.ControllerEnvironment.prototype.getCurrentDirectory;
-
-/**
- * @param {!DirectoryEntry} entry
- */
-importer.ControllerEnvironment.prototype.setCurrentDirectory;
-
-/**
- * Returns true if the Drive mount is present.
- * @return {boolean}
- */
-importer.ControllerEnvironment.prototype.isGoogleDriveMounted;
-
-/**
- * Returns the available space for the local volume in bytes.
- * @return {!Promise.<number>}
- */
-importer.ControllerEnvironment.prototype.getFreeStorageSpace;
-
-/**
- * Installs an 'unmount' listener. Listener is called with
- * the corresponding volume id when a volume is unmounted.
- * @param {function(string)} listener
- */
-importer.ControllerEnvironment.prototype.addVolumeUnmountListener;
-
-/**
- * Installs an 'directory-changed' listener. Listener is called when
- * the directory changed.
- * @param {function()} listener
- */
-importer.ControllerEnvironment.prototype.addDirectoryChangedListener;
-
-/**
- * Installs an 'selection-changed' listener. Listener is called when
- * user selected files is changed.
- * @param {function()} listener
- */
-importer.ControllerEnvironment.prototype.addSelectionChangedListener;
-
-/**
- * Class providing access to various pieces of information in the
- * FileManager environment, like the current directory, volumeinfo lookup
- * By hiding file manager we make it easy to test importer.ImportController.
- *
- * @constructor
- * @implements {importer.ControllerEnvironment}
- *
- * @param {!FileManager} fileManager
- */
-importer.RuntimeControllerEnvironment =
-    function(fileManager, selectionHandler) {
-  /** @private {!FileManager} */
-  this.fileManager_ = fileManager;
-
-  /** @private {!FileSelectionHandler} */
-  this.selectionHandler_ = selectionHandler;
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.getSelection =
-    function() {
-  return this.fileManager_.getSelection().entries;
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.getCurrentDirectory =
-    function() {
-  return /** @type {!DirectoryEntry} */ (
-      this.fileManager_.getCurrentDirectoryEntry());
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.setCurrentDirectory =
-    function(entry) {
-  this.fileManager_.directoryModel.activateDirectoryEntry(entry);
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.getVolumeInfo =
-    function(entry) {
-  return this.fileManager_.volumeManager.getVolumeInfo(entry);
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.isGoogleDriveMounted =
-    function() {
-  var drive = this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE);
-  return !!drive;
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
-    function(listener) {
-  // TODO(smckay): remove listeners when the page is torn down.
-  chrome.fileManagerPrivate.onMountCompleted.addListener(
-      /**
-       * @param {!MountCompletedEvent} event
-       * @this {importer.RuntimeControllerEnvironment}
-       */
-      function(event) {
-        if (event.eventType === 'unmount') {
-          listener(event.volumeMetadata.volumeId);
-        }
-      });
-};
-
-/** @override */
-
-importer.RuntimeControllerEnvironment.prototype.getFreeStorageSpace =
-    function() {
-  // NOTE: Checking Drive (instead of Downloads) actually returns
-  // the amount of available cloud storage space.
-  var localVolumeInfo =
-      this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
-          VolumeManagerCommon.VolumeType.DOWNLOADS);
-  return new Promise(
-      function(resolve, reject) {
-        chrome.fileManagerPrivate.getSizeStats(
-            localVolumeInfo.volumeId,
-            /** @param {Object} stats */
-            function(stats) {
-              if (stats && !chrome.runtime.lastError) {
-                resolve(stats.remainingSize);
-              } else {
-                reject('Failed to ascertain available free space.');
-              }
-            });
-      });
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.addDirectoryChangedListener =
-    function(listener) {
-  // TODO(smckay): remove listeners when the page is torn down.
-  this.fileManager_.directoryModel.addEventListener(
-      'directory-changed',
-      listener);
-};
-
-/** @override */
-importer.RuntimeControllerEnvironment.prototype.addSelectionChangedListener =
-    function(listener) {
-  this.selectionHandler_.addEventListener(
-      FileSelectionHandler.EventType.CHANGE,
-      listener);
-};
-
-/**
  * Class that adapts from the new non-command button to the old
  * command style interface.
  *
@@ -496,23 +378,30 @@ importer.CommandWidget = function() {};
  * Install a listener that get's called when the user wants to initiate
  * import.
  *
- * @param {function()} listener
+ * @param {function(!importer.ClickSource)} listener
  */
-importer.CommandWidget.prototype.addImportClickedListener;
+importer.CommandWidget.prototype.addClickListener;
 
 /**
- * Install a listener that get's called when the user wants to initiate
- * import.
- *
- * @param {function()} listener
- */
-importer.CommandWidget.prototype.addDestinationClickedListener;
-
-/**
- * @param {importer.ResponseId} responseId
+ * @param {importer.ActivityState} activityState
  * @param {importer.ScanResult=} opt_scan
  */
 importer.CommandWidget.prototype.update;
+
+/**
+ * Toggles the visibility state of the details panel.
+ */
+importer.CommandWidget.prototype.toggleDetails;
+
+/**
+ * @enum {string}
+ */
+importer.ClickSource = {
+  DESTINATION: 'destination',
+  MAIN: 'main',
+  PANEL: 'panel',
+  SIDE: 'side'
+};
 
 /**
  * Runtime implementation of CommandWidget.
@@ -524,17 +413,26 @@ importer.CommandWidget.prototype.update;
 importer.RuntimeCommandWidget = function() {
 
   /** @private {Element} */
-  this.importButton_ = document.getElementById('cloud-import-button');
-  this.importButton_.onclick = this.onImportClicked_.bind(this);
+  this.mainButton_ = document.getElementById('cloud-import-button');
+  this.mainButton_.onclick = this.onButtonClicked_.bind(
+      this, importer.ClickSource.MAIN);
 
   /** @private {Element} */
-  this.detailsButton_ = document.getElementById('cloud-import-details-button');
-  this.detailsButton_.onclick = this.toggleDetails_.bind(this);
+  this.sideButton_ = document.getElementById('cloud-import-details-button');
+  this.sideButton_.onclick = this.onButtonClicked_.bind(
+      this, importer.ClickSource.SIDE);
 
   /** @private {Element} */
-  this.detailsImportButton_ =
+  this.panelButton_ =
       document.querySelector('#cloud-import-details paper-button.import');
-  this.detailsImportButton_.onclick = this.onImportClicked_.bind(this);
+  this.panelButton_.onclick = this.onButtonClicked_.bind(
+      this, importer.ClickSource.PANEL);
+
+  /** @private {Element} */
+  this.statusContent_ =
+      document.querySelector('#cloud-import-details .status .content');
+  this.statusContent_.onclick = this.onButtonClicked_.bind(
+      this, importer.ClickSource.DESTINATION);
 
   /** @private {Element} */
   this.detailsPanel_ = document.getElementById('cloud-import-details');
@@ -544,66 +442,61 @@ importer.RuntimeCommandWidget = function() {
       false);
 
   /** @private {Element} */
-  this.detailsPanelBody_ =
-      document.querySelector('#cloud-import-details .main');
-
-  /** @private {Element} */
-  this.statusContent_ =
-      document.querySelector('#cloud-import-details .status .content');
-  this.statusContent_.onclick = this.onStatusClicked_.bind(this);
-
-  /** @private {Element} */
   this.toolbarIcon_ =
       document.querySelector('#cloud-import-button core-icon');
   this.statusIcon_ =
       document.querySelector('#cloud-import-details .status core-icon');
 
-  /** @private {function()} */
-  this.importListener_;
-
-  /** @private {function()} */
-  this.destinationListener_;
+  /** @private {function(!importer.ClickSource)} */
+  this.clickListener_;
 };
 
 /** @override */
-importer.RuntimeCommandWidget.prototype.addImportClickedListener =
+importer.RuntimeCommandWidget.prototype.addClickListener =
     function(listener) {
-  console.assert(!this.importListener_);
-  this.importListener_ = listener;
+  this.clickListener_ = listener;
+};
+
+/**
+ * @param {!importer.ClickSource} source
+ * @param {Event} event Click event.
+ * @private
+ */
+importer.RuntimeCommandWidget.prototype.onButtonClicked_ =
+    function(source, event) {
+  console.assert(!!this.clickListener_, 'Listener not set.');
+  switch (source) {
+    case importer.ClickSource.MAIN:
+    case importer.ClickSource.PANEL:
+      this.clickListener_(source);
+      break;
+    case importer.ClickSource.DESTINATION:
+      // NOTE: The element identified by class 'destination-link'
+      // comes and goes as the message in the UI changes.
+      // For this reason we add a click listener on the *container*
+      // and when handling clicks, check to see if the source
+      // was an element marked up to look like a link.
+      if (event.target.classList.contains('destination-link')) {
+        this.clickListener_(source);
+      }
+    case importer.ClickSource.SIDE:
+      this.toggleDetails();
+      break;
+    default:
+      assertNotReached('Unhandled click source: ' + source);
+  }
 };
 
 /** @override */
-importer.RuntimeCommandWidget.prototype.addDestinationClickedListener =
-    function(listener) {
-  console.assert(!this.destinationListener_);
-  this.destinationListener_ = listener;
+importer.RuntimeCommandWidget.prototype.toggleDetails = function() {
+    this.setDetailsVisible_(this.detailsPanel_.className === 'hidden');
 };
 
 /**
- * @param {Event} event Click event.
+ * @param {boolean} visible
  * @private
  */
-importer.RuntimeCommandWidget.prototype.onImportClicked_ = function(event) {
-  console.assert(!!this.importListener_, 'Listener not set.');
-  this.importListener_();
-};
-
-/**
- * @param {Event} event Click event.
- * @private
- */
-importer.RuntimeCommandWidget.prototype.onStatusClicked_ = function(event) {
-  console.assert(!!this.destinationListener_, 'Listener not set.');
-  // TODO(smckay): Only if the element is "destination-link".
-  this.destinationListener_();
-};
-
-/** @private */
-importer.RuntimeCommandWidget.prototype.toggleDetails_ = function() {
-    this.setDetailsVisible(this.detailsPanel_.className === 'hidden');
-};
-
-importer.RuntimeCommandWidget.prototype.setDetailsVisible = function(visible) {
+importer.RuntimeCommandWidget.prototype.setDetailsVisible_ = function(visible) {
   if (visible) {
     this.detailsPanel_.hidden = false;
     this.detailsPanel_.className = '';
@@ -625,18 +518,17 @@ importer.RuntimeCommandWidget.prototype.onDetailsTransitionEnd_ =
 
 /** @override */
 importer.RuntimeCommandWidget.prototype.update =
-    function(responseId, opt_scan) {
-  switch(responseId) {
-    case importer.ResponseId.HIDDEN:
-      this.setDetailsVisible(false);
+    function(activityState, opt_scan) {
+  switch(activityState) {
+    case importer.ActivityState.HIDDEN:
+      this.setDetailsVisible_(false);
 
-      this.importButton_.disabled = true;
-      this.detailsButton_.disabled = true;
+      this.panelButton_.disabled = true;
 
-      this.importButton_.hidden = true;
-      this.detailsButton_.hidden = true;
+      this.mainButton_.hidden = true;
+      this.sideButton_.hidden = true;
 
-      this.importButton_.setAttribute(
+      this.mainButton_.setAttribute(
           'title',
           '** SHOULD NOT BE VISIBLE **');
       this.statusContent_.innerHTML =
@@ -647,115 +539,105 @@ importer.RuntimeCommandWidget.prototype.update =
 
       break;
 
-    case importer.ResponseId.IMPORTING:
+    case importer.ActivityState.IMPORTING:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
-      this.setDetailsVisible(false);
+      this.setDetailsVisible_(false);
 
-      this.importButton_.setAttribute('title', strf(
+      this.mainButton_.setAttribute('title', strf(
           'CLOUD_IMPORT_TOOLTIP_IMPORTING',
           opt_scan.getFileEntries().length));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_IMPORTING',
           opt_scan.getFileEntries().length);
 
-      this.importButton_.disabled = true;
-      this.detailsButton_.disabled = true;
-      this.detailsImportButton_.disabled = true;
+      this.panelButton_.disabled = true;
 
-      this.importButton_.hidden = false;
-      this.detailsButton_.hidden = false;
-      this.detailsImportButton_.hidden = false;
+      this.mainButton_.hidden = false;
+      this.sideButton_.hidden = false;
+      this.panelButton_.hidden = false;
 
       this.toolbarIcon_.setAttribute('icon', 'autorenew');
       this.statusIcon_.setAttribute('icon', 'autorenew');
 
       break;
 
-    case importer.ResponseId.INSUFFICIENT_SPACE:
+    case importer.ActivityState.INSUFFICIENT_SPACE:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
-      this.importButton_.setAttribute('title', strf(
+      this.mainButton_.setAttribute('title', strf(
           'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE'));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE',
           opt_scan.getFileEntries().length);
 
-      this.importButton_.disabled = true;
-      this.detailsButton_.disabled = false;
-      this.detailsImportButton_.disabled = true;
+      this.panelButton_.disabled = true;
 
-      this.importButton_.hidden = false;
-      this.detailsButton_.hidden = false;
-      this.detailsImportButton_.hidden = false;
+      this.mainButton_.hidden = false;
+      this.sideButton_.hidden = false;
+      this.panelButton_.hidden = false;
 
       this.toolbarIcon_.setAttribute('icon', 'image:photo');
       this.statusIcon_.setAttribute('icon', 'cloud-off');
       break;
 
-    case importer.ResponseId.NO_MEDIA:
-      this.importButton_.setAttribute('title', str(
+    case importer.ActivityState.NO_MEDIA:
+      this.mainButton_.setAttribute('title', str(
           'CLOUD_IMPORT_STATUS_NO_MEDIA'));
       this.statusContent_.innerHTML = str(
           'CLOUD_IMPORT_STATUS_NO_MEDIA');
 
-      this.importButton_.disabled = true;
-      this.detailsButton_.disabled = true;
-      this.detailsImportButton_.disabled = true;
+      this.panelButton_.disabled = true;
 
-      this.importButton_.hidden = false;
-      this.detailsButton_.hidden = false;
+      this.mainButton_.hidden = false;
+      this.sideButton_.hidden = false;
       // Hidden for now, since this is also the "done" importing case.
-      this.detailsImportButton_.hidden = true;
+      this.panelButton_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-done');
       this.statusIcon_.setAttribute('icon', 'cloud-done');
       break;
 
-    case importer.ResponseId.READY:
+    case importer.ActivityState.READY:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
-      this.importButton_.setAttribute('title', strf(
+      this.mainButton_.setAttribute('title', strf(
           'CLOUD_IMPORT_TOOLTIP_READY',
           opt_scan.getFileEntries().length));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_READY',
           opt_scan.getFileEntries().length);
 
-      this.importButton_.disabled = false;
-      this.detailsButton_.disabled = false;
-      this.detailsImportButton_.disabled = false;
+      this.panelButton_.disabled = false;
 
-      this.importButton_.hidden = false;
-      this.detailsButton_.hidden = false;
-      this.detailsImportButton_.hidden = false;
+      this.mainButton_.hidden = false;
+      this.sideButton_.hidden = false;
+      this.panelButton_.hidden = false;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-upload');
       this.statusIcon_.setAttribute('icon', 'image:photo');
       break;
 
-    case importer.ResponseId.SCANNING:
+    case importer.ActivityState.SCANNING:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
-      this.importButton_.setAttribute('title', str(
+      this.mainButton_.setAttribute('title', str(
           'CLOUD_IMPORT_TOOLTIP_SCANNING'));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_SCANNING',
           opt_scan.getFileEntries().length);
 
-      this.importButton_.disabled = true;
-      this.detailsButton_.disabled = true;
-      this.detailsImportButton_.disabled = true;
+      this.panelButton_.disabled = true;
 
-      this.importButton_.hidden = false;
-      this.detailsButton_.hidden = false;
-      this.detailsImportButton_.hidden = true;
+      this.mainButton_.hidden = false;
+      this.sideButton_.hidden = false;
+      this.panelButton_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'autorenew');
       this.statusIcon_.setAttribute('icon', 'autorenew');
       break;
 
     default:
-      assertNotReached('Unrecognized response id: ' + responseId);
+      assertNotReached('Unrecognized response id: ' + activityState);
   }
 };
 
@@ -864,4 +746,275 @@ importer.ScanManager.prototype.getCurrentDirectoryScan = function() {
   }
 
   return scan;
+};
+
+/**
+ * Interface abstracting away the concrete file manager available
+ * to commands. By hiding file manager we make it easy to test
+ * ImportController.
+ *
+ * @interface
+ * @extends {VolumeManagerCommon.VolumeInfoProvider}
+ */
+importer.ControllerEnvironment = function() {};
+
+/**
+ * Returns the current file selection, if any. May be empty.
+ * @return {!Array.<!Entry>}
+ */
+importer.ControllerEnvironment.prototype.getSelection;
+
+/**
+ * Returns the directory entry for the current directory.
+ * @return {!DirectoryEntry}
+ */
+importer.ControllerEnvironment.prototype.getCurrentDirectory;
+
+/**
+ * @param {!DirectoryEntry} entry
+ */
+importer.ControllerEnvironment.prototype.setCurrentDirectory;
+
+/**
+ * Returns true if the Drive mount is present.
+ * @return {boolean}
+ */
+importer.ControllerEnvironment.prototype.isGoogleDriveMounted;
+
+/**
+ * Returns the available space for the local volume in bytes.
+ * @return {!Promise<number>}
+ */
+importer.ControllerEnvironment.prototype.getFreeStorageSpace;
+
+/**
+ * Installs an 'unmount' listener. Listener is called with
+ * the corresponding volume id when a volume is unmounted.
+ * @param {function(string)} listener
+ */
+importer.ControllerEnvironment.prototype.addVolumeUnmountListener;
+
+/**
+ * Installs an 'directory-changed' listener. Listener is called when
+ * the directory changed.
+ * @param {function()} listener
+ */
+importer.ControllerEnvironment.prototype.addDirectoryChangedListener;
+
+/**
+ * Installs an 'selection-changed' listener. Listener is called when
+ * user selected files is changed.
+ * @param {function()} listener
+ */
+importer.ControllerEnvironment.prototype.addSelectionChangedListener;
+
+/**
+ * Reveals the import root directory (the parent of all import destinations)
+ * in a new Files.app window.
+ * E.g. "Chrome OS Cloud backup". Creates it if it doesn't exist.
+ *
+ * @return {!Promise} Resolves when the folder has been shown.
+ */
+importer.ControllerEnvironment.prototype.showImportRoot;
+
+/**
+ * Returns the date-stamped import destination directory in a new
+ * Files.app window. E.g. "2015-12-04".
+ * Creates it if it doesn't exist.
+ *
+ * @param {!Date} date The import date
+ *
+ * @return {!Promise<!DirectoryEntry>} Resolves when the folder is available.
+ */
+importer.ControllerEnvironment.prototype.getImportDestination;
+
+/**
+ * Reveals the date-stamped import destination directory in a new
+ * Files.app window. E.g. "2015-12-04".
+ * Creates it if it doesn't exist.
+ *
+ * @param {!Date} date The import date
+ *
+ * @return {!Promise} Resolves when the folder has been shown.
+ */
+importer.ControllerEnvironment.prototype.showImportDestination;
+
+/**
+ * Class providing access to various pieces of information in the
+ * FileManager environment, like the current directory, volumeinfo lookup
+ * By hiding file manager we make it easy to test importer.ImportController.
+ *
+ * @constructor
+ * @implements {importer.ControllerEnvironment}
+ *
+ * @param {!FileManager} fileManager
+ */
+importer.RuntimeControllerEnvironment =
+    function(fileManager, selectionHandler) {
+  /** @private {!FileManager} */
+  this.fileManager_ = fileManager;
+
+  /** @private {!FileSelectionHandler} */
+  this.selectionHandler_ = selectionHandler;
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.getSelection =
+    function() {
+  return this.fileManager_.getSelection().entries;
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.getCurrentDirectory =
+    function() {
+  return /** @type {!DirectoryEntry} */ (
+      this.fileManager_.getCurrentDirectoryEntry());
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.setCurrentDirectory =
+    function(entry) {
+  this.fileManager_.directoryModel.activateDirectoryEntry(entry);
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.getVolumeInfo =
+    function(entry) {
+  return this.fileManager_.volumeManager.getVolumeInfo(entry);
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.isGoogleDriveMounted =
+    function() {
+  var drive = this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
+      VolumeManagerCommon.VolumeType.DRIVE);
+  return !!drive;
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
+    function(listener) {
+  // TODO(smckay): remove listeners when the page is torn down.
+  chrome.fileManagerPrivate.onMountCompleted.addListener(
+      /**
+       * @param {!MountCompletedEvent} event
+       * @this {importer.RuntimeControllerEnvironment}
+       */
+      function(event) {
+        if (event.eventType === 'unmount') {
+          listener(event.volumeMetadata.volumeId);
+        }
+      });
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.getFreeStorageSpace =
+    function() {
+  // NOTE: Checking Drive (instead of Downloads) actually returns
+  // the amount of available cloud storage space.
+  var localVolumeInfo =
+      this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
+          VolumeManagerCommon.VolumeType.DOWNLOADS);
+  return new Promise(
+      function(resolve, reject) {
+        chrome.fileManagerPrivate.getSizeStats(
+            localVolumeInfo.volumeId,
+            /** @param {Object} stats */
+            function(stats) {
+              if (stats && !chrome.runtime.lastError) {
+                resolve(stats.remainingSize);
+              } else {
+                reject('Failed to ascertain available free space.');
+              }
+            });
+      });
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.addDirectoryChangedListener =
+    function(listener) {
+  // TODO(smckay): remove listeners when the page is torn down.
+  this.fileManager_.directoryModel.addEventListener(
+      'directory-changed',
+      listener);
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.addSelectionChangedListener =
+    function(listener) {
+  this.selectionHandler_.addEventListener(
+      FileSelectionHandler.EventType.CHANGE,
+      listener);
+};
+
+/**
+ * Reveals the directory to the user in the Files app, either creating
+ * a new window, or focusing if already open in a window.
+ *
+ * @param {!DirectoryEntry} directory
+ * @private
+ */
+importer.RuntimeControllerEnvironment.prototype.revealDirectory_ =
+    function(directory) {
+  this.fileManager_.backgroundPage.launchFileManager(
+      {currentDirectoryURL: directory.toURL()},
+      /* App ID */ undefined);
+};
+
+/**
+ * Retrieves the user's drive root.
+ * @return {!Promise<!DirectoryEntry>}
+ * @private
+ */
+importer.RuntimeControllerEnvironment.prototype.getDriveRoot_ = function() {
+  var drive = this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
+      VolumeManagerCommon.VolumeType.DRIVE);
+  return /** @type {!Promise<!DirectoryEntry>} */ (drive.resolveDisplayRoot());
+};
+
+/**
+ * Fetches (creating if necessary) the import destination subdirectory.
+ * @return {!Promise<!DirectoryEntry>}
+ * @private
+ */
+importer.RuntimeControllerEnvironment.prototype.demandCloudFolder_ =
+    function(root) {
+  return importer.demandChildDirectory(
+      root,
+      str('CLOUD_IMPORT_DESTINATION_FOLDER'));
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.showImportRoot =
+    function() {
+  return this.getDriveRoot_()
+      .then(this.demandCloudFolder_.bind(this))
+      .then(this.revealDirectory_.bind(this))
+      .catch(importer.getLogger().catcher('import-root-provision-and-reveal'));
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.getImportDestination =
+    function(date) {
+  return this.getDriveRoot_()
+      .then(this.demandCloudFolder_.bind(this))
+      .then(
+          /**
+           * @param {!DirectoryEntry} root
+           * @return {!Promise<!DirectoryEntry>}
+           */
+          function(root) {
+            return importer.demandChildDirectory(
+                root,
+                importer.getDirectoryNameForDate(date));
+          })
+      .catch(importer.getLogger().catcher('import-destination-provision'));
+};
+
+/** @override */
+importer.RuntimeControllerEnvironment.prototype.showImportDestination =
+    function(date) {
+  return this.getImportDestination(date)
+      .then(this.revealDirectory_.bind(this))
+      .catch(importer.getLogger().catcher('import-destination-reveal'));
 };

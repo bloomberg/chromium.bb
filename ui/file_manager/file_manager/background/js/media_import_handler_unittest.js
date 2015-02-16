@@ -26,6 +26,9 @@ var destinationFileSystem;
 /** @type {!importer.DuplicateFinder} */
 var duplicateFinder;
 
+/** @type {!Promise<!DirectoryEntry>} */
+var destinationFactory;
+
 // Set up string assets.
 loadTimeData.data = {
   CLOUD_IMPORT_ITEMS_REMAINING: '',
@@ -55,6 +58,13 @@ function setUp() {
   importHistory = new importer.TestImportHistory();
   mediaScanner = new TestMediaScanner();
   destinationFileSystem = new MockFileSystem(destinationFactory);
+  destinationFactory = new Promise(
+      function(resolve, reject) {
+        resolve(destinationFileSystem.root);
+      }).then(
+          function(directory) {
+            return directory;
+          });
   duplicateFinder = new importer.TestDuplicateFinder();
 
   mediaImporter = new importer.MediaImportHandler(
@@ -281,11 +291,6 @@ function setupFileSystem(fileNames) {
       function(filename) {
         return fileSystem.entries[filename];
       });
-}
-
-/** @return {!DirectoryEntry} The destination root, for testing. */
-function destinationFactory() {
-  return destinationFileSystem.root;
 }
 
 /**

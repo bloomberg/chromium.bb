@@ -97,7 +97,7 @@ importer.TestImportHistory.prototype.wasCopied =
 
 /** @override */
 importer.TestImportHistory.prototype.markCopied =
-    function(entry, destination) {
+    function(entry, destination, destinationUrl) {
   var path = entry.fullPath;
   if (path in this.copiedPaths) {
     this.copiedPaths[path].push(destination);
