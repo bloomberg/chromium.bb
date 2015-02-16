@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (9,9) size 791x591
     LayoutSVGForeignObject {foreignObject} at (10,10) size 580x380
-      RenderBlock {xhtml:div} at (0,0) size 580x16
-        RenderText {#text} at (0,0) size 81x16
+      RenderBlock {xhtml:div} at (0,0) size 580x18
+        RenderText {#text} at (0,0) size 81x18
           text run at (0,0) width 81: "This is a test"
-      RenderBlock (anonymous) at (0,16) size 580x35
-        RenderInline {xhtml:a} at (0,0) size 68x16 [color=#0000EE]
-          RenderText {#text} at (0,0) size 68x16
+      RenderBlock (anonymous) at (0,18) size 580x37
+        RenderInline {xhtml:a} at (0,0) size 68x18 [color=#0000EE]
+          RenderText {#text} at (0,0) size 68x18
             text run at (0,0) width 68: "and a link."
-        RenderBR {xhtml:br} at (67,0) size 1x16
-        RenderButton {xhtml:input} at (0,16) size 16x18 [bgcolor=#C0C0C0]
+        RenderBR {xhtml:br} at (67,0) size 1x18
+        RenderButton {xhtml:input} at (0,18) size 16x18 [bgcolor=#C0C0C0]
         RenderText {#text} at (0,0) size 0x0
     LayoutSVGRect {rect} at (9,9) size 582x382 [stroke={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=580.00] [height=380.00]
