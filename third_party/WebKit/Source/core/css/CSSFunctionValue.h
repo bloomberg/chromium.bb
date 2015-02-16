@@ -1,57 +1,37 @@
-/*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CSSFunctionValue_h
 #define CSSFunctionValue_h
 
-#include "core/css/CSSValue.h"
+#include "core/CSSValueKeywords.h"
+#include "core/css/CSSValueList.h"
 
 namespace blink {
 
-class CSSValueList;
-
-class CSSFunctionValue : public CSSValue {
+class CSSFunctionValue : public CSSValueList {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(String name, PassRefPtrWillBeRawPtr<CSSValueList> args)
+    static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(CSSValueID id)
     {
-        return adoptRefWillBeNoop(new CSSFunctionValue(name, args));
+        return adoptRefWillBeNoop(new CSSFunctionValue(id));
     }
 
     String customCSSText() const;
 
-    bool equals(const CSSFunctionValue&) const;
+    bool equals(const CSSFunctionValue& other) const { return m_valueID == other.m_valueID && CSSValueList::equals(other); }
+    CSSValueID functionType() const { return m_valueID; }
 
-    CSSValueList* arguments() const { return m_args.get(); }
-
-    void traceAfterDispatch(Visitor*);
+    void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
 
 private:
-    CSSFunctionValue(String, PassRefPtrWillBeRawPtr<CSSValueList>);
+    CSSFunctionValue(CSSValueID id)
+        : CSSValueList(FunctionClass, CommaSeparator)
+        , m_valueID(id)
+    {
+    }
 
-    String m_name;
-    RefPtrWillBeMember<CSSValueList> m_args;
+    const CSSValueID m_valueID;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFunctionValue, isFunctionValue());

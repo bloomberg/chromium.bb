@@ -1029,8 +1029,6 @@
             'css/CSSCustomFontData.h',
             'css/CSSDefaultStyleSheets.cpp',
             'css/CSSDefaultStyleSheets.h',
-            'css/CSSFilterValue.cpp',
-            'css/CSSFilterValue.h',
             'css/CSSFontFace.cpp',
             'css/CSSFontFace.h',
             'css/CSSFontFaceRule.cpp',

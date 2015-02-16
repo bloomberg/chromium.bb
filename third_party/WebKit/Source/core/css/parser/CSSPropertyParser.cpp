@@ -3678,10 +3678,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParser
         if (!maxTrackBreadth)
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSValueList> parsedArguments = CSSValueList::createCommaSeparated();
-        parsedArguments->append(minTrackBreadth);
-        parsedArguments->append(maxTrackBreadth);
-        return CSSFunctionValue::create("minmax(", parsedArguments);
+        RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueMinmax);
+        result->append(minTrackBreadth);
+        result->append(maxTrackBreadth);
+        return result.release();
     }
 
     return parseGridBreadth(currentValue);
@@ -7180,45 +7180,18 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseWillChange()
     return values.release();
 }
 
-static CSSFilterValue::FilterOperationType filterInfoForId(CSSValueID id, unsigned& maximumArgumentCount)
+PassRefPtrWillBeRawPtr<CSSFunctionValue> CSSPropertyParser::parseBuiltinFilterArguments(CSSParserValueList* args, CSSValueID filterType)
 {
-    if (id == CSSValueGrayscale)
-        return CSSFilterValue::GrayscaleFilterOperation;
-    if (id == CSSValueSepia)
-        return CSSFilterValue::SepiaFilterOperation;
-    if (id == CSSValueSaturate)
-        return CSSFilterValue::SaturateFilterOperation;
-    if (id == CSSValueHueRotate)
-        return CSSFilterValue::HueRotateFilterOperation;
-    if (id == CSSValueInvert)
-        return CSSFilterValue::InvertFilterOperation;
-    if (id == CSSValueOpacity)
-        return CSSFilterValue::OpacityFilterOperation;
-    if (id == CSSValueBrightness)
-        return CSSFilterValue::BrightnessFilterOperation;
-    if (id == CSSValueContrast)
-        return CSSFilterValue::ContrastFilterOperation;
-    if (id == CSSValueBlur)
-        return CSSFilterValue::BlurFilterOperation;
-    if (id == CSSValueDropShadow) {
-        maximumArgumentCount = 4;  // x-offset, y-offset, blur-radius, color -- spread and inset style not allowed.
-        return CSSFilterValue::DropShadowFilterOperation;
-    }
-    return CSSFilterValue::UnknownFilterOperation;
-}
-
-PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArguments(CSSParserValueList* args, CSSFilterValue::FilterOperationType filterType)
-{
-    RefPtrWillBeRawPtr<CSSFilterValue> filterValue = CSSFilterValue::create(filterType);
+    RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = CSSFunctionValue::create(filterType);
     ASSERT(args);
 
     switch (filterType) {
-    case CSSFilterValue::GrayscaleFilterOperation:
-    case CSSFilterValue::SepiaFilterOperation:
-    case CSSFilterValue::SaturateFilterOperation:
-    case CSSFilterValue::InvertFilterOperation:
-    case CSSFilterValue::OpacityFilterOperation:
-    case CSSFilterValue::ContrastFilterOperation: {
+    case CSSValueGrayscale:
+    case CSSValueSepia:
+    case CSSValueSaturate:
+    case CSSValueInvert:
+    case CSSValueOpacity:
+    case CSSValueContrast: {
         // One optional argument, 0-1 or 0%-100%, if missing use 100%.
         if (args->size()) {
             CSSParserValue* value = args->current();
@@ -7231,8 +7204,8 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
                 return nullptr;
 
             // Saturate and Contrast allow values over 100%.
-            if (filterType != CSSFilterValue::SaturateFilterOperation
-                && filterType != CSSFilterValue::ContrastFilterOperation) {
+            if (filterType != CSSValueSaturate
+                && filterType != CSSValueContrast) {
                 double maxAllowed = value->unit == CSSPrimitiveValue::CSS_PERCENTAGE ? 100.0 : 1.0;
                 if (amount > maxAllowed)
                     return nullptr;
@@ -7242,7 +7215,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         }
         break;
     }
-    case CSSFilterValue::BrightnessFilterOperation: {
+    case CSSValueBrightness: {
         // One optional argument, if missing use 100%.
         if (args->size()) {
             CSSParserValue* value = args->current();
@@ -7254,7 +7227,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         }
         break;
     }
-    case CSSFilterValue::HueRotateFilterOperation: {
+    case CSSValueHueRotate: {
         // hue-rotate() takes one optional angle.
         if (args->size()) {
             CSSParserValue* argument = args->current();
@@ -7265,7 +7238,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         }
         break;
     }
-    case CSSFilterValue::BlurFilterOperation: {
+    case CSSValueBlur: {
         // Blur takes a single length. Zero parameters are allowed.
         if (args->size()) {
             CSSParserValue* argument = args->current();
@@ -7276,7 +7249,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         }
         break;
     }
-    case CSSFilterValue::DropShadowFilterOperation: {
+    case CSSValueDropShadow: {
         // drop-shadow() takes a single shadow.
         RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(args, CSSPropertyWebkitFilter);
         if (!shadowValueList || shadowValueList->length() != 1)
@@ -7286,7 +7259,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         break;
     }
     default:
-        ASSERT_NOT_REACHED();
+        return nullptr;
     }
     return filterValue.release();
 }
@@ -7302,26 +7275,20 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFilter()
         if (value->unit != CSSPrimitiveValue::CSS_URI && (value->unit != CSSParserValue::Function || !value->function))
             return nullptr;
 
-        CSSFilterValue::FilterOperationType filterType = CSSFilterValue::UnknownFilterOperation;
-
         // See if the specified primitive is one we understand.
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
-            RefPtrWillBeRawPtr<CSSFilterValue> referenceFilterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
-            list->append(referenceFilterValue);
+            RefPtrWillBeRawPtr<CSSFunctionValue> referenceFilterValue = CSSFunctionValue::create(CSSValueUrl);
             referenceFilterValue->append(CSSSVGDocumentValue::create(value->string));
+            list->append(referenceFilterValue.release());
         } else {
-            unsigned maximumArgumentCount = 1;
-
-            filterType = filterInfoForId(value->function->id, maximumArgumentCount);
-
-            if (filterType == CSSFilterValue::UnknownFilterOperation)
-                return nullptr;
+            CSSValueID filterType = value->function->id;
+            unsigned maximumArgumentCount = filterType == CSSValueDropShadow ? 4 : 1;
 
             CSSParserValueList* args = value->function->args.get();
             if (!args || args->size() > maximumArgumentCount)
                 return nullptr;
 
-            RefPtrWillBeRawPtr<CSSFilterValue> filterValue = parseBuiltinFilterArguments(args, filterType);
+            RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = parseBuiltinFilterArguments(args, filterType);
             if (!filterValue)
                 return nullptr;
 

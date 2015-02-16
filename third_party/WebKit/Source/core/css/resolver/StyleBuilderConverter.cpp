@@ -413,10 +413,9 @@ GridTrackSize StyleBuilderConverter::convertGridTrackSize(StyleResolverState& st
         return GridTrackSize(convertGridTrackBreadth(state, toCSSPrimitiveValue(value)));
 
     CSSFunctionValue* minmaxFunction = toCSSFunctionValue(value);
-    CSSValueList* arguments = minmaxFunction->arguments();
-    ASSERT_WITH_SECURITY_IMPLICATION(arguments->length() == 2);
-    GridLength minTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(arguments->item(0))));
-    GridLength maxTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(arguments->item(1))));
+    ASSERT_WITH_SECURITY_IMPLICATION(minmaxFunction->length() == 2);
+    GridLength minTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(minmaxFunction->item(0))));
+    GridLength maxTrackBreadth(convertGridTrackBreadth(state, toCSSPrimitiveValue(minmaxFunction->item(1))));
     return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 

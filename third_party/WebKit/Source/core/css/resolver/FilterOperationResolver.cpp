@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 
-#include "core/css/CSSFilterValue.h"
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/TransformBuilder.h"
@@ -38,35 +38,36 @@
 
 namespace blink {
 
-static FilterOperation::OperationType filterOperationForType(CSSFilterValue::FilterOperationType type)
+static FilterOperation::OperationType filterOperationForType(CSSValueID type)
 {
     switch (type) {
-    case CSSFilterValue::ReferenceFilterOperation:
+    case CSSValueUrl:
         return FilterOperation::REFERENCE;
-    case CSSFilterValue::GrayscaleFilterOperation:
+    case CSSValueGrayscale:
         return FilterOperation::GRAYSCALE;
-    case CSSFilterValue::SepiaFilterOperation:
+    case CSSValueSepia:
         return FilterOperation::SEPIA;
-    case CSSFilterValue::SaturateFilterOperation:
+    case CSSValueSaturate:
         return FilterOperation::SATURATE;
-    case CSSFilterValue::HueRotateFilterOperation:
+    case CSSValueHueRotate:
         return FilterOperation::HUE_ROTATE;
-    case CSSFilterValue::InvertFilterOperation:
+    case CSSValueInvert:
         return FilterOperation::INVERT;
-    case CSSFilterValue::OpacityFilterOperation:
+    case CSSValueOpacity:
         return FilterOperation::OPACITY;
-    case CSSFilterValue::BrightnessFilterOperation:
+    case CSSValueBrightness:
         return FilterOperation::BRIGHTNESS;
-    case CSSFilterValue::ContrastFilterOperation:
+    case CSSValueContrast:
         return FilterOperation::CONTRAST;
-    case CSSFilterValue::BlurFilterOperation:
+    case CSSValueBlur:
         return FilterOperation::BLUR;
-    case CSSFilterValue::DropShadowFilterOperation:
+    case CSSValueDropShadow:
         return FilterOperation::DROP_SHADOW;
-    case CSSFilterValue::UnknownFilterOperation:
+    default:
+        ASSERT_NOT_REACHED();
+        // FIXME: We shouldn't have a type None since we never create them
         return FilterOperation::NONE;
     }
-    return FilterOperation::NONE;
 }
 
 bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CSSToLengthConversionData& conversionData, FilterOperations& outOperations, StyleResolverState& state)
@@ -88,11 +89,11 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
     FilterOperations operations;
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
-        if (!currValue->isFilterValue())
+        if (!currValue->isFunctionValue())
             continue;
 
-        CSSFilterValue* filterValue = toCSSFilterValue(i.value());
-        FilterOperation::OperationType operationType = filterOperationForType(filterValue->operationType());
+        CSSFunctionValue* filterValue = toCSSFunctionValue(i.value());
+        FilterOperation::OperationType operationType = filterOperationForType(filterValue->functionType());
 
         if (operationType == FilterOperation::REFERENCE) {
             if (filterValue->length() != 1)
@@ -131,10 +132,10 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
         }
 
         CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0)->isPrimitiveValue() ? toCSSPrimitiveValue(filterValue->item(0)) : 0;
-        switch (filterValue->operationType()) {
-        case CSSFilterValue::GrayscaleFilterOperation:
-        case CSSFilterValue::SepiaFilterOperation:
-        case CSSFilterValue::SaturateFilterOperation: {
+        switch (filterValue->functionType()) {
+        case CSSValueGrayscale:
+        case CSSValueSepia:
+        case CSSValueSaturate: {
             double amount = 1;
             if (filterValue->length() == 1) {
                 amount = firstValue->getDoubleValue();
@@ -145,7 +146,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             operations.operations().append(BasicColorMatrixFilterOperation::create(amount, operationType));
             break;
         }
-        case CSSFilterValue::HueRotateFilterOperation: {
+        case CSSValueHueRotate: {
             double angle = 0;
             if (filterValue->length() == 1)
                 angle = firstValue->computeDegrees();
@@ -153,11 +154,11 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             operations.operations().append(BasicColorMatrixFilterOperation::create(angle, operationType));
             break;
         }
-        case CSSFilterValue::InvertFilterOperation:
-        case CSSFilterValue::BrightnessFilterOperation:
-        case CSSFilterValue::ContrastFilterOperation:
-        case CSSFilterValue::OpacityFilterOperation: {
-            double amount = (filterValue->operationType() == CSSFilterValue::BrightnessFilterOperation) ? 0 : 1;
+        case CSSValueInvert:
+        case CSSValueBrightness:
+        case CSSValueContrast:
+        case CSSValueOpacity: {
+            double amount = (filterValue->functionType() == CSSValueBrightness) ? 0 : 1;
             if (filterValue->length() == 1) {
                 amount = firstValue->getDoubleValue();
                 if (firstValue->isPercentage())
@@ -167,14 +168,14 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             operations.operations().append(BasicComponentTransferFilterOperation::create(amount, operationType));
             break;
         }
-        case CSSFilterValue::BlurFilterOperation: {
+        case CSSValueBlur: {
             Length stdDeviation = Length(0, Fixed);
             if (filterValue->length() >= 1)
                 stdDeviation = firstValue->convertToLength(conversionData);
             operations.operations().append(BlurFilterOperation::create(stdDeviation));
             break;
         }
-        case CSSFilterValue::DropShadowFilterOperation: {
+        case CSSValueDropShadow: {
             if (filterValue->length() != 1)
                 return false;
 
@@ -192,7 +193,6 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor));
             break;
         }
-        case CSSFilterValue::UnknownFilterOperation:
         default:
             ASSERT_NOT_REACHED();
             break;

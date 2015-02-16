@@ -26,7 +26,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
@@ -294,9 +293,6 @@ private:
     void logError(const String& message, const CSSParserLocation&);
 
     BisonCSSTokenizer m_tokenizer;
-
-    friend class TransformOperationInfo;
-    friend class FilterOperationInfo;
 };
 
 inline int cssyylex(void* yylval, BisonCSSParser* parser)

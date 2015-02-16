@@ -23,7 +23,6 @@
 #ifndef CSSPropertyParser_h
 #define CSSPropertyParser_h
 
-#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSPropertySourceData.h"
@@ -35,6 +34,7 @@ class BorderImageParseContext;
 class CSSBorderImageSliceValue;
 class CSSBasicShape;
 class CSSBasicShapeInset;
+class CSSFunctionValue;
 class CSSGradientValue;
 class CSSGridLineNamesValue;
 class CSSLineBoxContainValue;
@@ -242,7 +242,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseWillChange();
 
     PassRefPtrWillBeRawPtr<CSSValueList> parseFilter();
-    PassRefPtrWillBeRawPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
+    PassRefPtrWillBeRawPtr<CSSFunctionValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSValueID);
 
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransformOrigin();
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(CSSPropertyID);

@@ -29,7 +29,6 @@
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -548,10 +547,10 @@ static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackSize(const Gri
     case LengthTrackSizing:
         return specifiedValueForGridTrackBreadth(trackSize.length(), style);
     case MinMaxTrackSizing:
-        RefPtrWillBeRawPtr<CSSValueList> minMaxTrackBreadths = CSSValueList::createCommaSeparated();
+        RefPtrWillBeRawPtr<CSSFunctionValue> minMaxTrackBreadths = CSSFunctionValue::create(CSSValueMinmax);
         minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(), style));
         minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.maxTrackBreadth(), style));
-        return CSSFunctionValue::create("minmax(", minMaxTrackBreadths);
+        return minMaxTrackBreadths.release();
     }
     ASSERT_NOT_REACHED();
     return nullptr;
@@ -1215,61 +1214,61 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::valueForFilter(cons
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
-    RefPtrWillBeRawPtr<CSSFilterValue> filterValue = nullptr;
+    RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = nullptr;
 
     for (const auto& operation : style.filter().operations()) {
         FilterOperation* filterOperation = operation.get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE:
-            filterValue = CSSFilterValue::create(CSSFilterValue::ReferenceFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueUrl);
             filterValue->append(cssValuePool().createValue(toReferenceFilterOperation(filterOperation)->url(), CSSPrimitiveValue::CSS_STRING));
             break;
         case FilterOperation::GRAYSCALE:
-            filterValue = CSSFilterValue::create(CSSFilterValue::GrayscaleFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueGrayscale);
             filterValue->append(cssValuePool().createValue(toBasicColorMatrixFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::SEPIA:
-            filterValue = CSSFilterValue::create(CSSFilterValue::SepiaFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueSepia);
             filterValue->append(cssValuePool().createValue(toBasicColorMatrixFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::SATURATE:
-            filterValue = CSSFilterValue::create(CSSFilterValue::SaturateFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueSaturate);
             filterValue->append(cssValuePool().createValue(toBasicColorMatrixFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::HUE_ROTATE:
-            filterValue = CSSFilterValue::create(CSSFilterValue::HueRotateFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueHueRotate);
             filterValue->append(cssValuePool().createValue(toBasicColorMatrixFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_DEG));
             break;
         case FilterOperation::INVERT:
-            filterValue = CSSFilterValue::create(CSSFilterValue::InvertFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueInvert);
             filterValue->append(cssValuePool().createValue(toBasicComponentTransferFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::OPACITY:
-            filterValue = CSSFilterValue::create(CSSFilterValue::OpacityFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueOpacity);
             filterValue->append(cssValuePool().createValue(toBasicComponentTransferFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::BRIGHTNESS:
-            filterValue = CSSFilterValue::create(CSSFilterValue::BrightnessFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueBrightness);
             filterValue->append(cssValuePool().createValue(toBasicComponentTransferFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::CONTRAST:
-            filterValue = CSSFilterValue::create(CSSFilterValue::ContrastFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueContrast);
             filterValue->append(cssValuePool().createValue(toBasicComponentTransferFilterOperation(filterOperation)->amount(), CSSPrimitiveValue::CSS_NUMBER));
             break;
         case FilterOperation::BLUR:
-            filterValue = CSSFilterValue::create(CSSFilterValue::BlurFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueBlur);
             filterValue->append(zoomAdjustedPixelValue(toBlurFilterOperation(filterOperation)->stdDeviation().value(), style));
             break;
         case FilterOperation::DROP_SHADOW: {
             DropShadowFilterOperation* dropShadowOperation = toDropShadowFilterOperation(filterOperation);
-            filterValue = CSSFilterValue::create(CSSFilterValue::DropShadowFilterOperation);
+            filterValue = CSSFunctionValue::create(CSSValueDropShadow);
             // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
             ShadowData shadow(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, dropShadowOperation->color());
             filterValue->append(valueForShadowData(shadow, style, false));
             break;
         }
         default:
-            filterValue = CSSFilterValue::create(CSSFilterValue::UnknownFilterOperation);
+            ASSERT_NOT_REACHED();
             break;
         }
         list->append(filterValue.release());

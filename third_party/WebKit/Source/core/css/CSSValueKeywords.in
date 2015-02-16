@@ -1034,6 +1034,7 @@ brightness
 contrast
 blur
 drop-shadow
+url
 
 // colors
 rgb

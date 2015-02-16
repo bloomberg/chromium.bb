@@ -33,7 +33,6 @@
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
-#include "core/css/CSSFilterValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFontValue.h"
@@ -153,8 +152,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSCalcValue>(*this, other);
         case ImageSetClass:
             return compareCSSValues<CSSImageSetValue>(*this, other);
-        case CSSFilterClass:
-            return compareCSSValues<CSSFilterValue>(*this, other);
         case CSSSVGDocumentClass:
             return compareCSSValues<CSSSVGDocumentValue>(*this, other);
         case CSSContentDistributionClass:
@@ -229,8 +226,6 @@ String CSSValue::cssText() const
         return toCSSCalcValue(this)->customCSSText();
     case ImageSetClass:
         return toCSSImageSetValue(this)->customCSSText();
-    case CSSFilterClass:
-        return toCSSFilterValue(this)->customCSSText();
     case CSSSVGDocumentClass:
         return toCSSSVGDocumentValue(this)->customCSSText();
     case CSSContentDistributionClass:
@@ -326,9 +321,6 @@ void CSSValue::destroy()
         return;
     case ImageSetClass:
         delete toCSSImageSetValue(this);
-        return;
-    case CSSFilterClass:
-        delete toCSSFilterValue(this);
         return;
     case CSSSVGDocumentClass:
         delete toCSSSVGDocumentValue(this);
@@ -427,9 +419,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case ImageSetClass:
         toCSSImageSetValue(this)->~CSSImageSetValue();
         return;
-    case CSSFilterClass:
-        toCSSFilterValue(this)->~CSSFilterValue();
-        return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->~CSSSVGDocumentValue();
         return;
@@ -526,9 +515,6 @@ void CSSValue::trace(Visitor* visitor)
         return;
     case ImageSetClass:
         toCSSImageSetValue(this)->traceAfterDispatch(visitor);
-        return;
-    case CSSFilterClass:
-        toCSSFilterValue(this)->traceAfterDispatch(visitor);
         return;
     case CSSSVGDocumentClass:
         toCSSSVGDocumentValue(this)->traceAfterDispatch(visitor);

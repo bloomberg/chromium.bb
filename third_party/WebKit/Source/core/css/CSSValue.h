@@ -79,7 +79,6 @@ public:
     bool isTransformValue() const { return m_classType == CSSTransformClass; }
     bool isLineBoxContainValue() const { return m_classType == LineBoxContainClass; }
     bool isCalcValue() const {return m_classType == CalculationClass; }
-    bool isFilterValue() const { return m_classType == CSSFilterClass; }
     bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
     bool isContentDistributionValue() const { return m_classType == CSSContentDistributionClass; }
@@ -119,7 +118,6 @@ protected:
         FontFeatureClass,
         FontClass,
         FontFaceSrcClass,
-        FunctionClass,
 
         InheritedClass,
         InitialClass,
@@ -140,8 +138,8 @@ protected:
 
         // List class types must appear after ValueListClass.
         ValueListClass,
+        FunctionClass,
         ImageSetClass,
-        CSSFilterClass,
         CSSTransformClass,
         GridLineNamesClass,
         // Do not append non-list class types here.
