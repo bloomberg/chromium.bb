@@ -152,7 +152,12 @@ MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
 MessageLoop::~MessageLoop() {
   DCHECK_EQ(this, current());
 
+  // iOS just attaches to the loop, it doesn't Run it.
+  // TODO(stuartmorgan): Consider wiring up a Detach().
+#if !defined(OS_IOS)
   DCHECK(!run_loop_);
+#endif
+
 #if defined(OS_WIN)
   if (in_high_res_mode_)
     Time::ActivateHighResolutionTimer(false);
