@@ -9,6 +9,7 @@
  * @extends {cr.EventTarget}
  * @constructor
  * @struct
+ * @suppress {checkStructDictInheritance}
  */
 function MetadataCacheSet(items) {
   cr.EventTarget.call(this);
