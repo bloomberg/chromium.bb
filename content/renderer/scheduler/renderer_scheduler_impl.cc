@@ -446,4 +446,16 @@ RendererSchedulerImpl::ComputeNewInputStreamState(
   return INPUT_ACTIVE;
 }
 
+void RendererSchedulerImpl::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_queue_manager_->AddTaskObserver(task_observer);
+}
+
+void RendererSchedulerImpl::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_queue_manager_->RemoveTaskObserver(task_observer);
+}
+
 }  // namespace content

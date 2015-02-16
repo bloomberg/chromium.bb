@@ -11,6 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
+using testing::_;
 
 namespace content {
 namespace {
@@ -580,6 +581,74 @@ TEST_F(TaskQueueManagerTest, InterruptWorkBatchForDelayedTask) {
   // Running all remaining tasks should execute both pending tasks.
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
+}
+
+class MockTaskObserver : public base::MessageLoop::TaskObserver {
+ public:
+  MOCK_METHOD1(DidProcessTask, void(const base::PendingTask& task));
+  MOCK_METHOD1(WillProcessTask, void(const base::PendingTask& task));
+};
+
+TEST_F(TaskQueueManagerTest, TaskObserverAdding) {
+  Initialize(1u);
+  MockTaskObserver observer;
+
+  manager_->AddTaskObserver(&observer);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+
+  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(2);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(2);
+  test_task_runner_->RunUntilIdle();
+}
+
+TEST_F(TaskQueueManagerTest, TaskObserverRemoving) {
+  Initialize(1u);
+  MockTaskObserver observer;
+  manager_->AddTaskObserver(&observer);
+  manager_->RemoveTaskObserver(&observer);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+
+  runner->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
+
+  selector_->AppendQueueToService(0);
+  test_task_runner_->RunUntilIdle();
+}
+
+void RemoveObserverTask(TaskQueueManager* manager,
+                        base::MessageLoop::TaskObserver* observer) {
+  manager->RemoveTaskObserver(observer);
+}
+
+TEST_F(TaskQueueManagerTest, TaskObserverRemovingInsideTask) {
+  Initialize(1u);
+  MockTaskObserver observer;
+  manager_->AddTaskObserver(&observer);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+  runner->PostTask(FROM_HERE,
+                   base::Bind(&RemoveObserverTask, manager_.get(), &observer));
+
+  selector_->AppendQueueToService(0);
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
+  test_task_runner_->RunUntilIdle();
 }
 
 }  // namespace

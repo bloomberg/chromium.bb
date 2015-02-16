@@ -9,6 +9,7 @@
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -90,6 +91,11 @@ class CONTENT_EXPORT TaskQueueManager {
   // tasks posted to the main loop. The batch size is 1 by default.
   void SetWorkBatchSize(int work_batch_size);
 
+  // These functions can only be called on the same thread that the task queue
+  // manager executes its tasks on.
+  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
 
  private:
@@ -154,6 +160,8 @@ class CONTENT_EXPORT TaskQueueManager {
   int work_batch_size_;
 
   scoped_refptr<cc::TestNowSource> time_source_;
+
+  ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 

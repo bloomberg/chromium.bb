@@ -377,6 +377,8 @@
       'renderer/scheduler/task_queue_selector.h',
       'renderer/scheduler/web_scheduler_impl.cc',
       'renderer/scheduler/web_scheduler_impl.h',
+      'renderer/scheduler/webthread_impl_for_scheduler.cc',
+      'renderer/scheduler/webthread_impl_for_scheduler.h',
       'renderer/screen_orientation/screen_orientation_dispatcher.cc',
       'renderer/screen_orientation/screen_orientation_dispatcher.h',
       'renderer/screen_orientation/screen_orientation_observer.cc',

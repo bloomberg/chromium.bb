@@ -7,6 +7,7 @@
 #include <queue>
 
 #include "base/bind.h"
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/test/test_now_source.h"
@@ -413,8 +414,12 @@ void TaskQueueManager::ProcessTaskFromWorkQueue(size_t queue_index) {
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,
                                            pending_task.task);
   } else {
+    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                      WillProcessTask(pending_task));
     task_annotator_.RunTask("TaskQueueManager::PostTask",
                             "TaskQueueManager::RunTask", pending_task);
+    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                      DidProcessTask(pending_task));
   }
 }
 
@@ -440,6 +445,18 @@ void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(work_batch_size, 1);
   work_batch_size_ = work_batch_size;
+}
+
+void TaskQueueManager::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_observers_.AddObserver(task_observer);
+}
+
+void TaskQueueManager::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_observers_.RemoveObserver(task_observer);
 }
 
 void TaskQueueManager::SetTimeSourceForTesting(
