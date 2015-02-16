@@ -68,7 +68,7 @@ WorkerPerformance* WorkerGlobalScopePerformance::performance()
     return m_performance.get();
 }
 
-void WorkerGlobalScopePerformance::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerGlobalScopePerformance)
 {
     visitor->trace(m_performance);
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);

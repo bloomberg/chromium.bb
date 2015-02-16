@@ -46,7 +46,7 @@ public:
 
     static WorkerPerformance* performance(WorkerGlobalScope&);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WorkerGlobalScopePerformance();

@@ -52,7 +52,7 @@ public:
     double now(ExecutionContext*) const;
     PassRefPtrWillBeRawPtr<MemoryInfo> memory() const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     WorkerPerformance();
