@@ -13,9 +13,10 @@
 extern "C" {
 #endif
 
-int prctl(int option, uintptr_t arg2, uintptr_t arg3,
-          uintptr_t arg4, uintptr_t arg5);
+int prctl(int option, ...);
 
+#define PR_GET_DUMPABLE 3
+#define PR_SET_DUMPABLE 4
 #define PR_GET_NAME 16
 
 #ifdef __cplusplus
