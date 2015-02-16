@@ -51,7 +51,7 @@ public:
 
     String doNotTrack();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit NavigatorDoNotTrack(LocalFrame*);

@@ -44,7 +44,7 @@ NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorDoNotTrack);
 
-void NavigatorDoNotTrack::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorDoNotTrack)
 {
     WillBeHeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
