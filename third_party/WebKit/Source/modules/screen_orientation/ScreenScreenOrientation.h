@@ -23,7 +23,7 @@ public:
 
     static ScreenOrientation* orientation(ScriptState*, Screen&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     static const char* supplementName();

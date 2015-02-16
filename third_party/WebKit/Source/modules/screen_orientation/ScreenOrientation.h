@@ -50,7 +50,7 @@ public:
     // Helper being used by this class and LockOrientationCallback.
     static const AtomicString& orientationTypeToString(WebScreenOrientationType);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ScreenOrientation(LocalFrame*);

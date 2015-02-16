@@ -23,7 +23,7 @@ class ScreenOrientationDispatcher final : public GarbageCollectedFinalized<Scree
 public:
     static ScreenOrientationDispatcher& instance();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ScreenOrientationDispatcher();

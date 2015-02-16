@@ -19,7 +19,7 @@ ScreenOrientationDispatcher::ScreenOrientationDispatcher()
 {
 }
 
-void ScreenOrientationDispatcher::trace(Visitor* visitor)
+DEFINE_TRACE(ScreenOrientationDispatcher)
 {
     PlatformEventDispatcher::trace(visitor);
 }

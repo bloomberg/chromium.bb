@@ -44,7 +44,7 @@ const char* ScreenScreenOrientation::supplementName()
     return "ScreenScreenOrientation";
 }
 
-void ScreenScreenOrientation::trace(Visitor* visitor)
+DEFINE_TRACE(ScreenScreenOrientation)
 {
     visitor->trace(m_orientation);
     WillBeHeapSupplement<Screen>::trace(visitor);

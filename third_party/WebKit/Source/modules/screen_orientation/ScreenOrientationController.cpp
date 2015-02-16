@@ -209,7 +209,7 @@ void ScreenOrientationController::notifyDispatcher()
         stopUpdating();
 }
 
-void ScreenOrientationController::trace(Visitor* visitor)
+DEFINE_TRACE(ScreenOrientationController)
 {
     visitor->trace(m_orientation);
     FrameDestructionObserver::trace(visitor);
