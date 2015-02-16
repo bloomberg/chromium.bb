@@ -2251,10 +2251,9 @@ bool WebGLRenderingContextBase::extensionSupportedAndAllowed(const ExtensionTrac
     return true;
 }
 
-
 ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* scriptState, const String& name)
 {
-    RefPtrWillBeRawPtr<WebGLExtension> extension;
+    RefPtrWillBeRawPtr<WebGLExtension> extension = nullptr;
 
     if (!isContextLost()) {
         for (size_t i = 0; i < m_extensions.size(); ++i) {
