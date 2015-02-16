@@ -64,10 +64,10 @@ def upper_first(name):
     for acronym in ACRONYMS:
         if name.startswith(acronym.lower()):
             return name.replace(acronym.lower(), acronym, 1)
-    return _upper_first(name)
+    return upper_first_letter(name)
 
 
-def _upper_first(name):
+def upper_first_letter(name):
     """Return name with first letter uppercased."""
     if not name:
         return ''

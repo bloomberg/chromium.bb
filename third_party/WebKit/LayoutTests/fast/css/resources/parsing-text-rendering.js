@@ -12,9 +12,10 @@ function test(value)
 }
 
 shouldBe('test("text-rendering: auto;")', '"auto"');
-shouldBe('test("text-rendering: optimizeSpeed;")', '"optimizespeed"');
-shouldBe('test("text-rendering: optimizeLegibility;")', '"optimizelegibility"');
-shouldBe('test("text-rendering: geometricPrecision;")', '"geometricprecision"');
+shouldBe('test("text-rendering: optimizeSpeed;")', '"optimizeSpeed"');
+shouldBe('test("text-rendering: optimizeLegibility;")', '"optimizeLegibility"');
+shouldBe('test("text-rendering: geometricPrecision;")', '"geometricPrecision"');
+shouldBe('test("text-rendering: OptIMizESpEEd;")', '"optimizeSpeed"');
 
 shouldBeNull('test("text-rendering: auto auto;")');
 shouldBeNull('test("text-rendering: optimizeCoconuts;")');

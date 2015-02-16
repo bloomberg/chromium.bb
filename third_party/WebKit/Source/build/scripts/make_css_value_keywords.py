@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from in_file import InFile
+from name_utilities import upper_first_letter
 import in_generator
 import license
 
@@ -115,7 +116,7 @@ class CSSValueKeywordsWriter(in_generator.Writer):
         self._value_keywords = self.in_file.name_dictionaries
         first_property_id = 1
         for offset, property in enumerate(self._value_keywords):
-            property['name'] = property['name'].lower()
+            property['lower_name'] = property['name'].lower()
             property['enum_name'] = self._enum_name_from_value_keyword(property['name'])
             property['enum_value'] = first_property_id + offset
             if property['name'].startswith('-internal-'):
@@ -125,7 +126,7 @@ class CSSValueKeywordsWriter(in_generator.Writer):
                 assert property['mode'] != 'UASheet', 'UASheet mode only value keywords should have the prefix "-internal-".'
 
     def _enum_name_from_value_keyword(self, value_keyword):
-        return "CSSValue" + "".join(w.capitalize() for w in value_keyword.split("-"))
+        return "CSSValue" + "".join(upper_first_letter(w) for w in value_keyword.split("-"))
 
     def _enum_declaration(self, property):
         return "    %(enum_name)s = %(enum_value)s," % property
@@ -158,7 +159,7 @@ class CSSValueKeywordsWriter(in_generator.Writer):
             'class_name': self.class_name,
             'value_keyword_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._value_keywords)),
             'value_keyword_offsets': '\n'.join(map(lambda offset: '  %d,' % offset, keyword_offsets)),
-            'value_keyword_to_enum_map': '\n'.join(map(lambda property: '%(name)s, %(enum_name)s' % property, self._value_keywords)),
+            'value_keyword_to_enum_map': '\n'.join('%(lower_name)s, %(enum_name)s' % keyword for keyword in self._value_keywords),
             'ua_sheet_mode_values_keywords': '\n        '.join(map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))),
             'quirks_mode_or_ua_sheet_mode_values_keywords': '\n    '.join(map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))),
         }

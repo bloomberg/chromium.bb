@@ -205,8 +205,8 @@ rect: style.getPropertyValue(flood-opacity) : 1
 rect: style.getPropertyValue(lighting-color) : rgb(255, 255, 255)
 rect: style.getPropertyValue(stop-color) : rgb(0, 0, 0)
 rect: style.getPropertyValue(stop-opacity) : 1
-rect: style.getPropertyValue(color-interpolation) : srgb
-rect: style.getPropertyValue(color-interpolation-filters) : linearrgb
+rect: style.getPropertyValue(color-interpolation) : sRGB
+rect: style.getPropertyValue(color-interpolation-filters) : linearRGB
 rect: style.getPropertyValue(color-rendering) : auto
 rect: style.getPropertyValue(fill) : rgb(0, 0, 255)
 rect: style.getPropertyValue(fill-opacity) : 1
@@ -438,8 +438,8 @@ g: style.getPropertyValue(flood-opacity) : 1
 g: style.getPropertyValue(lighting-color) : rgb(255, 255, 255)
 g: style.getPropertyValue(stop-color) : rgb(0, 0, 0)
 g: style.getPropertyValue(stop-opacity) : 1
-g: style.getPropertyValue(color-interpolation) : srgb
-g: style.getPropertyValue(color-interpolation-filters) : linearrgb
+g: style.getPropertyValue(color-interpolation) : sRGB
+g: style.getPropertyValue(color-interpolation-filters) : linearRGB
 g: style.getPropertyValue(color-rendering) : auto
 g: style.getPropertyValue(fill) : rgb(0, 0, 0)
 g: style.getPropertyValue(fill-opacity) : 1

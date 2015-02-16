@@ -8010,14 +8010,14 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyShapeRendering:
     // auto | optimizeSpeed | crispEdges | geometricPrecision | inherit
-        if (id == CSSValueAuto || id == CSSValueOptimizespeed
-            || id == CSSValueCrispedges || id == CSSValueGeometricprecision)
+        if (id == CSSValueAuto || id == CSSValueOptimizeSpeed
+            || id == CSSValueCrispEdges || id == CSSValueGeometricPrecision)
             validPrimitive = true;
         break;
 
     case CSSPropertyColorRendering: // optimizeQuality | inherit
-        if (id == CSSValueAuto || id == CSSValueOptimizespeed
-            || id == CSSValueOptimizequality)
+        if (id == CSSValueAuto || id == CSSValueOptimizeSpeed
+            || id == CSSValueOptimizeQuality)
             validPrimitive = true;
         break;
 
@@ -8028,7 +8028,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyColorInterpolation: // auto | sRGB | linearRGB | inherit
     case CSSPropertyColorInterpolationFilters:
-        if (id == CSSValueAuto || id == CSSValueSrgb || id == CSSValueLinearrgb)
+        if (id == CSSValueAuto || id == CSSValueSRGB || id == CSSValueLinearRGB)
             validPrimitive = true;
         break;
 
