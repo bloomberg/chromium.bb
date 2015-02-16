@@ -23,7 +23,7 @@ public:
     static NavigatorPresentation& from(Navigator&);
     static Presentation* presentation(Navigator&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     static const char* supplementName();

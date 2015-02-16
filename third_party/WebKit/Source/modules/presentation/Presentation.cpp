@@ -49,7 +49,7 @@ ExecutionContext* Presentation::executionContext() const
     return frame()->document();
 }
 
-void Presentation::trace(Visitor* visitor)
+DEFINE_TRACE(Presentation)
 {
     visitor->trace(m_session);
     RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::trace(visitor);

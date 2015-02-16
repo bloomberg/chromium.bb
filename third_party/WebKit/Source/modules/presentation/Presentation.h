@@ -37,7 +37,7 @@ public:
     virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     PresentationSession* session() const;
 

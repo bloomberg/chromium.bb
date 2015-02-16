@@ -48,7 +48,7 @@ void PresentationController::provideTo(LocalFrame& frame, WebPresentationClient*
     WillBeHeapSupplement<LocalFrame>::provideTo(frame, PresentationController::supplementName(), PresentationController::create(frame, client));
 }
 
-void PresentationController::trace(Visitor* visitor)
+DEFINE_TRACE(PresentationController)
 {
     visitor->trace(m_presentation);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);

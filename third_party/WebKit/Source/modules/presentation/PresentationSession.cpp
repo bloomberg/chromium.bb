@@ -34,7 +34,7 @@ ExecutionContext* PresentationSession::executionContext() const
     return ContextLifecycleObserver::executionContext();
 }
 
-void PresentationSession::trace(Visitor* visitor)
+DEFINE_TRACE(PresentationSession)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>::trace(visitor);
     ContextLifecycleObserver::trace(visitor);

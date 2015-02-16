@@ -26,7 +26,7 @@ public:
     virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     const String& id() const { return m_id; }
     const AtomicString& state() const { return m_state; }

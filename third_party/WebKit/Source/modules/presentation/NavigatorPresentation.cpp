@@ -47,7 +47,7 @@ Presentation* NavigatorPresentation::presentation(Navigator& navigator)
     return self.m_presentation.get();
 }
 
-void NavigatorPresentation::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorPresentation)
 {
     visitor->trace(m_presentation);
     WillBeHeapSupplement<Navigator>::trace(visitor);

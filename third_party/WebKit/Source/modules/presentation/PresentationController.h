@@ -36,7 +36,7 @@ public:
     static void provideTo(LocalFrame&, WebPresentationClient*);
 
     // Implementation of HeapSupplement.
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Implementation of WebPresentationController.
     virtual void didChangeAvailability(bool available) override;
