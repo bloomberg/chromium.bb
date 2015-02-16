@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<title>Service Worker: controlling a SharedWorker</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+promise_test(function(t) {
+    var shared_worker = 'resources/shared-worker-controlled.js';
+    var service_worker = 'resources/simple-intercept-worker.js';
+    var scope = shared_worker;
+
+    service_worker_unregister_and_register(t, service_worker, scope)
+      .then(function(r) {
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(function() {
+          return new Promise(function(resolve, reject) {
+              var w = new SharedWorker(shared_worker);
+              w.port.onmessage = function(e) {
+                resolve(e.data);
+              }
+            });
+        })
+      .then(function(data) {
+          assert_equals(data, 'intercepted by service worker');
+          service_worker_unregister_and_done(t, scope);
+        })
+  }, 'Verify SharedWorker is controlled by a Service Worker');
+</script>
+</body>
