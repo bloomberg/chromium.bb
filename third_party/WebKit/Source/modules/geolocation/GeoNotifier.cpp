@@ -24,7 +24,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation, PositionCallback* successCall
     ASSERT(m_successCallback);
 }
 
-void GeoNotifier::trace(Visitor* visitor)
+DEFINE_TRACE(GeoNotifier)
 {
     visitor->trace(m_geolocation);
     visitor->trace(m_successCallback);

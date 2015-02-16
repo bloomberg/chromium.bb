@@ -64,7 +64,7 @@ public:
     void controllerForTestAdded(GeolocationController*) override;
     void controllerForTestRemoved(GeolocationController*) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     void asyncUpdateController();

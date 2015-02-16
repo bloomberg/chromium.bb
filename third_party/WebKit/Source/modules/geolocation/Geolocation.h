@@ -55,7 +55,7 @@ class Geolocation final
 public:
     static Geolocation* create(ExecutionContext*);
     virtual ~Geolocation();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void stop() override;
     Document* document() const;

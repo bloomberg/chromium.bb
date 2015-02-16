@@ -23,7 +23,7 @@ public:
     {
         return new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options);
     }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     const PositionOptions& options() const { return m_options; }
 

@@ -40,7 +40,7 @@ public:
     {
         return new GeolocationPosition(timestamp, latitude, longitude, accuracy, providesAltitude, altitude, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed);
     }
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     double timestamp() const { return m_timestamp; }
 

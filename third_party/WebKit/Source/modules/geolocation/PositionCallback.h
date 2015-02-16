@@ -35,7 +35,7 @@ namespace blink {
     class PositionCallback : public GarbageCollectedFinalized<PositionCallback> {
     public:
         virtual ~PositionCallback() { }
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
         virtual void handleEvent(Geoposition*) = 0;
     };
 

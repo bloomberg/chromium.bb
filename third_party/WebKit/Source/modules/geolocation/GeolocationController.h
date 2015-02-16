@@ -69,7 +69,7 @@ public:
     static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
     // Inherited from Supplement.
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     GeolocationController(LocalFrame&, GeolocationClient*);

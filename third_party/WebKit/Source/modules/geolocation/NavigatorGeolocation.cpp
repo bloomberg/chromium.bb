@@ -64,7 +64,7 @@ Geolocation* NavigatorGeolocation::geolocation()
     return m_geolocation.get();
 }
 
-void NavigatorGeolocation::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorGeolocation)
 {
     visitor->trace(m_geolocation);
     WillBeHeapSupplement<Navigator>::trace(visitor);

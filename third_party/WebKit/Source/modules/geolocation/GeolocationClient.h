@@ -50,7 +50,7 @@ public:
     virtual void controllerForTestAdded(GeolocationController*) { }
     virtual void controllerForTestRemoved(GeolocationController*) { }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 void provideGeolocationTo(LocalFrame&, GeolocationClient*);

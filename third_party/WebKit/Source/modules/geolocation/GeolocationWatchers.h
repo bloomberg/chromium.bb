@@ -16,7 +16,7 @@ class GeolocationWatchers {
 
 public:
     GeolocationWatchers() { }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool add(int id, GeoNotifier*);
     GeoNotifier* find(int id);

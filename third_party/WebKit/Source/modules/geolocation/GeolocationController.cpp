@@ -184,7 +184,7 @@ const char* GeolocationController::supplementName()
     return "GeolocationController";
 }
 
-void GeolocationController::trace(Visitor* visitor)
+DEFINE_TRACE(GeolocationController)
 {
     visitor->trace(m_client);
     visitor->trace(m_lastPosition);

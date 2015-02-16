@@ -97,7 +97,7 @@ Geolocation::~Geolocation()
     ASSERT(m_geolocationPermission != PermissionRequested);
 }
 
-void Geolocation::trace(Visitor* visitor)
+DEFINE_TRACE(Geolocation)
 {
     visitor->trace(m_oneShots);
     visitor->trace(m_watchers);

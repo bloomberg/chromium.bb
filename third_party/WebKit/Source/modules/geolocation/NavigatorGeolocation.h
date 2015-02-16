@@ -39,7 +39,7 @@ public:
     static Geolocation* geolocation(Navigator&);
     Geolocation* geolocation();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     NavigatorGeolocation(LocalFrame*);

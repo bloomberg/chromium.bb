@@ -41,7 +41,7 @@ public:
     {
         return new GeolocationError(code, message);
     }
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     ErrorCode code() const { return m_code; }
     const String& message() const { return m_message; }

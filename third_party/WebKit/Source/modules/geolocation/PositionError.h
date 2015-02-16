@@ -42,7 +42,7 @@ public:
     };
 
     static PositionError* create(ErrorCode code, const String& message) { return new PositionError(code, message); }
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     ErrorCode code() const { return m_code; }
     const String& message() const { return m_message; }

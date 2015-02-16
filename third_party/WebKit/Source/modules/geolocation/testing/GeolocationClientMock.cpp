@@ -179,7 +179,7 @@ void GeolocationClientMock::clearError()
     m_errorMessage = String();
 }
 
-void GeolocationClientMock::trace(Visitor* visitor)
+DEFINE_TRACE(GeolocationClientMock)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_controllers);

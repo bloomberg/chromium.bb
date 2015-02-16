@@ -40,7 +40,7 @@ public:
         return new Coordinates(latitude, longitude, providesAltitude, altitude, accuracy, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed);
     }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     double latitude() const { return m_latitude; }
     double longitude() const { return m_longitude; }
