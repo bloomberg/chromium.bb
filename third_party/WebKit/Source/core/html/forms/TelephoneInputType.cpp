@@ -51,9 +51,4 @@ const AtomicString& TelephoneInputType::formControlType() const
     return InputTypeNames::tel;
 }
 
-bool TelephoneInputType::shouldRespectSpeechAttribute()
-{
-    return true;
-}
-
 } // namespace blink

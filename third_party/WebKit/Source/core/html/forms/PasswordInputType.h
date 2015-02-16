@@ -47,7 +47,6 @@ private:
     virtual FormControlState saveFormControlState() const override;
     virtual void restoreFormControlState(const FormControlState&) override;
     virtual bool shouldRespectListAttribute() override;
-    virtual bool shouldRespectSpeechAttribute() override;
     virtual void enableSecureTextInput() override;
     virtual void disableSecureTextInput() override;
 };

@@ -65,7 +65,6 @@ private:
     virtual String badInputText() const override;
     virtual String rangeOverflowText(const Decimal& maxmum) const override;
     virtual String rangeUnderflowText(const Decimal& minimum) const override;
-    virtual bool shouldRespectSpeechAttribute() override;
     virtual bool supportsPlaceholder() const override;
     virtual void minOrMaxAttributeChanged() override;
     virtual void stepAttributeChanged() override;

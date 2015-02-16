@@ -81,11 +81,6 @@ bool PasswordInputType::shouldRespectListAttribute()
     return false;
 }
 
-bool PasswordInputType::shouldRespectSpeechAttribute()
-{
-    return true;
-}
-
 void PasswordInputType::enableSecureTextInput()
 {
     if (element().document().frame())

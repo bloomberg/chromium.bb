@@ -256,11 +256,6 @@ String NumberInputType::rangeUnderflowText(const Decimal& minimum) const
     return locale().queryString(WebLocalizedString::ValidationRangeUnderflow, localizeValue(serialize(minimum)));
 }
 
-bool NumberInputType::shouldRespectSpeechAttribute()
-{
-    return true;
-}
-
 bool NumberInputType::supportsPlaceholder() const
 {
     return true;

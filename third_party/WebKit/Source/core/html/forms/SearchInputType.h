@@ -47,7 +47,6 @@ private:
     virtual void countUsage() override;
     virtual LayoutObject* createRenderer(const LayoutStyle&) const override;
     virtual const AtomicString& formControlType() const override;
-    virtual bool shouldRespectSpeechAttribute() override;
     virtual bool needsContainer() const override;
     virtual void createShadowSubtree() override;
     virtual void handleKeydownEvent(KeyboardEvent*) override;

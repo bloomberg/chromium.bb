@@ -162,7 +162,6 @@ public:
     virtual bool storesValueSeparateFromAttribute();
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior);
     virtual bool shouldRespectListAttribute();
-    virtual bool shouldRespectSpeechAttribute();
     virtual bool isEnumeratable();
     virtual bool isCheckable();
     virtual bool isSteppable() const;

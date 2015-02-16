@@ -618,11 +618,6 @@ bool InputType::shouldRespectListAttribute()
     return false;
 }
 
-bool InputType::shouldRespectSpeechAttribute()
-{
-    return false;
-}
-
 bool InputType::isTextButton() const
 {
     return false;
