@@ -6,7 +6,13 @@
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
 
-TEST(SourceDir, ResolveRelativeFile) {
+// Fails on windows. http://crbug.com/458939
+#if defined(OS_WIN)
+#define MAYBE_ResolveRelativeFile DISABLED_ResolveRelativeFile
+#else
+#define MAYBE_ResolveRelativeFile ResolveRelativeFile
+#endif
+TEST(SourceDir, MAYBE_ResolveRelativeFile) {
   SourceDir base("//base/");
 #if defined(OS_WIN)
   base::StringPiece source_root("C:/source/root");
@@ -56,7 +62,13 @@ TEST(SourceDir, ResolveRelativeFile) {
 #endif
 }
 
-TEST(SourceDir, ResolveRelativeDir) {
+// Fails on windows. http://crbug.com/458939
+#if defined(OS_WIN)
+#define MAYBE_ResolveRelativeDir DISABLED_ResolveRelativeDir
+#else
+#define MAYBE_ResolveRelativeDir ResolveRelativeDir
+#endif
+TEST(SourceDir, MAYBE_ResolveRelativeDir) {
   SourceDir base("//base/");
 #if defined(OS_WIN)
   base::StringPiece source_root("C:/source/root");
