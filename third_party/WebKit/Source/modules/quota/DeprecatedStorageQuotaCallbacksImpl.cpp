@@ -52,7 +52,7 @@ DeprecatedStorageQuotaCallbacksImpl::~DeprecatedStorageQuotaCallbacksImpl()
 {
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::trace(Visitor* visitor)
+DEFINE_TRACE(DeprecatedStorageQuotaCallbacksImpl)
 {
     visitor->trace(m_usageCallback);
     visitor->trace(m_quotaCallback);

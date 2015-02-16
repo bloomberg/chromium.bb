@@ -60,7 +60,7 @@ public:
 
     void requestQuota(ExecutionContext*, int storageType, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DeprecatedStorageInfo();

@@ -74,7 +74,7 @@ DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
     return m_storageInfo.get();
 }
 
-void DOMWindowQuota::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowQuota)
 {
     visitor->trace(m_storageInfo);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);

@@ -95,7 +95,7 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const
     return m_persistentStorage.get();
 }
 
-void NavigatorStorageQuota::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorStorageQuota)
 {
     visitor->trace(m_storageQuota);
     visitor->trace(m_temporaryStorage);

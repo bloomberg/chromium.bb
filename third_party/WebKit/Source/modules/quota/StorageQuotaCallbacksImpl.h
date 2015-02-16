@@ -53,7 +53,7 @@ public:
     virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) override;
     virtual void didFail(WebStorageQuotaError) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit StorageQuotaCallbacksImpl(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);

@@ -45,7 +45,7 @@ typedef int ExceptionCode;
 class StorageErrorCallback : public GarbageCollectedFinalized<StorageErrorCallback> {
 public:
     virtual ~StorageErrorCallback() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(DOMError*) = 0;
 
     class CallbackTask final : public ExecutionContextTask {

@@ -84,7 +84,7 @@ DeprecatedStorageQuota* DeprecatedStorageInfo::getStorageQuota(int storageType)
     return 0;
 }
 
-void DeprecatedStorageInfo::trace(Visitor* visitor)
+DEFINE_TRACE(DeprecatedStorageInfo)
 {
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);

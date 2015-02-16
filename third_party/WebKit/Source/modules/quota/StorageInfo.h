@@ -47,7 +47,7 @@ public:
     unsigned long long usage() const { return m_usage; }
     unsigned long long quota() const { return m_quota; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     StorageInfo(unsigned long long usage, unsigned long long quota);

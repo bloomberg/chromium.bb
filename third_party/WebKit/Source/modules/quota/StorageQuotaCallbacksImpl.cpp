@@ -61,7 +61,7 @@ void StorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error)
     m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)));
 }
 
-void StorageQuotaCallbacksImpl::trace(Visitor* visitor)
+DEFINE_TRACE(StorageQuotaCallbacksImpl)
 {
     visitor->trace(m_resolver);
     StorageQuotaCallbacks::trace(visitor);

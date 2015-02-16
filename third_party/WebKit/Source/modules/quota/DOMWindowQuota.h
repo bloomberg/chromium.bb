@@ -48,7 +48,7 @@ public:
     static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow&);
     DeprecatedStorageInfo* webkitStorageInfo() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowQuota(LocalDOMWindow&);

@@ -56,7 +56,7 @@ public:
     DeprecatedStorageQuota* webkitTemporaryStorage() const;
     DeprecatedStorageQuota* webkitPersistentStorage() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit NavigatorStorageQuota(LocalFrame*);
