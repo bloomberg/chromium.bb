@@ -314,7 +314,8 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new EnrollmentScreen(this,
                                 oobe_display_->GetEnrollmentScreenActor());
   } else if (screen_name == kResetScreenName) {
-    return new ResetScreen(this, oobe_display_->GetResetScreenActor());
+    return new chromeos::ResetScreen(this,
+                                     oobe_display_->GetResetView());
   } else if (screen_name == kEnableDebuggingScreenName) {
     return new EnableDebuggingScreen(
         this, oobe_display_->GetEnableDebuggingScreenActor());

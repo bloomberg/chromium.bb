@@ -105,7 +105,7 @@ class OobeUI : public OobeDisplay,
   UpdateView* GetUpdateView() override;
   EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
   EnrollmentScreenActor* GetEnrollmentScreenActor() override;
-  ResetScreenActor* GetResetScreenActor() override;
+  ResetView* GetResetView() override;
   KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() override;
   KioskEnableScreenActor* GetKioskEnableScreenActor() override;
   TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() override;
@@ -194,7 +194,7 @@ class OobeUI : public OobeDisplay,
   EulaView* eula_view_;
   EnrollmentScreenActor* enrollment_screen_actor_;
   HIDDetectionScreenActor* hid_detection_screen_actor_;
-  ResetScreenActor* reset_screen_actor_;
+  ResetView* reset_view_;
   KioskAutolaunchScreenActor* autolaunch_screen_actor_;
   KioskEnableScreenActor* kiosk_enable_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;

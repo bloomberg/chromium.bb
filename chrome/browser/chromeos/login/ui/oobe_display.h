@@ -27,7 +27,7 @@ class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
 class NetworkErrorView;
 class NetworkView;
-class ResetScreenActor;
+class ResetView;
 class SupervisedUserCreationScreenHandler;
 class TermsOfServiceScreenActor;
 class UpdateView;
@@ -79,7 +79,7 @@ class OobeDisplay {
   virtual UpdateView* GetUpdateView() = 0;
   virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() = 0;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() = 0;
-  virtual ResetScreenActor* GetResetScreenActor() = 0;
+  virtual ResetView* GetResetView() = 0;
   virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() = 0;
   virtual KioskEnableScreenActor* GetKioskEnableScreenActor() = 0;
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
