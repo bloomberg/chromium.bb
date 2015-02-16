@@ -6,10 +6,18 @@
       var pathElement = document.createElementNS("http://www.w3.org/2000/svg","path");
 
       shouldThrow('pathElement.getPointAtLength()',
-      	'"TypeError: Failed to execute \'getPointAtLength\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
+        '"TypeError: Failed to execute \'getPointAtLength\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
+      shouldThrow('pathElement.getPointAtLength(NaN)',
+        '"TypeError: Failed to execute \'getPointAtLength\' on \'SVGPathElement\': The provided float value is non-finite."');
+      shouldThrow('pathElement.getPointAtLength(Infinity)',
+        '"TypeError: Failed to execute \'getPointAtLength\' on \'SVGPathElement\': The provided float value is non-finite."');
 
       shouldThrow('pathElement.getPathSegAtLength()',
       	'"TypeError: Failed to execute \'getPathSegAtLength\' on \'SVGPathElement\': 1 argument required, but only 0 present."');
+      shouldThrow('pathElement.getPathSegAtLength(NaN)',
+        '"TypeError: Failed to execute \'getPathSegAtLength\' on \'SVGPathElement\': The provided float value is non-finite."');
+      shouldThrow('pathElement.getPathSegAtLength(Infinity)',
+        '"TypeError: Failed to execute \'getPathSegAtLength\' on \'SVGPathElement\': The provided float value is non-finite."');
 
       shouldThrow('pathElement.createSVGPathSegMovetoAbs(0.0)',
       	'"TypeError: Failed to execute \'createSVGPathSegMovetoAbs\' on \'SVGPathElement\': 2 arguments required, but only 1 present."');
