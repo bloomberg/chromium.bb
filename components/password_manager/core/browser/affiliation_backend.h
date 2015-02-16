@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/affiliation_fetcher_delegate.h"
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/password_manager/core/browser/facet_manager_host.h"
 
 namespace base {
 class Clock;
@@ -31,6 +32,7 @@ namespace password_manager {
 
 class AffiliationDatabase;
 class AffiliationFetcher;
+class FacetManager;
 
 // The AffiliationBackend is the part of the AffiliationService that lives on a
 // background thread suitable for performing blocking I/O. As most tasks require
@@ -40,7 +42,8 @@ class AffiliationFetcher;
 // This class is not thread-safe, but it is fine to construct it on one thread
 // and then transfer it to the background thread for the rest of its life.
 // Initialize() must be called already on the background thread.
-class AffiliationBackend : public AffiliationFetcherDelegate {
+class AffiliationBackend : public FacetManagerHost,
+                           public AffiliationFetcherDelegate {
  public:
   // Constructs an instance that will use |request_context_getter| for all
   // network requests, and will rely on |time_source| to tell the current time,
@@ -68,31 +71,17 @@ class AffiliationBackend : public AffiliationFetcherDelegate {
   void TrimCache();
 
  private:
-  class FacetManager;
-  friend class FacetManager;
-
   // Collects facet URIs that require fetching and issues a network request
   // against the Affiliation API to fetch corresponding affiliation information.
   void SendNetworkRequest();
 
-  // Gets the current time as per |clock_|. The returned time will always be
-  // strictly greater than the NULL time. Used by FacetManager.
-  base::Time GetCurrentTime();
-
-  // Reads and returns the last update time of the equivalence class containing
-  // |facet_uri| from the database, or, if no such equivalence class is stored,
-  // returns the NULL time. Used by FacetManager.
-  base::Time ReadLastUpdateTimeFromDatabase(const FacetURI& facet_uri);
-
-  // Reads the equivalence class containing |facet_uri| from the database and
-  // returns true if found; returns false otherwise. Used by FacetManager.
+  // FacetManagerHost:
+  base::Time GetCurrentTime() override;
+  base::Time ReadLastUpdateTimeFromDatabase(const FacetURI& facet_uri) override;
   bool ReadAffiliationsFromDatabase(
       const FacetURI& facet_uri,
-      AffiliatedFacetsWithUpdateTime* affiliations);
-
-  // Signals the fetching logic that there is at least one facet that needs to
-  // be fetched immediately. Called by FacetManager.
-  void SignalNeedNetworkRequest();
+      AffiliatedFacetsWithUpdateTime* affiliations) override;
+  void SignalNeedNetworkRequest() override;
 
   // AffiliationFetcherDelegate:
   void OnFetchSucceeded(

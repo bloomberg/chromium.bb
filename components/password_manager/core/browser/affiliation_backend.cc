@@ -6,165 +6,16 @@
 
 #include <stdint.h>
 
-#include "base/bind.h"
-#include "base/location.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/affiliation_database.h"
 #include "components/password_manager/core/browser/affiliation_fetcher.h"
+#include "components/password_manager/core/browser/facet_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace password_manager {
-namespace {
-
-// The duration after which cached affiliation data is considered stale and will
-// not be used to serve requests any longer.
-const int kCacheLifetimeInHours = 24;
-
-// RequestInfo ----------------------------------------------------------------
-
-// Encapsulates the details of a pending GetAffiliations() request.
-struct RequestInfo {
-  AffiliationService::ResultCallback callback;
-  scoped_refptr<base::TaskRunner> callback_task_runner;
-};
-
-}  // namespace
-
-// AffiliationBackend::FacetManager -------------------------------------------
-
-// Manages and performs ongoing tasks concerning a single facet.
-class AffiliationBackend::FacetManager {
- public:
-  // The |backend| must outlive this object.
-  FacetManager(AffiliationBackend* backend, const FacetURI& facet_uri);
-  ~FacetManager();
-
-  // Called when |affiliation| information regarding this facet has just been
-  // fetched from the Affiliation API.
-  void OnFetchSucceeded(const AffiliatedFacetsWithUpdateTime& affiliation);
-
-  // Returns whether this instance has becomes redundant, that is, it has no
-  // more meaningful state than a newly created instance would have.
-  bool CanBeDiscarded() const;
-
-  // Returns whether or not affiliation information relating to this facet needs
-  // to be fetched right now.
-  bool DoesRequireFetch() const;
-
-  // Facet-specific implementations for methods in AffiliationService of the
-  // same name. See documentation in affiliation_service.h for details:
-  void GetAffiliations(bool cached_only, const RequestInfo& request_info);
-
- private:
-  // Returns the time when cached data for this facet will expire. The data is
-  // already considered expired at the returned microsecond.
-  base::Time GetCacheExpirationTime() const;
-
-  // Returns whether or not the cache has fresh data for this facet.
-  bool IsCachedDataFresh() const;
-
-  // Posts the callback of the request described by |request_info| with success.
-  static void ServeRequestWithSuccess(const RequestInfo& request_info,
-                                      const AffiliatedFacets& affiliation);
-
-  // Posts the callback of the request described by |request_info| with failure.
-  static void ServeRequestWithFailure(const RequestInfo& request_info);
-
-  AffiliationBackend* backend_;
-  FacetURI facet_uri_;
-
-  // The last time affiliation information was fetched for this facet, i.e. the
-  // freshness of the data in the cache. If there is no corresponding data in
-  // the database, this will contain the NULL time. Otherwise, the update time
-  // in the database should match this value; it is stored to reduce disk I/O.
-  base::Time last_update_time_;
-
-  // Contains information about the GetAffiliations() requests that are waiting
-  // for the result of looking up this facet.
-  std::vector<RequestInfo> pending_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(FacetManager);
-};
-
-AffiliationBackend::FacetManager::FacetManager(AffiliationBackend* backend,
-                                               const FacetURI& facet_uri)
-    : backend_(backend),
-      facet_uri_(facet_uri),
-      last_update_time_(backend_->ReadLastUpdateTimeFromDatabase(facet_uri)) {
-}
-
-AffiliationBackend::FacetManager::~FacetManager() {
-  // The manager will only be destroyed while there are pending requests if the
-  // entire backend is going. Call failure on pending requests in this case.
-  for (const auto& request_info : pending_requests_)
-    ServeRequestWithFailure(request_info);
-}
-
-void AffiliationBackend::FacetManager::GetAffiliations(
-    bool cached_only,
-    const RequestInfo& request_info) {
-  if (IsCachedDataFresh()) {
-    AffiliatedFacetsWithUpdateTime affiliation;
-    if (!backend_->ReadAffiliationsFromDatabase(facet_uri_, &affiliation)) {
-      // TODO(engedy): Implement this. crbug.com/437865.
-      NOTIMPLEMENTED();
-    }
-    DCHECK_EQ(affiliation.last_update_time, last_update_time_) << facet_uri_;
-    ServeRequestWithSuccess(request_info, affiliation.facets);
-  } else if (cached_only) {
-    ServeRequestWithFailure(request_info);
-  } else {
-    pending_requests_.push_back(request_info);
-    backend_->SignalNeedNetworkRequest();
-  }
-}
-
-void AffiliationBackend::FacetManager::OnFetchSucceeded(
-    const AffiliatedFacetsWithUpdateTime& affiliation) {
-  last_update_time_ = affiliation.last_update_time;
-  DCHECK(IsCachedDataFresh()) << facet_uri_;
-  for (const auto& request_info : pending_requests_)
-    ServeRequestWithSuccess(request_info, affiliation.facets);
-  pending_requests_.clear();
-}
-
-bool AffiliationBackend::FacetManager::CanBeDiscarded() const {
-  return pending_requests_.empty();
-}
-
-bool AffiliationBackend::FacetManager::DoesRequireFetch() const {
-  return !pending_requests_.empty() && !IsCachedDataFresh();
-}
-
-base::Time AffiliationBackend::FacetManager::GetCacheExpirationTime() const {
-  if (last_update_time_.is_null())
-    return base::Time();
-  return last_update_time_ + base::TimeDelta::FromHours(kCacheLifetimeInHours);
-}
-
-bool AffiliationBackend::FacetManager::IsCachedDataFresh() const {
-  return backend_->GetCurrentTime() < GetCacheExpirationTime();
-}
-
-// static
-void AffiliationBackend::FacetManager::ServeRequestWithSuccess(
-    const RequestInfo& request_info,
-    const AffiliatedFacets& affiliation) {
-  request_info.callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(request_info.callback, affiliation, true));
-}
-
-// static
-void AffiliationBackend::FacetManager::ServeRequestWithFailure(
-    const RequestInfo& request_info) {
-  request_info.callback_task_runner->PostTask(
-      FROM_HERE, base::Bind(request_info.callback, AffiliatedFacets(), false));
-}
-
-// AffiliationBackend ---------------------------------------------------------
 
 AffiliationBackend::AffiliationBackend(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
@@ -200,10 +51,7 @@ void AffiliationBackend::GetAffiliations(
 
   FacetManager* facet_manager = facet_managers_.get(facet_uri);
   DCHECK(facet_manager);
-  RequestInfo request_info;
-  request_info.callback = callback;
-  request_info.callback_task_runner = callback_task_runner;
-  facet_manager->GetAffiliations(cached_only, request_info);
+  facet_manager->GetAffiliations(cached_only, callback, callback_task_runner);
 
   if (facet_manager->CanBeDiscarded())
     facet_managers_.erase(facet_uri);
