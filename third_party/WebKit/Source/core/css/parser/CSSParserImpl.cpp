@@ -243,6 +243,8 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
         return consumeKeyframesRule(true, prelude, block);
     if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && equalIgnoringCase(name, "keyframes"))
         return consumeKeyframesRule(false, prelude, block);
+    if (equalIgnoringCase(name, "page"))
+        return consumePageRule(prelude, block);
     return nullptr; // Parse error, unrecognised at-rule with block
 }
 
@@ -404,6 +406,55 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
     return keyframeRule.release();
 }
 
+PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
+{
+    // We only support a small subset of the css-page spec.
+    prelude.consumeWhitespaceAndComments();
+    AtomicString typeSelector;
+    if (prelude.peek().type() == IdentToken)
+        typeSelector = AtomicString(prelude.consumeIncludingComments().value());
+
+    AtomicString pseudo;
+    if (prelude.peek().type() == ColonToken) {
+        prelude.consumeIncludingComments();
+        if (prelude.peek().type() != IdentToken)
+            return nullptr; // Parse error; expected ident token following colon in @page header
+        pseudo = AtomicString(prelude.consumeIncludingComments().value());
+    }
+
+    prelude.consumeWhitespaceAndComments();
+    if (!prelude.atEnd())
+        return nullptr; // Parse error; extra tokens in @page header
+
+    OwnPtr<CSSParserSelector> selector;
+    if (!typeSelector.isNull() && pseudo.isNull()) {
+        selector = CSSParserSelector::create(QualifiedName(nullAtom, typeSelector, m_defaultNamespace));
+    } else {
+        selector = CSSParserSelector::create();
+        if (!pseudo.isNull()) {
+            selector->setMatch(CSSSelector::PagePseudoClass);
+            selector->setValue(pseudo.lower());
+            if (selector->pseudoType() == CSSSelector::PseudoUnknown)
+                return nullptr; // Parse error; unknown page pseudo-class
+        }
+        if (!typeSelector.isNull())
+            selector->prependTagSelector(QualifiedName(nullAtom, typeSelector, m_defaultNamespace));
+    }
+
+    selector->setForPage();
+
+    RefPtrWillBeRawPtr<StyleRulePage> pageRule = StyleRulePage::create();
+    Vector<OwnPtr<CSSParserSelector>> selectorVector;
+    selectorVector.append(selector.release());
+    pageRule->parserAdoptSelectorVector(selectorVector);
+
+    consumeDeclarationList(block, CSSRuleSourceData::STYLE_RULE);
+    pageRule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
+    m_parsedProperties.clear();
+
+    return pageRule.release();
+}
+
 PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     OwnPtr<Vector<double>> keyList = consumeKeyframeKeyList(prelude);
@@ -416,6 +467,7 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframe> CSSParserImpl::consumeKeyframeStyleRul
     m_parsedProperties.clear();
     return rule.release();
 }
+
 PassRefPtrWillBeRawPtr<StyleRule> CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     CSSSelectorList selectorList;
