@@ -7,6 +7,7 @@
 """
 
 import logging
+import optparse
 import sys
 
 import patch_orderfile
@@ -59,21 +60,28 @@ def _CountMisorderedSymbols(symbols, symbol_infos):
 
 
 def main():
-  if len(sys.argv) != 4 and len(sys.argv) != 3:
-    logging.error('Usage: check_orderfile.py binary orderfile [threshold]')
+  parser = optparse.OptionParser(usage=
+      'usage: %prog [options] <binary> <orderfile>')
+  parser.add_option('--target-arch', action='store', dest='arch',
+                    default='arm',
+                    choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
+                    help='The target architecture for the binary.')
+  parser.add_option('--threshold', action='store', dest='threshold', default=0,
+                    help='The maximum allowed number of out-of-order symbols.')
+  options, argv = parser.parse_args(sys.argv)
+  if len(argv) != 3:
+    parser.print_help()
     return 1
-  (binary_filename, orderfile_filename) = sys.argv[1:3]
-  threshold = 0
-  if len(sys.argv) == 4:
-    threshold = int(sys.argv[3])
+  (binary_filename, orderfile_filename) = argv[1:]
 
+  symbol_extractor.SetArchitecture(options.arch)
   symbols = patch_orderfile.GetSymbolsFromOrderfile(orderfile_filename)
   symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
   # Missing symbols is not an error since some of them can be eliminated through
   # inlining.
   (misordered_pairs_count, matched_symbols, _) = _CountMisorderedSymbols(
       symbols, symbol_infos)
-  return (misordered_pairs_count > threshold) or (matched_symbols == 0)
+  return (misordered_pairs_count > options.threshold) or (matched_symbols == 0)
 
 
 if __name__ == '__main__':
