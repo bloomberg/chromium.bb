@@ -386,6 +386,12 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         player->update(TimingUpdateOnDemand);
     }
 
+    for (CSSPropertyID id : update->finishedTransitions()) {
+        // This transition can also be cancelled and finished at the same time
+        if (m_transitions.contains(id))
+            m_transitions.take(id);
+    }
+
     for (const auto& entry : update->newTransitions()) {
         const CSSAnimationUpdate::NewTransition& newTransition = entry.value;
 
@@ -560,12 +566,13 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
     if (activeTransitions) {
         for (const auto& entry : *activeTransitions) {
-            const AnimationPlayer& player = *entry.value.player;
             CSSPropertyID id = entry.key;
-            if (player.finishedInternal() || (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.get(id))) {
+            if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.get(id)) {
                 // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
                 // ASSERT(player.playStateInternal() == AnimationPlayer::Finished || !(activeAnimations && activeAnimations->isAnimationStyleChange()));
                 update->cancelTransition(id);
+            } else if (entry.value.player->finishedInternal()) {
+                update->finishTransition(id);
             }
         }
     }

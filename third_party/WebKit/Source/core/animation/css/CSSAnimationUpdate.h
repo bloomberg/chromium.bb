@@ -119,6 +119,7 @@ public:
     }
     bool isCancelledTransition(CSSPropertyID id) const { return m_cancelledTransitions.contains(id); }
     void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
+    void finishTransition(CSSPropertyID id) { m_finishedTransitions.add(id); }
 
     const WillBeHeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
@@ -145,6 +146,7 @@ public:
     using NewTransitionMap = WillBeHeapHashMap<CSSPropertyID, NewTransition>;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
+    const HashSet<CSSPropertyID>& finishedTransitions() const { return m_finishedTransitions; }
 
     void adoptActiveInterpolationsForAnimations(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
     void adoptActiveInterpolationsForTransitions(WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>>& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
@@ -161,6 +163,7 @@ public:
             && m_animationsWithUpdates.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
+            && m_finishedTransitions.isEmpty()
             && m_activeInterpolationsForAnimations.isEmpty()
             && m_activeInterpolationsForTransitions.isEmpty();
     }
@@ -180,6 +183,7 @@ private:
 
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
+    HashSet<CSSPropertyID> m_finishedTransitions;
 
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_activeInterpolationsForAnimations;
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_activeInterpolationsForTransitions;
