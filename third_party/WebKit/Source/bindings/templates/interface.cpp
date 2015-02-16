@@ -596,8 +596,9 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* script
     {% for set_wrapper_reference_to in set_wrapper_reference_to_list %}
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
-        if (!DOMDataStore::containsWrapper({{set_wrapper_reference_to.name}}, isolate))
-            {{set_wrapper_reference_to.name}}->wrap(creationContext, isolate);
+        {# The target wrapper for SetWrapperReferenceTo must be created before entering V8 GC.
+           Lazily creating a wrapper here may lead to execution of user javascript during GC. #}
+        RELEASE_ASSERT(DOMDataStore::containsWrapper({{set_wrapper_reference_to.name}}, isolate));
         DOMDataStore::setWrapperReference(wrapper, {{set_wrapper_reference_to.name}}, isolate);
     }
     {% endfor %}
