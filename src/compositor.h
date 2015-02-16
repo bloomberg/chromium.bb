@@ -599,6 +599,9 @@ enum weston_capability {
 
 	/* backend supports setting arbitrary resolutions */
 	WESTON_CAP_ARBITRARY_MODES		= 0x0008,
+
+	/* renderer supports weston_view_set_mask() clipping */
+	WESTON_CAP_VIEW_CLIP_MASK		= 0x0010,
 };
 
 struct weston_compositor {
@@ -797,6 +800,10 @@ struct weston_view {
 		struct wl_listener parent_destroy_listener;
 		struct wl_list child_list; /* geometry.parent_link */
 		struct wl_list parent_link;
+
+		/* managed by weston_view_set_mask() */
+		bool scissor_enabled;
+		pixman_region32_t scissor; /* always a simple rect */
 	} geometry;
 
 	/* State derived from geometry state, read-only.
@@ -1243,6 +1250,13 @@ weston_view_set_position(struct weston_view *view,
 void
 weston_view_set_transform_parent(struct weston_view *view,
 				 struct weston_view *parent);
+
+void
+weston_view_set_mask(struct weston_view *view,
+		     int x, int y, int width, int height);
+
+void
+weston_view_set_mask_infinite(struct weston_view *view);
 
 bool
 weston_view_is_mapped(struct weston_view *view);

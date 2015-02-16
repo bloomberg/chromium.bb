@@ -452,6 +452,7 @@ weston_view_create(struct weston_surface *surface)
 		       &view->transform.position.link);
 	weston_matrix_init(&view->transform.position.matrix);
 	wl_list_init(&view->geometry.child_list);
+	pixman_region32_init(&view->geometry.scissor);
 	pixman_region32_init(&view->transform.boundingbox);
 	view->transform.dirty = 1;
 
@@ -1078,6 +1079,34 @@ weston_view_assign_output(struct weston_view *ev)
 }
 
 static void
+weston_view_to_view_map(struct weston_view *from, struct weston_view *to,
+			int from_x, int from_y, int *to_x, int *to_y)
+{
+	float x, y;
+
+	weston_view_to_global_float(from, from_x, from_y, &x, &y);
+	weston_view_from_global_float(to, x, y, &x, &y);
+
+	*to_x = round(x);
+	*to_y = round(y);
+}
+
+static void
+weston_view_transfer_scissor(struct weston_view *from, struct weston_view *to)
+{
+	pixman_box32_t *a;
+	pixman_box32_t b;
+
+	a = pixman_region32_extents(&from->geometry.scissor);
+
+	weston_view_to_view_map(from, to, a->x1, a->y1, &b.x1, &b.y1);
+	weston_view_to_view_map(from, to, a->x2, a->y2, &b.x2, &b.y2);
+
+	pixman_region32_fini(&to->geometry.scissor);
+	pixman_region32_init_with_extents(&to->geometry.scissor, &b);
+}
+
+static void
 view_compute_bbox(struct weston_view *view, const pixman_box32_t *inbox,
 		  pixman_region32_t *bbox)
 {
@@ -1138,10 +1167,16 @@ weston_view_update_transform_disable(struct weston_view *view)
 	view->transform.inverse.d[13] = -view->geometry.y;
 
 	pixman_region32_init_rect(&view->transform.boundingbox,
-				  view->geometry.x,
-				  view->geometry.y,
+				  0, 0,
 				  view->surface->width,
 				  view->surface->height);
+	if (view->geometry.scissor_enabled)
+		pixman_region32_intersect(&view->transform.boundingbox,
+					  &view->transform.boundingbox,
+					  &view->geometry.scissor);
+
+	pixman_region32_translate(&view->transform.boundingbox,
+				  view->geometry.x, view->geometry.y);
 
 	if (view->alpha == 1.0) {
 		pixman_region32_copy(&view->transform.opaque,
@@ -1159,7 +1194,8 @@ weston_view_update_transform_enable(struct weston_view *view)
 	struct weston_matrix *matrix = &view->transform.matrix;
 	struct weston_matrix *inverse = &view->transform.inverse;
 	struct weston_transform *tform;
-	pixman_box32_t surfbox;
+	pixman_region32_t surfregion;
+	const pixman_box32_t *surfbox;
 
 	view->transform.enabled = 1;
 
@@ -1182,11 +1218,15 @@ weston_view_update_transform_enable(struct weston_view *view)
 		return -1;
 	}
 
-	surfbox.x1 = 0;
-	surfbox.y1 = 0;
-	surfbox.x2 = view->surface->width;
-	surfbox.y2 = view->surface->height;
-	view_compute_bbox(view, &surfbox, &view->transform.boundingbox);
+	pixman_region32_init_rect(&surfregion, 0, 0,
+				  view->surface->width, view->surface->height);
+	if (view->geometry.scissor_enabled)
+		pixman_region32_intersect(&surfregion, &surfregion,
+					  &view->geometry.scissor);
+	surfbox = pixman_region32_extents(&surfregion);
+
+	view_compute_bbox(view, surfbox, &view->transform.boundingbox);
+	pixman_region32_fini(&surfregion);
 
 	return 0;
 }
@@ -1240,6 +1280,15 @@ weston_view_update_transform(struct weston_view *view)
 		pixman_region32_intersect(&view->transform.opaque,
 					  &view->transform.opaque, &mask);
 		pixman_region32_fini(&mask);
+	}
+
+	if (parent) {
+		if (parent->geometry.scissor_enabled) {
+			view->geometry.scissor_enabled = true;
+			weston_view_transfer_scissor(parent, view);
+		} else {
+			view->geometry.scissor_enabled = false;
+		}
 	}
 
 	weston_view_damage_below(view);
@@ -1403,11 +1452,14 @@ transform_parent_handle_parent_destroy(struct wl_listener *listener,
 
 WL_EXPORT void
 weston_view_set_transform_parent(struct weston_view *view,
-				    struct weston_view *parent)
+				 struct weston_view *parent)
 {
 	if (view->geometry.parent) {
 		wl_list_remove(&view->geometry.parent_destroy_listener.link);
 		wl_list_remove(&view->geometry.parent_link);
+
+		if (!parent)
+			view->geometry.scissor_enabled = false;
 	}
 
 	view->geometry.parent = parent;
@@ -1422,6 +1474,92 @@ weston_view_set_transform_parent(struct weston_view *view,
 	}
 
 	weston_view_geometry_dirty(view);
+}
+
+/** Set a clip mask rectangle on a view
+ *
+ * \param view The view to set the clip mask on.
+ * \param x Top-left corner X coordinate of the clip rectangle.
+ * \param y Top-left corner Y coordinate of the clip rectangle.
+ * \param width Width of the clip rectangle, non-negative.
+ * \param height Height of the clip rectangle, non-negative.
+ *
+ * A shell may set a clip mask rectangle on a view. Everything outside
+ * the rectangle is cut away for input and output purposes: it is
+ * not drawn and cannot be hit by hit-test based input like pointer
+ * motion or touch-downs. Everything inside the rectangle will behave
+ * normally. Clients are unaware of clipping.
+ *
+ * The rectangle is set in the surface local coordinates. Setting a clip
+ * mask rectangle does not affect the view position, the view is positioned
+ * as it would be without a clip. The clip also does not change
+ * weston_surface::width,height.
+ *
+ * The clip mask rectangle is part of transformation inheritance
+ * (weston_view_set_transform_parent()). A clip set in the root of the
+ * transformation inheritance tree will affect all views in the tree.
+ * A clip can be set only on the root view. Attempting to set a clip
+ * on view that has a transformation parent will fail. Assigning a parent
+ * to a view that has a clip set will cause the clip to be forgotten.
+ *
+ * Because the clip mask is an axis-aligned rectangle, it poses restrictions
+ * on the additional transformations in the child views. These transformations
+ * may not rotate the coordinate axes, i.e., only translation and scaling
+ * are allowed. Violating this restriction causes the clipping to malfunction.
+ * Furthermore, using scaling may cause rounding errors in child clipping.
+ *
+ * The clip mask rectangle is not automatically adjusted based on
+ * wl_surface.attach dx and dy arguments.
+ *
+ * A clip mask rectangle can be set only if the compositor capability
+ * WESTON_CAP_VIEW_CLIP_MASK is present.
+ *
+ * This function sets the clip mask rectangle and schedules a repaint for
+ * the view.
+ */
+WL_EXPORT void
+weston_view_set_mask(struct weston_view *view,
+		     int x, int y, int width, int height)
+{
+	struct weston_compositor *compositor = view->surface->compositor;
+
+	if (!(compositor->capabilities & WESTON_CAP_VIEW_CLIP_MASK)) {
+		weston_log("%s not allowed without capability!\n", __func__);
+		return;
+	}
+
+	if (view->geometry.parent) {
+		weston_log("view %p has a parent, clip forbidden!\n", view);
+		return;
+	}
+
+	if (width < 0 || height < 0) {
+		weston_log("%s: illegal args %d, %d, %d, %d\n", __func__,
+			   x, y, width, height);
+		return;
+	}
+
+	pixman_region32_fini(&view->geometry.scissor);
+	pixman_region32_init_rect(&view->geometry.scissor, x, y, width, height);
+	view->geometry.scissor_enabled = true;
+	weston_view_geometry_dirty(view);
+	weston_view_schedule_repaint(view);
+}
+
+/** Remove the clip mask from a view
+ *
+ * \param view The view to remove the clip mask from.
+ *
+ * Removed the clip mask rectangle and schedules a repaint.
+ *
+ * \sa weston_view_set_mask
+ */
+WL_EXPORT void
+weston_view_set_mask_infinite(struct weston_view *view)
+{
+	view->geometry.scissor_enabled = false;
+	weston_view_geometry_dirty(view);
+	weston_view_schedule_repaint(view);
 }
 
 WL_EXPORT bool
@@ -1561,6 +1699,11 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 						    view_ix, view_iy, NULL))
 			continue;
 
+		if (view->geometry.scissor_enabled &&
+		    !pixman_region32_contains_point(&view->geometry.scissor,
+						    view_ix, view_iy, NULL))
+			continue;
+
 		*vx = view_x;
 		*vy = view_y;
 		return view;
@@ -1650,6 +1793,7 @@ weston_view_destroy(struct weston_view *view)
 	weston_layer_entry_remove(&view->layer_link);
 
 	pixman_region32_fini(&view->clip);
+	pixman_region32_fini(&view->geometry.scissor);
 	pixman_region32_fini(&view->transform.boundingbox);
 	pixman_region32_fini(&view->transform.opaque);
 
@@ -1847,6 +1991,8 @@ view_accumulate_damage(struct weston_view *view,
 					  view->geometry.x, view->geometry.y);
 	}
 
+	pixman_region32_intersect(&damage, &damage,
+				  &view->transform.boundingbox);
 	pixman_region32_subtract(&damage, &damage, opaque);
 	pixman_region32_union(&view->plane->damage,
 			      &view->plane->damage, &damage);
