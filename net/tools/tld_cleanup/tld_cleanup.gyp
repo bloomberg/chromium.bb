@@ -15,8 +15,8 @@
         '../../../url/url.gyp:url_lib',
       ],
       'sources': [
-        'tld_cleanup_util.h',
         'tld_cleanup_util.cc',
+        'tld_cleanup_util.h',
       ],
     },
   ],

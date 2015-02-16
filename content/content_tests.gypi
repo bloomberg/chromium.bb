@@ -15,6 +15,19 @@
       'test/test_video_frame_provider.h',
     ],
     'test_support_content_sources': [
+      # TODO(phajdan.jr): All of those files should live in content/test (if
+      # they're only used by content) or content/public/test (if they're used
+      # by other embedders).
+      'browser/download/mock_download_file.cc',
+      'browser/download/mock_download_file.h',
+      'browser/geolocation/fake_access_token_store.cc',
+      'browser/geolocation/fake_access_token_store.h',
+      'browser/geolocation/mock_location_arbitrator.cc',
+      'browser/geolocation/mock_location_arbitrator.h',
+      'browser/geolocation/mock_location_provider.cc',
+      'browser/geolocation/mock_location_provider.h',
+      'browser/renderer_host/media/mock_media_observer.cc',
+      'browser/renderer_host/media/mock_media_observer.h',
       'public/test/async_file_test_helper.cc',
       'public/test/async_file_test_helper.h',
       'public/test/browser_test.h',
@@ -92,19 +105,6 @@
       'public/test/web_contents_observer_sanity_checker.h',
       'public/test/web_contents_tester.cc',
       'public/test/web_contents_tester.h',
-      # TODO(phajdan.jr): All of those files should live in content/test (if
-      # they're only used by content) or content/public/test (if they're used
-      # by other embedders).
-      'browser/download/mock_download_file.cc',
-      'browser/download/mock_download_file.h',
-      'browser/geolocation/fake_access_token_store.cc',
-      'browser/geolocation/fake_access_token_store.h',
-      'browser/geolocation/mock_location_arbitrator.cc',
-      'browser/geolocation/mock_location_arbitrator.h',
-      'browser/geolocation/mock_location_provider.cc',
-      'browser/geolocation/mock_location_provider.h',
-      'browser/renderer_host/media/mock_media_observer.cc',
-      'browser/renderer_host/media/mock_media_observer.h',
       'test/appcache_test_helper.cc',
       'test/appcache_test_helper.h',
       'test/blink_test_environment.cc',
@@ -1375,8 +1375,6 @@
               ],
               'sources': [
                 '<@(content_browsertests_win_sources)',
-                'shell/app/resource.h',
-                'shell/app/shell.rc',
                 # TODO:  It would be nice to have these pulled in
                 # automatically from direct_dependent_settings in
                 # their various targets (net.gyp:net_resources, etc.),
@@ -1385,6 +1383,8 @@
                 '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                'shell/app/resource.h',
+                'shell/app/shell.rc',
               ],
               'dependencies': [
                 '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
@@ -2080,6 +2080,12 @@
           'conditions': [
             ['OS!="win"', {
               'sources!': [
+                 # windows-specific resources
+                'test/plugin/npapi_test.def',
+                'test/plugin/npapi_test.rc',
+                 # Seems windows specific.
+                'test/plugin/plugin_create_instance_in_paint.cc',
+                'test/plugin/plugin_create_instance_in_paint.h',
                 # TODO(port):  Port these.
                 # plugin_npobject_lifetime_test.cc has win32-isms
                 #   (HWND, CALLBACK).
@@ -2087,12 +2093,6 @@
                  # The window APIs are necessarily platform-specific.
                 'test/plugin/plugin_window_size_test.cc',
                 'test/plugin/plugin_windowed_test.cc',
-                 # Seems windows specific.
-                'test/plugin/plugin_create_instance_in_paint.cc',
-                'test/plugin/plugin_create_instance_in_paint.h',
-                 # windows-specific resources
-                'test/plugin/npapi_test.def',
-                'test/plugin/npapi_test.rc',
               ],
             }],
             ['OS=="mac"', {

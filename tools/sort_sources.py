@@ -49,14 +49,16 @@ def SortSources(original_lines):
       sources.append([line, comments])
       comments = []
     else:
-      if comments:
-        output_lines.extend(comments)
-        comments = []
+      # |sources| should be flushed first, to handle comments at the end of a
+      # source list correctly.
       if sources:
         for source_line, source_comments in sorted(sources):
           output_lines.extend(source_comments)
           output_lines.append(source_line)
         sources = []
+      if comments:
+        output_lines.extend(comments)
+        comments = []
       output_lines.append(line)
   return output_lines
 

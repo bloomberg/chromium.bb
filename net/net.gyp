@@ -772,15 +772,15 @@
               'disk_cache/blockfile/block_files_unittest.cc',
               # Need to read input data files.
               'filter/gzip_filter_unittest.cc',
-              'socket/ssl_server_socket_unittest.cc',
-              'spdy/fuzzing/hpack_fuzz_util_test.cc',
               # Need TestServer.
               'proxy/proxy_script_fetcher_impl_unittest.cc',
               'socket/ssl_client_socket_unittest.cc',
-              'url_request/url_fetcher_impl_unittest.cc',
-              'url_request/url_request_context_builder_unittest.cc',
+              'socket/ssl_server_socket_unittest.cc',
+              'spdy/fuzzing/hpack_fuzz_util_test.cc',
               # Needs GetAppOutput().
               'test/python_utils_unittest.cc',
+              'url_request/url_fetcher_impl_unittest.cc',
+              'url_request/url_request_context_builder_unittest.cc',
 
               # The following tests are disabled because they don't apply to
               # iOS.

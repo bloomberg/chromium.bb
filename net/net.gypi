@@ -235,6 +235,9 @@
       'base/keygen_handler_nss.cc',
       'base/keygen_handler_openssl.cc',
       'base/keygen_handler_win.cc',
+      # TODO(tc): gnome-vfs? xdgmime? /etc/mime.types?
+      'base/layered_network_delegate.cc',
+      'base/layered_network_delegate.h',
       'base/linked_hash_map.h',
       'base/load_flags.h',
       'base/load_flags_list.h',
@@ -273,9 +276,6 @@
       'base/nss_memio.c',
       'base/nss_memio.h',
       'base/platform_mime_util.h',
-      # TODO(tc): gnome-vfs? xdgmime? /etc/mime.types?
-      'base/layered_network_delegate.cc',
-      'base/layered_network_delegate.h',
       'base/platform_mime_util_linux.cc',
       'base/platform_mime_util_mac.mm',
       'base/platform_mime_util_win.cc',

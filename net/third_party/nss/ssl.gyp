@@ -25,7 +25,9 @@
       'type': '<(component)',
       'product_name': 'crssl',  # Don't conflict with OpenSSL's libssl
       'sources': [
+        'ssl/SSLerrs.h',
         'ssl/authcert.c',
+        'ssl/bodge/secitem_array.c',
         'ssl/cmpcert.c',
         'ssl/derive.c',
         'ssl/dtlscon.c',
@@ -45,7 +47,6 @@
         'ssl/sslenum.c',
         'ssl/sslerr.c',
         'ssl/sslerr.h',
-        'ssl/SSLerrs.h',
         'ssl/sslerrstrs.c',
         'ssl/sslgathr.c',
         'ssl/sslimpl.h',
@@ -67,7 +68,6 @@
         'ssl/unix_err.h',
         'ssl/win32err.c',
         'ssl/win32err.h',
-        'ssl/bodge/secitem_array.c',
       ],
       'sources!': [
         'ssl/os2_err.c',

@@ -12,9 +12,9 @@
         '../../../',
       ],
       'sources': [
+        '../valgrind/valgrind.h',
         'dynamic_annotations.c',
         'dynamic_annotations.h',
-        '../valgrind/valgrind.h',
       ],
       'includes': [
         '../../../build/android/increase_size_for_speed.gypi',

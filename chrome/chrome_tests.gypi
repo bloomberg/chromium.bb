@@ -24,6 +24,9 @@
       # The list of sources which is only used by chrome browser tests.
       '../apps/app_restore_service_browsertest.cc',
       '../apps/load_and_launch_browsertest.cc',
+      # TODO(craig): Rename this and run from base_unittests when the test
+      # is safe to run there. See http://crbug.com/78722 for details.
+      '../base/files/file_path_watcher_browsertest.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.h',
       '../components/autofill/content/renderer/test_password_generation_agent.cc',
@@ -565,9 +568,6 @@
       'test/data/webui/webui_resource_browsertest.cc',
       'test/gpu/webgl_infobar_browsertest.cc',
       'test/ppapi/ppapi_browsertest.cc',
-      # TODO(craig): Rename this and run from base_unittests when the test
-      # is safe to run there. See http://crbug.com/78722 for details.
-      '../base/files/file_path_watcher_browsertest.cc',
     ],
     # Cross-platform views browser tests ready for toolkit-views on Mac.
     'chrome_browser_tests_views_sources': [
@@ -667,10 +667,10 @@
       'browser/chromeos/login/mixin_based_browser_test.cc',
       'browser/chromeos/login/mixin_based_browser_test.h',
       'browser/chromeos/login/oobe_localization_browsertest.cc',
-      'browser/chromeos/login/reset_browsertest.cc',
       # TODO(nkostylev) Re-enable ResourceLoaderBrowserTest.
       #'browser/chromeos/login/resource_loader_browsertest.cc',
       'browser/chromeos/login/proxy_auth_dialog_browsertest.cc',
+      'browser/chromeos/login/reset_browsertest.cc',
       'browser/chromeos/login/saml/saml_browsertest.cc',
       'browser/chromeos/login/screens/mock_base_screen_delegate.cc',
       'browser/chromeos/login/screens/mock_base_screen_delegate.h',
@@ -2252,11 +2252,11 @@
             # TODO(rouslan): This test depends on hunspell and we cannot run it
             # on Mac, which does use hunspell by default.
             'browser/ui/webui/options/language_options_dictionary_download_browsertest.js',
-            # ProcessSingletonMac doesn't do anything.
-            'browser/process_singleton_browsertest.cc',
             # This test depends on GetCommandLineForRelaunch, which is not
             # available on Mac.
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
+            # ProcessSingletonMac doesn't do anything.
+            'browser/process_singleton_browsertest.cc',
             # single-process mode hangs on Mac sometimes because of multiple UI
             # message loops. See 306348
             'renderer/safe_browsing/phishing_classifier_browsertest.cc',
