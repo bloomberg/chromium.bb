@@ -4,15 +4,6 @@ function initialize_TracingTest()
 InspectorTest.preloadPanel("timeline");
 WebInspector.TempFile = InspectorTest.TempFileMock;
 
-InspectorTest.tracingManager = function()
-{
-    if (WebInspector.panels.timeline._tracingManager)
-        return WebInspector.panels.timeline._tracingManager;
-    if (!InspectorTest._tracingManager)
-        InspectorTest._tracingManager = new WebInspector.TracingManager();
-    return InspectorTest._tracingManager;
-}
-
 InspectorTest.tracingModel = function()
 {
     return WebInspector.panels.timeline._tracingModel;

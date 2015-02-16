@@ -53,9 +53,8 @@ function doWork()
 
 function test()
 {
-    var tracingManager = new WebInspector.TracingManager();
-    var tracingClient = new InspectorTest.TracingManagerClient(tracingManager, runEventsSanityCheck);
-    tracingManager.start(tracingClient, "", "", onTracingStarted);
+    var tracingClient = new InspectorTest.TracingManagerClient(InspectorTest.tracingManager, runEventsSanityCheck);
+    InspectorTest.tracingManager.start(tracingClient, "", "", onTracingStarted);
 
     function onTracingStarted(error)
     {

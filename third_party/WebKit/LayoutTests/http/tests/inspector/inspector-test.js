@@ -708,6 +708,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.layerTreeModel = target.layerTreeModel;
         InspectorTest.animationModel = target.animationModel;
         InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
+        InspectorTest.tracingManager = target.tracingManager;
     },
 
     targetRemoved: function(target) { }
