@@ -5,9 +5,11 @@
 #include "components/pdf/renderer/ppb_pdf_impl.h"
 
 #include "base/files/scoped_file.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "components/pdf/common/pdf_messages.h"
 #include "components/pdf/renderer/pdf_resource_util.h"
@@ -35,7 +37,11 @@
 namespace pdf {
 namespace {
 
-PPB_PDF_Impl::PrintClient* g_print_client = NULL;
+// --single-process model may fail in CHECK(!g_print_client) if there exist
+// more than two RenderThreads, so here we use TLS for g_print_client.
+// See http://crbug.com/457580.
+base::LazyInstance<base::ThreadLocalPointer<PPB_PDF_Impl::PrintClient> >::Leaky
+    g_print_client_tls = LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 class PrivateFontFile : public ppapi::Resource {
@@ -258,7 +264,8 @@ PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
     case PP_PDFFEATURE_HIDPI:
       return PP_TRUE;
     case PP_PDFFEATURE_PRINTING:
-      return (g_print_client && g_print_client->IsPrintingEnabled(instance))
+      return (g_print_client_tls.Pointer()->Get() &&
+              g_print_client_tls.Pointer()->Get()->IsPrintingEnabled(instance))
                  ? PP_TRUE
                  : PP_FALSE;
   }
@@ -372,12 +379,15 @@ const PPB_PDF* PPB_PDF_Impl::GetInterface() {
 
 // static
 bool PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
-  return g_print_client ? g_print_client->Print(instance_id) : false;
+  return g_print_client_tls.Pointer()->Get()
+             ? g_print_client_tls.Pointer()->Get()->Print(instance_id)
+             : false;
 }
 
 void PPB_PDF_Impl::SetPrintClient(PPB_PDF_Impl::PrintClient* client) {
-  CHECK(!g_print_client) << "There should only be a single PrintClient.";
-  g_print_client = client;
+  CHECK(!g_print_client_tls.Pointer()->Get())
+      << "There should only be a single PrintClient for one RenderThread.";
+  g_print_client_tls.Pointer()->Set(client);
 }
 
 }  // namespace pdf
