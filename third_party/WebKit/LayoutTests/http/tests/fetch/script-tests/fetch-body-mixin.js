@@ -24,7 +24,7 @@ function readStream(stream, values) {
   return stream.closed;
 }
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     var response;
     return fetch('/fetch/resources/doctype.html')
       .then(function(resp) {
@@ -43,7 +43,7 @@ promise_test(function(test) {
         })
     }, 'FetchTextAfterStreamGetReadableTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           // Accessing the body property makes the stream start working.
@@ -55,7 +55,7 @@ promise_test(function(test) {
         })
     }, 'FetchTextAfterAccessingStreamTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     var values = [];
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
@@ -71,7 +71,7 @@ promise_test(function(test) {
         })
     }, 'FetchStreamTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           var p1 = response.text();
@@ -88,7 +88,7 @@ promise_test(function(test) {
         })
     }, 'FetchTwiceTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.arrayBuffer();
@@ -98,7 +98,7 @@ promise_test(function(test) {
         })
     }, 'ArrayBufferTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.blob();
@@ -109,7 +109,7 @@ promise_test(function(test) {
         })
     }, 'BlobTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.json();
@@ -121,7 +121,7 @@ promise_test(function(test) {
         })
     }, 'JSONFailedTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/serviceworker/resources/simple.json')
       .then(function(response) {
           return response.json();
@@ -132,7 +132,7 @@ promise_test(function(test) {
         })
     }, 'JSONTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.text();
@@ -142,7 +142,7 @@ promise_test(function(test) {
         })
     }, 'TextTest');
 
-promise_test(function(test) {
+sequential_promise_test(function(test) {
     var expectedText = '';
     for (var i = 0; i < 100; ++i)
         expectedText += i;
@@ -183,4 +183,5 @@ promise_test(function(test) {
         })
     }, 'PartiallyReadFromStreamAndReadTextTest');
 
+sequential_promise_test_done();
 done();
