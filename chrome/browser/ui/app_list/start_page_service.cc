@@ -343,6 +343,12 @@ void StartPageService::AppListHidden() {
       speech_recognizer_) {
     speech_recognizer_->Stop();
     speech_recognizer_.reset();
+
+    // When the SpeechRecognizer is destroyed above, we get stuck in the current
+    // speech state instead of being reset into the READY state. Reset the
+    // speech state explicitly so that speech works when the launcher is opened
+    // again.
+    OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
   }
 
 #if defined(OS_CHROMEOS)
