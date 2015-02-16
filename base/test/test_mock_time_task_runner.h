@@ -33,7 +33,7 @@ class TickClock;
 //     turn call back into it (e.g., to post more tasks).
 //   - Tasks are stored in a priority queue, and executed in the increasing
 //     order of post time + delay.
-//   - It does not check for overflow when doing time arithmetic``. A sufficient
+//   - It does not check for overflow when doing time arithmetic. A sufficient
 //     condition for preventing overflows is to make sure that the sum of all
 //     posted task delays and fast-forward increments is still representable by
 //     a TimeDelta, and that adding this delta to the starting values of Time

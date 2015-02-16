@@ -75,8 +75,7 @@ bool TestMockTimeTaskRunner::TemporalOrder::operator()(
   return first_task.GetTimeToRun() > second_task.GetTimeToRun();
 }
 
-TestMockTimeTaskRunner::TestMockTimeTaskRunner()
-    : now_(Time::UnixEpoch()) {
+TestMockTimeTaskRunner::TestMockTimeTaskRunner() : now_(Time::UnixEpoch()) {
 }
 
 TestMockTimeTaskRunner::~TestMockTimeTaskRunner() {
