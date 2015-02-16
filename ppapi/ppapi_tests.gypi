@@ -476,8 +476,8 @@
         'lib/gl/include',
       ],
       'sources': [
-        'examples/video_decode/video_decode.cc',
         'examples/video_decode/testdata.h',
+        'examples/video_decode/video_decode.cc',
       ],
     },
     {
@@ -492,8 +492,8 @@
         'lib/gl/include',
       ],
       'sources': [
-        'examples/video_decode/video_decode_dev.cc',
         'examples/video_decode/testdata.h',
+        'examples/video_decode/video_decode_dev.cc',
       ],
     },
     {

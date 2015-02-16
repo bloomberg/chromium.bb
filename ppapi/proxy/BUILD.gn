@@ -98,8 +98,8 @@ component("proxy") {
     "plugin_var_tracker.h",
     "ppapi_command_buffer_proxy.cc",
     "ppapi_command_buffer_proxy.h",
-    "ppapi_messages.h",
     "ppapi_message_utils.h",
+    "ppapi_messages.h",
     "ppb_audio_proxy.cc",
     "ppb_audio_proxy.h",
     "ppb_core_proxy.cc",
@@ -250,14 +250,14 @@ component("proxy") {
       "ppp_instance_private_proxy.h",
       "ppp_video_decoder_proxy.cc",
       "ppp_video_decoder_proxy.h",
-      "video_decoder_resource.cc",
-      "video_decoder_resource.h",
-      "video_encoder_resource.cc",
-      "video_encoder_resource.h",
       "talk_resource.cc",
       "talk_resource.h",
       "video_capture_resource.cc",
       "video_capture_resource.h",
+      "video_decoder_resource.cc",
+      "video_decoder_resource.h",
+      "video_encoder_resource.cc",
+      "video_encoder_resource.h",
     ]
   }
 

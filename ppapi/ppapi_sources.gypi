@@ -125,9 +125,9 @@
       'c/private/ppb_pdf.h',
       'c/private/ppb_platform_verification_private.h',
       'c/private/ppb_proxy_private.h',
-      'c/private/ppb_testing_private.h',
       'c/private/ppb_tcp_server_socket_private.h',
       'c/private/ppb_tcp_socket_private.h',
+      'c/private/ppb_testing_private.h',
       'c/private/ppb_udp_socket_private.h',
       'c/private/ppb_uma_private.h',
       'c/private/ppb_video_destination_private.h',
@@ -302,8 +302,8 @@
       'cpp/dev/zoom_dev.h',
 
       # Deprecated interfaces.
-      'cpp/dev/scriptable_object_deprecated.h',
       'cpp/dev/scriptable_object_deprecated.cc',
+      'cpp/dev/scriptable_object_deprecated.h',
 
       # Private interfaces.
       'cpp/private/content_decryptor_private.cc',
@@ -394,9 +394,9 @@
     #
     'test_common_source_files': [
       # Common test files
-      'lib/gl/gles2/gles2.c',
       'lib/gl/gles2/gl2ext_ppapi.c',
       'lib/gl/gles2/gl2ext_ppapi.h',
+      'lib/gl/gles2/gles2.c',
       'tests/all_c_includes.h',
       'tests/all_cpp_includes.h',
       'tests/arch_dependent_sizes_32.h',

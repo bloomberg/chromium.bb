@@ -37,9 +37,9 @@
         'build_pnacl_newlib': 0,
         'nexe_destination_dir': 'test_data/ppapi/tests/extensions/media_galleries',
         'sources': [
-          'media_galleries/test_galleries.cc',
           '<(DEPTH)/ppapi/tests/test_utils.cc',
           '<(DEPTH)/ppapi/tests/test_utils.h',
+          'media_galleries/test_galleries.cc',
         ],
         'test_files': [
           'media_galleries/background.js',

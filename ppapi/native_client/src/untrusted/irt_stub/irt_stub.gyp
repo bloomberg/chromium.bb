@@ -20,9 +20,9 @@
         '../../../..',
       ],
       'sources': [
+        'plugin_main_irt.c',
         'ppapi_plugin_main.c',
         'ppapi_plugin_start.c',
-        'plugin_main_irt.c',
         'thread_creator.c'
       ],
       'dependencies': [

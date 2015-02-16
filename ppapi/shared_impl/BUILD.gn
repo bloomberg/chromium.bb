@@ -16,10 +16,10 @@ component("shared_impl") {
     "compositor_layer_data.h",
     "dictionary_var.cc",
     "dictionary_var.h",
-    "file_io_state_manager.cc",
-    "file_io_state_manager.h",
     "file_growth.cc",
     "file_growth.h",
+    "file_io_state_manager.cc",
+    "file_io_state_manager.h",
     "file_path.cc",
     "file_path.h",
     "file_ref_create_info.cc",
@@ -34,13 +34,13 @@ component("shared_impl") {
     "host_resource.h",
     "id_assignment.cc",
     "id_assignment.h",
+    "media_stream_audio_track_shared.cc",
+    "media_stream_audio_track_shared.h",
     "media_stream_buffer.h",
     "media_stream_buffer_manager.cc",
     "media_stream_buffer_manager.h",
-    "media_stream_audio_track_shared.cc",
-    "media_stream_audio_track_shared.h",
-    "media_stream_video_track_shared.h",
     "media_stream_video_track_shared.cc",
+    "media_stream_video_track_shared.h",
     "platform_file.cc",
     "platform_file.h",
     "ppapi_constants.h",
@@ -120,8 +120,8 @@ component("shared_impl") {
 
     # TODO(viettrungluu): Split these out; it won"t be used in NaCl.
     "private/net_address_private_impl.cc",
-    "private/net_address_private_impl_constants.cc",
     "private/net_address_private_impl.h",
+    "private/net_address_private_impl_constants.cc",
     "private/ppb_x509_certificate_private_shared.cc",
     "private/ppb_x509_certificate_private_shared.h",
   ]
@@ -148,8 +148,8 @@ component("shared_impl") {
       "ppb_audio_shared.cc",
       "ppb_graphics_3d_shared.cc",
       "ppb_opengles2_shared.cc",
-      "private/ppb_host_resolver_shared.cc",
       "private/net_address_private_impl.cc",
+      "private/ppb_host_resolver_shared.cc",
     ]
   }
 

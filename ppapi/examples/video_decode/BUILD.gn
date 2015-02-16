@@ -15,8 +15,8 @@ group("video_decode") {
 ppapi_example("dev") {
   output_name = "ppapi_example_video_decode_dev"
   sources = [
-    "video_decode_dev.cc",
     "testdata.h",
+    "video_decode_dev.cc",
   ]
   deps = [
     "//ppapi/cpp",
@@ -27,8 +27,8 @@ ppapi_example("dev") {
 ppapi_example("stable") {
   output_name = "ppapi_example_video_decode"
   sources = [
-    "video_decode.cc",
     "testdata.h",
+    "video_decode.cc",
   ]
   deps = [
     "//ppapi/cpp",
