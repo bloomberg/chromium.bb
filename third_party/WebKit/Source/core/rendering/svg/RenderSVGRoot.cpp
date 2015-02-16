@@ -41,7 +41,7 @@
 namespace blink {
 
 RenderSVGRoot::RenderSVGRoot(SVGElement* node)
-    : RenderReplaced(node)
+    : LayoutReplaced(node)
     , m_objectBoundingBoxValid(false)
     , m_isLayoutSizeChanged(false)
     , m_needsBoundariesOrTransformUpdate(true)
@@ -127,13 +127,13 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred sho
         return containingBlock()->availableLogicalWidth();
 
     if (style()->logicalWidth().isSpecified() || style()->logicalMaxWidth().isSpecified())
-        return RenderReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
+        return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 
     if (svg->hasIntrinsicWidth())
         return resolveLengthAttributeForSVG(svg->intrinsicWidth(), style()->effectiveZoom(), containingBlock()->availableLogicalWidth().toFloat());
 
     // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
-    return RenderReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
+    return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
 LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
@@ -149,13 +149,13 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
         return containingBlock()->availableLogicalHeight(IncludeMarginBorderPadding);
 
     if (style()->logicalHeight().isSpecified() || style()->logicalMaxHeight().isSpecified())
-        return RenderReplaced::computeReplacedLogicalHeight();
+        return LayoutReplaced::computeReplacedLogicalHeight();
 
     if (svg->hasIntrinsicHeight())
         return resolveLengthAttributeForSVG(svg->intrinsicHeight(), style()->effectiveZoom(), containingBlock()->availableLogicalHeight(IncludeMarginBorderPadding).toFloat());
 
     // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
-    return RenderReplaced::computeReplacedLogicalHeight();
+    return LayoutReplaced::computeReplacedLogicalHeight();
 }
 
 void RenderSVGRoot::layout()
@@ -218,7 +218,7 @@ void RenderSVGRoot::willBeDestroyed()
     RenderBlock::removePercentHeightDescendant(const_cast<RenderSVGRoot*>(this));
 
     SVGResourcesCache::clientDestroyed(this);
-    RenderReplaced::willBeDestroyed();
+    LayoutReplaced::willBeDestroyed();
 }
 
 void RenderSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
@@ -230,7 +230,7 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldS
         m_hasBoxDecorationBackground = calculateHasBoxDecorations();
     }
 
-    RenderReplaced::styleDidChange(diff, oldStyle);
+    LayoutReplaced::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
@@ -241,7 +241,7 @@ bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const LayoutStyle&) cons
 
 void RenderSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
-    RenderReplaced::addChild(child, beforeChild);
+    LayoutReplaced::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
 
     bool shouldIsolateDescendants = (child->isBlendingAllowed() && child->style()->hasBlendMode()) || child->hasNonIsolatedBlendingDescendants();
@@ -252,7 +252,7 @@ void RenderSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
 void RenderSVGRoot::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
-    RenderReplaced::removeChild(child);
+    LayoutReplaced::removeChild(child);
 
     bool hadNonIsolatedDescendants = (child->isBlendingAllowed() && child->style()->hasBlendMode()) || child->hasNonIsolatedBlendingDescendants();
     if (hadNonIsolatedDescendants)
@@ -283,14 +283,14 @@ void RenderSVGRoot::descendantIsolationRequirementsChanged(DescendantIsolationSt
 
 void RenderSVGRoot::insertedIntoTree()
 {
-    RenderReplaced::insertedIntoTree();
+    LayoutReplaced::insertedIntoTree();
     SVGResourcesCache::clientWasAddedToTree(this, styleRef());
 }
 
 void RenderSVGRoot::willBeRemovedFromTree()
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(this);
-    RenderReplaced::willBeRemovedFromTree();
+    LayoutReplaced::willBeRemovedFromTree();
 }
 
 // RenderBox methods will expect coordinates w/o any transforms in coordinates
@@ -323,7 +323,7 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
 LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
-    // RenderSVGRoot::mapRectToPaintInvalidationBacking and RenderReplaced::clippedOverflowRectForPaintInvalidation.
+    // RenderSVGRoot::mapRectToPaintInvalidationBacking and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
@@ -350,7 +350,7 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLa
 
     // Compute the paint invalidation rect in the parent coordinate space.
     LayoutRect rect = enclosingIntRect(paintInvalidationRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
@@ -363,7 +363,7 @@ void RenderSVGRoot::mapRectToPaintInvalidationBacking(const LayoutLayerModelObje
     if (shouldApplyViewportClip())
         rect.intersect(pixelSnappedBorderBoxRect());
 
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+    LayoutReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 // This method expects local CSS box coordinates.
@@ -376,12 +376,12 @@ void RenderSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInval
     // See http://crbug.com/364901
     // ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
 
-    RenderReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
+    LayoutReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
 const LayoutObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
-    return RenderReplaced::pushMappingToContainer(ancestorToStopAt, geometryMap);
+    return LayoutReplaced::pushMappingToContainer(ancestorToStopAt, geometryMap);
 }
 
 void RenderSVGRoot::updateCachedBoundaries()

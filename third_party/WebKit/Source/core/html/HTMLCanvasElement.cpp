@@ -45,7 +45,7 @@
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderHTMLCanvas.h"
+#include "core/layout/LayoutHTMLCanvas.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImage.h"
@@ -142,7 +142,7 @@ LayoutObject* HTMLCanvasElement::createRenderer(const LayoutStyle& style)
 {
     LocalFrame* frame = document().frame();
     if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
-        return new RenderHTMLCanvas(this);
+        return new LayoutHTMLCanvas(this);
     return HTMLElement::createRenderer(style);
 }
 
@@ -378,7 +378,7 @@ void HTMLCanvasElement::reset()
     if (LayoutObject* renderer = this->renderer()) {
         if (renderer->isCanvas()) {
             if (oldSize != size()) {
-                toRenderHTMLCanvas(renderer)->canvasSizeChanged();
+                toLayoutHTMLCanvas(renderer)->canvasSizeChanged();
                 if (renderBox() && renderBox()->hasAcceleratedCompositing())
                     renderBox()->contentChanged(CanvasChanged);
             }

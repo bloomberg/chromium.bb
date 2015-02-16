@@ -54,7 +54,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutImage::LayoutImage(Element* element)
-    : RenderReplaced(element, LayoutSize())
+    : LayoutReplaced(element, LayoutSize())
     , m_didIncrementVisuallyNonEmptyPixelCount(false)
     , m_isGeneratedContent(false)
     , m_imageDevicePixelRatio(1.0f)
@@ -77,7 +77,7 @@ void LayoutImage::destroy()
 {
     ASSERT(m_imageResource);
     m_imageResource->shutdown();
-    RenderReplaced::destroy();
+    LayoutReplaced::destroy();
 }
 
 void LayoutImage::setImageResource(PassOwnPtr<LayoutImageResource> imageResource)
@@ -93,7 +93,7 @@ void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
         return;
 
     if (hasBoxDecorationBackground() || hasMask() || hasShapeOutside())
-        RenderReplaced::imageChanged(newImage, rect);
+        LayoutReplaced::imageChanged(newImage, rect);
 
     if (!m_imageResource)
         return;
@@ -273,7 +273,7 @@ HTMLMapElement* LayoutImage::imageMap() const
 bool LayoutImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     HitTestResult tempResult(result.hitTestLocation());
-    bool inside = RenderReplaced::nodeAtPoint(request, tempResult, locationInContainer, accumulatedOffset, hitTestAction);
+    bool inside = LayoutReplaced::nodeAtPoint(request, tempResult, locationInContainer, accumulatedOffset, hitTestAction);
 
     if (tempResult.innerNode() && node()) {
         if (HTMLMapElement* map = imageMap()) {
@@ -296,7 +296,7 @@ bool LayoutImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
 
 void LayoutImage::layout()
 {
-    RenderReplaced::layout();
+    LayoutReplaced::layout();
     updateInnerContentRect();
 }
 
@@ -332,7 +332,7 @@ bool LayoutImage::updateImageLoadingPriorities()
 
 void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
 {
-    RenderReplaced::computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
+    LayoutReplaced::computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
     // Our intrinsicSize is empty if we're rendering generated images with relative width/height. Figure out the right intrinsic size to use.
     if (intrinsicSize.isEmpty() && (m_imageResource->imageHasRelativeWidth() || m_imageResource->imageHasRelativeHeight())) {
@@ -353,7 +353,7 @@ void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
 
 bool LayoutImage::needsPreferredWidthsRecalculation() const
 {
-    if (RenderReplaced::needsPreferredWidthsRecalculation())
+    if (LayoutReplaced::needsPreferredWidthsRecalculation())
         return true;
     return embeddedContentBox();
 }

@@ -10,4 +10,4 @@ layer at (0,0) size 800x600 transparent
 layer at (0,0) size 800x1
   RenderBlock {DIV} at (0,0) size 800x1
 layer at (0,0) size 1x1
-  RenderHTMLCanvas {CANVAS} at (0,0) size 1x1
+  LayoutHTMLCanvas {CANVAS} at (0,0) size 1x1

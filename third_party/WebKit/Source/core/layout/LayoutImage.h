@@ -26,14 +26,14 @@
 #define LayoutImage_h
 
 #include "core/layout/LayoutImageResource.h"
-#include "core/rendering/RenderReplaced.h"
+#include "core/layout/LayoutReplaced.h"
 
 namespace blink {
 
 class HTMLAreaElement;
 class HTMLMapElement;
 
-class LayoutImage : public RenderReplaced {
+class LayoutImage : public LayoutReplaced {
 public:
     // These are the paddings to use when displaying either alt text or an image.
     static const unsigned short paddingWidth = 4;
@@ -79,7 +79,7 @@ protected:
     virtual void layout() override;
     virtual bool updateImageLoadingPriorities() override final;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "LayoutImage"; }

@@ -12,12 +12,12 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutReplaced.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderReplaced.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
 
@@ -25,7 +25,7 @@ namespace blink {
 
 void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    m_layoutImage.RenderReplaced::paint(paintInfo, paintOffset);
+    m_layoutImage.LayoutReplaced::paint(paintInfo, paintOffset);
 
     if (paintInfo.phase == PaintPhaseOutline)
         paintAreaElementFocusRing(paintInfo);

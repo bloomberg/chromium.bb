@@ -6,9 +6,9 @@
 #include "core/paint/HTMLCanvasPainter.h"
 
 #include "core/html/HTMLCanvasElement.h"
+#include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/RenderDrawingRecorder.h"
-#include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
@@ -18,9 +18,9 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
 {
     GraphicsContext* context = paintInfo.context;
 
-    LayoutRect contentRect = m_renderHTMLCanvas.contentBoxRect();
+    LayoutRect contentRect = m_layoutHTMLCanvas.contentBoxRect();
     contentRect.moveBy(paintOffset);
-    LayoutRect paintRect = m_renderHTMLCanvas.replacedContentRect();
+    LayoutRect paintRect = m_layoutHTMLCanvas.replacedContentRect();
     paintRect.moveBy(paintOffset);
 
     bool clip = !contentRect.contains(paintRect);
@@ -31,13 +31,13 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
 
     // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
     // See bug for more details: crbug.com/353716.
-    InterpolationQuality interpolationQuality = m_renderHTMLCanvas.style()->imageRendering() == ImageRenderingOptimizeContrast ? InterpolationLow : CanvasDefaultInterpolationQuality;
-    if (m_renderHTMLCanvas.style()->imageRendering() == ImageRenderingPixelated)
+    InterpolationQuality interpolationQuality = m_layoutHTMLCanvas.style()->imageRendering() == ImageRenderingOptimizeContrast ? InterpolationLow : CanvasDefaultInterpolationQuality;
+    if (m_layoutHTMLCanvas.style()->imageRendering() == ImageRenderingPixelated)
         interpolationQuality = InterpolationNone;
 
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    toHTMLCanvasElement(m_renderHTMLCanvas.node())->paint(context, paintRect);
+    toHTMLCanvasElement(m_layoutHTMLCanvas.node())->paint(context, paintRect);
     context->setImageInterpolationQuality(previousInterpolationQuality);
 
     if (clip)

@@ -784,7 +784,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
         return;
 
     // If the embedded SVG document appears the first time, the ownerRenderer has already finished
-    // layout without knowing about the existence of the embedded SVG document, because RenderReplaced
+    // layout without knowing about the existence of the embedded SVG document, because LayoutReplaced
     // embeddedContentBox() returns 0, as long as the embedded document isn't loaded yet. Before
     // bothering to lay out the SVG document, mark the ownerRenderer needing layout and ask its
     // FrameView for a layout. After that the RenderEmbeddedObject (ownerRenderer) carries the

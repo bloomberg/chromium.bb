@@ -183,17 +183,17 @@ void LayoutVideo::updatePlayer()
 
 LayoutUnit LayoutVideo::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
 {
-    return RenderReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
+    return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
 LayoutUnit LayoutVideo::computeReplacedLogicalHeight() const
 {
-    return RenderReplaced::computeReplacedLogicalHeight();
+    return LayoutReplaced::computeReplacedLogicalHeight();
 }
 
 LayoutUnit LayoutVideo::minimumReplacedHeight() const
 {
-    return RenderReplaced::minimumReplacedHeight();
+    return LayoutReplaced::minimumReplacedHeight();
 }
 
 bool LayoutVideo::supportsAcceleratedRendering() const

@@ -19,4 +19,4 @@ layer at (0,0) size 800x386
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,116) size 257x257
-  RenderHTMLCanvas {CANVAS} at (0,0) size 257x257 [bgcolor=#808080]
+  LayoutHTMLCanvas {CANVAS} at (0,0) size 257x257 [bgcolor=#808080]

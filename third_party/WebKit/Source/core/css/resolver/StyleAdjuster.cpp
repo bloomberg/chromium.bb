@@ -41,11 +41,11 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/layout/LayoutReplaced.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/style/GridPosition.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/style/LayoutStyleConstants.h"
-#include "core/rendering/RenderReplaced.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/Length.h"
 #include "platform/transforms/TransformOperations.h"
@@ -415,9 +415,9 @@ void StyleAdjuster::adjustStyleForHTMLElement(LayoutStyle& style, const LayoutSt
         // Replaced renderers get this for free, and fallback content doesn't count.
         if (toHTMLPlugInElement(element).usePlaceholderContent()) {
             if (style.width().isAuto())
-                style.setWidth(Length(RenderReplaced::defaultWidth, Fixed));
+                style.setWidth(Length(LayoutReplaced::defaultWidth, Fixed));
             if (style.height().isAuto())
-                style.setHeight(Length(RenderReplaced::defaultHeight, Fixed));
+                style.setHeight(Length(LayoutReplaced::defaultHeight, Fixed));
         }
 
         return;

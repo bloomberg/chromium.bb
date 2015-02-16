@@ -23,13 +23,13 @@
 #ifndef RenderPart_h
 #define RenderPart_h
 
-#include "core/rendering/RenderReplaced.h"
+#include "core/layout/LayoutReplaced.h"
 #include "platform/Widget.h"
 
 namespace blink {
 
 // Renderer for frames via RenderFrame and RenderIFrame, and plug-ins via RenderEmbeddedObject.
-class RenderPart : public RenderReplaced {
+class RenderPart : public LayoutReplaced {
 public:
     explicit RenderPart(Element*);
     virtual ~RenderPart();

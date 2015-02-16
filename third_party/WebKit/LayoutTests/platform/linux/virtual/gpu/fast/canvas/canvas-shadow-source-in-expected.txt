@@ -16,6 +16,6 @@ layer at (0,0) size 800x470
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
 layer at (8,28) size 202x202
-  RenderHTMLCanvas {CANVAS} at (0,0) size 202x202 [border: (1px solid #999999)]
+  LayoutHTMLCanvas {CANVAS} at (0,0) size 202x202 [border: (1px solid #999999)]
 layer at (8,255) size 202x202
-  RenderHTMLCanvas {CANVAS} at (0,0) size 202x202 [border: (1px solid #999999)]
+  LayoutHTMLCanvas {CANVAS} at (0,0) size 202x202 [border: (1px solid #999999)]

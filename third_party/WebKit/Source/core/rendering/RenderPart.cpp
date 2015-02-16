@@ -40,7 +40,7 @@
 namespace blink {
 
 RenderPart::RenderPart(Element* element)
-    : RenderReplaced(element)
+    : LayoutReplaced(element)
     // Reference counting is used to prevent the part from being destroyed
     // while inside the Widget code, which might not be able to handle that.
     , m_refCount(1)
@@ -69,7 +69,7 @@ void RenderPart::willBeDestroyed()
     if (element && element->isFrameOwnerElement())
         toHTMLFrameOwnerElement(element)->setWidget(nullptr);
 
-    RenderReplaced::willBeDestroyed();
+    LayoutReplaced::willBeDestroyed();
 }
 
 void RenderPart::destroy()
@@ -97,7 +97,7 @@ Widget* RenderPart::widget() const
 
 LayerType RenderPart::layerTypeRequired() const
 {
-    LayerType type = RenderReplaced::layerTypeRequired();
+    LayerType type = LayoutReplaced::layerTypeRequired();
     if (type != NoLayer)
         return type;
     return ForcedLayer;
@@ -129,7 +129,7 @@ bool RenderPart::requiresAcceleratedCompositing() const
 
 bool RenderPart::needsPreferredWidthsRecalculation() const
 {
-    if (RenderReplaced::needsPreferredWidthsRecalculation())
+    if (LayoutReplaced::needsPreferredWidthsRecalculation())
         return true;
     return embeddedContentBox();
 }
@@ -137,7 +137,7 @@ bool RenderPart::needsPreferredWidthsRecalculation() const
 bool RenderPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     bool hadResult = result.innerNode();
-    bool inside = RenderReplaced::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
+    bool inside = LayoutReplaced::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
 
     // Check to see if we are really over the widget itself (and not just in the border/padding area).
     if ((inside || result.isRectBasedTest()) && !hadResult && result.innerNode() == node())
@@ -183,7 +183,7 @@ CompositingReasons RenderPart::additionalCompositingReasons() const
 
 void RenderPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderReplaced::styleDidChange(diff, oldStyle);
+    LayoutReplaced::styleDidChange(diff, oldStyle);
     Widget* widget = this->widget();
 
     if (!widget)
@@ -223,7 +223,7 @@ CursorDirective RenderPart::getCursor(const LayoutPoint& point, Cursor& cursor) 
         // A plug-in is responsible for setting the cursor when the pointer is over it.
         return DoNotSetCursor;
     }
-    return RenderReplaced::getCursor(point, cursor);
+    return LayoutReplaced::getCursor(point, cursor);
 }
 
 void RenderPart::updateOnWidgetChange()

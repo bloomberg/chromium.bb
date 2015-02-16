@@ -49,13 +49,13 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderFieldset.h"
 #include "core/rendering/RenderFileUploadControl.h"
-#include "core/rendering/RenderHTMLCanvas.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
@@ -295,7 +295,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
             return SVGRootRole;
         return ImageRole;
     }
-    // Note: if JavaScript is disabled, the renderer won't be a RenderHTMLCanvas.
+    // Note: if JavaScript is disabled, the renderer won't be a LayoutHTMLCanvas.
     if (isHTMLCanvasElement(node) && m_renderer->isCanvas())
         return CanvasRole;
 
@@ -718,7 +718,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (isCanvas()) {
         if (canvasHasFallbackContent())
             return false;
-        RenderHTMLCanvas* canvas = toRenderHTMLCanvas(m_renderer);
+        LayoutHTMLCanvas* canvas = toLayoutHTMLCanvas(m_renderer);
         if (canvas->size().height() <= 1 || canvas->size().width() <= 1)
             return true;
         // Otherwise fall through; use presence of help text, title, or description to decide.

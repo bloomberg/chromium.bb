@@ -115,7 +115,7 @@ void RenderEmbeddedObject::paintContents(const PaintInfo& paintInfo, const Layou
 void RenderEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (showsUnavailablePluginIndicator()) {
-        RenderReplaced::paint(paintInfo, paintOffset);
+        LayoutReplaced::paint(paintInfo, paintOffset);
         return;
     }
 

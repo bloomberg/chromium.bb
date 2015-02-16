@@ -23,13 +23,13 @@
 #ifndef RenderSVGRoot_h
 #define RenderSVGRoot_h
 
-#include "core/rendering/RenderReplaced.h"
+#include "core/layout/LayoutReplaced.h"
 
 namespace blink {
 
 class SVGElement;
 
-class RenderSVGRoot final : public RenderReplaced {
+class RenderSVGRoot final : public LayoutReplaced {
 public:
     explicit RenderSVGRoot(SVGElement*);
     virtual ~RenderSVGRoot();
@@ -76,7 +76,7 @@ private:
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
     virtual const char* renderName() const override { return "RenderSVGRoot"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || LayoutReplaced::isOfType(type); }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
     virtual LayoutUnit computeReplacedLogicalHeight() const override;

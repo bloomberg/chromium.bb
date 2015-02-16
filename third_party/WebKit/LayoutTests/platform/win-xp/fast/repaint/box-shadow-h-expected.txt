@@ -77,23 +77,23 @@ layer at (0,0) size 800x521
 layer at (18,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
 layer at (18,358) size 40x40
-  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
+  LayoutHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (143,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
 layer at (143,358) size 40x40
-  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
+  LayoutHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (268,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
 layer at (268,358) size 40x40
-  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
+  LayoutHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (393,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
 layer at (393,358) size 40x40
-  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
+  LayoutHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (518,248) size 40x40
   RenderBlock {DIV} at (10,240) size 40x40 [bgcolor=#FFFF77]
 layer at (518,358) size 40x40
-  RenderHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
+  LayoutHTMLCanvas {CANVAS} at (10,10) size 40x40 [bgcolor=#FFFF77]
 layer at (8,68) size 60x60
   RenderBlock (relative positioned) {DIV} at (0,60) size 60x60
 layer at (18,78) size 40x40

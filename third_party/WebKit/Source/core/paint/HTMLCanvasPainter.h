@@ -9,15 +9,15 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderHTMLCanvas;
+class LayoutHTMLCanvas;
 
 class HTMLCanvasPainter {
 public:
-    HTMLCanvasPainter(RenderHTMLCanvas& renderHTMLCanvas) : m_renderHTMLCanvas(renderHTMLCanvas) { }
+    HTMLCanvasPainter(LayoutHTMLCanvas& layoutHTMLCanvas) : m_layoutHTMLCanvas(layoutHTMLCanvas) { }
     void paintReplaced(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderHTMLCanvas& m_renderHTMLCanvas;
+    LayoutHTMLCanvas& m_layoutHTMLCanvas;
 };
 
 } // namespace blink

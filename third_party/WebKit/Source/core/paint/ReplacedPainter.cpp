@@ -6,83 +6,83 @@
 #include "core/paint/ReplacedPainter.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutReplaced.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
-#include "core/rendering/RenderReplaced.h"
 
 namespace blink {
 
 void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderReplaced);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutReplaced);
 
-    if (!m_renderReplaced.shouldPaint(paintInfo, paintOffset))
+    if (!m_layoutReplaced.shouldPaint(paintInfo, paintOffset))
         return;
 
-    LayoutPoint adjustedPaintOffset = paintOffset + m_renderReplaced.location();
-    LayoutRect paintRect(adjustedPaintOffset, m_renderReplaced.size());
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutReplaced.location();
+    LayoutRect paintRect(adjustedPaintOffset, m_layoutReplaced.size());
 
-    if (m_renderReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
-        m_renderReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
+    if (m_layoutReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
+        m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase == PaintPhaseMask) {
-        RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_renderReplaced, paintInfo.phase, paintRect);
-        m_renderReplaced.paintMask(paintInfo, adjustedPaintOffset);
+        RenderDrawingRecorder renderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect);
+        m_layoutReplaced.paintMask(paintInfo, adjustedPaintOffset);
         return;
     }
 
-    if (paintInfo.phase == PaintPhaseClippingMask && (!m_renderReplaced.hasLayer() || !m_renderReplaced.layer()->hasCompositedClippingMask()))
+    if (paintInfo.phase == PaintPhaseClippingMask && (!m_layoutReplaced.hasLayer() || !m_layoutReplaced.layer()->hasCompositedClippingMask()))
         return;
 
-    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderReplaced.style()->outlineWidth())
-        ObjectPainter(m_renderReplaced).paintOutline(paintInfo, paintRect);
+    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_layoutReplaced.style()->outlineWidth())
+        ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, paintRect);
 
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && !m_renderReplaced.canHaveChildren() && paintInfo.phase != PaintPhaseClippingMask)
+    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && !m_layoutReplaced.canHaveChildren() && paintInfo.phase != PaintPhaseClippingMask)
         return;
 
-    if (!paintInfo.shouldPaintWithinRoot(&m_renderReplaced))
+    if (!paintInfo.shouldPaintWithinRoot(&m_layoutReplaced))
         return;
 
-    bool drawSelectionTint = m_renderReplaced.selectionState() != LayoutObject::SelectionNone && !m_renderReplaced.document().printing();
+    bool drawSelectionTint = m_layoutReplaced.selectionState() != LayoutObject::SelectionNone && !m_layoutReplaced.document().printing();
     if (paintInfo.phase == PaintPhaseSelection) {
-        if (m_renderReplaced.selectionState() == LayoutObject::SelectionNone)
+        if (m_layoutReplaced.selectionState() == LayoutObject::SelectionNone)
             return;
         drawSelectionTint = false;
     }
 
     // FIXME(crbug.com/444591): Refactor this to not create a drawing recorder for renderers with children.
     OwnPtr<RenderDrawingRecorder> renderDrawingRecorder;
-    if (!m_renderReplaced.isSVGRoot())
-        renderDrawingRecorder = adoptPtr(new RenderDrawingRecorder(paintInfo.context, m_renderReplaced, paintInfo.phase, paintRect));
+    if (!m_layoutReplaced.isSVGRoot())
+        renderDrawingRecorder = adoptPtr(new RenderDrawingRecorder(paintInfo.context, m_layoutReplaced, paintInfo.phase, paintRect));
     if (renderDrawingRecorder && renderDrawingRecorder->canUseCachedDrawing())
         return;
 
     {
         OwnPtr<RoundedInnerRectClipper> clipper;
         bool completelyClippedOut = false;
-        if (m_renderReplaced.style()->hasBorderRadius()) {
-            LayoutRect borderRect = LayoutRect(adjustedPaintOffset, m_renderReplaced.size());
+        if (m_layoutReplaced.style()->hasBorderRadius()) {
+            LayoutRect borderRect = LayoutRect(adjustedPaintOffset, m_layoutReplaced.size());
 
             if (borderRect.isEmpty()) {
                 completelyClippedOut = true;
             } else {
                 // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
-                FloatRoundedRect roundedInnerRect = m_renderReplaced.style()->getRoundedInnerBorderFor(paintRect,
-                    m_renderReplaced.paddingTop() + m_renderReplaced.borderTop(), m_renderReplaced.paddingBottom() + m_renderReplaced.borderBottom(), m_renderReplaced.paddingLeft() + m_renderReplaced.borderLeft(), m_renderReplaced.paddingRight() + m_renderReplaced.borderRight(), true, true);
+                FloatRoundedRect roundedInnerRect = m_layoutReplaced.style()->getRoundedInnerBorderFor(paintRect,
+                    m_layoutReplaced.paddingTop() + m_layoutReplaced.borderTop(), m_layoutReplaced.paddingBottom() + m_layoutReplaced.borderBottom(), m_layoutReplaced.paddingLeft() + m_layoutReplaced.borderLeft(), m_layoutReplaced.paddingRight() + m_layoutReplaced.borderRight(), true, true);
 
-                clipper = adoptPtr(new RoundedInnerRectClipper(m_renderReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToContext));
+                clipper = adoptPtr(new RoundedInnerRectClipper(m_layoutReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToContext));
             }
         }
 
         if (!completelyClippedOut) {
             if (paintInfo.phase == PaintPhaseClippingMask) {
-                m_renderReplaced.paintClippingMask(paintInfo, adjustedPaintOffset);
+                m_layoutReplaced.paintClippingMask(paintInfo, adjustedPaintOffset);
             } else {
-                m_renderReplaced.paintReplaced(paintInfo, adjustedPaintOffset);
+                m_layoutReplaced.paintReplaced(paintInfo, adjustedPaintOffset);
             }
         }
     }
@@ -90,9 +90,9 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     // The selection tint never gets clipped by border-radius rounding, since we want it to run right up to the edges of
     // surrounding content.
     if (drawSelectionTint) {
-        LayoutRect selectionPaintingRect = m_renderReplaced.localSelectionRect();
+        LayoutRect selectionPaintingRect = m_layoutReplaced.localSelectionRect();
         selectionPaintingRect.moveBy(adjustedPaintOffset);
-        paintInfo.context->fillRect(pixelSnappedIntRect(selectionPaintingRect), m_renderReplaced.selectionBackgroundColor());
+        paintInfo.context->fillRect(pixelSnappedIntRect(selectionPaintingRect), m_layoutReplaced.selectionBackgroundColor());
     }
 }
 

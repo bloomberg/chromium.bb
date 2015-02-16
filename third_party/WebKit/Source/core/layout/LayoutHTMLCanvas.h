@@ -23,35 +23,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderHTMLCanvas_h
-#define RenderHTMLCanvas_h
+#ifndef LayoutHTMLCanvas_h
+#define LayoutHTMLCanvas_h
 
-#include "core/rendering/RenderReplaced.h"
+#include "core/layout/LayoutReplaced.h"
 
 namespace blink {
 
 class HTMLCanvasElement;
 
-class RenderHTMLCanvas final : public RenderReplaced {
+class LayoutHTMLCanvas final : public LayoutReplaced {
 public:
-    explicit RenderHTMLCanvas(HTMLCanvasElement*);
+    explicit LayoutHTMLCanvas(HTMLCanvasElement*);
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || RenderReplaced::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || LayoutReplaced::isOfType(type); }
     virtual LayerType layerTypeRequired() const override;
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutLayerModelObject&) override final;
 
     void canvasSizeChanged();
 
 private:
-    virtual const char* renderName() const override { return "RenderHTMLCanvas"; }
+    virtual const char* renderName() const override { return "LayoutHTMLCanvas"; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
     virtual void intrinsicSizeChanged() override { canvasSizeChanged(); }
 
     virtual CompositingReasons additionalCompositingReasons() const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderHTMLCanvas, isCanvas());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutHTMLCanvas, isCanvas());
 
 } // namespace blink
 
-#endif // RenderHTMLCanvas_h
+#endif // LayoutHTMLCanvas_h

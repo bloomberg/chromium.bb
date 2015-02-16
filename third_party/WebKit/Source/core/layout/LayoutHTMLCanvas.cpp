@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderHTMLCanvas.h"
+#include "core/layout/LayoutHTMLCanvas.h"
 
-#include "core/html/HTMLCanvasElement.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/HTMLCanvasPainter.h"
@@ -39,23 +39,23 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderHTMLCanvas::RenderHTMLCanvas(HTMLCanvasElement* element)
-    : RenderReplaced(element, LayoutSize(element->size()))
+LayoutHTMLCanvas::LayoutHTMLCanvas(HTMLCanvasElement* element)
+    : LayoutReplaced(element, LayoutSize(element->size()))
 {
     view()->frameView()->setIsVisuallyNonEmpty();
 }
 
-LayerType RenderHTMLCanvas::layerTypeRequired() const
+LayerType LayoutHTMLCanvas::layerTypeRequired() const
 {
     return NormalLayer;
 }
 
-void RenderHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     HTMLCanvasPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-void RenderHTMLCanvas::canvasSizeChanged()
+void LayoutHTMLCanvas::canvasSizeChanged()
 {
     IntSize canvasSize = toHTMLCanvasElement(node())->size();
     LayoutSize zoomedSize(canvasSize.width() * style()->effectiveZoom(), canvasSize.height() * style()->effectiveZoom());
@@ -81,7 +81,7 @@ void RenderHTMLCanvas::canvasSizeChanged()
         setNeedsLayout();
 }
 
-PaintInvalidationReason RenderHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& paintInvalidationContainer)
 {
     PaintInvalidationReason reason = RenderBox::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
     HTMLCanvasElement* element = toHTMLCanvasElement(node());
@@ -93,7 +93,7 @@ PaintInvalidationReason RenderHTMLCanvas::invalidatePaintIfNeeded(const PaintInv
     return reason;
 }
 
-CompositingReasons RenderHTMLCanvas::additionalCompositingReasons() const
+CompositingReasons LayoutHTMLCanvas::additionalCompositingReasons() const
 {
     HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
     if (canvas->renderingContext() && canvas->renderingContext()->isAccelerated())

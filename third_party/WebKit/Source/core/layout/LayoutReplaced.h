@@ -19,18 +19,18 @@
  *
  */
 
-#ifndef RenderReplaced_h
-#define RenderReplaced_h
+#ifndef LayoutReplaced_h
+#define LayoutReplaced_h
 
 #include "core/rendering/RenderBox.h"
 
 namespace blink {
 
-class RenderReplaced : public RenderBox {
+class LayoutReplaced : public RenderBox {
 public:
-    RenderReplaced(Element*);
-    RenderReplaced(Element*, const LayoutSize& intrinsicSize);
-    virtual ~RenderReplaced();
+    LayoutReplaced(Element*);
+    LayoutReplaced(Element*, const LayoutSize& intrinsicSize);
+    virtual ~LayoutReplaced();
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
     virtual LayoutUnit computeReplacedLogicalHeight() const override;
@@ -77,8 +77,6 @@ protected:
     virtual RenderBox* embeddedContentBox() const { return 0; }
 
 private:
-    virtual const char* renderName() const override { return "RenderReplaced"; }
-
     virtual void computePreferredLogicalWidths() override final;
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
