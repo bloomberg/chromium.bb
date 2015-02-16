@@ -126,6 +126,13 @@ MetadataCacheSet.prototype.clear = function(urls) {
 };
 
 /**
+ * Clears all cache.
+ */
+MetadataCacheSet.prototype.clearAll = function() {
+  this.items_.removeAll();
+};
+
+/**
  * Creates snapshot of the cache for entries.
  * @param {!Array<!Entry>} entries
  */
@@ -191,6 +198,11 @@ MetadataCacheSetStorage.prototype.put = function(url, item) {};
 MetadataCacheSetStorage.prototype.remove = function(url) {};
 
 /**
+ * Remove all items from the cache.
+ */
+MetadataCacheSetStorage.prototype.removeAll = function() {};
+
+/**
  * Implementation of MetadataCacheSetStorage by using raw object.
  * @param {Object} items Map of URL and MetadataCacheItem.
  * @constructor
@@ -230,7 +242,17 @@ MetadataCacheSetStorageForObject.prototype.remove = function(url) {
 };
 
 /**
+ * @override
+ */
+MetadataCacheSetStorageForObject.prototype.removeAll = function() {
+  for (var url in this.items_) {
+    delete this.items_[url];
+  }
+};
+
+/**
  * Implementation of MetadataCacheSetStorage by using LRUCache.
+ * TODO(hirono): Remove this class.
  * @param {!LRUCache<!MetadataCacheItem>} cache LRUCache.
  * @constructor
  * @implements {MetadataCacheSetStorage}
@@ -270,6 +292,13 @@ MetadataCacheSetStorageForLRUCache.prototype.put = function(url, item) {
  */
 MetadataCacheSetStorageForLRUCache.prototype.remove = function(url) {
   this.cache_.remove(url);
+};
+
+/**
+ * @override
+ */
+MetadataCacheSetStorageForLRUCache.prototype.removeAll = function() {
+  assertNotReached('Not implemented.');
 };
 
 /**

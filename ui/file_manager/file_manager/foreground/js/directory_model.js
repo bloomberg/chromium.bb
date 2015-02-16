@@ -45,11 +45,12 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
                                     this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ = new FileListContext(
-      fileFilter, metadataCache, metadataProviderCache, fileSystemMetadata);
+      fileFilter, metadataCache, fileSystemMetadata);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
   this.metadataCache_ = metadataCache;
+  this.metadataProviderCache_ = metadataProviderCache;
   this.fileSystemMetadata_ = fileSystemMetadata;
 
   this.volumeManager_ = volumeManager;
@@ -484,6 +485,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
   }.bind(this);
 
   // Clear the table, and start scanning.
+  this.metadataProviderCache_.clearAll();
   cr.dispatchSimpleEvent(this, 'scan-started');
   var fileList = this.getFileList();
   fileList.splice(0, fileList.length);

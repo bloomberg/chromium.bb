@@ -540,12 +540,11 @@ FileListModel.prototype.compareType_ = function(a, b) {
  *
  * @param {FileFilter} fileFilter The file-filter context.
  * @param {MetadataCache} metadataCache Metadata cache service.
- * @param {!MetadataProviderCache} metadataProviderCache
  * @param {!FileSystemMetadata} fileSystemMetadata
  * @constructor
  */
 function FileListContext(
-    fileFilter, metadataCache, metadataProviderCache, fileSystemMetadata) {
+    fileFilter, metadataCache, fileSystemMetadata) {
   /**
    * @type {FileListModel}
    */
@@ -555,12 +554,6 @@ function FileListContext(
    * @type {MetadataCache}
    */
   this.metadataCache = metadataCache;
-
-  /**
-   * @public {!MetadataProviderCache}
-   * @const
-   */
-  this.metadataProviderCache = metadataProviderCache;
 
   /**
    * @public {!FileSystemMetadata}
@@ -653,8 +646,6 @@ DirectoryContents.prototype.clone = function() {
  */
 DirectoryContents.prototype.dispose = function() {
   this.context_.metadataCache.resizeBy(-this.lastSpaceInMetadataCache_);
-  this.context_.metadataProviderCache.updateCacheSizeBy(
-      -this.lastSpaceInMetadataCache_);
   // Though the lastSpaceInMetadataCache_ is not supposed to be referred after
   // dispose(), keep it synced with requested cache size just in case.
   this.lastSpaceInMetadataCache_ = 0;
@@ -668,8 +659,6 @@ DirectoryContents.prototype.dispose = function() {
  */
 DirectoryContents.prototype.makeSpaceInMetadataCache_ = function(size) {
   this.context_.metadataCache.resizeBy(size - this.lastSpaceInMetadataCache_);
-  this.context_.metadataProviderCache.updateCacheSizeBy(
-      size - this.lastSpaceInMetadataCache_);
   this.lastSpaceInMetadataCache_ = size;
 };
 
