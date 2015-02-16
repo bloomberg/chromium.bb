@@ -38,7 +38,6 @@
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
@@ -224,7 +223,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 
     // Create a thread to rasterize SkPicture.
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("RasterThread"));
-    thread->postTask(FROM_HERE, new Task(WTF::bind(&rasterizeMain, m_surface->getCanvas(), picture.get())));
+    thread->postTask(new Task(WTF::bind(&rasterizeMain, m_surface->getCanvas(), picture.get())));
     thread.clear();
     EXPECT_EQ(0, m_frameBufferRequestCount);
 

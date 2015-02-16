@@ -33,7 +33,6 @@
 
 #include "platform/heap/ThreadState.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -46,7 +45,7 @@ public:
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
         // in PendingGCRunner::didProcessTask being executed.
-        m_thread->postTask(FROM_HERE, new GCTask);
+        m_thread->postTask(new GCTask);
     }
 
 private:

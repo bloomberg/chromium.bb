@@ -108,12 +108,12 @@ protected:
     {
         WebThread* currentThread = blink::Platform::current()->currentThread();
         while (ScriptStreamerThread::shared()->isRunningTask()) {
-            currentThread->postTask(FROM_HERE, new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
+            currentThread->postTask(new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
             currentThread->enterRunLoop();
         }
         // Once more, because the "streaming complete" notification might only
         // now be in the task queue.
-        currentThread->postTask(FROM_HERE, new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
+        currentThread->postTask(new Task(WTF::bind(&WebThread::exitRunLoop, currentThread)));
         currentThread->enterRunLoop();
     }
 

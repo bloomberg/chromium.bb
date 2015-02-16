@@ -261,13 +261,13 @@ private:
             EXPECT_EQ((Task*)0, m_task);
         }
 
-        virtual void postTask(const WebTraceLocation&, Task* task)
+        void postTask(const WebTraceLocation&, Task* task) override
         {
             EXPECT_EQ((Task*)0, m_task);
             m_task = task;
         }
 
-        virtual void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
+        void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
 
         virtual bool isCurrentThread() const override { return true; }
         virtual PlatformThreadId threadId() const override
@@ -334,7 +334,7 @@ class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
-        Platform::current()->currentThread()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
+        Platform::current()->currentThread()->postTask(new TestWrapperTask_ ## TEST_METHOD(this)); \
         Platform::current()->currentThread()->enterRunLoop();                                      \
     }
 

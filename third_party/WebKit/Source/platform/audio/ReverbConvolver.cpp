@@ -37,7 +37,6 @@
 #include "platform/audio/VectorMath.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -177,7 +176,7 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel, AudioChannel* d
 
     // Now that we've buffered more input, post another task to the background thread.
     if (m_backgroundThread)
-        m_backgroundThread->postTask(FROM_HERE, new Task(WTF::bind(&ReverbConvolver::processInBackground, this)));
+        m_backgroundThread->postTask(new Task(WTF::bind(&ReverbConvolver::processInBackground, this)));
 }
 
 void ReverbConvolver::reset()

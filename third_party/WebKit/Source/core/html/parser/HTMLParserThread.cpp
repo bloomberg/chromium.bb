@@ -33,7 +33,6 @@
 
 #include "platform/Task.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebTraceLocation.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -97,7 +96,7 @@ bool HTMLParserThread::isRunning()
 
 void HTMLParserThread::postTask(PassOwnPtr<Closure> closure)
 {
-    platformThread().postTask(FROM_HERE, new Task(closure));
+    platformThread().postTask(new Task(closure));
 }
 
 } // namespace blink

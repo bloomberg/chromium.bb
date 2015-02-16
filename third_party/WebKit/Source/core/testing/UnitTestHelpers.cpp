@@ -28,7 +28,7 @@
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
+
 
 namespace blink {
 namespace testing {
@@ -43,7 +43,7 @@ public:
 
 void runPendingTasks()
 {
-    blink::Platform::current()->currentThread()->postTask(FROM_HERE, new QuitTask);
+    blink::Platform::current()->currentThread()->postTask(new QuitTask);
     blink::Platform::current()->currentThread()->enterRunLoop();
 }
 

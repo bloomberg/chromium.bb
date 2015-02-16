@@ -45,9 +45,6 @@
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
         'blink_platform.gyp:blink_platform',
       ],
-      'defines': [
-        'INSIDE_BLINK',
-      ],
       'sources': [
         'heap/RunAllTests.cpp',
         '<@(platform_heap_test_files)',

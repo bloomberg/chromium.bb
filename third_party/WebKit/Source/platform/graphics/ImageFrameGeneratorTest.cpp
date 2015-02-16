@@ -32,7 +32,6 @@
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/WebTraceLocation.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -176,7 +175,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
-    thread->postTask(FROM_HERE, new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
+    thread->postTask(new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
     thread.clear();
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);

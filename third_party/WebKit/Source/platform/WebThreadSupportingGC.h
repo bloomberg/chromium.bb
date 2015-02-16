@@ -29,12 +29,12 @@ public:
 
     void postTask(WebThread::Task* task)
     {
-        m_thread->postTask(FROM_HERE, task);
+        m_thread->postTask(task);
     }
 
     void postDelayedTask(WebThread::Task* task, long long delayMs)
     {
-        m_thread->postDelayedTask(FROM_HERE, task, delayMs);
+        m_thread->postDelayedTask(task, delayMs);
     }
 
     bool isCurrentThread() const
