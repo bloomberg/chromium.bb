@@ -67,7 +67,6 @@ crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure 
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
 crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
 crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
-crbug.com/456640 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
 
 # Failing due to r188554
 crbug.com/450605 [ Android ] compositing/contents-opaque/layer-transform.html [ Failure ]
