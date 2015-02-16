@@ -5,6 +5,18 @@
 #ifndef NET_BASE_MIME_UTIL_H__
 #define NET_BASE_MIME_UTIL_H__
 
+// This file defines MIME utility functions. All of them assume the MIME type
+// to be of the format specified by rfc2045. According to it, MIME types are
+// case strongly insensitive except parameter values, which may or may not be
+// case sensitive.
+//
+// These utilities perform a *case-sensitive* matching for  parameter values,
+// which may produce some false negatives. Except that, matching is
+// case-insensitive.
+//
+// All constants in mime_util.cc must be written in lower case, except parameter
+// values, which can be any case.
+
 #include <string>
 #include <vector>
 
@@ -50,8 +62,7 @@ NET_EXPORT bool IsSupportedCertificateMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedMimeType(const std::string& mime_type);
 
 // Returns true if this the mime_type_pattern matches a given mime-type.
-// Checks for absolute matching and wildcards.  mime-types should be in
-// lower case.
+// Checks for absolute matching and wildcards. MIME types are case insensitive.
 NET_EXPORT bool MatchesMimeType(const std::string& mime_type_pattern,
                                 const std::string& mime_type);
 
@@ -125,9 +136,9 @@ NET_EXPORT SupportsType IsSupportedStrictMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs);
 
-// Get the extensions associated with the given mime type. This should be passed
-// in lower case. There could be multiple extensions for a given mime type, like
-// "html,htm" for "text/html", or "txt,text,html,..." for "text/*".
+// Get the extensions associated with the given mime type. There could be
+// multiple extensions for a given mime type, like "html,htm" for "text/html",
+// or "txt,text,html,..." for "text/*".
 // Note that we do not erase the existing elements in the the provided vector.
 // Instead, we append the result to it.
 NET_EXPORT void GetExtensionsForMimeType(
