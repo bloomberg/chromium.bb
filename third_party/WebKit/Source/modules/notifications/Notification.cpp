@@ -66,6 +66,12 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
         return nullptr;
     }
 
+    // The Web Notification constructor may not be used in Service Worker contexts.
+    if (context->isServiceWorkerGlobalScope()) {
+        exceptionState.throwTypeError("Illegal constructor.");
+        return nullptr;
+    }
+
     Notification* notification = new Notification(title, context);
 
     notification->setBody(options.body());

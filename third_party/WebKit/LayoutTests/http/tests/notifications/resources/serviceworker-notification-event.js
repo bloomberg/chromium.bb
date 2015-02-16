@@ -12,15 +12,12 @@ test(function() {
     assert_equals(event.notification, null);
     assert_inherits(event, 'waitUntil');
 
-    var notification = new Notification('foo');
     var eventWithInit = new NotificationEvent('NotificationEvent',
                                               { cancelable: true,
-                                                bubbles: true,
-                                                notification: notification,
+                                                bubbles: true
                                               });
     assert_equals(eventWithInit.cancelable, true);
     assert_equals(eventWithInit.bubbles, true);
-    assert_equals(eventWithInit.notification, notification);
 
 }, 'NotificationEvent is exposed, and has the expected interface.');
 
