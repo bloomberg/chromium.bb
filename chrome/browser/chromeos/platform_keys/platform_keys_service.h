@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
 
+#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
@@ -134,20 +136,19 @@ class PlatformKeysService : public KeyedService {
   using GetPlatformKeysCallback =
       base::Callback<void(scoped_ptr<base::ListValue> platform_keys)>;
 
-  // Registers the given public key as newly generated key, which is allowed to
-  // be used for signing for a single time. Afterwards, calls |callback|. If
-  // registration was successful, passes |true| otherwise |false| to the
-  // callback.
-  void RegisterPublicKey(const std::string& extension_id,
-                         const std::string& public_key_spki_der,
-                         const base::Closure& callback);
+  class Task;
+  class SignTask;
+  class PermissionUpdateTask;
 
-  // Gets the current validity of the given public key by reading StateStore.
-  // Invalidates the key if it was found to be valid. Finally, calls |callback|
-  // with the old validity.
-  void ReadValidityAndInvalidateKey(const std::string& extension_id,
-                                    const std::string& public_key_spki_der,
-                                    const base::Callback<void(bool)>& callback);
+  // Starts |task| eventually. To ensure that at most one |Task| is running at a
+  // time, it queues |task| for later execution if necessary.
+  void StartOrQueueTask(scoped_ptr<Task> task);
+
+  // Must be called after |task| is done. |task| will be invalid after this
+  // call. This must not be called for any but the task that ran last. If any
+  // other tasks are queued (see StartOrQueueTask()), it will start the next
+  // one.
+  void TaskFinished(Task* task);
 
   // Reads the list of public keys currently registered for |extension_id| from
   // StateStore. Calls |callback| with the read list, or a new empty list if
@@ -165,10 +166,18 @@ class PlatformKeysService : public KeyedService {
   // for the given extension. If any error occurs during key generation or
   // registration, calls |callback| with an error. Otherwise, on success, calls
   // |callback| with the public key.
-  void GenerateRSAKeyCallback(const std::string& extension_id,
-                              const GenerateKeyCallback& callback,
+  void GeneratedKey(const std::string& extension_id,
+                    const GenerateKeyCallback& callback,
+                    const std::string& public_key_spki_der,
+                    const std::string& error_message);
+
+  // Callback used by |GeneratedKey|.
+  // |public_key_spki_der| will contain the X.509 Subject Public Key Info  of
+  // the generated key in DER encoding. |task| points to the finished |Task|
+  // object.
+  void RegisteredGeneratedKey(const GenerateKeyCallback& callback,
                               const std::string& public_key_spki_der,
-                              const std::string& error_message);
+                              Task* task);
 
   // Calback used by |SelectClientCertificates|.
   // If the certificate request could be processed successfully, |matches| will
@@ -181,23 +190,6 @@ class PlatformKeysService : public KeyedService {
       scoped_ptr<net::CertificateList> matches,
       const std::string& error_message);
 
-  // Callback used by |RegisterPublicKey|.
-  // Updates the old |platform_keys| read from the StateStore and writes the
-  // updated value back to the StateStore.
-  void RegisterPublicKeyGotPlatformKeys(
-      const std::string& extension_id,
-      const std::string& public_key_spki_der,
-      const base::Closure& callback,
-      scoped_ptr<base::ListValue> platform_keys);
-
-  // Callback used by |ReadValidityAndInvalidateKey|.
-  // Invalidates the given public key so that future signing is prohibited and
-  // calls |callback| with the old validity.
-  void InvalidateKey(const std::string& extension_id,
-                     const std::string& public_key_spki_der,
-                     const base::Callback<void(bool)>& callback,
-                     scoped_ptr<base::ListValue> platform_keys);
-
   // Callback used by |GetPlatformKeysOfExtension|.
   // Is called with |value| set to the PlatformKeys value read from the
   // StateStore, which it forwards to |callback|. On error, calls |callback|
@@ -209,6 +201,7 @@ class PlatformKeysService : public KeyedService {
   content::BrowserContext* browser_context_;
   extensions::StateStore* state_store_;
   bool permission_check_enabled_ = true;
+  std::queue<linked_ptr<Task>> tasks_;
   base::WeakPtrFactory<PlatformKeysService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformKeysService);
