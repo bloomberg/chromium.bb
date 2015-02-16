@@ -342,9 +342,8 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
       << message_;
 }
 
-// https://crbug.com/458990
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_CheckSystemTokenAvailability,
+    CheckSystemTokenAvailability,
     EnterprisePlatformKeysTest,
     ::testing::Values(Params(SYSTEM_TOKEN_EXISTS,
                              DEVICE_STATUS_ENROLLED,
