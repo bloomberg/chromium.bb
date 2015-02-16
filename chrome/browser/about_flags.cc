@@ -2190,6 +2190,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)
   },
+  {
+    "bypass-app-banner-engagement-checks",
+    IDS_FLAGS_BYPASS_APP_BANNER_ENGAGEMENT_CHECKS_NAME,
+    IDS_FLAGS_BYPASS_APP_BANNER_ENGAGEMENT_CHECKS_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

@@ -47,6 +47,7 @@ extern const char kAppModeOAuth2Token[];
 extern const char kAuthExtensionPath[];
 extern const char kAutoLaunchAtStartup[];
 extern const char kAutoSelectDesktopCaptureSource[];
+extern const char kBypassAppBannerEngagementChecks[];
 extern const char kCertificateTransparencyLog[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kCheckCloudPrintConnectorPolicy[];

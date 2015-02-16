@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <string>
 
+#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/web_contents.h"
@@ -177,6 +179,11 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
     base::Time time) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBypassAppBannerEngagementChecks)) {
+    return true;
+  }
+
   // Don't show if it has been added to the homescreen.
   base::Time added_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,

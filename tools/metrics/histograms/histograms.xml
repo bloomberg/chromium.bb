@@ -51583,6 +51583,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="909439558" label="disable-device-discovery"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
+  <int value="936919953" label="bypass-app-banner-engagement-checks"/>
   <int value="939554480" label="enable-credit-card-scan"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="980396200" label="enable-new-korean-ime"/>
