@@ -24,12 +24,12 @@ component("user_manager") {
   if (is_chromeos) {
     sources += [
       "remove_user_delegate.h",
+      "user.cc",
+      "user.h",
       "user_image/default_user_images.cc",
       "user_image/default_user_images.h",
       "user_image/user_image.cc",
       "user_image/user_image.h",
-      "user.cc",
-      "user.h",
       "user_manager.cc",
       "user_manager.h",
       "user_manager_base.cc",

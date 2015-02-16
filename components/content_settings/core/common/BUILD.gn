@@ -11,10 +11,10 @@ static_library("common") {
     "content_settings_pattern_parser.cc",
     "content_settings_pattern_parser.h",
     "content_settings_types.h",
-    "permission_request_id.h",
     "permission_request_id.cc",
-    "pref_names.h",
+    "permission_request_id.h",
     "pref_names.cc",
+    "pref_names.h",
   ]
 
   deps = [
@@ -27,8 +27,8 @@ static_library("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "content_settings_pattern_unittest.cc",
     "content_settings_pattern_parser_unittest.cc",
+    "content_settings_pattern_unittest.cc",
   ]
 
   deps = [

@@ -10,8 +10,8 @@ static_library("navigation_interception") {
   sources = [
     "intercept_navigation_resource_throttle.cc",
     "intercept_navigation_resource_throttle.h",
-    "navigation_params.h",
     "navigation_params.cc",
+    "navigation_params.h",
   ]
 
   deps = [
@@ -28,8 +28,8 @@ static_library("navigation_interception") {
       "component_jni_registrar.h",
       "intercept_navigation_delegate.cc",
       "intercept_navigation_delegate.h",
-      "navigation_params_android.h",
       "navigation_params_android.cc",
+      "navigation_params_android.h",
     ]
     deps += [ ":jni_headers" ]
   }

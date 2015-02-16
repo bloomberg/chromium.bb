@@ -12,13 +12,11 @@ source_set("update_client") {
     "component_patcher_operation.h",
     "component_unpacker.cc",
     "component_unpacker.h",
-    "ping_manager.cc",
-    "ping_manager.h",
-    "utils.cc",
-    "utils.h",
-    "crx_update_item.h",
     "crx_downloader.cc",
     "crx_downloader.h",
+    "crx_update_item.h",
+    "ping_manager.cc",
+    "ping_manager.h",
     "request_sender.cc",
     "request_sender.h",
     "update_checker.cc",
@@ -33,6 +31,8 @@ source_set("update_client") {
     "update_response.h",
     "url_fetcher_downloader.cc",
     "url_fetcher_downloader.h",
+    "utils.cc",
+    "utils.h",
   ]
 
   deps = [
@@ -72,8 +72,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "test/component_patcher_unittest.cc",
-    "test/ping_manager_unittest.cc",
     "test/crx_downloader_unittest.cc",
+    "test/ping_manager_unittest.cc",
     "test/request_sender_unittest.cc",
     "test/update_checker_unittest.cc",
     "test/update_response_unittest.cc",

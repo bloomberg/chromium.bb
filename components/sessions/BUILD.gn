@@ -99,8 +99,8 @@ if (!is_ios && !is_android) {
   source_set("unit_tests") {
     testonly = true
     sources = [
-      "session_types_unittest.cc",
       "session_backend_unittest.cc",
+      "session_types_unittest.cc",
     ]
     deps = [
       ":sessions_content",

@@ -13,8 +13,8 @@ source_set("proximity_auth") {
     "bluetooth_connection_finder.cc",
     "bluetooth_connection_finder.h",
     "bluetooth_util.cc",
-    "bluetooth_util_chromeos.cc",
     "bluetooth_util.h",
+    "bluetooth_util_chromeos.cc",
     "client.cc",
     "client.h",
     "client_observer.h",
@@ -45,8 +45,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "base64url_unittest.cc",
-    "bluetooth_connection_unittest.cc",
     "bluetooth_connection_finder_unittest.cc",
+    "bluetooth_connection_unittest.cc",
     "client_unittest.cc",
     "connection_unittest.cc",
     "proximity_auth_system_unittest.cc",

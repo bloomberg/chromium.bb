@@ -9,6 +9,7 @@ source_set("common") {
 
   if (enable_configuration_policy) {
     sources = [
+      "../../policy_export.h",
       "async_policy_loader.cc",
       "async_policy_loader.h",
       "async_policy_provider.cc",
@@ -122,7 +123,6 @@ source_set("common") {
       "schema_registry.h",
       "schema_registry_tracking_policy_provider.cc",
       "schema_registry_tracking_policy_provider.h",
-      "../../policy_export.h",
     ]
 
     deps = [
@@ -182,8 +182,8 @@ source_set("common") {
     # can always interface with the PolicyService without having to #ifdef on
     # ENABLE_CONFIGURATION_POLICY.
     sources = [
-      "external_data_fetcher.h",
       "external_data_fetcher.cc",
+      "external_data_fetcher.h",
       "external_data_manager.h",
       "policy_map.cc",
       "policy_map.h",

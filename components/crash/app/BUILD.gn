@@ -8,10 +8,10 @@ if (is_android) {
 
 source_set("lib") {
   sources = [
-    "crash_reporter_client.cc",
-    "crash_reporter_client.h",
     "crash_keys_win.cc",
     "crash_keys_win.h",
+    "crash_reporter_client.cc",
+    "crash_reporter_client.h",
   ]
 
   include_dirs = [ "../../../breakpad/src" ]

@@ -12,6 +12,8 @@ static_library("browser") {
     "content_settings_observable_provider.cc",
     "content_settings_observable_provider.h",
     "content_settings_observer.h",
+    "content_settings_origin_identifier_value_map.cc",
+    "content_settings_origin_identifier_value_map.h",
     "content_settings_override_provider.cc",
     "content_settings_override_provider.h",
     "content_settings_policy_provider.cc",
@@ -19,17 +21,15 @@ static_library("browser") {
     "content_settings_pref_provider.cc",
     "content_settings_pref_provider.h",
     "content_settings_provider.h",
-    "content_settings_origin_identifier_value_map.cc",
-    "content_settings_origin_identifier_value_map.h",
     "content_settings_rule.cc",
     "content_settings_rule.h",
     "content_settings_usages_state.cc",
     "content_settings_usages_state.h",
     "content_settings_utils.cc",
     "content_settings_utils.h",
-    "local_shared_objects_counter.h",
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
+    "local_shared_objects_counter.h",
   ]
 
   deps = [

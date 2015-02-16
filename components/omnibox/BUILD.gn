@@ -4,8 +4,8 @@
 
 static_library("omnibox") {
   sources = [
-    "answers_cache.h",
     "answers_cache.cc",
+    "answers_cache.h",
     "autocomplete_input.cc",
     "autocomplete_input.h",
     "autocomplete_match.cc",
