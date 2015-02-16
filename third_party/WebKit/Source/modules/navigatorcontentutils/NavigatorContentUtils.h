@@ -53,7 +53,7 @@ public:
 
     static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
 
-    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<Page>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<Page>::trace(visitor); }
 
     void setClientForTest(PassOwnPtr<NavigatorContentUtilsClient> client) { m_client = client; }
 
