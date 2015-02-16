@@ -1903,9 +1903,6 @@ crbug.com/458420 [ Linux Release ] virtual/threaded/fast/scroll-behavior/overflo
 crbug.com/458420 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Failure Pass Timeout ]
 
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
-crbug.com/451759 fast/images/drag-image.html [ Failure ]
-crbug.com/451759 virtual/deferred/fast/images/drag-image.html [ Failure ]
-crbug.com/451759 virtual/slimmingpaint/fast/images/drag-image.html [ Failure ]
 crbug.com/458417 [ XP ] http/tests/fetch/workers/fetch.html [ Pass Timeout ]
 crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-brightness-clamping.html [ NeedsRebaseline ]
 crbug.com/458601 [ XP ] virtual/slimmingpaint/css3/filters/effect-brightness.html [ NeedsRebaseline ]
