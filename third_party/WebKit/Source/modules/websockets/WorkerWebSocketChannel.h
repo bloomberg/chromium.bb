@@ -75,7 +75,7 @@ public:
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned) override;
     virtual void disconnect() override; // Will suppress didClose().
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     class Bridge;
     // Allocated in the worker thread, but used in the main thread.
@@ -101,7 +101,7 @@ public:
         void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
         void disconnect();
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
         // WebSocketChannelClient functions.
         virtual void didConnect(const String& subprotocol, const String& extensions) override;
@@ -141,7 +141,7 @@ public:
         // Returns null when |disconnect| has already been called.
         WebSocketChannelClient* client() { return m_client; }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         // Returns false if shutdown event is received before method completion.

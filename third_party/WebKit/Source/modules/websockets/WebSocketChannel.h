@@ -101,7 +101,7 @@ public:
 
     virtual ~WebSocketChannel() { }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

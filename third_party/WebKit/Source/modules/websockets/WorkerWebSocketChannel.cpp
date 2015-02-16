@@ -93,7 +93,7 @@ public:
         m_event->wait();
     }
 
-    void trace(Visitor* visitor) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit WebSocketChannelSyncHelper(PassOwnPtr<WebWaitableEvent> event)
@@ -176,7 +176,7 @@ void WorkerWebSocketChannel::disconnect()
     m_bridge.clear();
 }
 
-void WorkerWebSocketChannel::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerWebSocketChannel)
 {
     visitor->trace(m_bridge);
     WebSocketChannel::trace(visitor);
@@ -362,7 +362,7 @@ void Peer::didError()
     m_loaderProxy->postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
 }
 
-void Peer::trace(Visitor* visitor)
+DEFINE_TRACE(Peer)
 {
     visitor->trace(m_bridge);
     visitor->trace(m_mainWebSocketChannel);
@@ -470,7 +470,7 @@ bool Bridge::waitForMethodCompletion(PassOwnPtr<ExecutionContextTask> task)
     return !m_workerGlobalScope->thread()->terminated();
 }
 
-void Bridge::trace(Visitor* visitor)
+DEFINE_TRACE(Bridge)
 {
     visitor->trace(m_client);
     visitor->trace(m_workerGlobalScope);

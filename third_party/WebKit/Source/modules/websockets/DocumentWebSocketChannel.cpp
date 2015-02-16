@@ -74,7 +74,7 @@ public:
     virtual void didFinishLoading() override;
     virtual void didFail(FileError::ErrorCode) override;
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_channel);
     }
@@ -582,7 +582,7 @@ void DocumentWebSocketChannel::didFailLoadingBlob(FileError::ErrorCode errorCode
     // |this| can be deleted here.
 }
 
-void DocumentWebSocketChannel::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentWebSocketChannel)
 {
     visitor->trace(m_blobLoader);
     visitor->trace(m_client);

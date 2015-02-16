@@ -14,6 +14,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/testing/WTFTestHelpers.h"
@@ -78,7 +79,7 @@ public:
         return m_channel.get();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_channel);
         DOMWebSocket::trace(visitor);

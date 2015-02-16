@@ -53,7 +53,7 @@ public:
         ClosingHandshakeComplete
     };
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short /* code */, const String& /* reason */) { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     WebSocketChannelClient() { }

@@ -33,6 +33,7 @@
 
 #include "modules/EventModules.h"
 #include "modules/websockets/CloseEventInit.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -62,7 +63,7 @@ public:
     // Event function.
     virtual const AtomicString& interfaceName() const override { return EventNames::CloseEvent; }
 
-    virtual void trace(Visitor* visitor) override { Event::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
 private:
     CloseEvent()

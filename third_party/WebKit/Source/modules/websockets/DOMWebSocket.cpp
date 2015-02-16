@@ -150,7 +150,7 @@ void DOMWebSocket::EventQueue::resumeTimerFired(Timer<EventQueue>*)
     dispatchQueuedEvents();
 }
 
-void DOMWebSocket::EventQueue::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWebSocket::EventQueue)
 {
     visitor->trace(m_events);
 }
@@ -663,7 +663,7 @@ void DOMWebSocket::didClose(ClosingHandshakeCompletionStatus closingHandshakeCom
     releaseChannel();
 }
 
-void DOMWebSocket::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWebSocket)
 {
     visitor->trace(m_channel);
     visitor->trace(m_eventQueue);

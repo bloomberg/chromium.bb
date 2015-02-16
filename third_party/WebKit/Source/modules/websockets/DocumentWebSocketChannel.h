@@ -36,6 +36,7 @@
 #include "core/fileapi/FileError.h"
 #include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/WebSocketChannel.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebSocketHandleClient.h"
@@ -85,7 +86,7 @@ public:
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
     virtual void disconnect() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     enum MessageType {
