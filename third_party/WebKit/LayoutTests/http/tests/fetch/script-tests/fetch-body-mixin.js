@@ -24,7 +24,7 @@ function readStream(stream, values) {
   return stream.closed;
 }
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     var response;
     return fetch('/fetch/resources/doctype.html')
       .then(function(resp) {
@@ -43,7 +43,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchTextAfterStreamGetReadableTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           // Accessing the body property makes the stream start working.
@@ -55,7 +55,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchTextAfterAccessingStreamTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     var values = [];
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
@@ -71,7 +71,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchStreamTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           var p1 = response.text();
@@ -88,7 +88,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchTwiceTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.arrayBuffer();
@@ -98,7 +98,7 @@ sequential_promise_test(function(test) {
         })
     }, 'ArrayBufferTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.blob();
@@ -109,7 +109,7 @@ sequential_promise_test(function(test) {
         })
     }, 'BlobTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.json();
@@ -121,7 +121,7 @@ sequential_promise_test(function(test) {
         })
     }, 'JSONFailedTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/serviceworker/resources/simple.json')
       .then(function(response) {
           return response.json();
@@ -132,7 +132,7 @@ sequential_promise_test(function(test) {
         })
     }, 'JSONTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.text();
@@ -142,7 +142,7 @@ sequential_promise_test(function(test) {
         })
     }, 'TextTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     var expectedText = '';
     for (var i = 0; i < 100; ++i)
         expectedText += i;
@@ -183,5 +183,4 @@ sequential_promise_test(function(test) {
         })
     }, 'PartiallyReadFromStreamAndReadTextTest');
 
-sequential_promise_test_done();
 done();

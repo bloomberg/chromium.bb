@@ -2,52 +2,65 @@ if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
 
-sequential_promise_test(function(t) {
-    return fetch('http://')
+async_test(function(t) {
+    fetch('http://')
       .then(
         t.unreached_func('fetch of invalid URL must fail'),
-        function() {});
+        function(e) {
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch invalid URL');
 
 // https://fetch.spec.whatwg.org/#fetching
 // Step 4:
 // request's url's scheme is not one of "http" and "https"
 //   A network error.
-sequential_promise_test(function(t) {
-    return fetch('ftp://localhost/')
+async_test(function(t) {
+    fetch('ftp://localhost/')
       .then(
         t.unreached_func('fetch of non-HTTP(S) CORS must fail'),
-        function() {});
+        function(e) {
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'fetch non-HTTP(S) CORS');
 
 // https://fetch.spec.whatwg.org/#concept-basic-fetch
 // The last statement:
 // Otherwise
 //   Return a network error.
-sequential_promise_test(function(t) {
-    return fetch('foobar://localhost/', {mode: 'no-cors'})
+async_test(function(t) {
+    fetch('foobar://localhost/', {mode: 'no-cors'})
       .then(
         t.unreached_func('scheme not listed in basic fetch spec must fail'),
-        function() {});
+        function(e) {
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'fetch of scheme not listed in basic fetch spec');
 
-sequential_promise_test(function(t) {
-    return fetch('/serviceworker/resources/fetch-status.php?status=200')
+async_test(function(t) {
+    fetch('/serviceworker/resources/fetch-status.php?status=200')
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch result of 200 response');
 
-sequential_promise_test(function(t) {
-    return fetch('/serviceworker/resources/fetch-status.php?status=404')
+async_test(function(t) {
+    fetch('/serviceworker/resources/fetch-status.php?status=404')
       .then(function(response) {
           assert_equals(response.status, 404);
           assert_equals(response.statusText, 'Not Found');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch result of 404 response');
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var request = new Request(
       '/serviceworker/resources/fetch-status.php?status=200#fragment');
 
@@ -56,7 +69,7 @@ sequential_promise_test(function(t) {
     assert_equals(request.url,
       BASE_ORIGIN + '/serviceworker/resources/fetch-status.php?status=200');
 
-    return fetch(request)
+    fetch(request)
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
@@ -66,10 +79,12 @@ sequential_promise_test(function(t) {
           assert_equals(response.url,
             BASE_ORIGIN +
             '/serviceworker/resources/fetch-status.php?status=200');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Request/response url attribute getter with fragment');
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var redirect_target_url =
       BASE_ORIGIN + '/serviceworker/resources/fetch-status.php?status=200';
     var redirect_original_url =
@@ -80,7 +95,7 @@ sequential_promise_test(function(t) {
     assert_equals(request.url, redirect_original_url,
       'Request\'s url is the original URL');
 
-    return fetch(request)
+    fetch(request)
       .then(function(response) {
           assert_equals(response.status, 200);
           assert_equals(response.statusText, 'OK');
@@ -88,7 +103,9 @@ sequential_promise_test(function(t) {
             'Response\'s url is locationURL');
           assert_equals(request.url, redirect_original_url,
             'Request\'s url remains the original URL');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Request/response url attribute getter with redirect');
 
 function evalJsonp(text) {
@@ -99,36 +116,40 @@ function evalJsonp(text) {
     });
 }
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var request =
       new Request('/serviceworker/resources/fetch-access-control.php',
                   {
                     method: 'POST',
                     body: new Blob(['Test Blob'], {type: 'test/type'})
                   });
-    return fetch(request)
+    fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
           assert_equals(result.body, 'Test Blob');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch with Blob body test');
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var request = new Request(
       '/serviceworker/resources/fetch-access-control.php',
       {method: 'POST', body: 'Test String'});
-    return fetch(request)
+    fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
           assert_equals(result.body, 'Test String');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch with string body test');
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var text = 'Test ArrayBuffer';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
@@ -136,16 +157,18 @@ sequential_promise_test(function(t) {
     var request = new Request(
       '/serviceworker/resources/fetch-access-control.php',
       {method: 'POST', body: array.buffer});
-    return fetch(request)
+    fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
           assert_equals(result.body, 'Test ArrayBuffer');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch with ArrayBuffer body test');
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var text = 'Test ArrayBufferView';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
@@ -153,16 +176,18 @@ sequential_promise_test(function(t) {
     var request = new Request(
       '/serviceworker/resources/fetch-access-control.php',
       {method: 'POST', body: array});
-    return fetch(request)
+    fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
           assert_equals(result.body, 'Test ArrayBufferView');
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch with ArrayBufferView body test');
 
-sequential_promise_test(function(t) {
+async_test(function(t) {
     var formData = new FormData();
     formData.append('StringKey1', '1234567890');
     formData.append('StringKey2', 'ABCDEFGHIJ');
@@ -172,7 +197,7 @@ sequential_promise_test(function(t) {
     var request = new Request(
       '/serviceworker/resources/fetch-access-control.php',
       {method: 'POST', body: formData});
-    return fetch(request)
+    fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
@@ -189,7 +214,9 @@ sequential_promise_test(function(t) {
           assert_equals(files['FileKey'].content, 'file content');
           assert_equals(files['FileKey'].name, 'file.dat');
           assert_equals(files['FileKey'].size, 12);
-        });
+          t.done();
+        })
+      .catch(unreached_rejection(t));
   }, 'Fetch with FormData body test');
 
 test(function(t) {
@@ -202,5 +229,4 @@ test(function(t) {
   'Destroying the execution context while fetch is happening should not ' +
   'cause a crash.');
 
-sequential_promise_test_done();
 done();

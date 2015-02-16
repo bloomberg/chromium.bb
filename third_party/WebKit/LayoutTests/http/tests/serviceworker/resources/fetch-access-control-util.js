@@ -396,13 +396,28 @@ function executeTest(test_target) {
       });
 }
 
+function executePromiseTest(test_target, name) {
+  var promise = Promise.resolve();
+  // Report the result.
+  promise_test(function(t) {
+      promise = executeTest(test_target);
+      return promise;
+    }, name);
+  return promise;
+}
+
 function executeTests(test_targets) {
-  for (var i = 0; i < test_targets.length; ++i) {
-    sequential_promise_test(
-      function(counter, t) {
-        return executeTest(test_targets[counter]);
-      }.bind(this, i),
-      "executeTest-" + i);
-  }
-  sequential_promise_test_done();
+  async_test(function(t) {
+      var promise = Promise.resolve();
+      for (var i = 0; i < test_targets.length; ++i) {
+        promise = promise.then(function(counter) {
+            return executePromiseTest(test_targets[counter],
+                                      "executeTest-" + counter);
+          }.bind(this, i)).catch(function(e) {
+            // The error was already reported. Continue to the next test.
+          });
+      }
+      promise.then(function() {t.done();});
+    },
+    'executeTests');
 }

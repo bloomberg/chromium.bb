@@ -22,7 +22,7 @@ function read_until_end(reader) {
   return new Promise(rec);
 }
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/doctype.html').then(function(res) {
         var stream = res.body;
         var reader = stream.getReader();
@@ -36,7 +36,7 @@ sequential_promise_test(function(t) {
       });
   }, 'ExclusiveStreamReader acquisition / releasing');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     function wait_until_readable(reader) {
       return reader.ready.then(function() {
           if (reader.state === 'waiting') {
@@ -67,7 +67,7 @@ sequential_promise_test(function(t) {
       });
   }, 'ExclusiveStreamReader state masking');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/doctype.html').then(function(res) {
         var reader = res.body.getReader();
         return read_until_end(reader);
@@ -88,5 +88,4 @@ sequential_promise_test(function(t) {
       });
   }, 'read contents with ExclusiveStreamReader');
 
-sequential_promise_test_done();
 done();
