@@ -23,7 +23,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
                                const std::string& origin) const override;
   bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   bool PromptUserToSavePassword(
-      scoped_ptr<PasswordFormManager> form_to_save) override;
+      scoped_ptr<PasswordFormManager> form_to_save,
+      password_manager::CredentialSourceType type) override;
   bool PromptUserToChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,

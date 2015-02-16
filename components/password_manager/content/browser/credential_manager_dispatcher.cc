@@ -225,9 +225,10 @@ void CredentialManagerDispatcher::OnNotifySignedIn(
       client_, GetDriver(), *form, this));
 }
 
-void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
+void CredentialManagerDispatcher::OnProvisionalSaveComplete(
+    CredentialSourceType type) {
   DCHECK(form_manager_);
-  client_->PromptUserToSavePassword(form_manager_.Pass());
+  client_->PromptUserToSavePassword(form_manager_.Pass(), type);
 }
 
 void CredentialManagerDispatcher::OnNotifySignedOut(int request_id) {

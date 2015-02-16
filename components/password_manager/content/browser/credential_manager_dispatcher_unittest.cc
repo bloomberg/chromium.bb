@@ -36,7 +36,8 @@ class TestPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
   TestPasswordManagerClient(password_manager::PasswordStore* store)
-      : did_prompt_user_to_save_(false),
+      : did_pass_credential_source_type_(false),
+        did_prompt_user_to_save_(false),
         did_prompt_user_to_choose_(false),
         is_off_the_record_(false),
         store_(store) {
@@ -52,8 +53,13 @@ class TestPasswordManagerClient
   PrefService* GetPrefs() override { return &prefs_; }
 
   bool PromptUserToSavePassword(
-      scoped_ptr<password_manager::PasswordFormManager> manager) override {
+      scoped_ptr<password_manager::PasswordFormManager> manager,
+      password_manager::CredentialSourceType type) override {
     did_prompt_user_to_save_ = true;
+    did_pass_credential_source_type_ =
+        (type == password_manager::CredentialSourceType::
+                     CREDENTIAL_SOURCE_PASSWORD_MANAGER ||
+         type == password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API);
     manager_.reset(manager.release());
     return true;
   }
@@ -78,6 +84,9 @@ class TestPasswordManagerClient
 
   bool IsOffTheRecord() const override { return is_off_the_record_; }
 
+  bool did_pass_credential_source_type() const {
+    return did_pass_credential_source_type_;
+  }
   bool did_prompt_user_to_save() const { return did_prompt_user_to_save_; }
   bool did_prompt_user_to_choose() const { return did_prompt_user_to_choose_; }
 
@@ -96,6 +105,7 @@ class TestPasswordManagerClient
 
  private:
   TestingPrefServiceSimple prefs_;
+  bool did_pass_credential_source_type_;
   bool did_prompt_user_to_save_;
   bool did_prompt_user_to_choose_;
   bool is_off_the_record_;
@@ -228,6 +238,7 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
   RunAllPendingTasks();
 
   EXPECT_TRUE(client_->did_prompt_user_to_save());
+  EXPECT_TRUE(client_->did_pass_credential_source_type());
   EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
 
   autofill::PasswordForm new_form =

@@ -24,7 +24,7 @@ class WebContents;
 }
 
 namespace password_manager {
-
+enum class CredentialSourceType;
 class CredentialManagerPasswordFormManager;
 class PasswordManagerClient;
 class PasswordManagerDriver;
@@ -37,7 +37,7 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
                               PasswordManagerClient* client);
   ~CredentialManagerDispatcher() override;
 
-  void OnProvisionalSaveComplete();
+  void OnProvisionalSaveComplete(CredentialSourceType type);
 
   // Called in response to an IPC from the renderer, triggered by a page's call
   // to 'navigator.credentials.notifyFailedSignIn'.

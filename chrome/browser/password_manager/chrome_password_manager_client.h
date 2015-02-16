@@ -51,7 +51,8 @@ class ChromePasswordManagerClient
   void AskUserAndMaybeReportURL(const GURL& url) const override;
   void AutofillResultsComputed() override;
   bool PromptUserToSavePassword(
-      scoped_ptr<password_manager::PasswordFormManager> form_to_save) override;
+      scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+      password_manager::CredentialSourceType type) override;
   bool PromptUserToChooseCredentials(
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,

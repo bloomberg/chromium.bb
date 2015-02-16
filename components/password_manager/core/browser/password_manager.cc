@@ -602,7 +602,9 @@ void PasswordManager::AskUserOrSavePassword() {
                           empty_password);
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
-    if (client_->PromptUserToSavePassword(provisional_save_manager_.Pass())) {
+    if (client_->PromptUserToSavePassword(
+            provisional_save_manager_.Pass(),
+            CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER)) {
       if (logger)
         logger->LogMessage(Logger::STRING_SHOW_PASSWORD_PROMPT);
     }

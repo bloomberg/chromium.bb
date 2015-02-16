@@ -30,6 +30,12 @@ enum CustomPassphraseState {
   ONLY_CUSTOM_PASSPHRASE
 };
 
+enum class CredentialSourceType {
+  CREDENTIAL_SOURCE_PASSWORD_MANAGER = 0,
+  CREDENTIAL_SOURCE_API,
+  CREDENTIAL_SOURCE_LAST = CREDENTIAL_SOURCE_API
+};
+
 // An abstraction of operations that depend on the embedders (e.g. Chrome)
 // environment.
 class PasswordManagerClient {
@@ -79,7 +85,8 @@ class PasswordManagerClient {
   // that this form doesn't need to be saved.
   // Returns true if the prompt was indeed displayed.
   virtual bool PromptUserToSavePassword(
-      scoped_ptr<PasswordFormManager> form_to_save) = 0;
+      scoped_ptr<PasswordFormManager> form_to_save,
+      CredentialSourceType type) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
   // Returns true if the prompt is indeed displayed. If the prompt is not

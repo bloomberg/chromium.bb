@@ -184,7 +184,8 @@ void ChromePasswordManagerClient::AutofillResultsComputed() {
 }
 
 bool ChromePasswordManagerClient::PromptUserToSavePassword(
-    scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
+    scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+    password_manager::CredentialSourceType) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
   if (!BrowsingDataHelper::IsWebScheme(
@@ -197,6 +198,8 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
         ManagePasswordsUIController::FromWebContents(web_contents());
     manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
   } else {
+    // TODO(melandory): If type is CREDENTIAL_SOURCE_API then new bubble should
+    // be shown.
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(
