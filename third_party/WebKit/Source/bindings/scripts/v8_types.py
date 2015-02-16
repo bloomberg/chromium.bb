@@ -671,10 +671,12 @@ IdlTypeBase.use_output_parameter_for_result = property(use_output_parameter_for_
 ################################################################################
 
 def preprocess_idl_type(idl_type):
+    if idl_type.is_nullable:
+        return IdlNullableType(idl_type.inner_type.preprocessed_type)
     if idl_type.is_enum:
         # Enumerations are internally DOMStrings
         return IdlType('DOMString')
-    if (idl_type.name in ['Any', 'Object'] or idl_type.is_callback_function):
+    if idl_type.base_type in ['any', 'object'] or idl_type.is_callback_function:
         return IdlType('ScriptValue')
     return idl_type
 

@@ -556,7 +556,7 @@ typedef unrestricted float GLclampf;
 
     GLenum getError();
 
-    object? getExtension(DOMString name);
+    [CallWith=ScriptState] object? getExtension(DOMString name);
 
     [CallWith=ScriptState] any getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
     [CallWith=ScriptState] any getParameter(GLenum pname);

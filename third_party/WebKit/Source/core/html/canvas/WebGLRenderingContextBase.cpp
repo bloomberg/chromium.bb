@@ -2252,25 +2252,25 @@ bool WebGLRenderingContextBase::extensionSupportedAndAllowed(const ExtensionTrac
 }
 
 
-PassRefPtrWillBeRawPtr<WebGLExtension> WebGLRenderingContextBase::getExtension(const String& name)
+ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* scriptState, const String& name)
 {
-    if (isContextLost())
-        return nullptr;
+    RefPtrWillBeRawPtr<WebGLExtension> extension;
 
-    for (size_t i = 0; i < m_extensions.size(); ++i) {
-        ExtensionTracker* tracker = m_extensions[i].get();
-        if (tracker->matchesNameWithPrefixes(name)) {
-            if (!extensionSupportedAndAllowed(tracker))
-                return nullptr;
-
-            RefPtrWillBeRawPtr<WebGLExtension> extension = tracker->getExtension(this);
-            if (extension)
-                m_extensionEnabled[extension->name()] = true;
-            return extension.release();
+    if (!isContextLost()) {
+        for (size_t i = 0; i < m_extensions.size(); ++i) {
+            ExtensionTracker* tracker = m_extensions[i].get();
+            if (tracker->matchesNameWithPrefixes(name)) {
+                if (extensionSupportedAndAllowed(tracker)) {
+                    extension = tracker->getExtension(this);
+                    if (extension)
+                        m_extensionEnabled[extension->name()] = true;
+                }
+                break;
+            }
         }
     }
 
-    return nullptr;
+    return ScriptValue(scriptState, toV8(extension, scriptState->context()->Global(), scriptState->isolate()));
 }
 
 ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptState* scriptState, GLenum target, GLenum attachment, GLenum pname)

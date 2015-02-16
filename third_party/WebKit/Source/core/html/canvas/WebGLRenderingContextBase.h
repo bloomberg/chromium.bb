@@ -199,7 +199,7 @@ public:
     ScriptValue getBufferParameter(ScriptState*, GLenum target, GLenum pname);
     void getContextAttributes(Nullable<WebGLContextAttributes>&);
     GLenum getError();
-    PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(const String& name);
+    ScriptValue getExtension(ScriptState*, const String& name);
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname);
     ScriptValue getParameter(ScriptState*, GLenum pname);
     ScriptValue getProgramParameter(ScriptState*, WebGLProgram*, GLenum pname);

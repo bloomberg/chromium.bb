@@ -150,6 +150,7 @@ interface TestObject {
     attribute TestInterface? testInterfaceOrNullAttribute;
     // Enumerations
     attribute TestEnum testEnumAttribute;
+    attribute TestEnum? testEnumOrNullAttribute;
     // Static attributes
     static attribute DOMString staticStringAttribute;
     static attribute long staticLongAttribute;
