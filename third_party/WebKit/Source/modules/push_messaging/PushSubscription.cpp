@@ -51,7 +51,7 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
     return promise;
 }
 
-void PushSubscription::trace(Visitor* visitor)
+DEFINE_TRACE(PushSubscription)
 {
     visitor->trace(m_serviceWorkerRegistration);
 }

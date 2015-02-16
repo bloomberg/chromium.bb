@@ -38,7 +38,7 @@ public:
     ScriptValue json(ScriptState*, ExceptionState&) const;
     const String& text() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     PushMessageData();

@@ -46,7 +46,7 @@ PushManager* ServiceWorkerRegistrationPush::pushManager()
     return m_pushManager.get();
 }
 
-void ServiceWorkerRegistrationPush::trace(Visitor* visitor)
+DEFINE_TRACE(ServiceWorkerRegistrationPush)
 {
     visitor->trace(m_registration);
     visitor->trace(m_pushManager);

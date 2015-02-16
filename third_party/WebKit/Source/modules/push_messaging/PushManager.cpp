@@ -90,7 +90,7 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
     return promise;
 }
 
-void PushManager::trace(Visitor* visitor)
+DEFINE_TRACE(PushManager)
 {
     visitor->trace(m_registration);
 }

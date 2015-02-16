@@ -23,7 +23,7 @@ public:
     static PushManager* pushManager(ServiceWorkerRegistration&);
     PushManager* pushManager();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ServiceWorkerRegistrationPush(ServiceWorkerRegistration*);

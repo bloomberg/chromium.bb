@@ -26,7 +26,7 @@ public:
     ScriptPromise getSubscription(ScriptState*);
     ScriptPromise hasPermission(ScriptState*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit PushManager(ServiceWorkerRegistration*);

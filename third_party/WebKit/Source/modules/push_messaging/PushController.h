@@ -25,7 +25,7 @@ public:
     static PushController* from(LocalFrame* frame) { return static_cast<PushController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
     static WebPushClient& clientFrom(LocalFrame*);
 
-    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
 
 private:
     explicit PushController(WebPushClient*);

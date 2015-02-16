@@ -68,7 +68,7 @@ const String& PushMessageData::text() const
     return m_messageData;
 }
 
-void PushMessageData::trace(Visitor*)
+DEFINE_TRACE(PushMessageData)
 {
 }
 

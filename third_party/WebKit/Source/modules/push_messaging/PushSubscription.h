@@ -29,7 +29,7 @@ public:
     const String& subscriptionId() const { return m_subscriptionId; }
     ScriptPromise unsubscribe(ScriptState*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     PushSubscription(const String& endpoint, const String& subscriptionId, ServiceWorkerRegistration*);

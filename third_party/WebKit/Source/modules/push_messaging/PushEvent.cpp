@@ -41,7 +41,7 @@ PushMessageData* PushEvent::data()
     return m_data.get();
 }
 
-void PushEvent::trace(Visitor* visitor)
+DEFINE_TRACE(PushEvent)
 {
     visitor->trace(m_data);
     ExtendableEvent::trace(visitor);
