@@ -25,11 +25,8 @@ char kLSanDefaultSuppressions[] =
 // Leaks in Nvidia's libGL.
 "leak:libGL.so\n"
 
-// A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
+// A small leak in V8. http://crbug.com/46571#c9
 "leak:blink::V8GCController::collectGarbage\n"
-
-// http://crbug.com/270180
-"leak:net::ProxyResolverV8::Context::ResolveProxy\n"
 
 // TODO(earthdok): revisit NSS suppressions after the switch to BoringSSL
 // NSS leaks in CertDatabaseNSSTest tests. http://crbug.com/51988
@@ -51,14 +48,8 @@ char kLSanDefaultSuppressions[] =
 // XRandR has several one time leaks.
 "leak:libxrandr\n"
 
-// Skia leaks GrGpuGL::ProgramCache::Entry. http://crbug.com/262934
-"leak:GrGpuGL::flushGraphicsState\n"
-
 // xrandr leak. http://crbug.com/119677
 "leak:XRRFindDisplay\n"
-
-// V8 may leak this by design in unit tests. http://crbug.com/323149
-"leak:v8::internal::Genesis::Genesis\n"
 
 // Suppressions for objects which can be owned by the V8 heap. This is a
 // temporary workaround until LeakSanitizer supports the V8 heap.
@@ -88,9 +79,6 @@ char kLSanDefaultSuppressions[] =
 
 // Small test-only leak in ppapi_unittests. http://crbug.com/258113
 "leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test\n"
-
-// http://crbug.com/318221
-"leak:base::EnsureProcessTerminated\n"
 
 // http://crbug.com/322671
 "leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread\n"
