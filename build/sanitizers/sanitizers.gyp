@@ -36,6 +36,11 @@
             'tsan_suppressions.cc',
           ],
         }],
+        ['lsan==1', {
+          'sources': [
+            'lsan_suppressions.cc',
+          ],
+        }],
       ],
       'cflags/': [
         ['exclude', '-fsanitize='],

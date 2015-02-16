@@ -12,12 +12,27 @@
 #include <string.h>
 #endif  // ADDRESS_SANITIZER && OS_MACOSX
 
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER)
 // Functions returning default options are declared weak in the tools' runtime
 // libraries. To make the linker pick the strong replacements for those
 // functions from this module, we explicitly force its inclusion by passing
 // -Wl,-u_sanitizer_options_link_helper
 extern "C"
 void _sanitizer_options_link_helper() { }
+
+// The callbacks we define here will be called from the sanitizer runtime, but
+// aren't referenced from the Chrome executable. We must ensure that those
+// callbacks are not sanitizer-instrumented, and that they aren't stripped by
+// the linker.
+#define SANITIZER_HOOK_ATTRIBUTE          \
+  extern "C"                              \
+  __attribute__((no_sanitize_address))    \
+  __attribute__((no_sanitize_memory))     \
+  __attribute__((no_sanitize_thread))     \
+  __attribute__((visibility("default")))  \
+  __attribute__((used))
+#endif
 
 #if defined(ADDRESS_SANITIZER)
 // Default options for AddressSanitizer in various configurations:
@@ -78,13 +93,7 @@ static const char kNaClFlag[] = "--type=nacl-loader";
 #endif  // OS_LINUX
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-extern "C"
-__attribute__((no_sanitize_address))
-__attribute__((visibility("default")))
-// The function isn't referenced from the executable itself. Make sure it isn't
-// stripped by the linker.
-__attribute__((used))
-const char *__asan_default_options() {
+SANITIZER_HOOK_ATTRIBUTE const char *__asan_default_options() {
 #if defined(OS_MACOSX)
   char*** argvp = _NSGetArgv();
   int* argcp = _NSGetArgc();
@@ -120,26 +129,34 @@ const char kTsanDefaultOptions[] =
     "report_thread_leaks=0 print_suppressions=1 history_size=7 "
     "strip_path_prefix=Release/../../ ";
 
-extern "C"
-__attribute__((no_sanitize_thread))
-__attribute__((visibility("default")))
-// The function isn't referenced from the executable itself. Make sure it isn't
-// stripped by the linker.
-__attribute__((used))
-const char *__tsan_default_options() {
+SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_options() {
   return kTsanDefaultOptions;
 }
 
 extern "C" char kTSanDefaultSuppressions[];
 
-extern "C"
-__attribute__((no_sanitize_thread))
-__attribute__((visibility("default")))
-// The function isn't referenced from the executable itself. Make sure it isn't
-// stripped by the linker.
-__attribute__((used))
-const char *__tsan_default_suppressions() {
+SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_suppressions() {
   return kTSanDefaultSuppressions;
 }
 
 #endif  // THREAD_SANITIZER && OS_LINUX
+
+#if defined(LEAK_SANITIZER)
+// Default options for LeakSanitizer:
+//   print_suppressions=1 - print the list of matched suppressions.
+//   strip_path_prefix=Release/../../ - prefixes up to and including this
+//     substring will be stripped from source file paths in symbolized reports.
+const char kLsanDefaultOptions[] =
+    "print_suppressions=1 strip_path_prefix=Release/../../ ";
+
+SANITIZER_HOOK_ATTRIBUTE const char *__lsan_default_options() {
+  return kLsanDefaultOptions;
+}
+
+extern "C" char kLSanDefaultSuppressions[];
+
+SANITIZER_HOOK_ATTRIBUTE const char *__lsan_default_suppressions() {
+  return kLSanDefaultSuppressions;
+}
+
+#endif  // LEAK_SANITIZER
