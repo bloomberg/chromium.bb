@@ -224,6 +224,7 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
     element.style.display = styleConfig.display;
     element.style.direction = styleConfig.direction;
     element.style.unicodeBidi = styleConfig.unicodeBidi;
+    element.style.zoom = styleConfig.zoom;
 };
 
 if (window.dialogArguments) {
