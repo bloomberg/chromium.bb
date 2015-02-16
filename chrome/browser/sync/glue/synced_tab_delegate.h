@@ -58,6 +58,10 @@ class SyncedTabDelegate {
   // Session sync related methods.
   virtual int GetSyncId() const = 0;
   virtual void SetSyncId(int sync_id) = 0;
+
+  // Returns true if this tab should be synchronized.
+  virtual bool ShouldSync() const = 0;
+
   // Returns the SyncedTabDelegate associated with WebContents.
   static SyncedTabDelegate* ImplFromWebContents(
       content::WebContents* web_contents);

@@ -33,6 +33,7 @@ class SyncedWindowDelegateAndroid : public browser_sync::SyncedWindowDelegate {
   SyncedTabDelegate* GetTabAt(int index) const override;
   SessionID::id_type GetTabIdAt(int index) const override;
   bool IsSessionRestoreInProgress() const override;
+  bool ShouldSync() const override;
 
  private:
   TabModel* tab_model_;

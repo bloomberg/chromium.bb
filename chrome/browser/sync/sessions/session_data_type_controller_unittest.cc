@@ -47,6 +47,8 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
     return is_restore_in_progress_;
   }
 
+  bool ShouldSync() const override { return false; }
+
   void SetSessionRestoreInProgress(bool is_restore_in_progress) {
     is_restore_in_progress_ = is_restore_in_progress;
 
@@ -65,7 +67,7 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
 
 class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
  public:
-  const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
+  std::set<const SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
     return delegates_;
   }
 
@@ -74,7 +76,7 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   }
 
  private:
-  std::set<SyncedWindowDelegate*> delegates_;
+  std::set<const SyncedWindowDelegate*> delegates_;
 };
 
 class SessionDataTypeControllerTest

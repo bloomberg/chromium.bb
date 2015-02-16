@@ -16,10 +16,6 @@ namespace sessions_util {
 // Ensures that the tab has valid entries.
 bool ShouldSyncTab(const SyncedTabDelegate& tab);
 
-// Decides whether |window| is interesting for tab syncing
-// purposes.
-bool ShouldSyncWindow(const SyncedWindowDelegate* window);
-
 }  // namespace sessions_util
 
 }  // namespace browser_sync

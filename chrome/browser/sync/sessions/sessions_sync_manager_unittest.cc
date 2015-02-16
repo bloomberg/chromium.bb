@@ -47,7 +47,7 @@ namespace {
 
 class SyncedWindowDelegateOverride : public SyncedWindowDelegate {
  public:
-  explicit SyncedWindowDelegateOverride(SyncedWindowDelegate* wrapped)
+  explicit SyncedWindowDelegateOverride(const SyncedWindowDelegate* wrapped)
       : wrapped_(wrapped) {
   }
   ~SyncedWindowDelegateOverride() override {}
@@ -96,23 +96,25 @@ class SyncedWindowDelegateOverride : public SyncedWindowDelegate {
     return wrapped_->IsSessionRestoreInProgress();
   }
 
+  bool ShouldSync() const override { return wrapped_->ShouldSync(); }
+
  private:
   std::map<int, SyncedTabDelegate*> tab_overrides_;
   std::map<int, SessionID::id_type> tab_id_overrides_;
-  SyncedWindowDelegate* wrapped_;
+  const SyncedWindowDelegate* const wrapped_;
 };
 
 class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
  public:
   TestSyncedWindowDelegatesGetter(
-      const std::set<SyncedWindowDelegate*>& delegates)
+      const std::set<const SyncedWindowDelegate*>& delegates)
       : delegates_(delegates) {}
 
-  const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
+  std::set<const SyncedWindowDelegate*> GetSyncedWindowDelegates() override {
     return delegates_;
   }
  private:
-  const std::set<SyncedWindowDelegate*> delegates_;
+  const std::set<const SyncedWindowDelegate*> delegates_;
 };
 
 class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
@@ -417,6 +419,10 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   int GetSyncId() const override { return sync_id_; }
   void SetSyncId(int sync_id) override { sync_id_ = sync_id; }
 
+  bool ShouldSync() const override {
+    return sessions_util::ShouldSyncTab(*this);
+  }
+
   void reset() {
     current_entry_index_ = 0;
     pending_entry_index_ = -1;
@@ -442,27 +448,27 @@ TEST_F(SessionsSyncManagerTest, ValidTabs) {
 
   // A null entry shouldn't crash.
   tab.AppendEntry(NULL);
-  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
+  EXPECT_FALSE(tab.ShouldSync());
   tab.reset();
 
   // A chrome:// entry isn't valid.
   content::NavigationEntry* entry(content::NavigationEntry::Create());
   entry->SetVirtualURL(GURL("chrome://preferences/"));
   tab.AppendEntry(entry);
-  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
+  EXPECT_FALSE(tab.ShouldSync());
 
 
   // A file:// entry isn't valid, even in addition to another entry.
   content::NavigationEntry* entry2(content::NavigationEntry::Create());
   entry2->SetVirtualURL(GURL("file://bla"));
   tab.AppendEntry(entry2);
-  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
+  EXPECT_FALSE(tab.ShouldSync());
 
   // Add a valid scheme entry to tab, making the tab valid.
   content::NavigationEntry* entry3(content::NavigationEntry::Create());
   entry3->SetVirtualURL(GURL("http://www.google.com"));
   tab.AppendEntry(entry3);
-  EXPECT_FALSE(sessions_util::ShouldSyncTab(tab));
+  EXPECT_FALSE(tab.ShouldSync());
 }
 
 // Make sure GetCurrentVirtualURL() returns the virtual URL of the pending
@@ -860,8 +866,8 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   out.clear();
   manager()->StopSyncing(syncer::SESSIONS);
 
-  const std::set<SyncedWindowDelegate*> windows(
-      SyncedWindowDelegate::GetSyncedWindowDelegates());
+  const std::set<const SyncedWindowDelegate*>& windows =
+      SyncedWindowDelegate::GetAll();
   ASSERT_EQ(1U, windows.size());
   SyncedTabDelegateFake t1_override, t2_override;
   t1_override.SetSyncId(1);  // No WebContents by default.
@@ -870,7 +876,7 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   window_override.OverrideTabAt(1, &t1_override, kNewTabId);
   window_override.OverrideTabAt(2, &t2_override,
                                 t2.GetSpecifics().session().tab().tab_id());
-  std::set<SyncedWindowDelegate*> delegates;
+  std::set<const SyncedWindowDelegate*> delegates;
   delegates.insert(&window_override);
   scoped_ptr<TestSyncedWindowDelegatesGetter> getter(
       new TestSyncedWindowDelegatesGetter(delegates));

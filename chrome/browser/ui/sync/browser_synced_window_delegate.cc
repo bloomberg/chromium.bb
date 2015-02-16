@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "chrome/browser/sync/sessions/sessions_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -15,23 +16,24 @@
 
 // static SyncedWindowDelegate implementations
 
+namespace browser_sync {
+
 // static
-const std::set<browser_sync::SyncedWindowDelegate*>
-    browser_sync::SyncedWindowDelegate::GetSyncedWindowDelegates() {
-  std::set<browser_sync::SyncedWindowDelegate*> synced_window_delegates;
-  for (chrome::BrowserIterator it; !it.done(); it.Next())
-    synced_window_delegates.insert(it->synced_window_delegate());
+std::set<const SyncedWindowDelegate*> SyncedWindowDelegate::GetAll() {
+  std::set<const SyncedWindowDelegate*> synced_window_delegates;
+  BrowserSyncedWindowDelegate::GetAllHelper(&synced_window_delegates);
   return synced_window_delegates;
 }
 
 // static
-const browser_sync::SyncedWindowDelegate*
-    browser_sync::SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
-        SessionID::id_type id) {
-  Browser* browser = chrome::FindBrowserWithID(id);
-  // In case we don't find the browser (e.g. for Developer Tools).
-  return browser ? browser->synced_window_delegate() : NULL;
+const SyncedWindowDelegate* SyncedWindowDelegate::FindById(
+    SessionID::id_type id) {
+  const SyncedWindowDelegate* synced_window_delegate =
+      BrowserSyncedWindowDelegate::FindByIdHelper(id);
+  return synced_window_delegate;
 }
+
+}  // namespace browser_sync
 
 // BrowserSyncedWindowDelegate implementations
 
@@ -39,6 +41,21 @@ BrowserSyncedWindowDelegate::BrowserSyncedWindowDelegate(Browser* browser)
     : browser_(browser) {}
 
 BrowserSyncedWindowDelegate::~BrowserSyncedWindowDelegate() {}
+
+// static
+void BrowserSyncedWindowDelegate::GetAllHelper(
+    std::set<const browser_sync::SyncedWindowDelegate*>* delegates) {
+  // Add all the browser windows.
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    delegates->insert(it->synced_window_delegate());
+}
+
+// static
+const browser_sync::SyncedWindowDelegate*
+BrowserSyncedWindowDelegate::FindByIdHelper(SessionID::id_type id) {
+  Browser* browser = chrome::FindBrowserWithID(id);
+  return (browser != NULL) ? browser->synced_window_delegate() : NULL;
+}
 
 bool BrowserSyncedWindowDelegate::IsTabPinned(
     const browser_sync::SyncedTabDelegate* tab) const {
@@ -92,4 +109,10 @@ bool BrowserSyncedWindowDelegate::IsTypePopup() const {
 
 bool BrowserSyncedWindowDelegate::IsSessionRestoreInProgress() const {
   return false;
+}
+
+bool BrowserSyncedWindowDelegate::ShouldSync() const {
+  if (IsApp())
+    return false;
+  return IsTypeTabbed() || IsTypePopup();
 }

@@ -15,9 +15,8 @@ namespace browser_sync {
 
 // SyncedWindowDelegate implementations
 
-const std::set<SyncedWindowDelegate*>
-    SyncedWindowDelegate::GetSyncedWindowDelegates() {
-  std::set<SyncedWindowDelegate*> synced_window_delegates;
+std::set<SyncedWindowDelegate const*> SyncedWindowDelegate::GetAll() {
+  std::set<SyncedWindowDelegate const*> synced_window_delegates;
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); ++i) {
     synced_window_delegates.insert((*i)->GetSyncedWindowDelegate());
@@ -25,11 +24,9 @@ const std::set<SyncedWindowDelegate*>
   return synced_window_delegates;
 }
 
-const SyncedWindowDelegate*
-    SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
-        SessionID::id_type session_id) {
-  TabModel* tab_model = TabModelList::FindTabModelWithId(
-      session_id);
+const SyncedWindowDelegate* SyncedWindowDelegate::FindById(
+    SessionID::id_type session_id) {
+  TabModel* tab_model = TabModelList::FindTabModelWithId(session_id);
 
   // In case we don't find the browser (e.g. for Developer Tools).
   return tab_model ? tab_model->GetSyncedWindowDelegate() : NULL;
@@ -89,6 +86,10 @@ SessionID::id_type SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {
 
 bool SyncedWindowDelegateAndroid::IsSessionRestoreInProgress() const {
   return tab_model_->IsSessionRestoreInProgress();
+}
+
+bool SyncedWindowDelegateAndroid::ShouldSync() const {
+  return true;
 }
 
 }  // namespace browser_sync

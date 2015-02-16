@@ -47,9 +47,9 @@ SessionDataTypeController::~SessionDataTypeController() {}
 
 bool SessionDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::set<browser_sync::SyncedWindowDelegate*> window =
+  std::set<const browser_sync::SyncedWindowDelegate*> window =
       synced_window_getter_->GetSyncedWindowDelegates();
-  for (std::set<browser_sync::SyncedWindowDelegate*>::const_iterator i =
+  for (std::set<const browser_sync::SyncedWindowDelegate*>::const_iterator i =
       window.begin(); i != window.end(); ++i) {
     if ((*i)->IsSessionRestoreInProgress()) {
       notification_registrar_.Add(

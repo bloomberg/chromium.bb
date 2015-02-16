@@ -12,9 +12,9 @@ SyncedWindowDelegatesGetter::SyncedWindowDelegatesGetter() {}
 
 SyncedWindowDelegatesGetter::~SyncedWindowDelegatesGetter() {}
 
-const std::set<SyncedWindowDelegate*>
+std::set<const SyncedWindowDelegate*>
 SyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
-  return SyncedWindowDelegate::GetSyncedWindowDelegates();
+  return SyncedWindowDelegate::GetAll();
 }
 
 }  // namespace browser_sync

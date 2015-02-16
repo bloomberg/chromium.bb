@@ -15,10 +15,8 @@ namespace browser_sync {
 namespace sessions_util {
 
 bool ShouldSyncTab(const SyncedTabDelegate& tab) {
-  if (SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
-          tab.GetWindowId()) == NULL) {
+  if (SyncedWindowDelegate::FindById(tab.GetWindowId()) == NULL)
     return false;
-  }
 
   // Does the tab have a valid NavigationEntry?
   if (tab.ProfileIsSupervised() && tab.GetBlockedNavigations()->size() > 0)
@@ -44,12 +42,6 @@ bool ShouldSyncTab(const SyncedTabDelegate& tab) {
     }
   }
   return found_valid_url;
-}
-
-bool ShouldSyncWindow(const SyncedWindowDelegate* window) {
-  if (window->IsApp())
-    return false;
-  return window->IsTypeTabbed() || window->IsTypePopup();
 }
 
 }  // namespace sessions_util

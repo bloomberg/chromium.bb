@@ -16,7 +16,7 @@ class SyncedWindowDelegatesGetter {
  public:
   SyncedWindowDelegatesGetter();
   virtual ~SyncedWindowDelegatesGetter();
-  virtual const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates();
+  virtual std::set<const SyncedWindowDelegate*> GetSyncedWindowDelegates();
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedWindowDelegatesGetter);
 };

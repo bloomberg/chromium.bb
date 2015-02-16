@@ -41,6 +41,7 @@ class SyncedTabDelegateAndroid : public browser_sync::SyncedTabDelegate {
   content::WebContents* GetWebContents() const override;
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
+  bool ShouldSync() const override;
 
   // Supervised user related methods.
 

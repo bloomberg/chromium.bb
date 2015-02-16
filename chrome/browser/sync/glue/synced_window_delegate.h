@@ -19,12 +19,11 @@ class SyncedWindowDelegate {
  public:
   // Methods originating from WindowList
 
-  // This method is to be used instead of using the BrowserList iterator.
-  static const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates();
+  // Returns all SyncedWindowDelegate instances.
+  static std::set<const SyncedWindowDelegate*> GetAll();
 
-  // This method is to be used instead of using BrowserList::FindBrowserWithId()
-  static const SyncedWindowDelegate* FindSyncedWindowDelegateWithId(
-      SessionID::id_type id);
+  // Find a SyncedWindowDelegate given its window's id.
+  static const SyncedWindowDelegate* FindById(SessionID::id_type id);
 
   // Methods originating from Browser.
 
@@ -64,6 +63,11 @@ class SyncedWindowDelegate {
 
   // Return true if we are currently restoring sessions asynchronously.
   virtual bool IsSessionRestoreInProgress() const = 0;
+
+  // Helper methods.
+
+  // Return true if this window should be considered for syncing.
+  virtual bool ShouldSync() const = 0;
 
  protected:
   virtual ~SyncedWindowDelegate() {}
