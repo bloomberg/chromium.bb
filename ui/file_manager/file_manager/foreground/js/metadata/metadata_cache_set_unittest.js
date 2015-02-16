@@ -137,3 +137,15 @@ function testMetadataCacheSetClear() {
   assertFalse(set.hasFreshCache([entryA], ['propertyA']));
   assertFalse(set.hasFreshCache([entryA], ['propertyB']));
 }
+
+function testMetadataCacheSetUpdateEvent() {
+  var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
+  var event = null;
+  set.addEventListener('update', function(inEvent) {
+    event = inEvent;
+  });
+  set.startRequests(1, set.createRequests([entryA], ['propertyA']));
+  set.storeProperties(1, [entryA], [{propertyA: 'value'}]);
+  assertEquals(1, event.entries.length);
+  assertEquals(entryA, event.entries[0]);
+}

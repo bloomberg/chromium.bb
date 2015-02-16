@@ -6,16 +6,21 @@
  * Set of MetadataCacheItem.
  * @param {!MetadataCacheSetStorage} items Storage object containing
  *     MetadataCacheItem.
+ * @extends {cr.EventTarget}
  * @constructor
  * @struct
  */
 function MetadataCacheSet(items) {
+  cr.EventTarget.call(this);
+
   /**
    * @private {!MetadataCacheSetStorage}
    * @const
    */
   this.items_ = items;
 }
+
+MetadataCacheSet.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Creates list of MetadataRequest based on the cache state.
@@ -62,14 +67,21 @@ MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
  */
 MetadataCacheSet.prototype.storeProperties = function(
     requestId, entries, results) {
-  var changed = false;
+  var changedEntries = [];
   for (var i = 0; i < entries.length; i++) {
     var url = entries[i].toURL();
     var item = this.items_.peek(url);
     if (item && item.storeProperties(requestId, results[i]))
-      changed = true;
+      changedEntries.push(entries[i]);
   }
-  return changed;
+  if (changedEntries.length) {
+    var event = new Event('update');
+    event.entries = changedEntries;
+    this.dispatchEvent(event);
+    return true;
+  } else {
+    return false;
+  }
 };
 
 /**
