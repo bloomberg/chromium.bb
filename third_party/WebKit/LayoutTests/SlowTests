@@ -196,3 +196,8 @@ crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.htm
 
 crbug.com/372424 http/tests/serviceworker/chromium/registration-stress.html [ Slow ]
 crbug.com/448670 http/tests/serviceworker/chromium/register-different-script-many-times.html [ Slow ]
+
+# Most crypto/subtle tests are slow some or most of the time.
+crbug.com/459009 crypto/subtle/ [ Slow ]
+
+

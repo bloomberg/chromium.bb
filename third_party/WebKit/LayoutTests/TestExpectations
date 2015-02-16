@@ -673,7 +673,6 @@ crbug.com/382732 [ Linux ] crypto/subtle/rsa-oaep-key-manipulation.html [ Failur
 crbug.com/382732 [ Linux ] crypto/subtle/rsa-oaep-plaintext-length.html [ Failure Pass ]
 crbug.com/382732 [ Linux ] crypto/subtle/rsa-oaep-wrap-unwrap-aes.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/subtle/clone-rsaHashedKey-private.html [ Failure Pass ]
-crbug.com/378315 [ Linux ] crypto/subtle/clone-rsaHashedKey-public.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/subtle/exportKey-unextractable.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/subtle/rsa-export-private-key.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/subtle/rsa-indexeddb.html [ Failure Pass ]
