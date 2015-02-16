@@ -1676,13 +1676,12 @@ void BrowserOptionsHandler::ShowCloudPrintDevicesPage(
 #endif
 
 void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(
-    bool always_on, const base::string16& audio_history_state,
+    const base::string16& audio_history_state,
     bool success, bool logging_enabled) {
   bool visible = logging_enabled && success;
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setAudioHistorySectionVisible",
       base::FundamentalValue(visible),
-      base::FundamentalValue(always_on),
       base::StringValue(audio_history_state));
 }
 
@@ -1752,10 +1751,10 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
 
     // Audio history should be displayed if it's enabled regardless of the
     // hotword error state if the user is signed in. If the user is not signed
-    // in, audio history is meaningless. An additional message is displayed if
-    // always-on hotwording is enabled.
+    // in, audio history is meaningless. This is only displayed if always-on
+    // hotwording is available.
     if (HotwordService::IsExperimentalHotwordingEnabled() &&
-        authenticated) {
+        authenticated && always_on) {
       std::string user_display_name = signin->GetAuthenticatedUsername();
       DCHECK(!user_display_name.empty());
       base::string16 audio_history_state =
@@ -1768,7 +1767,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
             base::Bind(
                 &BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible,
                 weak_ptr_factory_.GetWeakPtr(),
-                always_on, audio_history_state));
+                audio_history_state));
       }
     }
 

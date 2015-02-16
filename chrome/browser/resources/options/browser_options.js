@@ -1193,7 +1193,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Activates the Audio History and Always-On Hotword sections from the
+     * Activates the Always-On Hotword sections from the
      * System settings page.
      * @param {string=} opt_error The error message to display.
      * @private
@@ -1252,14 +1252,12 @@ cr.define('options', function() {
     /**
      * Activates the Audio History section of the Settings page.
      * @param {boolean} visible Whether the audio history section is visible.
-     * @param {boolean} alwaysOn Whether always-on hotwording is available.
      * @param {string} labelText Text describing current audio history state.
      * @private
      */
-    setAudioHistorySectionVisible_: function(visible, alwaysOn, labelText) {
+    setAudioHistorySectionVisible_: function(visible, labelText) {
       $('audio-history').hidden = !visible;
       $('audio-history-label').textContent = labelText;
-      $('audio-history-always-on-description').hidden = !alwaysOn;
     },
 
     /**
