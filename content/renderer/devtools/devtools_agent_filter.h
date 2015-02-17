@@ -49,7 +49,6 @@ class DevToolsAgentFilter : public IPC::MessageFilter {
   void AddEmbeddedWorkerRoute(int32 routing_id);
   void RemoveEmbeddedWorkerRoute(int32 routing_id);
 
-  bool message_handled_;
   base::MessageLoop* render_thread_loop_;
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
