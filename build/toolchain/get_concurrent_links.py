@@ -7,6 +7,7 @@
 
 import os
 import re
+import subprocess
 import sys
 
 def GetDefaultConcurrentLinks():
@@ -31,8 +32,7 @@ def GetDefaultConcurrentLinks():
         ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
       ]
 
-    stat = MEMORYSTATUSEX()
-    stat.dwLength = ctypes.sizeof(stat)
+    stat = MEMORYSTATUSEX(dwLength=ctypes.sizeof(MEMORYSTATUSEX))
     ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
 
     mem_limit = max(1, stat.ullTotalPhys / (4 * (2 ** 30)))  # total / 4GB
@@ -55,7 +55,7 @@ def GetDefaultConcurrentLinks():
       # A static library debug build of Chromium's unit_tests takes ~2.7GB, so
       # 4GB per ld process allows for some more bloat.
       return max(1, avail_bytes / (4 * (2 ** 30)))  # total / 4GB
-    except:
+    except Exception:
       return 1
   else:
     # TODO(scottmg): Implement this for other platforms.

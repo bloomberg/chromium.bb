@@ -37,7 +37,6 @@ def SetEnvironmentAndGetRuntimeDllDirs():
 
     toolchain = toolchain_data['path']
     version = toolchain_data['version']
-    version_is_pro = version[-1] != 'e'
     win8sdk = toolchain_data['win8sdk']
     wdk = toolchain_data['wdk']
     # TODO(scottmg): The order unfortunately matters in these. They should be
@@ -168,7 +167,6 @@ def Update():
   if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
-    json_data_file = os.path.join(script_dir, 'win_toolchain.json')
     get_toolchain_args = [
         sys.executable,
         os.path.join(depot_tools_path,

@@ -8,15 +8,13 @@ import re
 import subprocess
 import sys
 
-"""
-Copies the given "win tool" (which the toolchain uses to wrap compiler
-invocations) and the environment blocks for the 32-bit and 64-bit builds on
-Windows to the build directory.
-
-The arguments are the visual studio install location and the location of the
-win tool. The script assumes that the root build directory is the current dir
-and the files will be written to the current directory.
-"""
+# Copies the given "win tool" (which the toolchain uses to wrap compiler
+# invocations) and the environment blocks for the 32-bit and 64-bit builds on
+# Windows to the build directory.
+#
+# The arguments are the visual studio install location and the location of the
+# win tool. The script assumes that the root build directory is the current dir
+# and the files will be written to the current directory.
 
 
 def _ExtractImportantEnvironment(output_of_set):
@@ -104,7 +102,6 @@ def main():
           '<visual studio path> <win tool path> <win sdk path> '
           '<runtime dirs> <cpu_arch>')
     sys.exit(2)
-  vs_path = sys.argv[1]
   tool_source = sys.argv[2]
   win_sdk_path = sys.argv[3]
   runtime_dirs = sys.argv[4]
