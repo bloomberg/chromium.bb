@@ -19,14 +19,13 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_record_send_time_before_write;
 NET_EXPORT_PRIVATE
 extern bool FLAGS_quic_enable_bandwidth_resumption_experiment;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_pacing;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_std_cbrt;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_multiple_address_in_source_tokens;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_rto_uses_last_sent;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_attach_ack_notifiers_to_packets;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_ack_notifier_informed_on_serialized;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_rto;
 NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_seconds;
 NET_EXPORT_PRIVATE extern int64 FLAGS_quic_time_wait_list_max_connections;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_time_wait_list_size;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_small_default_packet_size;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

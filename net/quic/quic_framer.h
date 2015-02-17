@@ -306,7 +306,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // The packet must be of size |packet_size|.
   QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
                               const QuicFrames& frames,
-                              size_t packet_size);
+                              char* buffer,
+                              size_t packet_length);
 
   // Returns a QuicPacket* that is owned by the caller, and is populated with
   // the fields in |header| and |fec|.  Returns nullptr if the packet could

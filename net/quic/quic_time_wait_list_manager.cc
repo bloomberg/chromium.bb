@@ -22,7 +22,6 @@
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
-using std::make_pair;
 
 namespace net {
 
@@ -122,7 +121,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
                         version,
                         helper_->GetClock()->ApproximateNow(),
                         close_packet);
-  connection_id_map_.insert(make_pair(connection_id, data));
+  connection_id_map_.insert(std::make_pair(connection_id, data));
   if (new_connection_id) {
     visitor_->OnConnectionAddedToTimeWaitList(connection_id);
   }

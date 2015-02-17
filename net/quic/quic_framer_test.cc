@@ -479,6 +479,12 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     return BuildUnsizedDataPacket(&framer_, header, frames);
   }
 
+  QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
+                              const QuicFrames& frames,
+                              size_t packet_size) {
+    return BuildUnsizedDataPacket(&framer_, header, frames, packet_size);
+  }
+
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
   QuicVersion version_;
@@ -3393,8 +3399,7 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameLargePacket) {
       0x00,
   };
 
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildDataPacket(header, frames, kMaxPacketSize));
+  scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
   test::CompareCharArraysWithHexError("constructed packet",
@@ -3456,7 +3461,7 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
       0x00,
   };
 
-  scoped_ptr<QuicPacket> data(framer_.BuildDataPacket(header, frames, 37u));
+  scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames, 37u));
   ASSERT_TRUE(data != nullptr);
   // Expect 1 byte unused since at least 2 bytes are needed to fit more nacks.
   EXPECT_EQ(36u, data->length());
@@ -4024,8 +4029,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   frames.push_back(frame);
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
-  scoped_ptr<QuicPacket> raw_ack_packet(
-      framer_.BuildDataPacket(header, frames, kMaxPacketSize));
+  scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
@@ -4064,8 +4068,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   frames.push_back(frame);
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
-  scoped_ptr<QuicPacket> raw_ack_packet(
-      framer_.BuildDataPacket(header, frames, 500));
+  scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames, 500));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,

@@ -103,12 +103,17 @@ QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed);
 QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
                                         QuicPacketSequenceNumber least_unacked);
 
-// Returns a QuicPacket whose that is owned by the caller, and
+// Returns a QuicPacket that is owned by the caller, and
 // is populated with the fields in |header| and |frames|, or is nullptr if the
 // packet could not be created.
 QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicPacketHeader& header,
                                    const QuicFrames& frames);
+// Returns a QuicPacket that is owned by the caller, and of size |packet_size|.
+QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
+                                   const QuicPacketHeader& header,
+                                   const QuicFrames& frames,
+                                   size_t packet_size);
 
 template<typename SaveType>
 class ValueRestore {

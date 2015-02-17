@@ -1004,6 +1004,64 @@ INSTANTIATE_TEST_CASE_P(SupportedVersion,
                         QuicConnectionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
+TEST_P(QuicConnectionTest, MaxPacketSize) {
+  EXPECT_FALSE(connection_.is_server());
+  EXPECT_EQ(1350u, connection_.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_small_default_packet_size, true);
+  QuicConnectionId connection_id = 42;
+  bool kIsServer = true;
+  TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
+                            factory_, kIsServer, version());
+  EXPECT_TRUE(connection.is_server());
+  EXPECT_EQ(1000u, connection.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, ServerMaxPacketSize) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_small_default_packet_size, false);
+  QuicConnectionId connection_id = 42;
+  bool kIsServer = true;
+  TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
+                            factory_, kIsServer, version());
+  EXPECT_TRUE(connection.is_server());
+  EXPECT_EQ(1350u, connection.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  connection_.set_is_server(true);
+  connection_.set_max_packet_length(1000);
+
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = true;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.packet_sequence_number = 1;
+  header.fec_group = 0;
+
+  QuicFrames frames;
+  QuicPaddingFrame padding;
+  frames.push_back(QuicFrame(&frame1_));
+  frames.push_back(QuicFrame(&padding));
+
+  scoped_ptr<QuicPacket> packet(
+      BuildUnsizedDataPacket(&framer_, header, frames));
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
+  EXPECT_EQ(kMaxPacketSize, encrypted->length());
+
+  framer_.set_version(version());
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+
+  EXPECT_EQ(kMaxPacketSize, connection_.max_packet_length());
+}
+
 TEST_P(QuicConnectionTest, PacketsInOrder) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 

@@ -272,6 +272,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
   sent_packet_manager_.set_network_change_visitor(this);
+  if (FLAGS_quic_small_default_packet_size && is_server_) {
+    set_max_packet_length(kDefaultServerMaxPacketSize);
+  }
 }
 
 QuicConnection::~QuicConnection() {
@@ -1584,9 +1587,7 @@ void QuicConnection::OnSerializedPacket(
     serialized_packet.retransmittable_frames->
         set_encryption_level(encryption_level_);
 
-    if (FLAGS_quic_ack_notifier_informed_on_serialized) {
-      sent_packet_manager_.OnSerializedPacket(serialized_packet);
-    }
+    sent_packet_manager_.OnSerializedPacket(serialized_packet);
   }
   if (serialized_packet.is_fec_packet && fec_alarm_->IsSet()) {
     // If an FEC packet is serialized with the FEC alarm set, cancel the alarm.

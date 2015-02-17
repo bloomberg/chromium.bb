@@ -332,7 +332,7 @@ pair<size_t, size_t> CryptoTestUtils::AdvanceHandshake(
   }
   MovePackets(b_conn, &b_i, a, a_conn);
 
-  return make_pair(a_i, b_i);
+  return std::make_pair(a_i, b_i);
 }
 
 // static

@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "net/quic/congestion_control/cube_root.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 
@@ -136,17 +135,9 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
       time_to_origin_point_ = 0;
       origin_point_congestion_window_ = current_congestion_window;
     } else {
-      if (FLAGS_quic_use_std_cbrt) {
-        time_to_origin_point_ = static_cast<uint32>(
-            cbrt(kCubeFactor *
-                 (last_max_congestion_window_ - current_congestion_window)));
-      } else {
-        // TODO(rjshade): Remove CubeRoot source when removing
-        // FLAGS_quic_use_std_cbrt.
-        time_to_origin_point_ =
-            CubeRoot::Root(kCubeFactor * (last_max_congestion_window_ -
-                                          current_congestion_window));
-      }
+      time_to_origin_point_ =
+          static_cast<uint32>(cbrt(kCubeFactor * (last_max_congestion_window_ -
+                                                  current_congestion_window)));
       origin_point_congestion_window_ =
           last_max_congestion_window_;
     }

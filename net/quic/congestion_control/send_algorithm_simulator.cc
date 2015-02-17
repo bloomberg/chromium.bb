@@ -11,7 +11,6 @@
 #include "net/quic/crypto/quic_random.h"
 
 using std::list;
-using std::make_pair;
 using std::max;
 using std::min;
 using std::string;
@@ -290,13 +289,13 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
     if (it->sequence_number > sender->last_acked) {
       DVLOG(1) << "Lost packet:" << sender->last_acked
                << " dropped by buffer overflow.";
-      lost_packets.push_back(make_pair(sender->last_acked, info));
+      lost_packets.push_back(std::make_pair(sender->last_acked, info));
       continue;
     }
     if (it->lost) {
-      lost_packets.push_back(make_pair(sender->last_acked, info));
+      lost_packets.push_back(std::make_pair(sender->last_acked, info));
     } else {
-      acked_packets.push_back(make_pair(sender->last_acked, info));
+      acked_packets.push_back(std::make_pair(sender->last_acked, info));
     }
     // This packet has been acked or lost, remove it from sent_packets_.
     largest_observed = *it;

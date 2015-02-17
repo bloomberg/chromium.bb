@@ -30,10 +30,12 @@ const uint16 kServerPort = 80;
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
-      : connection_(new PacketSavingConnection(false)),
+      : connection_(new PacketSavingConnection(/*is_server=*/false)),
         session_(new TestClientSession(connection_, DefaultQuicConfig())),
         server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED),
-        stream_(new QuicCryptoClientStream(server_id_, session_.get(), nullptr,
+        stream_(new QuicCryptoClientStream(server_id_,
+                                           session_.get(),
+                                           nullptr,
                                            &crypto_config_)) {
     session_->SetCryptoStream(stream_.get());
     // Advance the time, because timers do not like uninitialized times.
@@ -121,7 +123,7 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   // Seed the config with a cached server config.
   CompleteCryptoHandshake();
 
-  connection_ = new PacketSavingConnection(true);
+  connection_ = new PacketSavingConnection(/*is_server=*/false);
   session_.reset(new TestClientSession(connection_, DefaultQuicConfig()));
   stream_.reset(new QuicCryptoClientStream(server_id_, session_.get(), nullptr,
                                            &crypto_config_));

@@ -15,7 +15,6 @@ namespace {
 
 using net::InsertStatus;
 using net::StrikeRegister;
-using std::make_pair;
 using std::min;
 using std::pair;
 using std::set;
@@ -232,9 +231,8 @@ class SlowStrikeRegister {
       return net::NONCE_INVALID_TIME_FAILURE;
     }
 
-    pair<uint32, string> nonce = make_pair(
-        nonce_time,
-        string(reinterpret_cast<const char*>(nonce_bytes), 32));
+    pair<uint32, string> nonce = std::make_pair(
+        nonce_time, string(reinterpret_cast<const char*>(nonce_bytes), 32));
 
     set<pair<uint32, string> >::const_iterator it = nonces_.find(nonce);
     if (it != nonces_.end()) {

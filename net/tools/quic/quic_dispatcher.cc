@@ -24,7 +24,6 @@ namespace net {
 namespace tools {
 
 using base::StringPiece;
-using std::make_pair;
 
 class DeleteSessionsAlarm : public EpollAlarm {
  public:
@@ -254,7 +253,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       return HandlePacketForTimeWait(header);
     }
     DVLOG(1) << "Created new session for " << connection_id;
-    session_map_.insert(make_pair(connection_id, session));
+    session_map_.insert(std::make_pair(connection_id, session));
   } else {
     session = it->second;
   }
@@ -352,7 +351,7 @@ void QuicDispatcher::OnWriteBlocked(
     // infinite loops in OnCanWrite.
     return;
   }
-  write_blocked_list_.insert(make_pair(blocked_writer, true));
+  write_blocked_list_.insert(std::make_pair(blocked_writer, true));
 }
 
 void QuicDispatcher::OnConnectionAddedToTimeWaitList(

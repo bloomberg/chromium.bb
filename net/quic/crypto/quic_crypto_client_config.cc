@@ -23,8 +23,6 @@
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
-using std::find;
-using std::make_pair;
 using std::map;
 using std::string;
 using std::vector;
@@ -324,7 +322,7 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   }
 
   CachedState* cached = new CachedState;
-  cached_states_.insert(make_pair(server_id, cached));
+  cached_states_.insert(std::make_pair(server_id, cached));
   bool cache_populated = PopulateFromCanonicalConfig(server_id, cached);
   UMA_HISTOGRAM_BOOLEAN(
       "Net.QuicCryptoClientConfig.PopulatedFromCanonicalConfig",
@@ -840,7 +838,7 @@ void QuicCryptoClientConfig::PreferAesGcm() {
   if (aead.size() <= 1) {
     return;
   }
-  QuicTagVector::iterator pos = find(aead.begin(), aead.end(), kAESG);
+  QuicTagVector::iterator pos = std::find(aead.begin(), aead.end(), kAESG);
   if (pos != aead.end()) {
     aead.erase(pos);
     aead.insert(aead.begin(), kAESG);

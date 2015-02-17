@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 
-using std::make_pair;
 using std::max;
 using std::min;
 using std::pair;
@@ -324,7 +323,7 @@ pair<uint32, uint32> StrikeRegister::GetValidRange(
     uint32 current_time_internal) const {
   if (current_time_internal < horizon_) {
     // Empty valid range.
-    return make_pair(std::numeric_limits<uint32>::max(), 0);
+    return std::make_pair(std::numeric_limits<uint32>::max(), 0);
   }
 
   uint32 lower_bound;
@@ -344,7 +343,7 @@ pair<uint32, uint32> StrikeRegister::GetValidRange(
       current_time_internal + min(current_time_internal - horizon_,
                                   window_secs_);
 
-  return make_pair(lower_bound, upper_bound);
+  return std::make_pair(lower_bound, upper_bound);
 }
 
 uint32 StrikeRegister::ExternalTimeToInternal(uint32 external_time) const {

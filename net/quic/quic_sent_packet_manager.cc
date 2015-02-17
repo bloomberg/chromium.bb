@@ -15,7 +15,6 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
 
-using std::make_pair;
 using std::max;
 using std::min;
 
@@ -329,7 +328,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
     if (it->in_flight) {
-      packets_acked_.push_back(make_pair(sequence_number, *it));
+      packets_acked_.push_back(std::make_pair(sequence_number, *it));
     }
     MarkPacketHandled(sequence_number, *it, delta_largest_observed);
   }
@@ -561,12 +560,7 @@ bool QuicSentPacketManager::OnPacketSent(
   DCHECK(!unacked_packets_.IsUnacked(sequence_number));
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
 
-  if (original_sequence_number == 0) {
-    if (!FLAGS_quic_ack_notifier_informed_on_serialized &&
-        serialized_packet->retransmittable_frames) {
-      ack_notifier_manager_.OnSerializedPacket(*serialized_packet);
-    }
-  } else {
+  if (original_sequence_number != 0) {
     PendingRetransmissionMap::iterator it =
         pending_retransmissions_.find(original_sequence_number);
     if (it != pending_retransmissions_.end()) {
@@ -793,7 +787,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     // should be recorded as a loss to the send algorithm, but not retransmitted
     // until it's known whether the FEC packet arrived.
     ++stats_->packets_lost;
-    packets_lost_.push_back(make_pair(sequence_number, transmission_info));
+    packets_lost_.push_back(std::make_pair(sequence_number, transmission_info));
     DVLOG(1) << ENDPOINT << "Lost packet " << sequence_number;
 
     if (transmission_info.retransmittable_frames != nullptr) {

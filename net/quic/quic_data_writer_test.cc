@@ -14,7 +14,8 @@ namespace test {
 namespace {
 
 TEST(QuicDataWriterTest, WriteUInt8ToOffset) {
-  QuicDataWriter writer(4);
+  char buffer[4];
+  QuicDataWriter writer(4, buffer);
 
   writer.WriteUInt32(0xfefdfcfb);
   EXPECT_TRUE(writer.WriteUInt8ToOffset(1, 0));
@@ -22,16 +23,15 @@ TEST(QuicDataWriterTest, WriteUInt8ToOffset) {
   EXPECT_TRUE(writer.WriteUInt8ToOffset(3, 2));
   EXPECT_TRUE(writer.WriteUInt8ToOffset(4, 3));
 
-  scoped_ptr<char[]> data(writer.take());
-
-  EXPECT_EQ(1, data[0]);
-  EXPECT_EQ(2, data[1]);
-  EXPECT_EQ(3, data[2]);
-  EXPECT_EQ(4, data[3]);
+  EXPECT_EQ(1, writer.data()[0]);
+  EXPECT_EQ(2, writer.data()[1]);
+  EXPECT_EQ(3, writer.data()[2]);
+  EXPECT_EQ(4, writer.data()[3]);
 }
 
 TEST(QuicDataWriterDeathTest, WriteUInt8ToOffset) {
-  QuicDataWriter writer(4);
+  char buffer[4];
+  QuicDataWriter writer(4, buffer);
 
   EXPECT_DFATAL(EXPECT_FALSE(writer.WriteUInt8ToOffset(5, 4)),
                 "offset: 4 >= capacity: 4");
@@ -80,10 +80,10 @@ TEST(QuicDataWriterTest, WriteUFloat16) {
   int num_test_cases = sizeof(test_cases) / sizeof(test_cases[0]);
 
   for (int i = 0; i < num_test_cases; ++i) {
-    QuicDataWriter writer(2);
+    char buffer[2];
+    QuicDataWriter writer(2, buffer);
     EXPECT_TRUE(writer.WriteUFloat16(test_cases[i].decoded));
-    scoped_ptr<char[]> data(writer.take());
-    EXPECT_EQ(test_cases[i].encoded, *reinterpret_cast<uint16*>(data.get()));
+    EXPECT_EQ(test_cases[i].encoded, *reinterpret_cast<uint16*>(writer.data()));
   }
 }
 
@@ -144,17 +144,18 @@ TEST(QuicDataWriterTest, RoundTripUFloat16) {
     // Check we're always within the promised range.
     EXPECT_LT(value, GG_UINT64_C(0x3FFC0000000));
     previous_value = value;
-    QuicDataWriter writer(6);
+    char buffer[6];
+    QuicDataWriter writer(6, buffer);
     EXPECT_TRUE(writer.WriteUFloat16(value - 1));
     EXPECT_TRUE(writer.WriteUFloat16(value));
     EXPECT_TRUE(writer.WriteUFloat16(value + 1));
-    scoped_ptr<char[]> data(writer.take());
     // Check minimal decoding (previous decoding has previous encoding).
-    EXPECT_EQ(i-1, *reinterpret_cast<uint16*>(data.get()));
+    EXPECT_EQ(i - 1, *reinterpret_cast<uint16*>(writer.data()));
     // Check roundtrip.
-    EXPECT_EQ(i, *reinterpret_cast<uint16*>(data.get() + 2));
+    EXPECT_EQ(i, *reinterpret_cast<uint16*>(writer.data() + 2));
     // Check next decoding.
-    EXPECT_EQ(i < 4096? i+1 : i, *reinterpret_cast<uint16*>(data.get() + 4));
+    EXPECT_EQ(i < 4096 ? i + 1 : i,
+              *reinterpret_cast<uint16*>(writer.data() + 4));
   }
 }
 

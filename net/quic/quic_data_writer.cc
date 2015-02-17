@@ -16,22 +16,15 @@ using std::numeric_limits;
 
 namespace net {
 
-QuicDataWriter::QuicDataWriter(size_t size)
-    : buffer_(new char[size]),
-      capacity_(size),
-      length_(0) {
+QuicDataWriter::QuicDataWriter(size_t size, char* buffer)
+    : buffer_(buffer), capacity_(size), length_(0) {
 }
 
 QuicDataWriter::~QuicDataWriter() {
-  delete[] buffer_;
 }
 
-char* QuicDataWriter::take() {
-  char* rv = buffer_;
-  buffer_ = nullptr;
-  capacity_ = 0;
-  length_ = 0;
-  return rv;
+char* QuicDataWriter::data() {
+  return buffer_;
 }
 
 bool QuicDataWriter::WriteUInt8(uint8 value) {

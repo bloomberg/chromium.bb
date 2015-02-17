@@ -16,7 +16,7 @@ namespace tools {
 
 QuicClientSession::QuicClientSession(const QuicConfig& config,
                                      QuicConnection* connection)
-    : QuicClientSessionBase(connection, config) {
+    : QuicClientSessionBase(connection, config), respect_goaway_(true) {
 }
 
 QuicClientSession::~QuicClientSession() {
@@ -46,7 +46,7 @@ QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
              << "Already " << GetNumOpenStreams() << " open.";
     return nullptr;
   }
-  if (goaway_received()) {
+  if (goaway_received() && respect_goaway_) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
              << "Already received goaway.";
     return nullptr;

@@ -17,7 +17,6 @@
 #include "net/quic/quic_socket_address_coder.h"
 
 using base::StringPiece;
-using std::make_pair;
 using std::map;
 using std::max;
 using std::min;
@@ -318,8 +317,9 @@ QuicPacketEntropyHash QuicFramer::GetPacketEntropyHash(
 
 QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
                                         const QuicFrames& frames,
-                                        size_t packet_size) {
-  QuicDataWriter writer(packet_size);
+                                        char* buffer,
+                                        size_t packet_length) {
+  QuicDataWriter writer(packet_length, buffer);
   if (!AppendPacketHeader(header, &writer)) {
     LOG(DFATAL) << "AppendPacketHeader failed";
     return nullptr;
@@ -403,15 +403,11 @@ QuicPacket* QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
     ++i;
   }
 
-  // Save the length before writing, because take clears it.
-  const size_t len = writer.length();
-  // Less than or equal because truncated acks end up with max_plaintex_size
-  // length, even though they're typically slightly shorter.
-  DCHECK_LE(len, packet_size);
-  QuicPacket* packet = new QuicPacket(
-      writer.take(), len, true, header.public_header.connection_id_length,
-      header.public_header.version_flag,
-      header.public_header.sequence_number_length);
+  QuicPacket* packet =
+      new QuicPacket(writer.data(), writer.length(), false,
+                     header.public_header.connection_id_length,
+                     header.public_header.version_flag,
+                     header.public_header.sequence_number_length);
 
   if (fec_builder_) {
     fec_builder_->OnBuiltFecProtectedPayload(header,
@@ -428,7 +424,8 @@ QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
   size_t len = GetPacketHeaderSize(header);
   len += fec.redundancy.length();
 
-  QuicDataWriter writer(len);
+  scoped_ptr<char[]> buffer(new char[len]);
+  QuicDataWriter writer(len, buffer.get());
   if (!AppendPacketHeader(header, &writer)) {
     LOG(DFATAL) << "AppendPacketHeader failed";
     return nullptr;
@@ -439,7 +436,7 @@ QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
     return nullptr;
   }
 
-  return new QuicPacket(writer.take(), len, true,
+  return new QuicPacket(buffer.release(), len, true,
                         header.public_header.connection_id_length,
                         header.public_header.version_flag,
                         header.public_header.sequence_number_length);
@@ -467,7 +464,8 @@ QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
 
   size_t len =
       kPublicFlagsSize + PACKET_8BYTE_CONNECTION_ID + reset_serialized.length();
-  QuicDataWriter writer(len);
+  scoped_ptr<char[]> buffer(new char[len]);
+  QuicDataWriter writer(len, buffer.get());
 
   uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST |
                                    PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID);
@@ -483,7 +481,7 @@ QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
     return nullptr;
   }
 
-  return new QuicEncryptedPacket(writer.take(), len, true);
+  return new QuicEncryptedPacket(buffer.release(), len, true);
 }
 
 QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
@@ -491,7 +489,8 @@ QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
     const QuicVersionVector& supported_versions) {
   DCHECK(header.version_flag);
   size_t len = GetVersionNegotiationPacketSize(supported_versions.size());
-  QuicDataWriter writer(len);
+  scoped_ptr<char[]> buffer(new char[len]);
+  QuicDataWriter writer(len, buffer.get());
 
   uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION |
                                    PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID);
@@ -509,7 +508,7 @@ QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
     }
   }
 
-  return new QuicEncryptedPacket(writer.take(), len, true);
+  return new QuicEncryptedPacket(buffer.release(), len, true);
 }
 
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
@@ -545,18 +544,16 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     rv = ProcessVersionNegotiationPacket(&public_header);
   } else if (public_header.reset_flag) {
     rv = ProcessPublicResetPacket(public_header);
+  } else if (packet.length() <= kMaxPacketSize) {
+    char buffer[kMaxPacketSize];
+    rv = ProcessDataPacket(public_header, packet, buffer, kMaxPacketSize);
   } else {
-    if (packet.length() <= kMaxPacketSize) {
-      char buffer[kMaxPacketSize];
-      rv = ProcessDataPacket(public_header, packet, buffer, kMaxPacketSize);
-    } else {
-      scoped_ptr<char[]> buffer(new char[packet.length()]);
-      rv = ProcessDataPacket(public_header, packet, buffer.get(),
-                             packet.length());
-      LOG_IF(DFATAL, rv) << "QUIC should never successfully process packets "
-                         << "larger than kMaxPacketSize. packet size:"
-                         << packet.length();
-    }
+    scoped_ptr<char[]> large_buffer(new char[packet.length()]);
+    rv = ProcessDataPacket(public_header, packet, large_buffer.get(),
+                           packet.length());
+    LOG_IF(DFATAL, rv) << "QUIC should never successfully process packets "
+                       << "larger than kMaxPacketSize. packet size:"
+                       << packet.length();
   }
 
   reader_.reset(nullptr);
@@ -1409,7 +1406,7 @@ bool QuicFramer::ProcessTimestampsInAckFrame(QuicAckFrame* ack_frame) {
       last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
 
       ack_frame->received_packet_times.push_back(
-          make_pair(seq_num, creation_time_.Add(last_timestamp_)));
+          std::make_pair(seq_num, creation_time_.Add(last_timestamp_)));
 
       for (uint8 i = 1; i < num_received_packets; ++i) {
         if (!reader_->ReadBytes(&delta_from_largest_observed,
@@ -1431,7 +1428,7 @@ bool QuicFramer::ProcessTimestampsInAckFrame(QuicAckFrame* ack_frame) {
         last_timestamp_ = last_timestamp_.Add(
             QuicTime::Delta::FromMicroseconds(incremental_time_delta_us));
         ack_frame->received_packet_times.push_back(
-            make_pair(seq_num, creation_time_.Add(last_timestamp_)));
+            std::make_pair(seq_num, creation_time_.Add(last_timestamp_)));
       }
     }
   }

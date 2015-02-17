@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_ack_notifier.h"
+#include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_utils.h"
 
@@ -297,8 +298,8 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(
   DCHECK_EQ(0u, queued_frames_.size());
   LOG_IF(DFATAL, frames.empty())
       << "Attempt to serialize empty packet";
-  for (size_t i = 0; i < frames.size(); ++i) {
-    bool success = AddFrame(frames[i], false);
+  for (const QuicFrame& frame : frames) {
+    bool success = AddFrame(frame, false);
     DCHECK(success);
   }
   SerializedPacket packet = SerializePacket();
@@ -372,8 +373,19 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   bool possibly_truncated_by_length = packet_size_ == max_plaintext_size &&
       queued_frames_.size() == 1 &&
       queued_frames_.back().type == ACK_FRAME;
-  scoped_ptr<QuicPacket> packet(
-      framer_->BuildDataPacket(header, queued_frames_, packet_size_));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicPacket> packet;
+  // Use the packet_size_ instead of the buffer size to ensure smaller
+  // packet sizes are properly used.
+  scoped_ptr<char[]> large_buffer;
+  if (packet_size_ <= kMaxPacketSize) {
+    packet.reset(
+        framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_));
+  } else {
+    large_buffer.reset(new char[packet_size_]);
+    packet.reset(framer_->BuildDataPacket(header, queued_frames_,
+                                          large_buffer.get(), packet_size_));
+  }
   LOG_IF(DFATAL, packet == nullptr) << "Failed to serialize "
                                     << queued_frames_.size() << " frames.";
   // Because of possible truncation, we can't be confident that our

@@ -21,7 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::string;
@@ -152,7 +151,7 @@ class QuicCryptoServerConfigPeer {
       // varargs will promote the value to an int so we have to read that from
       // the stack and cast down.
       const bool is_primary = static_cast<bool>(va_arg(ap, int));
-      expected.push_back(make_pair(server_config_id, is_primary));
+      expected.push_back(std::make_pair(server_config_id, is_primary));
     }
 
     va_end(ap);

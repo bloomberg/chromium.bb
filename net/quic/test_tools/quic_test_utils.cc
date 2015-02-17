@@ -13,6 +13,7 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_utils.h"
@@ -76,7 +77,22 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
     DCHECK(frame_size);
     packet_size += frame_size;
   }
-  return framer->BuildDataPacket(header, frames, packet_size);
+  return BuildUnsizedDataPacket(framer, header, frames, packet_size);
+}
+
+QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
+                                   const QuicPacketHeader& header,
+                                   const QuicFrames& frames,
+                                   size_t packet_size) {
+  char* buffer = new char[packet_size];
+  scoped_ptr<QuicPacket> packet(
+      framer->BuildDataPacket(header, frames, buffer, packet_size));
+  DCHECK(packet.get() != nullptr);
+  // Now I have to re-construct the data packet with data ownership.
+  return new QuicPacket(buffer, packet->length(), true,
+                        header.public_header.connection_id_length,
+                        header.public_header.version_flag,
+                        header.public_header.sequence_number_length);
 }
 
 uint64 SimpleRandom::RandUint64() {

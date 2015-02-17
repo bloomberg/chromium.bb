@@ -338,7 +338,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
     while (remaining_payload != 0) {
       int size = min(OneToN(6), remaining_payload);
       int index = payload_size - remaining_payload;
-      list_.push_back(make_pair(index, string(kPayload + index, size)));
+      list_.push_back(std::make_pair(index, string(kPayload + index, size)));
       remaining_payload -= size;
     }
   }
@@ -402,7 +402,7 @@ TEST_F(QuicStreamSequencerTest, FrameOverlapsBufferedData) {
 
   // Add a buffered frame.
   buffered_frames->insert(
-      make_pair(kBufferedOffset, string(kBufferedDataLength, '.')));
+      std::make_pair(kBufferedOffset, string(kBufferedDataLength, '.')));
 
   // New byte range partially overlaps with buffered frame, start offset
   // preceeding buffered frame.

@@ -15,7 +15,6 @@
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::make_pair;
 using std::min;
 
 namespace net {
@@ -97,7 +96,7 @@ class TcpCubicSenderTest : public ::testing::Test {
     for (int i = 0; i < n; ++i) {
       ++acked_sequence_number_;
       acked_packets.push_back(
-          make_pair(acked_sequence_number_, standard_packet_));
+          std::make_pair(acked_sequence_number_, standard_packet_));
     }
     sender_->OnCongestionEvent(
         true, bytes_in_flight_, acked_packets, lost_packets);
@@ -111,7 +110,7 @@ class TcpCubicSenderTest : public ::testing::Test {
     for (int i = 0; i < n; ++i) {
       ++acked_sequence_number_;
       lost_packets.push_back(
-          make_pair(acked_sequence_number_, standard_packet_));
+          std::make_pair(acked_sequence_number_, standard_packet_));
     }
     sender_->OnCongestionEvent(
         false, bytes_in_flight_, acked_packets, lost_packets);
@@ -122,8 +121,7 @@ class TcpCubicSenderTest : public ::testing::Test {
   void LosePacket(QuicPacketSequenceNumber sequence_number) {
     SendAlgorithmInterface::CongestionVector acked_packets;
     SendAlgorithmInterface::CongestionVector lost_packets;
-    lost_packets.push_back(
-        make_pair(sequence_number, standard_packet_));
+    lost_packets.push_back(std::make_pair(sequence_number, standard_packet_));
     sender_->OnCongestionEvent(
         false, bytes_in_flight_, acked_packets, lost_packets);
     bytes_in_flight_ -= kDefaultTCPMSS;

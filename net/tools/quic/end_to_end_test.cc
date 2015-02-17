@@ -319,6 +319,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // and TestWriterFactory when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
+    // TODO(ianswett): Remove this once it's fully rolled out.
+    FLAGS_quic_enable_pacing = false;
   }
 
   void TearDown() override { StopServer(); }
@@ -1406,8 +1408,6 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   // demonstrates that retransmissions do not break this functionality.
   ValueRestore<bool> old_flag(&FLAGS_quic_attach_ack_notifiers_to_packets,
                               true);
-  ValueRestore<bool> old_flag2(&FLAGS_quic_ack_notifier_informed_on_serialized,
-                               true);
 
   SetPacketLossPercentage(5);
   ASSERT_TRUE(Initialize());
