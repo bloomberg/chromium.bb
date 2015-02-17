@@ -109,7 +109,8 @@ void LinkHighlight::releaseResources()
 void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutLayerModelObject* paintInvalidationContainer)
 {
     GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBacking();
-    if (!newGraphicsLayer->drawsContent())
+    // FIXME: There should always be a GraphicsLayer. See crbug.com/431961.
+    if (newGraphicsLayer && !newGraphicsLayer->drawsContent())
         newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBackingForScrolling();
     if (!newGraphicsLayer)
         return;
@@ -189,6 +190,12 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutLayerModelO
     if (!m_node || !m_node->renderer() || !m_currentGraphicsLayer)
         return false;
     ASSERT(paintInvalidationContainer);
+
+    // FIXME: This is defensive code to avoid crashes such as those described in
+    // crbug.com/440887. This should be cleaned up once we fix the root cause of
+    // of the paint invalidation container not being composited.
+    if (!paintInvalidationContainer->layer()->compositedLayerMapping() && !paintInvalidationContainer->layer()->groupedMapping())
+        return false;
 
     // Get quads for node in absolute coordinates.
     Vector<FloatQuad> quads;
