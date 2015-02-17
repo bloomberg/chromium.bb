@@ -302,12 +302,12 @@ test("ash_unittests") {
       "wm/maximize_mode/maximize_mode_controller_unittest.cc",
 
       # Can't resize on Windows Ash. http://crbug.com/165962
+      "autoclick/autoclick_unittest.cc",
       "magnifier/magnification_controller_unittest.cc",
-      "wm/workspace/workspace_window_resizer_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
       "system/tray/media_security/multi_profile_media_tray_item_unittest.cc",
-      "autoclick/autoclick_unittest.cc",
       "virtual_keyboard_controller_unittest.cc",
+      "wm/workspace/workspace_window_resizer_unittest.cc",
     ]
     sources += [
       #'<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',  TODO(GYP)
