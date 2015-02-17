@@ -23,10 +23,22 @@ window.PerfTestHelper.random = function() {
     return (randomSeed & 0xfffffff) / 0x10000000;
 };
 
-window.PerfTestHelper.getN = function(defaultN) {
-    var match = /N=(\d+)/.exec(window.location.search);
+window.PerfTestHelper.getParameter = function(parameter) {
+    var match = new RegExp(parameter + '=([^&]*)').exec(window.location.search);
     if (match) {
-        return Number(match[1]);
+        return match[1];
+    }
+    return null;
+}
+
+window.PerfTestHelper.getN = function(defaultN) {
+    var match = PerfTestHelper.getParameter('N');
+    if (match) {
+        var n = Number(match);
+        if (isNaN(n)) {
+            throw 'Invalid N value: ' + match;
+        }
+        return n;
     }
     if (typeof defaultN === 'undefined') {
         throw 'Default N value required';

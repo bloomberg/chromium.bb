@@ -181,6 +181,53 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
       # Why: Tests many Web Animations all starting at different times.
       # pylint: disable=C0301
       'file://tough_animation_cases/web_animations_staggered_triggering.html?N=0316',
+
+      # Why: Tests color animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_color.html?api=css_animations&N=0316',
+      # Why: Tests filter animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_filter.html?api=css_animations&N=0316',
+      # Why: Tests length 3D animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_length_3d.html?api=css_animations&N=0316',
+      # Why: Tests complex length animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_length_complex.html?api=css_animations&N=0316',
+      # Why: Tests simple length animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_length_simple.html?api=css_animations&N=0316',
+      # Why: Tests shadow animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_shadow.html?api=css_animations&N=0316',
+      # Why: Tests complex transform animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_transform_complex.html?api=css_animations&N=0316',
+      # Why: Tests simple transform animations using CSS Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_transform_simple.html?api=css_animations&N=0316',
+
+      # Why: Tests color animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_color.html?api=web_animations&N=0316',
+      # Why: Tests length 3D animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_length_3d.html?api=web_animations&N=0316',
+      # Why: Tests complex length animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_length_complex.html?api=web_animations&N=0316',
+      # Why: Tests simple length animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_length_simple.html?api=web_animations&N=0316',
+      # Why: Tests shadow animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_shadow.html?api=web_animations&N=0316',
+      # Why: Tests complex transform animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_transform_complex.html?api=web_animations&N=0316',
+      # Why: Tests simple transform animations using Web Animations.
+      # pylint: disable=C0301
+      'file://tough_animation_cases/css_value_type_transform_simple.html?api=web_animations&N=0316',
     ]
 
     for url in urls_list_one:
