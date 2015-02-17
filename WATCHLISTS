@@ -15,18 +15,12 @@
                   '|chrome/browser/ui/views/accelerator_table\.cc',
     },
     'accessibility': {
-      'filepath': 'braille' \
-                  '|chrome/browser/accessibility/' \
+      'filepath': 'accessibility' \
+                  '|braille' \
                   '|chromevox' \
-                  '|content/browser/accessibility/' \
-                  '|content/browser/resources/accessibility/' \
-                  '|content/renderer/accessibility/' \
-                  '|content/test/data/accessibility/' \
-                  '|content/public/android/.*accessib' \
-                  '|chrome/.*accessib' \
-                  '|liblouis' \
-                  '|ui/base/accessibility/' \
-                  '|ui/views/accessibility/'
+                  '|iaccessible2' \
+                  '|isimpledom' \
+                  '|liblouis'
     },
     'activity_log': {
       'filepath': 'chrome/browser/extensions/activity_log/' \
@@ -798,10 +792,12 @@
     'accelerator_table': ['mazda+watch@chromium.org',
                           'derat+watch@chromium.org',
                           'yusukes+watch@chromium.org'],
-    'accessibility': ['dmazzoni+watch@chromium.org',
+    'accessibility': ['aboxhall+watch@chromium.org',
+                      'dmazzoni+watch@chromium.org',
                       'dtseng+watch@chromium.org',
+                      'je_julie.kim@samsung.com',
+                      'nektar+watch@chromium.org',
                       'plundblad+watch@chromium.org',
-                      'aboxhall+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'activity_log': ['felt@chromium.org'],
     'android_infra': ['yfriedman+watch@chromium.org',
