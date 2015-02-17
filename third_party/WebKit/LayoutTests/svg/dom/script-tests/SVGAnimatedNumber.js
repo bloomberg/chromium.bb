@@ -20,11 +20,15 @@ debug("Check assigning various valid and invalid values");
 shouldBe("feSpecularLightingElement.surfaceScale.baseVal = -1", "-1"); // Negative values are allowed from SVG DOM, but should lead to an error when rendering (disable the filter)
 shouldBe("feSpecularLightingElement.surfaceScale.baseVal = 300", "300");
 // ECMA-262, 9.3, "ToNumber"
-shouldBe("feSpecularLightingElement.surfaceScale.baseVal = 'aString'", "'aString'");
-shouldBe("feSpecularLightingElement.surfaceScale.baseVal", "NaN");
+shouldThrow("feSpecularLightingElement.surfaceScale.baseVal = 'aString'");
+shouldBe("feSpecularLightingElement.surfaceScale.baseVal", "300");
 shouldBe("feSpecularLightingElement.surfaceScale.baseVal = 0", "0");
-shouldBe("feSpecularLightingElement.surfaceScale.baseVal = feSpecularLightingElement", "feSpecularLightingElement");
-shouldBe("feSpecularLightingElement.surfaceScale.baseVal", "NaN");
+shouldThrow("feSpecularLightingElement.surfaceScale.baseVal = NaN");
+shouldBe("feSpecularLightingElement.surfaceScale.baseVal", "0");
+shouldThrow("feSpecularLightingElement.surfaceScale.baseVal = Infinity");
+shouldBe("feSpecularLightingElement.surfaceScale.baseVal", "0");
+shouldThrow("feSpecularLightingElement.surfaceScale.baseVal = feSpecularLightingElement");
+shouldBe("feSpecularLightingElement.surfaceScale.baseVal", "0");
 shouldBe("feSpecularLightingElement.surfaceScale.baseVal = 300", "300");
 
 debug("");

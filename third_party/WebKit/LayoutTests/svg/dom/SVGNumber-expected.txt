@@ -18,10 +18,13 @@ PASS numRef is 1000
 PASS num.value is -12345678
 
 Check assigning invalid number, number should be 0 afterwards
-PASS num.value = num is num
-PASS num.value = 'aString' is 'aString'
-PASS num.value = svgElement is svgElement
-PASS num.value is NaN
+PASS num.value = 0 is 0
+PASS num.value = num threw exception TypeError: Failed to set the 'value' property on 'SVGNumber': The provided float value is non-finite..
+PASS num.value = 'aString' threw exception TypeError: Failed to set the 'value' property on 'SVGNumber': The provided float value is non-finite..
+PASS num.value = svgElement threw exception TypeError: Failed to set the 'value' property on 'SVGNumber': The provided float value is non-finite..
+PASS num.value = NaN threw exception TypeError: Failed to set the 'value' property on 'SVGNumber': The provided float value is non-finite..
+PASS num.value = Infinity threw exception TypeError: Failed to set the 'value' property on 'SVGNumber': The provided float value is non-finite..
+PASS num.value is 0
 PASS num.value = null is null
 
 Check that the number is now null

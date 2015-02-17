@@ -38,14 +38,17 @@ shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_UNKNOWN, 4)"
 shouldThrow("length.newValueSpecifiedUnits(-1, 4)");
 shouldThrow("length.newValueSpecifiedUnits(11, 4)");
 // ECMA-262, 9.3, "ToNumber"
-shouldBeUndefined("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 'aString')");
-shouldBe("length.value", "NaN");
 shouldBeUndefined("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 0)");
-shouldBeUndefined("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, length)");
-shouldBe("length.value", "NaN");
-shouldBeUndefined("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 0)");
-shouldBeUndefined("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, svgElement)");
-shouldBe("length.value", "NaN");
+shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 'aString')");
+shouldBe("length.value", "0");
+shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, length)");
+shouldBe("length.value", "0");
+shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, svgElement)");
+shouldBe("length.value", "0");
+shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, NaN)");
+shouldBe("length.value", "0");
+shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, Infinity)");
+shouldBe("length.value", "0");
 shouldThrow("length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX)");
 // Reset to original value above.
 length.valueAsString = "2px";
@@ -76,6 +79,22 @@ shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
 
 shouldThrow("length.valueAsString = ',5 em'");
 shouldBeEqualToString("length.valueAsString", "2px");
+shouldBe("length.value", "2");
+shouldBe("length.valueInSpecifiedUnits", "2");
+shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
+debug("");
+debug("Check setting invalid 'value' arguments");
+shouldThrow("length.value = NaN");
+shouldThrow("length.value = Infinity");
+shouldBe("length.value", "2");
+shouldBe("length.valueInSpecifiedUnits", "2");
+shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
+debug("");
+debug("Check setting invalid 'valueInSpecifiedUnits' arguments");
+shouldThrow("length.valueInSpecifiedUnits = NaN");
+shouldThrow("length.valueInSpecifiedUnits = Infinity");
 shouldBe("length.value", "2");
 shouldBe("length.valueInSpecifiedUnits", "2");
 shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");

@@ -23,10 +23,13 @@ shouldBe("num.value", "-12345678");
 
 debug("");
 debug("Check assigning invalid number, number should be 0 afterwards");
-shouldBe("num.value = num", "num");
-shouldBe("num.value = 'aString'", "'aString'");
-shouldBe("num.value = svgElement", "svgElement");
-shouldBe("num.value", "NaN");
+shouldBe("num.value = 0", "0");
+shouldThrow("num.value = num");
+shouldThrow("num.value = 'aString'");
+shouldThrow("num.value = svgElement");
+shouldThrow("num.value = NaN");
+shouldThrow("num.value = Infinity");
+shouldBe("num.value", "0");
 shouldBeNull("num.value = null");
 
 debug("");

@@ -33,21 +33,24 @@ Check invalid arguments for 'newValueSpecifiedUnits'
 PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_UNKNOWN, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
 PASS length.newValueSpecifiedUnits(-1, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (65535)..
 PASS length.newValueSpecifiedUnits(11, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (11)..
-PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 'aString') is undefined.
-PASS length.value is NaN
 PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 0) is undefined.
-PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, length) is undefined.
-PASS length.value is NaN
-PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 0) is undefined.
-PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, svgElement) is undefined.
-PASS length.value is NaN
+PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, 'aString') threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.value is 0
+PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, length) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.value is 0
+PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, svgElement) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.value is 0
+PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, NaN) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.value is 0
+PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, Infinity) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.value is 0
 PASS length.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': 2 arguments required, but only 1 present..
 PASS length.newValueSpecifiedUnits('aString', 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
 PASS length.newValueSpecifiedUnits(length, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
 PASS length.newValueSpecifiedUnits(svgElement, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
-PASS length.newValueSpecifiedUnits('aString', 'aString') threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
-PASS length.newValueSpecifiedUnits(length, length) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
-PASS length.newValueSpecifiedUnits(svgElement, svgElement) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': Cannot set value with unknown or invalid units (0)..
+PASS length.newValueSpecifiedUnits('aString', 'aString') threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.newValueSpecifiedUnits(length, length) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
+PASS length.newValueSpecifiedUnits(svgElement, svgElement) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGLength': The provided float value is non-finite..
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
 PASS length.value is 2
 PASS length.valueInSpecifiedUnits is 2
@@ -66,6 +69,20 @@ PASS length.valueInSpecifiedUnits is 2
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
 PASS length.valueAsString = ',5 em' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGLength': The value provided (',5 em') is invalid..
 PASS length.valueAsString is "2px"
+PASS length.value is 2
+PASS length.valueInSpecifiedUnits is 2
+PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
+
+Check setting invalid 'value' arguments
+PASS length.value = NaN threw exception TypeError: Failed to set the 'value' property on 'SVGLength': The provided float value is non-finite..
+PASS length.value = Infinity threw exception TypeError: Failed to set the 'value' property on 'SVGLength': The provided float value is non-finite..
+PASS length.value is 2
+PASS length.valueInSpecifiedUnits is 2
+PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
+
+Check setting invalid 'valueInSpecifiedUnits' arguments
+PASS length.valueInSpecifiedUnits = NaN threw exception TypeError: Failed to set the 'valueInSpecifiedUnits' property on 'SVGLength': The provided float value is non-finite..
+PASS length.valueInSpecifiedUnits = Infinity threw exception TypeError: Failed to set the 'valueInSpecifiedUnits' property on 'SVGLength': The provided float value is non-finite..
 PASS length.value is 2
 PASS length.valueInSpecifiedUnits is 2
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
