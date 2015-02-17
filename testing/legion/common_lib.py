@@ -6,6 +6,7 @@
 
 import argparse
 import logging
+import os
 import socket
 import xmlrpclib
 
@@ -14,6 +15,8 @@ MY_IP = socket.gethostbyname(socket.gethostname())
 SERVER_ADDRESS = ''
 SERVER_PORT = 31710
 DEFAULT_TIMEOUT_SECS = 20 * 60  # 30 minutes
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+SWARMING_DIR = os.path.join(THIS_DIR, '..', '..', 'tools', 'swarming_client')
 
 
 def InitLogging():
