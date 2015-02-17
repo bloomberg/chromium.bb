@@ -318,13 +318,13 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     Element* editable = frame().selection().rootEditableElement();
     Position base = frame().selection().base().downstream();
     Node* baseNode = base.anchorNode();
-    if (editable->firstChild() == baseNode && editable->lastChild() == baseNode && baseNode->isTextNode()) {
+    if (baseNode && editable->firstChild() == baseNode && editable->lastChild() == baseNode && baseNode->isTextNode()) {
         m_compositionNode = nullptr;
         m_customCompositionUnderlines.clear();
 
         if (base.anchorType() != Position::PositionIsOffsetInAnchor)
             return;
-        if (!baseNode || baseNode != frame().selection().extent().anchorNode())
+        if (baseNode != frame().selection().extent().anchorNode())
             return;
 
         m_compositionNode = toText(baseNode);
