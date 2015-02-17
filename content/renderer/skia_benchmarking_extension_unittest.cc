@@ -72,8 +72,7 @@ TEST(SkiaBenchmarkingExtensionTest, SkDebugCanvas) {
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
   EXPECT_EQ(cmd, SkDrawCommand::kClipRect_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd),
-               SkDrawCommand::kClipRectString);
+  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "ClipRect");
   EXPECT_TRUE(HasInfoField(canvas, idx, "SkRect"));
   EXPECT_TRUE(HasInfoField(canvas, idx, "Op"));
   EXPECT_TRUE(HasInfoField(canvas, idx, "doAA"));
@@ -86,8 +85,7 @@ TEST(SkiaBenchmarkingExtensionTest, SkDebugCanvas) {
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
   cmd = canvas.getDrawCommandAt(idx)->getType();
   EXPECT_EQ(cmd, SkDrawCommand::kDrawRect_OpType);
-  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd),
-               SkDrawCommand::kDrawRectString);
+  EXPECT_STREQ(SkDrawCommand::GetCommandString(cmd), "DrawRect");
   EXPECT_TRUE(HasInfoField(canvas, idx, "SkRect"));
 
   ASSERT_TRUE(canvas.getDrawCommandAt(++idx) != NULL);
