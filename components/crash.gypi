@@ -8,10 +8,10 @@
       'target_name': 'crash_component_lib',
       'type': 'static_library',
       'sources': [
-        'crash/app/crash_reporter_client.cc',
-        'crash/app/crash_reporter_client.h',
         'crash/app/crash_keys_win.cc',
         'crash/app/crash_keys_win.h',
+        'crash/app/crash_reporter_client.cc',
+        'crash/app/crash_reporter_client.h',
       ],
       'include_dirs': [
         '..',
@@ -127,8 +127,6 @@
           'target_name': 'breakpad_win64',
           'type': 'static_library',
           'sources': [
-            'crash/app/crash_reporter_client.cc',
-            'crash/app/crash_reporter_client.h',
             'crash/app/breakpad_linux.cc',
             'crash/app/breakpad_linux.h',
             'crash/app/breakpad_linux_impl.h',
@@ -139,6 +137,8 @@
             # TODO(siggi): test the x64 version too.
             'crash/app/crash_keys_win.cc',
             'crash/app/crash_keys_win.h',
+            'crash/app/crash_reporter_client.cc',
+            'crash/app/crash_reporter_client.h',
             'crash/app/hard_error_handler_win.cc',
             'crash/app/hard_error_handler_win.h',
           ],
@@ -187,10 +187,10 @@
             '../base/base.gyp:base',
           ],
           'sources': [
-            'crash/app/crash_reporter_client.cc',
-            'crash/app/crash_reporter_client.h',
             'crash/app/breakpad_mac.h',
             'crash/app/breakpad_mac_stubs.mm',
+            'crash/app/crash_reporter_client.cc',
+            'crash/app/crash_reporter_client.h',
           ],
         },
       ],

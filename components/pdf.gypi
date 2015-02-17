@@ -49,10 +49,10 @@
       'pdf_common',
     ],
     'sources': [
-      'pdf/renderer/pepper_pdf_host.cc',
-      'pdf/renderer/pepper_pdf_host.h',
       'pdf/renderer/pdf_resource_util.cc',
       'pdf/renderer/pdf_resource_util.h',
+      'pdf/renderer/pepper_pdf_host.cc',
+      'pdf/renderer/pepper_pdf_host.h',
       'pdf/renderer/ppb_pdf_impl.cc',
       'pdf/renderer/ppb_pdf_impl.h',
     ],

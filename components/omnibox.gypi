@@ -31,8 +31,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'omnibox/answers_cache.h',
         'omnibox/answers_cache.cc',
+        'omnibox/answers_cache.h',
         'omnibox/autocomplete_input.cc',
         'omnibox/autocomplete_input.h',
         'omnibox/autocomplete_match.cc',

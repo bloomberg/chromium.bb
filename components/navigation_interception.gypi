@@ -25,8 +25,8 @@
         # Note: sources list duplicated in GN build.
         'navigation_interception/intercept_navigation_resource_throttle.cc',
         'navigation_interception/intercept_navigation_resource_throttle.h',
-        'navigation_interception/navigation_params.h',
         'navigation_interception/navigation_params.cc',
+        'navigation_interception/navigation_params.h',
       ],
       'conditions': [
         ['OS=="android"', {
@@ -39,8 +39,8 @@
             'navigation_interception/component_jni_registrar.h',
             'navigation_interception/intercept_navigation_delegate.cc',
             'navigation_interception/intercept_navigation_delegate.h',
-            'navigation_interception/navigation_params_android.h',
             'navigation_interception/navigation_params_android.cc',
+            'navigation_interception/navigation_params_android.h',
           ],
         }],
       ],

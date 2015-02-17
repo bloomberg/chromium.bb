@@ -23,9 +23,9 @@
         # Note: sources list duplicated in GN build.
         'captive_portal/captive_portal_detector.cc',
         'captive_portal/captive_portal_detector.h',
+        'captive_portal/captive_portal_export.h',
         'captive_portal/captive_portal_types.cc',
         'captive_portal/captive_portal_types.h',
-        'captive_portal/captive_portal_export.h',
       ],
     },
     {

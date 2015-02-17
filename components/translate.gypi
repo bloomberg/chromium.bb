@@ -75,6 +75,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'translate/core/common/language_detection_details.cc',
+        'translate/core/common/language_detection_details.h',
         'translate/core/common/translate_constants.cc',
         'translate/core/common/translate_constants.h',
         'translate/core/common/translate_errors.h',
@@ -86,8 +88,6 @@
         'translate/core/common/translate_switches.h',
         'translate/core/common/translate_util.cc',
         'translate/core/common/translate_util.h',
-        'translate/core/common/language_detection_details.cc',
-        'translate/core/common/language_detection_details.h',
       ],
     },
     {
@@ -138,10 +138,10 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/browser/browser_cld_data_provider_factory.cc',
-            'translate/content/browser/browser_cld_data_provider_factory.h',
             'translate/content/browser/browser_cld_data_provider.cc',
             'translate/content/browser/browser_cld_data_provider.h',
+            'translate/content/browser/browser_cld_data_provider_factory.cc',
+            'translate/content/browser/browser_cld_data_provider_factory.h',
             'translate/content/browser/browser_cld_utils.cc',
             'translate/content/browser/browser_cld_utils.h',
             'translate/content/browser/content_translate_driver.cc',
@@ -166,12 +166,12 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/common/translate_messages.cc',
-            'translate/content/common/translate_messages.h',
             'translate/content/common/cld_data_source.cc',
             'translate/content/common/cld_data_source.h',
             'translate/content/common/data_file_cld_data_provider_messages.cc',
             'translate/content/common/data_file_cld_data_provider_messages.h',
+            'translate/content/common/translate_messages.cc',
+            'translate/content/common/translate_messages.h',
            ],
         },
         {
@@ -195,16 +195,16 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/renderer/renderer_cld_data_provider_factory.cc',
-            'translate/content/renderer/renderer_cld_data_provider_factory.h',
+            'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
+            'translate/content/renderer/data_file_renderer_cld_data_provider.h',
             'translate/content/renderer/renderer_cld_data_provider.cc',
             'translate/content/renderer/renderer_cld_data_provider.h',
+            'translate/content/renderer/renderer_cld_data_provider_factory.cc',
+            'translate/content/renderer/renderer_cld_data_provider_factory.h',
             'translate/content/renderer/renderer_cld_utils.cc',
             'translate/content/renderer/renderer_cld_utils.h',
             'translate/content/renderer/translate_helper.cc',
             'translate/content/renderer/translate_helper.h',
-            'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
-            'translate/content/renderer/data_file_renderer_cld_data_provider.h',
            ],
           'conditions': [
             ['cld_version==0 or cld_version==2', {
@@ -236,12 +236,12 @@
           'sources': [
             'translate/ios/browser/ios_translate_driver.h',
             'translate/ios/browser/ios_translate_driver.mm',
-            'translate/ios/browser/language_detection_controller.h',
-            'translate/ios/browser/language_detection_controller.mm',
             'translate/ios/browser/js_language_detection_manager.h',
             'translate/ios/browser/js_language_detection_manager.mm',
             'translate/ios/browser/js_translate_manager.h',
             'translate/ios/browser/js_translate_manager.mm',
+            'translate/ios/browser/language_detection_controller.h',
+            'translate/ios/browser/language_detection_controller.mm',
             'translate/ios/browser/translate_controller.h',
             'translate/ios/browser/translate_controller.mm',
           ],

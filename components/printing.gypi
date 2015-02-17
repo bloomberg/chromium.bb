@@ -16,9 +16,9 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
       ],
       'sources': [
-        "printing/common/printing_param_traits_macros.h",
         "printing/common/print_messages.cc",
         "printing/common/print_messages.h",
+        "printing/common/printing_param_traits_macros.h",
       ],
     },{
        # GN: //components/printing/common:printing_renderer
@@ -54,10 +54,10 @@
         'printing_renderer',
       ],
       'sources': [
-        'printing/test/mock_printer.h',
         'printing/test/mock_printer.cc',
-        'printing/test/print_mock_render_thread.h',
+        'printing/test/mock_printer.h',
         'printing/test/print_mock_render_thread.cc',
+        'printing/test/print_mock_render_thread.h',
         'printing/test/print_test_content_renderer_client.cc',
         'printing/test/print_test_content_renderer_client.h',
       ],

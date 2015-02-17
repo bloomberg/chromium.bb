@@ -52,13 +52,13 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        "data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h",
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_config.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_config.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h',
-        "data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h",
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.cc',
@@ -175,4 +175,3 @@
 
   ],
 }
-

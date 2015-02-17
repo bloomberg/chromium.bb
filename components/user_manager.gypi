@@ -8,8 +8,8 @@
     'user_manager_shared_sources': [
       'user_manager/empty_user_info.cc',
       'user_manager/empty_user_info.h',
-      'user_manager/user_info.h',
       'user_manager/user_info.cc',
+      'user_manager/user_info.h',
       'user_manager/user_info_impl.cc',
       'user_manager/user_info_impl.h',
       'user_manager/user_manager_export.h',
@@ -17,12 +17,12 @@
     # Chrome OS user_manager sources.
     'user_manager_chromeos_sources': [
       'user_manager/remove_user_delegate.h',
+      'user_manager/user.cc',
+      'user_manager/user.h',
       'user_manager/user_image/default_user_images.cc',
       'user_manager/user_image/default_user_images.h',
       'user_manager/user_image/user_image.cc',
       'user_manager/user_image/user_image.h',
-      'user_manager/user.cc',
-      'user_manager/user.h',
       'user_manager/user_manager.cc',
       'user_manager/user_manager.h',
       'user_manager/user_manager_base.cc',

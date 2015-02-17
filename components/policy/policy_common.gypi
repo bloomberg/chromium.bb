@@ -199,8 +199,8 @@
       # Chrome can always interface with the PolicyService without having
       # to #ifdef on ENABLE_CONFIGURATION_POLICY.
       'sources': [
-        'core/common/external_data_fetcher.h',
         'core/common/external_data_fetcher.cc',
+        'core/common/external_data_fetcher.h',
         'core/common/external_data_manager.h',
         'core/common/policy_map.cc',
         'core/common/policy_map.h',

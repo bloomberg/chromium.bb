@@ -68,8 +68,8 @@
           'sources': [
             'keyed_service/content/browser_context_dependency_manager.cc',
             'keyed_service/content/browser_context_dependency_manager.h',
-            'keyed_service/content/browser_context_keyed_base_factory.h',
             'keyed_service/content/browser_context_keyed_base_factory.cc',
+            'keyed_service/content/browser_context_keyed_base_factory.h',
             'keyed_service/content/browser_context_keyed_service_factory.cc',
             'keyed_service/content/browser_context_keyed_service_factory.h',
             'keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.cc',
