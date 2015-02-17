@@ -101,6 +101,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
+  title_->SetHandlesTooltips(false);
 
   static const gfx::FontList font_list = GetFontList();
   title_->SetFontList(font_list);
@@ -264,8 +265,7 @@ void AppListItemView::SetItemName(const base::string16& display_name,
   title_->SetText(display_name);
   title_->Invalidate();
 
-  title_->SetTooltipText(display_name == full_name ? base::string16()
-                                                   : full_name);
+  tooltip_text_ = display_name == full_name ? base::string16() : full_name;
 
   // Use full name for accessibility.
   SetAccessibleName(
@@ -532,6 +532,19 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
   }
   if (!event->handled())
     CustomButton::OnGestureEvent(event);
+}
+
+bool AppListItemView::GetTooltipText(const gfx::Point& p,
+                                     base::string16* tooltip) const {
+  // Use the label to generate a tooltip, so that it will consider its text
+  // truncation in making the tooltip. We do not want the label itself to have a
+  // tooltip, so we only temporarily enable it to get the tooltip text from the
+  // label, then disable it again.
+  title_->SetHandlesTooltips(true);
+  title_->SetTooltipText(tooltip_text_);
+  bool handled = title_->GetTooltipText(p, tooltip);
+  title_->SetHandlesTooltips(false);
+  return handled;
 }
 
 void AppListItemView::OnSyncDragEnd() {

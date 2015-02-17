@@ -50,6 +50,8 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
   SkColor parent_background_color_;
 

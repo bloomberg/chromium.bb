@@ -84,6 +84,10 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // views::CustomButton overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // views::View overrides:
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+
  private:
   enum UIState {
     UI_STATE_NORMAL,    // Normal UI (icon + label)
@@ -157,6 +161,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   bool is_installing_;
   bool is_highlighted_;
+
+  base::string16 tooltip_text_;
 
   // A timer to defer showing drag UI when mouse is pressed.
   base::OneShotTimer<AppListItemView> mouse_drag_timer_;

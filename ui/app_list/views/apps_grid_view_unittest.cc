@@ -767,8 +767,8 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();
-  EXPECT_TRUE(title_label->GetTooltipText(
-      title_label->bounds().CenterPoint(), &actual_tooltip));
+  EXPECT_TRUE(item_view->GetTooltipText(title_label->bounds().CenterPoint(),
+                                        &actual_tooltip));
   EXPECT_EQ(expected_tooltip, base::UTF16ToUTF8(actual_tooltip));
   EXPECT_EQ(expected_text, base::UTF16ToUTF8(title_label->text()));
 }

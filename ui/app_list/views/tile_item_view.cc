@@ -41,6 +41,7 @@ TileItemView::TileItemView()
   title_->SetEnabledColor(kGridTitleColor);
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title_->SetHandlesTooltips(false);
 
   AddChildView(icon_);
   AddChildView(title_);
@@ -99,6 +100,18 @@ void TileItemView::UpdateBackgroundColor() {
 
 gfx::Size TileItemView::GetPreferredSize() const {
   return gfx::Size(kTileSize, kTileSize);
+}
+
+bool TileItemView::GetTooltipText(const gfx::Point& p,
+                                  base::string16* tooltip) const {
+  // Use the label to generate a tooltip, so that it will consider its text
+  // truncation in making the tooltip. We do not want the label itself to have a
+  // tooltip, so we only temporarily enable it to get the tooltip text from the
+  // label, then disable it again.
+  title_->SetHandlesTooltips(true);
+  bool handled = title_->GetTooltipText(p, tooltip);
+  title_->SetHandlesTooltips(false);
+  return handled;
 }
 
 }  // namespace app_list
