@@ -117,6 +117,7 @@ class AshTestBase : public testing::Test {
   // Utility methods to emulate user logged in or not, session started or not
   // and user able to lock screen or not cases.
   void SetSessionStarted(bool session_started);
+  void SetSessionStarting();
   void SetUserLoggedIn(bool user_logged_in);
   void SetCanLockScreen(bool can_lock_screen);
   void SetShouldLockScreenBeforeSuspending(bool should_lock);

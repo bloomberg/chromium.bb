@@ -326,6 +326,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Called when the LoginUI changes from visible to invisible.
   void UpdateShelfVisibilityAfterLoginUIChange();
 
+  // Returns true when |alignment_| is locked. This can be caused by the screen
+  // being locked, or when adding a user. Returns false when transitioning to a
+  // user session, and while the session is active.
+  bool IsAlignmentLocked() const;
+
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.

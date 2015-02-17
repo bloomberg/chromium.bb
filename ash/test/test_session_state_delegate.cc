@@ -70,7 +70,8 @@ TestSessionStateDelegate::TestSessionStateDelegate()
       screen_locked_(false),
       user_adding_screen_running_(false),
       logged_in_users_(1),
-      active_user_index_(0) {
+      active_user_index_(0),
+      session_state_(SESSION_STATE_LOGIN_PRIMARY) {
   user_list_.push_back(
       new MockUserInfo("First@tray"));  // This is intended to be capitalized.
   user_list_.push_back(
@@ -145,30 +146,30 @@ bool TestSessionStateDelegate::IsUserSessionBlocked() const {
 
 SessionStateDelegate::SessionState TestSessionStateDelegate::GetSessionState()
     const {
-  if (user_adding_screen_running_)
-    return SESSION_STATE_LOGIN_SECONDARY;
-
-  // Assuming that if session is not active we're at login.
-  return IsActiveUserSessionStarted() ?
-      SESSION_STATE_ACTIVE : SESSION_STATE_LOGIN_PRIMARY;
+  return session_state_;
 }
 
 void TestSessionStateDelegate::SetHasActiveUser(bool has_active_user) {
   has_active_user_ = has_active_user;
-  if (!has_active_user)
+  if (!has_active_user) {
     active_user_session_started_ = false;
-  else
+    session_state_ = SESSION_STATE_LOGIN_PRIMARY;
+  } else {
     Shell::GetInstance()->ShowShelf();
+  }
 }
 
 void TestSessionStateDelegate::SetActiveUserSessionStarted(
     bool active_user_session_started) {
   active_user_session_started_ = active_user_session_started;
   if (active_user_session_started) {
+    session_state_ = SESSION_STATE_ACTIVE;
     has_active_user_ = true;
     Shell::GetInstance()->CreateShelf();
     Shell::GetInstance()->UpdateAfterLoginStatusChange(
         user::LOGGED_IN_USER);
+  } else {
+    session_state_ = SESSION_STATE_LOGIN_PRIMARY;
   }
 }
 
@@ -184,6 +185,8 @@ void TestSessionStateDelegate::SetShouldLockScreenBeforeSuspending(
 void TestSessionStateDelegate::SetUserAddingScreenRunning(
     bool user_adding_screen_running) {
   user_adding_screen_running_ = user_adding_screen_running;
+  if (user_adding_screen_running_)
+    session_state_ = SESSION_STATE_LOGIN_SECONDARY;
 }
 
 void TestSessionStateDelegate::SetUserImage(

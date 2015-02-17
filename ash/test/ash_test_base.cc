@@ -292,6 +292,12 @@ void AshTestBase::SetSessionStarted(bool session_started) {
       SetActiveUserSessionStarted(session_started);
 }
 
+void AshTestBase::SetSessionStarting() {
+  ash_test_helper_->test_shell_delegate()
+      ->test_session_state_delegate()
+      ->set_session_state(SessionStateDelegate::SESSION_STATE_ACTIVE);
+}
+
 void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
   ash_test_helper_->test_shell_delegate()->test_session_state_delegate()->
       SetHasActiveUser(user_logged_in);

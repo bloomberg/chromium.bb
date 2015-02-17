@@ -23,6 +23,9 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   ~TestSessionStateDelegate() override;
 
   void set_logged_in_users(int users) { logged_in_users_ = users; }
+  void set_session_state(SessionState session_state) {
+    session_state_ = session_state;
+  }
   void AddUser(const std::string user_id);
   const user_manager::UserInfo* GetActiveUserInfo() const;
 
@@ -110,6 +113,10 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   int active_user_index_;
 
   std::vector<MockUserInfo*> user_list_;
+
+  // The current state of the login screen. |session_state_| becomes active
+  // before the profile and browser UI are available.
+  SessionState session_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionStateDelegate);
 };
