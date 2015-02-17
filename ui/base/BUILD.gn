@@ -308,7 +308,6 @@ component("base") {
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
     "//base:i18n",
-    "//cc",
     "//net",
     "//third_party/icu",
     "//ui/events",
@@ -530,7 +529,10 @@ component("base") {
       "ui_base_types.cc",
     ]
 
-    deps += [ ":ui_base_jni_headers" ]
+    deps += [
+      "//cc",
+      ":ui_base_jni_headers",
+    ]
 
     libs += [ "jnigraphics" ]
   }

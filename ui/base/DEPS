@@ -1,6 +1,4 @@
 include_rules = [
-  "+cc",
-  "-cc/blink",
   "+jni",
   "+net",
   "+skia/ext",

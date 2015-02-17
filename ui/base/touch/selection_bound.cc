@@ -5,41 +5,16 @@
 #include <algorithm>
 
 #include "base/macros.h"
-#include "cc/output/viewport_selection_bound.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 
-namespace {
-
-SelectionBound::Type ConvertToSelectionBoundType(cc::SelectionBoundType type) {
-  switch (type) {
-    case cc::SELECTION_BOUND_LEFT:
-      return SelectionBound::LEFT;
-    case cc::SELECTION_BOUND_RIGHT:
-      return SelectionBound::RIGHT;
-    case cc::SELECTION_BOUND_CENTER:
-      return SelectionBound::CENTER;
-    case cc::SELECTION_BOUND_EMPTY:
-      return SelectionBound::EMPTY;
-  }
-  NOTREACHED() << "Unknown selection bound type";
-  return SelectionBound::EMPTY;
-}
-
-}  // namespace
-
 SelectionBound::SelectionBound() : type_(EMPTY), visible_(false) {
 }
 
-SelectionBound::SelectionBound(const cc::ViewportSelectionBound& bound)
-    : type_(ConvertToSelectionBoundType(bound.type)),
-      visible_(bound.visible) {
-  if (type_ != EMPTY)
-    SetEdge(bound.edge_top, bound.edge_bottom);
-}
+SelectionBound::SelectionBound(const SelectionBound& other) = default;
 
 SelectionBound::~SelectionBound() {
 }

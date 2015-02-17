@@ -580,6 +580,7 @@
             'ui_base_types.cc',
           ],
           'dependencies': [
+            '../../cc/cc.gyp:cc',
             'ui_base_jni_headers',
           ],
           'link_settings': {

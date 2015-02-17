@@ -9,10 +9,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 
-namespace cc {
-struct ViewportSelectionBound;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -31,7 +27,7 @@ class UI_BASE_EXPORT SelectionBound {
   };
 
   SelectionBound();
-  explicit SelectionBound(const cc::ViewportSelectionBound& bound);
+  SelectionBound(const SelectionBound& other);
   ~SelectionBound();
 
   Type type() const { return type_; }

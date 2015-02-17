@@ -290,6 +290,32 @@ ui::GestureProvider::Config CreateGestureProviderConfig() {
   return config;
 }
 
+ui::SelectionBound::Type ConvertSelectionBoundType(
+    cc::SelectionBoundType type) {
+  switch (type) {
+    case cc::SELECTION_BOUND_LEFT:
+      return ui::SelectionBound::LEFT;
+    case cc::SELECTION_BOUND_RIGHT:
+      return ui::SelectionBound::RIGHT;
+    case cc::SELECTION_BOUND_CENTER:
+      return ui::SelectionBound::CENTER;
+    case cc::SELECTION_BOUND_EMPTY:
+      return ui::SelectionBound::EMPTY;
+  }
+  NOTREACHED() << "Unknown selection bound type";
+  return ui::SelectionBound::EMPTY;
+}
+
+ui::SelectionBound ConvertSelectionBound(
+    const cc::ViewportSelectionBound& bound) {
+  ui::SelectionBound ui_bound;
+  ui_bound.set_type(ConvertSelectionBoundType(bound.type));
+  ui_bound.set_visible(bound.visible);
+  if (ui_bound.type() != ui::SelectionBound::EMPTY)
+    ui_bound.SetEdge(bound.edge_top, bound.edge_bottom);
+  return ui_bound;
+}
+
 }  // anonymous namespace
 
 ReadbackRequest::ReadbackRequest(float scale,
@@ -1327,8 +1353,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 
   if (selection_controller_) {
     selection_controller_->OnSelectionBoundsChanged(
-        ui::SelectionBound(frame_metadata.selection_start),
-        ui::SelectionBound(frame_metadata.selection_end));
+        ConvertSelectionBound(frame_metadata.selection_start),
+        ConvertSelectionBound(frame_metadata.selection_end));
   }
 
   // All offsets and sizes are in CSS pixels.
