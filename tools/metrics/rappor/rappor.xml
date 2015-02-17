@@ -1,70 +1,47 @@
 <!--
-Copyright 2014 The Chromium Authors. All rights reserved.
+Copyright 2015 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<rappor-configuration>
 <!--
 This file is used to generate a comprehensive list of Chrome rappor metrics
 along with a detailed description for each histogram. See the design doc at
 http://www.chromium.org/developers/design-documents/rappor
 for a description of rappor metrics.
-
-TODO(holte): Add validation and pretty printing scripts.
 -->
 
-<rappor-configuration>
-
+<rappor-parameter-types>
 <!--
 Parameters that rappor metrics can be collected with.  This list should be
 kept in sync with parameter type definitions in
 components/rappor/rappor_service.cc.
 -->
 
-<rappor-parameter-types>
+<rappor-parameters name="COARSE_RAPPOR_TYPE">
+  <summary>
+    Stricter parameters for metrics collected from a broader population.
+  </summary>
+  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+      reporting-level="COARSE"/>
+</rappor-parameters>
 
 <rappor-parameters name="ETLD_PLUS_ONE">
   <summary>
     Parameters suitable for collecting the domain and registry of a URL from
     UMA opt-in users.
   </summary>
-  <parameters num-cohorts="128"
-              bytes="16"
-              hash-functions="2"
-              fake-prob=".5"
-              fake-one-prob=".5"
-              one-coin-prob=".75"
-              zero-coin-prob=".25"
-              reporting-level="FINE">
-  </parameters>
-</rappor-parameters>
-
-<rappor-parameters name="COARSE_RAPPOR_TYPE">
-  <summary>
-    Stricter parameters for metrics collected from a broader population.
-  </summary>
-  <parameters num-cohorts="128"
-              bytes="1"
-              hash-functions="2"
-              fake-prob=".5"
-              fake-one-prob=".5"
-              one-coin-prob=".75"
-              zero-coin-prob=".25"
-              reporting-level="COARSE">
+  <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.5"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+      reporting-level="FINE"/>
 </rappor-parameters>
 
 </rappor-parameter-types>
 
-<!-- Rappor metric definitions -->
-
 <rappor-metrics>
-
-<rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
-  <owner>rdevlin.cronin@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that might be doing ad injection.
-  </summary>
-</rappor-metric>
+<!-- Rappor metric definitions -->
 
 <rappor-metric name="ContentSettings.MixedScript.DisplayedShield"
     type="ETLD_PLUS_ONE">
@@ -73,6 +50,44 @@ components/rappor/rappor_service.cc.
     The eTLD+1 of a URL that displayed a mixed script shield. Note: this does
     *not* include pages with mixed scripts where the user has already clicked
     through the shield.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Extensions.PossibleAdInjection2" type="ETLD_PLUS_ONE">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that might be doing ad injection.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The domain and registry of the top level URL of a page which attempts to
+    launch a Flash NPAPI or PPAPI plugin, if the client has Flash installed
+    and enabled. Recorded when the plugin frame appears for each Flash object
+    found on the page, even if the plugin is click-to-play.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Plugins.FlashUrl" type="ETLD_PLUS_ONE">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL from where Flash SWF or SPL content is
+    being loaded from, while attempting to launch a Flash (NPAPI or PPAPI)
+    plugin that is installed and enabled.  Recorded when the plugin frame
+    appears for each Flash object found in the page, even if the plugin is
+    click-to-play.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Plugins.SilverlightOriginUrl" type="ETLD_PLUS_ONE">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The domain and registry of the top level URL of a page which attempts to
+    launch a Silverlight NPAPI plugin, if the client has Silverlight installed
+    and enabled. Recorded when the plugin frame appears for each Silverlight
+    object found on the page, even if the plugin is click-to-play.
   </summary>
 </rappor-metric>
 
@@ -109,34 +124,11 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="Plugins.SilverlightOriginUrl" type="ETLD_PLUS_ONE">
-  <owner>wfh@chromium.org</owner>
+<rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
   <summary>
-    The domain and registry of the top level URL of a page which attempts to
-    launch a Silverlight NPAPI plugin, if the client has Silverlight installed
-    and enabled. Recorded when the plugin frame appears for each Silverlight
-    object found on the page, even if the plugin is click-to-play.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Plugins.FlashUrl" type="ETLD_PLUS_ONE">
-  <owner>wfh@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL from where Flash SWF or SPL content is
-    being loaded from, while attempting to launch a Flash (NPAPI or PPAPI)
-    plugin that is installed and enabled.  Recorded when the plugin frame
-    appears for each Flash object found in the page, even if the plugin is
-    click-to-play.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
-  <owner>wfh@chromium.org</owner>
-  <summary>
-    The domain and registry of the top level URL of a page which attempts to
-    launch a Flash NPAPI or PPAPI plugin, if the client has Flash installed
-    and enabled. Recorded when the plugin frame appears for each Flash object
-    found on the page, even if the plugin is click-to-play.
+    The domain+registry of a URL that triggered a safe-browsing UWS
+    interstitial.
   </summary>
 </rappor-metric>
 
@@ -156,19 +148,11 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
-  <owner>nparker@chromium.org</owner>
-  <summary>
-    The domain+registry of a URL that triggered a safe-browsing UWS
-    interstitial.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="interstitial.ssl.domain" type="COARSE_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that triggered an SSL interstitial.
-    Domains for bad-clock warnings are not reported.
+    The domain+registry of a URL that triggered an SSL interstitial.     Domains
+    for bad-clock warnings are not reported.
   </summary>
 </rappor-metric>
 

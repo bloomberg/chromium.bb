@@ -819,14 +819,7 @@ def PrettyPrint(actions, actions_dict, comment_nodes=[]):
   return print_style.GetPrintStyle().PrettyPrintNode(doc)
 
 
-def main(argv):
-  presubmit = ('--presubmit' in argv)
-  actions_xml_path = os.path.join(path_utils.ScriptDir(), 'actions.xml')
-
-  # Save the original file content.
-  with open(actions_xml_path, 'rb') as f:
-    original_xml = f.read()
-
+def UpdateXml(original_xml):
   actions, actions_dict, comment_nodes = ParseActionFile(original_xml)
 
   AddComputedActions(actions)
@@ -848,30 +841,12 @@ def main(argv):
   AddExtensionActions(actions)
   AddHistoryPageActions(actions)
 
-  pretty = PrettyPrint(actions, actions_dict, comment_nodes)
-  if original_xml == pretty:
-    print 'actions.xml is correctly pretty-printed.'
-    sys.exit(0)
-  if presubmit:
-    logging.info('actions.xml is not formatted correctly; run '
-                 'extract_actions.py to fix.')
-    sys.exit(1)
+  return PrettyPrint(actions, actions_dict, comment_nodes)
 
-  # Prompt user to consent on the change.
-  if not diff_util.PromptUserToAcceptDiff(
-      original_xml, pretty, 'Is the new version acceptable?'):
-    logging.error('Aborting')
-    sys.exit(1)
 
-  print 'Creating backup file: actions.old.xml.'
-  shutil.move(actions_xml_path, 'actions.old.xml')
-
-  with open(actions_xml_path, 'wb') as f:
-    f.write(pretty)
-  print ('Updated %s. Don\'t forget to add it to your changelist' %
-         actions_xml_path)
-  return 0
-
+def main(argv):
+  presubmit_util.DoPresubmitMain(argv, 'actions.xml', 'actions.old.xml',
+                                 'extract_actions.py', UpdateXml)
 
 if '__main__' == __name__:
   sys.exit(main(sys.argv))
