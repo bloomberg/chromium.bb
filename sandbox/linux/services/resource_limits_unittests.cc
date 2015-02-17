@@ -18,9 +18,16 @@ namespace sandbox {
 
 namespace {
 
+// Fails on Android: crbug.com/459158
+#if !defined(OS_ANDROID)
+#define MAYBE_NoFork DISABLE_ON_ASAN(NoFork)
+#else
+#define MAYBE_NoFork DISABLED_NoFork
+#endif  // OS_ANDROID
+
 // Not being able to fork breaks LeakSanitizer, so disable on
 // all ASAN builds.
-SANDBOX_TEST(ResourceLimits, DISABLE_ON_ASAN(NoFork)) {
+SANDBOX_TEST(ResourceLimits, MAYBE_NoFork) {
   // Make sure that fork will fail with EAGAIN.
   SANDBOX_ASSERT(ResourceLimits::Lower(RLIMIT_NPROC, 0));
   errno = 0;
