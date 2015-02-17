@@ -55,6 +55,7 @@ class BookmarkAppBubbleView : public views::BubbleDelegateView,
 
   // Overridden from views::View:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
   gfx::Size GetMinimumSize() const override;
 
   // Overridden from views::ButtonListener:

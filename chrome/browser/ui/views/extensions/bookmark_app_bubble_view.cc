@@ -10,6 +10,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -179,6 +180,8 @@ void BookmarkAppBubbleView::Init() {
 
   title_tf_ = new views::Textfield();
   title_tf_->SetText(web_app_info_.title);
+  title_tf_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_BOOKMARK_APP_AX_BUBBLE_NAME_LABEL));
   title_tf_->set_controller(this);
   layout->AddView(title_tf_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -211,6 +214,11 @@ bool BookmarkAppBubbleView::AcceleratorPressed(
   }
 
   return BubbleDelegateView::AcceleratorPressed(accelerator);
+}
+
+void BookmarkAppBubbleView::GetAccessibleState(ui::AXViewState* state) {
+  views::BubbleDelegateView::GetAccessibleState(state);
+  state->name = l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_TITLE);
 }
 
 gfx::Size BookmarkAppBubbleView::GetMinimumSize() const {
