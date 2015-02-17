@@ -110,7 +110,12 @@ class TestCase(unittest.TestCase):
     if call.name.startswith('self.'):
       target = self.call_target(call.parent)
       _, attribute = call.name.rsplit('.', 1)
-      return mock.patch.object(target, attribute, **kwargs)
+      if (hasattr(type(target), attribute)
+          and isinstance(getattr(type(target), attribute), property)):
+        return mock.patch.object(
+            type(target), attribute, new_callable=mock.PropertyMock, **kwargs)
+      else:
+        return mock.patch.object(target, attribute, **kwargs)
     else:
       return mock.patch(call.name, **kwargs)
 

@@ -656,6 +656,24 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
                         self.device.RunShellCommand(cmd, check_return=False))
 
 
+class DeviceUtilsGetDevicePieWrapper(DeviceUtilsNewImplTest):
+
+  def testGetDevicePieWrapper_jb(self):
+    with self.assertCall(
+        self.call.device.build_version_sdk(),
+        constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN):
+      self.assertEqual('', self.device.GetDevicePieWrapper())
+
+  def testGetDevicePieWrapper_ics(self):
+    with self.assertCalls(
+        (self.call.device.build_version_sdk(),
+         constants.ANDROID_SDK_VERSION_CODES.ICE_CREAM_SANDWICH),
+        (mock.call.pylib.constants.GetOutDirectory(), '/foo/bar'),
+        (mock.call.os.path.exists(mock.ANY), True),
+        (self.call.adb.Push(mock.ANY, mock.ANY), '')):
+      self.assertNotEqual('', self.device.GetDevicePieWrapper())
+
+
 @mock.patch('time.sleep', mock.Mock())
 class DeviceUtilsKillAllTest(DeviceUtilsNewImplTest):
 
