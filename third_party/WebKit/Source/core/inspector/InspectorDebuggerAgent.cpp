@@ -1101,18 +1101,28 @@ int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& descriptio
         if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
             m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
     }
-    if (m_frontend && isStepping()) {
-        RefPtr<AsyncOperation> operation = AsyncOperation::create()
-            .setId(m_lastAsyncOperationId)
-            .setDescription(description)
-            .release();
-        if (!callFrames.isEmpty()) {
-            RefPtrWillBeRawPtr<JavaScriptCallFrame> jsCallFrame = ScriptDebugServer::toJavaScriptCallFrameUnsafe(callFrames);
-            if (jsCallFrame)
-                operation->setCallFrame(toScriptCallFrame(jsCallFrame.get()).buildInspectorObject());
+    if (m_frontend && chain && isStepping()) {
+        const AsyncCallStackVector& callStacks = chain->callStacks();
+        RefPtrWillBeRawPtr<AsyncCallStack> callStack = callStacks.isEmpty() ? nullptr : callStacks.first();
+        if (callStack) {
+            RefPtr<AsyncOperation> operation = AsyncOperation::create()
+                .setId(m_lastAsyncOperationId)
+                .setDescription(callStack->description())
+                .release();
+            callFrames = callStack->callFrames();
+            if (!callFrames.isEmpty()) {
+                RefPtrWillBeRawPtr<JavaScriptCallFrame> jsCallFrame = ScriptDebugServer::toJavaScriptCallFrameUnsafe(callFrames);
+                RefPtrWillBeRawPtr<ScriptCallStack> scriptCallStack = jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
+                if (scriptCallStack) {
+                    operation->setStackTrace(scriptCallStack->buildInspectorArray());
+                    RefPtrWillBeRawPtr<ScriptAsyncCallStack> scriptAsyncCallStack = currentAsyncStackTraceForConsole();
+                    if (scriptAsyncCallStack)
+                        operation->setAsyncStackTrace(scriptAsyncCallStack->buildInspectorObject());
+                }
+            }
+            m_asyncOperationNotifications.add(m_lastAsyncOperationId);
+            m_frontend->asyncOperationStarted(operation.release());
         }
-        m_asyncOperationNotifications.add(m_lastAsyncOperationId);
-        m_frontend->asyncOperationStarted(operation.release());
     }
     return m_lastAsyncOperationId;
 }

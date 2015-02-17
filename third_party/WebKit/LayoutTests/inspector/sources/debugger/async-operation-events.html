@@ -86,9 +86,10 @@ function test()
     function asyncOperationDescription(operation)
     {
         var link = "";
-        if (operation.callFrame) {
-            var url = WebInspector.displayNameForURL(operation.callFrame.url);
-            link = " " + operation.callFrame.functionName + " @ " + url + ":" + operation.callFrame.lineNumber;
+        var callFrame = operation.stackTrace && operation.stackTrace[0];
+        if (callFrame) {
+            var url = WebInspector.displayNameForURL(callFrame.url);
+            link = " " + callFrame.functionName + " @ " + url + ":" + callFrame.lineNumber;
         }
         return ("[" + operation.description + "]" + link);
     }
