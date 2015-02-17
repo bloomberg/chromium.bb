@@ -4,14 +4,13 @@
  */
 
 /* From private/ppb_camera_capabilities_private.idl,
- *   modified Fri Aug 22 11:08:14 2014.
+ *   modified Tue Feb  3 19:54:34 2015.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CAMERA_CAPABILITIES_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_CAMERA_CAPABILITIES_PRIVATE_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
@@ -40,16 +39,6 @@
  */
 struct PPB_CameraCapabilities_Private_0_1 {
   /**
-   * Creates a PPB_CameraCapabilities_Private resource.
-   *
-   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
-   * a module.
-   *
-   * @return A <code>PP_Resource</code> corresponding to a
-   * PPB_CameraCapabilities_Private resource if successful, 0 if failed.
-   */
-  PP_Resource (*Create)(PP_Instance instance);
-  /**
    * IsCameraCapabilities() determines if the given resource is a
    * <code>PPB_CameraCapabilities_Private</code>.
    *
@@ -77,23 +66,6 @@ struct PPB_CameraCapabilities_Private_0_1 {
   void (*GetSupportedPreviewSizes)(PP_Resource capabilities,
                                    int32_t* array_size,
                                    struct PP_Size** preview_sizes);
-  /**
-   * GetSupportedJpegSize() returns the supported JPEG sizes for the given
-   * <code>PPB_CameraCapabilities_Private</code>.
-   *
-   * @param[in] capabilities A <code>PP_Resource</code> corresponding to an
-   * image capture capabilities resource.
-   * @param[out] array_size The size of JPEG size array. If the output of this
-   * is 0, the camera has no support for generating JPEG images.
-   * @param[out] jpeg_sizes An array of <code>PP_Size</code> corresponding to
-   * the supported JPEG image sizes in pixels. The ownership of the array
-   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
-   * should not free it. When a PPB_CameraCapabilities_Private is deleted, the
-   * array returning from this is no longer valid.
-   */
-  void (*GetSupportedJpegSizes)(PP_Resource capabilities,
-                                int32_t* array_size,
-                                struct PP_Size** jpeg_sizes);
 };
 
 typedef struct PPB_CameraCapabilities_Private_0_1

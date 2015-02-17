@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_image_capture_private.idl,
- *   modified Thu Feb  5 22:47:43 2015.
+ *   modified Fri Feb  6 15:40:49 2015.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_IMAGE_CAPTURE_PRIVATE_H_
@@ -47,22 +47,11 @@ struct PPB_ImageCapture_Private_0_1 {
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
-   * @param[in] camera_source_id A <code>PP_Var</code> identifying a camera
-   * source. The type is string. The ID can be obtained from
-   * MediaStreamTrack.getSources() or MediaStreamVideoTrack.id. If a
-   * MediaStreamVideoTrack is associated with the same source and the track
-   * is closed, this PPB_ImageCapture_Private object can still do image capture.
-   * @param[in] error_callback A <code>PPB_ImageCapture_Private_ErrorCallback
-   * </code> callback to indicate the image capture has failed.
-   * @param[inout] user_data An opaque pointer that will be passed to the
-   * callbacks of PPB_ImageCapture_Private.
    *
    * @return A <code>PP_Resource</code> corresponding to a
    * PPB_ImageCapture_Private resource if successful, 0 if failed.
    */
-  PP_Resource (*Create)(PP_Instance instance,
-                        struct PP_Var camera_source_id,
-                        void* user_data);
+  PP_Resource (*Create)(PP_Instance instance);
   /**
    * Determines if a resource is an image capture resource.
    *
@@ -74,6 +63,22 @@ struct PPB_ImageCapture_Private_0_1 {
    */
   PP_Bool (*IsImageCapture)(PP_Resource resource);
   /**
+   * Opens a video capture device.
+   *
+   * @param[in] image_capture A <code>PP_Resource</code> corresponding to an
+   * image capture resource.
+   * @param[in] device_id A <code>PP_Var</code> identifying a camera device. The
+   * type is string. The ID can be obtained from MediaStreamTrack.getSources()
+   * or MediaStreamVideoTrack.id.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of <code>Open()</code>.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*Open)(PP_Resource image_capture,
+                  struct PP_Var device_id,
+                  struct PP_CompletionCallback callback);
+  /**
    * Disconnects from the camera and cancels all pending capture requests.
    * After this returns, no callbacks will be called. If <code>
    * PPB_ImageCapture_Private</code> is destroyed and is not closed yet, this
@@ -82,12 +87,8 @@ struct PPB_ImageCapture_Private_0_1 {
    *
    * @param[in] image_capture A <code>PP_Resource</code> corresponding to an
    * image capture resource.
-   * @param[in] callback <code>PP_CompletionCallback</code> to be called upon
-   * completion of <code>Close()</code>.
-   *
-   * @return An int32_t containing a result code from <code>pp_errors.h</code>.
    */
-  int32_t (*Close)(PP_Resource resource, struct PP_CompletionCallback callback);
+  void (*Close)(PP_Resource image_capture);
   /**
    * Gets the camera capabilities.
    *

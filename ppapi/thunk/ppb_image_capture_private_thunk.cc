@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_image_capture_private.idl modified Thu Feb  5 22:47:43 2015.
+// From private/ppb_image_capture_private.idl modified Fri Feb  6 14:55:55 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -17,15 +17,12 @@ namespace thunk {
 
 namespace {
 
-PP_Resource Create(PP_Instance instance,
-                   struct PP_Var camera_source_id,
-                   void* user_data) {
+PP_Resource Create(PP_Instance instance) {
   VLOG(4) << "PPB_ImageCapture_Private::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateImageCapturePrivate(
-      instance, camera_source_id, user_data);
+  return enter.functions()->CreateImageCapturePrivate(instance);
 }
 
 PP_Bool IsImageCapture(PP_Resource resource) {
@@ -34,12 +31,22 @@ PP_Bool IsImageCapture(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-int32_t Close(PP_Resource resource, struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_ImageCapture_Private::Close()";
-  EnterResource<PPB_ImageCapture_API> enter(resource, callback, true);
+int32_t Open(PP_Resource image_capture,
+             struct PP_Var device_id,
+             struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_ImageCapture_Private::Open()";
+  EnterResource<PPB_ImageCapture_API> enter(image_capture, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Close(enter.callback()));
+  return enter.SetResult(enter.object()->Open(device_id, enter.callback()));
+}
+
+void Close(PP_Resource image_capture) {
+  VLOG(4) << "PPB_ImageCapture_Private::Close()";
+  EnterResource<PPB_ImageCapture_API> enter(image_capture, true);
+  if (enter.failed())
+    return;
+  enter.object()->Close();
 }
 
 int32_t GetCameraCapabilities(PP_Resource image_capture,
@@ -54,7 +61,7 @@ int32_t GetCameraCapabilities(PP_Resource image_capture,
 }
 
 const PPB_ImageCapture_Private_0_1 g_ppb_imagecapture_private_thunk_0_1 =
-    {&Create, &IsImageCapture, &Close, &GetCameraCapabilities};
+    {&Create, &IsImageCapture, &Open, &Close, &GetCameraCapabilities};
 
 }  // namespace
 

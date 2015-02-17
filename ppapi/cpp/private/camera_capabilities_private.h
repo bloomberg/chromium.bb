@@ -6,6 +6,8 @@
 #ifndef PPAPI_CPP_PRIVATE_CAMERA_CAPABILITIES_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_CAMERA_CAPABILITIES_PRIVATE_H_
 
+#include <vector>
+
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/size.h"
@@ -36,12 +38,6 @@ class CameraCapabilities_Private : public Resource {
   /// resource.
   explicit CameraCapabilities_Private(const Resource& resource);
 
-  /// Constructs a <code>CameraCapabilities_Private</code> object.
-  ///
-  /// @param[in] instance The instance with which this resource will be
-  /// associated.
-  explicit CameraCapabilities_Private(const InstanceHandle& instance);
-
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has had 1 ref added for you.
   ///
@@ -59,13 +55,6 @@ class CameraCapabilities_Private : public Resource {
   /// supported preview sizes in pixels.
   void GetSupportedPreviewSizes(std::vector<Size>* preview_sizes);
 
-  /// GetSupportedJpegSize() returns the supported JPEG sizes for the given
-  /// <code>CameraCapabilities_Private</code>.
-  ///
-  /// @param[out] A vector of <code>Size</code> corresponding to the
-  /// supported JPEG image sizes in pixels.
-  void GetSupportedJpegSizes(std::vector<Size>* jpeg_sizes);
-
   /// IsCameraCapabilities() determines if the given resource is a
   /// <code>CameraCapabilities_Private</code>.
   ///
@@ -80,4 +69,3 @@ class CameraCapabilities_Private : public Resource {
 }  // namespace pp
 
 #endif  /* PPAPI_CPP_PRIVATE_CAMERA_CAPABILITIES_PRIVATE_H_ */
-

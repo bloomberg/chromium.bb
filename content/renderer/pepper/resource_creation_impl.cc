@@ -128,6 +128,11 @@ PP_Resource ResourceCreationImpl::CreateHostResolverPrivate(
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateImageCapturePrivate(
+    PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
                                                   PP_ImageDataFormat format,
                                                   const PP_Size* size,

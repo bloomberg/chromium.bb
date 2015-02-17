@@ -29,6 +29,7 @@
   F(PPB_BrowserFont_Singleton_API)      \
   F(PPB_BrowserFont_Trusted_API)        \
   F(PPB_Buffer_API)                     \
+  F(PPB_CameraCapabilities_API)         \
   F(PPB_Compositor_API)                 \
   F(PPB_CompositorLayer_API)            \
   F(PPB_DeviceRef_API)                  \
@@ -52,6 +53,7 @@
   F(PPB_Graphics3D_API)                 \
   F(PPB_HostResolver_API)               \
   F(PPB_HostResolver_Private_API)       \
+  F(PPB_ImageCapture_API)               \
   F(PPB_ImageData_API)                  \
   F(PPB_InputEvent_API)                 \
   F(PPB_IsolatedFileSystem_Private_API) \

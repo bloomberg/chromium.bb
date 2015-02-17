@@ -190,6 +190,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
+  virtual PP_Resource CreateImageCapturePrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreatePlatformVerificationPrivate(
       PP_Instance instance) = 0;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,

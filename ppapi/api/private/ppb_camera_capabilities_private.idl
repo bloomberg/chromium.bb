@@ -11,7 +11,7 @@
 [generate_thunk]
 
 label Chrome {
-  M39 = 0.1
+  M42 = 0.1
 };
 
 /**
@@ -21,17 +21,6 @@ label Chrome {
  */
 [version=0.1]
 interface PPB_CameraCapabilities_Private {
-  /**
-   * Creates a PPB_CameraCapabilities_Private resource.
-   *
-   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
-   * a module.
-   *
-   * @return A <code>PP_Resource</code> corresponding to a
-   * PPB_CameraCapabilities_Private resource if successful, 0 if failed.
-   */
-  PP_Resource Create([in] PP_Instance instance);
-
   /**
    * IsCameraCapabilities() determines if the given resource is a
    * <code>PPB_CameraCapabilities_Private</code>.
@@ -63,23 +52,4 @@ interface PPB_CameraCapabilities_Private {
       [in] PP_Resource capabilities,
       [out] int32_t array_size,
       [out, size_is(array_size)] PP_Size[] preview_sizes);
-
-  /**
-   * GetSupportedJpegSize() returns the supported JPEG sizes for the given
-   * <code>PPB_CameraCapabilities_Private</code>.
-   *
-   * @param[in] capabilities A <code>PP_Resource</code> corresponding to an
-   * image capture capabilities resource.
-   * @param[out] array_size The size of JPEG size array. If the output of this
-   * is 0, the camera has no support for generating JPEG images.
-   * @param[out] jpeg_sizes An array of <code>PP_Size</code> corresponding to
-   * the supported JPEG image sizes in pixels. The ownership of the array
-   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
-   * should not free it. When a PPB_CameraCapabilities_Private is deleted, the
-   * array returning from this is no longer valid.
-   */
-  void GetSupportedJpegSizes(
-      [in] PP_Resource capabilities,
-      [out] int32_t array_size,
-      [out, size_is(array_size)] PP_Size[] jpeg_sizes);
 };

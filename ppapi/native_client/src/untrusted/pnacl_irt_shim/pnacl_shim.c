@@ -3593,22 +3593,27 @@ static PP_Bool Pnacl_M19_PPB_HostResolver_Private_GetNetAddress(PP_Resource host
 
 /* Begin wrapper methods for PPB_ImageCapture_Private_0_1 */
 
-static PP_Resource Pnacl_M39_PPB_ImageCapture_Private_Create(PP_Instance instance, struct PP_Var* camera_source_id, void* user_data) {
+static PP_Resource Pnacl_M42_PPB_ImageCapture_Private_Create(PP_Instance instance) {
   const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  return iface->Create(instance, *camera_source_id, user_data);
+  return iface->Create(instance);
 }
 
-static PP_Bool Pnacl_M39_PPB_ImageCapture_Private_IsImageCapture(PP_Resource resource) {
+static PP_Bool Pnacl_M42_PPB_ImageCapture_Private_IsImageCapture(PP_Resource resource) {
   const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
   return iface->IsImageCapture(resource);
 }
 
-static int32_t Pnacl_M39_PPB_ImageCapture_Private_Close(PP_Resource resource, struct PP_CompletionCallback* callback) {
+static int32_t Pnacl_M42_PPB_ImageCapture_Private_Open(PP_Resource image_capture, struct PP_Var* device_id, struct PP_CompletionCallback* callback) {
   const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  return iface->Close(resource, *callback);
+  return iface->Open(image_capture, *device_id, *callback);
 }
 
-static int32_t Pnacl_M39_PPB_ImageCapture_Private_GetCameraCapabilities(PP_Resource image_capture, PP_Resource* capabilities, struct PP_CompletionCallback* callback) {
+static void Pnacl_M42_PPB_ImageCapture_Private_Close(PP_Resource image_capture) {
+  const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
+  iface->Close(image_capture);
+}
+
+static int32_t Pnacl_M42_PPB_ImageCapture_Private_GetCameraCapabilities(PP_Resource image_capture, PP_Resource* capabilities, struct PP_CompletionCallback* callback) {
   const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
   return iface->GetCameraCapabilities(image_capture, capabilities, *callback);
 }
@@ -5491,10 +5496,11 @@ static const struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver
 };
 
 static const struct PPB_ImageCapture_Private_0_1 Pnacl_Wrappers_PPB_ImageCapture_Private_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance, struct PP_Var camera_source_id, void* user_data))&Pnacl_M39_PPB_ImageCapture_Private_Create,
-    .IsImageCapture = (PP_Bool (*)(PP_Resource resource))&Pnacl_M39_PPB_ImageCapture_Private_IsImageCapture,
-    .Close = (int32_t (*)(PP_Resource resource, struct PP_CompletionCallback callback))&Pnacl_M39_PPB_ImageCapture_Private_Close,
-    .GetCameraCapabilities = (int32_t (*)(PP_Resource image_capture, PP_Resource* capabilities, struct PP_CompletionCallback callback))&Pnacl_M39_PPB_ImageCapture_Private_GetCameraCapabilities
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M42_PPB_ImageCapture_Private_Create,
+    .IsImageCapture = (PP_Bool (*)(PP_Resource resource))&Pnacl_M42_PPB_ImageCapture_Private_IsImageCapture,
+    .Open = (int32_t (*)(PP_Resource image_capture, struct PP_Var device_id, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_ImageCapture_Private_Open,
+    .Close = (void (*)(PP_Resource image_capture))&Pnacl_M42_PPB_ImageCapture_Private_Close,
+    .GetCameraCapabilities = (int32_t (*)(PP_Resource image_capture, PP_Resource* capabilities, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_ImageCapture_Private_GetCameraCapabilities
 };
 
 /* Not generating wrapper interface for PPB_InputEvent_Private_0_1 */

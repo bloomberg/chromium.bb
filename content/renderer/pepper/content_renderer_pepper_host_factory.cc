@@ -15,6 +15,7 @@
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
+#include "content/renderer/pepper/pepper_image_capture_host.h"
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
@@ -196,6 +197,17 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
           return scoped_ptr<ResourceHost>();
         }
         return scoped_ptr<ResourceHost>(host);
+      }
+    }
+  }
+
+  // Private interfaces.
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
+    switch (message.type()) {
+      case PpapiHostMsg_ImageCapture_Create::ID: {
+        scoped_ptr<PepperImageCaptureHost> host(
+            new PepperImageCaptureHost(host_, instance, resource));
+        return host->Init() ? host.Pass() : nullptr;
       }
     }
   }

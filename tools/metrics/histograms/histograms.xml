@@ -54724,6 +54724,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="62905097" label="PPB_TrueTypeFont(Dev);0.1"/>
   <int value="79708274" label="PPB_TCPSocket;1.1"/>
   <int value="110360074" label="PPB_Var;1.1"/>
+  <int value="125017713" label="PPB_CameraCapabilities_Private;0.1"/>
   <int value="126651696" label="PPB_ContentDecryptor_Private;0.12"/>
   <int value="138418890" label="PPB_Memory(Dev);0.1"/>
   <int value="153443470" label="PPB_URLResponseInfo;1.0"/>
@@ -54834,6 +54835,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1577776196" label="PPB_InputEvent_Private;0.1"/>
   <int value="1641037564" label="PPB_VideoSource_Private;0.1"/>
   <int value="1645591549" label="PPB_Widget(Dev);0.3"/>
+  <int value="1659973365" label="PPB_ImageCapture_Private;0.1"/>
   <int value="1677958987" label="PPB_ImageData;1.0"/>
   <int value="1680873803" label="PPB_Console;1.0"/>
   <int value="1681523535" label="PPB_TCPSocket;1.2"/>

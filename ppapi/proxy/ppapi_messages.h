@@ -1541,7 +1541,19 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
 
-// IsolatedFileSystem
+// ImageCapture ----------------------------------------------------------------
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_ImageCapture_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_ImageCapture_Close)
+
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_ImageCapture_Open,
+                     std::string /* camera_source_id */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_ImageCapture_OpenReply)
+
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_ImageCapture_GetSupportedPreviewSizes)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_ImageCapture_GetSupportedPreviewSizesReply,
+                     std::vector<PP_Size> /* preview_sizes */)
+
+// IsolatedFileSystem ----------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_IsolatedFileSystem_Create)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_IsolatedFileSystem_BrowserOpen,
                      PP_IsolatedFileSystemType_Private /* type */)
@@ -2242,6 +2254,8 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,
 // Called by the plugin to set the link under the cursor.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetLinkUnderCursor,
                      std::string /* url */)
+
+// VideoCapture ----------------------------------------------------------------
 
 // VideoCapture_Dev, plugin -> host
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)

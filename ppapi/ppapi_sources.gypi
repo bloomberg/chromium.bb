@@ -106,6 +106,7 @@
       'c/private/pp_file_handle.h',
       'c/private/pp_private_font_charset.h',
       'c/private/pp_video_frame_private.h',
+      'c/private/ppb_camera_capabilities_private.h',
       'c/private/ppb_content_decryptor_private.h',
       'c/private/ppb_ext_crx_file_system_private.h',
       'c/private/ppb_find_private.h',
@@ -117,6 +118,7 @@
       'c/private/ppb_flash_menu.h',
       'c/private/ppb_flash_message_loop.h',
       'c/private/ppb_host_resolver_private.h',
+      'c/private/ppb_image_capture_private.h',
       'c/private/ppb_input_event_private.h',
       'c/private/ppb_instance_private.h',
       'c/private/ppb_isolated_file_system_private.h',
@@ -306,6 +308,8 @@
       'cpp/dev/scriptable_object_deprecated.h',
 
       # Private interfaces.
+      'cpp/private/camera_capabilities_private.cc',
+      'cpp/private/camera_capabilities_private.h',
       'cpp/private/content_decryptor_private.cc',
       'cpp/private/content_decryptor_private.h',
       'cpp/private/ext_crx_file_system_private.cc',
@@ -334,6 +338,8 @@
       'cpp/private/flash_message_loop.h',
       'cpp/private/host_resolver_private.cc',
       'cpp/private/host_resolver_private.h',
+      'cpp/private/image_capture_private.cc',
+      'cpp/private/image_capture_private.h',
       'cpp/private/input_event_private.cc',
       'cpp/private/input_event_private.h',
       'cpp/private/instance_private.cc',
