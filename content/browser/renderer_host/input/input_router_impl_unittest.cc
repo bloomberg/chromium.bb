@@ -1302,7 +1302,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_FALSE(TouchEventTimeoutEnabled());
 
-  MoveTouchPoint(0, 1, 1);
+  MoveTouchPoint(0, 1, 2);
   SendTouchEvent();
   EXPECT_FALSE(TouchEventTimeoutEnabled());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());

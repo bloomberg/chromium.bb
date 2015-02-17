@@ -46,14 +46,15 @@ bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
 }
 
 // Compare all properties of touch points to determine the state.
-bool HasPointChanged(const WebTouchPoint& last_point,
-    const WebTouchPoint& current_point) {
-  if (last_point.screenPosition != current_point.screenPosition ||
-      last_point.position != current_point.position ||
-      last_point.radiusX != current_point.radiusX ||
-      last_point.radiusY != current_point.radiusY ||
-      last_point.rotationAngle != current_point.rotationAngle ||
-      last_point.force != current_point.force) {
+bool HasPointChanged(const WebTouchPoint& point_1,
+    const WebTouchPoint& point_2) {
+  DCHECK_EQ(point_1.id, point_2.id);
+  if (point_1.screenPosition != point_2.screenPosition ||
+      point_1.position != point_2.position ||
+      point_1.radiusX != point_2.radiusX ||
+      point_1.radiusY != point_2.radiusY ||
+      point_1.rotationAngle != point_2.rotationAngle ||
+      point_1.force != point_2.force) {
     return true;
   }
   return false;
@@ -729,9 +730,24 @@ TouchEventQueue::FilterBeforeForwarding(const WebTouchEvent& event) {
         continue;
 
       for (size_t j = 0; j < last_sent_touchevent_->touchesLength; ++j) {
-        if (point.id == last_sent_touchevent_->touches[j].id)
+        if (point.id != last_sent_touchevent_->touches[j].id)
+          continue;
+
+        if (event.type != WebInputEvent::TouchMove)
           return FORWARD_TO_RENDERER;
+
+        // All pointers in TouchMove events may have state as StateMoved,
+        // even though none of the pointers have not changed in real.
+        // Forward these events when at least one pointer has changed.
+        if (HasPointChanged(last_sent_touchevent_->touches[j], point))
+          return FORWARD_TO_RENDERER;
+
+        // This is a TouchMove event for which we have yet to find a
+        // non-stationary pointer. Continue checking the next pointers
+        // in the |event|.
+        break;
       }
+
     }
   }
 

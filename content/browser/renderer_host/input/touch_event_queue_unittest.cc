@@ -1438,7 +1438,7 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // TouchMove with a secondary pointer should not be suppressed.
-  MoveTouchPoint(1, kSlopLengthDips, 0);
+  MoveTouchPoint(1, kSlopLengthDips+1, 0);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1528,7 +1528,7 @@ TEST_F(TouchEventQueueTest, AsyncTouch) {
    SendGestureEventAck(WebInputEvent::GestureScrollUpdate,
                        INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
-   MoveTouchPoint(0, 10, 5);
+   MoveTouchPoint(0, 10, 5+i);
    SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
    EXPECT_FALSE(HasPendingAsyncTouchMove());
    EXPECT_TRUE(sent_event().cancelable);
@@ -1538,7 +1538,7 @@ TEST_F(TouchEventQueueTest, AsyncTouch) {
    // Consuming a scroll event will throttle subsequent touchmoves.
    SendGestureEventAck(WebInputEvent::GestureScrollUpdate,
                        INPUT_EVENT_ACK_STATE_CONSUMED);
-   MoveTouchPoint(0, 10, 5);
+   MoveTouchPoint(0, 10, 7+i);
    SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
    EXPECT_TRUE(HasPendingAsyncTouchMove());
    EXPECT_EQ(0U, queued_event_count());
@@ -1629,7 +1629,7 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  MoveTouchPoint(0, 0, 5);
+  MoveTouchPoint(0, 0, 6);
   followup_scroll.type = WebInputEvent::GestureScrollUpdate;
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1707,11 +1707,11 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
 
   // The pending touchmove should be coalesced with the next (now synchronous)
   // touchmove.
-  MoveTouchPoint(0, 0, 25);
+  MoveTouchPoint(0, 0, 26);
   EXPECT_TRUE(sent_event().cancelable);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
   EXPECT_EQ(WebInputEvent::TouchMove, sent_event().type);
-  EXPECT_EQ(WebTouchPoint::StateStationary, sent_event().touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateMoved, sent_event().touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateMoved, sent_event().touches[1].state);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -2192,28 +2192,69 @@ TEST_F(TouchEventQueueTest, PointerStatesWhenOtherThanPositionChanged) {
 
   // Change touch point rotationAngle.
   ChangeTouchPointRotationAngle(0, 1.1f);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // TouchMove is sent. Test for pointer state.
   const WebTouchEvent& event3 = sent_event();
   EXPECT_EQ(WebInputEvent::TouchMove, event3.type);
   EXPECT_EQ(WebTouchPoint::StateMoved, event3.touches[0].state);
 
-  // TODO(jdduke): Now trying to forward a TouchMove event without really
-  // changing touch point properties. Update below test with testing for
-  // rejected TouchMove with ack state INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-  // crbug.com/452032. Or should it be in a separte test?.
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(4U, GetAndResetSentEventCount());
+  EXPECT_EQ(4U, GetAndResetAckedEventCount());
+}
 
-  // Do not change any properties, but use previous values.
-  MoveTouchPoint(0, 1.f, 1.f);
-  ChangeTouchPointRadius(0, 1.5f, 1.f);
+// Tests that TouchMoves are filtered when none of the points are changed.
+TEST_F(TouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
+  PressTouchPoint(1, 1);
+  PressTouchPoint(2, 2);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+  EXPECT_EQ(2U, GetAndResetAckedEventCount());
 
-  // Receive an ACK for previous TouchMove.
+  // Move 1st touch point.
+  MoveTouchPoint(0, 10, 10);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+
+  // TouchMove should be allowed and test for touches state.
+  const WebTouchEvent& event1 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event1.type);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event1.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event1.touches[1].state);
+
+  // Do not really move any touch points, but use previous values.
+  MoveTouchPoint(0, 10, 10);
+  ChangeTouchPointRadius(1, 1, 1);
+  MoveTouchPoint(1, 2, 2);
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+
+  // Receive an ACK for 1st TouchMove.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  // TouchMove is sent, but pointer state should be StateStationary.
-  const WebTouchEvent& event4 = sent_event();
-  EXPECT_EQ(WebInputEvent::TouchMove, event4.type);
-  EXPECT_EQ(WebTouchPoint::StateStationary, event4.touches[0].state);
+  // Tries to forward TouchMove but should be filtered
+  // when none of the touch points have changed.
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(4U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+
+  // Move 2nd touch point.
+  MoveTouchPoint(1, 3, 3);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove should be allowed and test for touches state.
+  const WebTouchEvent& event2 = sent_event();
+  EXPECT_EQ(WebInputEvent::TouchMove, event2.type);
+  EXPECT_EQ(WebTouchPoint::StateStationary, event2.touches[0].state);
+  EXPECT_EQ(WebTouchPoint::StateMoved, event2.touches[1].state);
 }
 
 }  // namespace content
