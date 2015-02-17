@@ -181,6 +181,7 @@ static_library("test_support") {
   deps = [
     ":ipc",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

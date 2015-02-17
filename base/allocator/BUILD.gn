@@ -46,6 +46,11 @@ if (use_allocator == "tcmalloc") {
   source_set("tcmalloc") {
     tcmalloc_dir = "//third_party/tcmalloc/chromium"
 
+    # Don't check tcmalloc's includes. These files include various files like
+    # base/foo.h and they actually refer to tcmalloc's forked copy of base
+    # rather than the regular one, which confuses the header checker.
+    check_includes = false
+
     sources = [
       # Generated for our configuration from tcmalloc"s build
       # and checked in.
@@ -134,7 +139,6 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/windows/port.cc",
       "$tcmalloc_dir/src/windows/port.h",
       "allocator_shim.cc",
-      "allocator_shim.h",
       "debugallocation_shim.cc",
 
       # These are both #included by allocator_shim for maximal linking.

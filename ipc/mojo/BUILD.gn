@@ -37,8 +37,9 @@ component("mojo") {
     "//base/third_party/dynamic_annotations",
     "//ipc",
     "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/c/environment:environment",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     ":client_channel",
   ]
 }
@@ -59,6 +60,7 @@ test("ipc_mojo_unittests") {
     "//ipc:test_support",
     "//ipc/mojo",
     "//mojo/environment:chromium",
+    "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/system",
     "//url",
   ]
