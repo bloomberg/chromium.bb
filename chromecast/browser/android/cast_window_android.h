@@ -44,7 +44,7 @@ class CastWindowAndroid : public content::WebContentsDelegate,
       content::BrowserContext* browser_context,
       const GURL& url);
 
-  virtual ~CastWindowAndroid();
+  ~CastWindowAndroid() override;
 
   void LoadURL(const GURL& url);
   // Calls RVH::ClosePage() and waits for acknowledgement before closing/
@@ -57,24 +57,24 @@ class CastWindowAndroid : public content::WebContentsDelegate,
   static bool RegisterJni(JNIEnv* env);
 
   // content::WebContentsDelegate implementation:
-  virtual void AddNewContents(content::WebContents* source,
-                              content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_rect,
-                              bool user_gesture,
-                              bool* was_blocked) override;
-  virtual void CloseContents(content::WebContents* source) override;
-  virtual bool CanOverscrollContent() const override;
-  virtual bool AddMessageToConsole(content::WebContents* source,
-                                   int32 level,
-                                   const base::string16& message,
-                                   int32 line_no,
-                                   const base::string16& source_id) override;
-  virtual void ActivateContents(content::WebContents* contents) override;
-  virtual void DeactivateContents(content::WebContents* contents) override;
+  void AddNewContents(content::WebContents* source,
+                      content::WebContents* new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override;
+  void CloseContents(content::WebContents* source) override;
+  bool CanOverscrollContent() const override;
+  bool AddMessageToConsole(content::WebContents* source,
+                           int32 level,
+                           const base::string16& message,
+                           int32 line_no,
+                           const base::string16& source_id) override;
+  void ActivateContents(content::WebContents* contents) override;
+  void DeactivateContents(content::WebContents* contents) override;
 
   // content::WebContentsObserver implementation:
-  virtual void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
  private:
   explicit CastWindowAndroid(content::BrowserContext* browser_context);

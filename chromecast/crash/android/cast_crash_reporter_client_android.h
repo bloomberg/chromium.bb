@@ -14,16 +14,16 @@ class CastCrashReporterClientAndroid
     : public crash_reporter::CrashReporterClient {
  public:
   CastCrashReporterClientAndroid();
-  virtual ~CastCrashReporterClientAndroid();
+  ~CastCrashReporterClientAndroid() override;
 
   // crash_reporter::CrashReporterClient implementation:
-  virtual void GetProductNameAndVersion(const char** product_name,
-                                        const char** version) override;
-  virtual base::FilePath GetReporterLogFilename() override;
-  virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
-  virtual int GetAndroidMinidumpDescriptor() override;
-  virtual bool GetCollectStatsConsent() override;
-  virtual bool EnableBreakpadForProcess(
+  void GetProductNameAndVersion(const char** product_name,
+                                const char** version) override;
+  base::FilePath GetReporterLogFilename() override;
+  bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
+  int GetAndroidMinidumpDescriptor() override;
+  bool GetCollectStatsConsent() override;
+  bool EnableBreakpadForProcess(
       const std::string& process_type) override;
 
  private:
