@@ -1852,5 +1852,3 @@ crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFai
 
 crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Failure ]
 crbug.com/457137 [ Linux ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
-
-crbug.com/459118 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ NeedsRebaseline ]
