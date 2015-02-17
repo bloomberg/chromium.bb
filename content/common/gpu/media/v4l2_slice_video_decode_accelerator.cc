@@ -1268,7 +1268,10 @@ void V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChangeIfNeeded() {
   DCHECK_EQ(state_, kIdle);
   DCHECK(decoder_display_queue_.empty());
   // All output buffers should've been returned from decoder and device by now.
-  DCHECK_EQ(free_output_buffers_.size(), output_buffer_map_.size());
+  // The only remaining owner of surfaces may be display (client), and we will
+  // dismiss them when destroying output buffers below.
+  DCHECK_EQ(free_output_buffers_.size() + surfaces_at_display_.size(),
+            output_buffer_map_.size());
 
   // Keep input queue running while we switch outputs.
   if (!StopDevicePoll(true)) {

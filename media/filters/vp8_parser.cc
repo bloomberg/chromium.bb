@@ -793,24 +793,41 @@ bool Vp8Parser::ParsePartitions(Vp8FrameHeader* fhdr) {
   CHECK_GE(fhdr->num_of_dct_partitions, 1u);
   CHECK_LE(fhdr->num_of_dct_partitions, kMaxDCTPartitions);
 
-  // Jump to the beginning of the first dct partition.
-  size_t first_dct_pos = fhdr->first_part_offset + fhdr->first_part_size;
+  // DCT partitions start after the first partition and partition size values
+  // that follow it. There are num_of_dct_partitions - 1 sizes stored in the
+  // stream after the first partition, each 3 bytes long. The size of last
+  // DCT partition is not stored in the stream, but is instead calculated by
+  // taking the remainder of the frame size after the penultimate DCT partition.
+  size_t first_dct_pos = fhdr->first_part_offset + fhdr->first_part_size +
+                         (fhdr->num_of_dct_partitions - 1) * 3;
+
+  // Make sure we have enough data for the first partition and partition sizes.
   if (fhdr->frame_size < first_dct_pos)
     return false;
-  const uint8_t* ptr = fhdr->data + first_dct_pos;
+
+  // Total size of all DCT partitions.
   size_t bytes_left = fhdr->frame_size - first_dct_pos;
 
-  for (size_t i = 0; i < fhdr->num_of_dct_partitions - 1; ++i) {
-    // Need 3 bytes at the beginning of the partition to read its size from.
-    if (bytes_left < 3)
-      return false;
+  // Position ourselves at the beginning of partition size values.
+  const uint8_t* ptr =
+      fhdr->data + fhdr->first_part_offset + fhdr->first_part_size;
 
+  // Read sizes from the stream (if present).
+  for (size_t i = 0; i < fhdr->num_of_dct_partitions - 1; ++i) {
     fhdr->dct_partition_sizes[i] = (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
 
-    ptr += fhdr->dct_partition_sizes[i] + 3;
-    bytes_left -= fhdr->dct_partition_sizes[i] + 3;
+    // Make sure we have enough data in the stream for ith partition and
+    // subtract its size from total.
+    if (bytes_left < fhdr->dct_partition_sizes[i])
+      return false;
+
+    bytes_left -= fhdr->dct_partition_sizes[i];
+
+    // Move to the position of the next partition size value.
+    ptr += 3;
   }
 
+  // The remainder of the data belongs to the last DCT partition.
   fhdr->dct_partition_sizes[fhdr->num_of_dct_partitions - 1] = bytes_left;
 
   DVLOG(4) << "Control part size: " << fhdr->first_part_size;
