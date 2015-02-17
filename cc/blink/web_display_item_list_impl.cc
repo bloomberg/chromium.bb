@@ -35,8 +35,7 @@ scoped_refptr<cc::DisplayItemList> WebDisplayItemListImpl::ToDisplayItemList() {
 
 void WebDisplayItemListImpl::appendDrawingItem(const SkPicture* picture) {
   display_item_list_->AppendItem(cc::DrawingDisplayItem::Create(
-      skia::SharePtr(const_cast<SkPicture*>(picture)),
-      gfx::PointF(picture->cullRect().x(), picture->cullRect().y())));
+      skia::SharePtr(const_cast<SkPicture*>(picture)), gfx::PointF(0, 0)));
 }
 
 void WebDisplayItemListImpl::appendDrawingItem(
