@@ -88,9 +88,6 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Returns whether the frame uses custom frame coloring.
   bool UsesCustomFrameColors() const;
 
-  // Returns the frame color to use when |frame_| is inactive.
-  SkColor GetInactiveFrameColor() const;
-
   views::Widget* frame_;
   views::View* view_;
   views::View* left_header_view_;  // May be NULL.

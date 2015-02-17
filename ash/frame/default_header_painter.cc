@@ -37,8 +37,6 @@ const SkColor kHeaderContentSeparatorInactiveColor =
     SkColorSetRGB(180, 180, 182);
 // The default color of the frame.
 const SkColor kDefaultFrameColor = SkColorSetRGB(242, 242, 242);
-// The alpha of the inactive frame.
-const SkAlpha kInactiveFrameAlpha = 204;
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
 
@@ -165,8 +163,8 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
 
   SkPaint paint;
   int active_alpha = activation_animation_->CurrentValueBetween(0, 255);
-  paint.setColor(color_utils::AlphaBlend(
-      active_frame_color_, GetInactiveFrameColor(), active_alpha));
+  paint.setColor(color_utils::AlphaBlend(active_frame_color_,
+                                         inactive_frame_color_, active_alpha));
 
   TileRoundRect(canvas, paint, GetLocalBounds(), corner_radius);
 
@@ -343,17 +341,6 @@ gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {
 bool DefaultHeaderPainter::UsesCustomFrameColors() const {
   return active_frame_color_ != kDefaultFrameColor ||
          inactive_frame_color_ != kDefaultFrameColor;
-}
-
-SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
-  SkColor color = inactive_frame_color_;
-  if (!frame_->IsMaximized() && !frame_->IsFullscreen()) {
-    color = SkColorSetARGB(kInactiveFrameAlpha,
-                           SkColorGetR(color),
-                           SkColorGetG(color),
-                           SkColorGetB(color));
-  }
-  return color;
 }
 
 }  // namespace ash
