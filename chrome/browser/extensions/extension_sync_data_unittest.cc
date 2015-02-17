@@ -97,9 +97,9 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   extension_sync_data.PopulateFromExtensionSpecifics(*extension_specifics);
   EXPECT_EQ(kValidId, extension_sync_data.id());
   EXPECT_EQ(GURL(kValidUpdateUrl), extension_sync_data.update_url());
-  EXPECT_EQ(false, extension_sync_data.enabled());
+  EXPECT_FALSE(extension_sync_data.enabled());
   EXPECT_EQ(true, extension_sync_data.incognito_enabled());
-  EXPECT_EQ(false, extension_sync_data.remote_install());
+  EXPECT_FALSE(extension_sync_data.remote_install());
   EXPECT_EQ(ExtensionSyncData::BOOLEAN_TRUE,
             extension_sync_data.all_urls_enabled());
   EXPECT_TRUE(Version(kVersion).Equals(extension_sync_data.version()));
@@ -118,7 +118,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataForExtension) {
   extension_sync_data.PopulateFromExtensionSpecifics(*extension_specifics);
   EXPECT_EQ(ExtensionSyncData::BOOLEAN_FALSE,
             extension_sync_data.all_urls_enabled());
-  EXPECT_EQ(false, extension_sync_data.incognito_enabled());
+  EXPECT_FALSE(extension_sync_data.incognito_enabled());
 
   SyncDataToProtobufEqual(extension_sync_data);
 
