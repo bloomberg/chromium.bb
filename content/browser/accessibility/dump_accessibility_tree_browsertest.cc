@@ -1132,7 +1132,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("table-thead-tbody-tfoot.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTableSpans) {
+// crbug.com/457687 will correct ColumnIndexRange
+// Rebaseline after Blink's change goes in
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityTableSpans) {
   RunHtmlTest(FILE_PATH_LITERAL("table-spans.html"));
 }
 
