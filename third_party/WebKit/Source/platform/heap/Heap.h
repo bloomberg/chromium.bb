@@ -459,7 +459,10 @@ public:
         return (blinkPagePayloadSize() - pageHeaderSize()) & ~allocationMask;
     }
     Address payloadEnd() { return payload() + payloadSize(); }
-    bool containedInObjectPayload(Address address) { return payload() <= address && address < payloadEnd(); }
+    bool containedInObjectPayload(Address address)
+    {
+        return payload() <= address && address < payloadEnd();
+    }
 
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
@@ -467,18 +470,7 @@ public:
     virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
-    virtual void markOrphaned() override
-    {
-        // Zap the payload with a recognizable value to detect any incorrect
-        // cross thread pointer usage.
-#if defined(ADDRESS_SANITIZER)
-        // This needs to zap poisoned memory as well.
-        // Force unpoison memory before memset.
-        ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
-#endif
-        memset(payload(), orphanedZapValue, payloadSize());
-        BasePage::markOrphaned();
-    }
+    virtual void markOrphaned() override;
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*) override;
@@ -490,12 +482,7 @@ public:
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
     // the result can be used to populate the negative page cache.
-    virtual bool contains(Address addr) override
-    {
-        Address blinkPageStart = roundToBlinkPageStart(address());
-        ASSERT(blinkPageStart == address() - WTF::kSystemPageSize); // Page is at aligned address plus guard page size.
-        return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
-    }
+    virtual bool contains(Address) override;
 #endif
     virtual size_t size() override { return blinkPageSize; }
     static size_t pageHeaderSize()
@@ -530,16 +517,15 @@ private:
 // object.
 class LargeObjectPage final : public BasePage {
 public:
-    LargeObjectPage(PageMemory* storage, BaseHeap* heap, size_t payloadSize)
-        : BasePage(storage, heap)
-        , m_payloadSize(payloadSize)
-    {
-    }
+    LargeObjectPage(PageMemory*, BaseHeap*, size_t);
 
     Address payload() { return heapObjectHeader()->payload(); }
     size_t payloadSize() { return m_payloadSize; }
     Address payloadEnd() { return payload() + payloadSize(); }
-    bool containedInObjectPayload(Address address) { return payload() <= address && address < payloadEnd(); }
+    bool containedInObjectPayload(Address address)
+    {
+        return payload() <= address && address < payloadEnd();
+    }
 
     virtual size_t objectPayloadSizeForTesting() override;
     virtual bool isEmpty() override;
@@ -547,13 +533,7 @@ public:
     virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
     virtual void checkAndMarkPointer(Visitor*, Address) override;
-    virtual void markOrphaned() override
-    {
-        // Zap the payload with a recognizable value to detect any incorrect
-        // cross thread pointer usage.
-        memset(payload(), orphanedZapValue, payloadSize());
-        BasePage::markOrphaned();
-    }
+    virtual void markOrphaned() override;
 
 #if ENABLE(GC_PROFILING)
     const GCInfo* findGCInfo(Address) override;
@@ -562,15 +542,11 @@ public:
     void countMarkedObjects(ClassAgeCountsMap&) override;
     void countObjectsToSweep(ClassAgeCountsMap&) override;
 #endif
-
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
     // populate the negative page cache.
-    virtual bool contains(Address object) override
-    {
-        return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
-    }
+    virtual bool contains(Address) override;
 #endif
     virtual size_t size()
     {

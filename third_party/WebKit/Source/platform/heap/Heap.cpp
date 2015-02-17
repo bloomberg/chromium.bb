@@ -477,66 +477,6 @@ void HeapObjectHeader::finalize(Address object, size_t objectSize)
     // thread commences execution.
 }
 
-void LargeObjectPage::sweep()
-{
-    Heap::increaseMarkedObjectSize(size());
-    heapObjectHeader()->unmark();
-}
-
-bool LargeObjectPage::isEmpty()
-{
-    return !heapObjectHeader()->isMarked();
-}
-
-#if ENABLE(ASSERT)
-static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
-{
-    // Scan through the object's fields and check that they are all zero.
-    Address* objectFields = reinterpret_cast<Address*>(objectPointer);
-    for (size_t i = 0; i < objectSize / sizeof(Address); ++i) {
-        if (objectFields[i] != 0)
-            return false;
-    }
-    return true;
-}
-#endif
-
-static void markPointer(Visitor* visitor, HeapObjectHeader* header)
-{
-    const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
-    if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
-        visitor->markHeaderNoTracing(header);
-        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
-    } else {
-        visitor->markHeader(header, gcInfo->m_trace);
-    }
-}
-
-void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address)
-{
-    ASSERT(contains(address));
-    if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
-        return;
-#if ENABLE(GC_PROFILING)
-    visitor->setHostInfo(&address, "stack");
-#endif
-    markPointer(visitor, heapObjectHeader());
-}
-
-void LargeObjectPage::markUnmarkedObjectsDead()
-{
-    HeapObjectHeader* header = heapObjectHeader();
-    if (header->isMarked())
-        header->unmark();
-    else
-        header->markDead();
-}
-
-void LargeObjectPage::removeFromHeap()
-{
-    static_cast<LargeObjectHeap*>(heap())->freeLargeObjectPage(this);
-}
-
 BaseHeap::BaseHeap(ThreadState* state, int index)
     : m_firstPage(nullptr)
     , m_firstUnsweptPage(nullptr)
@@ -1321,25 +1261,6 @@ PageMemory* FreePagePool::takeFreePage(int index)
     return nullptr;
 }
 
-BasePage::BasePage(PageMemory* storage, BaseHeap* heap)
-    : m_storage(storage)
-    , m_heap(heap)
-    , m_next(nullptr)
-    , m_terminating(false)
-    , m_swept(true)
-{
-    ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
-}
-
-void BasePage::markOrphaned()
-{
-    m_heap = nullptr;
-    m_terminating = false;
-    // Since we zap the page payload for orphaned pages we need to mark it as
-    // unused so a conservative pointer won't interpret the object headers.
-    storage()->markUnused();
-}
-
 OrphanedPagePool::~OrphanedPagePool()
 {
     for (int index = 0; index < NumberOfHeaps; ++index) {
@@ -1503,6 +1424,25 @@ void FreeList::getFreeSizeStats(PerBucketFreeListStats bucketStats[], size_t& to
 }
 #endif
 
+BasePage::BasePage(PageMemory* storage, BaseHeap* heap)
+    : m_storage(storage)
+    , m_heap(heap)
+    , m_next(nullptr)
+    , m_terminating(false)
+    , m_swept(true)
+{
+    ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
+}
+
+void BasePage::markOrphaned()
+{
+    m_heap = nullptr;
+    m_terminating = false;
+    // Since we zap the page payload for orphaned pages we need to mark it as
+    // unused so a conservative pointer won't interpret the object headers.
+    storage()->markUnused();
+}
+
 NormalPage::NormalPage(PageMemory* storage, BaseHeap* heap)
     : BasePage(storage, heap)
 {
@@ -1533,6 +1473,11 @@ bool NormalPage::isEmpty()
 {
     HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(payload());
     return header->isFree() && header->size() == payloadSize();
+}
+
+void NormalPage::removeFromHeap()
+{
+    heapForNormalPage()->freePage(this);
 }
 
 void NormalPage::sweep()
@@ -1613,16 +1558,6 @@ void NormalPage::markUnmarkedObjectsDead()
     }
 }
 
-void NormalPage::removeFromHeap()
-{
-    heapForNormalPage()->freePage(this);
-}
-
-NormalPageHeap* NormalPage::heapForNormalPage()
-{
-    return static_cast<NormalPageHeap*>(heap());
-}
-
 void NormalPage::populateObjectStartBitMap()
 {
     memset(&m_objectStartBitMap, 0, objectStartBitMapSize);
@@ -1691,6 +1626,30 @@ HeapObjectHeader* NormalPage::findHeaderFromAddress(Address address)
     return header;
 }
 
+#if ENABLE(ASSERT)
+static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
+{
+    // Scan through the object's fields and check that they are all zero.
+    Address* objectFields = reinterpret_cast<Address*>(objectPointer);
+    for (size_t i = 0; i < objectSize / sizeof(Address); ++i) {
+        if (objectFields[i] != 0)
+            return false;
+    }
+    return true;
+}
+#endif
+
+static void markPointer(Visitor* visitor, HeapObjectHeader* header)
+{
+    const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
+    if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
+        visitor->markHeaderNoTracing(header);
+        ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
+    } else {
+        visitor->markHeader(header, gcInfo->m_trace);
+    }
+}
+
 void NormalPage::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(contains(address));
@@ -1701,6 +1660,19 @@ void NormalPage::checkAndMarkPointer(Visitor* visitor, Address address)
     visitor->setHostInfo(&address, "stack");
 #endif
     markPointer(visitor, header);
+}
+
+void NormalPage::markOrphaned()
+{
+    // Zap the payload with a recognizable value to detect any incorrect
+    // cross thread pointer usage.
+#if defined(ADDRESS_SANITIZER)
+    // This needs to zap poisoned memory as well.
+    // Force unpoison memory before memset.
+    ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
+#endif
+    memset(payload(), orphanedZapValue, payloadSize());
+    BasePage::markOrphaned();
 }
 
 #if ENABLE(GC_PROFILING)
@@ -1785,10 +1757,74 @@ void NormalPage::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts)
 }
 #endif
 
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
+bool NormalPage::contains(Address addr)
+{
+    Address blinkPageStart = roundToBlinkPageStart(address());
+    ASSERT(blinkPageStart == address() - WTF::kSystemPageSize); // Page is at aligned address plus guard page size.
+    return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
+}
+#endif
+
+NormalPageHeap* NormalPage::heapForNormalPage()
+{
+    return static_cast<NormalPageHeap*>(heap());
+}
+
+LargeObjectPage::LargeObjectPage(PageMemory* storage, BaseHeap* heap, size_t payloadSize)
+    : BasePage(storage, heap)
+    , m_payloadSize(payloadSize)
+{
+}
+
 size_t LargeObjectPage::objectPayloadSizeForTesting()
 {
     markAsSwept();
     return payloadSize();
+}
+
+bool LargeObjectPage::isEmpty()
+{
+    return !heapObjectHeader()->isMarked();
+}
+
+void LargeObjectPage::removeFromHeap()
+{
+    static_cast<LargeObjectHeap*>(heap())->freeLargeObjectPage(this);
+}
+
+void LargeObjectPage::sweep()
+{
+    Heap::increaseMarkedObjectSize(size());
+    heapObjectHeader()->unmark();
+}
+
+void LargeObjectPage::markUnmarkedObjectsDead()
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (header->isMarked())
+        header->unmark();
+    else
+        header->markDead();
+}
+
+void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address)
+{
+    ASSERT(contains(address));
+    if (!containedInObjectPayload(address) || heapObjectHeader()->isDead())
+        return;
+#if ENABLE(GC_PROFILING)
+    visitor->setHostInfo(&address, "stack");
+#endif
+    markPointer(visitor, heapObjectHeader());
+}
+
+void LargeObjectPage::markOrphaned()
+{
+    // Zap the payload with a recognizable value to detect any incorrect
+    // cross thread pointer usage.
+    memset(payload(), orphanedZapValue, payloadSize());
+    BasePage::markOrphaned();
 }
 
 #if ENABLE(GC_PROFILING)
@@ -1849,6 +1885,13 @@ void LargeObjectPage::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts)
         String className(classOf(header->payload()));
         ++(classAgeCounts.add(className, AgeCounts()).storedValue->value.ages[header->age()]);
     }
+}
+#endif
+
+#if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
+bool LargeObjectPage::contains(Address object)
+{
+    return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
 }
 #endif
 
