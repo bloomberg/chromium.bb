@@ -4,9 +4,12 @@
 
 #include "base/memory/scoped_ptr.h"
 
+#include <sstream>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -677,4 +680,14 @@ TEST(ScopedPtrTest, SelfResetWithCustomDeleterOptOut) {
   scoped_ptr<int> owner(new int);
   scoped_ptr<int, NoOpDeleter> x(owner.get());
   x.reset(x.get());
+}
+
+// Logging a scoped_ptr<T> to an ostream shouldn't convert it to a boolean
+// value first.
+TEST(ScopedPtrTest, LoggingDoesntConvertToBoolean) {
+  scoped_ptr<int> x(new int);
+  std::stringstream s;
+  s << x;
+  std::string expected = base::StringPrintf("%p", x.get());
+  EXPECT_EQ(expected, s.str());
 }
