@@ -55,6 +55,7 @@ class WebInputEvent;
 class WebLocalFrameImpl;
 class WebString;
 class WebViewImpl;
+class DebuggerTask;
 
 class WebDevToolsAgentImpl final
     : public WebDevToolsAgent
@@ -139,6 +140,8 @@ private:
     typedef Vector<RefPtr<JSONObject> > NotificationQueue;
     NotificationQueue m_notificationQueue;
     String m_stateCookie;
+
+    friend class DebuggerTask;
 };
 
 } // namespace blink

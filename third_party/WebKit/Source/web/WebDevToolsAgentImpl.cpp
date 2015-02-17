@@ -190,8 +190,13 @@ public:
     virtual ~DebuggerTask() { }
     virtual void run()
     {
-        if (WebDevToolsAgent* webagent = m_descriptor->agent())
-            webagent->dispatchOnInspectorBackend(m_descriptor->message());
+        WebDevToolsAgent* webagent = m_descriptor->agent();
+        if (!webagent)
+            return;
+
+        WebDevToolsAgentImpl* agentImpl = static_cast<WebDevToolsAgentImpl*>(webagent);
+        if (agentImpl->m_attached)
+            agentImpl->inspectorController()->dispatchMessageFromFrontend(m_descriptor->message());
     }
 
 private:
@@ -444,7 +449,10 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
 {
     if (!m_attached)
         return;
-    inspectorController()->dispatchMessageFromFrontend(message);
+    if (WebDevToolsAgent::shouldInterruptForMessage(message))
+        PageScriptDebugServer::shared().runPendingTasks();
+    else
+        inspectorController()->dispatchMessageFromFrontend(message);
 }
 
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
