@@ -30,7 +30,7 @@ const char kHelpSwitchHelp[] =
 
 const char kInSwitch[] = "in";
 const char kInSwitchHelp[] =
-    "output only the messages in the specified list.";
+    "output only the messages at the specified positions in the file.";
 
 const char kInvertSwitch[] = "invert";
 const char kInvertSwitchHelp[] =
@@ -102,9 +102,6 @@ int main(int argc, char** argv) {
       end_index = static_cast<size_t>(temp);
   }
 
-  bool has_indices = cmd->HasSwitch(kInSwitch);
-  std::vector<bool> indices;
-
   bool has_regexp = cmd->HasSwitch(kRegexpSwitch);
   RE2 filter_pattern(cmd->GetSwitchValueASCII(kRegexpSwitch));
 
@@ -133,6 +130,9 @@ int main(int argc, char** argv) {
                                 message_vector.begin(), message_vector.end());
     message_vector.weak_clear();
   }
+
+  bool has_indices = cmd->HasSwitch(kInSwitch);
+  std::vector<bool> indices;
 
   if (has_indices) {
     indices.resize(input_message_vector.size(), false);
