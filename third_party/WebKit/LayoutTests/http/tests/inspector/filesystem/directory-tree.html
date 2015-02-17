@@ -14,7 +14,7 @@ function test()
     if (!fileSystemListTreeElement) {
         fileSystemListTreeElement = new WebInspector.FileSystemListTreeElement(resourcesPanel);
         resourcesPanel.fileSystemListTreeElement = fileSystemListTreeElement;
-        resourcesPanel.sidebarTree.appendChild(fileSystemListTreeElement);
+        resourcesPanel._sidebarTree.appendChild(fileSystemListTreeElement);
     }
 
     var fileSystemItem = null;

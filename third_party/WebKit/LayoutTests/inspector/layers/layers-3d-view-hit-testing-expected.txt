@@ -1,12 +1,12 @@
 Initial state
 State of layers:
 hovered layer: none
-selected layer: none
+selected layer: content root
 
 Hovering content root
 State of layers:
 hovered layer: content root
-selected layer: none
+selected layer: content root
 
 Selecting layer b
 State of layers:
