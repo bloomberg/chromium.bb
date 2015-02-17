@@ -1730,30 +1730,30 @@ void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   base::allocator::ReleaseFreeMemory();
 
-  // Trigger full v8 garbage collection on critical memory notification. This
-  // will potentially hang the renderer for a long time, however, when we
-  // receive a memory pressure notification, we might be about to be killed.
-  if (blink_platform_impl_ && blink::mainThreadIsolate()) {
-    blink::mainThreadIsolate()->LowMemoryNotification();
-    RenderThread::Get()->PostTaskToAllWebWorkers(
-        base::Bind(&LowMemoryNotificationOnThisThread));
-  }
-
-  if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    if (blink_platform_impl_) {
-      // Clear the image cache. Do not call into blink if it is not initialized.
-      blink::WebImageCache::clear();
-    }
-
-    // Purge Skia font cache, by setting it to 0 and then again to the previous
-    // limit.
-    size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
-    SkGraphics::SetFontCacheLimit(font_cache_limit);
-  }
-
+  // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
     blink::WebCache::pruneAll();
+
+    if (blink::mainThreadIsolate()) {
+      // Trigger full v8 garbage collection on memory pressure notifications.
+      // This will potentially hang the renderer for a long time, however, when
+      // we receive a memory pressure notification, we might be about to be
+      // killed.
+      blink::mainThreadIsolate()->LowMemoryNotification();
+      RenderThread::Get()->PostTaskToAllWebWorkers(
+          base::Bind(&LowMemoryNotificationOnThisThread));
+    }
+
+    if (memory_pressure_level ==
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+      // Clear the image cache.
+      blink::WebImageCache::clear();
+
+      // Purge Skia font cache, by setting it to 0 and then again to the
+      // previous limit.
+      size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
+      SkGraphics::SetFontCacheLimit(font_cache_limit);
+    }
   }
 }
 
