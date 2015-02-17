@@ -37,6 +37,10 @@ PASS output.send([0x80, 0xf4, 0x00, 0x00]) threw exception TypeError: Failed to 
 PASS output.send([0x80, 0x00, 0xf4, 0x00]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': Unexpected status byte at index at index 2 (244)..
 PASS output.send([0x80, 0x00, 0x00, 0xf4]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': Reserved status is not allowed at index 3 (244)..
 PASS output.send([0xf0, 0xff, 0xf4, 0xf7]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': System exclusive message contains a status byte at index 2 (244)..
+PASS output.send([], NaN) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
+PASS output.send([], Infinity) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
+PASS output.send(new Uint8Array(), NaN) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
+PASS output.send(new Uint8Array(), Infinity) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The provided double value is non-finite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

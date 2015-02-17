@@ -91,6 +91,12 @@ navigator.requestMIDIAccess({sysex: true}).then(function (a) {
     shouldThrow('output.send([0x80, 0x00, 0x00, 0xf4])');
     shouldThrow('output.send([0xf0, 0xff, 0xf4, 0xf7])');
 
+    // Invalid timestamps.
+    shouldThrow('output.send([], NaN)');
+    shouldThrow('output.send([], Infinity)');
+    shouldThrow('output.send(new Uint8Array(), NaN)');
+    shouldThrow('output.send(new Uint8Array(), Infinity)');
+
     finishJSTest();
 }, function () {
     testFailed("requestMIDIAccess() return an error.");
