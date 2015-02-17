@@ -89,7 +89,6 @@
 #include "core/storage/StorageNamespaceController.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/InspectorAccessibilityAgent.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
@@ -438,7 +437,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->inspectorController().registerModuleAgent(DeviceOrientationInspectorAgent::create(m_page.get()));
     m_page->inspectorController().registerModuleAgent(InspectorFileSystemAgent::create(m_page.get()));
     m_page->inspectorController().registerModuleAgent(InspectorIndexedDBAgent::create(m_page.get()));
-    m_page->inspectorController().registerModuleAgent(InspectorAccessibilityAgent::create(m_page.get()));
 
     provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
     m_page->setValidationMessageClient(ValidationMessageClientImpl::create(*this));

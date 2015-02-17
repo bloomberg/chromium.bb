@@ -481,8 +481,6 @@
       'accessibility/AXTableHeaderContainer.h',
       'accessibility/AXTableRow.cpp',
       'accessibility/AXTableRow.h',
-      'accessibility/InspectorAccessibilityAgent.cpp',
-      'accessibility/InspectorAccessibilityAgent.h',
       'battery/BatteryDispatcher.cpp',
       'battery/BatteryDispatcher.h',
       'battery/BatteryManager.cpp',
