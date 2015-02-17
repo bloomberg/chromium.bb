@@ -110,6 +110,9 @@ class RenderViewTest : public testing::Test {
   // Sends a left mouse click at the |point|.
   void SimulatePointClick(const gfx::Point& point);
 
+  // Sends a tap at the |rect|.
+  void SimulateRectTap(const gfx::Rect& rect);
+
   // Simulates |node| being focused.
   void SetFocused(const blink::WebNode& node);
 

@@ -8,7 +8,10 @@
 #include "components/autofill/content/renderer/page_click_listener.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/public/platform/WebPoint.h"
+#include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -21,6 +24,8 @@ using blink::WebInputElement;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebNode;
+using blink::WebPoint;
+using blink::WebSize;
 using blink::WebTextAreaElement;
 
 namespace {
@@ -73,14 +78,22 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
     return;
   }
 
-  PotentialActivationAt(event.x, event.y);
+  WebNode clicked_node = render_frame()->GetRenderView()->GetWebView()
+      ->hitTestResultAt(WebPoint(event.x, event.y)).node();
+  focused_node_was_last_clicked_ = !clicked_node.isNull() &&
+                                   clicked_node.focused();
 }
 
 void PageClickTracker::DidHandleGestureEvent(const WebGestureEvent& event) {
   if (event.type != WebGestureEvent::GestureTap)
     return;
 
-  PotentialActivationAt(event.x, event.y);
+  WebNode tapped_node = render_frame()->GetRenderView()->GetWebView()
+      ->hitTestResultForTap(
+          WebPoint(event.x, event.y),
+          WebSize(event.data.tap.width, event.data.tap.height)).node();
+  focused_node_was_last_clicked_ = !tapped_node.isNull() &&
+                                   tapped_node.focused();
 }
 
 void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
@@ -88,7 +101,7 @@ void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
 }
 
 void PageClickTracker::FocusChangeComplete() {
-  blink::WebNode focused_node = render_frame()->GetFocusedElement();
+  WebNode focused_node = render_frame()->GetFocusedElement();
   if (focused_node_was_last_clicked_ && !focused_node.isNull()) {
     const WebInputElement input_element = GetTextWebInputElement(focused_node);
     if (!input_element.isNull()) {
@@ -108,20 +121,6 @@ void PageClickTracker::FocusChangeComplete() {
   focused_node_was_last_clicked_ = false;
 }
 
-void PageClickTracker::PotentialActivationAt(int x, int y) {
-  blink::WebElement focused_element = render_frame()->GetFocusedElement();
-  if (focused_element.isNull())
-    return;
-
-  if (!GetScaledBoundingBox(
-           render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
-           &focused_element).Contains(x, y)) {
-    return;
-  }
-
-  focused_node_was_last_clicked_ = true;
-}
-
 // PageClickTracker::Legacy ----------------------------------------------------
 
 PageClickTracker::Legacy::Legacy(PageClickTracker* tracker)
@@ -133,13 +132,12 @@ void PageClickTracker::Legacy::OnDestruct() {
   // No-op. Don't delete |this|.
 }
 
-void PageClickTracker::Legacy::DidHandleMouseEvent(
-    const blink::WebMouseEvent& event) {
+void PageClickTracker::Legacy::DidHandleMouseEvent(const WebMouseEvent& event) {
   tracker_->DidHandleMouseEvent(event);
 }
 
 void PageClickTracker::Legacy::DidHandleGestureEvent(
-    const blink::WebGestureEvent& event) {
+    const WebGestureEvent& event) {
   tracker_->DidHandleGestureEvent(event);
 }
 

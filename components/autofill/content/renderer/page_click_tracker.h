@@ -60,9 +60,6 @@ class PageClickTracker : public content::RenderFrameObserver {
   void DidHandleGestureEvent(const blink::WebGestureEvent& event);
   void FocusChangeComplete();
 
-  // Called there is a tap or click at |x|, |y|.
-  void PotentialActivationAt(int x, int y);
-
   // True when the last click was on the focused node.
   bool focused_node_was_last_clicked_;
 

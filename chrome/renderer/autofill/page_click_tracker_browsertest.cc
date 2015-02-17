@@ -165,12 +165,24 @@ TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaFocusedAndClicked) {
 }
 
 TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaClicked) {
-  EXPECT_NE(text_, text_.document().focusedElement());
+  EXPECT_NE(textarea_, textarea_.document().focusedElement());
   view_->GetWebView()->setPageScaleFactor(3);
   view_->GetWebView()->setPinchViewportOffset(blink::WebFloatPoint(50, 50));
 
   // Click textarea_1.
   SimulatePointClick(gfx::Point(30, 30));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
+}
+
+TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaTapped) {
+  EXPECT_NE(textarea_, textarea_.document().focusedElement());
+  view_->GetWebView()->setPageScaleFactor(3);
+  view_->GetWebView()->setPinchViewportOffset(blink::WebFloatPoint(50, 50));
+
+  // Tap textarea_1.
+  SimulateRectTap(gfx::Rect(30, 30, 30, 30));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
   EXPECT_FALSE(test_listener_.was_focused_);
   EXPECT_TRUE(textarea_ == test_listener_.form_control_element_clicked_);
@@ -188,6 +200,40 @@ TEST_F(PageClickTrackerTest, PageClickTrackerDisabledInputClickedNoEvent) {
   // Click the disabled element.
   EXPECT_TRUE(SimulateElementClick("button_2"));
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+}
+
+TEST_F(PageClickTrackerTest,
+       PageClickTrackerClickDisabledInputDoesNotResetClickCounter) {
+  EXPECT_NE(text_, text_.document().focusedElement());
+  // Click the text field once.
+  EXPECT_TRUE(SimulateElementClick("text_1"));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
+  test_listener_.ClearResults();
+
+  // Click the disabled element.
+  EXPECT_TRUE(SimulateElementClick("button_2"));
+  EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
+  test_listener_.ClearResults();
+
+  // Click the text field second time. Page click tracker should know that this
+  // is the second click.
+  EXPECT_TRUE(SimulateElementClick("text_1"));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_TRUE(test_listener_.was_focused_);
+  EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
+}
+
+TEST_F(PageClickTrackerTest, PageClickTrackerTapNearEdgeIsPageClick) {
+  EXPECT_NE(text_, text_.document().focusedElement());
+  // Tap outside of element bounds, but tap width is overlapping the field.
+  gfx::Rect element_bounds = GetElementBounds("text_1");
+  SimulateRectTap(element_bounds -
+                  gfx::Vector2d(element_bounds.width() / 2 + 1, 0));
+  EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
+  EXPECT_FALSE(test_listener_.was_focused_);
+  EXPECT_TRUE(text_ == test_listener_.form_control_element_clicked_);
 }
 
 }  // namespace autofill
