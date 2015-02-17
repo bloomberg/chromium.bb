@@ -41,6 +41,7 @@
             '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
             '../ipc/ipc_nacl.gyp:ipc_nacl',
             '../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
+            '../mojo/mojo_nacl.gyp:monacl_codegen',
             '../native_client/tools.gyp:prep_toolchain',
             '../ppapi/ppapi_ipc_nacl.gyp:ppapi_ipc_nacl',
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',

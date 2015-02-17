@@ -17,8 +17,16 @@
 
 {{body}}
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 size_t mojo_irt_query(const char* interface_ident,
                       void* table,
                       size_t tablesize);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MOJO_NACL_MOJO_IRT_H_

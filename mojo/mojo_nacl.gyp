@@ -19,12 +19,16 @@
                 'nacl/generator/generate_nacl_bindings.py',
                 'nacl/generator/interface.py',
                 'nacl/generator/interface_dsl.py',
-                'nacl/generator/mojo_syscall.cc.tmpl',
                 'nacl/generator/libmojo.cc.tmpl',
+                'nacl/generator/mojo_irt.c.tmpl',
+                'nacl/generator/mojo_irt.h.tmpl',
+                'nacl/generator/mojo_syscall.cc.tmpl',
               ],
               'outputs': [
-                '<(monacl_codegen_dir)/mojo_syscall.cc',
                 '<(monacl_codegen_dir)/libmojo.cc',
+                '<(monacl_codegen_dir)/mojo_irt.c',
+                '<(monacl_codegen_dir)/mojo_irt.h',
+                '<(monacl_codegen_dir)/mojo_syscall.cc',
               ],
               'action': [
                 'python',
@@ -33,6 +37,9 @@
               ],
             },
           ],
+          'direct_dependent_settings': {
+            'include_dirs': [ '../third_party/mojo/src/' ],
+          },
         },
         {
           'target_name': 'monacl_syscall',
