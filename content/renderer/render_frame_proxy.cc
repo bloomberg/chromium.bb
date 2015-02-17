@@ -74,7 +74,10 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     RenderFrameProxy* parent =
         RenderFrameProxy::FromRoutingID(parent_routing_id);
     web_frame = parent->web_frame()->createRemoteChild(
-        blink::WebString::fromUTF8(replicated_state.name), proxy.get());
+        blink::WebString::fromUTF8(replicated_state.name),
+        RenderFrameImpl::ContentToWebSandboxFlags(
+            replicated_state.sandbox_flags),
+        proxy.get());
     render_view = parent->render_view();
   }
 
