@@ -1,13 +1,7 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-import errno
-import os
-import re
-import subprocess
-import sys
-
+#
 # Copies the given "win tool" (which the toolchain uses to wrap compiler
 # invocations) and the environment blocks for the 32-bit and 64-bit builds on
 # Windows to the build directory.
@@ -15,6 +9,12 @@ import sys
 # The arguments are the visual studio install location and the location of the
 # win tool. The script assumes that the root build directory is the current dir
 # and the files will be written to the current directory.
+
+import errno
+import os
+import re
+import subprocess
+import sys
 
 
 def _ExtractImportantEnvironment(output_of_set):
