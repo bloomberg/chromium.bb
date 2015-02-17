@@ -15,15 +15,6 @@ function FileGrid() {
 }
 
 /**
- * Thumbnail quality.
- * @enum {number}
- */
-FileGrid.ThumbnailQuality = {
-  LOW: 0,
-  HIGH: 1
-};
-
-/**
  * Inherits from cr.ui.Grid.
  */
 FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
@@ -113,10 +104,10 @@ FileGrid.prototype.setListThumbnailLoader = function(listThumbnailLoader) {
 FileGrid.prototype.onThumbnailLoaded_ = function(event) {
   var listItem = this.getListItemByIndex(event.index);
   if (listItem) {
-    var thumbnail = listItem.querySelector('.img-container > .thumbnail');
-    if (thumbnail) {
+    var box = listItem.querySelector('.img-container');
+    if (box) {
       FileGrid.setThumbnailImage_(
-          assertInstanceof(thumbnail, HTMLDivElement), event.dataUrl);
+          assertInstanceof(box, HTMLDivElement), event.dataUrl);
     }
   }
 };
@@ -155,7 +146,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
     if (!entry || urls.indexOf(entry.toURL()) === -1)
       continue;
 
-    FileGrid.decorateThumbnailBox_(box,
+    FileGrid.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement),
                                    entry,
                                    this.fileSystemMetadata_,
                                    this.volumeManager_,
@@ -235,7 +226,7 @@ FileGrid.decorateThumbnail_ = function(
   }
   if (shouldLoadThumbnail) {
     FileGrid.decorateThumbnailBox_(
-        box,
+        assertInstanceof(box, HTMLDivElement),
         entry,
         fileSystemMetadata,
         volumeManager,
@@ -265,7 +256,7 @@ FileGrid.decorateThumbnail_ = function(
 /**
  * Decorates the box containing a centered thumbnail image.
  *
- * @param {Element} box Box to decorate.
+ * @param {!HTMLDivElement} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
@@ -298,16 +289,11 @@ FileGrid.decorateThumbnailBox_ = function(
     return;
   }
 
-  // Create a box for thumbnail here to perform transition correctly.
-  var thumbnail = box.ownerDocument.createElement('div');
-  thumbnail.classList.add('thumbnail');
-  box.appendChild(thumbnail);
-
   // Set thumbnail if it's already in cache.
   if (listThumbnailLoader &&
       listThumbnailLoader.getThumbnailFromCache(entry)) {
     FileGrid.setThumbnailImage_(
-        assertInstanceof(thumbnail, HTMLDivElement),
+        box,
         listThumbnailLoader.getThumbnailFromCache(entry).dataUrl);
   } else {
     var mediaType = FileType.getMediaType(entry);
@@ -317,14 +303,29 @@ FileGrid.decorateThumbnailBox_ = function(
 
 /**
  * Sets thumbnail image to the box.
- * @param {!HTMLDivElement} thumbnail A div element to be filled with thumbnail.
+ * @param {!HTMLDivElement} thumbnail A div element to hold thumbnails.
  * @param {string} dataUrl Data url of thumbnail.
  * @private
  */
-FileGrid.setThumbnailImage_ = function(thumbnail, dataUrl) {
-  // TODO(yawano): Add transition animation for thumbnail update.
+FileGrid.setThumbnailImage_ = function(box, dataUrl) {
+  var oldThumbnails = box.querySelectorAll('.thumbnail');
+
+  var thumbnail = box.ownerDocument.createElement('div');
+  thumbnail.classList.add('thumbnail');
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-  thumbnail.classList.add('loaded');
+  thumbnail.addEventListener('webkitAnimationEnd', function() {
+    // Remove animation css once animation is completed in order not to animate
+    // agein when an item is attached to the dom again.
+    thumbnail.classList.remove('animate');
+
+    for (var i = 0; i < oldThumbnails.length; i++) {
+      if (box.contains(oldThumbnails[i]))
+        box.removeChild(oldThumbnails[i]);
+    }
+  });
+  thumbnail.classList.add('animate');
+
+  box.appendChild(thumbnail);
 };
 
 /**

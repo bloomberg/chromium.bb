@@ -872,13 +872,13 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
   background-position: center;
   background-size: cover;
   height: 100%;
-  opacity: 0;
-  transition: opacity 250ms linear;
+  opacity: 1;
+  position: absolute;
   width: 100%;
 }
 
-.thumbnail-grid .img-container > .thumbnail.loaded {
-  opacity: 1;
+.thumbnail-grid .img-container > .thumbnail.animate {
+  -webkit-animation: fadeIn 250ms linear;
 }
 
 .thumbnail-grid .thumbnail-bottom {
