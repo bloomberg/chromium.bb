@@ -52,7 +52,7 @@ void usage() {
             << "  ipc_message_util"
             << " [--" << kStartSwitch << "=n]"
             << " [--" << kEndSwitch << "=m]"
-            << " [--" << kInSwitch << "=i,j,...]]"
+            << " [--" << kInSwitch << "=i[,j,...]]"
             << " [--" << kRegexpSwitch << "=x]"
             << " [--" << kInvertSwitch << "]"
             << " [--" << kDumpSwitch << "]"
