@@ -241,7 +241,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
 #if defined(OS_MACOSX)
-    int string_id = IDS_ADD_TO_DOCK;
+    int string_id = IDS_ADD_TO_APPLICATIONS;
 #elif defined(OS_WIN)
     int string_id = IDS_ADD_TO_TASKBAR;
 #else

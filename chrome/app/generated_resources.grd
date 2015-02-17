@@ -2230,8 +2230,8 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
       <if expr="is_macosx">
-        <message name="IDS_ADD_TO_DOCK" desc="Button text for adding a bookmark app to the dock.">
-          Add to Dock...
+        <message name="IDS_ADD_TO_APPLICATIONS" desc="Button text for adding a bookmark app to the Applications Folder.">
+          Add to Applications...
         </message>
       </if>
       <if expr="use_ash">
