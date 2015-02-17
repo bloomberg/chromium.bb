@@ -101,8 +101,6 @@
       'browser/shell_screen.h',
     ],
     'app_shell_lib_sources_chromeos': [
-      'browser/api/shell_gcd/shell_gcd_api.cc',
-      'browser/api/shell_gcd/shell_gcd_api.h',
       'browser/api/vpn_provider/vpn_service_factory.cc',
     ],
     'app_shell_lib_sources_nacl': [
@@ -129,7 +127,6 @@
       'browser/shell_screen_unittest.cc',
     ],
     'app_shell_unittests_sources_chromeos': [
-      'browser/api/shell_gcd/shell_gcd_api_unittest.cc',
       'browser/shell_audio_controller_chromeos_unittest.cc',
     ],
     'app_shell_unittests_sources_nacl': [

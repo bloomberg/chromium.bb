@@ -14,7 +14,6 @@
     ],
     # Chrome OS specific APIs.
     'chromeos_schema_files': [
-      'shell_gcd.idl',
     ],
     
     'chromium_code': 1,

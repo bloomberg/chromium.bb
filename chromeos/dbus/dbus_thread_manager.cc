@@ -40,7 +40,6 @@
 #include "chromeos/dbus/peer_daemon_manager_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/privet_daemon_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -275,10 +274,6 @@ PowerManagerClient* DBusThreadManager::GetPowerManagerClient() {
   return client_bundle_->power_manager_client();
 }
 
-PrivetDaemonClient* DBusThreadManager::GetPrivetDaemonClient() {
-  return client_bundle_->privet_daemon_client();
-}
-
 SessionManagerClient* DBusThreadManager::GetSessionManagerClient() {
   return client_bundle_->session_manager_client();
 }
@@ -321,7 +316,6 @@ void DBusThreadManager::InitializeClients() {
   GetPermissionBrokerClient()->Init(GetSystemBus());
   GetPeerDaemonManagerClient()->Init(GetSystemBus());
   GetPowerManagerClient()->Init(GetSystemBus());
-  GetPrivetDaemonClient()->Init(GetSystemBus());
   GetSessionManagerClient()->Init(GetSystemBus());
   GetShillDeviceClient()->Init(GetSystemBus());
   GetShillIPConfigClient()->Init(GetSystemBus());
@@ -649,12 +643,6 @@ void DBusThreadManagerSetter::SetPermissionBrokerClient(
 void DBusThreadManagerSetter::SetPowerManagerClient(
     scoped_ptr<PowerManagerClient> client) {
   DBusThreadManager::Get()->client_bundle_->power_manager_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetPrivetDaemonClient(
-    scoped_ptr<PrivetDaemonClient> client) {
-  DBusThreadManager::Get()->client_bundle_->privet_daemon_client_ =
       client.Pass();
 }
 
