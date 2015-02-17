@@ -50,12 +50,6 @@ using testing::_;
 
 namespace {
 
-class FakeContextEvictionManager : public ContextEvictionManager {
-public:
-    void forciblyLoseOldestContext(const String& reason) { }
-    IntSize oldestContextSize() { return IntSize(); }
-};
-
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
 public:
     WebGraphicsContext3DForTests()
@@ -173,11 +167,11 @@ static const int alternateHeight = 50;
 class DrawingBufferForTests : public DrawingBuffer {
 public:
     static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3D> context,
-        const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
+        const IntSize& size, PreserveDrawingBuffer preserve)
     {
         OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
         RefPtr<DrawingBufferForTests> drawingBuffer =
-            adoptRef(new DrawingBufferForTests(context, extensionsUtil.release(), preserve, contextEvictionManager));
+            adoptRef(new DrawingBufferForTests(context, extensionsUtil.release(), preserve));
         if (!drawingBuffer->initialize(size)) {
             drawingBuffer->beginDestruction();
             return PassRefPtr<DrawingBufferForTests>();
@@ -187,10 +181,9 @@ public:
 
     DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3D> context,
         PassOwnPtr<Extensions3DUtil> extensionsUtil,
-        PreserveDrawingBuffer preserve,
-        PassRefPtr<ContextEvictionManager> contextEvictionManager)
+        PreserveDrawingBuffer preserve)
         : DrawingBuffer(context, extensionsUtil, false /* multisampleExtensionSupported */,
-            false /* packedDepthStencilExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes(), contextEvictionManager)
+            false /* packedDepthStencilExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes())
         , m_live(0)
     { }
 
@@ -207,11 +200,10 @@ class DrawingBufferTest : public Test {
 protected:
     virtual void SetUp()
     {
-        RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
         OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
         m_context = context.get();
         m_drawingBuffer = DrawingBufferForTests::create(context.release(),
-            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
+            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
     }
 
     WebGraphicsContext3DForTests* webContext()
@@ -445,14 +437,13 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
 protected:
     virtual void SetUp()
     {
-        RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
         OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
         m_context = context.get();
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
         m_imageId0 = webContext()->nextImageIdToBeCreated();
         EXPECT_CALL(*webContext(), bindTexImage2DMock(m_imageId0)).Times(1);
         m_drawingBuffer = DrawingBufferForTests::create(context.release(),
-            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
+            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
         testing::Mock::VerifyAndClearExpectations(webContext());
     }
 
@@ -622,12 +613,11 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         OwnPtr<DepthStencilTrackingContext> context = adoptPtr(new DepthStencilTrackingContext);
         DepthStencilTrackingContext* trackingContext = context.get();
         DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
-        RefPtr<ContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager);
 
         WebGraphicsContext3D::Attributes requestedAttributes;
         requestedAttributes.stencil = cases[i].requestStencil;
         requestedAttributes.depth = cases[i].requestDepth;
-        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(context.release(), IntSize(10, 10), preserve, requestedAttributes, contextEvictionManager);
+        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(context.release(), IntSize(10, 10), preserve, requestedAttributes);
 
         EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
         EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);

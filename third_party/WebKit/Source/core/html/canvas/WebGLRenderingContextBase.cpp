@@ -161,20 +161,6 @@ size_t WebGLRenderingContextBase::oldestContextIndex()
     return candidateID;
 }
 
-IntSize WebGLRenderingContextBase::oldestContextSize()
-{
-    IntSize size;
-
-    size_t candidateID = oldestContextIndex();
-    if (candidateID < activeContexts().size()) {
-        WebGLRenderingContextBase* candidate = activeContexts()[candidateID];
-        size.setWidth(candidate->drawingBufferWidth());
-        size.setHeight(candidate->drawingBufferHeight());
-    }
-
-    return size;
-}
-
 void WebGLRenderingContextBase::activateContext(WebGLRenderingContextBase* context)
 {
     unsigned removedContexts = 0;
@@ -231,16 +217,6 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
         break;
     }
 }
-
-class WebGLRenderingContextEvictionManager : public ContextEvictionManager {
-public:
-    void forciblyLoseOldestContext(const String& reason) {
-        WebGLRenderingContextBase::forciblyLoseOldestContext(reason);
-    };
-    IntSize oldestContextSize() {
-        return WebGLRenderingContextBase::oldestContextSize();
-    };
-};
 
 namespace {
 
@@ -679,8 +655,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
 PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context)
 {
-    RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
-
     blink::WebGraphicsContext3D::Attributes attrs;
     attrs.alpha = m_requestedAttributes.alpha();
     attrs.depth = m_requestedAttributes.depth();
@@ -688,7 +662,7 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwn
     attrs.antialias = m_requestedAttributes.antialias();
     attrs.premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes.preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    return DrawingBuffer::create(context, clampedCanvasSize(), preserve, attrs, contextEvictionManager.release());
+    return DrawingBuffer::create(context, clampedCanvasSize(), preserve, attrs);
 }
 
 void WebGLRenderingContextBase::initializeNewContext()

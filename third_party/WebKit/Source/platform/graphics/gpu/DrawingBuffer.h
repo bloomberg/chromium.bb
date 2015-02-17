@@ -61,15 +61,6 @@ class WebExternalTextureLayer;
 class WebGraphicsContext3D;
 class WebLayer;
 
-// Abstract interface to allow basic context eviction management
-class PLATFORM_EXPORT ContextEvictionManager : public RefCounted<ContextEvictionManager> {
-public:
-    virtual ~ContextEvictionManager() {};
-
-    virtual void forciblyLoseOldestContext(const String& reason) = 0;
-    virtual IntSize oldestContextSize() = 0;
-};
-
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
 // results to a WebLayer for compositing.
 class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public WebExternalTextureLayerClient  {
@@ -101,7 +92,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes, PassRefPtr<ContextEvictionManager>);
+    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
 
     virtual ~DrawingBuffer();
 
@@ -182,8 +173,7 @@ protected: // For unittests
         bool packedDepthStencilExtensionSupported,
         bool discardFramebufferSupported,
         PreserveDrawingBuffer,
-        WebGraphicsContext3D::Attributes requestedAttributes,
-        PassRefPtr<ContextEvictionManager>);
+        WebGraphicsContext3D::Attributes requestedAttributes);
 
     bool initialize(const IntSize&);
 
@@ -209,13 +199,6 @@ private:
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
     void setSize(const IntSize& size);
-
-    // Calculates the difference in pixels between the current buffer size and the proposed size.
-    static int pixelDelta(const IntSize& newSize, const IntSize& curSize);
-
-    // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget
-    // Returns true if the buffer will only fit if the oldest WebGL context is forcibly lost
-    IntSize adjustSizeWithContextEviction(const IntSize&, bool& evictContext);
 
     void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
 
@@ -304,8 +287,6 @@ private:
     Vector<RefPtr<MailboxInfo>> m_textureMailboxes;
     // Mailboxes that were released by the compositor can be used again by this DrawingBuffer.
     Deque<WebExternalTextureMailbox> m_recycledMailboxQueue;
-
-    RefPtr<ContextEvictionManager> m_contextEvictionManager;
 
     // If the width and height of the Canvas's backing store don't
     // match those that we were given in the most recent call to
