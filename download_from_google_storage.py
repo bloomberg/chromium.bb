@@ -105,18 +105,6 @@ class Gsutil(object):
     return (code, out, err)
 
 
-def check_bucket_permissions(base_url, gsutil):
-  code, _, ls_err = gsutil.check_call('ls', base_url)
-  if code != 0:
-    print >> sys.stderr, ls_err
-  if code == 403:
-    print >> sys.stderr, 'Got error 403 while authenticating to %s.' % base_url
-    print >> sys.stderr, 'Try running "download_from_google_storage --config".'
-  elif code == 404:
-    print >> sys.stderr, '%s not found.' % base_url
-  return code
-
-
 def check_platform(target):
   """Checks if any parent directory of target matches (win|mac|linux)."""
   assert os.path.isabs(target)
@@ -453,12 +441,6 @@ def main(args):
                    % options.output)
 
   base_url = 'gs://%s' % options.bucket
-
-  # Check we have a valid bucket with valid permissions.
-  if not options.no_auth:
-    code = check_bucket_permissions(base_url, gsutil)
-    if code:
-      return code
 
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,

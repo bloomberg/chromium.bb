@@ -15,7 +15,6 @@ import sys
 import threading
 import time
 
-from download_from_google_storage import check_bucket_permissions
 from download_from_google_storage import get_sha1
 from download_from_google_storage import Gsutil
 from download_from_google_storage import printer_worker
@@ -242,11 +241,6 @@ def main(args):
                    GSUTIL_DEFAULT_PATH)
 
   base_url = 'gs://%s' % options.bucket
-
-  # Check we have a valid bucket with valid permissions.
-  code = check_bucket_permissions(base_url, gsutil)
-  if code:
-    return code
 
   return upload_to_google_storage(
       input_filenames, base_url, gsutil, options.force, options.use_md5,
