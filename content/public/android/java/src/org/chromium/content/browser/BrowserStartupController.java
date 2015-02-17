@@ -283,8 +283,8 @@ public class BrowserStartupController {
         // Now we really need to have the resources ready.
         resourceExtractor.waitForCompletion();
 
-        nativeSetCommandLineFlags(singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
         ContentMain.initApplicationContext(appContext);
+        nativeSetCommandLineFlags(singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
     }
 
     /**
@@ -294,6 +294,8 @@ public class BrowserStartupController {
         ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
         resourceExtractor.startExtractingResources();
         resourceExtractor.waitForCompletion();
+
+        ContentMain.initApplicationContext(mContext.getApplicationContext());
         nativeSetCommandLineFlags(false, null);
     }
 
