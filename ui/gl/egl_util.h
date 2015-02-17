@@ -5,10 +5,12 @@
 #ifndef UI_GL_EGL_UTIL_H_
 #define UI_GL_EGL_UTIL_H_
 
+#include "ui/gl/gl_export.h"
+
 namespace ui {
 
 // Returns the last EGL error as a string.
-const char* GetLastEGLErrorString();
+GL_EXPORT const char* GetLastEGLErrorString();
 
 }  // namespace ui
 
