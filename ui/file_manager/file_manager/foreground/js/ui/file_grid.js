@@ -322,7 +322,7 @@ FileGrid.decorateThumbnailBox_ = function(
  * @private
  */
 FileGrid.setThumbnailImage_ = function(thumbnail, dataUrl) {
-  thumbnail.classList.add('thumbnail');
+  // TODO(yawano): Add transition animation for thumbnail update.
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
   thumbnail.classList.add('loaded');
 };

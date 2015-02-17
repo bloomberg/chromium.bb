@@ -76,6 +76,7 @@ function ListThumbnailLoader(
   // change, and change this class to handle it.
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
   this.dataModel_.addEventListener('sorted', this.onSorted_.bind(this));
+  this.dataModel_.addEventListener('change', this.onChange_.bind(this));
 }
 
 ListThumbnailLoader.prototype.__proto__ = cr.EventTarget.prototype;
@@ -117,6 +118,21 @@ ListThumbnailLoader.prototype.onSplice_ = function(event) {
  * @param {!Event} event Event
  */
 ListThumbnailLoader.prototype.onSorted_ = function(event) {
+  this.cursor_ = this.beginIndex_;
+  this.continue_();
+}
+
+/**
+ * An event handler for change event of data model.
+ *
+ * @param {!Event} event Event
+ */
+ListThumbnailLoader.prototype.onChange_ = function(event) {
+  // Revoke cache of updated file.
+  var item = this.dataModel_.item(event.index);
+  if (item)
+    this.cache_.remove(item.toURL());
+
   this.cursor_ = this.beginIndex_;
   this.continue_();
 }
@@ -318,11 +334,11 @@ ListThumbnailLoader.Task = function(
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
   return new Promise(function(resolve, reject) {
-    this.metadataCache_.getOne(
-        this.entry_, 'thumbnail|filesystem|external|media', resolve);
-  }.bind(this)).then(function(metadata) {
+    this.metadataCache_.getLatest(
+        [this.entry_], 'thumbnail|filesystem|external|media', resolve);
+  }.bind(this)).then(function(metadatas) {
     return new this.thumbnailLoaderConstructor_(
-        this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadata)
+        this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadatas[0])
         .loadAsDataUrl();
   }.bind(this)).then(function(result) {
     return new ListThumbnailLoader.ThumbnailData(

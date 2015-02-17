@@ -622,6 +622,12 @@ function DirectoryContents(context,
   this.scanCancelled_ = false;
 
   this.lastSpaceInMetadataCache_ = 0;
+
+  /**
+   * Metadata snapshot which is used to know which file is actually changed.
+   * @type {Object}
+   */
+  this.metadataSnapshot_ = null;
 }
 
 /**
@@ -675,17 +681,66 @@ DirectoryContents.prototype.setFileList = function(fileList) {
 };
 
 /**
+ * Creates snapshot of metadata in the directory.
+ * @return {!Object} Metadata snapshot of current directory contents.
+ */
+DirectoryContents.prototype.createMetadataSnapshot = function() {
+  var snapshot = {};
+  var entries = this.fileList_.slice();
+  var metadata = this.context_.fileSystemMetadata.getCache(
+      entries, ['modificationTime']);
+  for (var i = 0; i < entries.length; i++) {
+    snapshot[entries[i].toURL()] = metadata[i];
+  }
+  return snapshot;
+}
+
+/**
+ * Sets metadata snapshot which is used to check changed files.
+ * @param {!Object} metadataSnapshot A metadata snapshot.
+ */
+DirectoryContents.prototype.setMetadataSnapshot = function(metadataSnapshot) {
+  this.metadataSnapshot_ = metadataSnapshot;
+}
+
+/**
  * Use the filelist from the context and replace its contents with the entries
- * from the current fileList.
+ * from the current fileList. If metadata snapshot is set, this method checks
+ * actually updated files and dispatch change events by calling updateIndexes.
  */
 DirectoryContents.prototype.replaceContextFileList = function() {
   if (this.context_.fileList !== this.fileList_) {
+    // TODO(yawano): While we should update the list with adding or deleting
+    // what actually added and deleted instead of deleting and adding all items,
+    // splice of array data model is expensive since it always runs sort and we
+    // replace the list in this way to reduce the number of splice calls.
     var spliceArgs = this.fileList_.slice();
     var fileList = this.context_.fileList;
     spliceArgs.unshift(0, fileList.length);
     fileList.splice.apply(fileList, spliceArgs);
     this.fileList_ = fileList;
     this.makeSpaceInMetadataCache_(this.fileList_.length);
+
+    // Check updated files and dispatch change events.
+    if (this.metadataSnapshot_) {
+      var updatedIndexes = [];
+      var entries = this.fileList_.slice();
+      var newMetadatas = this.context_.fileSystemMetadata.getCache(
+          entries, ['modificationTime']);
+
+      for (var i = 0; i < entries.length; i++) {
+        var url = entries[i].toURL();
+        var newMetadata = newMetadatas[i];
+        if (this.metadataSnapshot_[url] &&
+            this.metadataSnapshot_[url].modificationTime &&
+            this.metadataSnapshot_[url].modificationTime.getTime() !==
+            newMetadata.modificationTime.getTime())
+          updatedIndexes.push(i);
+      }
+
+      if (updatedIndexes.length > 0)
+        this.fileList_.updateIndexes(updatedIndexes);
+    }
   }
 };
 
@@ -952,14 +1007,22 @@ DirectoryContents.prototype.prefetchMetadata =
     function(entries, refresh, callback) {
   var TYPES = 'filesystem|external';
   if (refresh) {
-    this.context_.metadataCache.getLatest(entries, TYPES, callback);
     this.context_.fileSystemMetadata.notifyEntriesChanged(entries);
-    this.context_.fileSystemMetadata.get(
-        entries, this.context_.prefetchPropertyNames);
+    Promise.all([
+        new Promise(function(resolve) {
+          this.context_.metadataCache.getLatest(entries, TYPES, resolve);
+        }.bind(this)),
+        this.context_.fileSystemMetadata.get(
+            entries, this.context_.prefetchPropertyNames)
+    ]).then(function(results) { callback(results[0]); });
   } else {
-    this.context_.metadataCache.get(entries, TYPES, callback);
-    this.context_.fileSystemMetadata.get(
-        entries, this.context_.prefetchPropertyNames);
+    Promise.all([
+        new Promise(function(resolve) {
+          this.context_.metadataCache.get(entries, TYPES, callback);
+        }.bind(this)),
+        this.context_.fileSystemMetadata.get(
+            entries, this.context_.prefetchPropertyNames)
+    ]).then(function(results) { callback(results[0]); });
   }
 };
 

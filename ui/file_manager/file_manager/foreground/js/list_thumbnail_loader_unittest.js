@@ -42,7 +42,7 @@ function generateSampleImageDataUrl(document) {
 }
 
 var listThumbnailLoader;
-var getOneCallbacks;
+var getLatestCallbacks;
 var thumbnailLoadedEvents;
 var fileListModel;
 var fileSystem = new MockFileSystem('volume-id');
@@ -63,10 +63,10 @@ function setUp() {
   MockThumbnailLoader.testImageWidth = 160;
   MockThumbnailLoader.testImageHeight = 160;
 
-  getOneCallbacks = {};
+  getLatestCallbacks = {};
   var metadataCache = {
-    getOne: function(entry, type, callback) {
-      getOneCallbacks[entry.toURL()] = callback;
+    getLatest: function(entries, type, callback) {
+      getLatestCallbacks[getKeyOfGetLatestCallback_(entries)] = callback;
     }
   };
 
@@ -81,10 +81,21 @@ function setUp() {
   });
 }
 
-function resolveGetOneCallback(url) {
-  assert(getOneCallbacks[url]);
-  getOneCallbacks[url]();
-  delete getOneCallbacks[url];
+function getKeyOfGetLatestCallback_(entries) {
+  return entries.reduce(function(previous, current) {
+    return previous + '|' + current.toURL();
+  }, '');
+}
+
+function resolveGetLatestCallback(entries) {
+  var key = getKeyOfGetLatestCallback_(entries);
+  assert(getLatestCallbacks[key]);
+  getLatestCallbacks[key](entries.map(function() { return {}; }));
+  delete getLatestCallbacks[key];
+}
+
+function hasPendingGetLatestCallback(entries) {
+  return !!getLatestCallbacks[getKeyOfGetLatestCallback_(entries)];
 }
 
 function areEntriesInCache(entries) {
@@ -105,8 +116,9 @@ function testStory(callback) {
   listThumbnailLoader.setHighPriorityRange(0, 2);
 
   // Assert that 2 fetch tasks are running.
-  assertArrayEquals([entry1.toURL(), entry2.toURL()],
-      Object.keys(getOneCallbacks));
+  assertTrue(hasPendingGetLatestCallback([entry1]));
+  assertTrue(hasPendingGetLatestCallback([entry2]));
+  assertEquals(2, Object.keys(getLatestCallbacks).length);
 
   // Fails to get thumbnail from cache for Test2.jpg.
   assertEquals(null, listThumbnailLoader.getThumbnailFromCache(entry2));
@@ -115,10 +127,11 @@ function testStory(callback) {
   listThumbnailLoader.setHighPriorityRange(4, 6);
 
   // Assert that no new tasks are enqueued.
-  assertArrayEquals([entry1.toURL(), entry2.toURL()],
-      Object.keys(getOneCallbacks));
+  assertTrue(hasPendingGetLatestCallback([entry1]));
+  assertTrue(hasPendingGetLatestCallback([entry2]));
+  assertEquals(2, Object.keys(getLatestCallbacks).length);
 
-  resolveGetOneCallback(entry2.toURL());
+  resolveGetLatestCallback([entry2]);
 
   reportPromise(waitUntil(function() {
     // Assert that thumbnailLoaded event is fired for Test2.jpg.
@@ -140,21 +153,21 @@ function testStory(callback) {
 
     // Assert that new task is enqueued.
     return waitUntil(function() {
-      return !!getOneCallbacks[entry1.toURL()] &&
-          !!getOneCallbacks[entry4.toURL()] &&
-          Object.keys(getOneCallbacks).length === 2;
+      return hasPendingGetLatestCallback([entry1]) &&
+          hasPendingGetLatestCallback([entry4]) &&
+          Object.keys(getLatestCallbacks).length === 2;
     });
   }).then(function() {
     // Set high priority range to 2 - 4.
     listThumbnailLoader.setHighPriorityRange(2, 4);
 
-    resolveGetOneCallback(entry1.toURL());
+    resolveGetLatestCallback([entry1]);
 
     // Assert that task for (Test3.jpg) is enqueued.
     return waitUntil(function() {
-      return !!getOneCallbacks[entry3.toURL()] &&
-          !!getOneCallbacks[entry4.toURL()] &&
-          Object.keys(getOneCallbacks).length === 2;
+      return hasPendingGetLatestCallback([entry3]) &&
+          hasPendingGetLatestCallback([entry4]) &&
+          Object.keys(getLatestCallbacks).length === 2;
     });
   }), callback);
 }
@@ -169,9 +182,8 @@ function testRangeIsAtTheEndOfList() {
   fileListModel.push(directory1, entry1, entry2, entry3, entry4, entry5);
 
   // Assert that a task is enqueued for entry5.
-  assertEquals(1, Object.keys(getOneCallbacks).length);
-  assertEquals('filesystem:volume-id/Test5.jpg',
-      Object.keys(getOneCallbacks)[0]);
+  assertTrue(hasPendingGetLatestCallback([entry5]));
+  assertEquals(1, Object.keys(getLatestCallbacks).length);
 }
 
 function testCache(callback) {
@@ -181,19 +193,19 @@ function testCache(callback) {
   listThumbnailLoader.setHighPriorityRange(0, 2);
   fileListModel.push(entry1, entry2, entry3, entry4, entry5, entry6);
 
-  resolveGetOneCallback(entry1.toURL());
+  resolveGetLatestCallback([entry1]);
   // In this test case, entry 3 is resolved earlier than entry 2.
-  resolveGetOneCallback(entry3.toURL());
-  resolveGetOneCallback(entry2.toURL());
-  assertEquals(0, Object.keys(getOneCallbacks).length);
+  resolveGetLatestCallback([entry3]);
+  resolveGetLatestCallback([entry2]);
+  assertEquals(0, Object.keys(getLatestCallbacks).length);
 
   reportPromise(waitUntil(function() {
     return areEntriesInCache([entry3, entry2, entry1]);
   }).then(function() {
     // Move high priority range to 1 - 3.
     listThumbnailLoader.setHighPriorityRange(1, 3);
-    resolveGetOneCallback(entry4.toURL());
-    assertEquals(0, Object.keys(getOneCallbacks).length);
+    resolveGetLatestCallback([entry4]);
+    assertEquals(0, Object.keys(getLatestCallbacks).length);
 
     return waitUntil(function() {
       return areEntriesInCache([entry4, entry3, entry2, entry1]);
@@ -201,9 +213,9 @@ function testCache(callback) {
   }).then(function() {
     // Move high priority range to 4 - 6.
     listThumbnailLoader.setHighPriorityRange(4, 6);
-    resolveGetOneCallback(entry5.toURL());
-    resolveGetOneCallback(entry6.toURL());
-    assertEquals(0, Object.keys(getOneCallbacks).length);
+    resolveGetLatestCallback([entry5]);
+    resolveGetLatestCallback([entry6]);
+    assertEquals(0, Object.keys(getLatestCallbacks).length);
 
     return waitUntil(function() {
       return areEntriesInCache([entry6, entry5, entry4, entry3, entry2]);
@@ -211,13 +223,13 @@ function testCache(callback) {
   }).then(function() {
     // Move high priority range to 3 - 5.
     listThumbnailLoader.setHighPriorityRange(3, 5);
-    assertEquals(0, Object.keys(getOneCallbacks).length);
+    assertEquals(0, Object.keys(getLatestCallbacks).length);
     assertTrue(areEntriesInCache([entry6, entry5, entry4, entry3, entry2]));
 
     // Move high priority range to 0 - 2.
     listThumbnailLoader.setHighPriorityRange(0, 2);
-    resolveGetOneCallback(entry1.toURL());
-    assertEquals(0, Object.keys(getOneCallbacks).length);
+    resolveGetLatestCallback([entry1]);
+    assertEquals(0, Object.keys(getLatestCallbacks).length);
 
     return waitUntil(function() {
       return areEntriesInCache([entry3, entry2, entry1, entry6, entry5]);
@@ -235,11 +247,11 @@ function testErrorHandling(callback) {
   listThumbnailLoader.setHighPriorityRange(0, 2);
   fileListModel.push(entry1, entry2, entry3, entry4);
 
-  resolveGetOneCallback(entry2.toURL());
+  resolveGetLatestCallback([entry2]);
 
   // Assert that new task is enqueued for entry3.
   reportPromise(waitUntil(function() {
-    return !!getOneCallbacks[entry3.toURL()];
+    return hasPendingGetLatestCallback([entry3]);
   }), callback);
 }
 
@@ -250,9 +262,9 @@ function testSortedEvent(callback) {
   listThumbnailLoader.setHighPriorityRange(0, 2);
   fileListModel.push(directory1, entry1, entry2, entry3, entry4, entry5);
 
-  resolveGetOneCallback(entry1.toURL());
-  resolveGetOneCallback(entry2.toURL());
-  assertEquals(0, Object.keys(getOneCallbacks).length);
+  resolveGetLatestCallback([entry1]);
+  resolveGetLatestCallback([entry2]);
+  assertEquals(0, Object.keys(getLatestCallbacks).length);
 
   // In order to assert that following task enqueues are fired by sorted event,
   // wait until all thumbnail loads are completed.
@@ -264,8 +276,8 @@ function testSortedEvent(callback) {
     fileListModel.sort('name', 'desc');
 
     return waitUntil(function() {
-      return !!getOneCallbacks[entry5.toURL()] &&
-          !!getOneCallbacks[entry4.toURL()]
+      return hasPendingGetLatestCallback([entry5]) &&
+          hasPendingGetLatestCallback([entry4])
     });
   }), callback);
 }

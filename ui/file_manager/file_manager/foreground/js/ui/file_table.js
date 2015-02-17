@@ -829,6 +829,7 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
  * @private
  */
 FileTable.prototype.setThumbnailImage_ = function(box, dataUrl) {
+  // TODO(yawano): Add transition animation for thumbnail update.
   box.style.backgroundImage = 'url(' + dataUrl + ')';
   box.classList.add('loaded');
 };

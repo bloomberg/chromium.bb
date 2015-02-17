@@ -398,6 +398,8 @@ DirectoryModel.prototype.rescan = function(refresh) {
 
   var dirContents = this.currentDirContents_.clone();
   dirContents.setFileList([]);
+  dirContents.setMetadataSnapshot(
+      this.currentDirContents_.createMetadataSnapshot());
 
   var sequence = this.changeDirectorySequence_;
 
