@@ -1635,7 +1635,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (InstallUtil::IsChromeSxSProcess()) {
     if (system_install ||
         prefs.is_multi_install() ||
-        cmd_line.HasSwitch(installer::switches::kForceUninstall) ||
+        cmd_line.HasSwitch(installer::switches::kSelfDestruct) ||
         cmd_line.HasSwitch(installer::switches::kMakeChromeDefault) ||
         cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser) ||
         cmd_line.HasSwitch(installer::switches::kRemoveChromeRegistration) ||
