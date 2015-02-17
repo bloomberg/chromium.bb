@@ -22,7 +22,15 @@ CvoxBrailleTranslatorManagerTest.prototype = {
   setUp: function() {
     this.liblouis = new FakeLibLouis();
     this.manager = new cvox.BrailleTranslatorManager(this.liblouis);
-    this.liblouis.translator_manager = this.manager;
+    this.liblouis.translatorManager = this.manager;
+    // This is called by an event handler in production, but we don't rely
+    // on that for this test.
+    this.manager.loadLiblouis_();
+  },
+
+  addChangeListener: function(callback) {
+    return this.manager.addChangeListener(this.continueTest(
+        WhenTestDone.ASSERT, callback));
   },
 };
 
@@ -36,7 +44,7 @@ FakeLibLouis.prototype = {
 
   /** @override */
   getTranslator: function(fileNames, callback) {
-    var tables = this.translator_manager.getTablesForTest();
+    var tables = this.translatorManager.getTablesForTest();
     var result = null;
     if (tables != null) {
       var found = tables.filter(function(table) {
@@ -73,7 +81,7 @@ TEST_F('CvoxBrailleTranslatorManagerTest', 'testInitial', function() {
   assertEquals(null, this.manager.getExpandingTranslator());
   assertEquals(null, this.manager.getDefaultTranslator());
   assertEquals(null, this.manager.getUncontractedTranslator());
-  this.manager.addChangeListener(function() {
+  this.addChangeListener(function() {
     assertNotEquals(null, this.manager.getExpandingTranslator());
     assertEquals('en-US-comp8', this.manager.getDefaultTranslator().table.id);
     assertEquals(null, this.manager.getUncontractedTranslator());
@@ -83,10 +91,10 @@ TEST_F('CvoxBrailleTranslatorManagerTest', 'testInitial', function() {
 
 TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithoutChange',
        function() {
-  this.manager.addChangeListener(callOnce(function() {
+  this.addChangeListener(callOnce(function() {
     assertNotEquals(null, this.manager.getExpandingTranslator());
-    // This works because the fake liblouis is actually not synchonous.
-    this.manager.addChangeListener(function() {
+    // This works because the fake liblouis is actually not asynchonous.
+    this.addChangeListener(function() {
       throw Error('Should not be called.');
     });
     this.manager.refresh();
@@ -96,9 +104,9 @@ TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithoutChange',
 
 TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithChange',
        function() {
-  this.manager.addChangeListener(callOnce(function() {
+  this.addChangeListener(callOnce(function() {
     assertNotEquals(null, this.manager.getExpandingTranslator());
-    this.manager.addChangeListener(function() {
+    this.addChangeListener(function() {
       assertEquals('en-UEB-g2', this.manager.getDefaultTranslator().table.id);
       assertEquals('en-US-comp8',
                    this.manager.getUncontractedTranslator().table.id);

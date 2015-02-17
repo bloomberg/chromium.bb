@@ -61,9 +61,11 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
    */
   this.uncontractedTableId_ = null;
 
-  this.fetchTables_();
-  document.addEventListener('DOMContentLoaded', this.loadLiblouis_.bind(this),
-                            false);
+  if (!opt_liblouisForTest) {
+    document.addEventListener('DOMContentLoaded',
+                              this.loadLiblouis_.bind(this),
+                              false);
+  }
 };
 
 cvox.BrailleTranslatorManager.prototype = {
@@ -211,6 +213,7 @@ cvox.BrailleTranslatorManager.prototype = {
     // have a body.
     this.liblouis_.attachToElement(
         /** @type {!HTMLBodyElement} */ (document.body));
+    this.fetchTables_();
   },
 
   /**
