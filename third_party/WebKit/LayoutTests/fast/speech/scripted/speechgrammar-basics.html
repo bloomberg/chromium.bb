@@ -25,6 +25,9 @@ function run() {
     // Test setting the attributes.
     evalAndLog("g.weight = 2");
     shouldBe("g.weight", "2.0");
+    shouldThrow("g.weight = NaN");
+    shouldThrow("g.weight = Infinity");
+    shouldBe("g.weight", "2.0");
     evalAndLog("g.src = 'grammar.xml'");
     shouldBe("g.src", "base + 'grammar.xml'");
     evalAndLog("g.src = 'http://example.tld/grammar.xml'");
@@ -64,6 +67,12 @@ function run() {
     shouldBe("gs.item(2).weight", "4");
     shouldBe("gs[2].src", "'data:application/xml,%3Cgrammar%3Efoo%3C/grammar%3E'");
     shouldBe("gs[2].weight", "4");
+
+    shouldThrow("gs.addFromUri('http://foo.tld/grammar.xml', NaN)");
+    shouldThrow("gs.addFromUri('http://foo.tld/grammar.xml', Infinity)");
+    shouldThrow("gs.addFromString('foo', NaN)");
+    shouldThrow("gs.addFromString('foo', Infinity)");
+
     finishJSTest();
 }
 

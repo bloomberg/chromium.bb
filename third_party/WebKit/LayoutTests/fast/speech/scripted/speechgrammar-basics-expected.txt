@@ -13,6 +13,9 @@ PASS g.weight is 1.0
 PASS g.src is ''
 g.weight = 2
 PASS g.weight is 2.0
+PASS g.weight = NaN threw exception TypeError: Failed to set the 'weight' property on 'SpeechGrammar': The provided float value is non-finite..
+PASS g.weight = Infinity threw exception TypeError: Failed to set the 'weight' property on 'SpeechGrammar': The provided float value is non-finite..
+PASS g.weight is 2.0
 g.src = 'grammar.xml'
 PASS g.src is base + 'grammar.xml'
 g.src = 'http://example.tld/grammar.xml'
@@ -47,6 +50,10 @@ PASS gs.item(2).src is 'data:application/xml,%3Cgrammar%3Efoo%3C/grammar%3E'
 PASS gs.item(2).weight is 4
 PASS gs[2].src is 'data:application/xml,%3Cgrammar%3Efoo%3C/grammar%3E'
 PASS gs[2].weight is 4
+PASS gs.addFromUri('http://foo.tld/grammar.xml', NaN) threw exception TypeError: Failed to execute 'addFromUri' on 'SpeechGrammarList': The provided float value is non-finite..
+PASS gs.addFromUri('http://foo.tld/grammar.xml', Infinity) threw exception TypeError: Failed to execute 'addFromUri' on 'SpeechGrammarList': The provided float value is non-finite..
+PASS gs.addFromString('foo', NaN) threw exception TypeError: Failed to execute 'addFromString' on 'SpeechGrammarList': The provided float value is non-finite..
+PASS gs.addFromString('foo', Infinity) threw exception TypeError: Failed to execute 'addFromString' on 'SpeechGrammarList': The provided float value is non-finite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

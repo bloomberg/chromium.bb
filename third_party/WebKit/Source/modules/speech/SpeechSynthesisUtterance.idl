@@ -24,9 +24,10 @@
  */
 
 [
-    GarbageCollected,
     Constructor(optional DOMString text = null),
-    ConstructorCallWith=ExecutionContext
+    ConstructorCallWith=ExecutionContext,
+    GarbageCollected,
+    TypeChecking=Unrestricted,
 ] interface SpeechSynthesisUtterance : EventTarget {
     attribute DOMString text;
     attribute DOMString lang;
