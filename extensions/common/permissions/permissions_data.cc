@@ -10,6 +10,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -57,6 +58,21 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
 
   return std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
          whitelist.end();
+}
+
+// static
+bool PermissionsData::ScriptsMayRequireActionForExtension(
+    const Extension* extension,
+    const PermissionSet* permissions) {
+  // An extension may require user action to execute scripts iff the extension
+  // shows up in chrome:extensions (so the user can grant withheld permissions),
+  // is not part of chrome or corporate policy, not on the scripting whitelist,
+  // and requires enough permissions that we should withhold them.
+  return extension->ShouldDisplayInExtensionSettings() &&
+      !Manifest::IsPolicyLocation(extension->location()) &&
+      !Manifest::IsComponentLocation(extension->location()) &&
+      !CanExecuteScriptEverywhere(extension) &&
+      permissions->ShouldWarnAllHosts();
 }
 
 bool PermissionsData::ShouldSkipPermissionWarnings(

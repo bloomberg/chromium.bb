@@ -252,20 +252,6 @@ bool DefaultAllowedScriptingOnAllUrls() {
   return !FeatureSwitch::scripts_require_action()->IsEnabled();
 }
 
-bool ScriptsMayRequireActionForExtension(
-    const Extension* extension,
-    const PermissionSet* permissions) {
-  // An extension may require user action to execute scripts iff the extension
-  // shows up in chrome:extensions (so the user can grant withheld permissions),
-  // is not part of chrome or corporate policy, not on the scripting whitelist,
-  // and requires enough permissions that we should withhold them.
-  return extension->ShouldDisplayInExtensionSettings() &&
-      !Manifest::IsPolicyLocation(extension->location()) &&
-      !Manifest::IsComponentLocation(extension->location()) &&
-      !PermissionsData::CanExecuteScriptEverywhere(extension) &&
-      permissions->ShouldWarnAllHosts();
-}
-
 bool IsAppLaunchable(const std::string& extension_id,
                      content::BrowserContext* context) {
   int reason = ExtensionPrefs::Get(context)->GetDisableReasons(extension_id);

@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -230,7 +229,7 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   // ran (because this feature is not enabled). Add the extension to the list of
   // permitted extensions (for metrics), and return immediately.
   if (request_id == -1) {
-    if (util::ScriptsMayRequireActionForExtension(
+    if (PermissionsData::ScriptsMayRequireActionForExtension(
             extension,
             extension->permissions_data()->active_permissions().get())) {
       permitted_extensions_.insert(extension->id());

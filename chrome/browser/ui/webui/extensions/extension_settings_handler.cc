@@ -343,7 +343,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   content::BrowserContext* context = extension_service_->GetBrowserContext();
   bool show_all_urls =
       (FeatureSwitch::scripts_require_action()->IsEnabled() &&
-       util::ScriptsMayRequireActionForExtension(
+       PermissionsData::ScriptsMayRequireActionForExtension(
            extension,
            extension->permissions_data()->active_permissions().get())) ||
       extension->permissions_data()->HasWithheldImpliedAllHosts() ||

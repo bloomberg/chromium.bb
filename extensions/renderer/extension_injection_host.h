@@ -28,6 +28,7 @@ class ExtensionInjectionHost : public InjectionHost {
       const GURL& top_frame_url,
       int tab_id,
       bool is_declarative) const override;
+  bool ShouldNotifyBrowserOfInjection() const override;
 
   scoped_refptr<const Extension> extension_;
 

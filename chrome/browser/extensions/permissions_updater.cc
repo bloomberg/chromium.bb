@@ -184,8 +184,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
 
   // Determine whether or not to withhold host permissions.
   bool should_withhold_permissions = false;
-  if (util::ScriptsMayRequireActionForExtension(extension,
-                                                bounded_active.get())) {
+  if (PermissionsData::ScriptsMayRequireActionForExtension(
+          extension, bounded_active.get())) {
     should_withhold_permissions =
         init_flag_ & INIT_FLAG_TRANSIENT ?
             !util::DefaultAllowedScriptingOnAllUrls() :

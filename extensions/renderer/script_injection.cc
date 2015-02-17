@@ -13,7 +13,6 @@
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/host_id.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/renderer/dom_activity_logger.h"
@@ -40,10 +39,6 @@ const int64 kInvalidRequestId = -1;
 
 // The id of the next pending injection.
 int64 g_next_pending_id = 0;
-
-bool ShouldNotifyBrowserOfInjections() {
-  return !FeatureSwitch::scripts_require_action()->IsEnabled();
-}
 
 // Append all the child frames of |parent_frame| to |frames_vector|.
 void AppendAllChildFrames(blink::WebFrame* parent_frame,
@@ -150,15 +145,14 @@ bool ScriptInjection::TryToInject(UserScript::RunLocation current_location,
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return true;  // We're done.
     case PermissionsData::ACCESS_WITHHELD:
-      RequestPermission();
+      SendInjectionMessage(true /* request permission */);
       return false;  // Wait around for permission.
     case PermissionsData::ACCESS_ALLOWED:
       Inject(injection_host, scripts_run_info);
       return true;  // We're done!
   }
 
-  // Some compilers don't realize that we always return from the switch() above.
-  // Make them happy.
+  NOTREACHED();
   return false;
 }
 
@@ -173,14 +167,13 @@ bool ScriptInjection::OnPermissionGranted(const InjectionHost* injection_host,
   return true;
 }
 
-void ScriptInjection::RequestPermission() {
+void ScriptInjection::SendInjectionMessage(bool request_permission) {
   content::RenderView* render_view =
       content::RenderView::FromWebView(web_frame()->top()->view());
 
   // If we are just notifying the browser of the injection, then send an
   // invalid request (which is treated like a notification).
-  request_id_ = ShouldNotifyBrowserOfInjections() ? kInvalidRequestId
-                                                  : g_next_pending_id++;
+  request_id_ = request_permission ? g_next_pending_id++ : kInvalidRequestId;
   render_view->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
       render_view->GetRoutingID(),
       host_id_.id(),
@@ -200,9 +193,8 @@ void ScriptInjection::Inject(const InjectionHost* injection_host,
   DCHECK(scripts_run_info);
   DCHECK(!complete_);
 
-  if (ShouldNotifyBrowserOfInjections() &&
-      injection_host->id().type() == HostID::EXTENSIONS)
-    RequestPermission();
+  if (injection_host->ShouldNotifyBrowserOfInjection())
+    SendInjectionMessage(false /* don't request permission */);
 
   std::vector<blink::WebFrame*> frame_vector;
   frame_vector.push_back(web_frame_);
