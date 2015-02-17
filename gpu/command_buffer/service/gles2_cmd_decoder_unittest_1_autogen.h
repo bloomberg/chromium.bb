@@ -1212,6 +1212,8 @@ TEST_P(GLES2DecoderTest1, GenTransformFeedbacksImmediateInvalidArgs) {
 
 // TODO(gman): GetActiveUniformBlockName
 
+// TODO(gman): GetActiveUniformsiv
+
 // TODO(gman): GetAttachedShaders
 
 // TODO(gman): GetAttribLocation
@@ -1810,77 +1812,4 @@ TEST_P(GLES2DecoderTest1, GetShaderivInvalidArgs2_1) {
 // TODO(gman): GetShaderSource
 // TODO(gman): GetString
 
-TEST_P(GLES2DecoderTest1, GetTexParameterfvValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  SpecializedSetup<cmds::GetTexParameterfv, 0>(true);
-  typedef cmds::GetTexParameterfv::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                                      result->GetData()));
-  result->size = 0;
-  cmds::GetTexParameterfv cmd;
-  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(
-      decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_TEXTURE_MAG_FILTER),
-      result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, GetTexParameterfvInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
-  cmds::GetTexParameterfv::Result* result =
-      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetTexParameterfv cmd;
-  cmd.Init(GL_PROXY_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, GetTexParameterfvInvalidArgs1_0) {
-  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
-  cmds::GetTexParameterfv::Result* result =
-      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetTexParameterfv cmd;
-  cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, GetTexParameterfvInvalidArgs2_0) {
-  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
-  cmds::GetTexParameterfv::Result* result =
-      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetTexParameterfv cmd;
-  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-}
-
-TEST_P(GLES2DecoderTest1, GetTexParameterfvInvalidArgs2_1) {
-  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
-  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
-  cmds::GetTexParameterfv::Result* result =
-      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
-  result->size = 0;
-  cmds::GetTexParameterfv cmd;
-  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
-           kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  EXPECT_EQ(0u, result->size);
-}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

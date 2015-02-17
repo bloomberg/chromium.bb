@@ -297,6 +297,12 @@ void GLES2InterfaceStub::GetActiveUniformBlockName(GLuint /* program */,
                                                    GLsizei* /* length */,
                                                    char* /* name */) {
 }
+void GLES2InterfaceStub::GetActiveUniformsiv(GLuint /* program */,
+                                             GLsizei /* count */,
+                                             const GLuint* /* indices */,
+                                             GLenum /* pname */,
+                                             GLint* /* params */) {
+}
 void GLES2InterfaceStub::GetAttachedShaders(GLuint /* program */,
                                             GLsizei /* maxcount */,
                                             GLsizei* /* count */,
@@ -1005,6 +1011,11 @@ void GLES2InterfaceStub::GetTransformFeedbackVaryingsCHROMIUM(
     GLsizei /* bufsize */,
     GLsizei* /* size */,
     void* /* info */) {
+}
+void GLES2InterfaceStub::GetUniformsES3CHROMIUM(GLuint /* program */,
+                                                GLsizei /* bufsize */,
+                                                GLsizei* /* size */,
+                                                void* /* info */) {
 }
 GLuint GLES2InterfaceStub::CreateStreamTextureCHROMIUM(GLuint /* texture */) {
   return 0;

@@ -266,6 +266,12 @@ void GetActiveUniformBlockName(GLuint program,
                                GLsizei* length,
                                char* name) override;
 
+void GetActiveUniformsiv(GLuint program,
+                         GLsizei count,
+                         const GLuint* indices,
+                         GLenum pname,
+                         GLint* params) override;
+
 void GetAttachedShaders(GLuint program,
                         GLsizei maxcount,
                         GLsizei* count,
@@ -818,6 +824,11 @@ void GetTransformFeedbackVaryingsCHROMIUM(GLuint program,
                                           GLsizei bufsize,
                                           GLsizei* size,
                                           void* info) override;
+
+void GetUniformsES3CHROMIUM(GLuint program,
+                            GLsizei bufsize,
+                            GLsizei* size,
+                            void* info) override;
 
 GLuint CreateStreamTextureCHROMIUM(GLuint texture) override;
 

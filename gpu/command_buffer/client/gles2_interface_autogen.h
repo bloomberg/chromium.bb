@@ -195,6 +195,11 @@ virtual void GetActiveUniformBlockName(GLuint program,
                                        GLsizei bufsize,
                                        GLsizei* length,
                                        char* name) = 0;
+virtual void GetActiveUniformsiv(GLuint program,
+                                 GLsizei count,
+                                 const GLuint* indices,
+                                 GLenum pname,
+                                 GLint* params) = 0;
 virtual void GetAttachedShaders(GLuint program,
                                 GLsizei maxcount,
                                 GLsizei* count,
@@ -597,6 +602,10 @@ virtual void GetTransformFeedbackVaryingsCHROMIUM(GLuint program,
                                                   GLsizei bufsize,
                                                   GLsizei* size,
                                                   void* info) = 0;
+virtual void GetUniformsES3CHROMIUM(GLuint program,
+                                    GLsizei bufsize,
+                                    GLsizei* size,
+                                    void* info) = 0;
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) = 0;
 virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                                    GLsizei width,

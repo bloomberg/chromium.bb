@@ -2456,7 +2456,7 @@ void GLES2Implementation::GetActiveUniformBlockiv(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetActiveUniformBlockiv("
       << program << ", " << index << ", "
-      << GLES2Util::GetStringProgramParameter(pname) << ", "
+      << GLES2Util::GetStringUniformBlockParameter(pname) << ", "
       << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu", "GLES2::GetActiveUniformBlockiv");
   bool success =
@@ -2467,6 +2467,68 @@ void GLES2Implementation::GetActiveUniformBlockiv(
       // TODO(zmo): For GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, there will
       // be more than one value returned in params.
       GPU_CLIENT_LOG("  params: " << params[0]);
+    }
+  }
+  CheckGLError();
+}
+
+bool GLES2Implementation::GetActiveUniformsivHelper(
+    GLuint program, GLsizei count, const GLuint* indices,
+    GLenum pname, GLint* params) {
+  typedef cmds::GetActiveUniformsiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return false;
+  }
+  result->SetNumResults(0);
+  base::CheckedNumeric<size_t> bytes = static_cast<size_t>(count);
+  bytes *= sizeof(GLuint);
+  if (!bytes.IsValid()) {
+    SetGLError(GL_INVALID_VALUE, "glGetActiveUniformsiv", "count overflow");
+    return false;
+  }
+  SetBucketContents(kResultBucketId, indices, bytes.ValueOrDefault(0));
+  helper_->GetActiveUniformsiv(
+      program, kResultBucketId, pname, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  bool success = result->GetNumResults() == count;
+  if (success) {
+    if (params) {
+      result->CopyResult(params);
+    }
+    GPU_CLIENT_LOG_CODE_BLOCK({
+      for (int32_t i = 0; i < result->GetNumResults(); ++i) {
+        GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
+      }
+    });
+  }
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return success;
+}
+
+void GLES2Implementation::GetActiveUniformsiv(
+    GLuint program, GLsizei count, const GLuint* indices,
+    GLenum pname, GLint* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetActiveUniformsiv("
+      << program << ", " << count << ", "
+      << static_cast<const void*>(indices) << ", "
+      << GLES2Util::GetStringUniformParameter(pname) << ", "
+      << static_cast<const void*>(params) << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetActiveUniformsiv");
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetActiveUniformsiv", "count < 0");
+    return;
+  }
+  bool success = share_group_->program_info_manager()->GetActiveUniformsiv(
+      this, program, count, indices, pname, params);
+  if (success) {
+    if (params) {
+      GPU_CLIENT_LOG_CODE_BLOCK({
+        for (GLsizei ii = 0; ii < count; ++ii) {
+          GPU_CLIENT_LOG("  " << ii << ": " << params[ii]);
+        }
+      });
     }
   }
   CheckGLError();
@@ -3798,11 +3860,11 @@ void GLES2Implementation::GetUniformBlocksCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   if (bufsize < 0) {
     SetGLError(
-        GL_INVALID_VALUE, "glUniformBlocksCHROMIUM", "bufsize less than 0.");
+        GL_INVALID_VALUE, "glGetUniformBlocksCHROMIUM", "bufsize less than 0.");
     return;
   }
   if (size == NULL) {
-    SetGLError(GL_INVALID_VALUE, "glUniformBlocksCHROMIUM", "size is null.");
+    SetGLError(GL_INVALID_VALUE, "glGetUniformBlocksCHROMIUM", "size is null.");
     return;
   }
   // Make sure they've set size to 0 else the value will be undefined on
@@ -3818,8 +3880,49 @@ void GLES2Implementation::GetUniformBlocksCHROMIUM(
     return;
   }
   if (static_cast<size_t>(bufsize) < result.size()) {
+    SetGLError(GL_INVALID_OPERATION, "glGetUniformBlocksCHROMIUM",
+               "bufsize is too small for result.");
+    return;
+  }
+  memcpy(info, &result[0], result.size());
+}
+
+void GLES2Implementation::GetUniformsES3CHROMIUMHelper(
+    GLuint program, std::vector<int8>* result) {
+  DCHECK(result);
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetUniformsES3CHROMIUM(program, kResultBucketId);
+  GetBucketContents(kResultBucketId, result);
+}
+
+void GLES2Implementation::GetUniformsES3CHROMIUM(
+    GLuint program, GLsizei bufsize, GLsizei* size, void* info) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  if (bufsize < 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glGetUniformsES3CHROMIUM", "bufsize less than 0.");
+    return;
+  }
+  if (size == NULL) {
+    SetGLError(GL_INVALID_VALUE, "glGetUniformsES3CHROMIUM", "size is null.");
+    return;
+  }
+  // Make sure they've set size to 0 else the value will be undefined on
+  // lost context.
+  DCHECK_EQ(0, *size);
+  std::vector<int8> result;
+  GetUniformsES3CHROMIUMHelper(program, &result);
+  if (result.empty()) {
+    return;
+  }
+  *size = result.size();
+  if (!info) {
+    return;
+  }
+  if (static_cast<size_t>(bufsize) < result.size()) {
     SetGLError(GL_INVALID_OPERATION,
-               "glUniformBlocksCHROMIUM", "bufsize is too small for result.");
+               "glGetUniformsES3CHROMIUM", "bufsize is too small for result.");
     return;
   }
   memcpy(info, &result[0], result.size());

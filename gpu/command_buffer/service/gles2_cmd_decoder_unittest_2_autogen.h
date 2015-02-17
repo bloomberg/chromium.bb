@@ -12,6 +12,80 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, GetTexParameterfvValidArgs) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  SpecializedSetup<cmds::GetTexParameterfv, 0>(true);
+  typedef cmds::GetTexParameterfv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_, GetTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                                      result->GetData()));
+  result->size = 0;
+  cmds::GetTexParameterfv cmd;
+  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(
+      decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_TEXTURE_MAG_FILTER),
+      result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetTexParameterfvInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
+  cmds::GetTexParameterfv::Result* result =
+      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetTexParameterfv cmd;
+  cmd.Init(GL_PROXY_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetTexParameterfvInvalidArgs1_0) {
+  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
+  cmds::GetTexParameterfv::Result* result =
+      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetTexParameterfv cmd;
+  cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetTexParameterfvInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
+  cmds::GetTexParameterfv::Result* result =
+      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetTexParameterfv cmd;
+  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_P(GLES2DecoderTest2, GetTexParameterfvInvalidArgs2_1) {
+  EXPECT_CALL(*gl_, GetTexParameterfv(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetTexParameterfv, 0>(false);
+  cmds::GetTexParameterfv::Result* result =
+      static_cast<cmds::GetTexParameterfv::Result*>(shared_memory_address_);
+  result->size = 0;
+  cmds::GetTexParameterfv cmd;
+  cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
+           kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
 TEST_P(GLES2DecoderTest2, GetTexParameterivValidArgs) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1519,15 +1593,6 @@ TEST_P(GLES2DecoderTest2, VertexAttrib2fvImmediateValidArgs) {
   EXPECT_CALL(*gl_, VertexAttrib2fv(1, reinterpret_cast<GLfloat*>(
                                            ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttrib3fValidArgs) {
-  EXPECT_CALL(*gl_, VertexAttrib3f(1, 2, 3, 4));
-  SpecializedSetup<cmds::VertexAttrib3f, 0>(true);
-  cmds::VertexAttrib3f cmd;
-  cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

@@ -352,6 +352,14 @@ void GLES2GetActiveUniformBlockName(GLuint program,
   gles2::GetGLContext()->GetActiveUniformBlockName(program, index, bufsize,
                                                    length, name);
 }
+void GLES2GetActiveUniformsiv(GLuint program,
+                              GLsizei count,
+                              const GLuint* indices,
+                              GLenum pname,
+                              GLint* params) {
+  gles2::GetGLContext()->GetActiveUniformsiv(program, count, indices, pname,
+                                             params);
+}
 void GLES2GetAttachedShaders(GLuint program,
                              GLsizei maxcount,
                              GLsizei* count,
@@ -1090,6 +1098,12 @@ void GLES2GetTransformFeedbackVaryingsCHROMIUM(GLuint program,
   gles2::GetGLContext()->GetTransformFeedbackVaryingsCHROMIUM(program, bufsize,
                                                               size, info);
 }
+void GLES2GetUniformsES3CHROMIUM(GLuint program,
+                                 GLsizei bufsize,
+                                 GLsizei* size,
+                                 void* info) {
+  gles2::GetGLContext()->GetUniformsES3CHROMIUM(program, bufsize, size, info);
+}
 GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
   return gles2::GetGLContext()->CreateStreamTextureCHROMIUM(texture);
 }
@@ -1597,6 +1611,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetActiveUniformBlockName",
      reinterpret_cast<GLES2FunctionPointer>(glGetActiveUniformBlockName),
+    },
+    {
+     "glGetActiveUniformsiv",
+     reinterpret_cast<GLES2FunctionPointer>(glGetActiveUniformsiv),
     },
     {
      "glGetAttachedShaders",
@@ -2279,6 +2297,10 @@ extern const NameToFunc g_gles2_function_table[] = {
      "glGetTransformFeedbackVaryingsCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
          glGetTransformFeedbackVaryingsCHROMIUM),
+    },
+    {
+     "glGetUniformsES3CHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glGetUniformsES3CHROMIUM),
     },
     {
      "glCreateStreamTextureCHROMIUM",

@@ -726,6 +726,19 @@ void GetActiveUniformBlockName(GLuint program,
   }
 }
 
+void GetActiveUniformsiv(GLuint program,
+                         uint32_t indices_bucket_id,
+                         GLenum pname,
+                         uint32_t params_shm_id,
+                         uint32_t params_shm_offset) {
+  gles2::cmds::GetActiveUniformsiv* c =
+      GetCmdSpace<gles2::cmds::GetActiveUniformsiv>();
+  if (c) {
+    c->Init(program, indices_bucket_id, pname, params_shm_id,
+            params_shm_offset);
+  }
+}
+
 void GetAttachedShaders(GLuint program,
                         uint32_t result_shm_id,
                         uint32_t result_shm_offset,
@@ -2222,6 +2235,14 @@ void GetUniformBlocksCHROMIUM(GLuint program, uint32_t bucket_id) {
 void GetTransformFeedbackVaryingsCHROMIUM(GLuint program, uint32_t bucket_id) {
   gles2::cmds::GetTransformFeedbackVaryingsCHROMIUM* c =
       GetCmdSpace<gles2::cmds::GetTransformFeedbackVaryingsCHROMIUM>();
+  if (c) {
+    c->Init(program, bucket_id);
+  }
+}
+
+void GetUniformsES3CHROMIUM(GLuint program, uint32_t bucket_id) {
+  gles2::cmds::GetUniformsES3CHROMIUM* c =
+      GetCmdSpace<gles2::cmds::GetUniformsES3CHROMIUM>();
   if (c) {
     c->Init(program, bucket_id);
   }

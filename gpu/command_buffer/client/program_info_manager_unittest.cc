@@ -46,6 +46,11 @@ class ProgramInfoManagerTest : public testing::Test {
     uint32_t indices1[1];
   };
 
+  struct UniformsES3Data {
+    UniformsES3Header header;
+    UniformES3Info entry[2];
+  };
+
   struct TransformFeedbackVaryingsData {
     TransformFeedbackVaryingsHeader header;
     TransformFeedbackVaryingInfo entry[2];
@@ -123,6 +128,20 @@ class ProgramInfoManagerTest : public testing::Test {
     data->indices0[1] = kIndices[0][1];
     memcpy(data->name1, kName[1], arraysize(data->name1));
     data->indices1[0] = kIndices[1][0];
+  }
+
+  void SetupUniformsES3Data(UniformsES3Data* data) {
+    data->header.num_uniforms = 2;
+    data->entry[0].block_index = 1;
+    data->entry[0].offset = 2;
+    data->entry[0].array_stride = 3;
+    data->entry[0].matrix_stride = 4;
+    data->entry[0].is_row_major = 0;
+    data->entry[1].block_index = 5;
+    data->entry[1].offset = 6;
+    data->entry[1].array_stride = 7;
+    data->entry[1].matrix_stride = 8;
+    data->entry[1].is_row_major = 1;
   }
 
   void SetupTransformFeedbackVaryingsData(TransformFeedbackVaryingsData* data) {
@@ -448,6 +467,80 @@ TEST_F(ProgramInfoManagerTest, GetUniformIndices) {
     for (GLsizei ii = 0; ii < kCount; ++ii) {
       EXPECT_EQ(kIndices[ii], indices[ii]);
     }
+  }
+}
+
+TEST_F(ProgramInfoManagerTest, GetActiveUniformsivCached) {
+  // ES3 only parameters.
+  UniformsES3Data data_es3;
+  SetupUniformsES3Data(&data_es3);
+  std::vector<int8> result(sizeof(data_es3));
+  memcpy(&result[0], &data_es3, sizeof(data_es3));
+  EXPECT_FALSE(program_->IsCached(ProgramInfoManager::kES3Uniformsiv));
+  program_->UpdateES3Uniformsiv(result);
+  EXPECT_TRUE(program_->IsCached(ProgramInfoManager::kES3Uniformsiv));
+
+  uint32_t count = data_es3.header.num_uniforms;
+  std::vector<GLuint> indices(count);
+  for (uint32_t ii = 0; ii < count; ++ii) {
+    indices[ii] = ii;
+  }
+  std::vector<GLint> block_index(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_BLOCK_INDEX, &block_index[0]));
+  std::vector<GLint> offset(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_OFFSET, &offset[0]));
+  std::vector<GLint> array_stride(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_ARRAY_STRIDE, &array_stride[0]));
+  std::vector<GLint> matrix_stride(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_MATRIX_STRIDE, &matrix_stride[0]));
+  std::vector<GLint> is_row_major(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_IS_ROW_MAJOR, &is_row_major[0]));
+
+  for (uint32_t ii = 0; ii < count; ++ii) {
+    EXPECT_EQ(data_es3.entry[ii].block_index, block_index[ii]);
+    EXPECT_EQ(data_es3.entry[ii].offset, offset[ii]);
+    EXPECT_EQ(data_es3.entry[ii].array_stride, array_stride[ii]);
+    EXPECT_EQ(data_es3.entry[ii].matrix_stride, matrix_stride[ii]);
+    EXPECT_EQ(data_es3.entry[ii].is_row_major, is_row_major[ii]);
+  }
+
+  // ES2 parameters.
+  ProgramES2Data data_es2;
+  SetupProgramES2Data(&data_es2);
+  result.resize(sizeof(data_es2));
+  memcpy(&result[0], &data_es2, sizeof(data_es2));
+  EXPECT_FALSE(program_->IsCached(ProgramInfoManager::kES2));
+  program_->UpdateES2(result);
+  EXPECT_TRUE(program_->IsCached(ProgramInfoManager::kES2));
+
+  std::vector<GLint> size(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_SIZE, &size[0]));
+  std::vector<GLint> type(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_TYPE, &type[0]));
+  std::vector<GLint> name_length(count);
+  EXPECT_TRUE(program_info_manager_->GetActiveUniformsiv(
+      NULL, kClientProgramId, static_cast<GLsizei>(count), &indices[0],
+      GL_UNIFORM_NAME_LENGTH, &name_length[0]));
+
+  for (uint32_t ii = 0; ii < count; ++ii) {
+    EXPECT_EQ(data_es2.uniforms[ii].size, size[ii]);
+    EXPECT_EQ(data_es2.uniforms[ii].type, static_cast<uint32_t>(type[ii]));
+    EXPECT_EQ(data_es2.uniforms[ii].name_length + 1,
+              static_cast<uint32_t>(name_length[ii]));
   }
 }
 

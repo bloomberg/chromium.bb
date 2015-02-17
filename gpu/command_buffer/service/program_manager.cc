@@ -1529,6 +1529,80 @@ bool Program::GetTransformFeedbackVaryings(
   return true;
 }
 
+bool Program::GetUniformsES3(CommonDecoder::Bucket* bucket) const {
+  // The data is packed into the bucket in the following order
+  //   1) header
+  //   2) N entries of UniformES3Info
+  //
+  // We query all the data directly through GL calls, assuming they are
+  // cheap through MANGLE.
+
+  DCHECK(bucket);
+  GLuint program = service_id();
+
+  uint32_t header_size = sizeof(UniformsES3Header);
+  bucket->SetSize(header_size);  // In case we fail.
+
+  GLsizei count = 0;
+  GLint param = GL_FALSE;
+  // We assume program is a valid program service id.
+  glGetProgramiv(program, GL_LINK_STATUS, &param);
+  if (param == GL_TRUE) {
+    param = 0;
+    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &count);
+  }
+  if (count == 0) {
+    return true;
+  }
+
+  base::CheckedNumeric<uint32_t> size = sizeof(UniformES3Info);
+  size *= count;
+  uint32_t entry_size = size.ValueOrDefault(0);
+  size += header_size;
+  if (!size.IsValid())
+    return false;
+  uint32_t total_size = size.ValueOrDefault(0);
+  bucket->SetSize(total_size);
+  UniformsES3Header* header =
+      bucket->GetDataAs<UniformsES3Header*>(0, header_size);
+  DCHECK(header);
+  header->num_uniforms = static_cast<uint32_t>(count);
+
+  // Instead of GetDataAs<UniformES3Info*>, we do GetDataAs<int32_t>. This is
+  // because struct UniformES3Info is defined as five int32_t.
+  // By doing this, we can fill the structs through loops.
+  int32_t* entries =
+      bucket->GetDataAs<int32_t*>(header_size, entry_size);
+  DCHECK(entries);
+  const size_t kStride = sizeof(UniformES3Info) / sizeof(int32_t);
+
+  const GLenum kPname[] = {
+    GL_UNIFORM_BLOCK_INDEX,
+    GL_UNIFORM_OFFSET,
+    GL_UNIFORM_ARRAY_STRIDE,
+    GL_UNIFORM_MATRIX_STRIDE,
+    GL_UNIFORM_IS_ROW_MAJOR,
+  };
+  const GLint kDefaultValue[] = { -1, -1, -1, -1, 0 };
+  const size_t kNumPnames = arraysize(kPname);
+  std::vector<GLuint> indices(count);
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    indices[ii] = ii;
+  }
+  std::vector<GLint> params(count);
+  for (size_t pname_index = 0; pname_index < kNumPnames; ++pname_index) {
+    for (GLsizei ii = 0; ii < count; ++ii) {
+      params[ii] = kDefaultValue[pname_index];
+    }
+    glGetActiveUniformsiv(
+        program, count, &indices[0], kPname[pname_index], &params[0]);
+    for (GLsizei ii = 0; ii < count; ++ii) {
+      entries[kStride * ii + pname_index] = params[ii];
+    }
+  }
+  return true;
+}
+
 Program::~Program() {
   if (manager_) {
     if (manager_->have_context_) {

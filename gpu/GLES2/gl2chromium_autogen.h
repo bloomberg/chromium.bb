@@ -88,6 +88,7 @@
 #define glGetActiveUniform GLES2_GET_FUN(GetActiveUniform)
 #define glGetActiveUniformBlockiv GLES2_GET_FUN(GetActiveUniformBlockiv)
 #define glGetActiveUniformBlockName GLES2_GET_FUN(GetActiveUniformBlockName)
+#define glGetActiveUniformsiv GLES2_GET_FUN(GetActiveUniformsiv)
 #define glGetAttachedShaders GLES2_GET_FUN(GetAttachedShaders)
 #define glGetAttribLocation GLES2_GET_FUN(GetAttribLocation)
 #define glGetBooleanv GLES2_GET_FUN(GetBooleanv)
@@ -264,6 +265,7 @@
 #define glGetUniformBlocksCHROMIUM GLES2_GET_FUN(GetUniformBlocksCHROMIUM)
 #define glGetTransformFeedbackVaryingsCHROMIUM \
   GLES2_GET_FUN(GetTransformFeedbackVaryingsCHROMIUM)
+#define glGetUniformsES3CHROMIUM GLES2_GET_FUN(GetUniformsES3CHROMIUM)
 #define glCreateStreamTextureCHROMIUM GLES2_GET_FUN(CreateStreamTextureCHROMIUM)
 #define glCreateImageCHROMIUM GLES2_GET_FUN(CreateImageCHROMIUM)
 #define glDestroyImageCHROMIUM GLES2_GET_FUN(DestroyImageCHROMIUM)

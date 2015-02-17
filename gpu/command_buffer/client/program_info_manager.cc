@@ -44,6 +44,17 @@ ProgramInfoManager::Program::UniformInfo::UniformInfo(
 ProgramInfoManager::Program::UniformInfo::~UniformInfo() {
 }
 
+ProgramInfoManager::Program::UniformES3::UniformES3()
+    : block_index(-1),
+      offset(-1),
+      array_stride(-1),
+      matrix_stride(-1),
+      is_row_major(0) {
+}
+
+ProgramInfoManager::Program::UniformES3::~UniformES3() {
+}
+
 ProgramInfoManager::Program::UniformBlock::UniformBlock()
     : binding(0),
       data_size(0),
@@ -72,7 +83,8 @@ ProgramInfoManager::Program::Program()
       cached_es3_uniform_blocks_(false),
       active_uniform_block_max_name_length_(0),
       cached_es3_transform_feedback_varyings_(false),
-      transform_feedback_varying_max_length_(0) {
+      transform_feedback_varying_max_length_(0),
+      cached_es3_uniformsiv_(false) {
 }
 
 ProgramInfoManager::Program::~Program() {
@@ -226,6 +238,85 @@ ProgramInfoManager::Program::GetTransformFeedbackVarying(GLuint index) const {
       &transform_feedback_varyings_[index] : NULL;
 }
 
+bool ProgramInfoManager::Program::GetUniformsiv(
+    GLsizei count, const GLuint* indices, GLenum pname, GLint* params) {
+  if (count == 0) {
+    // At this point, pname has already been validated.
+    return true;
+  }
+  DCHECK(count > 0 && indices);
+  size_t num_uniforms = uniform_infos_.size();
+  if (num_uniforms == 0) {
+    num_uniforms = uniforms_es3_.size();
+  }
+  if (static_cast<size_t>(count) > num_uniforms) {
+    return false;
+  }
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    if (indices[ii] >= num_uniforms) {
+      return false;
+    }
+  }
+  if (!params) {
+    return true;
+  }
+  switch (pname) {
+    case GL_UNIFORM_SIZE:
+      DCHECK_EQ(num_uniforms, uniform_infos_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = static_cast<GLint>(uniform_infos_[indices[ii]].size);
+      }
+      return true;
+    case GL_UNIFORM_TYPE:
+      DCHECK_EQ(num_uniforms, uniform_infos_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = static_cast<GLint>(uniform_infos_[indices[ii]].type);
+      }
+      return true;
+    case GL_UNIFORM_NAME_LENGTH:
+      DCHECK_EQ(num_uniforms, uniform_infos_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = static_cast<GLint>(
+            uniform_infos_[indices[ii]].name.length() + 1);
+      }
+      return true;
+    case GL_UNIFORM_BLOCK_INDEX:
+      DCHECK_EQ(num_uniforms, uniforms_es3_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = uniforms_es3_[indices[ii]].block_index;
+      }
+      return true;
+    case GL_UNIFORM_OFFSET:
+      DCHECK_EQ(num_uniforms, uniforms_es3_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = uniforms_es3_[indices[ii]].offset;
+      }
+      return true;
+    case GL_UNIFORM_ARRAY_STRIDE:
+      DCHECK_EQ(num_uniforms, uniforms_es3_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = uniforms_es3_[indices[ii]].array_stride;
+      }
+      return true;
+    case GL_UNIFORM_MATRIX_STRIDE:
+      DCHECK_EQ(num_uniforms, uniforms_es3_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = uniforms_es3_[indices[ii]].matrix_stride;
+      }
+      return true;
+    case GL_UNIFORM_IS_ROW_MAJOR:
+      DCHECK_EQ(num_uniforms, uniforms_es3_.size());
+      for (GLsizei ii = 0; ii < count; ++ii) {
+        params[ii] = uniforms_es3_[indices[ii]].is_row_major;
+      }
+      return true;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return false;
+}
+
 void ProgramInfoManager::Program::UpdateES2(const std::vector<int8>& result) {
   if (cached_es2_) {
     return;
@@ -353,6 +444,48 @@ void ProgramInfoManager::Program::UpdateES3UniformBlocks(
   cached_es3_uniform_blocks_ = true;
 }
 
+void ProgramInfoManager::Program::UpdateES3Uniformsiv(
+    const std::vector<int8>& result) {
+  if (cached_es3_uniformsiv_) {
+    return;
+  }
+  if (result.empty()) {
+    // This should only happen on a lost context.
+    return;
+  }
+  uniforms_es3_.clear();
+
+  // |result| comes from GPU process. We consider it trusted data. Therefore,
+  // no need to check for overflows as the GPU side did the checks already.
+  uint32_t header_size = sizeof(UniformsES3Header);
+  DCHECK_GE(result.size(), header_size);
+  const UniformsES3Header* header = LocalGetAs<const UniformsES3Header*>(
+      result, 0, header_size);
+  DCHECK(header);
+  if (header->num_uniforms == 0) {
+    DCHECK_EQ(result.size(), header_size);
+    // TODO(zmo): Here we can't tell if no uniforms are defined, or
+    // the previous link failed.
+    return;
+  }
+  uniforms_es3_.resize(header->num_uniforms);
+
+  uint32_t entry_size = sizeof(UniformES3Info) * header->num_uniforms;
+  DCHECK_EQ(result.size(), header_size + entry_size);
+  const UniformES3Info* entries = LocalGetAs<const UniformES3Info*>(
+      result, header_size, entry_size);
+  DCHECK(entries);
+
+  for (uint32_t ii = 0; ii < header->num_uniforms; ++ii) {
+    uniforms_es3_[ii].block_index = entries[ii].block_index;
+    uniforms_es3_[ii].offset = entries[ii].offset;
+    uniforms_es3_[ii].array_stride = entries[ii].array_stride;
+    uniforms_es3_[ii].matrix_stride = entries[ii].matrix_stride;
+    uniforms_es3_[ii].is_row_major = entries[ii].is_row_major;
+  }
+  cached_es3_uniformsiv_ = true;
+}
+
 void ProgramInfoManager::Program::UpdateES3TransformFeedbackVaryings(
     const std::vector<int8>& result) {
   if (cached_es3_transform_feedback_varyings_) {
@@ -422,6 +555,8 @@ bool ProgramInfoManager::Program::IsCached(ProgramInfoType type) const {
       return cached_es3_uniform_blocks_;
     case kES3TransformFeedbackVaryings:
       return cached_es3_transform_feedback_varyings_;
+    case kES3Uniformsiv:
+      return cached_es3_uniformsiv_;
     case kNone:
       return true;
     default:
@@ -476,6 +611,14 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
         gl->GetTransformFeedbackVaryingsCHROMIUMHelper(program, &result);
       }
       info->UpdateES3TransformFeedbackVaryings(result);
+    case kES3Uniformsiv:
+      {
+        base::AutoUnlock unlock(lock_);
+        // lock_ can't be held across IPC call or else it may deadlock in
+        // pepper. http://crbug.com/418651
+        gl->GetUniformsES3CHROMIUMHelper(program, &result);
+      }
+      info->UpdateES3Uniformsiv(result);
     default:
       NOTREACHED();
       return NULL;
@@ -525,6 +668,34 @@ bool ProgramInfoManager::GetProgramiv(
     return false;
   }
   return info->GetProgramiv(pname, params);
+}
+
+bool ProgramInfoManager::GetActiveUniformsiv(
+    GLES2Implementation* gl, GLuint program, GLsizei count,
+    const GLuint* indices, GLenum pname, GLint* params) {
+  base::AutoLock auto_lock(lock_);
+  ProgramInfoType type = kNone;
+  switch (pname) {
+    case GL_UNIFORM_SIZE:
+    case GL_UNIFORM_TYPE:
+    case GL_UNIFORM_NAME_LENGTH:
+      type = kES2;
+      break;
+    case GL_UNIFORM_BLOCK_INDEX:
+    case GL_UNIFORM_OFFSET:
+    case GL_UNIFORM_ARRAY_STRIDE:
+    case GL_UNIFORM_MATRIX_STRIDE:
+    case GL_UNIFORM_IS_ROW_MAJOR:
+      type = kES3Uniformsiv;
+      break;
+    default:
+      return false;
+  }
+  Program* info = GetProgramInfo(gl, program, type);
+  if (info) {
+    return info->GetUniformsiv(count, indices, pname, params);
+  }
+  return gl->GetActiveUniformsivHelper(program, count, indices, pname, params);
 }
 
 GLint ProgramInfoManager::GetAttribLocation(

@@ -1313,6 +1313,22 @@ _NAMED_TYPE_INFO = {
       'GL_MOUSE_POSITION_CHROMIUM',
     ],
   },
+  'UniformParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_UNIFORM_SIZE',
+      'GL_UNIFORM_TYPE',
+      'GL_UNIFORM_NAME_LENGTH',
+      'GL_UNIFORM_BLOCK_INDEX',
+      'GL_UNIFORM_OFFSET',
+      'GL_UNIFORM_ARRAY_STRIDE',
+      'GL_UNIFORM_MATRIX_STRIDE',
+      'GL_UNIFORM_IS_ROW_MAJOR',
+    ],
+    'invalid': [
+      'GL_UNIFORM_BLOCK_NAME_LENGTH',
+    ],
+  },
   'UniformBlockParameter': {
     'type': 'GLenum',
     'valid': [
@@ -2064,6 +2080,15 @@ _FUNCTION_INFO = {
     'result': ['int32_t'],
     'unsafe': True,
   },
+  'GetActiveUniformsiv': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'cmd_args':
+        'GLidProgram program, uint32_t indices_bucket_id, GLenum pname, '
+        'GLint* params',
+    'result': ['SizedResult<GLint>'],
+    'unsafe': True,
+  },
   'GetAttachedShaders': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],
@@ -2245,6 +2270,17 @@ _FUNCTION_INFO = {
     'unsafe': True,
   },
   'GetUniformBlocksCHROMIUM': {
+    'type': 'Custom',
+    'expectation': False,
+    'impl_func': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+    'cmd_args': 'GLidProgram program, uint32_t bucket_id',
+    'result': ['uint32_t'],
+    'unsafe': True,
+  },
+  'GetUniformsES3CHROMIUM': {
     'type': 'Custom',
     'expectation': False,
     'impl_func': False,

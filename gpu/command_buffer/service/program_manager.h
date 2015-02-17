@@ -156,6 +156,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Return false on overflow.
   bool GetTransformFeedbackVaryings(CommonDecoder::Bucket* bucket) const;
 
+  // Gather all info through glGetActiveUniformsiv, except for size, type,
+  // name_length, which we gather through glGetActiveUniform in
+  // glGetProgramInfoCHROMIUM.
+  bool GetUniformsES3(CommonDecoder::Bucket* bucket) const;
+
   // Sets the sampler values for a uniform.
   // This is safe to call for any location. If the location is not
   // a sampler uniform nothing will happen.

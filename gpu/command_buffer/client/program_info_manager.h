@@ -74,6 +74,10 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       GLES2Implementation* gl, GLuint program, GLsizei count,
       const char* const* names, GLuint* indices);
 
+  bool GetActiveUniformsiv(
+      GLES2Implementation* gl, GLuint program, GLsizei count,
+      const GLuint* indices, GLenum pname, GLint* params);
+
  private:
   friend class ProgramInfoManagerTest;
 
@@ -81,11 +85,14 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
   FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest, UpdateES3UniformBlocks);
   FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest,
                            UpdateES3TransformFeedbackVaryings);
+  FRIEND_TEST_ALL_PREFIXES(ProgramInfoManagerTest,
+                           GetActiveUniformsivCached);
 
   enum ProgramInfoType {
     kES2,
     kES3UniformBlocks,
     kES3TransformFeedbackVaryings,
+    kES3Uniformsiv,
     kNone,
   };
 
@@ -101,6 +108,16 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
       bool is_array;
       std::string name;
       std::vector<GLint> element_locations;
+    };
+    struct UniformES3 {
+      UniformES3();
+      ~UniformES3();
+
+      GLint block_index;
+      GLint offset;
+      GLint array_stride;
+      GLint matrix_stride;
+      GLint is_row_major;
     };
     struct VertexAttrib {
       VertexAttrib(GLsizei _size, GLenum _type, const std::string& _name,
@@ -146,6 +163,9 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
     // Gets the index of a uniform by name. Return INVALID_INDEX in failure.
     GLuint GetUniformIndex(const std::string& name) const;
 
+    bool GetUniformsiv(
+        GLsizei count, const GLuint* indices, GLenum pname, GLint* params);
+
     GLint GetFragDataLocation(const std::string& name) const;
     void CacheFragDataLocation(const std::string& name, GLint loc);
 
@@ -165,6 +185,9 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     // Updates the ES3 UniformBlock info after a successful link.
     void UpdateES3UniformBlocks(const std::vector<int8>& result);
+
+    // Updates the ES3 Uniformsiv info after a successful link.
+    void UpdateES3Uniformsiv(const std::vector<int8>& result);
 
     // Updates the ES3 TransformFeedbackVaryings info after a successful link.
     void UpdateES3TransformFeedbackVaryings(const std::vector<int8>& result);
@@ -202,6 +225,10 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     // TransformFeedback varyings by index.
     std::vector<TransformFeedbackVarying> transform_feedback_varyings_;
+
+    bool cached_es3_uniformsiv_;
+
+    std::vector<UniformES3> uniforms_es3_;
 
     base::hash_map<std::string, GLint> frag_data_locations_;
   };

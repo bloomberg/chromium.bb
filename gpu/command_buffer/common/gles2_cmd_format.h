@@ -186,6 +186,22 @@ struct TransformFeedbackVaryingsHeader {
   // TransformFeedbackVaryingInfo varyings[num_transform_feedback_varyings];
 };
 
+// Parameters of a uniform that can be queried through glGetActiveUniformsiv,
+// but not through glGetActiveUniform.
+struct UniformES3Info {
+  int32_t block_index;
+  int32_t offset;
+  int32_t array_stride;
+  int32_t matrix_stride;
+  int32_t is_row_major;
+};
+
+// The format of the bucket filled out by GetUniformsivES3CHROMIUM
+struct UniformsES3Header {
+  uint32_t num_uniforms;
+  // UniformES3Info uniforms[num_uniforms];
+};
+
 // The format of QuerySync used by EXT_occlusion_query_boolean
 struct QuerySync {
   void Reset() {

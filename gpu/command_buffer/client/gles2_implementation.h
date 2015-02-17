@@ -222,6 +222,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLint* size, GLenum* type, char* name);
   void GetUniformBlocksCHROMIUMHelper(
       GLuint program, std::vector<int8>* result);
+  void GetUniformsES3CHROMIUMHelper(
+      GLuint program, std::vector<int8>* result);
   GLuint GetUniformBlockIndexHelper(GLuint program, const char* name);
   bool GetActiveUniformBlockNameHelper(
       GLuint program, GLuint index, GLsizei bufsize,
@@ -235,6 +237,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLint* size, GLenum* type, char* name);
   bool GetUniformIndicesHelper(
       GLuint program, GLsizei count, const char* const* names, GLuint* indices);
+  bool GetActiveUniformsivHelper(
+      GLuint program, GLsizei count, const GLuint* indices,
+      GLenum pname, GLint* params);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

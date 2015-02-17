@@ -9902,6 +9902,55 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockName(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetActiveUniformsiv& c =
+      *static_cast<const gles2::cmds::GetActiveUniformsiv*>(cmd_data);
+  GLuint program_id = c.program;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  Bucket* bucket = GetBucket(c.indices_bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  GLsizei count = static_cast<GLsizei>(bucket->size() / sizeof(GLuint));
+  const GLuint* indices = bucket->GetDataAs<const GLuint*>(0, bucket->size());
+  typedef cmds::GetActiveUniformsiv::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(count));
+  GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glGetActiveUniformsiv");
+  if (!program) {
+    return error::kNoError;
+  }
+  GLuint service_id = program->service_id();
+  GLint link_status = GL_FALSE;
+  glGetProgramiv(service_id, GL_LINK_STATUS, &link_status);
+  if (link_status != GL_TRUE) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+        "glGetActiveUniformsiv", "program not linked");
+    return error::kNoError;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetActiveUniformsiv");
+  glGetActiveUniformsiv(service_id, count, indices, pname, params);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(count);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetActiveUniformsiv", "");
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetActiveAttrib(uint32 immediate_data_size,
                                                      const void* cmd_data) {
   const gles2::cmds::GetActiveAttrib& c =
@@ -10252,6 +10301,25 @@ error::Error GLES2DecoderImpl::HandleGetUniformBlocksCHROMIUM(
     return error::kNoError;
   }
   program->GetUniformBlocks(bucket);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetUniformsES3CHROMIUM(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetUniformsES3CHROMIUM& c =
+      *static_cast<const gles2::cmds::GetUniformsES3CHROMIUM*>(cmd_data);
+  GLuint program_id = static_cast<GLuint>(c.program);
+  uint32 bucket_id = c.bucket_id;
+  Bucket* bucket = CreateBucket(bucket_id);
+  bucket->SetSize(sizeof(UniformsES3Header));  // in case we fail.
+  Program* program = NULL;
+  program = GetProgram(program_id);
+  if (!program || !program->IsValid()) {
+    return error::kNoError;
+  }
+  program->GetUniformsES3(bucket);
   return error::kNoError;
 }
 

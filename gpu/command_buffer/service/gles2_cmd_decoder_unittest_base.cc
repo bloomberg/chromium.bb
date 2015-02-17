@@ -570,19 +570,24 @@ void GLES2DecoderTestBase::DoFenceSync(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-void GLES2DecoderTestBase::SetBucketAsCString(
-    uint32 bucket_id, const char* str) {
-  uint32 size = str ? (strlen(str) + 1) : 0;
+void GLES2DecoderTestBase::SetBucketData(
+    uint32_t bucket_id, const void* data, uint32_t data_size) {
+  DCHECK(data || data_size == 0);
   cmd::SetBucketSize cmd1;
-  cmd1.Init(bucket_id, size);
+  cmd1.Init(bucket_id, data_size);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd1));
-  if (str) {
-    memcpy(shared_memory_address_, str, size);
+  if (data) {
+    memcpy(shared_memory_address_, data, data_size);
     cmd::SetBucketData cmd2;
-    cmd2.Init(bucket_id, 0, size, kSharedMemoryId, kSharedMemoryOffset);
+    cmd2.Init(bucket_id, 0, data_size, kSharedMemoryId, kSharedMemoryOffset);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
     ClearSharedMemory();
   }
+}
+
+void GLES2DecoderTestBase::SetBucketAsCString(
+    uint32 bucket_id, const char* str) {
+  SetBucketData(bucket_id, str, str ? (strlen(str) + 1) : 0);
 }
 
 void GLES2DecoderTestBase::SetBucketAsCStrings(

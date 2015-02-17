@@ -170,6 +170,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
   void DoFenceSync(GLuint client_id, GLuint service_id);
 
+  void SetBucketData(uint32_t bucket_id, const void* data, uint32_t data_size);
   void SetBucketAsCString(uint32 bucket_id, const char* str);
   // If we want a valid bucket, just set |count_in_header| as |count|,
   // and set |str_end| as 0.

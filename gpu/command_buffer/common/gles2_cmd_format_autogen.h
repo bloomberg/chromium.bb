@@ -3499,6 +3499,67 @@ static_assert(
     offsetof(GetActiveUniformBlockName, result_shm_offset) == 20,
     "offset of GetActiveUniformBlockName result_shm_offset should be 20");
 
+struct GetActiveUniformsiv {
+  typedef GetActiveUniformsiv ValueType;
+  static const CommandId kCmdId = kGetActiveUniformsiv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            uint32_t _indices_bucket_id,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    program = _program;
+    indices_bucket_id = _indices_bucket_id;
+    pname = _pname;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _indices_bucket_id,
+            GLenum _pname,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_program, _indices_bucket_id, _pname,
+                                       _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t indices_bucket_id;
+  uint32_t pname;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+static_assert(sizeof(GetActiveUniformsiv) == 24,
+              "size of GetActiveUniformsiv should be 24");
+static_assert(offsetof(GetActiveUniformsiv, header) == 0,
+              "offset of GetActiveUniformsiv header should be 0");
+static_assert(offsetof(GetActiveUniformsiv, program) == 4,
+              "offset of GetActiveUniformsiv program should be 4");
+static_assert(offsetof(GetActiveUniformsiv, indices_bucket_id) == 8,
+              "offset of GetActiveUniformsiv indices_bucket_id should be 8");
+static_assert(offsetof(GetActiveUniformsiv, pname) == 12,
+              "offset of GetActiveUniformsiv pname should be 12");
+static_assert(offsetof(GetActiveUniformsiv, params_shm_id) == 16,
+              "offset of GetActiveUniformsiv params_shm_id should be 16");
+static_assert(offsetof(GetActiveUniformsiv, params_shm_offset) == 20,
+              "offset of GetActiveUniformsiv params_shm_offset should be 20");
+
 struct GetAttachedShaders {
   typedef GetAttachedShaders ValueType;
   static const CommandId kCmdId = kGetAttachedShaders;
@@ -10945,6 +11006,45 @@ static_assert(
 static_assert(
     offsetof(GetTransformFeedbackVaryingsCHROMIUM, bucket_id) == 8,
     "offset of GetTransformFeedbackVaryingsCHROMIUM bucket_id should be 8");
+
+struct GetUniformsES3CHROMIUM {
+  typedef GetUniformsES3CHROMIUM ValueType;
+  static const CommandId kCmdId = kGetUniformsES3CHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program, uint32_t _bucket_id) {
+    SetHeader();
+    program = _program;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _program, uint32_t _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t bucket_id;
+};
+
+static_assert(sizeof(GetUniformsES3CHROMIUM) == 12,
+              "size of GetUniformsES3CHROMIUM should be 12");
+static_assert(offsetof(GetUniformsES3CHROMIUM, header) == 0,
+              "offset of GetUniformsES3CHROMIUM header should be 0");
+static_assert(offsetof(GetUniformsES3CHROMIUM, program) == 4,
+              "offset of GetUniformsES3CHROMIUM program should be 4");
+static_assert(offsetof(GetUniformsES3CHROMIUM, bucket_id) == 8,
+              "offset of GetUniformsES3CHROMIUM bucket_id should be 8");
 
 struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;

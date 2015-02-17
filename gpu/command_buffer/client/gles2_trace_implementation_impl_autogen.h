@@ -517,6 +517,15 @@ void GLES2TraceImplementation::GetActiveUniformBlockName(GLuint program,
   gl_->GetActiveUniformBlockName(program, index, bufsize, length, name);
 }
 
+void GLES2TraceImplementation::GetActiveUniformsiv(GLuint program,
+                                                   GLsizei count,
+                                                   const GLuint* indices,
+                                                   GLenum pname,
+                                                   GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetActiveUniformsiv");
+  gl_->GetActiveUniformsiv(program, count, indices, pname, params);
+}
+
 void GLES2TraceImplementation::GetAttachedShaders(GLuint program,
                                                   GLsizei maxcount,
                                                   GLsizei* count,
@@ -1719,6 +1728,14 @@ void GLES2TraceImplementation::GetTransformFeedbackVaryingsCHROMIUM(
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "GLES2Trace::GetTransformFeedbackVaryingsCHROMIUM");
   gl_->GetTransformFeedbackVaryingsCHROMIUM(program, bufsize, size, info);
+}
+
+void GLES2TraceImplementation::GetUniformsES3CHROMIUM(GLuint program,
+                                                      GLsizei bufsize,
+                                                      GLsizei* size,
+                                                      void* info) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetUniformsES3CHROMIUM");
+  gl_->GetUniformsES3CHROMIUM(program, bufsize, size, info);
 }
 
 GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {
