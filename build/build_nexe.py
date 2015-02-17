@@ -82,6 +82,10 @@ def IsStale(out_ts, src_ts, rebuilt=False):
   return out_ts <= src_ts
 
 
+def FlagStringToBool(flag_value):
+  return bool(re.search(r'^([tTyY]|1:?)', flag_value))
+
+
 def IsEnvFlagTrue(flag_name, default=False):
   """Return true when the given flag is true.
 
@@ -98,7 +102,7 @@ def IsEnvFlagTrue(flag_name, default=False):
   flag_value = os.environ.get(flag_name)
   if flag_value is None:
     return default
-  return bool(re.search(r'^([tTyY]|1:?)', flag_value))
+  return FlagStringToBool(flag_value)
 
 
 def GetIntegerEnv(flag_name, default=0):
@@ -226,6 +230,7 @@ class Builder(CommandRunner):
     self.gomacc = goma_config.get('gomacc', '')
     self.goma_burst = goma_config.get('burst', False)
     self.goma_threads = goma_config.get('threads', 1)
+    self.allow_thin_archives = FlagStringToBool(options.allow_thin_archives)
 
     # Define NDEBUG for Release builds.
     if options.build_config.startswith('Release'):
@@ -247,6 +252,7 @@ class Builder(CommandRunner):
     self.irt_linker = options.irt_linker
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
+    self.Log('Archive allow thin: %s' % self.allow_thin_archives)
 
   def GenNaClPath(self, path):
     """Helper which prepends path with the native client source directory."""
@@ -630,7 +636,7 @@ class Builder(CommandRunner):
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
-  def Archive(self, srcs):
+  def Archive(self, srcs, thin):
     """Archive these objects with predetermined options and output name."""
     out = self.ArchiveOutputName()
     self.Log('\nArchive %s' % out)
@@ -643,7 +649,10 @@ class Builder(CommandRunner):
       cmd_line += self.link_options
     else:
       bin_name = self.GetAr()
-      cmd_line = [bin_name, '-rc', out]
+      ar_flags = '-rc'
+      if thin:
+        ar_flags += 'T'
+      cmd_line = [bin_name, ar_flags, out]
       if not self.empty:
         cmd_line += srcs
 
@@ -717,11 +726,14 @@ class Builder(CommandRunner):
       elif self.strip_all or self.strip_debug:
         self.Strip(out)
     elif self.outtype in ['nlib', 'plib']:
-      out = self.Archive(srcs)
       if self.strip_debug:
+        out = self.Archive(srcs, thin=False)
         self.Strip(out)
       elif self.strip_all:
         raise Error('FAILED: --strip-all on libs will result in unusable libs.')
+      else:
+        # If not stripping, we can use thin archives, if allowed.
+        out = self.Archive(srcs, thin=self.allow_thin_archives)
     else:
       raise Error('FAILED: Unknown outtype: %s' % (self.outtype))
 
@@ -798,6 +810,8 @@ def Main(argv):
                     help='GYP build configuration name (Release/Debug)')
   parser.add_option('--gomadir', dest='gomadir',
                     help='Path of the goma directory.')
+  parser.add_option('--allow-thin-archives', dest='allow_thin_archives',
+                    help='Allow use of thin archives', default='1')
   options, files = parser.parse_args(argv[1:])
 
   if options.name is None:
