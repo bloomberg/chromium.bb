@@ -155,7 +155,7 @@ Viewport.prototype = {
    */
   resize_: function() {
     if (this.fittingType_ == Viewport.FittingType.FIT_TO_PAGE)
-      this.fitToPage();
+      this.fitToPageInternal_(false);
     else if (this.fittingType_ == Viewport.FittingType.FIT_TO_WIDTH)
       this.fitToWidth();
     else
@@ -394,23 +394,23 @@ Viewport.prototype = {
       this.fittingType_ = Viewport.FittingType.FIT_TO_WIDTH;
       if (!this.documentDimensions_)
         return;
-      // Track the last y-position to stay at the same position after zooming.
-      var oldY = this.window_.pageYOffset / this.zoom_;
       // When computing fit-to-width, the maximum width of a page in the
       // document is used, which is equal to the size of the document width.
       this.setZoomInternal_(this.computeFittingZoom_(this.documentDimensions_,
                                                      true));
       var page = this.getMostVisiblePage();
-      this.window_.scrollTo(0, oldY * this.zoom_);
       this.updateViewport_();
     }.bind(this));
   },
 
   /**
-   * Zoom the viewport so that a page consumes the entire viewport. Also scrolls
-   * to the top of the most visible page.
+   * @private
+   * Zoom the viewport so that a page consumes the entire viewport.
+   * @param {boolean} scrollToTopOfPage Set to true if the viewport should be
+   *     scrolled to the top of the current page. Set to false if the viewport
+   *     should remain at the current scroll position.
    */
-  fitToPage: function() {
+  fitToPageInternal_: function(scrollToTopOfPage) {
     this.mightZoom_(function() {
       this.fittingType_ = Viewport.FittingType.FIT_TO_PAGE;
       if (!this.documentDimensions_)
@@ -422,9 +422,18 @@ Viewport.prototype = {
         height: this.pageDimensions_[page].height,
       };
       this.setZoomInternal_(this.computeFittingZoom_(dimensions, false));
-      this.window_.scrollTo(0, this.pageDimensions_[page].y * this.zoom_);
+      if (scrollToTopOfPage)
+        this.window_.scrollTo(0, this.pageDimensions_[page].y * this.zoom_);
       this.updateViewport_();
     }.bind(this));
+  },
+
+  /**
+   * Zoom the viewport so that a page consumes the entire viewport. Also scrolls
+   * the viewport to the top of the current page.
+   */
+  fitToPage: function() {
+    this.fitToPageInternal_(true);
   },
 
   /**

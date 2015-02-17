@@ -309,6 +309,19 @@ var tests = [
     chrome.test.assertEq(0.25, viewport.zoom);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(50, viewport.position.y);
+
+    // Test that when the window size changes, fit-to-page occurs but does not
+    // scroll to the top of the page (it should stay at the scaled scroll
+    // position).
+    mockWindow.scrollTo(0, 0);
+    viewport.fitToPage();
+    chrome.test.assertEq(0.5, viewport.zoom);
+    mockWindow.scrollTo(0, 10);
+    mockWindow.setSize(50, 50);
+    chrome.test.assertEq(0.25, viewport.zoom);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(5, viewport.position.y);
+
     chrome.test.succeed();
   },
 

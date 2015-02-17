@@ -12,6 +12,11 @@ function MockWindow(width, height, sizer) {
     if (e == 'resize')
       this.resizeCallback = f;
   };
+  this.setSize = function(width, height) {
+    this.innerWidth = width;
+    this.innerHeight = height;
+    this.resizeCallback();
+  }
   this.scrollTo = function(x, y) {
     if (sizer) {
       x = Math.min(x, parseInt(sizer.style.width) - width);
