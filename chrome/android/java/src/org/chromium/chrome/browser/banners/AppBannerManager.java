@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
@@ -32,6 +33,9 @@ public class AppBannerManager extends EmptyTabObserver {
     /** Retrieves information about a given package. */
     private static AppDetailsDelegate sAppDetailsDelegate;
 
+    /** Whether the banners are enabled. */
+    private static Boolean sIsEnabled;
+
     /** Pointer to the native side AppBannerManager. */
     private final long mNativePointer;
 
@@ -43,7 +47,8 @@ public class AppBannerManager extends EmptyTabObserver {
      * @return True if banners are enabled, false otherwise.
      */
     public static boolean isEnabled() {
-        return nativeIsEnabled();
+        if (sIsEnabled == null) sIsEnabled = nativeIsEnabled();
+        return sIsEnabled;
     }
 
     /**
@@ -129,6 +134,24 @@ public class AppBannerManager extends EmptyTabObserver {
         };
     }
 
+    /** Enables the app banners for testing. */
+    @VisibleForTesting
+    static void setIsEnabledForTesting() {
+        sIsEnabled = true;
+    }
+
+    /** Sets a constant (in days) that gets added to the time when the current time is requested. */
+    @VisibleForTesting
+    static void setTimeDeltaForTesting(int days) {
+        nativeSetTimeDeltaForTesting(days);
+    }
+
+    /** Records how many native BitmapFetchers are actively retrieving app icons. */
+    @VisibleForTesting
+    public int getNumActiveFetchersForTesting() {
+        return nativeGetNumActiveFetchers(mNativePointer);
+    }
+
     private static native boolean nativeIsEnabled();
     private native long nativeInit();
     private native void nativeDestroy(long nativeAppBannerManager);
@@ -136,6 +159,10 @@ public class AppBannerManager extends EmptyTabObserver {
             WebContents webContents);
     private native boolean nativeOnAppDetailsRetrieved(long nativeAppBannerManager, AppData data,
             String title, String packageName, String imageUrl);
+
+    // Testing methods.
+    private static native void nativeSetTimeDeltaForTesting(int days);
+    private native int nativeGetNumActiveFetchers(long nativeAppBannerManager);
 
     // UMA tracking.
     private static native void nativeRecordDismissEvent(int metric);

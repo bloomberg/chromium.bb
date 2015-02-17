@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
+#include "chrome/browser/android/banners/app_banner_manager.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
@@ -114,12 +115,14 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents, web_contents->GetURL(),
         native_app_package_,
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
+        AppBannerManager::GetCurrentTime());
   } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents, web_contents->GetURL(),
         web_app_data_.start_url.spec(),
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, base::Time::Now());
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
+        AppBannerManager::GetCurrentTime());
   }
 }
 
@@ -146,7 +149,7 @@ bool AppBannerInfoBarDelegate::Accept() {
         web_contents, web_contents->GetURL(),
         web_app_data_.start_url.spec(),
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-        base::Time::Now());
+        AppBannerManager::GetCurrentTime());
 
     ShortcutInfo info;
     info.UpdateFromManifest(web_app_data_);
@@ -201,7 +204,7 @@ void AppBannerInfoBarDelegate::OnInstallIntentReturned(
         web_contents->GetURL(),
         native_app_package_,
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-        base::Time::Now());
+        AppBannerManager::GetCurrentTime());
   }
 
   UpdateInstallState(env, obj);

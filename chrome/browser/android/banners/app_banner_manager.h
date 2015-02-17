@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
@@ -92,6 +93,12 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Fetches the icon at the given URL asynchronously.
   // Returns |false| if this couldn't be kicked off.
   bool FetchIcon(const GURL& image_url);
+
+  // Return how many fetchers are active.
+  int GetNumActiveFetchers(JNIEnv* env, jobject jobj);
+
+  // Returns the current time.
+  static base::Time GetCurrentTime();
 
   // WebContentsObserver overrides.
   void DidNavigateMainFrame(

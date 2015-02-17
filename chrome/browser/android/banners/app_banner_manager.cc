@@ -44,6 +44,7 @@ using base::android::ConvertUTF16ToJavaString;
 
 namespace {
 const char kBannerTag[] = "google-play-id";
+base::TimeDelta gTimeDeltaForTesting;
 }
 
 namespace banners {
@@ -144,20 +145,20 @@ void AppBannerManager::RecordCouldShowBanner(
     const std::string& package_or_start_url) {
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), validated_url_, package_or_start_url,
-      AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW, base::Time::Now());
+      AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW, GetCurrentTime());
 }
 
 bool AppBannerManager::CheckIfShouldShow(
     const std::string& package_or_start_url) {
   if (!AppBannerSettingsHelper::ShouldShowBanner(web_contents(), validated_url_,
                                                  package_or_start_url,
-                                                 base::Time::Now())) {
+                                                 GetCurrentTime())) {
     return false;
   }
 
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), validated_url_, package_or_start_url,
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, base::Time::Now());
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, GetCurrentTime());
   return true;
 }
 
@@ -258,6 +259,10 @@ bool AppBannerManager::OnAppDetailsRetrieved(JNIEnv* env,
   return FetchIcon(GURL(image_url));
 }
 
+int AppBannerManager::GetNumActiveFetchers(JNIEnv* env, jobject obj) {
+  return fetcher_.get() ? 1 : 0;
+}
+
 bool AppBannerManager::FetchIcon(const GURL& image_url) {
   if (!web_contents())
     return false;
@@ -284,6 +289,11 @@ int AppBannerManager::GetPreferredIconSize() {
   return Java_AppBannerManager_getPreferredIconSize(env, jobj.obj());
 }
 
+// static
+base::Time AppBannerManager::GetCurrentTime() {
+  return base::Time::Now() + gTimeDeltaForTesting;
+}
+
 void RecordDismissEvent(JNIEnv* env, jclass clazz, jint metric) {
   banners::TrackDismissEvent(metric);
 }
@@ -300,6 +310,10 @@ jlong Init(JNIEnv* env, jobject obj) {
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAppInstallAlerts);
+}
+
+void SetTimeDeltaForTesting(JNIEnv* env, jclass clazz, jint days) {
+  gTimeDeltaForTesting = base::TimeDelta::FromDays(days);
 }
 
 // Register native methods

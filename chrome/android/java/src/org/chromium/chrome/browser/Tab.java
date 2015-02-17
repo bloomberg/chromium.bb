@@ -2441,6 +2441,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return the AppBannerManager.
+     */
+    @VisibleForTesting
+    public AppBannerManager getAppBannerManagerForTesting() {
+        return mAppBannerManager;
+    }
+
+    /**
      * Ensures the counter is at least as high as the specified value.  The counter should always
      * point to an unused ID (which will be handed out next time a request comes in).  Exposed so
      * that anything externally loading tabs and ids can set enforce new tabs start at the correct
