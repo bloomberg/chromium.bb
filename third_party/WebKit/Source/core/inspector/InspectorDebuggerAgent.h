@@ -222,6 +222,7 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
+    void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();
 
     void changeJavaScriptRecursionLevel(int step);
@@ -299,6 +300,8 @@ private:
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
+    int m_currentAsyncOperationId;
+    bool m_notifyCurrentAsyncOperationCompleted;
     bool m_performingAsyncStepIn;
     WillBeHeapVector<RawPtrWillBeMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
 };

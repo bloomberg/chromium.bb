@@ -13,9 +13,16 @@ function testFunction()
 function callback1()
 {
     setTimeout(callback2, 0);
+    Promise.resolve(42)
+        .then(function() {});
 }
 
 function callback2()
+{
+    setTimeout(callback3, 0);
+}
+
+function callback3()
 {
     debugger;
 }
@@ -41,9 +48,9 @@ function test()
     function step3()
     {
         var actions = [
-            "StepOver", "StepOver", "StepInto", "Print",
-            "StepOver", "StepOver",
-            "Resume",
+            "StepOver", "StepOver", "StepOver", "Print", // @ callback1
+            "StepOver", "StepOver", "StepOver", "StepOver", "StepOver", "Print", // @ callback2
+            "StepOver", "StepOver", "Resume",
             "Resume",
         ];
         InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
@@ -54,25 +61,36 @@ function test()
         InspectorTest.completeDebuggerTest();
     }
 
-    var lastAsyncOperationId = -1;
+    var asyncOperations = {};
 
     function onAsyncOperationStarted(event)
     {
         var operation = event.data.operation;
-        lastAsyncOperationId = operation.id;
-        InspectorTest.addResult("==> AsyncOperationStarted: " + operation.description);
+        var description = asyncOperationDescription(operation);
+        asyncOperations[operation.id] = description;
+        InspectorTest.addResult("==> AsyncOperationStarted: " + description);
     }
 
     function onAsyncOperationCompleted(event)
     {
         var operationId = event.data.operationId;
-        InspectorTest.assertEquals(lastAsyncOperationId, operationId);
-        InspectorTest.addResult("==> AsyncOperationCompleted");
+        InspectorTest.addResult("==> AsyncOperationCompleted: " + asyncOperations[operationId]);
+        delete asyncOperations[operationId];
     }
 
     function onAsyncOperationsCleared()
     {
         InspectorTest.addResult("==> AsyncOperationsCleared");
+    }
+
+    function asyncOperationDescription(operation)
+    {
+        var link = "";
+        if (operation.callFrame) {
+            var url = WebInspector.displayNameForURL(operation.callFrame.url);
+            link = " " + operation.callFrame.functionName + " @ " + url + ":" + operation.callFrame.lineNumber;
+        }
+        return ("[" + operation.description + "]" + link);
     }
 }
 
