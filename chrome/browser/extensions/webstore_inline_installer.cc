@@ -6,22 +6,26 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
 namespace extensions {
 
-const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
+const char kInvalidWebstoreResponseError[] =
+    "Invalid Chrome Web Store response.";
 const char kNoVerifiedSitesError[] =
     "Inline installs can only be initiated for Chrome Web Store items that "
-    "have one or more verified sites";
+    "have one or more verified sites.";
 const char kNotFromVerifiedSitesError[] =
     "Installs can only be initiated by one of the Chrome Web Store item's "
-    "verified sites";
+    "verified sites.";
 const char kInlineInstallSupportedError[] =
     "Inline installation is not supported for this item. The user will be "
     "redirected to the Chrome Web Store.";
+const char kInitiatedFromPopupError[] =
+    "Inline installs can not be initiated from pop-up windows.";
 
 WebstoreInlineInstaller::WebstoreInlineInstaller(
     content::WebContents* web_contents,
@@ -126,6 +130,12 @@ WebContents* WebstoreInlineInstaller::GetWebContents() const {
 bool WebstoreInlineInstaller::CheckInlineInstallPermitted(
     const base::DictionaryValue& webstore_data,
     std::string* error) const {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  DCHECK(browser);
+  if (browser->is_type_popup()) {
+    *error = kInitiatedFromPopupError;
+    return false;
+  }
   // The store may not support inline installs for this item, in which case
   // we open the store-provided redirect URL in a new tab and abort the
   // installation process.
@@ -152,7 +162,6 @@ bool WebstoreInlineInstaller::CheckInlineInstallPermitted(
     *error = kInlineInstallSupportedError;
     return false;
   }
-
   *error = "";
   return true;
 }

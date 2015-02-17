@@ -13,7 +13,11 @@
 
 namespace base {
 class CommandLine;
-}  // namespace base
+}
+
+namespace contents {
+class WebContents;
+}
 
 class WebstoreInstallerTest : public ExtensionBrowserTest {
  public:
@@ -33,6 +37,9 @@ class WebstoreInstallerTest : public ExtensionBrowserTest {
                              const std::string& page_filename);
 
   void RunTest(const std::string& test_function_name);
+
+  void RunTest(content::WebContents* web_contents,
+               const std::string& test_function_name);
 
   // Passes |i| to |test_function_name|, and expects that function to
   // return one of "FAILED", "KEEPGOING" or "DONE". KEEPGOING should be
