@@ -413,6 +413,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAck) {
   EXPECT_EQ(0UL, blob_context->context()->blob_count());
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAckPrefetch) {
+  SimpleTest(GetTestUrl("indexeddb", "blob_did_ack_prefetch.html"));
+  content::ChromeBlobStorageContext* blob_context =
+      ChromeBlobStorageContext::GetFor(
+          shell()->web_contents()->GetBrowserContext());
+  EXPECT_EQ(0UL, blob_context->context()->blob_count());
+}
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
   SimpleTest(GetTestUrl("indexeddb", "blobs_use_quota.html"));
 }

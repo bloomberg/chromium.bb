@@ -4,6 +4,7 @@
 
 #include "content/child/indexed_db/webidbcursor_impl.h"
 
+#include <string>
 #include <vector>
 
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
@@ -194,10 +195,22 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
     return;
   }
 
+  // Ack any unused blobs.
+  std::vector<std::string> uuids;
+  for (const auto& blobs : prefetch_blob_info_) {
+    for (size_t i = 0, size = blobs.size(); i < size; ++i)
+      uuids.push_back(blobs[i].uuid().latin1());
+  }
+  if (!uuids.empty())
+    thread_safe_sender_->Send(new IndexedDBHostMsg_AckReceivedBlobs(uuids));
+
+  // Reset the back-end cursor.
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBCursorPrefetchReset(
       used_prefetches_, prefetch_keys_.size(), ipc_cursor_id_);
+
+  // Reset the prefetch cache.
   prefetch_keys_.clear();
   prefetch_primary_keys_.clear();
   prefetch_values_.clear();
