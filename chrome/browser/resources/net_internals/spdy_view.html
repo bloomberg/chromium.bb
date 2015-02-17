@@ -1,18 +1,18 @@
 <div id=spdy-view-tab-content class=content-box>
   <ul id=spdy-view-status style='margin-top:0'>
-    <li>SPDY Enabled: <span jscontent="spdy_enabled"></span></li>
+    <li>HTTP/2 Enabled: <span jscontent="spdy_enabled"></span></li>
     <li>Use Alternate Protocol: <span jscontent="use_alternate_protocols"></span></li>
-    <li>Force SPDY Always: <span jscontent="force_spdy_always"></span></li>
-    <li>Force SPDY Over SSL: <span jscontent="force_spdy_over_ssl"></span></li>
+    <li>Force HTTP/2 Always: <span jscontent="force_spdy_always"></span></li>
+    <li>Force HTTP/2 Over SSL: <span jscontent="force_spdy_over_ssl"></span></li>
     <li>Next Protocols: <span jscontent="next_protos"></span></li>
   </ul>
 
-  <h4>SPDY sessions</h4>
+  <h4>HTTP/2 sessions</h4>
   <div id=spdy-view-session-info>
     <!-- Only one of these two are shown -->
     <div jsdisplay="spdySessionInfo.length == 0">None</div>
     <div jsdisplay="spdySessionInfo.length != 0">
-      <a href="#events&q=type:SPDY_SESSION%20is:active">View live SPDY sessions</a>
+      <a href="#events&q=type:SPDY_SESSION%20is:active">View live HTTP/2 sessions</a>
       <p>
         <table class="styled-table">
           <thead>

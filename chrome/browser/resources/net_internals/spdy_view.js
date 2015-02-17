@@ -27,7 +27,7 @@ var SpdyView = (function() {
   }
 
   SpdyView.TAB_ID = 'tab-handle-spdy';
-  SpdyView.TAB_NAME = 'SPDY';
+  SpdyView.TAB_NAME = 'HTTP/2';
   SpdyView.TAB_HASH = '#spdy';
 
   // IDs for special HTML elements in spdy_view.html
