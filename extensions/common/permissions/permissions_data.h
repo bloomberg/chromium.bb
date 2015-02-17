@@ -58,14 +58,6 @@ class PermissionsData {
   PermissionsData(const Extension* extension);
   virtual ~PermissionsData();
 
-  // Returns true if the |extension| can silently increase its permission level.
-  // Users must approve permissions for unpacked and packed extensions in the
-  // following situations:
-  //  - when installing or upgrading packed extensions
-  //  - when installing unpacked extensions that have NPAPI plugins
-  //  - when either type of extension requests optional permissions
-  static bool CanSilentlyIncreasePermissions(const Extension* extension);
-
   // Returns true if the extension is a COMPONENT extension or is on the
   // whitelist of extensions that can script all pages.
   static bool CanExecuteScriptEverywhere(const Extension* extension);

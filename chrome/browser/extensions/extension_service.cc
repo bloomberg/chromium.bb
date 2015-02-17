@@ -1583,21 +1583,19 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   // can upgrade without requiring this user's approval.
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
 
+  // Silently grant all active permissions to default apps and apps installed
+  // in kiosk mode.
   bool auto_grant_permission =
-      (!is_extension_installed && extension->was_installed_by_default()) ||
+      extension->was_installed_by_default() ||
       extensions::ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode();
-  // Silently grant all active permissions to default apps only on install.
-  // After install they should behave like other apps.
-  // Silently grant all active permissions to apps install in kiosk mode on both
-  // install and update.
   if (auto_grant_permission)
     GrantPermissions(extension);
 
   bool is_privilege_increase = false;
   // We only need to compare the granted permissions to the current permissions
-  // if the extension is not allowed to silently increase its permissions.
-  if (!extensions::PermissionsData::CanSilentlyIncreasePermissions(extension) &&
-      !auto_grant_permission) {
+  // if the extension has not been auto-granted its permissions above and is
+  // installed internally.
+  if (extension->location() == Manifest::INTERNAL && !auto_grant_permission) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
     scoped_refptr<PermissionSet> granted_permissions =

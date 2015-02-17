@@ -48,12 +48,6 @@ void PermissionsData::SetPolicyDelegate(PolicyDelegate* delegate) {
 }
 
 // static
-bool PermissionsData::CanSilentlyIncreasePermissions(
-    const Extension* extension) {
-  return extension->location() != Manifest::INTERNAL;
-}
-
-// static
 bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
   if (extension->location() == Manifest::COMPONENT)
     return true;
