@@ -7,7 +7,7 @@ testElement.innerHTML='<div id="A1"><div id="B1"></div><div id="B2"></div></div>
 
 function filter(node)
 {
-    debug(" filtering node " + node.id);
+    debug(" filtering node " + node.id + " [this=" + this + "]");
     if (node.id == "B1")
         return NodeFilter.FILTER_SKIP;
     return NodeFilter.FILTER_ACCEPT;
@@ -18,10 +18,27 @@ walker = document.createTreeWalker(testElement, NodeFilter.SHOW_ELEMENT, filter,
 shouldBe("walker.firstChild(); walker.currentNode.id", "'A1'");
 shouldBe("walker.nextNode(); walker.currentNode.id", "'B2'");
 
+function strictFilter(node)
+{
+    "use strict";
+    debug(" filtering node " + node.id + " [this=" + this + "]");
+    if (node.id == "B1")
+        return NodeFilter.FILTER_SKIP;
+    return NodeFilter.FILTER_ACCEPT;
+}
+
+debug("<br>Testing with strict raw function filter");
+walker = document.createTreeWalker(testElement, NodeFilter.SHOW_ELEMENT, strictFilter, false);
+shouldBe("walker.firstChild(); walker.currentNode.id", "'A1'");
+shouldBe("walker.nextNode(); walker.currentNode.id", "'B2'");
+
 debug("<br>Testing with object filter");
 walker = document.createTreeWalker(testElement, NodeFilter.SHOW_ELEMENT, {
+    toString : function() {
+      return "custom node filter";
+    },
     acceptNode : function(node) {
-      debug(" filtering node " + node.id);
+      debug(" filtering node " + node.id + " [this=" + this + "]");
       if (node.id == "B1")
           return NodeFilter.FILTER_SKIP;
       return NodeFilter.FILTER_ACCEPT;

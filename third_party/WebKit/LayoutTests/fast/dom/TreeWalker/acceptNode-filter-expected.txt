@@ -4,17 +4,24 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Testing with raw function filter
- filtering node A1
+ filtering node A1 [this=[object Window]]
 PASS walker.firstChild(); walker.currentNode.id is 'A1'
- filtering node B1
- filtering node B2
+ filtering node B1 [this=[object Window]]
+ filtering node B2 [this=[object Window]]
+PASS walker.nextNode(); walker.currentNode.id is 'B2'
+
+Testing with strict raw function filter
+ filtering node A1 [this=undefined]
+PASS walker.firstChild(); walker.currentNode.id is 'A1'
+ filtering node B1 [this=undefined]
+ filtering node B2 [this=undefined]
 PASS walker.nextNode(); walker.currentNode.id is 'B2'
 
 Testing with object filter
- filtering node A1
+ filtering node A1 [this=custom node filter]
 PASS walker.firstChild(); walker.currentNode.id is 'A1'
- filtering node B1
- filtering node B2
+ filtering node B1 [this=custom node filter]
+ filtering node B2 [this=custom node filter]
 PASS walker.nextNode(); walker.currentNode.id is 'B2'
 
 Testing with null filter

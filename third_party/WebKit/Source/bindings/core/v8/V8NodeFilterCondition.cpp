@@ -71,8 +71,10 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
     v8::TryCatch exceptionCatcher;
 
     v8::Handle<v8::Function> callback;
+    v8::Handle<v8::Value> receiver;
     if (filter->IsFunction()) {
         callback = v8::Handle<v8::Function>::Cast(filter);
+        receiver = v8::Undefined(isolate);
     } else {
         v8::Local<v8::Value> value = filter->ToObject(isolate)->Get(v8AtomicString(isolate, "acceptNode"));
         if (value.IsEmpty() || !value->IsFunction()) {
@@ -80,13 +82,13 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
             return NodeFilter::FILTER_REJECT;
         }
         callback = v8::Handle<v8::Function>::Cast(value);
+        receiver = filter;
     }
 
     OwnPtr<v8::Handle<v8::Value>[]> info = adoptArrayPtr(new v8::Handle<v8::Value>[1]);
-    v8::Handle<v8::Object> context = m_scriptState->context()->Global();
-    info[0] = toV8(node, context, isolate);
+    info[0] = toV8(node, m_scriptState->context()->Global(), isolate);
 
-    v8::Handle<v8::Value> result = ScriptController::callFunction(m_scriptState->executionContext(), callback, context, 1, info.get(), isolate);
+    v8::Handle<v8::Value> result = ScriptController::callFunction(m_scriptState->executionContext(), callback, receiver, 1, info.get(), isolate);
 
     if (exceptionCatcher.HasCaught()) {
         exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
