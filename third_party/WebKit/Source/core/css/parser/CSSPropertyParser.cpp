@@ -932,6 +932,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             validPrimitive = true;
         else
             validPrimitive = (!id && validUnit(value, FNumber | FPercent | FNonNeg));
+        if (validPrimitive && m_context.useCounter()
+            && !(id == CSSValueNormal
+                || (value->unit == CSSPrimitiveValue::CSS_NUMBER && value->fValue == 1)
+                || (value->unit == CSSPrimitiveValue::CSS_PERCENTAGE && value->fValue == 100)))
+            m_context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
         break;
 
     case CSSPropertySrc: // Only used within @font-face so cannot use inherit | initial or be !important. This is a list of urls or local references.
