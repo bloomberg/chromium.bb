@@ -29,7 +29,7 @@ class BisectResults(object):
     culprit_revisions: A list of revisions, which contain the bad change
         introducing the failure.
     other_regressions: A list of tuples representing other regressions, which
-        may have occured.
+        may have occurred.
     regression_size: For performance bisects, this is a relative change of
         the mean metric value. For other bisects this field always contains
         'zero-to-nonzero'.

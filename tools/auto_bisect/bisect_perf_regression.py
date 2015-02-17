@@ -77,7 +77,7 @@ BUILD_RESULT_FAIL = 1
 BUILD_RESULT_SKIPPED = 2
 
 # The confidence percentage we require to consider the initial range a
-# regression based on the test results of the inital good and bad revisions.
+# regression based on the test results of the initial good and bad revisions.
 REGRESSION_CONFIDENCE = 80
 # How many times to repeat the test on the last known good and first known bad
 # revisions in order to assess a more accurate confidence score in the
@@ -929,7 +929,7 @@ class BisectPerformanceMetrics(object):
                                  build_type='Release'):
     """Unzips the build archive and moves it to the build output directory.
 
-    The build output directory is whereever the binaries are expected to
+    The build output directory is wherever the binaries are expected to
     be in order to start Chrome and run tests.
 
     TODO: Simplify and clarify this method if possible.

@@ -296,7 +296,7 @@ class AndroidChromeBuildArchive(BuildArchive):
 
 def BuildIsAvailable(bucket_name, remote_path):
   """Checks whether a build is currently archived at some place."""
-  logging.info('Checking existance: gs://%s/%s' % (bucket_name, remote_path))
+  logging.info('Checking existence: gs://%s/%s' % (bucket_name, remote_path))
   try:
     exists = cloud_storage.Exists(bucket_name, remote_path)
     logging.info('Exists? %s' % exists)

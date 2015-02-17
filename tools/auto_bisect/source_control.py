@@ -125,7 +125,7 @@ def IsInProperBranch():
 
 
 def GetCommitPosition(git_revision, cwd=None):
-  """Finds git commit postion for the given git hash.
+  """Finds git commit position for the given git hash.
 
   This function executes "git footer --position-num <git hash>" command to get
   commit position the given revision.
