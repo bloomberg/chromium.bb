@@ -481,6 +481,9 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 	    ev->transform.enabled)
 		return NULL;
 
+	if (ev->geometry.scissor_enabled)
+		return NULL;
+
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   buffer->resource, GBM_BO_USE_SCANOUT);
 
@@ -999,6 +1002,8 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 	if (ev->output_mask != (1u << output->base.id))
 		return NULL;
 	if (c->cursors_are_broken)
+		return NULL;
+	if (ev->geometry.scissor_enabled)
 		return NULL;
 	if (ev->surface->buffer_ref.buffer == NULL ||
 	    !wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) ||
