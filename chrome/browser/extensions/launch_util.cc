@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -48,6 +49,13 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
   int value = GetLaunchTypePrefValue(prefs, extension->id());
   if (value >= LAUNCH_TYPE_FIRST && value < NUM_LAUNCH_TYPES)
     result = static_cast<LaunchType>(value);
+
+#if defined(OS_MACOSX)
+  // On Mac, opening in a window is only supported if bookmark apps are enabled.
+  if (!extensions::util::IsNewBookmarkAppsEnabled() &&
+      !extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
+    result = LAUNCH_TYPE_REGULAR;
+#endif
 
   return result;
 }
