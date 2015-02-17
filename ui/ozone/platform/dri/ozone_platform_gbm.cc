@@ -49,8 +49,6 @@ namespace ui {
 
 namespace {
 
-const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
-
 class GlApiLoader {
  public:
   GlApiLoader()
@@ -155,7 +153,7 @@ class OzonePlatformGbm : public OzonePlatform {
   void InitializeGPU() override {
     gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
-    gbm_ = new GbmWrapper(base::FilePath(kDefaultGraphicsCardPath));
+    gbm_ = new GbmWrapper(GetFirstDisplayCardPath());
     gbm_->Initialize();
     drm_device_manager_.reset(new DrmDeviceManager(gbm_));
     buffer_generator_.reset(new GbmBufferGenerator());

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DRI_UTIL_H_
 #define UI_OZONE_PLATFORM_DRI_DRI_UTIL_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -50,6 +51,8 @@ bool MapDumbBuffer(int fd,
 
 void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DriWrapper>& drm,
                                          ScreenManager* screen_manager);
+
+base::FilePath GetFirstDisplayCardPath();
 
 }  // namespace ui
 

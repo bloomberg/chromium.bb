@@ -40,8 +40,6 @@ namespace ui {
 
 namespace {
 
-const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
-
 // OzonePlatform for Linux DRI (Direct Rendering Infrastructure)
 //
 // This platform is Linux without any display server (no X, wayland, or
@@ -49,7 +47,7 @@ const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : dri_(new DriWrapper(base::FilePath(kDefaultGraphicsCardPath))),
+      : dri_(new DriWrapper(GetFirstDisplayCardPath())),
         buffer_generator_(new DriBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
         device_manager_(CreateDeviceManager()),
