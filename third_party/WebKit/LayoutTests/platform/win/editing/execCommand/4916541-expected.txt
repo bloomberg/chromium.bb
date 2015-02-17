@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
           RenderInline {SPAN} at (0,0) size 22x17
             RenderText {#text} at (0,0) size 22x17
               text run at (0,0) width 22: "foo"
-            RenderBR {BR} at (21,14) size 1x0
+            LayoutBR {BR} at (21,14) size 1x0
           RenderInline {SPAN} at (0,0) size 21x17
             RenderText {#text} at (0,18) size 21x17
               text run at (0,18) width 21: "bar"

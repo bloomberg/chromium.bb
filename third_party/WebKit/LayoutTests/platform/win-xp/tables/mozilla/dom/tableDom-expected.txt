@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
               text run at (0,0) width 27: "Do It"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,38) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,58) size 62x56 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 60x54
           LayoutTableRow {TR} at (0,2) size 60x24
@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 23x19
                 text run at (2,2) width 23: "c22"
       RenderBlock (anonymous) at (0,114) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
 layer at (152,11) size 59x16
   RenderBlock {DIV} at (2,3) size 59x16
     RenderText {#text} at (0,0) size 7x16

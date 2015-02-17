@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
               RenderText {#text} at (1,1) size 4x17
                 text run at (1,1) width 4: " "
       RenderBlock (anonymous) at (0,58) size 784x36
-        RenderBR {BR} at (0,0) size 0x17
-        RenderBR {BR} at (0,18) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,18) size 0x17
       LayoutTable {TABLE} at (0,94) size 784x279
         LayoutTableSection {TBODY} at (0,0) size 784x279
           LayoutTableRow {TR} at (0,1) size 784x277

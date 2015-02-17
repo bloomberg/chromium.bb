@@ -6,7 +6,7 @@ layer at (0,0) size 800x402
       RenderBlock (anonymous) at (0,0) size 784x36
         RenderText {#text} at (0,0) size 615x18
           text run at (0,0) width 615: "This test verifies the visual alignment of items in a select element while changing text direction."
-        RenderBR {BR} at (614,0) size 1x18
+        LayoutBR {BR} at (614,0) size 1x18
         RenderText {#text} at (0,18) size 438x18
           text run at (0,18) width 438: "All the items in the following select elements should be left-aligned."
       LayoutTable {TABLE} at (0,36) size 650x98

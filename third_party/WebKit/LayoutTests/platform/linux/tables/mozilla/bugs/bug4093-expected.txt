@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
                             text run at (0,0) width 204: "CleanSweep Deluxe tracks the files you use"
                             text run at (0,13) width 194: "most often, then recommends rarely used"
                             text run at (0,26) width 105: "ones for you to delete."
-                          RenderBR {BR} at (105,36) size 0x0
+                          LayoutBR {BR} at (105,36) size 0x0
                     LayoutTableRow {TR} at (0,210) size 224x8
                       LayoutTableCell {TD} at (10,210) size 214x8 [r=3 c=1 rs=1 cs=1]
                         LayoutImage {IMG} at (0,0) size 1x8

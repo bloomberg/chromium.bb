@@ -12,17 +12,17 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x56
           RenderText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,28) size 492x28
             text run at (0,28) width 492: "Smart delete when deleting the first word on a line."
         RenderBlock {DIV} at (14,86) size 756x112
           RenderText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
-          RenderBR {BR} at (189,22) size 1x0
+          LayoutBR {BR} at (189,22) size 1x0
           RenderText {#text} at (0,28) size 708x56
             text run at (0,28) width 708: "The first word and the space following the first word should be deleted. It"
             text run at (0,56) width 201: "should like this this: "
-          RenderBR {BR} at (200,78) size 1x0
+          LayoutBR {BR} at (200,78) size 1x0
           RenderText {#text} at (0,84) size 70x28
             text run at (0,84) width 70: "bar baz"
       RenderBlock {DIV} at (0,236) size 784x32

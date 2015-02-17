@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x36
         RenderText {#text} at (0,0) size 234x17
           text run at (0,0) width 234: "This is a test for multiple ruby runs. "
-        RenderBR {BR} at (233,14) size 1x0
-        RenderBR {BR} at (0,18) size 0x17
+        LayoutBR {BR} at (233,14) size 1x0
+        LayoutBR {BR} at (0,18) size 0x17
       RenderBlock {P} at (0,52) size 784x30
         RenderText {#text} at (0,12) size 159x17
           text run at (0,12) width 159: "<ruby> is defined in the "

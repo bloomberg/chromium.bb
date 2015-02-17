@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TH} at (2,5) size 35x44 [border: (1px inset #808080)] [r=0 c=3 rs=2 cs=1]
               RenderText {#text} at (3,2) size 29x19
                 text run at (3,2) width 29: "Red"
-              RenderBR {BR} at (3,17) size 1x0
+              LayoutBR {BR} at (3,17) size 1x0
               RenderText {#text} at (2,22) size 31x19
                 text run at (2,22) width 31: "eyes"
           LayoutTableRow {TR} at (0,28) size 197x24

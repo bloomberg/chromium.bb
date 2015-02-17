@@ -187,7 +187,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           RenderText {#text} at (0,0) size 0x0
           RenderMenuList {SELECT} at (0,9) size 36x18 [bgcolor=#F8F8F8]
             RenderBlock (anonymous) at (0,0) size 36x18
-              RenderBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
+              LayoutBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
           RenderText {#text} at (36,0) size 6x28
             text run at (36,0) width 6: " "
           RenderMenuList {SELECT} at (42,9) size 36x18 [bgcolor=#F8F8F8]
@@ -204,7 +204,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       RenderBlock {DIV} at (0,561.88) size 784x19
         RenderMenuList {SELECT} at (0,1) size 36x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 36x18
-            RenderBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
+            LayoutBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
         RenderText {#text} at (36,0) size 4x18
           text run at (36,0) width 4: " "
         RenderMenuList {SELECT} at (40,1) size 36x18 [bgcolor=#F8F8F8]
@@ -223,7 +223,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           RenderText {#text} at (0,0) size 0x0
           RenderMenuList {SELECT} at (0,0) size 36x18 [bgcolor=#F8F8F8]
             RenderBlock (anonymous) at (0,0) size 36x18
-              RenderBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
+              LayoutBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
           RenderText {#text} at (36,3) size 3x13
             text run at (36,3) width 3: " "
           RenderMenuList {SELECT} at (38.50,0) size 36x18 [bgcolor=#F8F8F8]

@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 602x17
           text run at (0,0) width 602: "The following is a test for having a trailing base within a <ruby> with no associated ruby text."
       RenderBlock (anonymous) at (0,34) size 784x36
-        RenderBR {BR} at (0,0) size 0x17
-        RenderBR {BR} at (0,18) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,18) size 0x17
       RenderBlock {P} at (0,86) size 784x30
         RenderText {#text} at (0,12) size 159x17
           text run at (0,12) width 159: "<ruby> is defined in the "

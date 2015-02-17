@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
                 RenderBlock {CENTER} at (0,0) size 150x36
                   RenderInline {IFRAMEX} at (0,0) size 0x35
                     RenderText {#text} at (0,0) size 0x0
-                    RenderBR {BR} at (75,0) size 0x17
-                    RenderBR {BR} at (75,18) size 0x17
+                    LayoutBR {BR} at (75,0) size 0x17
+                    LayoutBR {BR} at (75,18) size 0x17
               LayoutTableCell {TD} at (150,0) size 1x1 [bgcolor=#FFFFFF] [r=0 c=1 rs=1 cs=1]
                 LayoutImage {IMG} at (0,0) size 1x1
                 RenderText {#text} at (0,0) size 0x0
@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
                         RenderBlock {P} at (2,2) size 441x54
                           RenderText {#text} at (0,0) size 164x17
                             text run at (0,0) width 164: "IMPROVE YOUR SITE "
-                          RenderBR {BR} at (163,14) size 1x0
+                          LayoutBR {BR} at (163,14) size 1x0
                           RenderText {#text} at (0,18) size 426x35
                             text run at (0,18) width 426: "In this week's Home Improvements you can find an article on how"
                             text run at (0,36) width 277: "to spice up your page by using imagemaps."
@@ -43,4 +43,4 @@ layer at (0,0) size 800x600
                 RenderBlock (anonymous) at (0,0) size 600x1
                   LayoutImage {IMG} at (0,0) size 600x1
                 RenderBlock {P} at (0,17) size 600x18
-                  RenderBR {BR} at (300,0) size 0x17
+                  LayoutBR {BR} at (300,0) size 0x17

@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
             text run at (0,0) width 78: "H"
         RenderText {#text} at (77,76) size 5x18
           text run at (77,76) width 5: " "
-        RenderBR {BR} at (81,90) size 1x0
+        LayoutBR {BR} at (81,90) size 1x0
         RenderInline {SPAN} at (0,0) size 78x115 [color=#560063]
           RenderText {#text} at (0,115) size 78x115
             text run at (0,115) width 78: "H"

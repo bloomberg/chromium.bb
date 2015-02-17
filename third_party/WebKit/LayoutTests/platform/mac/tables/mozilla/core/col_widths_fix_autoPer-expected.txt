@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 22x18
                 text run at (2,2) width 22: "foo"
       RenderBlock (anonymous) at (0,46) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
         RenderText {#text} at (0,18) size 409x18
           text run at (0,18) width 409: "fixed table - too small a percentage width cell is honored to min"
       LayoutTable {TABLE} at (0,82) size 300x28 [border: (1px outset #808080)]
@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 22x18
                 text run at (2,2) width 22: "foo"
       RenderBlock (anonymous) at (0,110) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
         RenderText {#text} at (0,18) size 331x18
           text run at (0,18) width 331: "fixed table - percentage cell width includes padding"
       LayoutTable {TABLE} at (0,146) size 300x66 [border: (1px outset #808080)]
@@ -42,7 +42,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (21,21) size 60x18
                 text run at (21,21) width 60: "cell=auto"
       RenderBlock (anonymous) at (0,212) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,230) size 300x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 298x26
           LayoutTableRow {TR} at (0,2) size 298x22
@@ -53,7 +53,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 60x18
                 text run at (2,2) width 60: "cell=auto"
       RenderBlock (anonymous) at (0,258) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
         RenderText {#text} at (0,18) size 253x18
           text run at (0,18) width 253: "fixed table - % cells don't get expanded"
       LayoutTable {TABLE} at (0,294) size 200x28 [border: (1px outset #808080)]
@@ -69,7 +69,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 28x18
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,322) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
         RenderText {#text} at (0,18) size 208x18
           text run at (0,18) width 208: "fixed table - % cells are honored"
       LayoutTable {TABLE} at (0,358) size 200x46 [border: (1px outset #808080)]

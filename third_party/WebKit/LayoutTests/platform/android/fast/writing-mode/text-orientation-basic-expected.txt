@@ -22,35 +22,35 @@ layer at (0,0) size 800x712
           RenderInline {SPAN} at (0,0) size 41x170
             RenderText {#text} at (2,1) size 41x170
               text run at (2,1) width 170: "Hello world"
-          RenderBR {BR} at (11,171) size 0x0
+          LayoutBR {BR} at (11,171) size 0x0
           RenderInline {SPAN} at (0,0) size 41x419
             RenderText {#text} at (45,1) size 41x419
               text run at (45,1) width 419: "Hello world"
-          RenderBR {BR} at (54,420) size 0x0
+          LayoutBR {BR} at (54,420) size 0x0
           RenderInline {SPAN} at (0,0) size 41x170
             RenderText {#text} at (88,1) size 41x170
               text run at (88,1) width 170: "Hello world"
-          RenderBR {BR} at (97,171) size 0x0
+          LayoutBR {BR} at (97,171) size 0x0
           RenderInline {SPAN} at (0,0) size 41x419
             RenderText {#text} at (131,1) size 41x419
               text run at (131,1) width 419: "Hello world"
-          RenderBR {BR} at (140,420) size 0x0
+          LayoutBR {BR} at (140,420) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderBlock {DIV} at (174,0) size 174x172 [border: (1px solid #008000)]
           RenderInline {SPAN} at (0,0) size 41x170
             RenderText {#text} at (2,1) size 41x170
               text run at (2,1) width 170: "Hello world"
-          RenderBR {BR} at (11,171) size 0x0
+          LayoutBR {BR} at (11,171) size 0x0
           RenderInline {SPAN} at (0,0) size 41x170
             RenderText {#text} at (45,1) size 41x170
               text run at (45,1) width 170: "Hello world"
-          RenderBR {BR} at (54,171) size 0x0
+          LayoutBR {BR} at (54,171) size 0x0
           RenderInline {SPAN} at (0,0) size 41x170
             RenderText {#text} at (88,1) size 41x170
               text run at (88,1) width 170: "Hello world"
-          RenderBR {BR} at (97,171) size 0x0
+          LayoutBR {BR} at (97,171) size 0x0
           RenderInline {SPAN} at (0,0) size 41x170
             RenderText {#text} at (131,1) size 41x170
               text run at (131,1) width 170: "Hello world"
-          RenderBR {BR} at (140,171) size 0x0
+          LayoutBR {BR} at (140,171) size 0x0
         RenderText {#text} at (0,0) size 0x0

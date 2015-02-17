@@ -13,8 +13,8 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 364x19
                 text run at (2,2) width 364: "Here is a table with a lime background using the ID attribute."
       RenderBlock (anonymous) at (0,30) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
-        RenderBR {BR} at (0,20) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,20) size 0x19
       LayoutTable {TABLE} at (0,70) size 510x30 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 508x28
           LayoutTableRow {TR} at (0,2) size 508x24

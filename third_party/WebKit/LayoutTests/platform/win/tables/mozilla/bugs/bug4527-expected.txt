@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
               RenderInline {NOBR} at (0,0) size 19x17
                 RenderInline {A} at (0,0) size 19x17 [color=#0000EE]
                   LayoutImage {IMG} at (468,0) size 19x60
-              RenderBR {BR} at (487,60) size 0x0
+              LayoutBR {BR} at (487,60) size 0x0
               LayoutImage {IMG} at (0,60) size 470x10
-              RenderBR {BR} at (470,70) size 0x0
+              LayoutBR {BR} at (470,70) size 0x0
           LayoutTableRow {TR} at (0,70) size 613x50
             LayoutTableCell {TD} at (126,82) size 232x25 [bgcolor=#CCCCCC] [r=1 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 232x25

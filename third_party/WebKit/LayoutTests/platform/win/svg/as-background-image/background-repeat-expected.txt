@@ -12,7 +12,7 @@ layer at (0,0) size 800x544
       RenderBlock {DIV} at (462,10) size 202x152 [border: (1px solid #008000)]
       RenderText {#text} at (674,158) size 4x17
         text run at (674,158) width 4: " "
-      RenderBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       RenderBlock {DIV} at (10,186) size 202x152 [border: (1px solid #008000)]
       RenderText {#text} at (222,334) size 4x17
         text run at (222,334) width 4: " "
@@ -22,7 +22,7 @@ layer at (0,0) size 800x544
       RenderBlock {DIV} at (462,186) size 202x152 [border: (1px solid #008000)]
       RenderText {#text} at (674,334) size 4x17
         text run at (674,334) width 4: " "
-      RenderBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       RenderBlock {DIV} at (10,362) size 202x152 [border: (1px solid #008000)]
       RenderText {#text} at (222,510) size 4x17
         text run at (222,510) width 4: " "
@@ -32,4 +32,4 @@ layer at (0,0) size 800x544
       RenderBlock {DIV} at (462,362) size 202x152 [border: (1px solid #008000)]
       RenderText {#text} at (674,510) size 4x17
         text run at (674,510) width 4: " "
-      RenderBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0

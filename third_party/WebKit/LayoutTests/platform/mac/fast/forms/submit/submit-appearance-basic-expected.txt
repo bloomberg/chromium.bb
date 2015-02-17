@@ -9,7 +9,7 @@ layer at (0,0) size 800x217
             text run at (0,0) width 18: "foo"
       RenderText {#text} at (41,3) size 5x18
         text run at (41,3) width 5: " "
-      RenderBR {BR} at (45,3) size 1x18
+      LayoutBR {BR} at (45,3) size 1x18
       RenderButton {INPUT} at (4,30) size 35.56x24 [bgcolor=#C0C0C0] [border: (3px solid #00FF00)]
         RenderBlock (anonymous) at (9,5) size 17.56x13
           RenderText {#text} at (0,0) size 18x13
@@ -22,21 +22,21 @@ layer at (0,0) size 800x217
             text run at (0,0) width 18: "foo"
       RenderText {#text} at (89,32) size 5x18
         text run at (89,32) width 5: " "
-      RenderBR {BR} at (93,32) size 1x18
+      LayoutBR {BR} at (93,32) size 1x18
       RenderButton {INPUT} at (4,62) size 33.56x22 [border: (2px outset #C0C0C0)]
         RenderBlock (anonymous) at (8,4) size 17.56x13
           RenderText {#text} at (0,0) size 18x13
             text run at (0,0) width 18: "foo"
       RenderText {#text} at (41,63) size 5x18
         text run at (41,63) width 5: " "
-      RenderBR {BR} at (45,63) size 1x18
+      LayoutBR {BR} at (45,63) size 1x18
       RenderButton {INPUT} at (4,92) size 33.56x18 [bgcolor=#C0C0C0]
         RenderBlock (anonymous) at (8,2) size 17.56x13
           RenderText {#text} at (0,0) size 18x13
             text run at (0,0) width 18: "foo"
       RenderText {#text} at (41,91) size 5x18
         text run at (41,91) width 5: " "
-      RenderBR {BR} at (45,91) size 1x18
+      LayoutBR {BR} at (45,91) size 1x18
       RenderButton {INPUT} at (4,118) size 36.77x21 [bgcolor=#C0C0C0]
         RenderBlock (anonymous) at (8,2) size 20.77x16
           RenderText {#text} at (0,0) size 21x16
@@ -55,7 +55,7 @@ layer at (0,0) size 800x217
             text run at (0,0) width 21: "foo"
       RenderText {#text} at (142,119) size 5x18
         text run at (142,119) width 5: " "
-      RenderBR {BR} at (146,119) size 1x18
+      LayoutBR {BR} at (146,119) size 1x18
       RenderButton {INPUT} at (6,159) size 55.14x31 [bgcolor=#C0C0C0]
         RenderBlock (anonymous) at (12,3.50) size 31.14x23
           RenderText {#text} at (0,0) size 32x23
@@ -68,4 +68,4 @@ layer at (0,0) size 800x217
             text run at (0,0) width 42: "foo"
       RenderText {#text} at (160,167) size 5x18
         text run at (160,167) width 5: " "
-      RenderBR {BR} at (164,167) size 1x18
+      LayoutBR {BR} at (164,167) size 1x18

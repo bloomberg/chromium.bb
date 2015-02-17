@@ -13,7 +13,7 @@ layer at (0,0) size 800x412
             LayoutTableCell {TD} at (2,2) size 60x38 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 58x17
                 text run at (1,1) width 58: "Centered"
-              RenderBR {BR} at (58,1) size 1x17
+              LayoutBR {BR} at (58,1) size 1x17
               RenderText {#text} at (1,19) size 24x17
                 text run at (1,19) width 24: "OK"
       RenderBlock {P} at (0,110) size 784x6 [border: (3px solid #800080)]
@@ -27,7 +27,7 @@ layer at (0,0) size 800x412
             LayoutTableCell {TD} at (2,2) size 60x38 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 58x17
                 text run at (1,1) width 58: "Centered"
-              RenderBR {BR} at (58,1) size 1x17
+              LayoutBR {BR} at (58,1) size 1x17
               RenderText {#text} at (1,19) size 45x17
                 text run at (1,19) width 45: "SHIFT"
       RenderBlock {P} at (0,242) size 784x6 [border: (3px solid #800080)]
@@ -41,7 +41,7 @@ layer at (0,0) size 800x412
             LayoutTableCell {TD} at (2,2) size 60x38 [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 58x17
                 text run at (1,1) width 58: "Centered"
-              RenderBR {BR} at (58,1) size 1x17
+              LayoutBR {BR} at (58,1) size 1x17
               RenderText {#text} at (1,19) size 54x17
                 text run at (1,19) width 54: "NOSTD"
       RenderBlock {P} at (0,374) size 784x6 [border: (3px solid #800080)]

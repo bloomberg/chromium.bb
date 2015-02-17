@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
             RenderText {#text} at (0,0) size 299x19
               text run at (0,0) width 299: "On Feb 1, 2006, at 7:37 PM, David Hyatt wrote:"
           RenderBlock (anonymous) at (0,20) size 784x20
-            RenderBR {BR} at (0,0) size 0x19
+            LayoutBR {BR} at (0,0) size 0x19
           RenderBlock {BLOCKQUOTE} at (40,56) size 704x240 [color=#0000FF]
             RenderBlock {DIV} at (0,0) size 704x80
               RenderText {#text} at (0,0) size 413x19
@@ -40,7 +40,7 @@ layer at (0,0) size 800x600
                 text run at (683,40) width 4: " "
                 text run at (0,60) width 604: "into our image cache and stay around until the CGImageRef goes away (which could be a long time)."
             RenderBlock {DIV} at (0,80) size 704x20
-              RenderBR {BR} at (0,0) size 0x19
+              LayoutBR {BR} at (0,0) size 0x19
             RenderBlock {DIV} at (0,100) size 704x60
               RenderText {#text} at (0,0) size 297x19
                 text run at (0,0) width 297: "I think this is terrible but am not sure how to fix it."
@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
                 text run at (697,20) width 4: " "
                 text run at (0,40) width 65: "NSImage?"
             RenderBlock {DIV} at (0,160) size 704x20
-              RenderBR {BR} at (0,0) size 0x19
+              LayoutBR {BR} at (0,0) size 0x19
             RenderBlock {DIV} at (0,180) size 704x20
               RenderText {#text} at (0,0) size 29x19
                 text run at (0,0) width 29: "dave"
@@ -72,7 +72,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (0,0) size 117x19
                 text run at (0,0) width 117: "(hyatt@apple.com)"
             RenderBlock {DIV} at (0,220) size 704x20
-              RenderBR {BR} at (0,0) size 0x19
+              LayoutBR {BR} at (0,0) size 0x19
         RenderBlock (anonymous) at (0,312) size 784x20
-          RenderBR {BR} at (0,0) size 0x19
+          LayoutBR {BR} at (0,0) size 0x19
 caret: position 0 of child 0 {BR} of child 6 {DIV} of child 2 {BLOCKQUOTE} of child 1 {DIV} of child 1 {DIV} of body

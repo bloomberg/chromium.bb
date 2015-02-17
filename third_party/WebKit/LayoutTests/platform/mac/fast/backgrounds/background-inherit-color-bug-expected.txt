@@ -19,11 +19,11 @@ layer at (0,0) size 785x1132 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 577: "Example: With the following code, the background color of H1"
             text run at (0,18) width 615: "elements stays pink, no matter what background color the parents"
             text run at (0,36) width 49: "have:"
-          RenderBR {BR} at (48,36) size 1x18
+          LayoutBR {BR} at (48,36) size 1x18
           RenderText {#text} at (0,54) size 308x18
             text run at (0,54) width 49: "  H1 "
             text run at (48,54) width 260: "{ background-color: pink; }"
-          RenderBR {BR} at (307,54) size 1x18
+          LayoutBR {BR} at (307,54) size 1x18
           RenderText {#text} at (0,72) size 279x18
             text run at (0,72) width 49: "  H1 "
             text run at (48,72) width 231: "{ background: inherit; }"

@@ -7,7 +7,7 @@ layer at (0,0) size 800x170
         RenderInline {A} at (0,0) size 153x17 [color=#0000EE]
           RenderText {#text} at (0,0) size 153x17
             text run at (0,0) width 153: "rdar://problem/7026010"
-        RenderBR {BR} at (152,0) size 1x17
+        LayoutBR {BR} at (152,0) size 1x17
         RenderText {#text} at (0,18) size 475x17
           text run at (0,18) width 475: "Test for the root layer getting correctly positioned. You should see no red."
 layer at (350,1) size 100x100

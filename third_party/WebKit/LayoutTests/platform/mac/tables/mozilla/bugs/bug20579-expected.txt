@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
           RenderInline {A} at (0,0) size 279x18 [color=#0000EE]
             RenderText {#text} at (157,0) size 279x18
               text run at (157,0) width 279: "http://www.linuxplanet.com/linuxplanet/"
-          RenderBR {BR} at (435,14) size 1x0
+          LayoutBR {BR} at (435,14) size 1x0
           RenderText {#text} at (0,18) size 147x18
             text run at (0,18) width 147: "First cell is coded as: "
         RenderInline {CODE} at (0,0) size 282x15
@@ -29,4 +29,4 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (50,1) size 1x50 [r=0 c=1 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 1x50
             LayoutTableCell {TD} at (51,17) size 733x18 [r=0 c=2 rs=1 cs=1]
-              RenderBR {BR} at (0,0) size 0x18
+              LayoutBR {BR} at (0,0) size 0x18

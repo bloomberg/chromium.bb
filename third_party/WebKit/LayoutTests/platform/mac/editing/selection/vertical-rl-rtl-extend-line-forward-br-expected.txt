@@ -10,7 +10,7 @@ layer at (0,0) size 800x202
         RenderBlock {P} at (20,0) size 48x138.72
           RenderText {#text} at (1,42) size 23x97
             text run at (1,42) width 97 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D7}\x{5EA}\x{5D5}\x{5DC}."
-          RenderBR {BR} at (1,42) size 23x1
+          LayoutBR {BR} at (1,42) size 23x1
           RenderText {#text} at (25,31) size 23x108
             text run at (25,31) width 107 RTL: "\x{5D0}\x{5D9}\x{5DF} \x{5DC}\x{5D9} \x{5E9}\x{5DD}."
       RenderBlock {PRE} at (0,185.72) size 784x0

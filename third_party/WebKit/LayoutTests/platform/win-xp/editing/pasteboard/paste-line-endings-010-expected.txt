@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x83
           RenderText {#text} at (0,0) size 66x26
             text run at (0,0) width 66: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,27) size 158x27
             text run at (0,27) width 158: "Fix for this bug: "
           RenderInline {A} at (0,0) size 257x27 [color=#0000EE]
@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,113) size 756x111
           RenderText {#text} at (0,0) size 189x26
             text run at (0,0) width 189: "Expected Results: "
-          RenderBR {BR} at (189,21) size 0x0
+          LayoutBR {BR} at (189,21) size 0x0
           RenderText {#text} at (0,27) size 746x83
             text run at (0,27) width 746: "Should see two lines of text below, self-documenting themselves as \"line one\""
             text run at (0,55) width 713: "and \"line two\". The insertion point must be after the first character (\"l\") of"

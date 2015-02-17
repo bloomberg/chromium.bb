@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 764: "This bug only seems to occur if the bullet character is non-ASCII (has a Unicode value higher than 127). Non-breaking"
           text run at (0,18) width 286: "spaces (&#160;), however, are an exception."
       RenderBlock (anonymous) at (0,150.91) size 784x72
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderInline {FONT} at (0,0) size 338x53 [color=#CC0000]
           RenderText {#text} at (0,18) size 338x17
             text run at (0,18) width 70: "\x{BB} England "
@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
             text run at (130,18) width 73: "\x{BB} Scotland "
             text run at (202,18) width 77: "\x{BB} Germany "
             text run at (278,18) width 60: "\x{BB} France "
-          RenderBR {BR} at (337,32) size 1x0
-          RenderBR {BR} at (0,36) size 0x17
+          LayoutBR {BR} at (337,32) size 1x0
+          LayoutBR {BR} at (0,36) size 0x17
           RenderText {#text} at (0,54) size 338x17
             text run at (0,54) width 70: "\x{BB} England "
             text run at (69,54) width 62: "\x{BB} Ireland "
@@ -33,4 +33,4 @@ layer at (0,0) size 800x600
             text run at (202,54) width 77: "\x{BB} Germany "
             text run at (278,54) width 60: "\x{BB} France "
         RenderText {#text} at (0,0) size 0x0
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0

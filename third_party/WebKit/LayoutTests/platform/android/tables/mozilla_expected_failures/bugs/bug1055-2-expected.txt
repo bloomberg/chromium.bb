@@ -97,7 +97,7 @@ layer at (0,0) size 785x941
               RenderText {#text} at (7,7) size 8x19
                 text run at (7,7) width 8: "9"
       RenderBlock (anonymous) at (0,593.38) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (96.50,613.38) size 576x104 [border: (6px double #FFFF00)]
         LayoutTableSection {TBODY} at (6,6) size 563x91
           LayoutTableRow {TR} at (0,0) size 563x32

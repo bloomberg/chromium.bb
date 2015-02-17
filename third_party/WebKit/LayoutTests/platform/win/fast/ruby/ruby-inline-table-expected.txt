@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 774x35
           text run at (0,0) width 774: "Test that <ruby> rendered as inline-table (or somesuch) is not affected by ruby rendering. Both <div> below should look"
           text run at (0,18) width 65: "the same. "
-        RenderBR {BR} at (64,32) size 1x0
-        RenderBR {BR} at (0,36) size 0x17
+        LayoutBR {BR} at (64,32) size 1x0
+        LayoutBR {BR} at (0,36) size 0x17
       RenderBlock {DIV} at (3.19,57.19) size 777.63x48 [bgcolor=#FFFFDD] [border: (1px solid #000000)]
         RenderText {#text} at (9,21) size 227x17
           text run at (9,21) width 227: "This is some XHTML1.1 text with "
@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (275,21) size 58x17
           text run at (275,21) width 58: " markup."
       RenderBlock (anonymous) at (0,108.38) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (3.19,129.56) size 777.63x48 [bgcolor=#FFFFDD] [border: (1px solid #000000)]
         RenderText {#text} at (9,21) size 227x17
           text run at (9,21) width 227: "This is some XHTML1.1 text with "

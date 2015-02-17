@@ -7,7 +7,7 @@ layer at (0,0) size 800x87
         RenderText {#text} at (0,0) size 636x17
           text run at (0,0) width 636: "This test case is to see whether distributed text justify works properly for the complicated sentence."
       RenderBlock (anonymous) at (0,18) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,36) size 302x17 [border: (1px solid #000000)]
         RenderInline {SPAN} at (0,0) size 29x15
           RenderText {#text} at (1,1) size 29x15
@@ -27,4 +27,4 @@ layer at (0,0) size 800x87
         RenderText {#text} at (146,1) size 155x15
           text run at (146,1) width 155: " ipsum"
       RenderBlock (anonymous) at (0,53) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17

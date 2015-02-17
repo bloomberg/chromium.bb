@@ -27,7 +27,7 @@ layer at (0,0) size 800x492
               RenderText {#text} at (3,3) size 12x17
                 text run at (3,3) width 8 RTL: "\x{5D0}"
                 text run at (10,3) width 5: "."
-              RenderBR {BR} at (14,17) size 1x0
+              LayoutBR {BR} at (14,17) size 1x0
               RenderText {#text} at (3,21) size 8x17
                 text run at (3,21) width 8: "b"
             LayoutTableCell {TD} at (78,32) size 33x23 [border: (1px solid #008000)] [r=1 c=2 rs=1 cs=1]
@@ -49,7 +49,7 @@ layer at (0,0) size 800x492
               RenderText {#text} at (3,3) size 12x17
                 text run at (3,3) width 8 RTL: "\x{5D0}"
                 text run at (10,3) width 5: "."
-              RenderBR {BR} at (14,17) size 1x0
+              LayoutBR {BR} at (14,17) size 1x0
               RenderText {#text} at (3,21) size 8x17
                 text run at (3,21) width 8 RTL: "\x{5D1}"
             LayoutTableCell {TD} at (78,73) size 33x23 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
@@ -69,7 +69,7 @@ layer at (0,0) size 800x492
             LayoutTableCell {TD} at (33,105) size 45x41 [border: (1px solid #008000)] [r=3 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 16x17
                 text run at (3,3) width 16 RTL: "\x{5D0}\x{5D0}"
-              RenderBR {BR} at (3,17) size 0x0
+              LayoutBR {BR} at (3,17) size 0x0
               RenderText {#text} at (3,21) size 20x17
                 text run at (3,21) width 8: "b"
                 text run at (11,21) width 4 RTL: " "
@@ -93,7 +93,7 @@ layer at (0,0) size 800x492
             LayoutTableCell {TD} at (33,146) size 45x41 [border: (1px solid #008000)] [r=4 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 15x17
                 text run at (3,3) width 15: "aa"
-              RenderBR {BR} at (3,17) size 0x0
+              LayoutBR {BR} at (3,17) size 0x0
               RenderText {#text} at (3,21) size 20x17
                 text run at (3,21) width 8: "b"
                 text run at (11,21) width 4 RTL: " "
@@ -116,7 +116,7 @@ layer at (0,0) size 800x492
             LayoutTableCell {TD} at (33,187) size 45x41 [border: (1px solid #008000)] [r=5 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 16x17
                 text run at (3,3) width 16 RTL: "\x{5D0}\x{5D0}"
-              RenderBR {BR} at (3,17) size 0x0
+              LayoutBR {BR} at (3,17) size 0x0
               RenderText {#text} at (3,21) size 20x17
                 text run at (3,21) width 12 RTL: " \x{5D1}"
                 text run at (14,21) width 9: "1"
@@ -139,7 +139,7 @@ layer at (0,0) size 800x492
             LayoutTableCell {TD} at (33,228) size 45x41 [border: (1px solid #008000)] [r=6 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 15x17
                 text run at (3,3) width 15: "aa"
-              RenderBR {BR} at (3,17) size 0x0
+              LayoutBR {BR} at (3,17) size 0x0
               RenderText {#text} at (3,21) size 20x17
                 text run at (3,21) width 12 RTL: " \x{5D1}"
                 text run at (14,21) width 9: "1"
@@ -161,7 +161,7 @@ layer at (0,0) size 800x492
             LayoutTableCell {TD} at (33,269) size 45x41 [border: (1px solid #008000)] [r=7 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 17x17
                 text run at (3,3) width 17: "a ("
-              RenderBR {BR} at (19,17) size 1x0
+              LayoutBR {BR} at (19,17) size 1x0
               RenderText {#text} at (3,21) size 18x17
                 text run at (3,21) width 18: "] b"
             LayoutTableCell {TD} at (78,269) size 33x41 [border: (1px solid #008000)] [r=7 c=2 rs=1 cs=1]
@@ -183,7 +183,7 @@ layer at (0,0) size 800x492
               RenderText {#text} at (3,3) size 18x17
                 text run at (3,3) width 8 RTL: "\x{5D0}"
                 text run at (10,3) width 11: " ("
-              RenderBR {BR} at (20,17) size 1x0
+              LayoutBR {BR} at (20,17) size 1x0
               RenderText {#text} at (3,21) size 18x17
                 text run at (3,21) width 18: "] b"
             LayoutTableCell {TD} at (78,310) size 33x41 [border: (1px solid #008000)] [r=8 c=2 rs=1 cs=1]
@@ -205,7 +205,7 @@ layer at (0,0) size 800x492
             LayoutTableCell {TD} at (33,351) size 45x41 [border: (1px solid #008000)] [r=9 c=1 rs=1 cs=1]
               RenderText {#text} at (3,3) size 17x17
                 text run at (3,3) width 17: "a ("
-              RenderBR {BR} at (19,17) size 1x0
+              LayoutBR {BR} at (19,17) size 1x0
               RenderText {#text} at (3,21) size 17x17
                 text run at (3,21) width 10: "] "
                 text run at (12,21) width 8 RTL: "\x{5D1}"
@@ -228,7 +228,7 @@ layer at (0,0) size 800x492
               RenderText {#text} at (3,3) size 18x17
                 text run at (3,3) width 8 RTL: "\x{5D0}"
                 text run at (10,3) width 11: " ("
-              RenderBR {BR} at (20,17) size 1x0
+              LayoutBR {BR} at (20,17) size 1x0
               RenderText {#text} at (3,21) size 17x17
                 text run at (3,21) width 10: "] "
                 text run at (12,21) width 8 RTL: "\x{5D1}"

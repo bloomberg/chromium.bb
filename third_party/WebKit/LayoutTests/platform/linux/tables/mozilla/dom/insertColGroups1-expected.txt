@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 24x19
                 text run at (2,2) width 24: "300"
       RenderBlock (anonymous) at (0,50) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,70) size 610x30 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -43,4 +43,4 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 24x19
                 text run at (2,2) width 24: "300"
       RenderBlock (anonymous) at (0,100) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19

@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 172x18
           text run at (0,0) width 172: "Tests: the colspan attribute"
-        RenderBR {BR} at (171,14) size 1x0
+        LayoutBR {BR} at (171,14) size 1x0
       RenderBlock {P} at (0,34) size 784x72
         RenderText {#text} at (0,0) size 75x18
           text run at (0,0) width 75: "Conditions:"
-        RenderBR {BR} at (74,14) size 1x0
+        LayoutBR {BR} at (74,14) size 1x0
         RenderText {#text} at (0,18) size 763x54
           text run at (0,18) width 668: "The colSpan attribute specifies the number of columns spanned by the current cell. The default value of "
           text run at (667,18) width 96: "this attribute is"
@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
           text run at (0,36) width 572: "second table tests the zero value. \"Just A\" should span \"A\" and \"Just B\" should span \"B.\""
       RenderBlock {HR} at (0,192) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,202) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,220) size 278x70 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 278x18
           RenderText {#text} at (29,0) size 220x18
@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 32x18
                 text run at (2,2) width 32: "eight"
       RenderBlock (anonymous) at (0,290) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,308) size 199x70 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 199x18
           RenderText {#text} at (15,0) size 169x18

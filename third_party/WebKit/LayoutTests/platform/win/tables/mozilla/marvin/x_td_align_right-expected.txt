@@ -10,7 +10,7 @@ layer at (0,0) size 800x258
         RenderInline {b} at (0,0) size 77x17
           RenderText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "Example 1."
-        RenderBR {br} at (76,0) size 1x17
+        LayoutBR {br} at (76,0) size 1x17
         RenderText {#text} at (0,18) size 124x17
           text run at (0,18) width 124: "Table width=100%"
       LayoutTable {table} at (0,86) size 784x28 [border: (1px outset #808080)]
@@ -23,7 +23,7 @@ layer at (0,0) size 800x258
         RenderInline {b} at (0,0) size 77x17
           RenderText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "Example 2."
-        RenderBR {br} at (76,0) size 1x17
+        LayoutBR {br} at (76,0) size 1x17
         RenderText {#text} at (0,18) size 433x17
           text run at (0,18) width 408: "No specific table width; text in second row exceeds text in first "
           text run at (407,18) width 26: "row"

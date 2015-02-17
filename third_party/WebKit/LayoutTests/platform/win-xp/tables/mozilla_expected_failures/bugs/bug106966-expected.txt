@@ -16,7 +16,7 @@ layer at (0,0) size 785x1393 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (1,1) size 123x19
                 text run at (1,1) width 123: "contentwithoutspace"
       RenderBlock (anonymous) at (0,122) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,264) size 200x159 [bgcolor=#FFA500] [border: (10px solid #0000FF)]
         RenderBlock {CAPTION} at (0,0) size 200x20
           RenderText {#text} at (75,0) size 50x19

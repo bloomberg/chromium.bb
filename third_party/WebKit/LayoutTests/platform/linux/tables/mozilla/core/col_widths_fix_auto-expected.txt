@@ -12,4 +12,4 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,26) size 784x20
         RenderText {#text} at (0,0) size 31x19
           text run at (0,0) width 31: "after "
-        RenderBR {BR} at (31,15) size 0x0
+        LayoutBR {BR} at (31,15) size 0x0

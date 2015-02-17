@@ -9,8 +9,8 @@ layer at (0,0) size 800x600
           text run at (0,18) width 507: "single <ruby> markup in the text contained in the block, broken across 2 lines. "
           text run at (506,18) width 252: "Part of it should be on the first line, the"
           text run at (0,36) width 140: "rest on the other line. "
-        RenderBR {BR} at (139,50) size 1x0
-        RenderBR {BR} at (0,54) size 0x17
+        LayoutBR {BR} at (139,50) size 1x0
+        LayoutBR {BR} at (0,54) size 0x17
       RenderBlock {DIV} at (0,72) size 284x73 [border: (2px solid #0000FF)]
         RenderText {#text} at (12,14) size 159x17
           text run at (12,14) width 159: "<ruby> is defined in the "

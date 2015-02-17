@@ -16,10 +16,10 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"
       RenderBlock (anonymous) at (0,50) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {HR} at (0,78) size 602x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,88) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,108) size 600x111
         LayoutTableSection {TBODY} at (0,0) size 600x111
           LayoutTableRow {TR} at (0,2) size 600x44

@@ -10,7 +10,7 @@ layer at (548,0) size 252x600
         RenderInline {SPAN} at (0,0) size 108x458
           RenderText {#text} at (1,102) size 53x335
             text run at (1,102) width 335: "PARAGRAPH 1 "
-          RenderBR {BR} at (1,436) size 53x1
+          LayoutBR {BR} at (1,436) size 53x1
           RenderText {#text} at (56,0) size 53x293
             text run at (56,0) width 293: "MORE TEXT. "
           RenderInline {SPAN} at (0,0) size 15x166

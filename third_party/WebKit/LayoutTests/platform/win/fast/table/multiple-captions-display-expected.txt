@@ -19,10 +19,10 @@ layer at (0,0) size 800x280
         LayoutTableSection {tbody} at (0,150) size 128x38
           LayoutTableRow (anonymous) at (0,0) size 128x36
             LayoutTableCell (anonymous) at (2,0) size 124x36 [r=0 c=0 rs=1 cs=1]
-              RenderBR {br} at (0,0) size 0x17
+              LayoutBR {br} at (0,0) size 0x17
               RenderText {#text} at (0,18) size 124x17
                 text run at (0,18) width 124: "Some body content"
-              RenderBR {br} at (123,18) size 1x17
+              LayoutBR {br} at (123,18) size 1x17
         LayoutTableSection {tfoot} at (0,190) size 128x20
           LayoutTableRow (anonymous) at (0,0) size 128x18
             LayoutTableCell (anonymous) at (2,0) size 124x18 [r=0 c=0 rs=1 cs=1]

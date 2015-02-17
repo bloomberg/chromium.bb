@@ -8,7 +8,7 @@ layer at (18,10) size 764x102
     RenderText {#text} at (0,0) size 0x0
 layer at (18,10) size 35x36
   RenderInline (relative positioned) {SPAN} at (0,0) size 35x36 [bgcolor=#808080]
-    RenderBR {BR} at (1,1) size 0x18
+    LayoutBR {BR} at (1,1) size 0x18
     RenderText {#text} at (1,19) size 35x18
       text run at (1,19) width 35: "again"
 layer at (18,122) size 764x102
@@ -16,7 +16,7 @@ layer at (18,122) size 764x102
     RenderText {#text} at (0,0) size 0x0
 layer at (18,122) size 0x18
   RenderInline (relative positioned) {SPAN} at (0,0) size 0x18 [bgcolor=#808080]
-    RenderBR {BR} at (1,1) size 0x18
+    LayoutBR {BR} at (1,1) size 0x18
 layer at (19,123) size 50x18
   LayoutImage {IMG} at (1,1) size 50x18 [bgcolor=#0000FF]
 layer at (18,234) size 764x102
@@ -25,7 +25,7 @@ layer at (18,234) size 764x102
 layer at (18,234) size 0x18
   RenderInline (relative positioned) {SPAN} at (0,0) size 0x18 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 0x0
-    RenderBR {BR} at (1,1) size 0x18
+    LayoutBR {BR} at (1,1) size 0x18
 layer at (19,235) size 50x18
   LayoutImage {IMG} at (1,1) size 50x18 [bgcolor=#0000FF]
 layer at (18,346) size 764x102
@@ -33,8 +33,8 @@ layer at (18,346) size 764x102
     RenderText {#text} at (0,0) size 0x0
 layer at (18,346) size 0x36
   RenderInline (relative positioned) {SPAN} at (0,0) size 0x36 [bgcolor=#808080]
-    RenderBR {BR} at (1,1) size 0x18
-    RenderBR {BR} at (1,19) size 0x18
+    LayoutBR {BR} at (1,1) size 0x18
+    LayoutBR {BR} at (1,19) size 0x18
 layer at (19,347) size 50x36
   LayoutImage {IMG} at (1,1) size 50x36 [bgcolor=#0000FF]
 layer at (18,458) size 764x102
@@ -43,9 +43,9 @@ layer at (18,458) size 764x102
 layer at (18,458) size 0x72
   RenderInline (relative positioned) {SPAN} at (0,0) size 0x72 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 0x0
-    RenderBR {BR} at (1,1) size 0x18
-    RenderBR {BR} at (1,19) size 0x18
-    RenderBR {BR} at (1,37) size 0x18
-    RenderBR {BR} at (1,55) size 0x18
+    LayoutBR {BR} at (1,1) size 0x18
+    LayoutBR {BR} at (1,19) size 0x18
+    LayoutBR {BR} at (1,37) size 0x18
+    LayoutBR {BR} at (1,55) size 0x18
 layer at (19,459) size 50x72
   LayoutImage {IMG} at (1,1) size 50x72 [bgcolor=#0000FF]

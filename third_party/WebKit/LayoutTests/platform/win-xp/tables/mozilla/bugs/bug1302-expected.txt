@@ -193,7 +193,7 @@ layer at (0,0) size 785x972 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                         RenderText {#text} at (1,1) size 20x19
                           text run at (1,1) width 20: "2,5"
       RenderBlock (anonymous) at (0,180) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,216) size 769x100
         RenderText {#text} at (0,0) size 768x99
           text run at (0,0) width 304: "This is a table colspan counting problem (IMHO). "
@@ -206,7 +206,7 @@ layer at (0,0) size 785x972 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (514,60) width 251: "the two tables below are width=auto (i.e.,"
           text run at (0,80) width 171: "no width attribute specified)."
       RenderBlock (anonymous) at (0,332) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,352) size 623x58 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 621x56
           LayoutTableRow {TR} at (0,0) size 621x28
@@ -228,8 +228,8 @@ layer at (0,0) size 785x972 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (115,0) width 149: " blah blah blah blah blah "
                   text run at (264,0) width 349: "--- why doesn't this cell span the table (5.0 win95 jun17)?"
       RenderBlock (anonymous) at (0,410) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
-        RenderBR {BR} at (0,20) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,20) size 0x19
       LayoutTable {TABLE} at (0,450) size 494x58 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 492x56
           LayoutTableRow {TR} at (0,0) size 492x28
@@ -251,7 +251,7 @@ layer at (0,0) size 785x972 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (115,0) width 149: " blah blah blah blah blah "
                   text run at (264,0) width 220: "--- this cell spans the table correctly."
       RenderBlock (anonymous) at (0,508) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,544) size 769x20
         RenderText {#text} at (0,0) size 223x19
           text run at (0,0) width 223: "Here's the test case from bug #2645."
@@ -293,7 +293,7 @@ layer at (0,0) size 785x972 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               RenderText {#text} at (2,2) size 316x19
                 text run at (2,2) width 316: "blue (colspan=4) --- doesn't span (5.0 win95 jun17)"
       RenderBlock (anonymous) at (0,808) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,844) size 769x20
         RenderText {#text} at (0,0) size 409x19
           text run at (0,0) width 409: "Here's the same table but the 'colspan' values have been normalized."
@@ -320,4 +320,4 @@ layer at (0,0) size 785x972 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               RenderText {#text} at (2,2) size 219x19
                 text run at (2,2) width 219: "blue (colspan=3) --- spans correctly"
       RenderBlock (anonymous) at (0,936) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19

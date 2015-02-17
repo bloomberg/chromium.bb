@@ -11,13 +11,13 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           text run at (5,0) width 96: "\x{590F}\x{76EE}\x{6F31}\x{77F3}"
       RenderBlock {DIV} at (125.34,0) size 3929x504
         RenderBlock (anonymous) at (0,0) size 2216x504
-          RenderBR {BR} at (0,0) size 17x0
-          RenderBR {BR} at (18,0) size 17x0
-          RenderBR {BR} at (36,0) size 17x0
+          LayoutBR {BR} at (0,0) size 17x0
+          LayoutBR {BR} at (18,0) size 17x0
+          LayoutBR {BR} at (36,0) size 17x0
           RenderText {#text} at (54,0) size 17x144
             text run at (54,0) width 144: "\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{3000}\x{4E00}"
-          RenderBR {BR} at (54,144) size 17x0
-          RenderBR {BR} at (72,0) size 17x0
+          LayoutBR {BR} at (54,144) size 17x0
+          LayoutBR {BR} at (72,0) size 17x0
           RenderText {#text} at (101,0) size 17x16
             text run at (101,0) width 16: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x35
@@ -31,7 +31,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 33: "\x{5C71}\x{8DEF}"
           RenderText {#text} at (101,50) size 17x205
             text run at (101,50) width 204: "\x{3092}\x{767B}\x{308A}\x{306A}\x{304C}\x{3089}\x{3001}\x{3053}\x{3046}\x{8003}\x{3048}\x{305F}\x{3002}"
-          RenderBR {BR} at (101,254) size 17x1
+          LayoutBR {BR} at (101,254) size 17x1
           RenderText {#text} at (130,0) size 17x16
             text run at (130,0) width 16: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x16
@@ -100,7 +100,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,2) width 36: "\x{7AAE}\x{5C48}"
           RenderText {#text} at (148,0) size 17x243
             text run at (148,0) width 243: "\x{3060}\x{3002}\x{3068}\x{304B}\x{304F}\x{306B}\x{4EBA}\x{306E}\x{4E16}\x{306F}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3044}\x{3002}"
-          RenderBR {BR} at (148,242) size 17x1
+          LayoutBR {BR} at (148,242) size 17x1
           RenderText {#text} at (177,0) size 17x108
             text run at (177,0) width 108: "\x{3000}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3055}\x{304C}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x18
@@ -137,7 +137,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{753B}"
           RenderText {#text} at (206,257) size 17x81
             text run at (206,257) width 80: "\x{304C}\x{51FA}\x{6765}\x{308B}\x{3002}"
-          RenderBR {BR} at (206,337) size 17x1
+          LayoutBR {BR} at (206,337) size 17x1
           RenderText {#text} at (224,0) size 17x16
             text run at (224,0) width 16: "\x{3000}"
           RenderInline {STRONG} at (0,0) size 17x47
@@ -178,7 +178,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
               text run at (289,138) width 47: "\x{4EBA}\x{306E}\x{4E16}"
           RenderText {#text} at (289,184) size 17x203
             text run at (289,184) width 202: "\x{3088}\x{308A}\x{3082}\x{306A}\x{304A}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304B}\x{308D}\x{3046}\x{3002}"
-          RenderBR {BR} at (289,386) size 17x1
+          LayoutBR {BR} at (289,386) size 17x1
           RenderText {#text} at (307,0) size 17x477
             text run at (307,0) width 477: "\x{3000}\x{8D8A}\x{3059}\x{4E8B}\x{306E}\x{306A}\x{3089}\x{306C}\x{4E16}\x{304C}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3051}\x{308C}\x{3070}\x{3001}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{3044}\x{6240}\x{3092}\x{3069}\x{308C}\x{307B}\x{3069}\x{304B}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x34
@@ -260,7 +260,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{5C0A}"
           RenderText {#text} at (394,356) size 17x45
             text run at (394,356) width 45: "\x{3068}\x{3044}\x{3002}"
-          RenderBR {BR} at (394,400) size 17x1
+          LayoutBR {BR} at (394,400) size 17x1
           RenderText {#text} at (423,0) size 17x232
             text run at (423,0) width 232: "\x{3000}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304D}\x{4E16}\x{304B}\x{3089}\x{3001}\x{4F4F}\x{307F}\x{306B}\x{304F}\x{304D}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x20
@@ -679,7 +679,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 32: "\x{5BF5}\x{5150}"
           RenderText {#text} at (742,111) size 17x143
             text run at (742,111) width 142: "\x{3088}\x{308A}\x{3082}\x{5E78}\x{798F}\x{3067}\x{3042}\x{308B}\x{3002}"
-          RenderBR {BR} at (742,253) size 17x1
+          LayoutBR {BR} at (742,253) size 17x1
           RenderText {#text} at (771,0) size 17x260
             text run at (771,0) width 260: "\x{3000}\x{4E16}\x{306B}\x{4F4F}\x{3080}\x{3053}\x{3068}\x{4E8C}\x{5341}\x{5E74}\x{306B}\x{3057}\x{3066}\x{3001}\x{4F4F}\x{3080}\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x33
@@ -831,7 +831,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{8DB3}"
           RenderText {#text} at (992,16) size 17x285
             text run at (992,16) width 285: "\x{3089}\x{306C}\x{3002}\x{5B58}\x{5206}\x{98DF}\x{3048}\x{3070}\x{3042}\x{3068}\x{304C}\x{4E0D}\x{6109}\x{5FEB}\x{3060}\x{3002}\x{2026}\x{2026}"
-          RenderBR {BR} at (992,300) size 17x1
+          LayoutBR {BR} at (992,300) size 17x1
           RenderText {#text} at (1021,0) size 17x16
             text run at (1021,0) width 16: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x16
@@ -1024,7 +1024,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{4F55}"
           RenderText {#text} at (1137,91) size 17x122
             text run at (1137,91) width 121: "\x{306E}\x{4E8B}\x{3082}\x{306A}\x{304B}\x{3063}\x{305F}\x{3002}"
-          RenderBR {BR} at (1137,212) size 17x1
+          LayoutBR {BR} at (1137,212) size 17x1
           RenderText {#text} at (1166,0) size 17x236
             text run at (1166,0) width 236: "\x{3000}\x{7ACB}\x{3061}\x{4E0A}\x{304C}\x{308B}\x{6642}\x{306B}\x{5411}\x{3046}\x{3092}\x{898B}\x{308B}\x{3068}\x{3001}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x19
@@ -1286,7 +1286,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 32: "\x{96E3}\x{7FA9}"
           RenderText {#text} at (1369,446) size 17x33
             text run at (1369,446) width 32: "\x{3060}\x{3002}"
-          RenderBR {BR} at (1369,478) size 17x1
+          LayoutBR {BR} at (1369,478) size 17x1
           RenderText {#text} at (1398,0) size 17x205
             text run at (1398,0) width 205: "\x{3000}\x{571F}\x{3092}\x{306A}\x{3089}\x{3059}\x{3060}\x{3051}\x{306A}\x{3089}\x{3055}\x{307B}\x{3069}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x33
@@ -1482,7 +1482,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 33: "\x{4E03}\x{66F2}"
           RenderText {#text} at (1601,217) size 17x89
             text run at (1601,217) width 88: "\x{308A}\x{3078}\x{304B}\x{304B}\x{308B}\x{3002}"
-          RenderBR {BR} at (1601,305) size 17x1
+          LayoutBR {BR} at (1601,305) size 17x1
           RenderText {#text} at (1630,0) size 17x140
             text run at (1630,0) width 140: "\x{3000}\x{305F}\x{3061}\x{307E}\x{3061}\x{8DB3}\x{306E}\x{4E0B}\x{3067}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x33
@@ -1614,7 +1614,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (1811,459) size 35x490
             text run at (1811,459) width 31: "\x{306B}\x{6B8B}"
             text run at (1829,0) width 139: "\x{308B}\x{306E}\x{304B}\x{3082}\x{77E5}\x{308C}\x{306A}\x{3044}\x{3002}"
-          RenderBR {BR} at (1829,138) size 17x1
+          LayoutBR {BR} at (1829,138) size 17x1
           RenderText {#text} at (1858,0) size 17x16
             text run at (1858,0) width 16: "\x{3000}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x34
@@ -1732,7 +1732,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (1974,347) size 35x504
             text run at (1974,347) width 157: "\x{308C}\x{9055}\x{3046}\x{3068}\x{304D}\x{306B}\x{3082}\x{5143}\x{6C17}\x{3088}"
             text run at (1992,0) width 227: "\x{304F}\x{9CF4}\x{304D}\x{3064}\x{3065}\x{3051}\x{308B}\x{3060}\x{308D}\x{3046}\x{3068}\x{601D}\x{3063}\x{305F}\x{3002}"
-          RenderBR {BR} at (1992,226) size 17x1
+          LayoutBR {BR} at (1992,226) size 17x1
           RenderText {#text} at (2021,0) size 17x190
             text run at (2021,0) width 190: "\x{3000}\x{6625}\x{306F}\x{7720}\x{304F}\x{306A}\x{308B}\x{3002}\x{732B}\x{306F}\x{9F20}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x17
@@ -1794,7 +1794,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (2097,0) width 494: "\x{3059}\x{308B}\x{3002}\x{96F2}\x{96C0}\x{306E}\x{9CF4}\x{304F}\x{306E}\x{306F}\x{53E3}\x{3067}\x{9CF4}\x{304F}\x{306E}\x{3067}\x{306F}\x{306A}\x{3044}\x{3001}\x{9B42}\x{5168}\x{4F53}\x{304C}\x{9CF4}\x{304F}\x{306E}\x{3060}\x{3002}\x{9B42}\x{306E}\x{6D3B}"
             text run at (2115,0) width 495: "\x{52D5}\x{304C}\x{58F0}\x{306B}\x{3042}\x{3089}\x{308F}\x{308C}\x{305F}\x{3082}\x{306E}\x{306E}\x{3046}\x{3061}\x{3067}\x{3001}\x{3042}\x{308C}\x{307B}\x{3069}\x{5143}\x{6C17}\x{306E}\x{3042}\x{308B}\x{3082}\x{306E}\x{306F}\x{306A}\x{3044}\x{3002}\x{3042}"
             text run at (2133,0) width 383: "\x{3042}\x{6109}\x{5FEB}\x{3060}\x{3002}\x{3053}\x{3046}\x{601D}\x{3063}\x{3066}\x{3001}\x{3053}\x{3046}\x{6109}\x{5FEB}\x{306B}\x{306A}\x{308B}\x{306E}\x{304C}\x{8A69}\x{3067}\x{3042}\x{308B}\x{3002}"
-          RenderBR {BR} at (2133,382) size 17x1
+          LayoutBR {BR} at (2133,382) size 17x1
           RenderText {#text} at (2151,0) size 46x500
             text run at (2151,0) width 500: "\x{3000}\x{305F}\x{3061}\x{307E}\x{3061}\x{30B7}\x{30A7}\x{30EC}\x{30FC}\x{306E}\x{96F2}\x{96C0}\x{306E}\x{8A69}\x{3092}\x{601D}\x{3044}\x{51FA}\x{3057}\x{3066}\x{3001}\x{53E3}\x{306E}\x{3046}\x{3061}\x{3067}\x{899A}\x{3048}\x{305F}\x{3068}\x{3053}\x{308D}\x{3060}"
             text run at (2180,0) width 15: "\x{3051}"
@@ -1810,23 +1810,23 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (2180,52) size 35x491
             text run at (2180,52) width 439: "\x{3057}\x{3066}\x{898B}\x{305F}\x{304C}\x{3001}\x{899A}\x{3048}\x{3066}\x{3044}\x{308B}\x{3068}\x{3053}\x{308D}\x{306F}\x{4E8C}\x{4E09}\x{53E5}\x{3057}\x{304B}\x{306A}\x{304B}\x{3063}\x{305F}\x{3002}\x{305D}\x{306E}\x{4E8C}\x{4E09}"
             text run at (2198,0) width 198: "\x{53E5}\x{306E}\x{306A}\x{304B}\x{306B}\x{3053}\x{3093}\x{306A}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
-          RenderBR {BR} at (2198,198) size 17x0
+          LayoutBR {BR} at (2198,198) size 17x0
         RenderBlock {DIV} at (2216,32) size 90x472
           RenderText {#text} at (0,0) size 17x191
             text run at (0,0) width 191: "\x{3000}\x{3000}We look before and after"
-          RenderBR {BR} at (0,190) size 17x1
+          LayoutBR {BR} at (0,190) size 17x1
           RenderText {#text} at (18,0) size 17x225
             text run at (18,0) width 225: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
-          RenderBR {BR} at (18,224) size 17x1
+          LayoutBR {BR} at (18,224) size 17x1
           RenderText {#text} at (36,0) size 17x174
             text run at (36,0) width 174: "\x{3000}\x{3000}Our sincerest laughter"
-          RenderBR {BR} at (36,173) size 17x1
+          LayoutBR {BR} at (36,173) size 17x1
           RenderText {#text} at (54,0) size 17x234
             text run at (54,0) width 234: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
-          RenderBR {BR} at (54,233) size 17x1
+          LayoutBR {BR} at (54,233) size 17x1
           RenderText {#text} at (72,0) size 17x363
             text run at (72,0) width 363: "Our sweetest songs are those that tell of saddest thought."
-          RenderBR {BR} at (72,362) size 17x1
+          LayoutBR {BR} at (72,362) size 17x1
         RenderBlock (anonymous) at (2306,0) size 1623x504
           RenderText {#text} at (12,0) size 17x108
             text run at (12,0) width 108: "\x{300C}\x{524D}\x{3092}\x{307F}\x{3066}\x{306F}\x{3001}"
@@ -1887,7 +1887,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{7C60}"
           RenderText {#text} at (70,172) size 17x96
             text run at (70,172) width 95: "\x{308B}\x{3068}\x{305E}\x{77E5}\x{308C}\x{300D}"
-          RenderBR {BR} at (70,267) size 17x1
+          LayoutBR {BR} at (70,267) size 17x1
           RenderText {#text} at (88,0) size 46x489
             text run at (88,0) width 489: "\x{3000}\x{306A}\x{308B}\x{307B}\x{3069}\x{3044}\x{304F}\x{3089}\x{8A69}\x{4EBA}\x{304C}\x{5E78}\x{798F}\x{3067}\x{3082}\x{3001}\x{3042}\x{306E}\x{96F2}\x{96C0}\x{306E}\x{3088}\x{3046}\x{306B}\x{601D}\x{3044}\x{5207}\x{3063}\x{3066}\x{3001}\x{4E00}\x{5FC3}"
             text run at (117,0) width 298: "\x{4E0D}\x{4E71}\x{306B}\x{3001}\x{524D}\x{5F8C}\x{3092}\x{5FD8}\x{5374}\x{3057}\x{3066}\x{3001}\x{308F}\x{304C}\x{559C}\x{3073}\x{3092}\x{6B4C}\x{3046}"
@@ -1973,7 +1973,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (233,150) size 35x480
             text run at (233,150) width 329: "\x{3082}\x{591A}\x{304B}\x{308D}\x{3046}\x{3002}\x{305D}\x{3093}\x{306A}\x{3089}\x{3070}\x{8A69}\x{4EBA}\x{306B}\x{306A}\x{308B}\x{306E}\x{3082}\x{8003}\x{3048}\x{7269}"
             text run at (251,0) width 32: "\x{3060}\x{3002}"
-          RenderBR {BR} at (251,31) size 17x1
+          LayoutBR {BR} at (251,31) size 17x1
           RenderText {#text} at (280,0) size 17x125
             text run at (280,0) width 125: "\x{3000}\x{3057}\x{3070}\x{3089}\x{304F}\x{306F}\x{8DEF}\x{304C}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x18
@@ -2057,7 +2057,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 32: "\x{5451}\x{6C17}"
           RenderText {#text} at (385,213) size 17x231
             text run at (385,213) width 231: "\x{306A}\x{3082}\x{306E}\x{3060}\x{3002}\x{307E}\x{305F}\x{8003}\x{3048}\x{3092}\x{3064}\x{3065}\x{3051}\x{308B}\x{3002}"
-          RenderBR {BR} at (385,443) size 17x1
+          LayoutBR {BR} at (385,443) size 17x1
           RenderText {#text} at (414,0) size 17x63
             text run at (414,0) width 63: "\x{3000}\x{8A69}\x{4EBA}\x{306B}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x18
@@ -2152,7 +2152,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (519,392) size 35x496
             text run at (519,392) width 104: "\x{3044}\x{3082}\x{306E}\x{304C}\x{98DF}\x{3079}\x{3089}"
             text run at (537,0) width 170: "\x{308C}\x{306C}\x{304F}\x{3089}\x{3044}\x{306E}\x{4E8B}\x{3060}\x{308D}\x{3046}\x{3002}"
-          RenderBR {BR} at (537,169) size 17x1
+          LayoutBR {BR} at (537,169) size 17x1
           RenderText {#text} at (566,0) size 17x398
             text run at (566,0) width 398: "\x{3000}\x{3057}\x{304B}\x{3057}\x{82E6}\x{3057}\x{307F}\x{306E}\x{306A}\x{3044}\x{306E}\x{306F}\x{306A}\x{305C}\x{3060}\x{308D}\x{3046}\x{3002}\x{305F}\x{3060}\x{3053}\x{306E}\x{666F}\x{8272}\x{3092}\x{4E00}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x19
@@ -2301,7 +2301,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 32: "\x{9187}\x{4E4E}"
           RenderText {#text} at (740,60) size 17x341
             text run at (740,60) width 341: "\x{3068}\x{3057}\x{3066}\x{9187}\x{306A}\x{308B}\x{8A69}\x{5883}\x{306B}\x{5165}\x{3089}\x{3057}\x{3080}\x{308B}\x{306E}\x{306F}\x{81EA}\x{7136}\x{3067}\x{3042}\x{308B}\x{3002}"
-          RenderBR {BR} at (740,400) size 17x1
+          LayoutBR {BR} at (740,400) size 17x1
           RenderText {#text} at (758,0) size 46x494
             text run at (758,0) width 494: "\x{3000}\x{604B}\x{306F}\x{3046}\x{3064}\x{304F}\x{3057}\x{304B}\x{308D}\x{3001}\x{5B5D}\x{3082}\x{3046}\x{3064}\x{304F}\x{3057}\x{304B}\x{308D}\x{3001}\x{5FE0}\x{541B}\x{611B}\x{56FD}\x{3082}\x{7D50}\x{69CB}\x{3060}\x{308D}\x{3046}\x{3002}\x{3057}\x{304B}"
             text run at (787,0) width 92: "\x{3057}\x{81EA}\x{8EAB}\x{304C}\x{305D}\x{306E}"
@@ -2362,7 +2362,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{89E3}"
           RenderText {#text} at (845,61) size 17x78
             text run at (845,61) width 78: "\x{3057}\x{304B}\x{306D}\x{308B}\x{3002}"
-          RenderBR {BR} at (845,138) size 17x1
+          LayoutBR {BR} at (845,138) size 17x1
           RenderText {#text} at (863,0) size 46x495
             text run at (863,0) width 495: "\x{3000}\x{3053}\x{308C}\x{304C}\x{308F}\x{304B}\x{308B}\x{305F}\x{3081}\x{306B}\x{306F}\x{3001}\x{308F}\x{304B}\x{308B}\x{3060}\x{3051}\x{306E}\x{4F59}\x{88D5}\x{306E}\x{3042}\x{308B}\x{7B2C}\x{4E09}\x{8005}\x{306E}\x{5730}\x{4F4D}\x{306B}\x{7ACB}\x{305F}"
             text run at (892,0) width 309: "\x{306D}\x{3070}\x{306A}\x{3089}\x{306C}\x{3002}\x{4E09}\x{8005}\x{306E}\x{5730}\x{4F4D}\x{306B}\x{7ACB}\x{3066}\x{3070}\x{3053}\x{305D}\x{829D}\x{5C45}\x{306F}"
@@ -2389,7 +2389,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{68DA}"
           RenderText {#text} at (939,17) size 17x400
             text run at (939,17) width 399: "\x{3078}\x{4E0A}\x{3052}\x{3066}\x{3044}\x{308B}\x{3002}\x{898B}\x{305F}\x{308A}\x{8AAD}\x{3093}\x{3060}\x{308A}\x{3059}\x{308B}\x{9593}\x{3060}\x{3051}\x{306F}\x{8A69}\x{4EBA}\x{3067}\x{3042}\x{308B}\x{3002}"
-          RenderBR {BR} at (939,416) size 17x1
+          LayoutBR {BR} at (939,416) size 17x1
           RenderText {#text} at (968,0) size 17x298
             text run at (968,0) width 298: "\x{3000}\x{305D}\x{308C}\x{3059}\x{3089}\x{3001}\x{666E}\x{901A}\x{306E}\x{829D}\x{5C45}\x{3084}\x{5C0F}\x{8AAC}\x{3067}\x{306F}\x{4EBA}\x{60C5}\x{3092}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x19
@@ -2462,7 +2462,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
                     text run at (0,0) width 16: "\x{5ACC}"
           RenderText {#text} at (1073,203) size 17x33
             text run at (1073,203) width 32: "\x{3060}\x{3002}"
-          RenderBR {BR} at (1073,235) size 17x1
+          LayoutBR {BR} at (1073,235) size 17x1
           RenderText {#text} at (1091,0) size 46x504
             text run at (1091,0) width 504: "\x{3000}\x{82E6}\x{3057}\x{3093}\x{3060}\x{308A}\x{3001}\x{6012}\x{3063}\x{305F}\x{308A}\x{3001}\x{9A12}\x{3044}\x{3060}\x{308A}\x{3001}\x{6CE3}\x{3044}\x{305F}\x{308A}\x{306F}\x{4EBA}\x{306E}\x{4E16}\x{306B}\x{3064}\x{304D}\x{3082}\x{306E}\x{3060}\x{3002}\x{4F59}"
             text run at (1120,0) width 142: "\x{3082}\x{4E09}\x{5341}\x{5E74}\x{306E}\x{9593}\x{305D}\x{308C}\x{3092}"
@@ -2630,7 +2630,7 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (1337,378) size 35x500
             text run at (1337,378) width 122: "\x{3092}\x{805E}\x{3044}\x{3066}\x{5606}\x{606F}\x{3057}\x{305F}"
             text run at (1355,0) width 123: "\x{306E}\x{3082}\x{7121}\x{7406}\x{306F}\x{306A}\x{3044}\x{3002}"
-          RenderBR {BR} at (1355,122) size 17x1
+          LayoutBR {BR} at (1355,122) size 17x1
           RenderText {#text} at (1384,0) size 17x153
             text run at (1384,0) width 153: "\x{3000}\x{3046}\x{308C}\x{3057}\x{3044}\x{4E8B}\x{306B}\x{6771}\x{6D0B}\x{306E}"
           LayoutRuby (inline) {RUBY} at (0,0) size 17x33
@@ -2901,4 +2901,4 @@ layer at (-3374,0) size 4174x600 backgroundClip at (0,0) size 800x600 clip at (0
           RenderText {#text} at (1587,364) size 35x501
             text run at (1587,364) width 136: "\x{306B}\x{3001}\x{3059}\x{3079}\x{3066}\x{3092}\x{5FD8}\x{5374}\x{3057}"
             text run at (1605,0) width 262: "\x{3066}\x{3050}\x{3063}\x{3059}\x{308A}\x{5BDD}\x{8FBC}\x{3080}\x{3088}\x{3046}\x{306A}\x{529F}\x{5FB3}\x{3067}\x{3042}\x{308B}\x{3002}"
-          RenderBR {BR} at (1605,261) size 17x1
+          LayoutBR {BR} at (1605,261) size 17x1

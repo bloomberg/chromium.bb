@@ -12,13 +12,13 @@ layer at (0,0) size 785x1449 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 146: "WICD Core 1.0 #20-3"
         RenderBlock {p} at (0,121.14) size 769x0
           RenderBlock (floating) {div} at (256.30,128) size 256.30x448
-            RenderBR {br} at (256,0) size 1x19
+            LayoutBR {br} at (256,0) size 1x19
           RenderBlock (floating) {div} at (512.59,128) size 256.30x448
           RenderBlock (floating) {div} at (384.50,704) size 384.50x192
           RenderBlock (floating) {div} at (0,896) size 384.50x192
           RenderBlock (floating) {div} at (384.50,1024) size 384.50x128
         RenderBlock {p} at (0,121.14) size 769x596 [color=#FFFFFF]
-          RenderBR {br} at (769,0) size 0x19
+          LayoutBR {br} at (769,0) size 0x19
           RenderText {#text} at (640,576) size 9x19
             text run at (640,576) width 9: ".."
         RenderBlock {p} at (0,733.14) size 769x580
@@ -50,7 +50,7 @@ layer at (0,0) size 785x1449 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 755: "The test is successful, if all SVG elements resize exacly dependend on the width of the browser window, but keep their aspect"
             text run at (0,20) width 553: "ratio and relative position. The complete grid should always show a perfect rectangle object."
         RenderBlock {p} at (0,1385.14) size 769x40
-          RenderBR {br} at (0,0) size 0x19
+          LayoutBR {br} at (0,0) size 0x19
           RenderInline {a} at (0,0) size 32x19 [color=#0000EE]
             RenderText {#text} at (0,20) size 32x19
               text run at (0,20) width 32: "Back"

@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         RenderBlock (anonymous) at (14,23.59) size 87.09x36
           RenderText {#text} at (0,0) size 81x17
             text run at (0,0) width 81: "Hello world."
-          RenderBR {BR} at (80,14) size 1x0
+          LayoutBR {BR} at (80,14) size 1x0
           RenderText {#text} at (0,18) size 81x17
             text run at (0,18) width 81: "Hello world."
       RenderText {#text} at (119,41) size 5x17

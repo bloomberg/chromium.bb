@@ -12,8 +12,8 @@ layer at (0,0) size 800x410
         text run at (502,0) width 138: "\". The 6th higlighted "
         text run at (639,0) width 119: "instance should be"
         text run at (0,18) width 43: "active."
-      RenderBR {BR} at (42,18) size 1x17
-      RenderBR {BR} at (0,36) size 0x17
+      LayoutBR {BR} at (42,18) size 1x17
+      LayoutBR {BR} at (0,36) size 0x17
       RenderText {#text} at (0,54) size 91x17
         text run at (0,54) width 91: "Lorum ipsum "
       RenderInline {SPAN} at (0,0) size 46x17
@@ -29,7 +29,7 @@ layer at (0,0) size 800x410
           text run at (270,54) width 46: "findme"
       RenderText {#text} at (315,54) size 48x17
         text run at (315,54) width 48: " lorum."
-      RenderBR {BR} at (362,54) size 1x17
+      LayoutBR {BR} at (362,54) size 1x17
       RenderText {#text} at (0,72) size 53x17
         text run at (0,72) width 53: "longtext"
       RenderInline {SPAN} at (0,0) size 46x17
@@ -37,7 +37,7 @@ layer at (0,0) size 800x410
           text run at (52,72) width 46: "findme"
       RenderText {#text} at (97,72) size 45x17
         text run at (97,72) width 45: "noyou."
-      RenderBR {BR} at (141,72) size 1x17
+      LayoutBR {BR} at (141,72) size 1x17
       RenderSVGRoot {svg} at (18,134) size 228x160
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGPath {path} at (108,98) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]

@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x81
           RenderText {#text} at (0,0) size 68x26
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,27) size 162x26
             text run at (0,27) width 162: "Fix for this bug: "
           RenderInline {A} at (0,0) size 551x26 [color=#0000EE]
@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
           RenderBlock (anonymous) at (0,0) size 756x54
             RenderText {#text} at (0,0) size 190x26
               text run at (0,0) width 190: "Expected Results: "
-            RenderBR {BR} at (189,21) size 1x0
+            LayoutBR {BR} at (189,21) size 1x0
             RenderText {#text} at (0,27) size 201x26
               text run at (0,27) width 201: "Should see the string"
           RenderBlock {PRE} at (0,78) size 756x27

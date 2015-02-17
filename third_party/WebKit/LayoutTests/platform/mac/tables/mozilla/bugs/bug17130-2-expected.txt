@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (136,1) size 9x18
                   text run at (136,1) width 9: " :"
       RenderBlock (anonymous) at (0,102.53) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {H4} at (0,141.80) size 784x18
         RenderText {#text} at (0,0) size 487x18
           text run at (0,0) width 487: "This is the same table as above but with all <SPAN> elements removed."

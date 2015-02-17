@@ -15,10 +15,10 @@ layer at (0,0) size 800x600
           text run at (607,0) width 155: "The table should push it"
           text run at (0,18) width 341: "out to 100% but it doesn't. Instead the layer collapses"
       RenderBlock {P} at (0,52) size 784x72
-        RenderBR {BR} at (0,0) size 0x17
-        RenderBR {BR} at (0,18) size 0x17
-        RenderBR {BR} at (0,36) size 0x17
-        RenderBR {BR} at (0,54) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,18) size 0x17
+        LayoutBR {BR} at (0,36) size 0x17
+        LayoutBR {BR} at (0,54) size 0x17
       RenderBlock {P} at (0,140) size 784x36
         RenderText {#text} at (0,0) size 266x17
           text run at (0,0) width 266: "The next table is inside a div tag set with "
@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
             text run at (265,0) width 53: "relative"
         RenderText {#text} at (317,0) size 85x17
           text run at (317,0) width 85: " positioning. "
-        RenderBR {BR} at (401,14) size 1x0
+        LayoutBR {BR} at (401,14) size 1x0
         RenderText {#text} at (0,18) size 142x17
           text run at (0,18) width 142: "No width has been set"
 layer at (8,70) size 142x28

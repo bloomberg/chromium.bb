@@ -3,31 +3,31 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBR {BR} at (0,0) size 0x19
-      RenderBR {BR} at (0,20) size 0x19
-      RenderBR {BR} at (0,40) size 0x19
-      RenderBR {BR} at (0,60) size 0x19
+      LayoutBR {BR} at (0,0) size 0x19
+      LayoutBR {BR} at (0,20) size 0x19
+      LayoutBR {BR} at (0,40) size 0x19
+      LayoutBR {BR} at (0,60) size 0x19
       RenderText {#text} at (0,80) size 172x19
         text run at (0,80) width 172: "24 green box with word ok: "
       RenderText {#text} at (0,0) size 0x0
-      RenderBR {BR} at (0,0) size 0x0
-      RenderBR {BR} at (0,100) size 0x19
-      RenderBR {BR} at (0,120) size 0x19
-      RenderBR {BR} at (0,140) size 0x19
+      LayoutBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,100) size 0x19
+      LayoutBR {BR} at (0,120) size 0x19
+      LayoutBR {BR} at (0,140) size 0x19
       RenderText {#text} at (0,160) size 172x19
         text run at (0,160) width 172: "25 green box with word ok: "
       RenderText {#text} at (0,0) size 0x0
-      RenderBR {BR} at (0,0) size 0x0
-      RenderBR {BR} at (0,180) size 0x19
-      RenderBR {BR} at (0,200) size 0x19
-      RenderBR {BR} at (0,220) size 0x19
+      LayoutBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,180) size 0x19
+      LayoutBR {BR} at (0,200) size 0x19
+      LayoutBR {BR} at (0,220) size 0x19
       RenderText {#text} at (0,240) size 172x19
         text run at (0,240) width 172: "26 green box with word ok: "
       RenderText {#text} at (0,0) size 0x0
-      RenderBR {BR} at (0,0) size 0x0
-      RenderBR {BR} at (0,260) size 0x19
-      RenderBR {BR} at (0,280) size 0x19
-      RenderBR {BR} at (0,300) size 0x19
+      LayoutBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,260) size 0x19
+      LayoutBR {BR} at (0,280) size 0x19
+      LayoutBR {BR} at (0,300) size 0x19
 hidden layer at (0,108) size 800x34
   RenderBlock (positioned) {DIV} at (0,108) size 800x34 [border: (2px solid #FF0000)]
     RenderBlock {DIV} at (2,2) size 796x4 [border: (2px solid #FF0000)]

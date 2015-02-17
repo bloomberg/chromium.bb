@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 785.63x34
         RenderText {#text} at (0,0) size 307x16
           text run at (0,0) width 307: "Tests that these functions account for full page zoom."
-        RenderBR {BR} at (307,13) size 0x0
+        LayoutBR {BR} at (307,13) size 0x0
         RenderText {#text} at (0,17) size 174x16
           text run at (0,17) width 174: "There should be no red visible."
       LayoutTable {TABLE} at (0,48.39) size 785x19

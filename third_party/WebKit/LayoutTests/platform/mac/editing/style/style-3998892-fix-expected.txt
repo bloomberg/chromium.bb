@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x84
           RenderText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,28) size 113x28
             text run at (0,28) width 113: "Bug fix for "
           RenderInline {A} at (0,0) size 258x28 [color=#0000EE]
@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,114) size 756x56
           RenderText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
-          RenderBR {BR} at (189,22) size 1x0
+          LayoutBR {BR} at (189,22) size 1x0
           RenderText {#text} at (0,28) size 599x28
             text run at (0,28) width 599: "Should see first line (\"foo\") not bold; second line (\"bar\") bold."
       RenderBlock {DIV} at (0,208) size 784x60

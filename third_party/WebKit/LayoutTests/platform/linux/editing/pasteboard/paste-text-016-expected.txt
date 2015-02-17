@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
             text run at (89,0) width 164: "<rdar://problem/3927554>"
         RenderText {#text} at (253,0) size 367x19
           text run at (253,0) width 367: " REGRESSION (Mail): Paste inserts content in wrong place "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
         RenderText {#text} at (0,20) size 355x19
           text run at (0,20) width 355: "***TEST*** line should be second, following the first line."
       RenderBlock {DIV} at (0,40) size 784x12
@@ -37,12 +37,12 @@ layer at (0,0) size 800x600
           RenderBlock {P} at (14,14) size 756x28
             RenderText {#text} at (0,0) size 313x27
               text run at (0,0) width 313: "Should be first line of document."
-            RenderBR {BR} at (313,21) size 0x0
+            LayoutBR {BR} at (313,21) size 0x0
           RenderBlock {P} at (14,42) size 756x28
             RenderText {#text} at (0,0) size 127x27
               text run at (0,0) width 127: "***TEST***"
           RenderBlock {DIV} at (14,70) size 756x28
-            RenderBR {BR} at (0,0) size 0x27
+            LayoutBR {BR} at (0,0) size 0x27
           RenderBlock {P} at (14,98) size 756x28
             RenderText {#text} at (0,0) size 126x27
               text run at (0,0) width 126: "Another line."
@@ -55,5 +55,5 @@ layer at (0,0) size 800x600
             RenderText {#text} at (0,0) size 6x27
               text run at (0,0) width 6: " "
           RenderBlock {P} at (14,182) size 756x28
-            RenderBR {BR} at (0,0) size 0x27
+            LayoutBR {BR} at (0,0) size 0x27
 caret: position 0 of child 0 {BR} of child 2 {DIV} of child 1 {DIV} of child 7 {DIV} of body

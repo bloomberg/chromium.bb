@@ -9,11 +9,11 @@ layer at (0,0) size 800x600
           text run at (138,0) width 618: "accessing a frame's document while it is still loading does not prevent the load, but can access at"
           text run at (0,18) width 226: "least a temporary empty document."
       RenderBlock (anonymous) at (0,52) size 784x116
-        RenderBR {BR} at (300,40) size 0x0
-        RenderBR {BR} at (300,80) size 0x0
+        LayoutBR {BR} at (300,40) size 0x0
+        LayoutBR {BR} at (300,80) size 0x0
         RenderText {#text} at (0,80) size 166x18
           text run at (0,80) width 166: "[object HTMLDocument]"
-        RenderBR {BR} at (165,94) size 1x0
+        LayoutBR {BR} at (165,94) size 1x0
         RenderText {#text} at (0,98) size 166x18
           text run at (0,98) width 166: "[object HTMLDocument]"
       RenderBlock {P} at (0,184) size 784x18

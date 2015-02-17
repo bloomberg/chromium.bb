@@ -37,7 +37,7 @@ layer at (208,67) size 469x162
   RenderBlock {DIV} at (200,0) size 469x162 [bgcolor=#FFA500]
     RenderText {#text} at (0,0) size 144x17
       text run at (0,0) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,0) size 1x17
+    LayoutBR {BR} at (143,0) size 1x17
     RenderText {#text} at (0,18) size 97x17
       text run at (0,18) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -51,14 +51,14 @@ layer at (208,67) size 469x162
         text run at (75,38) width 129: "overflow: hidden"
     RenderText {#text} at (203,36) size 5x17
       text run at (203,36) width 5: ";"
-    RenderBR {BR} at (207,36) size 1x17
+    LayoutBR {BR} at (207,36) size 1x17
     RenderText {#text} at (0,54) size 334x17
       text run at (0,54) width 334: "\x{2013} has a 100px left margin and a 100px right margin;"
-    RenderBR {BR} at (333,54) size 1x17
-    RenderBR {BR} at (0,72) size 0x17
+    LayoutBR {BR} at (333,54) size 1x17
+    LayoutBR {BR} at (0,72) size 0x17
     RenderText {#text} at (0,90) size 144x17
       text run at (0,90) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,90) size 1x17
+    LayoutBR {BR} at (143,90) size 1x17
     RenderText {#text} at (0,108) size 97x17
       text run at (0,108) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -72,7 +72,7 @@ layer at (208,67) size 469x162
         text run at (75,128) width 129: "overflow: hidden"
     RenderText {#text} at (203,126) size 5x17
       text run at (203,126) width 5: ";"
-    RenderBR {BR} at (207,126) size 1x17
+    LayoutBR {BR} at (207,126) size 1x17
     RenderText {#text} at (0,144) size 334x17
       text run at (0,144) width 334: "\x{2013} has a 100px left margin and a 100px right margin;"
 layer at (8,412) size 769x200 backgroundClip at (8,412) size 769x188 clip at (8,412) size 769x188 outlineClip at (0,0) size 785x600
@@ -86,7 +86,7 @@ layer at (208,412) size 569x162
   RenderBlock {DIV} at (200,0) size 569x162 [bgcolor=#FFA500]
     RenderText {#text} at (0,0) size 144x17
       text run at (0,0) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,0) size 1x17
+    LayoutBR {BR} at (143,0) size 1x17
     RenderText {#text} at (0,18) size 97x17
       text run at (0,18) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -100,14 +100,14 @@ layer at (208,412) size 569x162
         text run at (0,38) width 48: "hidden"
     RenderText {#text} at (48,36) size 5x17
       text run at (48,36) width 5: ";"
-    RenderBR {BR} at (52,36) size 1x17
+    LayoutBR {BR} at (52,36) size 1x17
     RenderText {#text} at (0,54) size 168x17
       text run at (0,54) width 168: "\x{2013} has a 200px left margin;"
-    RenderBR {BR} at (167,54) size 1x17
-    RenderBR {BR} at (0,72) size 0x17
+    LayoutBR {BR} at (167,54) size 1x17
+    LayoutBR {BR} at (0,72) size 0x17
     RenderText {#text} at (0,90) size 144x17
       text run at (0,90) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,90) size 1x17
+    LayoutBR {BR} at (143,90) size 1x17
     RenderText {#text} at (0,108) size 97x17
       text run at (0,108) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -121,7 +121,7 @@ layer at (208,412) size 569x162
         text run at (0,128) width 48: "hidden"
     RenderText {#text} at (48,126) size 5x17
       text run at (48,126) width 5: ";"
-    RenderBR {BR} at (52,126) size 1x17
+    LayoutBR {BR} at (52,126) size 1x17
     RenderText {#text} at (0,144) size 168x17
       text run at (0,144) width 168: "\x{2013} has a 200px left margin;"
 layer at (8,757) size 769x200 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
@@ -136,7 +136,7 @@ layer at (308,757) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) s
   RenderBlock {DIV} at (300,0) size 369x162 [bgcolor=#FFA500]
     RenderText {#text} at (0,0) size 144x17
       text run at (0,0) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,0) size 1x17
+    LayoutBR {BR} at (143,0) size 1x17
     RenderText {#text} at (0,18) size 97x17
       text run at (0,18) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -150,14 +150,14 @@ layer at (308,757) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) s
         text run at (131,38) width 129: "overflow: hidden"
     RenderText {#text} at (259,36) size 5x17
       text run at (259,36) width 5: ";"
-    RenderBR {BR} at (263,36) size 1x17
+    LayoutBR {BR} at (263,36) size 1x17
     RenderText {#text} at (0,54) size 318x17
       text run at (0,54) width 318: "\x{2013} has a 0px left margin and a 100px right margin;"
-    RenderBR {BR} at (317,54) size 1x17
-    RenderBR {BR} at (0,72) size 0x17
+    LayoutBR {BR} at (317,54) size 1x17
+    LayoutBR {BR} at (0,72) size 0x17
     RenderText {#text} at (0,90) size 144x17
       text run at (0,90) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,90) size 1x17
+    LayoutBR {BR} at (143,90) size 1x17
     RenderText {#text} at (0,108) size 97x17
       text run at (0,108) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -171,7 +171,7 @@ layer at (308,757) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) s
         text run at (131,128) width 129: "overflow: hidden"
     RenderText {#text} at (259,126) size 5x17
       text run at (259,126) width 5: ";"
-    RenderBR {BR} at (263,126) size 1x17
+    LayoutBR {BR} at (263,126) size 1x17
     RenderText {#text} at (0,144) size 318x17
       text run at (0,144) width 318: "\x{2013} has a 0px left margin and a 100px right margin;"
 layer at (8,1102) size 769x200 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
@@ -191,7 +191,7 @@ layer at (208,1102) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) 
   RenderBlock {DIV} at (200,0) size 369x162 [bgcolor=#FFA500]
     RenderText {#text} at (0,0) size 144x17
       text run at (0,0) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,0) size 1x17
+    LayoutBR {BR} at (143,0) size 1x17
     RenderText {#text} at (0,18) size 97x17
       text run at (0,18) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -205,14 +205,14 @@ layer at (208,1102) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) 
         text run at (131,38) width 129: "overflow: hidden"
     RenderText {#text} at (259,36) size 5x17
       text run at (259,36) width 5: ";"
-    RenderBR {BR} at (263,36) size 1x17
+    LayoutBR {BR} at (263,36) size 1x17
     RenderText {#text} at (0,54) size 334x17
       text run at (0,54) width 334: "\x{2013} has a 100px left margin and a 100px right margin;"
-    RenderBR {BR} at (333,54) size 1x17
-    RenderBR {BR} at (0,72) size 0x17
+    LayoutBR {BR} at (333,54) size 1x17
+    LayoutBR {BR} at (0,72) size 0x17
     RenderText {#text} at (0,90) size 144x17
       text run at (0,90) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,90) size 1x17
+    LayoutBR {BR} at (143,90) size 1x17
     RenderText {#text} at (0,108) size 97x17
       text run at (0,108) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -226,7 +226,7 @@ layer at (208,1102) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) 
         text run at (131,128) width 129: "overflow: hidden"
     RenderText {#text} at (259,126) size 5x17
       text run at (259,126) width 5: ";"
-    RenderBR {BR} at (263,126) size 1x17
+    LayoutBR {BR} at (263,126) size 1x17
     RenderText {#text} at (0,144) size 334x17
       text run at (0,144) width 334: "\x{2013} has a 100px left margin and a 100px right margin;"
 layer at (8,1446) size 769x200 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
@@ -246,7 +246,7 @@ layer at (208,1446) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) 
   RenderBlock {DIV} at (200,0) size 369x162 [bgcolor=#FFA500]
     RenderText {#text} at (0,0) size 144x17
       text run at (0,0) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,0) size 1x17
+    LayoutBR {BR} at (143,0) size 1x17
     RenderText {#text} at (0,18) size 97x17
       text run at (0,18) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -260,14 +260,14 @@ layer at (208,1446) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) 
         text run at (131,38) width 129: "overflow: hidden"
     RenderText {#text} at (259,36) size 5x17
       text run at (259,36) width 5: ";"
-    RenderBR {BR} at (263,36) size 1x17
+    LayoutBR {BR} at (263,36) size 1x17
     RenderText {#text} at (0,54) size 177x17
       text run at (0,54) width 177: "\x{2013} has a 200px right margin;"
-    RenderBR {BR} at (176,54) size 1x17
-    RenderBR {BR} at (0,72) size 0x17
+    LayoutBR {BR} at (176,54) size 1x17
+    LayoutBR {BR} at (0,72) size 0x17
     RenderText {#text} at (0,90) size 144x17
       text run at (0,90) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,90) size 1x17
+    LayoutBR {BR} at (143,90) size 1x17
     RenderText {#text} at (0,108) size 97x17
       text run at (0,108) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 196x17
@@ -281,7 +281,7 @@ layer at (208,1446) size 369x162 backgroundClip at (0,0) size 0x0 clip at (0,0) 
         text run at (131,128) width 129: "overflow: hidden"
     RenderText {#text} at (259,126) size 5x17
       text run at (259,126) width 5: ";"
-    RenderBR {BR} at (263,126) size 1x17
+    LayoutBR {BR} at (263,126) size 1x17
     RenderText {#text} at (0,144) size 177x17
       text run at (0,144) width 177: "\x{2013} has a 200px right margin;"
 layer at (8,1791) size 769x270 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
@@ -302,7 +302,7 @@ layer at (308,1791) size 169x270 backgroundClip at (0,0) size 0x0 clip at (0,0) 
   RenderBlock {DIV} at (300,0) size 169x270 [bgcolor=#FFA500]
     RenderText {#text} at (0,0) size 144x17
       text run at (0,0) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,0) size 1x17
+    LayoutBR {BR} at (143,0) size 1x17
     RenderText {#text} at (0,18) size 97x17
       text run at (0,18) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 166x35
@@ -317,15 +317,15 @@ layer at (308,1791) size 169x270 backgroundClip at (0,0) size 0x0 clip at (0,0) 
         text run at (0,74) width 128: "overflow: hidden"
     RenderText {#text} at (128,72) size 5x17
       text run at (128,72) width 5: ";"
-    RenderBR {BR} at (132,72) size 1x17
+    LayoutBR {BR} at (132,72) size 1x17
     RenderText {#text} at (0,90) size 151x35
       text run at (0,90) width 148: "\x{2013} has a 0px left margin"
       text run at (0,108) width 151: "and a 0px right margin;"
-    RenderBR {BR} at (150,108) size 1x17
-    RenderBR {BR} at (0,126) size 0x17
+    LayoutBR {BR} at (150,108) size 1x17
+    LayoutBR {BR} at (0,126) size 0x17
     RenderText {#text} at (0,144) size 144x17
       text run at (0,144) width 144: "This orange rectangle:"
-    RenderBR {BR} at (143,144) size 1x17
+    LayoutBR {BR} at (143,144) size 1x17
     RenderText {#text} at (0,162) size 97x17
       text run at (0,162) width 97: "\x{2013} establishes a "
     RenderInline {STRONG} at (0,0) size 166x35
@@ -340,7 +340,7 @@ layer at (308,1791) size 169x270 backgroundClip at (0,0) size 0x0 clip at (0,0) 
         text run at (0,218) width 128: "overflow: hidden"
     RenderText {#text} at (128,216) size 5x17
       text run at (128,216) width 5: ";"
-    RenderBR {BR} at (132,216) size 1x17
+    LayoutBR {BR} at (132,216) size 1x17
     RenderText {#text} at (0,234) size 151x35
       text run at (0,234) width 148: "\x{2013} has a 0px left margin"
       text run at (0,252) width 151: "and a 0px right margin;"

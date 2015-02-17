@@ -13,14 +13,14 @@ layer at (0,0) size 800x900 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,58) width 576: "upon this continent, a new nation, conceived in Liberty, and"
             text run at (575,58) width 7: " "
             text run at (0,106) width 393: "dedicated to the proposition that all men "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,154) size 584x124
             text run at (0,154) width 569: "are created equal. Now we are engaged in a great civil war,"
             text run at (568,154) width 7: " "
             text run at (0,202) width 578: "testing whether that nation, or any nation, so conceived, and"
             text run at (577,202) width 7: " "
             text run at (0,250) width 562: "so dedicated, can long endure. We are met here on a great "
-          RenderBR {BR} at (561,272) size 1x0
+          LayoutBR {BR} at (561,272) size 1x0
           RenderText {#text} at (0,298) size 597x172
             text run at (0,298) width 591: "battlefield of that war. We have come to dedicate a portion of"
             text run at (590,298) width 7: " "
@@ -29,7 +29,7 @@ layer at (0,0) size 800x900 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,394) width 573: "that that nation might live. It is altogether fitting and proper"
             text run at (572,394) width 7: " "
             text run at (0,442) width 223: "that we should do this. "
-          RenderBR {BR} at (222,464) size 1x0
+          LayoutBR {BR} at (222,464) size 1x0
           RenderText {#text} at (0,490) size 582x124
             text run at (0,490) width 550: "Four score and seven years ago our fathers brought forth,"
             text run at (549,490) width 7: " "

@@ -19,7 +19,7 @@ layer at (0,0) size 800x514
         RenderBlock {P} at (0,454) size 123.55x36
           RenderText {#text} at (0,0) size 86x18
             text run at (0,0) width 86: "Lorem ipsum"
-          RenderBR {BR} at (85,0) size 1x18
+          LayoutBR {BR} at (85,0) size 1x18
           RenderText {#text} at (0,18) size 88x18
             text run at (0,18) width 88: "dolor sit amet"
       RenderBlock (floating) {DIV} at (133.55,0) size 123.55x454

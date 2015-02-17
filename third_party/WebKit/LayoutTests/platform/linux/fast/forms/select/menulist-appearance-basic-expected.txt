@@ -9,7 +9,7 @@ layer at (0,0) size 800x455
             text run at (4,1) width 17: "foo"
       RenderText {#text} at (50,4) size 4x19
         text run at (50,4) width 4: " "
-      RenderBR {BR} at (54,4) size 0x19
+      LayoutBR {BR} at (54,4) size 0x19
       RenderMenuList {SELECT} at (4,32) size 42x28 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,9) size 40x18
           RenderText at (4,1) size 17x16
@@ -34,7 +34,7 @@ layer at (0,0) size 800x455
             text run at (4,1) width 17: "foo"
       RenderText {#text} at (224,40) size 4x19
         text run at (224,40) width 4: " "
-      RenderBR {BR} at (228,40) size 0x19
+      LayoutBR {BR} at (228,40) size 0x19
       RenderMenuList {SELECT} at (4,76) size 46x24 [bgcolor=#C0C0C0] [border: (3px solid #00FF00)]
         RenderBlock (anonymous) at (3,3) size 40x18
           RenderText at (4,1) size 17x16
@@ -47,7 +47,7 @@ layer at (0,0) size 800x455
             text run at (4,1) width 17: "foo"
       RenderText {#text} at (108,78) size 4x19
         text run at (108,78) width 4: " "
-      RenderBR {BR} at (112,78) size 0x19
+      LayoutBR {BR} at (112,78) size 0x19
       RenderMenuList {SELECT} at (4,115) size 42x20 [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 40x18
           RenderText at (4,1) size 17x16
@@ -61,14 +61,14 @@ layer at (0,0) size 800x455
               text run at (4,1) width 18: "bar"
       RenderText {#text} at (119,115) size 4x19
         text run at (119,115) width 4: " "
-      RenderBR {BR} at (123,115) size 0x19
+      LayoutBR {BR} at (123,115) size 0x19
       RenderMenuList {SELECT} at (4,150) size 42x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 40x18
           RenderText at (4,1) size 17x16
             text run at (4,1) width 17: "foo"
       RenderText {#text} at (50,150) size 4x19
         text run at (50,150) width 4: " "
-      RenderBR {BR} at (54,150) size 0x19
+      LayoutBR {BR} at (54,150) size 0x19
       RenderMenuList {SELECT} at (4,184) size 47x23 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 45x21
           RenderText at (4,1) size 22x18
@@ -87,7 +87,7 @@ layer at (0,0) size 800x455
             text run at (4,1) width 33: "foo"
       RenderText {#text} at (190,186) size 4x19
         text run at (190,186) width 4: " "
-      RenderBR {BR} at (194,186) size 0x19
+      LayoutBR {BR} at (194,186) size 0x19
       RenderMenuList {SELECT} at (6,230) size 53x28 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 51x26
           RenderText at (4,1) size 28x23
@@ -100,19 +100,19 @@ layer at (0,0) size 800x455
             text run at (4,1) width 37: "foo"
       RenderText {#text} at (149,236) size 4x19
         text run at (149,236) width 4: " "
-      RenderBR {BR} at (153,236) size 0x19
+      LayoutBR {BR} at (153,236) size 0x19
       RenderText {#text} at (208,283) size 4x19
         text run at (208,283) width 4: " "
-      RenderBR {BR} at (212,283) size 0x19
+      LayoutBR {BR} at (212,283) size 0x19
       RenderText {#text} at (208,317) size 4x19
         text run at (208,317) width 4: " "
-      RenderBR {BR} at (212,317) size 0x19
+      LayoutBR {BR} at (212,317) size 0x19
       RenderText {#text} at (208,351) size 4x19
         text run at (208,351) width 4: " "
-      RenderBR {BR} at (212,351) size 0x19
+      LayoutBR {BR} at (212,351) size 0x19
       RenderText {#text} at (208,385) size 4x19
         text run at (208,385) width 4: " "
-      RenderBR {BR} at (212,385) size 0x19
+      LayoutBR {BR} at (212,385) size 0x19
       RenderText {#text} at (0,0) size 0x0
 layer at (12,281) size 200x25 clip at (13,282) size 183x23 scrollHeight 51
   RenderListBox {SELECT} at (4,273) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]

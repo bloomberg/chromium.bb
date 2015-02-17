@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
             RenderText {#text} at (0,0) size 311x18
               text run at (0,0) width 311: "On Feb 1, 2006, at 7:37 PM, David Hyatt wrote:"
           RenderBlock (anonymous) at (0,18) size 784x18
-            RenderBR {BR} at (0,0) size 0x18
+            LayoutBR {BR} at (0,0) size 0x18
           RenderBlock {BLOCKQUOTE} at (40,52) size 704x234 [color=#0000FF]
             RenderBlock {DIV} at (0,0) size 704x90
               RenderText {#text} at (0,0) size 449x18
@@ -40,7 +40,7 @@ layer at (0,0) size 800x600
                 text run at (673,54) width 5: " "
                 text run at (0,72) width 71: "long time)."
             RenderBlock {DIV} at (0,90) size 704x18
-              RenderBR {BR} at (0,0) size 0x18
+              LayoutBR {BR} at (0,0) size 0x18
             RenderBlock {DIV} at (0,108) size 704x54
               RenderText {#text} at (0,0) size 324x18
                 text run at (0,0) width 324: "I think this is terrible but am not sure how to fix it."
@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
                 text run at (659,18) width 5: " "
                 text run at (0,36) width 227: "method for accessing an NSImage?"
             RenderBlock {DIV} at (0,162) size 704x18
-              RenderBR {BR} at (0,0) size 0x18
+              LayoutBR {BR} at (0,0) size 0x18
             RenderBlock {DIV} at (0,180) size 704x18
               RenderText {#text} at (0,0) size 31x18
                 text run at (0,0) width 31: "dave"
@@ -72,7 +72,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (0,0) size 124x18
                 text run at (0,0) width 124: "(hyatt@apple.com)"
             RenderBlock {DIV} at (0,216) size 704x18
-              RenderBR {BR} at (0,0) size 0x18
+              LayoutBR {BR} at (0,0) size 0x18
         RenderBlock (anonymous) at (0,302) size 784x18
-          RenderBR {BR} at (0,0) size 0x18
+          LayoutBR {BR} at (0,0) size 0x18
 caret: position 0 of child 0 {BR} of child 6 {DIV} of child 2 {BLOCKQUOTE} of child 1 {DIV} of child 1 {DIV} of body

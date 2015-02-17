@@ -16,7 +16,7 @@ layer at (0,0) size 785x1050
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"
       RenderBlock (anonymous) at (0,50) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 324x19
           text run at (0,20) width 324: "fixed table - percentage cells allocated left to rigth first"
       LayoutTable {TABLE} at (0,90) size 300x50 [border: (1px outset #808080)]
@@ -33,7 +33,7 @@ layer at (0,0) size 785x1050
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "50%"
       RenderBlock (anonymous) at (0,140) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 482x19
           text run at (0,20) width 482: "fixed table - percentage cells allocated left to rigth first allocated from left to right"
       LayoutTable {TABLE} at (0,180) size 300x50 [border: (1px outset #808080)]
@@ -50,7 +50,7 @@ layer at (0,0) size 785x1050
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "95%"
       RenderBlock (anonymous) at (0,230) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 324x19
           text run at (0,20) width 324: "fixed table - percentage cells allocated left to rigth first"
       LayoutTable {TABLE} at (0,270) size 200x66 [border: (1px outset #808080)]
@@ -64,7 +64,7 @@ layer at (0,0) size 785x1050
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "50%"
       RenderBlock (anonymous) at (0,336) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 324x19
           text run at (0,20) width 324: "fixed table - percentage cells allocated left to right first"
       LayoutTable {TABLE} at (0,376) size 200x86 [border: (1px outset #808080)]
@@ -85,7 +85,7 @@ layer at (0,0) size 785x1050
                 text run at (2,22) width 29: "50%"
                 text run at (2,42) width 29: "50%"
       RenderBlock (anonymous) at (0,462) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 324x19
           text run at (0,20) width 324: "fixed table - percentage cells allocated left to right first"
       LayoutTable {TABLE} at (0,502) size 400x66 [border: (1px outset #808080)]
@@ -106,7 +106,7 @@ layer at (0,0) size 785x1050
               RenderText {#text} at (2,2) size 95x19
                 text run at (2,2) width 95: "50% 50% 50%"
       RenderBlock (anonymous) at (0,568) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 324x19
           text run at (0,20) width 324: "fixed table - percentage cells allocated left to right first"
       LayoutTable {TABLE} at (0,608) size 400x86 [border: (1px outset #808080)]
@@ -132,7 +132,7 @@ layer at (0,0) size 785x1050
                 text run at (2,22) width 29: "50%"
                 text run at (2,42) width 29: "50%"
       RenderBlock (anonymous) at (0,694) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,714) size 200x30 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 198x28
           LayoutTableRow {TR} at (0,2) size 198x24
@@ -146,7 +146,7 @@ layer at (0,0) size 785x1050
               RenderText {#text} at (2,2) size 21x19
                 text run at (2,2) width 21: "zap"
       RenderBlock (anonymous) at (0,744) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 216x19
           text run at (0,20) width 216: "PERCENTAGE WIDTH TABLES"
       LayoutTable {TABLE} at (0,784) size 769x90 [border: (1px outset #808080)]
@@ -168,7 +168,7 @@ layer at (0,0) size 785x1050
                 text run at (2,42) width 20: "foo"
                 text run at (2,62) width 20: "foo"
       RenderBlock (anonymous) at (0,874) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,894) size 769x90 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x88
           LayoutTableRow {TR} at (0,2) size 767x84
@@ -194,7 +194,7 @@ layer at (0,0) size 785x1050
                 text run at (2,42) width 20: "foo"
                 text run at (2,62) width 20: "foo"
       RenderBlock (anonymous) at (0,984) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1004) size 769x30 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x28
           LayoutTableRow {TR} at (0,2) size 767x24

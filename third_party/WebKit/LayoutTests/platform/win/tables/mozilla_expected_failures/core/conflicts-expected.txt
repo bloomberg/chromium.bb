@@ -17,7 +17,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (6,6) width 22: "foo"
       RenderBlock {HR} at (0,82) size 402x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,92) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 353x17
           text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,128) size 500x52 [border: (1px outset #808080)]
@@ -37,7 +37,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,180) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 353x17
           text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,216) size 300x52 [border: (1px outset #808080)]
@@ -57,7 +57,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,268) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 353x17
           text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,304) size 500x52 [border: (1px outset #808080)]
@@ -79,7 +79,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,356) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 353x17
           text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,392) size 500x52 [border: (1px outset #808080)]
@@ -101,7 +101,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,444) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 353x17
           text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,480) size 500x52 [border: (1px outset #808080)]
@@ -123,7 +123,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,532) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 353x17
           text run at (0,18) width 353: "fixed table - percent cell wins over fix cell (and in IE5)"
       LayoutTable {TABLE} at (0,568) size 500x52 [border: (1px outset #808080)]
@@ -145,7 +145,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,620) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 306x17
           text run at (0,18) width 306: "fixed table - % wins over fixed even on colspan"
       LayoutTable {TABLE} at (0,656) size 300x52 [border: (1px outset #808080)]
@@ -165,7 +165,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,708) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 306x17
           text run at (0,18) width 306: "fixed table - % wins over fixed even on colspan"
       LayoutTable {TABLE} at (0,744) size 300x52 [border: (1px outset #808080)]
@@ -185,7 +185,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 21x17
                 text run at (2,2) width 21: "bar"
       RenderBlock (anonymous) at (0,796) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 371x17
           text run at (0,18) width 371: "auto table - percent colspan wins over fixed colspan XXX"
       LayoutTable {TABLE} at (0,832) size 769x52 [border: (1px outset #808080)]
@@ -205,7 +205,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,884) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 333x17
           text run at (0,18) width 333: "auto table - percent colspan wins over fixed colspan"
       LayoutTable {TABLE} at (0,920) size 769x76 [border: (1px outset #808080)]
@@ -235,7 +235,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,996) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 333x17
           text run at (0,18) width 333: "auto table - percent colspan wins over fixed colspan"
       LayoutTable {TABLE} at (0,1032) size 769x76 [border: (1px outset #808080)]
@@ -265,7 +265,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,1108) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 333x17
           text run at (0,18) width 333: "auto table - percent colspan wins over fixed colspan"
       LayoutTable {TABLE} at (0,1144) size 769x76 [border: (1px outset #808080)]
@@ -295,7 +295,7 @@ layer at (0,0) size 785x1306 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 28x17
                 text run at (2,2) width 28: "auto"
       RenderBlock (anonymous) at (0,1220) size 769x36
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 383x17
           text run at (0,18) width 383: "percent cell/col percentage conflict goes to cell (and in IE5)"
       LayoutTable {TABLE} at (0,1256) size 500x34 [border: (1px outset #808080)]

@@ -9,7 +9,7 @@ layer at (0,0) size 800x380
       RenderBlock {P} at (0,36) size 784x108
         RenderText {#text} at (0,0) size 446x19
           text run at (0,0) width 446: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
-        RenderBR {BR} at (446,0) size 0x19
+        LayoutBR {BR} at (446,0) size 0x19
         LayoutTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,21) size 4x19
           text run at (154,21) width 4: " "
@@ -28,7 +28,7 @@ layer at (0,0) size 800x380
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderBR {BR} at (154,43) size 0x19
+        LayoutBR {BR} at (154,43) size 0x19
         LayoutTextControl {INPUT} at (0,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,65) size 4x19
           text run at (154,65) width 4: " "
@@ -51,7 +51,7 @@ layer at (0,0) size 800x380
       RenderBlock {P} at (0,160) size 784x108
         RenderText {#text} at (0,0) size 494x19
           text run at (0,0) width 494: "Apply \"text-overflow:ellipsis\" to inputs. The following input should show an ellipsis:"
-        RenderBR {BR} at (494,0) size 0x19
+        LayoutBR {BR} at (494,0) size 0x19
         LayoutTextControl {INPUT} at (0,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,21) size 4x19
           text run at (154,21) width 4: " "
@@ -70,7 +70,7 @@ layer at (0,0) size 800x380
             RenderBlock {DIV} at (1,0) size 136x16
         RenderText {#text} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderBR {BR} at (154,43) size 0x19
+        LayoutBR {BR} at (154,43) size 0x19
         LayoutTextControl {INPUT} at (0,64) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,65) size 4x19
           text run at (154,65) width 4: " "
@@ -93,7 +93,7 @@ layer at (0,0) size 800x380
       RenderBlock {P} at (0,284) size 784x64
         RenderText {#text} at (0,0) size 218x19
           text run at (0,0) width 218: "Dynamic style change text-overflow:"
-        RenderBR {BR} at (218,0) size 0x19
+        LayoutBR {BR} at (218,0) size 0x19
         RenderText {#text} at (0,21) size 223x19
           text run at (0,21) width 223: "Clip to ellipsis (should show ellipsis): "
         LayoutTextControl {INPUT} at (223,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -102,7 +102,7 @@ layer at (0,0) size 800x380
         LayoutTextControl {INPUT} at (381,20) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (535,21) size 4x19
           text run at (535,21) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
         RenderText {#text} at (0,43) size 244x19
           text run at (0,43) width 244: "Ellipsis to clip (should not show ellipsis): "
         LayoutTextControl {INPUT} at (244,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -111,7 +111,7 @@ layer at (0,0) size 800x380
         LayoutTextControl {INPUT} at (402,42) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (556,43) size 4x19
           text run at (556,43) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
 layer at (10,75) size 150x16 scrollWidth 317
   RenderBlock {DIV} at (2,3) size 150x16 [color=#A9A9A9]
     RenderText {#text} at (0,0) size 317x16

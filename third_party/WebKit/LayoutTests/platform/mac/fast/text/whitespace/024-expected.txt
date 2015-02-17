@@ -60,7 +60,7 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,1) width 346: "The blank line between '2003' and the nested element "
                 text run at (346,1) width 146: "triggers the width bug."
       RenderBlock (anonymous) at (0,397.25) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {H2} at (0,435.16) size 769x28
         RenderText {#text} at (0,0) size 109x28
           text run at (0,0) width 109: "Example 2"
@@ -101,7 +101,7 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (356,0) width 222: "number of characters contained by"
                   text run at (0,18) width 124: "the nested element."
       RenderBlock (anonymous) at (0,654.06) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {H2} at (0,691.97) size 769x28
         RenderText {#text} at (0,0) size 109x28
           text run at (0,0) width 109: "Example 3"
@@ -136,7 +136,7 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (346,1) width 230: "has been removed, so the bug is not"
                 text run at (1,19) width 62: "triggered."
       RenderBlock (anonymous) at (0,895.88) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {H2} at (0,933.78) size 769x28
         RenderText {#text} at (0,0) size 109x28
           text run at (0,0) width 109: "Example 4"
@@ -175,4 +175,4 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,19) width 289: "because now the '2003' is itself contained by "
                 text run at (289,19) width 298: "a nested element (in this case, another SPAN)."
       RenderBlock (anonymous) at (0,1152.69) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18

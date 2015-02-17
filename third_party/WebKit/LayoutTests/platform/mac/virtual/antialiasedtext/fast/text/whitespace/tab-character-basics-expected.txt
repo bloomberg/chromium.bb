@@ -9,7 +9,7 @@ layer at (0,0) size 800x502
       RenderBlock {P} at (3,56) size 640x42
         RenderText {#text} at (0,0) size 298x20
           text run at (0,0) width 298: "0123456789012345678901234567890"
-        RenderBR {BR} at (297,0) size 1x20
+        LayoutBR {BR} at (297,0) size 1x20
         RenderText {#text} at (0,21) size 77x20
           text run at (0,21) width 77: "X\x{9}XX\x{9}XXX"
       RenderBlock {OL} at (3,114) size 640x63
@@ -44,7 +44,7 @@ layer at (0,0) size 800x502
       RenderBlock {P} at (3,309) size 640x63
         RenderText {#text} at (0,0) size 490x20
           text run at (0,0) width 490: "012345678901234567890123456789012345678901234567890"
-        RenderBR {BR} at (489,0) size 1x20
+        LayoutBR {BR} at (489,0) size 1x20
         RenderText {#text} at (0,21) size 634x41
           text run at (0,21) width 634: "X\x{9}\x{9}XX\x{9}\x{9}XXX\x{9}\x{9}XXXX\x{9}\x{9}XX"
           text run at (0,42) width 29: "XXX"

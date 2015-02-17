@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
       RenderBlock (anonymous) at (0,36) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,54) size 336x36 [border: (5px outset #808080)]
         LayoutTableSection {TBODY} at (5,5) size 326x26
           LayoutTableRow {TR} at (0,2) size 326x22
@@ -24,14 +24,14 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "x"
       RenderBlock (anonymous) at (0,90) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {P} at (0,124) size 784x36
         RenderText {#text} at (0,0) size 360x18
           text run at (0,0) width 360: "In this table, the second and the third cell are given 40%"
-        RenderBR {BR} at (359,14) size 1x0
+        LayoutBR {BR} at (359,14) size 1x0
         RenderText {#text} at (0,18) size 260x18
           text run at (0,18) width 260: "The cells are competing with each other."
-        RenderBR {BR} at (259,32) size 1x0
+        LayoutBR {BR} at (259,32) size 1x0
       LayoutTable {TABLE} at (0,176) size 348x36 [border: (5px outset #808080)]
         LayoutTableSection {TBODY} at (5,5) size 338x26
           LayoutTableRow {TR} at (0,2) size 338x22
@@ -47,10 +47,10 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,228) size 784x54
         RenderText {#text} at (0,0) size 360x18
           text run at (0,0) width 360: "In this table, the second and the third cell are given 50%"
-        RenderBR {BR} at (359,14) size 1x0
+        LayoutBR {BR} at (359,14) size 1x0
         RenderText {#text} at (0,18) size 455x18
           text run at (0,18) width 455: "The cells are competing again but their percentage can not be satisfied."
-        RenderBR {BR} at (454,32) size 1x0
+        LayoutBR {BR} at (454,32) size 1x0
         RenderText {#text} at (0,36) size 488x18
           text run at (0,36) width 488: "The table grows as large as it can and the first cell gets to its minimal width."
       LayoutTable {TABLE} at (0,298) size 784x54 [border: (5px outset #808080)]

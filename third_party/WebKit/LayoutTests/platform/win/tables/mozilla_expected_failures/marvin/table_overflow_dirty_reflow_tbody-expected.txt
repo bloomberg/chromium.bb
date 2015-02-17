@@ -15,10 +15,10 @@ layer at (0,0) size 785x532
             LayoutTableCell {TD} at (114,30) size 84x86 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (16,16) size 21x17
                 text run at (16,16) width 21: "bar"
-              RenderBR {BR} at (36,16) size 1x17
+              LayoutBR {BR} at (36,16) size 1x17
               RenderText {#text} at (16,34) size 23x17
                 text run at (16,34) width 23: "baz"
-              RenderBR {BR} at (38,34) size 1x17
+              LayoutBR {BR} at (38,34) size 1x17
               RenderText {#text} at (16,52) size 23x17
                 text run at (16,52) width 23: "zap"
           LayoutTableRow {TR} at (0,146) size 228x132

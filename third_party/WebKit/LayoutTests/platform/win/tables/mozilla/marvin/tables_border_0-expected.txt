@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderText {#text} at (0,0) size 440x17
           text run at (0,0) width 440: "The table displayed is two rows by three columns with a border of 0."
-        RenderBR {BR} at (439,14) size 1x0
+        LayoutBR {BR} at (439,14) size 1x0
       LayoutTable {TABLE} at (0,18) size 211x46
         LayoutTableSection {TBODY} at (0,0) size 211x46
           LayoutTableRow {TR} at (0,2) size 211x20

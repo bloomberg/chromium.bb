@@ -10,7 +10,7 @@ layer at (0,0) size 800x76
               text run at (0,0) width 240: "A button (enabled) with green background"
         RenderText {#text} at (256,1) size 4x19
           text run at (256,1) width 4: " "
-        RenderBR {br} at (0,0) size 0x0
+        LayoutBR {br} at (0,0) size 0x0
         LayoutTextControl {input} at (0,22) size 249x22 [bgcolor=#00FF00] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
 layer at (10,41) size 245x16 scrollWidth 254

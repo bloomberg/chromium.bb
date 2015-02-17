@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,0) size 766x39
         text run at (0,0) width 766: "This is a initial test for simple ruby. There should be 2 ruby annotations on below line, one with a ruby text shorter than the base,"
         text run at (0,20) width 277: "and one with a ruby text longer than the base. "
-      RenderBR {BR} at (277,35) size 0x0
-      RenderBR {BR} at (0,40) size 0x19
+      LayoutBR {BR} at (277,35) size 0x0
+      LayoutBR {BR} at (0,40) size 0x19
       RenderText {#text} at (0,71) size 146x19
         text run at (0,71) width 146: "<ruby> is defined in the "
       LayoutRuby (inline) {RUBY} at (0,0) size 175x19

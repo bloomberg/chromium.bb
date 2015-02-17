@@ -16,7 +16,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (11,11) size 33x19
                 text run at (11,11) width 33: "FOO"
       RenderBlock (anonymous) at (0,604) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,624) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 524x20
           RenderText {#text} at (231,0) size 62x19
@@ -27,7 +27,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,674) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,694) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 524x20
           RenderText {#text} at (474,0) size 50x19
@@ -38,7 +38,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,744) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,764) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,30) size 524x20
           RenderText {#text} at (220,0) size 84x19
@@ -49,7 +49,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,814) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,834) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,30) size 524x20
           RenderText {#text} at (0,0) size 65x19
@@ -60,7 +60,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,884) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,904) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 524x20
           RenderText {#text} at (231,0) size 62x19
@@ -71,7 +71,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,954) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,974) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,30) size 524x20
           RenderText {#text} at (220,0) size 84x19
@@ -82,7 +82,7 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,1024) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1044) size 524x50 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 524x20
           RenderText {#text} at (231,0) size 62x19
@@ -93,4 +93,4 @@ layer at (0,0) size 785x1130
               RenderText {#text} at (2,2) size 514x19
                 text run at (2,2) width 514: "FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO FOO"
       RenderBlock (anonymous) at (0,1094) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19

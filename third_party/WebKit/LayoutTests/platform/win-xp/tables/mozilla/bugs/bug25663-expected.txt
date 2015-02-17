@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
                     LayoutTableCell {TD} at (6,2) size 467x62 [r=0 c=1 rs=1 cs=1]
                       RenderText {#text} at (1,1) size 210x19
                         text run at (1,1) width 210: "Welcome to the new DaveCentral!"
-                      RenderBR {BR} at (211,16) size 0x0
+                      LayoutBR {BR} at (211,16) size 0x0
                       RenderText {#text} at (1,21) size 436x39
                         text run at (1,21) width 81: "I have a new "
                         text run at (82,21) width 333: "Linux software archive as well as the Windows archive "
@@ -23,10 +23,10 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (483,2) size 123x104 [bgcolor=#99CCCC] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 110x19
                 text run at (2,2) width 110: "ANDOVER.NET"
-              RenderBR {BR} at (112,17) size 0x0
+              LayoutBR {BR} at (112,17) size 0x0
               RenderText {#text} at (2,22) size 105x19
                 text run at (2,22) width 105: "E-COMMERCE"
-              RenderBR {BR} at (107,37) size 0x0
+              LayoutBR {BR} at (107,37) size 0x0
               RenderText {#text} at (2,42) size 97x59
                 text run at (2,42) width 97: "Buy some smart"
                 text run at (2,62) width 57: "stuff from"

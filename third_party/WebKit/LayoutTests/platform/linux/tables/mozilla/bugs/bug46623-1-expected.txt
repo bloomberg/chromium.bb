@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
                           text run at (2,2) width 98: "Contact MPG:"
                       RenderText {#text} at (100,2) size 4x19
                         text run at (100,2) width 4: " "
-                      RenderBR {BR} at (0,0) size 0x0
+                      LayoutBR {BR} at (0,0) size 0x0
                       RenderInline {FONT} at (0,0) size 237x31
                         RenderInline {B} at (0,0) size 148x15
                           RenderInline {A} at (0,0) size 148x15 [color=#551A8B]
@@ -42,7 +42,7 @@ layer at (0,0) size 800x600
                         RenderText {#text} at (2,2) size 85x19
                           text run at (2,2) width 85: "MPG Rules:"
                       RenderText {#text} at (0,0) size 0x0
-                      RenderBR {BR} at (0,0) size 0x0
+                      LayoutBR {BR} at (0,0) size 0x0
                       RenderText {#text} at (2,22) size 56x59
                         text run at (2,22) width 56: "Not at all"
                         text run at (2,42) width 42: "serious"

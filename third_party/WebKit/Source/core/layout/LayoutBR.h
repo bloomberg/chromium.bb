@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef RenderBR_h
-#define RenderBR_h
+#ifndef LayoutBR_h
+#define LayoutBR_h
 
 #include "core/rendering/RenderText.h"
 
@@ -29,12 +29,12 @@
  */
 namespace blink {
 
-class RenderBR final : public RenderText {
+class LayoutBR final : public RenderText {
 public:
-    explicit RenderBR(Node*);
-    virtual ~RenderBR();
+    explicit LayoutBR(Node*);
+    virtual ~LayoutBR();
 
-    virtual const char* renderName() const override { return "RenderBR"; }
+    virtual const char* renderName() const override { return "LayoutBR"; }
 
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutLayerModelObject* /*paintInvalidationContainer*/) const override { return LayoutRect(); }
 
@@ -55,8 +55,8 @@ protected:
     virtual void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBR, isBR());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, isBR());
 
 } // namespace blink
 
-#endif // RenderBR_h
+#endif // LayoutBR_h

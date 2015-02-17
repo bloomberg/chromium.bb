@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
         LayoutImage {IMG} at (100,0) size 100x100
         RenderText {#text} at (200,86) size 4x18
           text run at (200,86) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
       RenderBlock {P} at (0,154) size 784x18
         RenderText {#text} at (0,0) size 243x18
           text run at (0,0) width 243: "These should not match (at this time):"

@@ -10,7 +10,7 @@ layer at (0,0) size 785x1376 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 266x15
           text run at (0,0) width 266: "Resize document for maximum effect"
       RenderBlock (anonymous) at (0,86.44) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {H2} at (0,124.34) size 769x28
         RenderText {#text} at (0,0) size 504x28
           text run at (0,0) width 504: "Auto-width tables with spans nested 8 levels deep"
@@ -197,7 +197,7 @@ layer at (0,0) size 785x1376 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 27x18
                 text run at (2,2) width 27: "Cell"
       RenderBlock (anonymous) at (0,558.25) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {H2} at (0,596.16) size 769x28
         RenderText {#text} at (0,0) size 396x28
           text run at (0,0) width 396: "100% width tables nested 6 levels deep"

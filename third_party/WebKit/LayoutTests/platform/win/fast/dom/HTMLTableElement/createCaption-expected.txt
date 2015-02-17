@@ -6,11 +6,11 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 273x17
           text run at (0,0) width 273: "Tests: the TABLE.createCaption() method"
-        RenderBR {BR} at (272,14) size 1x0
+        LayoutBR {BR} at (272,14) size 1x0
       RenderBlock {P} at (0,34) size 784x54
         RenderText {#text} at (0,0) size 75x17
           text run at (0,0) width 75: "Conditions:"
-        RenderBR {BR} at (74,14) size 1x0
+        LayoutBR {BR} at (74,14) size 1x0
         RenderText {#text} at (0,18) size 768x35
           text run at (0,18) width 695: "If no caption exists, the method should create an empty caption, add it to the table, and return a pointer to it. "
           text run at (694,18) width 74: "If a caption"
@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 42x17
                 text run at (2,2) width 42: "Purple"
       RenderBlock (anonymous) at (0,260) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,278) size 132x94 [border: (1px outset #808080)]
         RenderBlock {CAPTION} at (0,0) size 132x18
           RenderInline {B} at (0,0) size 76x17

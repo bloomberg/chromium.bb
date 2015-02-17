@@ -44,12 +44,12 @@ layer at (0,0) size 800x464
                 text run at (2,2) width 60: "First Row"
           LayoutTableRow {TR} at (0,13) size 66x12
       RenderBlock (anonymous) at (0,184) size 784x100
-        RenderBR {BR} at (0,0) size 0x19
-        RenderBR {BR} at (0,20) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,20) size 0x19
         RenderText {#text} at (0,40) size 432x19
           text run at (0,40) width 432: "Same tables as above but removing height=\"50%\" from the second row:"
-        RenderBR {BR} at (432,40) size 0x19
-        RenderBR {BR} at (0,60) size 0x19
+        LayoutBR {BR} at (432,40) size 0x19
+        LayoutBR {BR} at (0,60) size 0x19
         RenderText {#text} at (0,80) size 286x19
           text run at (0,80) width 286: "Table 5: border=1 cellspacing=0 cellpadding=0"
       LayoutTable {TABLE} at (0,284) size 64x24 [border: (1px outset #808080)]

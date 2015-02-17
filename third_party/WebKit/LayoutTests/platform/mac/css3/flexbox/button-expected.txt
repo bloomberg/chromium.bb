@@ -17,19 +17,19 @@ layer at (0,0) size 800x243
       RenderBlock (anonymous) at (0,54) size 784x55
         RenderText {#text} at (0,0) size 81x18
           text run at (0,0) width 81: "Simple case."
-        RenderBR {BR} at (80,0) size 1x18
+        LayoutBR {BR} at (80,0) size 1x18
         RenderButton {BUTTON} at (0,20) size 16x15 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
-        RenderBR {BR} at (16,18) size 0x18
+        LayoutBR {BR} at (16,18) size 0x18
         RenderButton {INPUT} at (0,36) size 16x18 [bgcolor=#C0C0C0]
-        RenderBR {BR} at (16,37) size 0x18
+        LayoutBR {BR} at (16,37) size 0x18
       RenderBlock {HR} at (0,117) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,127) size 784x100
         RenderText {#text} at (0,0) size 745x36
           text run at (0,0) width 745: "Empty <button> and <input type=button> with overflow: scroll;. The presence of the scrollbar should not shrink the"
           text run at (0,18) width 45: "button."
-        RenderBR {BR} at (44,18) size 1x18
-        RenderBR {BR} at (31,36) size 0x18
-        RenderBR {BR} at (31,68) size 0x18
+        LayoutBR {BR} at (44,18) size 1x18
+        LayoutBR {BR} at (31,36) size 0x18
+        LayoutBR {BR} at (31,68) size 0x18
 layer at (8,183) size 31x20 clip at (10,183) size 12x5
   RenderButton {BUTTON} at (0,48) size 31x20 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
 layer at (8,217) size 31x18 clip at (8,217) size 16x3

@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
                 text run at (61,42) width 109: "door on same-sex"
                 text run at (2,62) width 222: "marriages. All eyes look to Vermont."
       RenderBlock (anonymous) at (0,232) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,268) size 784x20
         RenderInline {B} at (0,0) size 339x19
           RenderText {#text} at (0,0) size 339x19

@@ -4,7 +4,7 @@ layer at (0,0) size 785x2642
   RenderBlock {HTML} at (0,0) size 785x2642
     RenderBody {BODY} at (8,8) size 769x2626
       RenderBlock (anonymous) at (0,0) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 74x19
           text run at (0,20) width 74: "table - color"
       LayoutTable {TABLE} at (0,40) size 68x38 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -17,7 +17,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,78) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 78x19
           text run at (0,20) width 78: "table - image"
       LayoutTable {TABLE} at (0,118) size 68x38 [border: (1px outset #808080)]
@@ -30,7 +30,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,156) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 117x19
           text run at (0,20) width 117: "table - color, image"
       LayoutTable {TABLE} at (0,196) size 68x38 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -43,7 +43,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,234) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 65x19
           text run at (0,20) width 65: "cell - color"
       LayoutTable {TABLE} at (0,274) size 68x38 [border: (1px outset #808080)]
@@ -56,7 +56,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,312) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 69x19
           text run at (0,20) width 69: "cell - image"
       LayoutTable {TABLE} at (0,352) size 68x38 [border: (1px outset #808080)]
@@ -69,7 +69,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,390) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 108x19
           text run at (0,20) width 108: "cell - color, image"
       LayoutTable {TABLE} at (0,430) size 68x38 [border: (1px outset #808080)]
@@ -82,7 +82,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,468) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 147x19
           text run at (0,20) width 147: "table - color; cell - color"
       LayoutTable {TABLE} at (0,508) size 68x38 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -95,7 +95,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,546) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 151x19
           text run at (0,20) width 151: "table - image; cell - color"
       LayoutTable {TABLE} at (0,586) size 68x38 [border: (1px outset #808080)]
@@ -108,7 +108,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,624) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 155x19
           text run at (0,20) width 155: "table - image; cell - image"
       LayoutTable {TABLE} at (0,664) size 68x38 [border: (1px outset #808080)]
@@ -121,7 +121,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,702) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 98x19
           text run at (0,20) width 98: "row group color"
       LayoutTable {TABLE} at (0,742) size 68x38 [border: (1px outset #808080)]
@@ -134,7 +134,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,780) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 98x19
           text run at (0,20) width 98: "row group color"
       LayoutTable {TABLE} at (0,820) size 68x68 [border: (1px outset #808080)]
@@ -155,7 +155,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,888) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 59x19
           text run at (0,20) width 59: "row color"
       LayoutTable {TABLE} at (0,928) size 68x38 [border: (1px outset #808080)]
@@ -168,7 +168,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,966) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 59x19
           text run at (0,20) width 59: "row color"
       LayoutTable {TABLE} at (0,1006) size 68x68 [border: (1px outset #808080)]
@@ -188,7 +188,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1074) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 63x19
           text run at (0,20) width 63: "row image"
       LayoutTable {TABLE} at (0,1114) size 68x38 [border: (1px outset #808080)]
@@ -201,7 +201,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1152) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 141x19
           text run at (0,20) width 141: "table - color, row color"
       LayoutTable {TABLE} at (0,1192) size 68x68 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -221,7 +221,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1260) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 145x19
           text run at (0,20) width 145: "table - image, row color"
       LayoutTable {TABLE} at (0,1300) size 68x68 [border: (1px outset #808080)]
@@ -241,7 +241,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1368) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 145x19
           text run at (0,20) width 145: "table - color; row image"
       LayoutTable {TABLE} at (0,1408) size 68x38 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -254,7 +254,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1446) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 149x19
           text run at (0,20) width 149: "table - image, row image"
       LayoutTable {TABLE} at (0,1486) size 68x38 [border: (1px outset #808080)]
@@ -267,7 +267,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1524) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 204x19
           text run at (0,20) width 204: "table - color; row color; cell color"
       LayoutTable {TABLE} at (0,1564) size 68x68 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -287,7 +287,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1632) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 208x19
           text run at (0,20) width 208: "table - image; row color; cell color"
       LayoutTable {TABLE} at (0,1672) size 68x68 [border: (1px outset #808080)]
@@ -307,7 +307,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1740) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 208x19
           text run at (0,20) width 208: "table - color; row image; cell color"
       LayoutTable {TABLE} at (0,1780) size 68x68 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -327,7 +327,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1848) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 208x19
           text run at (0,20) width 208: "table - color; row color; cell image"
       LayoutTable {TABLE} at (0,1888) size 68x68 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -347,7 +347,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,1956) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 92x19
           text run at (0,20) width 92: "col group color"
       LayoutTable {TABLE} at (0,1996) size 38x38 [border: (1px outset #808080)]
@@ -359,7 +359,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"
       RenderBlock (anonymous) at (0,2034) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 53x19
           text run at (0,20) width 53: "col color"
       LayoutTable {TABLE} at (0,2074) size 38x38 [border: (1px outset #808080)]
@@ -371,7 +371,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"
       RenderBlock (anonymous) at (0,2112) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 216x19
           text run at (0,20) width 216: "table - image; row image; cell image"
       LayoutTable {TABLE} at (0,2152) size 68x68 [border: (1px outset #808080)]
@@ -391,7 +391,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,2220) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 228x19
           text run at (0,20) width 228: "table - color, tbodies color, row color"
       LayoutTable {TABLE} at (0,2260) size 46x102 [bgcolor=#FFA500] [border: (1px outset #808080)]
@@ -410,7 +410,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "foo"
       RenderBlock (anonymous) at (0,2362) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 57x19
           text run at (0,20) width 57: "col image"
       LayoutTable {TABLE} at (0,2402) size 74x74 [border: (1px outset #808080)]
@@ -432,7 +432,7 @@ layer at (0,0) size 785x2642
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,2476) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 355x19
           text run at (0,20) width 355: "table color; col group color; col color; row color; cell color"
       LayoutTable {TABLE} at (0,2516) size 118x90 [bgcolor=#FFA500] [border: (1px outset #808080)]

@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
                           RenderText {#text} at (2,2) size 11x15
                             text run at (2,2) width 11: "In"
                         RenderText {#text} at (0,0) size 0x0
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
               LayoutTable {TABLE} at (1,20) size 439x24 [bgcolor=#FF00FF]
                 LayoutTableSection {TBODY} at (0,0) size 439x24
                   LayoutTableRow {TR} at (0,2) size 439x20

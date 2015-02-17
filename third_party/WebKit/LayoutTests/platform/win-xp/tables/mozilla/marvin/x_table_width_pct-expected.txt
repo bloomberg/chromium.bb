@@ -11,7 +11,7 @@ layer at (0,0) size 800x256
                 text run at (2,2) width 382: "This table should have a width 100% of the available horizontal "
                 text run at (384,2) width 35: "space"
       RenderBlock (anonymous) at (0,30) size 784x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,50) size 588x30 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 586x28
           LayoutTableRow {tr} at (0,2) size 586x24
@@ -20,7 +20,7 @@ layer at (0,0) size 800x256
                 text run at (2,2) width 374: "This table should have a width 75% of the available horizontal "
                 text run at (376,2) width 35: "space"
       RenderBlock (anonymous) at (0,80) size 784x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,100) size 392x50 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 390x48
           LayoutTableRow {tr} at (0,2) size 390x44
@@ -29,7 +29,7 @@ layer at (0,0) size 800x256
                 text run at (2,2) width 370: "This table should have a width 50% of the available horizontal"
                 text run at (2,22) width 35: "space"
       RenderBlock (anonymous) at (0,150) size 784x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,170) size 196x70 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 194x68
           LayoutTableRow {tr} at (0,2) size 194x64

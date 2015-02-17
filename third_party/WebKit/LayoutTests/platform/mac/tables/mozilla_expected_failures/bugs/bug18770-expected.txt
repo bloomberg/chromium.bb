@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (117,0) size 483x90 [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (0,0) size 198x18
                 text run at (0,0) width 198: "Quotes delayed by 20 minutes."
-              RenderBR {BR} at (197,14) size 1x0
+              LayoutBR {BR} at (197,14) size 1x0
               RenderText {#text} at (0,18) size 473x72
                 text run at (0,18) width 129: "To ensure that your "
                 text run at (128,18) width 316: "portfolios and other personalized content can't be"

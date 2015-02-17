@@ -8,7 +8,7 @@ layer at (0,0) size 800x2041 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           RenderText {#text} at (0,0) size 451x90
             text run at (0,0) width 451: "This test passes if no text is"
             text run at (0,45) width 211: "overlapping."
-          RenderBR {BR} at (210,45) size 1x45
+          LayoutBR {BR} at (210,45) size 1x45
           RenderText {#text} at (0,90) size 451x585
             text run at (0,90) width 451: "Autosize Autosize Autosize"
             text run at (0,135) width 451: "Autosize Autosize Autosize"

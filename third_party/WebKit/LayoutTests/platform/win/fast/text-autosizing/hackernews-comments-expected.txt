@@ -71,8 +71,8 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                       LayoutTableCell {TD} at (2,54) size 52x2 [r=3 c=0 rs=1 cs=1]
                       LayoutTableCell {TD} at (56,54) size 344x2 [r=3 c=1 rs=1 cs=1]
                 RenderBlock (anonymous) at (0,58) size 653x32
-                  RenderBR {BR} at (0,0) size 0x16
-                  RenderBR {BR} at (0,16) size 0x16
+                  LayoutBR {BR} at (0,0) size 0x16
+                  LayoutBR {BR} at (0,16) size 0x16
                 LayoutTable {TABLE} at (0,90) size 653x779
                   LayoutTableSection {TBODY} at (0,0) size 653x779
                     LayoutTableRow {TR} at (0,2) size 653x422
@@ -93,7 +93,7 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                       text run at (359,0) width 69: "| link"
                                   RenderText {#text} at (0,0) size 0x0
                                 RenderBlock (anonymous) at (1,26) size 583x330
-                                  RenderBR {BR} at (0,0) size 0x33
+                                  LayoutBR {BR} at (0,0) size 0x33
                                   RenderInline {SPAN} at (0,0) size 551x297
                                     RenderText {#text} at (0,0) size 0x0
                                     RenderInline {FONT} at (0,0) size 551x297
@@ -134,7 +134,7 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                       text run at (174,33) width 69: "| link"
                                   RenderText {#text} at (0,0) size 0x0
                                 RenderBlock (anonymous) at (1,59) size 263x66
-                                  RenderBR {BR} at (0,0) size 0x33
+                                  LayoutBR {BR} at (0,0) size 0x33
                                   RenderInline {SPAN} at (0,0) size 255x33
                                     RenderText {#text} at (0,0) size 0x0
                                     RenderInline {FONT} at (0,0) size 255x33
@@ -166,7 +166,7 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                       text run at (370,0) width 70: "| link"
                                   RenderText {#text} at (0,0) size 0x0
                                 RenderBlock (anonymous) at (1,26) size 440x66
-                                  RenderBR {BR} at (0,0) size 0x33
+                                  LayoutBR {BR} at (0,0) size 0x33
                                   RenderInline {SPAN} at (0,0) size 275x33
                                     RenderText {#text} at (0,0) size 0x0
                                     RenderInline {FONT} at (0,0) size 275x33
@@ -180,8 +180,8 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                       text run at (0,0) width 67: "reply"
                                   RenderText {#text} at (0,0) size 0x0
                 RenderBlock (anonymous) at (0,869) size 653x32
-                  RenderBR {BR} at (0,0) size 0x16
-                  RenderBR {BR} at (0,16) size 0x16
+                  LayoutBR {BR} at (0,0) size 0x16
+                  LayoutBR {BR} at (0,16) size 0x16
             LayoutTableRow {TR} at (0,931) size 653x18
               LayoutTableCell {TD} at (0,931) size 653x18 [r=3 c=0 rs=1 cs=1]
                 LayoutTable {TABLE} at (0,0) size 653x2
@@ -189,4 +189,4 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     LayoutTableRow {TR} at (0,0) size 653x2
                       LayoutTableCell {TD} at (0,0) size 653x2 [bgcolor=#FF6600] [r=0 c=0 rs=1 cs=1]
                 RenderBlock (anonymous) at (0,2) size 653x16
-                  RenderBR {BR} at (0,0) size 0x16
+                  LayoutBR {BR} at (0,0) size 0x16

@@ -13,13 +13,13 @@ layer at (0,0) size 800x600
         RenderInline {TT} at (0,0) size 112x64
           RenderText {#text} at (0,0) size 112x16
             text run at (0,0) width 112: "<col width=50>"
-          RenderBR {BR} at (112,12) size 0x0
+          LayoutBR {BR} at (112,12) size 0x0
           RenderText {#text} at (0,16) size 112x16
             text run at (0,16) width 112: "<col width=2*>"
-          RenderBR {BR} at (112,28) size 0x0
+          LayoutBR {BR} at (112,28) size 0x0
           RenderText {#text} at (0,32) size 112x16
             text run at (0,32) width 112: "<col width=1*>"
-          RenderBR {BR} at (112,44) size 0x0
+          LayoutBR {BR} at (112,44) size 0x0
           RenderText {#text} at (0,48) size 112x16
             text run at (0,48) width 112: "<col width=3*>"
         RenderText {#text} at (0,0) size 0x0

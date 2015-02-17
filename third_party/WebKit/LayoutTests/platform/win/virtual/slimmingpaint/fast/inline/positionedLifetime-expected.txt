@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock {INPUT} at (5,3) size 13x13
       RenderText {#text} at (21,2) size 4x17
         text run at (21,2) width 4: " "
-      RenderBR {BR} at (25,16) size 0x0
+      LayoutBR {BR} at (25,16) size 0x0
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0

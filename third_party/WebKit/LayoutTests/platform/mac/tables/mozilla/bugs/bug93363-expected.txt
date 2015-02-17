@@ -48,6 +48,6 @@ layer at (0,0) size 800x600
                                   text run at (0,72) width 103: "contained in a P"
                                   text run at (0,90) width 90: "that's nowrap."
       RenderBlock (anonymous) at (0,278) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
         RenderText {#text} at (0,18) size 331x18
           text run at (0,18) width 331: "Tables have a thick border, cells have a thin border."

@@ -19,13 +19,13 @@ layer at (0,0) size 800x165
       RenderBlock {HR} at (0,56) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,66) size 784x75
         LayoutImage {IMG} at (0,0) size 0x30
-        RenderBR {BR} at (0,15) size 0x19
-        RenderBR {BR} at (0,35) size 0x19
+        LayoutBR {BR} at (0,15) size 0x19
+        LayoutBR {BR} at (0,35) size 0x19
         RenderInline {SPAN} at (0,0) size 287x19
           RenderText {#text} at (0,55) size 287x19
             text run at (0,55) width 287: "The highlight should be on this line, not above it."
         RenderText {#text} at (287,55) size 4x19
           text run at (287,55) width 4: " "
-        RenderBR {BR} at (291,55) size 0x19
+        LayoutBR {BR} at (291,55) size 0x19
 selection start: position 0 of child 0 {#text} of child 6 {SPAN} of child 5 {DIV} of body
 selection end:   position 51 of child 0 {#text} of child 6 {SPAN} of child 5 {DIV} of body

@@ -13,7 +13,7 @@ layer at (0,0) size 800x1008 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "y"
       RenderBlock (anonymous) at (0,28) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,46) size 784x28 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x26
           LayoutTableRow {TR} at (0,2) size 782x22
@@ -24,7 +24,7 @@ layer at (0,0) size 800x1008 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 8x18
                 text run at (2,2) width 8: "y"
       RenderBlock (anonymous) at (0,74) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,92) size 859x610 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 857x608
           LayoutTableRow {TR} at (0,2) size 857x604
@@ -38,7 +38,7 @@ layer at (0,0) size 800x1008 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (2,56) width 20: "get"
                 text run at (2,74) width 43: "along?"
       RenderBlock (anonymous) at (0,702) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,720) size 784x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x44
           LayoutTableRow {TR} at (0,2) size 782x40
@@ -53,7 +53,7 @@ layer at (0,0) size 800x1008 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 113x18
                 text run at (2,2) width 113: "I great, thank you"
       RenderBlock (anonymous) at (0,766) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,784) size 784x208 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x206
           LayoutTableRow {TR} at (0,2) size 782x202

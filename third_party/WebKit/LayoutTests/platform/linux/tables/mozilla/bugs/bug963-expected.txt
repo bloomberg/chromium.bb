@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x20
         RenderText {#text} at (0,0) size 333x19
           text run at (0,0) width 333: "The window needs to be resized smaller to see the bug "
-        RenderBR {BR} at (333,15) size 0x0
+        LayoutBR {BR} at (333,15) size 0x0
       LayoutTable {TABLE} at (0,20) size 434x26
         LayoutTableSection {TBODY} at (0,0) size 434x26
           LayoutTableRow {TR} at (0,2) size 434x22

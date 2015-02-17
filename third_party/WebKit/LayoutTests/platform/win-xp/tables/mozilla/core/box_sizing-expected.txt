@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,114) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,134) size 100x114 [bgcolor=#0000FF] [border: (20px solid #000000)]
         LayoutTableSection {TBODY} at (30,30) size 40x54
           LayoutTableRow {TR} at (0,2) size 40x24
@@ -26,7 +26,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,248) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,268) size 100x114 [bgcolor=#0000FF] [border: (20px solid #000000)]
         LayoutTableSection {TBODY} at (30,30) size 40x54
           LayoutTableRow {TR} at (0,2) size 40x24

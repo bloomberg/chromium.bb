@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x108
           RenderText {#text} at (0,0) size 68x26
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,27) size 733x80
             text run at (0,27) width 733: "Deleting when a selection starts in a blank line created by a block with a BR"
             text run at (0,54) width 720: "placeholder in it and extends to a character that is not at the end of a block."
@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,138) size 756x81
           RenderText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
-          RenderBR {BR} at (189,21) size 1x0
+          LayoutBR {BR} at (189,21) size 1x0
           RenderText {#text} at (0,27) size 677x53
             text run at (0,27) width 677: "Should see the two lines in the red box. Each should contain \"A\" only."
             text run at (0,54) width 614: "Insertion point should be blinking at the start of the second line."

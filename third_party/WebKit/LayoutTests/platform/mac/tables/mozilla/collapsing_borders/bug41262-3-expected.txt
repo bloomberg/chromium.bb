@@ -98,7 +98,7 @@ layer at (0,0) size 800x664 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,18) width 71: "conflict.gif"
         RenderText {#text} at (70,18) size 10x18
           text run at (70,18) width 10: ": "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
         RenderBlock {IMG} at (0,36) size 236.81x22
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,514) size 784x36

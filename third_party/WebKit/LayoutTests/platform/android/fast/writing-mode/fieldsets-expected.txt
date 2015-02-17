@@ -5,7 +5,7 @@ layer at (0,0) size 785x1250
     RenderBody {BODY} at (8,8) size 769x1234
       RenderText {#text} at (0,0) size 262x19
         text run at (0,0) width 262: "LTR fieldset with left/center/right text-align: "
-      RenderBR {BR} at (262,15) size 0x0
+      LayoutBR {BR} at (262,15) size 0x0
       RenderFieldSet {FIELDSET} at (16,36) size 228x119.59 [border: (2px groove #C0C0C0)]
         RenderBlock {LEGEND} at (34,0) size 104x25
           RenderBlock {DIV} at (2,0) size 100x25 [bgcolor=#FFA500]
@@ -20,10 +20,10 @@ layer at (0,0) size 785x1250
           RenderBlock {DIV} at (2,0) size 100x25 [bgcolor=#FFA500]
       RenderText {#text} at (260,312) size 4x19
         text run at (260,312) width 4: " "
-      RenderBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,332) size 262x19
         text run at (0,332) width 262: "RTL fieldset with left/center/right text-align: "
-      RenderBR {BR} at (262,347) size 0x0
+      LayoutBR {BR} at (262,347) size 0x0
       RenderFieldSet {FIELDSET} at (16,368) size 228x119.59 [border: (2px groove #C0C0C0)]
         RenderBlock {LEGEND} at (14,0) size 104x25
           RenderBlock {DIV} at (2,0) size 100x25 [bgcolor=#FFA500]
@@ -38,10 +38,10 @@ layer at (0,0) size 785x1250
           RenderBlock {DIV} at (2,0) size 100x25 [bgcolor=#FFA500]
       RenderText {#text} at (260,644) size 4x19
         text run at (260,644) width 4: " "
-      RenderBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,664) size 313x19
         text run at (0,664) width 313: "Vertical LTR fieldset with left/center/right text-align: "
-      RenderBR {BR} at (313,679) size 0x0
+      LayoutBR {BR} at (313,679) size 0x0
       RenderFieldSet {FIELDSET} at (16,700) size 119.59x228 [border: (2px groove #C0C0C0)]
         RenderBlock {LEGEND} at (0,34) size 25x104
           RenderBlock {DIV} at (0,2) size 25x100 [bgcolor=#FFA500]
@@ -57,10 +57,10 @@ layer at (0,0) size 785x1250
           RenderBlock {DIV} at (0,2) size 25x100 [bgcolor=#FFA500]
       RenderText {#text} at (462,929) size 5x19
         text run at (462,929) width 5: " "
-      RenderBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,949) size 313x19
         text run at (0,949) width 313: "Vertical RTL fieldset with left/center/right text-align: "
-      RenderBR {BR} at (313,964) size 0x0
+      LayoutBR {BR} at (313,964) size 0x0
       RenderFieldSet {FIELDSET} at (16,985) size 119.59x228 [border: (2px groove #C0C0C0)]
         RenderBlock {LEGEND} at (0,14) size 25x104
           RenderBlock {DIV} at (0,2) size 25x100 [bgcolor=#FFA500]

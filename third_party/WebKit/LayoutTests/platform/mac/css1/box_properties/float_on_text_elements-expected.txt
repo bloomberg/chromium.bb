@@ -15,7 +15,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,54) width 769: "no padding, border or margins on this and the previous element, so the text of the two elements should be very close to"
           text run at (0,72) width 71: "each other."
       RenderBlock (anonymous) at (0,90) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,116) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {P} at (0,126) size 769x72 [bgcolor=#FFFF00]
         RenderText {#text} at (0,0) size 769x72
@@ -27,7 +27,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,72) size 15x15
         RenderText {#text} at (15,73) size 4x18
           text run at (15,73) width 4: " "
-        RenderBR {BR} at (19,87) size 0x0
+        LayoutBR {BR} at (19,87) size 0x0
       RenderBlock {HR} at (0,225) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {P} at (0,235) size 384.50x108 [bgcolor=#FFFF00]
         RenderText {#text} at (0,0) size 385x108
@@ -41,7 +41,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (384.50,0) size 15x15
         RenderText {#text} at (399,1) size 5x18
           text run at (399,1) width 5: " "
-        RenderBR {BR} at (403,15) size 1x0
+        LayoutBR {BR} at (403,15) size 1x0
       RenderBlock {HR} at (0,351) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {P} at (384.50,361) size 384.50x108 [bgcolor=#FFFF00]
         RenderText {#text} at (0,0) size 385x108
@@ -55,7 +55,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (0,0) size 15x15
         RenderText {#text} at (15,1) size 4x18
           text run at (15,1) width 4: " "
-        RenderBR {BR} at (19,15) size 0x0
+        LayoutBR {BR} at (19,15) size 0x0
       RenderBlock {HR} at (0,477) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,487) size 769x72
         RenderBlock (floating) {SPAN} at (0,0) size 48x37 [bgcolor=#C0C0C0]
@@ -68,7 +68,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (48,36) width 721: "should be vertically aligned with the top of the first line of this paragraph. This is commonly known as \"drop-"
           text run at (0,54) width 33: "cap\"."
       RenderBlock (anonymous) at (0,559) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,585) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {P} at (423,605) size 336x214 [bgcolor=#FFFF00] [border: (3px solid #FF0000)]
         RenderText {#text} at (8,8) size 320x198
@@ -102,7 +102,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,180) width 413: "sidebar's red border, due to the margin styles set for the floated"
           text run at (0,198) width 55: "element."
       RenderBlock (anonymous) at (0,811) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,837) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {DIV} at (0,847) size 769x26 [bgcolor=#66CCFF] [border: (4px solid #FF0000)]
         RenderBlock (floating) {DIV} at (425,14) size 330x244 [bgcolor=#FFFF00]
@@ -125,7 +125,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           RenderText {#text} at (0,0) size 274x18
             text run at (0,0) width 274: "See description in the box on the right side"
       RenderBlock (anonymous) at (0,873) size 769x242
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,1123) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {DIV} at (0,1133) size 192.25x72 [bgcolor=#66CCFF]
         RenderBlock {P} at (0,0) size 192.25x72
@@ -148,7 +148,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (192,18) width 31: "left) "
           text run at (222,18) width 204: "and a yellow box (on the right)."
       RenderBlock (anonymous) at (0,1169) size 769x36
-        RenderBR {BR} at (192,0) size 1x18
+        LayoutBR {BR} at (192,0) size 1x18
       RenderBlock {HR} at (0,1213) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock (floating) {DIV} at (0,1223) size 576.75x126 [bgcolor=#66CCFF]
         RenderBlock (floating) {DIV} at (422.56,0) size 144.19x36 [bgcolor=#FFFF00]
@@ -172,7 +172,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,108) width 113: "have a 10px blue "
             text run at (112,108) width 144: "stripe on its right side."
       RenderBlock (anonymous) at (0,1223) size 769x126
-        RenderBR {BR} at (576,0) size 1x18
+        LayoutBR {BR} at (576,0) size 1x18
       RenderBlock {HR} at (0,1357) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutTable {TABLE} at (0,1367) size 769x1403 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x1401
@@ -198,7 +198,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,54) width 747: "is no padding, border or margins on this and the previous element, so the text of the two elements should be very"
                   text run at (0,72) width 124: "close to each other."
               RenderBlock (anonymous) at (4,94) size 747x18
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
               RenderBlock {HR} at (4,120) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock (floating) {P} at (4,130) size 747x72 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,0) size 747x72
@@ -210,7 +210,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (0,72) size 15x15
                 RenderText {#text} at (15,73) size 4x18
                   text run at (15,73) width 4: " "
-                RenderBR {BR} at (19,87) size 0x0
+                LayoutBR {BR} at (19,87) size 0x0
               RenderBlock {HR} at (4,229) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock (floating) {P} at (4,239) size 373.50x108 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,0) size 374x108
@@ -224,7 +224,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (373.50,0) size 15x15
                 RenderText {#text} at (388,1) size 5x18
                   text run at (388,1) width 5: " "
-                RenderBR {BR} at (392,15) size 1x0
+                LayoutBR {BR} at (392,15) size 1x0
               RenderBlock {HR} at (4,355) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock (floating) {P} at (377.50,365) size 373.50x108 [bgcolor=#FFFF00]
                 RenderText {#text} at (0,0) size 374x108
@@ -238,7 +238,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (0,0) size 15x15
                 RenderText {#text} at (15,1) size 4x18
                   text run at (15,1) width 4: " "
-                RenderBR {BR} at (19,15) size 0x0
+                LayoutBR {BR} at (19,15) size 0x0
               RenderBlock {HR} at (4,481) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock {P} at (4,491) size 747x72
                 RenderBlock (floating) {SPAN} at (0,0) size 48x37 [bgcolor=#C0C0C0]
@@ -251,7 +251,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (48,36) width 699: "should be vertically aligned with the top of the first line of this paragraph. This is commonly known as"
                   text run at (0,54) width 74: "\"drop-cap\"."
               RenderBlock (anonymous) at (4,563) size 747x18
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
               RenderBlock {HR} at (4,589) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock (floating) {P} at (405,609) size 336x214 [bgcolor=#FFFF00] [border: (3px solid #FF0000)]
                 RenderText {#text} at (8,8) size 320x198
@@ -285,7 +285,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,180) width 391: "and to the right of the sidebar's red border, due to the margin"
                   text run at (0,198) width 212: "styles set for the floated element."
               RenderBlock (anonymous) at (4,815) size 747x18
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
               RenderBlock {HR} at (4,841) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock {DIV} at (4,851) size 747x26 [bgcolor=#66CCFF] [border: (4px solid #FF0000)]
                 RenderBlock (floating) {DIV} at (403,14) size 330x244 [bgcolor=#FFFF00]
@@ -308,7 +308,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   RenderText {#text} at (0,0) size 274x18
                     text run at (0,0) width 274: "See description in the box on the right side"
               RenderBlock (anonymous) at (4,877) size 747x242
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
               RenderBlock {HR} at (4,1127) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock (floating) {DIV} at (4,1137) size 186.75x72 [bgcolor=#66CCFF]
                 RenderBlock {P} at (0,0) size 186.75x72
@@ -331,7 +331,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (186,18) width 32: "left) "
                   text run at (217,18) width 203: "and a yellow box (on the right)."
               RenderBlock (anonymous) at (4,1173) size 747x36
-                RenderBR {BR} at (186,0) size 1x18
+                LayoutBR {BR} at (186,0) size 1x18
               RenderBlock {HR} at (4,1217) size 747x2 [border: (1px inset #EEEEEE)]
               RenderBlock (floating) {DIV} at (4,1227) size 560.25x126 [bgcolor=#66CCFF]
                 RenderBlock (floating) {DIV} at (410.19,0) size 140.06x36 [bgcolor=#FFFF00]
@@ -356,5 +356,5 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,108) width 266: "yellow rectange should have a 10px blue "
                     text run at (265,108) width 143: "stripe on its right side."
               RenderBlock (anonymous) at (4,1227) size 747x126
-                RenderBR {BR} at (560,0) size 1x18
+                LayoutBR {BR} at (560,0) size 1x18
               RenderBlock {HR} at (4,1361) size 747x2 [border: (1px inset #EEEEEE)]

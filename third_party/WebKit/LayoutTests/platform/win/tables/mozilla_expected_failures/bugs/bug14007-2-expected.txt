@@ -7,7 +7,7 @@ layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderBlock (anonymous) at (0,0) size 769x18
           RenderText {#text} at (250,0) size 269x17
             text run at (250,0) width 269: "Build 1999/10/27/08 Win95 - Daily Build"
-          RenderBR {BR} at (518,14) size 1x0
+          LayoutBR {BR} at (518,14) size 1x0
         LayoutTable {TABLE} at (69.50,18) size 630x1157 [border: (10px outset #808080)]
           RenderBlock {CAPTION} at (0,0) size 630x18
             RenderText {#text} at (272,0) size 86x17
@@ -75,7 +75,7 @@ layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                                     text run at (0,18) width 52: "doors &"
                                     text run at (0,36) width 28: "hide"
                 RenderBlock (anonymous) at (2,410) size 89x18
-                  RenderBR {BR} at (0,0) size 0x17
+                  LayoutBR {BR} at (0,0) size 0x17
             LayoutTableRow {TR} at (0,430) size 610x274
               LayoutTableCell {TD} at (0,430) size 89x202 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 85x180 [color=#000000]
@@ -104,7 +104,7 @@ layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
                 RenderBlock (anonymous) at (2,182) size 85x18
-                  RenderBR {BR} at (0,0) size 0x17
+                  LayoutBR {BR} at (0,0) size 0x17
               LayoutTableCell {TD} at (89,430) size 85x80 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x76 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x76
@@ -298,7 +298,7 @@ layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                                     text run at (0,18) width 47: "reserve"
                                     text run at (0,36) width 30: "food"
                 RenderBlock (anonymous) at (2,342) size 85x18
-                  RenderBR {BR} at (0,0) size 0x17
+                  LayoutBR {BR} at (0,0) size 0x17
               LayoutTableCell {TD} at (89,704) size 85x290 [color=#FFFFFF] [bgcolor=#404080] [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=1]
                 LayoutTable {TABLE} at (2,2) size 81x286 [color=#000000]
                   LayoutTableSection {TBODY} at (0,0) size 81x286
@@ -501,7 +501,7 @@ layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 RenderText {#text} at (2,2) size 6x17
                   text run at (2,2) width 6: "-"
         RenderBlock (anonymous) at (0,1175) size 769x54
-          RenderBR {BR} at (384,0) size 1x17
+          LayoutBR {BR} at (384,0) size 1x17
           RenderText {#text} at (16,18) size 737x35
             text run at (16,18) width 737: "Notice the scrollbars, they are rendered outside of the table columns, and the yellow day numbers are hidden under"
             text run at (366,36) width 37: "them."

@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
           text run at (0,20) width 97: "that is wrapped "
           text run at (97,20) width 224: "around the text box clears up layout)."
       RenderBlock (anonymous) at (0,56) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {FORM} at (0,76) size 784x136
         RenderBlock {CENTER} at (0,0) size 784x136
           LayoutTable {TABLE} at (92,0) size 600x136 [bgcolor=#EEEEEE] [border: (1px outset #808080)]

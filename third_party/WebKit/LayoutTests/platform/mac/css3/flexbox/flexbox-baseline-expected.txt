@@ -216,10 +216,10 @@ layer at (473,352) size 179x65 backgroundClip at (473,352) size 178x65 clip at (
   RenderBlock {DIV} at (0,0) size 178.53x65
     RenderText {#text} at (0,15) size 157x18
       text run at (0,15) width 157: "The baseline is based on"
-    RenderBR {BR} at (156,15) size 1x18
+    LayoutBR {BR} at (156,15) size 1x18
     RenderText {#text} at (0,33) size 164x18
       text run at (0,33) width 164: "the non-scrolled position;"
-    RenderBR {BR} at (163,33) size 1x18
+    LayoutBR {BR} at (163,33) size 1x18
     RenderText {#text} at (0,51) size 114x18
       text run at (0,51) width 114: "this won't line up."
 layer at (473,5) size 53x18

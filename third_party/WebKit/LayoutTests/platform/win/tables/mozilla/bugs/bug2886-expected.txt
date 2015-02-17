@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
                         RenderText {#text} at (1,1) size 33x17
                           text run at (1,1) width 33: "FOO"
       RenderBlock (anonymous) at (0,160) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,178) size 703x107
         LayoutTableSection {TBODY} at (0,0) size 703x107
           LayoutTableRow {TR} at (0,2) size 703x103
@@ -87,7 +87,7 @@ layer at (0,0) size 800x600
                         RenderText {#text} at (1,1) size 33x17
                           text run at (1,1) width 33: "FOO"
       RenderBlock (anonymous) at (0,285) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {P} at (0,319) size 784x18
         RenderInline {B} at (0,0) size 242x17
           RenderText {#text} at (0,0) size 242x17

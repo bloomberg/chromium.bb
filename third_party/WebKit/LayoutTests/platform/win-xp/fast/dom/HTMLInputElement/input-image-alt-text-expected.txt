@@ -11,11 +11,11 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,56) size 784x0
       RenderBlock {FORM} at (0,56) size 784x97
         RenderBlock {INPUT} at (0,0) size 55x20
-        RenderBR {BR} at (55,20) size 0x0
+        LayoutBR {BR} at (55,20) size 0x0
         RenderBlock {INPUT} at (0,20) size 102x52 [border: (1px solid #000000)]
-        RenderBR {BR} at (102,71) size 0x0
+        LayoutBR {BR} at (102,71) size 0x0
         LayoutImage {INPUT} at (0,72) size 75x25
-        RenderBR {BR} at (75,97) size 0x0
+        LayoutBR {BR} at (75,97) size 0x0
 layer at (8,64) size 55x20 clip at (9,65) size 53x18
   RenderBlock {DIV} at (0,0) size 55x20 [border: (1px solid #C0C0C0)]
 layer at (10,66) size 51x16

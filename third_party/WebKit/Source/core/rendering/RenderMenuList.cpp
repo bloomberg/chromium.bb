@@ -37,9 +37,9 @@
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/layout/LayoutBR.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
-#include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderView.h"
 #include "platform/fonts/FontCache.h"
@@ -276,7 +276,7 @@ void RenderMenuList::setText(const String& s)
             DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
             if (m_buttonText)
                 m_buttonText->destroy();
-            m_buttonText = new RenderBR(&document());
+            m_buttonText = new LayoutBR(&document());
             m_buttonText->setStyle(style());
             addChild(m_buttonText);
         }

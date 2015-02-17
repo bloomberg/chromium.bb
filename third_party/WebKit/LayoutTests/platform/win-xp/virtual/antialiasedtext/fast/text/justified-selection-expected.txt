@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
           text run at (53,3) width 50: "e mi"
           text run at (3,23) width 64: "psumdolor"
       RenderBlock (anonymous) at (0,118) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,138) size 106x46 [border: (3px solid #0000FF)]
         RenderText {#text} at (3,3) size 100x39
           text run at (3,3) width 100: "Lo re mi"

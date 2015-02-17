@@ -20,28 +20,28 @@ layer at (8,88) size 404x64
       text run at (2,30) width 15: "is"
       text run at (2,58) width 50: "some"
       text run at (2,86) width 37: "text"
-    RenderBR {BR} at (39,107) size 0x0
+    LayoutBR {BR} at (39,107) size 0x0
     RenderText {#text} at (2,114) size 50x111
       text run at (2,114) width 41: "This"
       text run at (2,142) width 15: "is"
       text run at (2,170) width 50: "some"
       text run at (2,198) width 37: "text"
-    RenderBR {BR} at (39,219) size 0x0
+    LayoutBR {BR} at (39,219) size 0x0
     RenderText {#text} at (2,226) size 50x111
       text run at (2,226) width 41: "This"
       text run at (2,254) width 15: "is"
       text run at (2,282) width 50: "some"
       text run at (2,310) width 37: "text"
-    RenderBR {BR} at (39,331) size 0x0
+    LayoutBR {BR} at (39,331) size 0x0
     RenderText {#text} at (2,338) size 50x111
       text run at (2,338) width 41: "This"
       text run at (2,366) width 15: "is"
       text run at (2,394) width 50: "some"
       text run at (2,422) width 37: "text"
-    RenderBR {BR} at (39,443) size 0x0
+    LayoutBR {BR} at (39,443) size 0x0
     RenderText {#text} at (2,450) size 50x111
       text run at (2,450) width 41: "This"
       text run at (2,478) width 15: "is"
       text run at (2,506) width 50: "some"
       text run at (2,534) width 37: "text"
-    RenderBR {BR} at (39,555) size 0x0
+    LayoutBR {BR} at (39,555) size 0x0

@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
                   text run at (0,0) width 724: "BlaBlaBla Bla BlaBla BlaBlaBlaBla Bla Bla Bla BlaBlaBla BlaBla Bla BlaBla BlaBlaBlaBla BlaBla Bla BlaBla BlaBla Bla"
               RenderBlock {P} at (1,37) size 724x0
       RenderBlock (anonymous) at (0,46) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,66) size 730x46
         LayoutTableSection {TBODY} at (0,0) size 730x46
           LayoutTableRow {TR} at (0,2) size 730x38

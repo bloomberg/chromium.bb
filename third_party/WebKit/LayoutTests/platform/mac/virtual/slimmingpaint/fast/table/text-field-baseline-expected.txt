@@ -78,7 +78,7 @@ layer at (0,0) size 800x391
                   text run at (0,0) width 25: "Foo"
               LayoutTableCell {DD} at (25,114) size 212x36 [r=6 c=1 rs=1 cs=1]
                 RenderBlock {DIV} at (0,0) size 211.97x36
-                  RenderBR {BR} at (0,0) size 0x18
+                  LayoutBR {BR} at (0,0) size 0x18
                   RenderText {#text} at (0,18) size 212x18
                     text run at (0,18) width 212: "Bar (should be aligned with Foo)"
 layer at (36,123) size 117x13

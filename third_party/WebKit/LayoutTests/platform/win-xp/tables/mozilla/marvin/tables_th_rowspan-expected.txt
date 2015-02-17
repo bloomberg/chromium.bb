@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x40
         RenderText {#text} at (0,0) size 610x19
           text run at (0,0) width 610: "This table uses a ROWSPAN attribute in the first TH tag. The ROWSPAN attribute has a value of 2."
-        RenderBR {BR} at (610,15) size 0x0
-        RenderBR {BR} at (0,20) size 0x19
+        LayoutBR {BR} at (610,15) size 0x0
+        LayoutBR {BR} at (0,20) size 0x19
       LayoutTable {TABLE} at (0,40) size 280x56 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 278x54
           LayoutTableRow {TR} at (0,2) size 278x24

@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderText {#text} at (0,0) size 566x18
           text run at (0,0) width 566: "The TH tag uses the ALIGN attribute. The contents in the TH tag should be aligned left."
-        RenderBR {BR} at (565,14) size 1x0
+        LayoutBR {BR} at (565,14) size 1x0
       LayoutTable {TABLE} at (0,18) size 298x52 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 296x50
           LayoutTableRow {TR} at (0,2) size 296x22

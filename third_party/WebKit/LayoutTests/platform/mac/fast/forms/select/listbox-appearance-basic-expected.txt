@@ -18,30 +18,30 @@ layer at (0,0) size 800x546
         text run at (304,48) width 5: " "
       RenderText {#text} at (358,48) size 5x18
         text run at (358,48) width 5: " "
-      RenderBR {BR} at (362,48) size 1x18
+      LayoutBR {BR} at (362,48) size 1x18
       RenderText {#text} at (46,118) size 5x18
         text run at (46,118) width 5: " "
       RenderText {#text} at (93,118) size 5x18
         text run at (93,118) width 5: " "
-      RenderBR {BR} at (97,118) size 1x18
+      LayoutBR {BR} at (97,118) size 1x18
       RenderText {#text} at (42,184) size 5x18
         text run at (42,184) width 5: " "
-      RenderBR {BR} at (46,184) size 1x18
+      LayoutBR {BR} at (46,184) size 1x18
       RenderText {#text} at (42,250) size 5x18
         text run at (42,250) width 5: " "
-      RenderBR {BR} at (46,250) size 1x18
+      LayoutBR {BR} at (46,250) size 1x18
       RenderText {#text} at (50,379) size 5x18
         text run at (50,379) width 5: " "
       RenderText {#text} at (111,379) size 5x18
         text run at (111,379) width 5: " "
       RenderText {#text} at (178,379) size 5x18
         text run at (178,379) width 5: " "
-      RenderBR {BR} at (182,379) size 1x18
+      LayoutBR {BR} at (182,379) size 1x18
       RenderText {#text} at (57,512) size 5x18
         text run at (57,512) width 5: " "
       RenderText {#text} at (135,512) size 5x18
         text run at (135,512) width 5: " "
-      RenderBR {BR} at (139,512) size 1x18
+      LayoutBR {BR} at (139,512) size 1x18
 layer at (12,11) size 35x59 clip at (13,12) size 22x57 scrollHeight 56
   RenderListBox {SELECT} at (4,3.25) size 34.56x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {OPTION} at (1,1) size 21.56x14.19

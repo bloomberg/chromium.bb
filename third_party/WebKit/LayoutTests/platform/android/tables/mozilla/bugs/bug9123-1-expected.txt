@@ -8,10 +8,10 @@ layer at (0,0) size 800x600
           text run at (20,0) width 405: "Here's the structure of the problem table (which usually begins with "
           text run at (425,0) width 64: "'N E W S "
           text run at (489,0) width 134: "H E A D L I N E S'). "
-        RenderBR {BR} at (623,15) size 0x0
+        LayoutBR {BR} at (623,15) size 0x0
         RenderText {#text} at (20,20) size 309x19
           text run at (20,20) width 309: "This table is width 100%; two rows; three columns;"
-        RenderBR {BR} at (329,35) size 0x0
+        LayoutBR {BR} at (329,35) size 0x0
         RenderText {#text} at (20,40) size 452x19
           text run at (20,40) width 452: "The first row: widths 15, 125, 15 ... The second row: widths 15, 100%, 15"
       LayoutTable {TABLE} at (0,76) size 800x41 [border: (1px outset #808080)]

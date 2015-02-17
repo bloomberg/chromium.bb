@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 558: "The squares below should have blue tops and green bottoms, not the other way around."
       RenderBlock {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,196) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
 layer at (8,104) size 784x100
   RenderBlock (relative positioned) {DIV} at (0,96) size 784x100
     RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#87CEEB]

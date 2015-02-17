@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderText {#text} at (0,0) size 420x19
         text run at (0,0) width 420: "This tests that you can tab out of a text field if an iframe comes after it."
-      RenderBR {BR} at (420,15) size 0x0
+      LayoutBR {BR} at (420,15) size 0x0
       LayoutTextControl {INPUT} at (0,156) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       RenderText {#text} at (154,157) size 4x19
         text run at (154,157) width 4: " "

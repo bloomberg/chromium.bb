@@ -10,7 +10,7 @@ layer at (0,0) size 800x52
           text run at (173,2) width 225: "SVGLocatable::getScreenCTM()"
       RenderText {#text} at (397,0) size 117x17
         text run at (397,0) width 117: " in mixed content "
-      RenderBR {br} at (513,0) size 1x17
+      LayoutBR {br} at (513,0) size 1x17
       RenderText {#text} at (0,18) size 322x17
         text run at (0,18) width 322: "If the test passes you should see a green rectangle."
 layer at (30,100) size 400x200

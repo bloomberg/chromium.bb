@@ -5,30 +5,30 @@ layer at (0,0) size 800x453
     RenderBody {BODY} at (8,8) size 784x437
       RenderText {#text} at (189,31) size 4x19
         text run at (189,31) width 4: " "
-      RenderBR {BR} at (193,31) size 0x19
+      LayoutBR {BR} at (193,31) size 0x19
       RenderText {#text} at (193,86) size 4x19
         text run at (193,86) width 4: " "
       RenderText {#text} at (386,86) size 4x19
         text run at (386,86) width 4: " "
-      RenderBR {BR} at (390,86) size 0x19
+      LayoutBR {BR} at (390,86) size 0x19
       RenderText {#text} at (189,137) size 4x19
         text run at (189,137) width 4: " "
-      RenderBR {BR} at (193,137) size 0x19
+      LayoutBR {BR} at (193,137) size 0x19
       RenderText {#text} at (189,188) size 4x19
         text run at (189,188) width 4: " "
-      RenderBR {BR} at (193,188) size 0x19
+      LayoutBR {BR} at (193,188) size 0x19
       RenderText {#text} at (229,251) size 4x19
         text run at (229,251) width 4: " "
       RenderText {#text} at (502,251) size 4x19
         text run at (502,251) width 4: " "
       RenderText {#text} at (309,324) size 4x19
         text run at (309,324) width 4: " "
-      RenderBR {BR} at (313,324) size 0x19
+      LayoutBR {BR} at (313,324) size 0x19
       RenderText {#text} at (275,417) size 4x19
         text run at (275,417) width 4: " "
       RenderText {#text} at (642,417) size 4x19
         text run at (642,417) width 4: " "
-      RenderBR {BR} at (646,417) size 0x19
+      LayoutBR {BR} at (646,417) size 0x19
 layer at (12,12) size 181x38 clip at (13,13) size 179x36
   LayoutTextControl {TEXTAREA} at (4,4) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 175x16

@@ -6,10 +6,10 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,0) size 784x312
         RenderText {#text} at (159,140) size 162x17
           text run at (159,140) width 162: "This should be centered. "
-        RenderBR {BR} at (624,154) size 1x0
+        LayoutBR {BR} at (624,154) size 1x0
         RenderText {#text} at (161,294) size 162x17
           text run at (161,294) width 162: "This should be centered. "
-        RenderBR {BR} at (622,308) size 1x0
+        LayoutBR {BR} at (622,308) size 1x0
 layer at (328,8) size 304x154
   LayoutIFrame {IFRAME} at (320.19,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150

@@ -15,7 +15,7 @@ layer at (0,0) size 800x60
           RenderDetailsMarker {DIV} at (132.14,1.33) size 17.86x13.33: down
       RenderText {#text} at (312,1) size 4x19
         text run at (312,1) width 4: " "
-      RenderBR {BR} at (316,1) size 0x19
+      LayoutBR {BR} at (316,1) size 0x19
       LayoutTextControl {INPUT} at (0,22) size 154x22 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (2,3) size 150x16
           RenderBlock {DIV} at (0,0) size 132.14x16

@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 63x17
                 text run at (2,2) width 63: "10% 10%"
       RenderBlock (anonymous) at (0,62) size 784x54
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 775x35
           text run at (0,18) width 775: "auto table - % width cell increases table width based on % cell which makes it largest. Nav4.x does not increase the table"
           text run at (0,36) width 204: "too much if the only cells are %"
@@ -27,4 +27,4 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 30x17
                 text run at (2,2) width 30: "10%"
       RenderBlock (anonymous) at (0,160) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17

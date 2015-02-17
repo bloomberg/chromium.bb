@@ -10,13 +10,13 @@ layer at (0,0) size 800x600
               RenderBlock (anonymous) at (1,1) size 229x54
                 RenderText {#text} at (0,0) size 229x18
                   text run at (0,0) width 229: "This cell has the nowrap parameter "
-                RenderBR {BR} at (228,14) size 1x0
-                RenderBR {BR} at (0,18) size 0x18
+                LayoutBR {BR} at (228,14) size 1x0
+                LayoutBR {BR} at (0,18) size 0x18
                 RenderText {#text} at (0,36) size 32x18
                   text run at (0,36) width 32: "<hr>"
               RenderBlock {HR} at (1,63) size 229x2 [border: (1px inset #EEEEEE)]
               RenderBlock (anonymous) at (1,73) size 229x36
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
                 RenderText {#text} at (0,18) size 97x18
                   text run at (0,18) width 97: "<hr width=30>"
               RenderBlock {HR} at (99.50,117) size 32x2 [border: (1px inset #EEEEEE)]
@@ -29,13 +29,13 @@ layer at (0,0) size 800x600
               RenderBlock (anonymous) at (1,1) size 229x54
                 RenderText {#text} at (0,0) size 109x18
                   text run at (0,0) width 109: "This cell doesn't "
-                RenderBR {BR} at (108,14) size 1x0
-                RenderBR {BR} at (0,18) size 0x18
+                LayoutBR {BR} at (108,14) size 1x0
+                LayoutBR {BR} at (0,18) size 0x18
                 RenderText {#text} at (0,36) size 32x18
                   text run at (0,36) width 32: "<hr>"
               RenderBlock {HR} at (1,63) size 229x2 [border: (1px inset #EEEEEE)]
               RenderBlock (anonymous) at (1,73) size 229x36
-                RenderBR {BR} at (0,0) size 0x18
+                LayoutBR {BR} at (0,0) size 0x18
                 RenderText {#text} at (0,18) size 97x18
                   text run at (0,18) width 97: "<hr width=30>"
               RenderBlock {HR} at (99.50,117) size 32x2 [border: (1px inset #EEEEEE)]

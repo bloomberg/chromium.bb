@@ -28,8 +28,8 @@ layer at (0,0) size 800x600
         RenderInline {SPAN} at (0,0) size 204x84
           RenderText {#text} at (14,14) size 16x28
             text run at (14,14) width 16: "s "
-          RenderBR {BR} at (29,36) size 1x0
-          RenderBR {BR} at (14,42) size 0x28
+          LayoutBR {BR} at (29,36) size 1x0
+          LayoutBR {BR} at (14,42) size 0x28
           RenderText {#text} at (14,70) size 204x28
             text run at (14,70) width 94: " war. We "
             text run at (107,70) width 111: "of that war."

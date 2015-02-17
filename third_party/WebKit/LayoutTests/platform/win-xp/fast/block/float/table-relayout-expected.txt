@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
                   text run at (1,21) width 164: "consectetuer adipiscing elit."
                   text run at (1,41) width 77: "Nunc neque."
       RenderBlock (anonymous) at (0,168) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,188) size 200x66 [bgcolor=#C0C0C0]
         LayoutTable {TABLE} at (0,0) size 200x66
           LayoutTableSection {TBODY} at (0,0) size 200x66

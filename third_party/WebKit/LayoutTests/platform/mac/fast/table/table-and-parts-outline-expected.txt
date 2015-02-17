@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x36
         RenderText {#text} at (0,0) size 676x18
           text run at (0,0) width 676: "You should see a table with a dotted green outline, and four table cells inside it with a solid black outline."
-        RenderBR {BR} at (675,14) size 1x0
-        RenderBR {BR} at (0,18) size 0x18
+        LayoutBR {BR} at (675,14) size 1x0
+        LayoutBR {BR} at (0,18) size 0x18
       LayoutTable {TABLE} at (0,36) size 88x46
         LayoutTableSection {TBODY} at (0,0) size 88x46
           LayoutTableRow {TR} at (0,2) size 88x20

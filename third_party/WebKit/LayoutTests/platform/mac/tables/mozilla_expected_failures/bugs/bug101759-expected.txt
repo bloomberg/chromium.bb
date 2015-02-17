@@ -28,7 +28,7 @@ layer at (0,0) size 785x1646 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (47,153) size 722x0 [bgcolor=#008000] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (0,0) size 0x0 [bgcolor=#FFFF00]
       RenderBlock (anonymous) at (0,306) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,324) size 769x310 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x308
           LayoutTableRow {TR} at (0,0) size 767x308
@@ -54,7 +54,7 @@ layer at (0,0) size 785x1646 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (49,153) size 718x2 [bgcolor=#008000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (1,1) size 0x0 [bgcolor=#FFFF00]
       RenderBlock (anonymous) at (0,634) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,652) size 769x312 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x310
           LayoutTableRow {TR} at (0,0) size 767x310
@@ -80,7 +80,7 @@ layer at (0,0) size 785x1646 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (51,153) size 716x4 [bgcolor=#008000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutTable {TABLE} at (2,2) size 0x0 [bgcolor=#FFFF00]
       RenderBlock (anonymous) at (0,964) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,982) size 769x306
         LayoutTableSection {TBODY} at (0,0) size 769x306
           LayoutTableRow {TR} at (0,0) size 769x306
@@ -125,7 +125,7 @@ layer at (0,0) size 785x1646 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (94,153) size 675x0 [bgcolor=#008000] [r=0 c=2 rs=1 cs=1]
               LayoutTable {TABLE} at (0,0) size 0x0 [bgcolor=#FFFF00]
       RenderBlock (anonymous) at (0,1288) size 769x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,1306) size 769x306
         LayoutTableSection {TBODY} at (0,0) size 769x306
           LayoutTableRow {TR} at (0,0) size 769x306

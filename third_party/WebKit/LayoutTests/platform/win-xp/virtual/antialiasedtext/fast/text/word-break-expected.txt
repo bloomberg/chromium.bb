@@ -21,7 +21,7 @@ layer at (0,0) size 785x1036
               RenderText {#text} at (6,6) size 168x16
                 text run at (6,6) width 168: "This cell should grow"
       RenderBlock (anonymous) at (0,130) size 769x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 415x19
           text run at (0,20) width 415: "This test checks that word-break is ignored when white-space is pre."
       RenderBlock {PRE} at (0,183) size 110x26 [border: (5px solid #000000)]
@@ -29,7 +29,7 @@ layer at (0,0) size 785x1036
           text run at (5,5) width 448: "Thislongwordshouldnotgetbrokenbutshouldstickoutofthepre."
           text run at (453,5) width 0: " "
       RenderBlock (anonymous) at (0,222) size 769x60
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 768x39
           text run at (0,20) width 453: "The next two examples test our custom break-word value for word-break. "
           text run at (453,20) width 304: "We should get the same results as break-all for the"
@@ -49,7 +49,7 @@ layer at (0,0) size 785x1036
               RenderText {#text} at (6,6) size 168x16
                 text run at (6,6) width 168: "This cell should grow"
       RenderBlock (anonymous) at (0,392) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {PRE} at (0,425) size 110x90 [border: (5px solid #000000)]
         RenderText {#text} at (5,5) size 96x80
           text run at (5,5) width 96: "Thislongword"
@@ -59,7 +59,7 @@ layer at (0,0) size 785x1036
           text run at (5,69) width 64: "fthepre."
           text run at (69,69) width 0: " "
       RenderBlock (anonymous) at (0,528) size 769x60
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 756x39
           text run at (0,20) width 596: "This test makes sure floating and positioned elements do the right thing with word-break: break-all. "
           text run at (596,20) width 160: "The minimum width should"
@@ -71,11 +71,11 @@ layer at (0,0) size 785x1036
             text run at (0,0) width 296: "Eventhoughthishasareallylongword itsh"
             text run at (0,16) width 296: "ouldnotstick out oftheenclosing300pxb"
             text run at (0,32) width 40: "lock."
-        RenderBR {BR} at (302,2) size 0x16
+        LayoutBR {BR} at (302,2) size 0x16
       RenderBlock (anonymous) at (0,640) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock (anonymous) at (0,764) size 769x80
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 768x59
           text run at (0,20) width 615: "This test makes sure floating and positioned elements do the right thing with word-break: break-word. "
           text run at (615,20) width 117: "The minimum width"
@@ -88,9 +88,9 @@ layer at (0,0) size 785x1036
             text run at (0,0) width 256: "Eventhoughthishasareallylongword"
             text run at (0,16) width 160: "itshouldnotstick out"
             text run at (0,32) width 200: "oftheenclosing300pxblock."
-        RenderBR {BR} at (302,2) size 0x16
+        LayoutBR {BR} at (302,2) size 0x16
       RenderBlock (anonymous) at (0,896) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
 layer at (8,668) size 304x104
   RenderBlock (relative positioned) {DIV} at (0,660) size 304x104 [border: (2px solid #000000)]
 layer at (10,670) size 300x48

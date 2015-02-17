@@ -145,7 +145,7 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (0,49) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
       RenderBlock (anonymous) at (0,358) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,378) size 609x358 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 607x356
           LayoutTableRow {TR} at (0,2) size 607x32
@@ -288,7 +288,7 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (0,0) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
       RenderBlock (anonymous) at (0,736) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,756) size 609x358 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 607x356
           LayoutTableRow {TR} at (0,2) size 607x32
@@ -431,7 +431,7 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (0,24) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
       RenderBlock (anonymous) at (0,1114) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1134) size 609x358 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 607x356
           LayoutTableRow {TR} at (0,2) size 607x32

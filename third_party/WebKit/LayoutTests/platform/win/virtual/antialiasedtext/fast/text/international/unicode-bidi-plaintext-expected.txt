@@ -9,15 +9,15 @@ layer at (0,0) size 800x204
       RenderBlock {DIV} at (0,18) size 784x72
         RenderText {#text} at (0,0) size 46x17
           text run at (0,0) width 46: "!hello. "
-        RenderBR {BR} at (45,0) size 1x17
+        LayoutBR {BR} at (45,0) size 1x17
         RenderText {#text} at (741,18) size 43x17
           text run at (741,18) width 43 RTL: "!\x{5E9}\x{5DC}\x{5D5}\x{5DD}. "
-        RenderBR {BR} at (741,18) size 1x17
+        LayoutBR {BR} at (741,18) size 1x17
         RenderText {#text} at (0,36) size 65x17
           text run at (0,36) width 40: "hello, "
           text run at (39,36) width 17 RTL: "\x{5DC}\x{5D5}\x{5D9}"
           text run at (55,36) width 10: "! "
-        RenderBR {BR} at (64,36) size 1x17
+        LayoutBR {BR} at (64,36) size 1x17
         RenderText {#text} at (690,54) size 94x17
           text run at (690,54) width 7 RTL: "!"
           text run at (696,54) width 51: "WebKit"

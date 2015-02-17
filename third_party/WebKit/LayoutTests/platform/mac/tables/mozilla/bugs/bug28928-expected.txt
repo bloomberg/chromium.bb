@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
                       text run at (0,0) width 22: " Go "
                 RenderText {#text} at (129,0) size 5x18
                   text run at (129,0) width 5: " "
-                RenderBR {BR} at (133,14) size 1x0
+                LayoutBR {BR} at (133,14) size 1x0
                 RenderText {#text} at (0,19) size 190x18
                   text run at (0,19) width 190: "Enter City Name or Zip Code"
           LayoutTableRow {TR} at (0,59) size 196x0
@@ -42,7 +42,7 @@ layer at (0,0) size 800x600
                       text run at (0,0) width 22: " Go "
                 RenderText {#text} at (129,0) size 5x18
                   text run at (129,0) width 5: " "
-                RenderBR {BR} at (133,14) size 1x0
+                LayoutBR {BR} at (133,14) size 1x0
                 RenderText {#text} at (0,19) size 190x18
                   text run at (0,19) width 190: "Enter City Name or Zip Code"
           LayoutTableRow {TR} at (0,59) size 196x0

@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 96x19
                 text run at (2,2) width 96: "80% height row"
       RenderBlock (anonymous) at (0,220) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 101x19
           text run at (0,20) width 101: "table height=200"
       LayoutTable {TABLE} at (0,260) size 101x306 [border: (1px outset #808080)]

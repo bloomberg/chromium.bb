@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderBR.h"
+#include "core/layout/LayoutBR.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
@@ -35,37 +35,37 @@ static PassRefPtr<StringImpl> newlineString()
     return string.impl();
 }
 
-RenderBR::RenderBR(Node* node)
+LayoutBR::LayoutBR(Node* node)
     : RenderText(node, newlineString())
 {
 }
 
-RenderBR::~RenderBR()
+LayoutBR::~LayoutBR()
 {
 }
 
-int RenderBR::lineHeight(bool firstLine) const
+int LayoutBR::lineHeight(bool firstLine) const
 {
     const LayoutStyle& style = styleRef(firstLine && document().styleEngine()->usesFirstLineRules());
     return style.computedLineHeight();
 }
 
-void RenderBR::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutBR::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderText::styleDidChange(diff, oldStyle);
 }
 
-int RenderBR::caretMinOffset() const
+int LayoutBR::caretMinOffset() const
 {
     return 0;
 }
 
-int RenderBR::caretMaxOffset() const
+int LayoutBR::caretMaxOffset() const
 {
     return 1;
 }
 
-PositionWithAffinity RenderBR::positionForPoint(const LayoutPoint&)
+PositionWithAffinity LayoutBR::positionForPoint(const LayoutPoint&)
 {
     return createPositionWithAffinity(0, DOWNSTREAM);
 }

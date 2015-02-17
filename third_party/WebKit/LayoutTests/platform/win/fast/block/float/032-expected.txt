@@ -7,40 +7,40 @@ layer at (0,0) size 785x1022 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutImage {IMG} at (205,5) size 100x100 [bgcolor=#800080]
       RenderBlock (anonymous) at (0,110) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,128) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutImage {IMG} at (305,5) size 100x100 [bgcolor=#800080]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,238) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,256) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutImage {IMG} at (105,5) size 100x100 [bgcolor=#800080]
       RenderBlock (anonymous) at (0,366) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,384) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutImage {IMG} at (55,5) size 100x100 [bgcolor=#800080]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,494) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,512) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutTextControl {INPUT} at (205,5) size 104x106 [bgcolor=#800080] [border: (2px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,622) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,640) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutTextControl {INPUT} at (305,5) size 104x106 [bgcolor=#800080] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,750) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,768) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutTextControl {INPUT} at (105,5) size 104x106 [bgcolor=#800080] [border: (2px inset #EEEEEE)]
       RenderBlock (anonymous) at (0,878) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,896) size 769x110 [border: (5px solid #000000)]
         RenderBlock (floating) {DIV} at (5,5) size 100x100 [bgcolor=#008000]
         LayoutTextControl {INPUT} at (55,5) size 104x106 [bgcolor=#800080] [border: (2px inset #EEEEEE)]

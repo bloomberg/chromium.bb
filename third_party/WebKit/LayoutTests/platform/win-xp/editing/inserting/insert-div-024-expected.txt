@@ -53,7 +53,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (14,14) size 36x27
           text run at (14,14) width 36: "xxx"
       RenderBlock {P} at (0,307) size 784x56 [border: (2px solid #0000FF)]
-        RenderBR {BR} at (14,14) size 0x27 [bgcolor=#008000]
+        LayoutBR {BR} at (14,14) size 0x27 [bgcolor=#008000]
       RenderBlock {P} at (0,387) size 784x56 [border: (2px solid #0000FF)]
         RenderText {#text} at (14,14) size 36x27
           text run at (14,14) width 36: "xxx"

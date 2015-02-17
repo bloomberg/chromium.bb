@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,56) size 784x20
         RenderText {#text} at (0,0) size 133x19
           text run at (0,0) width 133: "Table with width=459"
-        RenderBR {BR} at (133,15) size 0x0
+        LayoutBR {BR} at (133,15) size 0x0
       LayoutTable {TABLE} at (0,76) size 784x246 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x244
           LayoutTableRow {TR} at (0,2) size 782x154

@@ -5,7 +5,7 @@ layer at (0,0) size 800x970 backgroundClip at (0,0) size 800x600 clip at (0,0) s
     RenderBody {BODY} at (8,8) size 784x954
       RenderBlock {DIV} at (0,0) size 100x100
       RenderBlock (anonymous) at (0,100) size 784x54
-        RenderBR {BR} at (0,0) size 0x18
-        RenderBR {BR} at (0,18) size 0x18
-        RenderBR {BR} at (0,36) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,18) size 0x18
+        LayoutBR {BR} at (0,36) size 0x18
       RenderBlock {DIV} at (0,154) size 800x800

@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
                       LayoutTableSection {TBODY} at (0,0) size 260x299
                         LayoutTableRow {TR} at (0,0) size 260x22
                           LayoutTableCell {TD} at (0,0) size 6x22 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]
-                            RenderBR {BR} at (2,2) size 0x18
+                            LayoutBR {BR} at (2,2) size 0x18
                           LayoutTableCell {TD} at (6,1) size 254x19 [bgcolor=#CCCCDD] [r=0 c=1 rs=1 cs=1]
                             RenderInline {FONT} at (0,0) size 247x15
                               RenderInline {B} at (0,0) size 247x15
@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
                                   text run at (2,2) width 247: "CHAMBERLAIN'S CAREER STATISTICS"
                         LayoutTableRow {TR} at (0,22) size 260x277
                           LayoutTableCell {TD} at (0,149) size 6x22 [bgcolor=#FFFFFF] [r=1 c=0 rs=1 cs=1]
-                            RenderBR {BR} at (2,2) size 0x18
+                            LayoutBR {BR} at (2,2) size 0x18
                           LayoutTableCell {TD} at (6,22) size 254x277 [r=1 c=1 rs=1 cs=1]
                             LayoutTable {TABLE} at (2,2) size 250x256
                               LayoutTableSection {TBODY} at (0,0) size 250x256

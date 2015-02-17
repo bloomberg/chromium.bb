@@ -23,7 +23,7 @@ layer at (0,0) size 800x204
               RenderText {#text} at (3,3) size 36x19
                 text run at (3,3) width 36: "Cell 4"
       RenderBlock (anonymous) at (0,80) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,100) size 167x88 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 165x86
           LayoutTableRow {TR} at (0,2) size 165x26

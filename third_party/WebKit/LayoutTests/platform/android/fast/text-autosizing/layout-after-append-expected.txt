@@ -8,7 +8,7 @@ layer at (0,0) size 800x2087
           RenderText {#text} at (0,1) size 446x90
             text run at (0,1) width 446: "This test passes if no text is"
             text run at (0,47) width 207: "overlapping."
-          RenderBR {BR} at (207,47) size 0x44
+          LayoutBR {BR} at (207,47) size 0x44
           RenderText {#text} at (0,93) size 434x596
             text run at (0,93) width 434: "Autosize Autosize Autosize"
             text run at (0,139) width 434: "Autosize Autosize Autosize"

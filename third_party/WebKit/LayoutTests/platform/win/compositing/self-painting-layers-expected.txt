@@ -15,10 +15,10 @@ layer at (18,266) size 302x152 clip at (19,267) size 285x150 scrollY 24.00 scrol
     RenderBlock {DIV} at (1,1) size 285x500
       RenderText {#text} at (0,6) size 107x36
         text run at (0,6) width 107: "Scrolled"
-      RenderBR {BR} at (106,6) size 1x36
+      LayoutBR {BR} at (106,6) size 1x36
       RenderText {#text} at (0,54) size 48x36
         text run at (0,54) width 48: "text"
-      RenderBR {BR} at (47,54) size 1x36
+      LayoutBR {BR} at (47,54) size 1x36
       RenderText {#text} at (0,102) size 64x36
         text run at (0,102) width 64: "here."
 layer at (19,51) size 300x200

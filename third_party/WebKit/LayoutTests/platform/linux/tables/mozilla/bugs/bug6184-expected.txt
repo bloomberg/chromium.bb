@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 28x19
                 text run at (2,2) width 28: "hello"
       RenderBlock (anonymous) at (0,70) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,90) size 600x46 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 598x44
           LayoutTableRow {TR} at (0,0) size 598x44
@@ -37,4 +37,4 @@ layer at (0,0) size 800x600
                 text run at (253,22) width 116: "What's your stand?"
           LayoutTableRow {TR} at (0,44) size 598x0
       RenderBlock (anonymous) at (0,136) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19

@@ -12,22 +12,22 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x84
           RenderText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,28) size 625x28
             text run at (0,28) width 625: "Delete at the end of document when there is a BR following a P. "
-          RenderBR {BR} at (624,50) size 1x0
+          LayoutBR {BR} at (624,50) size 1x0
           RenderText {#text} at (0,56) size 438x28
             text run at (0,56) width 438: "This is a test case for rdar://problem/4110366"
         RenderBlock {DIV} at (14,114) size 756x112
           RenderText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
-          RenderBR {BR} at (189,22) size 1x0
+          LayoutBR {BR} at (189,22) size 1x0
           RenderText {#text} at (0,28) size 715x56
             text run at (0,28) width 239: "Red box with four lines. "
             text run at (238,28) width 477: "The second line is a nested red box with the word"
             text run at (0,56) width 80: "\"hello\". "
             text run at (79,56) width 312: "The other three lines are empty. "
-          RenderBR {BR} at (390,78) size 1x0
+          LayoutBR {BR} at (390,78) size 1x0
           RenderText {#text} at (0,84) size 461x28
             text run at (0,84) width 461: "Selection is a caret at the start of the fourth line."
       RenderBlock {DIV} at (0,264) size 784x140 [border: (2px solid #FF0000)]
@@ -35,5 +35,5 @@ layer at (0,0) size 800x600
           RenderText {#text} at (2,2) size 48x28
             text run at (2,2) width 48: "hello"
         RenderBlock {P} at (2,82) size 780x32 [border: (2px solid #FF0000)]
-          RenderBR {BR} at (2,2) size 0x28
+          LayoutBR {BR} at (2,2) size 0x28
 caret: position 0 of child 0 {BR} of child 1 {P} of child 3 {DIV} of body

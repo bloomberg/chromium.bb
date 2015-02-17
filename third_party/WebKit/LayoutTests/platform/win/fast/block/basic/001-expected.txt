@@ -23,11 +23,11 @@ layer at (0,0) size 800x600
             RenderInline {FONT} at (0,0) size 98x35 [color=#FF0000]
               RenderText {#text} at (0,0) size 98x17
                 text run at (0,0) width 98: "Now more text."
-              RenderBR {BR} at (97,14) size 1x0
+              LayoutBR {BR} at (97,14) size 1x0
               RenderText {#text} at (0,18) size 68x17
                 text run at (0,18) width 68: "This is red"
             RenderText {#text} at (67,18) size 233x17
               text run at (67,18) width 233: " but now only italic on the same line"
-          RenderBR {BR} at (299,32) size 1x0
+          LayoutBR {BR} at (299,32) size 1x0
           RenderText {#text} at (0,36) size 132x17
             text run at (0,36) width 132: "Plain line at the end."

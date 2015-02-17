@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 57x19
                 text run at (2,2) width 57: "200 table"
       RenderBlock (anonymous) at (0,86) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 206x19
           text run at (0,20) width 206: "nested table width includes border"
       LayoutTable {TABLE} at (0,126) size 204x52 [border: (1px outset #808080)]

@@ -40,31 +40,31 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,0) width 43: "Value:"
         RenderText {#text} at (42,0) size 85x17
           text run at (42,0) width 85: " scroll | fixed"
-        RenderBR {BR} at (126,14) size 1x0
+        LayoutBR {BR} at (126,14) size 1x0
         RenderInline {EM} at (0,0) size 45x17
           RenderText {#text} at (0,18) size 45x17
             text run at (0,18) width 45: "Initial:"
         RenderText {#text} at (44,18) size 40x17
           text run at (44,18) width 40: " scroll"
-        RenderBR {BR} at (83,32) size 1x0
+        LayoutBR {BR} at (83,32) size 1x0
         RenderInline {EM} at (0,0) size 70x17
           RenderText {#text} at (0,36) size 70x17
             text run at (0,36) width 70: "Applies to:"
         RenderText {#text} at (69,36) size 82x17
           text run at (69,36) width 82: " all elements"
-        RenderBR {BR} at (150,50) size 1x0
+        LayoutBR {BR} at (150,50) size 1x0
         RenderInline {EM} at (0,0) size 64x17
           RenderText {#text} at (0,54) size 64x17
             text run at (0,54) width 64: "Inherited:"
         RenderText {#text} at (63,54) size 21x17
           text run at (63,54) width 21: " no"
-        RenderBR {BR} at (83,68) size 1x0
+        LayoutBR {BR} at (83,68) size 1x0
         RenderInline {EM} at (0,0) size 124x17
           RenderText {#text} at (0,72) size 124x17
             text run at (0,72) width 124: "Percentage values:"
         RenderText {#text} at (123,72) size 32x17
           text run at (123,72) width 32: " N/A"
-        RenderBR {BR} at (154,86) size 1x0
+        LayoutBR {BR} at (154,86) size 1x0
       RenderBlock {P} at (0,415.53) size 784x36
         RenderText {#text} at (0,0) size 783x35
           text run at (0,0) width 783: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the canvas"
@@ -129,31 +129,31 @@ layer at (0,0) size 800x1207 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                     text run at (0,0) width 43: "Value:"
                 RenderText {#text} at (42,0) size 85x17
                   text run at (42,0) width 85: " scroll | fixed"
-                RenderBR {BR} at (126,14) size 1x0
+                LayoutBR {BR} at (126,14) size 1x0
                 RenderInline {EM} at (0,0) size 45x17
                   RenderText {#text} at (0,18) size 45x17
                     text run at (0,18) width 45: "Initial:"
                 RenderText {#text} at (44,18) size 40x17
                   text run at (44,18) width 40: " scroll"
-                RenderBR {BR} at (83,32) size 1x0
+                LayoutBR {BR} at (83,32) size 1x0
                 RenderInline {EM} at (0,0) size 70x17
                   RenderText {#text} at (0,36) size 70x17
                     text run at (0,36) width 70: "Applies to:"
                 RenderText {#text} at (69,36) size 82x17
                   text run at (69,36) width 82: " all elements"
-                RenderBR {BR} at (150,50) size 1x0
+                LayoutBR {BR} at (150,50) size 1x0
                 RenderInline {EM} at (0,0) size 64x17
                   RenderText {#text} at (0,54) size 64x17
                     text run at (0,54) width 64: "Inherited:"
                 RenderText {#text} at (63,54) size 21x17
                   text run at (63,54) width 21: " no"
-                RenderBR {BR} at (83,68) size 1x0
+                LayoutBR {BR} at (83,68) size 1x0
                 RenderInline {EM} at (0,0) size 124x17
                   RenderText {#text} at (0,72) size 124x17
                     text run at (0,72) width 124: "Percentage values:"
                 RenderText {#text} at (123,72) size 32x17
                   text run at (123,72) width 32: " N/A"
-                RenderBR {BR} at (154,86) size 1x0
+                LayoutBR {BR} at (154,86) size 1x0
               RenderBlock {P} at (4,322.53) size 762x36
                 RenderText {#text} at (0,0) size 735x35
                   text run at (0,0) width 735: "If a background image is specified, the value of 'background-attachment' determines if it is fixed with regard to the"

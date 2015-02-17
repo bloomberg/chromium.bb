@@ -6,7 +6,7 @@ layer at (0,0) size 800x199
       RenderBlock {DIV} at (0,0) size 600x36
         RenderText {#text} at (0,0) size 241x14
           text run at (0,0) width 241: "Table autosizing tests - wide-specified-width.html"
-        RenderBR {BR} at (240,0) size 1x14
+        LayoutBR {BR} at (240,0) size 1x14
         RenderText {#text} at (0,14) size 469x14
           text run at (0,14) width 469: "This test passes if the cell with lots of text is autosized and none of the other 5 cells are autosized."
       LayoutTable {TABLE} at (1,37) size 500x161 [border: none]

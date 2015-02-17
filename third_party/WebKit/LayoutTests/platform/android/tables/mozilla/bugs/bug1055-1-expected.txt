@@ -4,7 +4,7 @@ layer at (0,0) size 785x2136
   RenderBlock {HTML} at (0,0) size 785x2136.19
     RenderBody {BODY} at (8,8) size 769x2120.19
       RenderBlock (anonymous) at (0,0) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {HR} at (0,28) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,48.72) size 769x23
         RenderText {#text} at (0,0) size 87x22
@@ -51,7 +51,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (2,11) size 145x19
                         text run at (2,11) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,248.44) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,284.44) size 769x20
         RenderInline {CODE} at (0,0) size 56x16
           RenderText {#text} at (0,3) size 56x16
@@ -94,7 +94,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (1,11) size 145x19
                         text run at (1,11) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,435.44) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {HR} at (0,463.44) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,484.16) size 769x23
         RenderText {#text} at (0,0) size 100x22
@@ -141,7 +141,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (2,2) size 145x19
                         text run at (2,2) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,656.88) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,692.88) size 769x20
         RenderInline {CODE} at (0,0) size 56x16
           RenderText {#text} at (0,3) size 56x16
@@ -184,7 +184,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (1,1) size 145x19
                         text run at (1,1) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,813.88) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {HR} at (0,841.88) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,862.59) size 769x23
         RenderText {#text} at (0,0) size 118x22
@@ -231,7 +231,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (2,2) size 145x19
                         text run at (2,2) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,1062.31) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,1098.31) size 769x20
         RenderInline {CODE} at (0,0) size 56x16
           RenderText {#text} at (0,3) size 56x16
@@ -274,7 +274,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (1,1) size 145x19
                         text run at (1,1) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,1249.31) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {HR} at (0,1277.31) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,1298.03) size 769x23
         RenderText {#text} at (0,0) size 87x22
@@ -321,7 +321,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (11,2) size 145x19
                         text run at (11,2) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,1470.75) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,1506.75) size 769x20
         RenderInline {CODE} at (0,0) size 56x16
           RenderText {#text} at (0,3) size 56x16
@@ -364,7 +364,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (11,1) size 145x19
                         text run at (11,1) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,1627.75) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {HR} at (0,1655.75) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,1676.47) size 769x23
         RenderText {#text} at (0,0) size 55x22
@@ -411,7 +411,7 @@ layer at (0,0) size 785x2136
                       RenderText {#text} at (11,11) size 145x19
                         text run at (11,11) width 145: "Nested single-cell table!"
       RenderBlock (anonymous) at (0,1903.19) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,1939.19) size 769x20
         RenderInline {CODE} at (0,0) size 56x16
           RenderText {#text} at (0,3) size 56x16

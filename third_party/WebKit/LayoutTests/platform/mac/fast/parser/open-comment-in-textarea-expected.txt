@@ -10,10 +10,10 @@ layer at (8,8) size 161x32 clip at (9,9) size 144x30 scrollHeight 56
     RenderBlock {DIV} at (3,3) size 140x52
       RenderText {#text} at (0,0) size 25x13
         text run at (0,0) width 25: "<!--"
-      RenderBR {BR} at (24,11) size 1x0
+      LayoutBR {BR} at (24,11) size 1x0
       RenderText {#text} at (0,13) size 140x26
         text run at (0,13) width 139: "This should be part of the"
         text run at (138,13) width 2: " "
         text run at (0,26) width 48: "textarea."
-      RenderBR {BR} at (47,37) size 1x0
-      RenderBR {BR} at (0,39) size 0x13
+      LayoutBR {BR} at (47,37) size 1x0
+      LayoutBR {BR} at (0,39) size 0x13

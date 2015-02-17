@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
               LayoutImage {IMG} at (1,1) size 21x45
               LayoutImage {IMG} at (22,1) size 21x45
       RenderBlock (anonymous) at (0,59) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       LayoutTable {TABLE} at (0,77) size 468x72 [bgcolor=#F7D68C]
         LayoutTableSection {TBODY} at (0,0) size 468x72
           LayoutTableRow {TR} at (0,0) size 468x42

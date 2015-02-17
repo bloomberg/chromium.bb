@@ -10,19 +10,19 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,1) size 4x19
           text run at (154,1) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,22) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,23) size 4x19
           text run at (154,23) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,44) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,45) size 4x19
           text run at (154,45) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
         LayoutTextControl {INPUT} at (0,66) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (154,67) size 4x19
           text run at (154,67) width 4: " "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
       RenderBlock {DIV} at (0,124) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
 layer at (10,47) size 150x16

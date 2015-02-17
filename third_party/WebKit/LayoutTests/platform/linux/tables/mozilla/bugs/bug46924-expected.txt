@@ -16,7 +16,7 @@ layer at (0,0) size 800x278
           LayoutTableRow {TR} at (0,2) size 782x24 [bgcolor=#C0C0C0]
             LayoutTableCell {TD} at (2,2) size 778x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
       RenderBlock (anonymous) at (0,76) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {DIV} at (0,96) size 784x20
         RenderText {#text} at (0,0) size 285x19
           text run at (0,0) width 285: "For comparison: The same table without a tfoot"
@@ -38,7 +38,7 @@ layer at (0,0) size 800x278
               RenderText {#text} at (676,2) size 100x19
                 text run at (676,2) width 100: "This is the footer"
       RenderBlock (anonymous) at (0,242) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
 layer at (13,33) size 387x20
   RenderBlock (relative positioned) {DIV} at (2,2) size 387x20 [bgcolor=#FF0000]
     RenderText {#text} at (128,0) size 259x19

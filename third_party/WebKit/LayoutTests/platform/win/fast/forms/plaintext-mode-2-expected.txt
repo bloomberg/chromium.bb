@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (0,0) size 600x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (600,2) size 4x17
           text run at (600,2) width 4: " "
-        RenderBR {BR} at (604,16) size 0x0
+        LayoutBR {BR} at (604,16) size 0x0
       RenderBlock {DIV} at (0,22) size 784x18
         RenderText {#text} at (0,0) size 33x17
           text run at (0,0) width 33: "This "

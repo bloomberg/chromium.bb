@@ -17,81 +17,81 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           RenderBlock (anonymous) at (0,25) size 785x831
             RenderBlock {DIV} at (0,32) size 183x60 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,13) size 80x0
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (183,32) size 183x60 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 77x15
                   text run at (0,0) width 77: "disabled: \"true\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (366,0) size 199x92 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 78x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 78: "\"padding:10px\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (565,20) size 179x72 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 72x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 72: "\"padding:0px\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (0,124) size 203x96 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 72x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 72: "\"margin:10px\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (203,144) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 66x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 66: "\"margin:0px\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (386,144) size 82x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 68x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 68: "\"width:60px\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (468,92) size 104x128 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 73x47
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 73: "padding:20px\","
-              RenderBR {BR} at (81,33) size 0x15
+              LayoutBR {BR} at (81,33) size 0x15
             RenderBlock {DIV} at (572,132) size 82x88 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 63x47
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 55: "padding:0\","
-              RenderBR {BR} at (81,33) size 0x15
+              LayoutBR {BR} at (81,33) size 0x15
             RenderBlock {DIV} at (0,252) size 183x104 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 69x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 69: "\"height:60px\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (183,236) size 82x120 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 64x47
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              RenderBR {BR} at (81,33) size 0x15
+              LayoutBR {BR} at (81,33) size 0x15
             RenderBlock {DIV} at (265,280) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 91x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 91: "\"overflow:hidden\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (448,265) size 183x91 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 85x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 85: "\"overflow:scroll\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (631,220) size 82x136 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 86x63
@@ -99,7 +99,7 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 86: "\"overflow:hidden;"
                   text run at (0,32) width 58: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              RenderBR {BR} at (81,49) size 0x15
+              LayoutBR {BR} at (81,49) size 0x15
             RenderBlock {DIV} at (0,356) size 82x136 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 80x63
@@ -107,21 +107,21 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 80: "\"overflow:scroll;"
                   text run at (0,32) width 58: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              RenderBR {BR} at (81,49) size 0x15
+              LayoutBR {BR} at (81,49) size 0x15
             RenderBlock {DIV} at (82,372) size 82x120 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 74x47
                   text run at (0,0) width 74: "cols: \"5\", style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              RenderBR {BR} at (81,33) size 0x15
+              LayoutBR {BR} at (81,33) size 0x15
             RenderBlock {DIV} at (164,372) size 82x120 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 79x47
                   text run at (0,0) width 79: "rows: \"4\", style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              RenderBR {BR} at (81,33) size 0x15
+              LayoutBR {BR} at (81,33) size 0x15
             RenderBlock {DIV} at (246,356) size 82x136 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 74x63
@@ -129,84 +129,84 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 49: "\"4\", style:"
                   text run at (0,32) width 63: "\"width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              RenderBR {BR} at (81,49) size 0x15
+              LayoutBR {BR} at (81,49) size 0x15
             RenderBlock {DIV} at (328,432) size 82x60 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 44x15
                   text run at (0,0) width 44: "cols: \"3\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (410,416) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 49x15
                   text run at (0,0) width 49: "rows: \"3\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (593,432) size 82x60 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 44x15
                   text run at (0,0) width 44: "cols: \"7\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (0,492) size 183x140 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 49x15
                   text run at (0,0) width 49: "rows: \"7\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (183,524) size 82x108 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 74x31
                   text run at (0,0) width 74: "cols: \"5\", rows:"
                   text run at (0,16) width 19: "\"4\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (265,557) size 183x75 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 58x15
                   text run at (0,0) width 58: "wrap: \"off\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (448,572) size 183x60 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 65x15
                   text run at (0,0) width 65: "wrap: \"hard\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (0,648) size 183x60 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 63x15
                   text run at (0,0) width 63: "wrap: \"soft\","
-              RenderBR {BR} at (81,1) size 0x15
+              LayoutBR {BR} at (81,1) size 0x15
             RenderBlock {DIV} at (183,632) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 71x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 71: "space:normal\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (366,632) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 66x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 54: "space:pre\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (549,632) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 79x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 79: "space:prewrap\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (0,755) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 75x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 75: "space:nowrap\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (183,755) size 183x76 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 75x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 75: "space:pre-line\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (366,740) size 183x91 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 69x31
                   text run at (0,0) width 64: "style: \"word-"
                   text run at (0,16) width 69: "wrap:normal\","
-              RenderBR {BR} at (81,17) size 0x15
+              LayoutBR {BR} at (81,17) size 0x15
             RenderBlock {DIV} at (549,708) size 183x123 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 66x63
@@ -214,7 +214,7 @@ layer at (0,0) size 785x861 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,16) width 66: "style: \"white-"
                   text run at (0,32) width 50: "space:pre-"
                   text run at (0,48) width 33: "wrap\","
-              RenderBR {BR} at (81,49) size 0x15
+              LayoutBR {BR} at (81,49) size 0x15
     layer at (1,79) size 181x38 clip at (2,80) size 179x36
       LayoutTextControl {TEXTAREA} at (1,17) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         RenderBlock {DIV} at (3,3) size 175x16
@@ -700,81 +700,81 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
           RenderBlock (anonymous) at (0,25) size 785x785
             RenderBlock {DIV} at (0,50) size 181x38 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x0
-              RenderBR {BR} at (81,1) size 0x0
+              LayoutBR {BR} at (81,1) size 0x0
             RenderBlock {DIV} at (181,34) size 181x54 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 77x15
                   text run at (0,0) width 77: "disabled: \"true\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (362,0) size 199x88 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 78x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 78: "\"padding:10px\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (561,20) size 179x68 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 72x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 72: "\"padding:0px\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (0,122) size 201x90 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 72x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 72: "\"margin:10px\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (201,142) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 66x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 66: "\"margin:0px\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (382,142) size 82x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 68x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 68: "\"width:60px\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (464,88) size 82x124 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 73x47
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 73: "padding:20px\","
-              RenderBR {BR} at (81,45) size 0x0
+              LayoutBR {BR} at (81,45) size 0x0
             RenderBlock {DIV} at (546,128) size 82x84 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 63x47
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 55: "padding:0\","
-              RenderBR {BR} at (81,45) size 0x0
+              LayoutBR {BR} at (81,45) size 0x0
             RenderBlock {DIV} at (0,244) size 181x94 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 69x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 69: "\"height:60px\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (181,228) size 82x110 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 64x47
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              RenderBR {BR} at (81,45) size 0x0
+              LayoutBR {BR} at (81,45) size 0x0
             RenderBlock {DIV} at (263,268) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 91x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 91: "\"overflow:hidden\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (444,253) size 181x85 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 85x31
                   text run at (0,0) width 27: "style:"
                   text run at (0,16) width 85: "\"overflow:scroll\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (625,212) size 82x126 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 86x63
@@ -782,7 +782,7 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   text run at (0,16) width 86: "\"overflow:hidden;"
                   text run at (0,32) width 58: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              RenderBR {BR} at (81,61) size 0x0
+              LayoutBR {BR} at (81,61) size 0x0
             RenderBlock {DIV} at (0,338) size 82x126 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 80x63
@@ -790,21 +790,21 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   text run at (0,16) width 80: "\"overflow:scroll;"
                   text run at (0,32) width 58: "width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              RenderBR {BR} at (81,61) size 0x0
+              LayoutBR {BR} at (81,61) size 0x0
             RenderBlock {DIV} at (82,354) size 82x110 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 74x47
                   text run at (0,0) width 74: "cols: \"5\", style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              RenderBR {BR} at (81,45) size 0x0
+              LayoutBR {BR} at (81,45) size 0x0
             RenderBlock {DIV} at (164,354) size 82x110 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x48
                 RenderText {#text} at (0,0) size 79x47
                   text run at (0,0) width 79: "rows: \"4\", style:"
                   text run at (0,16) width 63: "\"width:60px;"
                   text run at (0,32) width 64: "height:60px\","
-              RenderBR {BR} at (81,45) size 0x0
+              LayoutBR {BR} at (81,45) size 0x0
             RenderBlock {DIV} at (246,338) size 82x126 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 74x63
@@ -812,84 +812,84 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   text run at (0,16) width 49: "\"4\", style:"
                   text run at (0,32) width 63: "\"width:60px;"
                   text run at (0,48) width 64: "height:60px\","
-              RenderBR {BR} at (81,61) size 0x0
+              LayoutBR {BR} at (81,61) size 0x0
             RenderBlock {DIV} at (328,410) size 82x54 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 44x15
                   text run at (0,0) width 44: "cols: \"3\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (410,394) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 49x15
                   text run at (0,0) width 49: "rows: \"3\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (591,410) size 82x54 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 44x15
                   text run at (0,0) width 44: "cols: \"7\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (0,464) size 181x134 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 49x15
                   text run at (0,0) width 49: "rows: \"7\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (181,496) size 82x102 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 74x31
                   text run at (0,0) width 74: "cols: \"5\", rows:"
                   text run at (0,16) width 19: "\"4\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (263,529) size 181x69 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 58x15
                   text run at (0,0) width 58: "wrap: \"off\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (444,544) size 181x54 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 65x15
                   text run at (0,0) width 65: "wrap: \"hard\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (0,614) size 181x54 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x16
                 RenderText {#text} at (0,0) size 63x15
                   text run at (0,0) width 63: "wrap: \"soft\","
-              RenderBR {BR} at (81,13) size 0x0
+              LayoutBR {BR} at (81,13) size 0x0
             RenderBlock {DIV} at (181,598) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 71x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 71: "space:normal\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (362,598) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 66x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 54: "space:pre\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (543,598) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 79x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 79: "space:prewrap\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (0,715) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 75x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 75: "space:nowrap\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (181,715) size 181x70 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 75x31
                   text run at (0,0) width 66: "style: \"white-"
                   text run at (0,16) width 75: "space:pre-line\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (362,700) size 181x85 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x32
                 RenderText {#text} at (0,0) size 69x31
                   text run at (0,0) width 64: "style: \"word-"
                   text run at (0,16) width 69: "wrap:normal\","
-              RenderBR {BR} at (81,29) size 0x0
+              LayoutBR {BR} at (81,29) size 0x0
             RenderBlock {DIV} at (543,668) size 181x117 [border: (1px solid #0000FF)]
               RenderBlock {SPAN} at (1,1) size 80x64
                 RenderText {#text} at (0,0) size 66x63
@@ -897,7 +897,7 @@ layer at (0,861) size 785x815 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   text run at (0,16) width 66: "style: \"white-"
                   text run at (0,32) width 50: "space:pre-"
                   text run at (0,48) width 33: "wrap\","
-              RenderBR {BR} at (81,61) size 0x0
+              LayoutBR {BR} at (81,61) size 0x0
     layer at (1,81) size 179x36 clip at (2,82) size 177x34
       LayoutTextControl {TEXTAREA} at (1,1) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         RenderBlock {DIV} at (3,3) size 175x16

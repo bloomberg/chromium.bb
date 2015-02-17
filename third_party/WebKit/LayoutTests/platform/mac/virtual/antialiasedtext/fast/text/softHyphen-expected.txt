@@ -39,7 +39,7 @@ layer at (0,0) size 785x992 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       RenderBlock {P} at (0,240) size 769x36
         RenderText {#text} at (0,0) size 20x18
           text run at (0,0) width 20: "Do"
-        RenderBR {BR} at (19,14) size 1x0
+        LayoutBR {BR} at (19,14) size 1x0
         RenderText {#text} at (0,18) size 81x18
           text run at (0,18) width 81: "lorem ipsum"
       RenderBlock {P} at (0,292) size 769x18

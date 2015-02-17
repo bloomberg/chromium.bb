@@ -20,5 +20,5 @@ layer at (0,0) size 800x600
           text run at (0,36) width 133: "block flow element)."
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,54) size 784x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
 caret: position 0 of child 0 {BR} of child 2 {DIV} of body

@@ -49,7 +49,7 @@ layer at (0,0) size 785x904
               RenderText {#text} at (2,2) size 28x19
                 text run at (2,2) width 28: "c1r4"
       RenderBlock (anonymous) at (0,166) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,186) size 258x212 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 256x210
           LayoutTableRow {TR} at (0,2) size 256x24
@@ -115,7 +115,7 @@ layer at (0,0) size 785x904
               RenderText {#text} at (2,2) size 28x19
                 text run at (2,2) width 28: "c1r9"
       RenderBlock (anonymous) at (0,398) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,418) size 61x56 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 59x54
           LayoutTableRow {TR} at (0,2) size 59x24
@@ -140,7 +140,7 @@ layer at (0,0) size 785x904
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,504) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,524) size 602x364 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 600x362
           LayoutTableRow {TR} at (0,0) size 600x0

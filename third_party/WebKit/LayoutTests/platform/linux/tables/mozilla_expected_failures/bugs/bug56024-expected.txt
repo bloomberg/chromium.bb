@@ -16,7 +16,7 @@ layer at (0,0) size 800x104
                         text run at (1,21) width 294: "Gore are expected to show a kinder, gentler side"
                         text run at (1,41) width 265: "Wednesday in the second of three nationally"
                         text run at (1,61) width 111: "televised debates. "
-                      RenderBR {BR} at (112,76) size 0x0
+                      LayoutBR {BR} at (112,76) size 0x0
             LayoutTableCell {TD} at (302,2) size 96x82 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
               RenderBlock (anonymous) at (1,1) size 94x80
                 RenderInline {FONT} at (0,0) size 92x79 [color=#CC3333]

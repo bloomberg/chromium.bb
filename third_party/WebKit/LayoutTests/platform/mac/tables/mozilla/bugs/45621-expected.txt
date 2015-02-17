@@ -18,6 +18,6 @@ layer at (0,0) size 800x140
               LayoutTextControl {INPUT} at (9,9) size 374x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,101) size 784x18
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
 layer at (23,86) size 368x13
   RenderBlock {DIV} at (3,3) size 368x13

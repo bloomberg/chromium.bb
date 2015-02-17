@@ -14,7 +14,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "80%"
       RenderBlock (anonymous) at (0,584) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,604) size 54x108 [bgcolor=#0000FF] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 52x106
           LayoutTableRow {TR} at (0,2) size 52x50
@@ -26,7 +26,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "50"
       RenderBlock (anonymous) at (0,712) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,732) size 26x122 [bgcolor=#0000FF] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 24x120
           LayoutTableRow {TR} at (0,2) size 24x64
@@ -50,7 +50,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "50"
       RenderBlock (anonymous) at (0,1112) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1132) size 34x258 [bgcolor=#0000FF] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 32x256
           LayoutTableRow {TR} at (0,2) size 32x200
@@ -62,7 +62,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "50"
       RenderBlock (anonymous) at (0,1390) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1410) size 64x208 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 62x206
           LayoutTableRow {TR} at (0,2) size 62x100
@@ -79,7 +79,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,22) width 24: "100"
                 text run at (2,42) width 24: "100"
       RenderBlock (anonymous) at (0,1618) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1638) size 47x30 [bgcolor=#FFFF00] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 45x28
           LayoutTableRow {TR} at (0,2) size 45x24
@@ -87,7 +87,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 37x19
                 text run at (2,2) width 37: "100%"
       RenderBlock (anonymous) at (0,1668) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,1688) size 39x584 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 37x582
           LayoutTableRow {TR} at (0,2) size 37x114
@@ -99,7 +99,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "80%"
       RenderBlock (anonymous) at (0,2272) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,2292) size 61x206 [bgcolor=#808080] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 59x204
           LayoutTableRow {TR} at (0,2) size 59x200
@@ -110,7 +110,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 24x19
                 text run at (2,2) width 24: "200"
       RenderBlock (anonymous) at (0,2498) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,2518) size 61x198 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 59x196
           LayoutTableRow {TR} at (0,2) size 59x192
@@ -121,7 +121,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 16x19
                 text run at (2,2) width 16: "20"
       RenderBlock (anonymous) at (0,2716) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,2736) size 39x584 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 37x582
           LayoutTableRow {TR} at (0,2) size 37x500
@@ -133,7 +133,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "80%"
       RenderBlock (anonymous) at (0,3320) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,3340) size 100x584 [bgcolor=#FF0000] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 98x582
           LayoutTableRow {TR} at (0,2) size 98x266
@@ -158,7 +158,7 @@ layer at (0,0) size 785x4366 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderText {#text} at (2,2) size 26x19
                 text run at (2,2) width 26: "auto"
       RenderBlock (anonymous) at (0,3924) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,3944) size 53x406 [bgcolor=#FFA500] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 51x404
           LayoutTableRow {TR} at (0,2) size 51x400

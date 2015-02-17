@@ -15,7 +15,7 @@ layer at (0,0) size 800x222
             text run at (0,18) width 187: "differently than IE/FF/Opera"
         RenderText {#text} at (186,18) size 5x17
           text run at (186,18) width 5: "."
-        RenderBR {BR} at (190,18) size 1x17
+        LayoutBR {BR} at (190,18) size 1x17
         RenderText {#text} at (0,36) size 425x17
           text run at (0,36) width 425: "This test passes if the red block below is truncated on the left side."
       RenderBlock {DIV} at (-218,70) size 1002x128 [border: (1px solid #FF0000)]

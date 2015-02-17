@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutImage {IMG} at (0,0) size 220x100
         RenderText {#text} at (220,86) size 4x17
           text run at (220,86) width 4: " "
-        RenderBR {BR} at (224,100) size 0x0
+        LayoutBR {BR} at (224,100) size 0x0
       LayoutTable {TABLE} at (0,104) size 784x172
         LayoutTableSection {TBODY} at (0,0) size 784x172
           LayoutTableRow {TR} at (0,2) size 784x20
@@ -35,8 +35,8 @@ layer at (0,0) size 800x600
               RenderText {#text} at (1,1) size 472x35
                 text run at (1,1) width 472: "Try shrinking this table to ~250px wide. The left hand (gold) column will"
                 text run at (1,19) width 169: "suddenly expand in width."
-              RenderBR {BR} at (169,33) size 1x0
-              RenderBR {BR} at (1,37) size 0x17
+              LayoutBR {BR} at (169,33) size 1x0
+              LayoutBR {BR} at (1,37) size 0x17
               RenderText {#text} at (1,55) size 477x89
                 text run at (1,55) width 267: "mozilla qa smoke tests smoke qa mozilla "
                 text run at (267,55) width 211: "mozilla qa smoke tests smoke qa"

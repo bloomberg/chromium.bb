@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
           text run at (649,80) width 79: "It's as though"
           text run at (0,100) width 341: "NGLayout thinks the Imagemap areas are located a few "
           text run at (341,100) width 155: "hundred pixels to the left. "
-        RenderBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,120) size 638x63
         LayoutTableSection {TBODY} at (0,0) size 638x63
           LayoutTableRow {TR} at (0,2) size 638x59

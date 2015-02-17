@@ -13,5 +13,5 @@ layer at (0,0) size 800x140
       RenderBlock (anonymous) at (0,98) size 784x18
         RenderText {#text} at (0,0) size 39x18
           text run at (0,0) width 39: "PASS"
-        RenderBR {BR} at (38,0) size 1x18
+        LayoutBR {BR} at (38,0) size 1x18
 caret: position 7 of child 0 {#text} of child 3 {DIV} of body

@@ -368,7 +368,7 @@ layer at (0,0) size 785x6114
             LayoutTableCell {TD} at (37,2) size 33x44 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "Data"
-              RenderBR {BR} at (31,2) size 0x19
+              LayoutBR {BR} at (31,2) size 0x19
               RenderText {#text} at (2,22) size 29x19
                 text run at (2,22) width 29: "Data"
             LayoutTableCell {TD} at (72,12) size 33x24 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
@@ -393,13 +393,13 @@ layer at (0,0) size 785x6114
               RenderInline {SPAN} at (0,0) size 120x73
                 RenderText {#text} at (2,3) size 120x73
                   text run at (2,3) width 120: "Data"
-              RenderBR {BR} at (122,46) size 0x19
+              LayoutBR {BR} at (122,46) size 0x19
               RenderText {#text} at (2,78) size 29x19
                 text run at (2,78) width 29: "Data"
             LayoutTableCell {TD} at (163,46) size 124x100 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "Data"
-              RenderBR {BR} at (31,2) size 0x19
+              LayoutBR {BR} at (31,2) size 0x19
               RenderInline {SPAN} at (0,0) size 120x73
                 RenderText {#text} at (2,23) size 120x73
                   text run at (2,23) width 120: "Data"
@@ -416,13 +416,13 @@ layer at (0,0) size 785x6114
               RenderInline {SPAN} at (0,0) size 120x73
                 RenderText {#text} at (2,3) size 120x73
                   text run at (2,3) width 120: "Data"
-              RenderBR {BR} at (122,46) size 0x19
+              LayoutBR {BR} at (122,46) size 0x19
               RenderText {#text} at (2,78) size 29x19
                 text run at (2,78) width 29: "Data"
             LayoutTableCell {TD} at (163,46) size 124x100 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "Data"
-              RenderBR {BR} at (31,2) size 0x19
+              LayoutBR {BR} at (31,2) size 0x19
               RenderInline {SPAN} at (0,0) size 120x73
                 RenderText {#text} at (2,23) size 120x73
                   text run at (2,23) width 120: "Data"
@@ -469,13 +469,13 @@ layer at (0,0) size 785x6114
               RenderInline {SPAN} at (0,0) size 120x73
                 RenderText {#text} at (2,3) size 120x73
                   text run at (2,3) width 120: "Data"
-              RenderBR {BR} at (122,46) size 0x19
+              LayoutBR {BR} at (122,46) size 0x19
               RenderText {#text} at (2,78) size 29x19
                 text run at (2,78) width 29: "Data"
             LayoutTableCell {TD} at (163,46) size 124x100 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
               RenderText {#text} at (2,2) size 29x19
                 text run at (2,2) width 29: "Data"
-              RenderBR {BR} at (31,2) size 0x19
+              LayoutBR {BR} at (31,2) size 0x19
               RenderInline {SPAN} at (0,0) size 120x73
                 RenderText {#text} at (2,23) size 120x73
                   text run at (2,23) width 120: "Data"

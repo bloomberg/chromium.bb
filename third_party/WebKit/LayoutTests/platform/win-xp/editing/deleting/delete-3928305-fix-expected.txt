@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (0,0) size 32x27
             text run at (0,0) width 32: "foo"
         RenderBlock (anonymous) at (14,42) size 756x28
-          RenderBR {BR} at (0,0) size 0x27
+          LayoutBR {BR} at (0,0) size 0x27
         RenderBlock {DIV} at (14,70) size 756x28
           RenderText {#text} at (0,0) size 33x27
             text run at (0,0) width 33: "baz"

@@ -12,13 +12,13 @@ layer at (0,0) size 800x236
       RenderBlock {P} at (0,52) size 784x72 [bgcolor=#00FFFF]
         RenderText {#text} at (80,0) size 217x17
           text run at (80,0) width 217: "Only the first line of this sentence"
-        RenderBR {BR} at (296,0) size 1x17
+        LayoutBR {BR} at (296,0) size 1x17
         RenderText {#text} at (0,18) size 125x17
           text run at (0,18) width 125: "should be indented,"
-        RenderBR {BR} at (124,18) size 1x17
+        LayoutBR {BR} at (124,18) size 1x17
         RenderText {#text} at (0,36) size 149x17
           text run at (0,36) width 149: "the others should all be"
-        RenderBR {BR} at (148,36) size 1x17
+        LayoutBR {BR} at (148,36) size 1x17
         RenderInline {EM} at (0,0) size 116x17
           RenderText {#text} at (0,54) size 116x17
             text run at (0,54) width 116: "aligned on the left"

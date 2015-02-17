@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderText {#text} at (0,0) size 610x18
         text run at (0,0) width 610: "The label attribute appears, but is missing the equals value piece, so the containing text is used."
-      RenderBR {BR} at (609,14) size 1x0
+      LayoutBR {BR} at (609,14) size 1x0
       RenderMenuList {SELECT} at (0,18) size 464x18 [bgcolor=#F8F8F8]
         RenderBlock (anonymous) at (0,0) size 464x18
           RenderText at (8,2) size 433x13

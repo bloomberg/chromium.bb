@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderText {#text} at (0,0) size 270x18
           text run at (0,0) width 270: "The select should not contain blank items "
-        RenderBR {BR} at (269,14) size 1x0
+        LayoutBR {BR} at (269,14) size 1x0
       RenderBlock {FORM} at (0,18) size 784x19
         RenderInline {B} at (0,0) size 48x18
           RenderText {#text} at (0,0) size 48x18
@@ -22,10 +22,10 @@ layer at (0,0) size 800x600
               text run at (8,2) width 32: "Excite"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,53) size 784x36
-        RenderBR {BR} at (0,0) size 0x18
+        LayoutBR {BR} at (0,0) size 0x18
         RenderText {#text} at (0,18) size 270x18
           text run at (0,18) width 270: "The select should not contain blank items "
-        RenderBR {BR} at (269,32) size 1x0
+        LayoutBR {BR} at (269,32) size 1x0
       RenderBlock {FORM} at (0,89) size 784x18
         RenderMenuList {SELECT} at (0,0) size 230x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 230x18

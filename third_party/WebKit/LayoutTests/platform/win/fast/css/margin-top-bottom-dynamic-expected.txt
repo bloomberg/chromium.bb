@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (1,1) size 86x17
             text run at (1,1) width 86: "Lorem ipsum"
       RenderBlock (anonymous) at (0,270) size 784x40
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderButton {INPUT} at (0,18) size 108x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 92x16
             RenderText {#text} at (0,0) size 92x16
@@ -57,7 +57,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (1,1) size 86x17
             text run at (1,1) width 86: "Lorem ipsum"
       RenderBlock (anonymous) at (0,432) size 784x40
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
         RenderButton {INPUT} at (0,18) size 108x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           RenderBlock (anonymous) at (8,3) size 92x16
             RenderText {#text} at (0,0) size 92x16

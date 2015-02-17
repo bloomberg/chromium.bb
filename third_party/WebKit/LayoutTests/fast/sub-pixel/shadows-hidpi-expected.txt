@@ -7,8 +7,8 @@ layer at (0,0) size 800x58
         RenderText {#text} at (0,0) size 30x10
           text run at (0,0) width 30: "XXX"
       RenderBlock (anonymous) at (0,10) size 784x32
-        RenderBR {BR} at (0,0) size 0x10
-        RenderBR {BR} at (0,10) size 0x10
+        LayoutBR {BR} at (0,0) size 0x10
+        LayoutBR {BR} at (0,10) size 0x10
         RenderBlock {DIV} at (0,20) size 32x12 [border: (1px solid #000000)]
           RenderText {#text} at (1,1) size 30x10
             text run at (1,1) width 30: "XXX"

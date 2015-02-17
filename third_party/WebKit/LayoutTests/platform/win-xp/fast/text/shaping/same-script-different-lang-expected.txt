@@ -10,9 +10,9 @@ layer at (0,0) size 800x202
         RenderText {#text} at (0,3) size 82x21
           text run at (0,3) width 82: "Hindi:JHA \x{91D}"
       RenderBlock (anonymous) at (0,79.72) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,115.72) size 784x24
         RenderText {#text} at (0,3) size 93x21
           text run at (0,3) width 93: "Nepali:JHA \x{91D}"
       RenderBlock (anonymous) at (0,155.72) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19

@@ -6,7 +6,7 @@ layer at (0,0) size 800x169
       RenderBlock {div} at (0,0) size 784x48 [border: (4px dotted #000000)]
         RenderText {#text} at (4,4) size 410x19
           text run at (4,4) width 410: "The SVG rect below this should have a solid red stroke and blue fill."
-        RenderBR {br} at (414,4) size 0x19
+        LayoutBR {br} at (414,4) size 0x19
         RenderText {#text} at (4,24) size 291x19
           text run at (4,24) width 291: "https://bugs.webkit.org/show_bug.cgi?id=25738"
       RenderBlock (anonymous) at (0,48) size 784x105

@@ -10,14 +10,14 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (14,14) size 756x56
           RenderText {#text} at (0,0) size 68x28
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,28) size 344x28
             text run at (0,28) width 344: "Multiple ctrl-k presses then a ctrl-y."
         RenderBlock {DIV} at (14,86) size 756x112
           RenderBlock (anonymous) at (0,0) size 756x28
             RenderText {#text} at (0,0) size 190x28
               text run at (0,0) width 190: "Expected Results: "
-            RenderBR {BR} at (189,22) size 1x0
+            LayoutBR {BR} at (189,22) size 1x0
           RenderBlock {DIV} at (0,28) size 756x84
             RenderBlock (anonymous) at (0,0) size 756x28
               RenderText {#text} at (0,0) size 131x28

@@ -29,7 +29,7 @@ layer at (0,0) size 800x264
           text run at (87,3) width 4: " "
           text run at (91,3) width 260: "The blue square will NOT change to green."
       RenderBlock (anonymous) at (0,220) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
 layer at (8,136) size 100x100
   RenderBlock (relative positioned) {DIV} at (0,120) size 100x100
 layer at (-92,136) size 200x100 backgroundClip at (8,136) size 100x100 clip at (8,136) size 100x100 outlineClip at (8,136) size 100x100

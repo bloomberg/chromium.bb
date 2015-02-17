@@ -6,7 +6,7 @@ layer at (0,0) size 800x260
       RenderBlock {DIV} at (0,0) size 600x36
         RenderText {#text} at (0,0) size 247x14
           text run at (0,0) width 247: "Table autosizing tests - nested-table-wrapping.html"
-        RenderBR {BR} at (246,0) size 1x14
+        LayoutBR {BR} at (246,0) size 1x14
         RenderText {#text} at (0,14) size 390x14
           text run at (0,14) width 390: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
       LayoutTable {TABLE} at (1,37) size 798x222 [border: none]

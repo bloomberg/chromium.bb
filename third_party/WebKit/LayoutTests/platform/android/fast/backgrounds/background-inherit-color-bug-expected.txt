@@ -20,11 +20,11 @@ layer at (0,0) size 785x1162
             text run at (0,0) width 600: "Example: With the following code, the background color of H1"
             text run at (0,18) width 560: "elements stays pink, no matter what background color the"
             text run at (0,36) width 130: "parents have:"
-          RenderBR {BR} at (130,36) size 0x18
+          LayoutBR {BR} at (130,36) size 0x18
           RenderText {#text} at (0,54) size 320x18
             text run at (0,54) width 50: "  H1 "
             text run at (50,54) width 270: "{ background-color: pink; }"
-          RenderBR {BR} at (320,54) size 0x18
+          LayoutBR {BR} at (320,54) size 0x18
           RenderText {#text} at (0,72) size 290x18
             text run at (0,72) width 50: "  H1 "
             text run at (50,72) width 240: "{ background: inherit; }"

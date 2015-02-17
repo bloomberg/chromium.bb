@@ -60,7 +60,7 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,1) width 346: "The blank line between '2003' and the nested element "
                 text run at (346,1) width 146: "triggers the width bug."
       RenderBlock (anonymous) at (0,407.25) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {H2} at (0,445.16) size 769x27
         RenderText {#text} at (0,0) size 109x26
           text run at (0,0) width 109: "Example 2"
@@ -101,7 +101,7 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (356,0) width 222: "number of characters contained by"
                   text run at (0,18) width 124: "the nested element."
       RenderBlock (anonymous) at (0,673.06) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {H2} at (0,710.97) size 769x27
         RenderText {#text} at (0,0) size 109x26
           text run at (0,0) width 109: "Example 3"
@@ -136,7 +136,7 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (346,1) width 230: "has been removed, so the bug is not"
                 text run at (1,19) width 62: "triggered."
       RenderBlock (anonymous) at (0,922.88) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17
       RenderBlock {H2} at (0,960.78) size 769x27
         RenderText {#text} at (0,0) size 109x26
           text run at (0,0) width 109: "Example 4"
@@ -176,4 +176,4 @@ layer at (0,0) size 785x1223 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (289,19) width 244: "a nested element (in this case, another"
                 text run at (1,37) width 51: "SPAN)."
       RenderBlock (anonymous) at (0,1188.69) size 769x18
-        RenderBR {BR} at (0,0) size 0x17
+        LayoutBR {BR} at (0,0) size 0x17

@@ -12,19 +12,19 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (36.89,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (209,2) size 5x17
           text run at (209,2) width 5: " "
-        RenderBR {BR} at (213,16) size 1x0
+        LayoutBR {BR} at (213,16) size 1x0
         RenderText {#text} at (0,24) size 28x17
           text run at (0,24) width 28: "text "
         LayoutTextControl {INPUT} at (27.98,22) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (200,24) size 5x17
           text run at (200,24) width 5: " "
-        RenderBR {BR} at (204,38) size 1x0
+        LayoutBR {BR} at (204,38) size 1x0
         RenderText {#text} at (0,46) size 66x17
           text run at (0,46) width 66: "checkbox "
         RenderBlock {INPUT} at (69.30,47) size 13x13
         RenderText {#text} at (85,46) size 5x17
           text run at (85,46) width 5: " "
-        RenderBR {BR} at (89,60) size 1x0
+        LayoutBR {BR} at (89,60) size 1x0
         RenderText {#text} at (0,66) size 26x17
           text run at (0,66) width 26: "file "
         RenderFileUploadControl {INPUT} at (25.31,64) size 238x22 "No file chosen"
@@ -34,19 +34,19 @@ layer at (0,0) size 800x600
                 text run at (0,0) width 69: "Choose File"
         RenderText {#text} at (263,66) size 5x17
           text run at (263,66) width 5: " "
-        RenderBR {BR} at (267,80) size 1x0
+        LayoutBR {BR} at (267,80) size 1x0
         RenderText {#text} at (0,86) size 44x17
           text run at (0,86) width 44: "image "
         LayoutImage {INPUT} at (43.09,99) size 10x1
         RenderText {#text} at (53,86) size 5x17
           text run at (53,86) width 5: " "
-        RenderBR {BR} at (57,100) size 1x0
+        LayoutBR {BR} at (57,100) size 1x0
         RenderText {#text} at (0,106) size 37x17
           text run at (0,106) width 37: "radio "
         RenderBlock {INPUT} at (41.88,107) size 13x13
         RenderText {#text} at (57,106) size 5x17
           text run at (57,106) width 5: " "
-        RenderBR {BR} at (61,120) size 1x0
+        LayoutBR {BR} at (61,120) size 1x0
         RenderText {#text} at (0,133) size 40x17
           text run at (0,133) width 40: "range "
         LayoutSlider {INPUT} at (41.53,126) size 129x21 [color=#C4C4C4] [bgcolor=#FFFFFF]
@@ -55,7 +55,7 @@ layer at (0,0) size 800x600
               RenderBlock {DIV} at (59,0) size 11x21
         RenderText {#text} at (172,133) size 5x17
           text run at (172,133) width 5: " "
-        RenderBR {BR} at (176,147) size 1x0
+        LayoutBR {BR} at (176,147) size 1x0
         RenderText {#text} at (0,153) size 35x17
           text run at (0,153) width 35: "reset "
         RenderButton {INPUT} at (34.20,151) size 50x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
               text run at (0,0) width 34: "Reset"
         RenderText {#text} at (84,153) size 5x17
           text run at (84,153) width 5: " "
-        RenderBR {BR} at (88,167) size 1x0
+        LayoutBR {BR} at (88,167) size 1x0
         RenderText {#text} at (0,175) size 48x17
           text run at (0,175) width 48: "submit "
         RenderButton {INPUT} at (47.56,173) size 57x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -73,19 +73,19 @@ layer at (0,0) size 800x600
               text run at (0,0) width 41: "Submit"
         RenderText {#text} at (104,175) size 5x17
           text run at (104,175) width 5: " "
-        RenderBR {BR} at (108,189) size 1x0
+        LayoutBR {BR} at (108,189) size 1x0
         RenderText {#text} at (0,197) size 51x17
           text run at (0,197) width 51: "isindex "
         LayoutTextControl {INPUT} at (50.22,195) size 175x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (225,197) size 5x17
           text run at (225,197) width 5: " "
-        RenderBR {BR} at (229,211) size 1x0
+        LayoutBR {BR} at (229,211) size 1x0
         RenderText {#text} at (0,219) size 65x17
           text run at (0,219) width 65: "password "
         LayoutTextControl {INPUT} at (64.44,217) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (237,219) size 5x17
           text run at (237,219) width 5: " "
-        RenderBR {BR} at (241,233) size 1x0
+        LayoutBR {BR} at (241,233) size 1x0
         RenderText {#text} at (0,241) size 45x17
           text run at (0,241) width 45: "search "
         LayoutTextControl {INPUT} at (44.86,239) size 175x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

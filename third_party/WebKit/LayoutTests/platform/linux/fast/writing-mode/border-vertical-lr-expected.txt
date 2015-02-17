@@ -11,8 +11,8 @@ layer at (0,0) size 772x600
           text run at (209,0) width 126: "\x{304C}\x{3067}\x{304D}\x{307E}\x{3059}\x{3002}"
       RenderText {#text} at (209,130) size 23x5
         text run at (209,130) width 5: " "
-      RenderBR {BR} at (0,0) size 0x0
-      RenderBR {BR} at (272,0) size 23x0
+      LayoutBR {BR} at (0,0) size 0x0
+      LayoutBR {BR} at (272,0) size 23x0
       RenderInline {SPAN} at (0,0) size 415x574 [border: (5px solid #000000)]
         RenderText {#text} at (335,7) size 401x574
           text run at (335,7) width 567: "\x{305B}\x{3063}\x{304B}\x{304F}\x{898B}\x{3064}\x{3051}\x{305F}\x{3059}\x{3070}\x{3089}\x{3057}\x{3044}\x{8A18}\x{4E8B}\x{304C}\x{3069}\x{3053}\x{306B}\x{3042}\x{3063}\x{305F}\x{304B}\x{5FD8}\x{308C}\x{3066}\x{3057}"

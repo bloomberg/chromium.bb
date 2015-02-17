@@ -32,8 +32,8 @@ layer at (0,0) size 800x354
           RenderText {#text} at (0,0) size 145x19
             text run at (0,0) width 145: "a TFOOT with one row"
       RenderBlock (anonymous) at (0,172) size 784x40
-        RenderBR {br} at (0,0) size 0x19
-        RenderBR {br} at (0,20) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,20) size 0x19
       LayoutTable {table} at (0,212) size 179x118
         RenderBlock {caption} at (0,0) size 179x20
           RenderText {#text} at (65,0) size 49x19

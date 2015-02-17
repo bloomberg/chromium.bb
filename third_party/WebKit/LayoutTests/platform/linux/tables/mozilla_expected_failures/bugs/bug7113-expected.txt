@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
                     text run at (2,2) width 64: "Portfolios"
               RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,30) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,50) size 784x32 [bgcolor=#EEEEEE] [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x30
           LayoutTableRow {TR} at (0,0) size 782x30 [bgcolor=#CCCCFF]

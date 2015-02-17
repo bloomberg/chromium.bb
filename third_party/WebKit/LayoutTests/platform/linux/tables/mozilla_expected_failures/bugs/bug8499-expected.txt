@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
           text run at (0,40) width 203: "further without losing some of the "
           text run at (203,40) width 103: "original 'flavour'.)"
       RenderBlock (anonymous) at (0,76) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,96) size 773x148 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 771x146
           LayoutTableRow {TR} at (0,2) size 771x142
@@ -47,7 +47,7 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (293,0) size 102x52 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 90x19
                                 text run at (6,6) width 90: "27/03 - 30/04 "
-                              RenderBR {BR} at (96,21) size 0x0
+                              LayoutBR {BR} at (96,21) size 0x0
                               RenderText {#text} at (6,26) size 86x19
                                 text run at (6,26) width 86: "16/10 - 31/10"
                             LayoutTableCell {TD} at (395,10) size 176x32 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
@@ -56,20 +56,20 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (571,0) size 90x52 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "22/5 - 16/07"
-                              RenderBR {BR} at (84,21) size 0x0
+                              LayoutBR {BR} at (84,21) size 0x0
                               RenderText {#text} at (6,26) size 78x19
                                 text run at (6,26) width 78: "28/8 - 01/10"
                             LayoutTableCell {TD} at (661,10) size 90x32 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "17/07 - 27/8"
       RenderBlock (anonymous) at (0,244) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {P} at (0,280) size 784x20
         RenderText {#text} at (0,0) size 518x19
           text run at (0,0) width 402: "This table repeats the previous table, but removes the 'bad applet'. "
           text run at (402,0) width 116: "Table lays out OK."
       RenderBlock (anonymous) at (0,316) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,336) size 773x168 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 771x166
           LayoutTableRow {TR} at (0,2) size 771x162
@@ -103,7 +103,7 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (293,0) size 102x52 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 90x19
                                 text run at (6,6) width 90: "27/03 - 30/04 "
-                              RenderBR {BR} at (96,21) size 0x0
+                              LayoutBR {BR} at (96,21) size 0x0
                               RenderText {#text} at (6,26) size 86x19
                                 text run at (6,26) width 86: "16/10 - 31/10"
                             LayoutTableCell {TD} at (395,10) size 176x32 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
@@ -112,7 +112,7 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (571,0) size 90x52 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
                               RenderText {#text} at (6,6) size 78x19
                                 text run at (6,6) width 78: "22/5 - 16/07"
-                              RenderBR {BR} at (84,21) size 0x0
+                              LayoutBR {BR} at (84,21) size 0x0
                               RenderText {#text} at (6,26) size 78x19
                                 text run at (6,26) width 78: "28/8 - 01/10"
                             LayoutTableCell {TD} at (661,10) size 90x32 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]

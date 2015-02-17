@@ -20,18 +20,18 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,0) size 125x214
                     LayoutTableCell {TD} at (0,0) size 125x214 [r=0 c=0 rs=1 cs=1]
                       LayoutImage {IMG} at (0,0) size 125x34
-                      RenderBR {BR} at (125,34) size 0x0
+                      LayoutBR {BR} at (125,34) size 0x0
                       RenderText {#text} at (0,34) size 113x39
                         text run at (0,34) width 113: "Jose moving out to"
                         text run at (0,54) width 20: "sea"
-                      RenderBR {BR} at (20,69) size 0x0
-                      RenderBR {BR} at (0,74) size 0x19
-                      RenderBR {BR} at (0,94) size 0x19
-                      RenderBR {BR} at (0,114) size 0x19
-                      RenderBR {BR} at (0,134) size 0x19
-                      RenderBR {BR} at (0,154) size 0x19
-                      RenderBR {BR} at (0,174) size 0x19
-                      RenderBR {BR} at (0,194) size 0x19
+                      LayoutBR {BR} at (20,69) size 0x0
+                      LayoutBR {BR} at (0,74) size 0x19
+                      LayoutBR {BR} at (0,94) size 0x19
+                      LayoutBR {BR} at (0,114) size 0x19
+                      LayoutBR {BR} at (0,134) size 0x19
+                      LayoutBR {BR} at (0,154) size 0x19
+                      LayoutBR {BR} at (0,174) size 0x19
+                      LayoutBR {BR} at (0,194) size 0x19
           LayoutTableRow {TR} at (0,29) size 450x185
             LayoutTableCell {TD} at (0,29) size 167x105 [r=1 c=0 rs=1 cs=1]
               LayoutImage {IMG} at (0,0) size 167x105
@@ -44,7 +44,7 @@ layer at (0,0) size 800x600
                 RenderInline {B} at (0,0) size 68x16
                   RenderText {#text} at (0,0) size 68x16
                     text run at (0,0) width 68: "Chilly time"
-                RenderBR {BR} at (68,13) size 0x0
+                LayoutBR {BR} at (68,13) size 0x0
                 RenderText {#text} at (0,16) size 145x64
                   text run at (0,16) width 117: "Though the calendar"
                   text run at (0,32) width 120: "disagrees, the feel of"

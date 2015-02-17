@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         RenderInline {xhtml:a} at (0,0) size 68x17 [color=#0000EE]
           RenderText {#text} at (0,0) size 68x17
             text run at (0,0) width 68: "and a link."
-        RenderBR {xhtml:br} at (67,0) size 1x17
+        LayoutBR {xhtml:br} at (67,0) size 1x17
       RenderBlock {xhtml:div} at (0,36) size 250x18
         RenderText {#text} at (0,0) size 56x17
           text run at (0,0) width 56: "[HTML]"

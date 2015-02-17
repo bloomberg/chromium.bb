@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           RenderBlock {OL} at (0,0) size 624x54
             RenderListItem {LI} at (40,0) size 584x54
               RenderListMarker at (-90.22,0) size 86.22x18: "CYWOQVJ"
-              RenderBR {BR} at (0,0) size 0x18
+              LayoutBR {BR} at (0,0) size 0x18
               RenderText {#text} at (0,18) size 493x36
                 text run at (0,18) width 190: "SUCCESS (you didn't crash) "
                 text run at (189,18) width 304: "Our behavior here matches WinIE not FireFox."

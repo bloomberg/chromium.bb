@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (6,6) size 40x19
                 text run at (6,6) width 40: "BBBB"
       RenderBlock (anonymous) at (0,92) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 252x19
           text run at (0,20) width 252: "This table should have cell padding of 5px"
       LayoutTable {TABLE} at (0,132) size 105x72 [border: (1px outset #808080)]
@@ -43,7 +43,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (6,6) size 40x19
                 text run at (6,6) width 40: "BBBB"
       RenderBlock (anonymous) at (0,204) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 252x19
           text run at (0,20) width 252: "This table should have cell padding of 5px"
       LayoutTable {TABLE} at (0,244) size 105x72 [border: (1px outset #808080)]
@@ -63,7 +63,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (6,6) size 40x19
                 text run at (6,6) width 40: "BBBB"
       RenderBlock (anonymous) at (0,316) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 502x19
           text run at (0,20) width 502: "This table should have cell padding of 5px except the 1st cell's left padding will be 0"
       LayoutTable {TABLE} at (0,356) size 105x72 [border: (1px outset #808080)]
@@ -83,7 +83,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (6,6) size 40x19
                 text run at (6,6) width 40: "BBBB"
       RenderBlock (anonymous) at (0,428) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 512x19
           text run at (0,20) width 512: "This table should have cell padding of 5px except the last cell's left padding will be 30"
       LayoutTable {TABLE} at (0,468) size 130x72 [border: (1px outset #808080)]

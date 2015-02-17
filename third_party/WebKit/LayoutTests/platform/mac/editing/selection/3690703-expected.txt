@@ -27,8 +27,8 @@ layer at (0,0) size 800x600
               LayoutTableCell {TD} at (0,16) size 784x1 [r=1 c=0 rs=1 cs=1]
                 LayoutImage {IMG} at (0,0) size 1x1
         RenderBlock (anonymous) at (0,19) size 784x36
-          RenderBR {BR} at (392,0) size 0x18
-          RenderBR {BR} at (392,18) size 0x18
+          LayoutBR {BR} at (392,0) size 0x18
+          LayoutBR {BR} at (392,18) size 0x18
         RenderBlock {DIV} at (0,55) size 784x99 [border: (2px solid #AAAAFF)]
           LayoutTable {TABLE} at (214.50,2) size 355x23
             LayoutTableSection {TBODY} at (0,0) size 355x23
@@ -82,7 +82,7 @@ layer at (0,0) size 800x600
                     text run at (0,0) width 4: " "
                 LayoutTableCell {TD} at (149,1) size 298x37 [r=0 c=1 rs=1 cs=1]
                   LayoutTextControl {INPUT} at (0,0) size 298x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                  RenderBR {BR} at (298,14) size 0x0
+                  LayoutBR {BR} at (298,14) size 0x0
                   RenderButton {INPUT} at (49.08,19) size 92.20x18 [bgcolor=#C0C0C0]
                     RenderBlock (anonymous) at (8,2) size 76.20x13
                       RenderText {#text} at (0,0) size 77x13
@@ -98,20 +98,20 @@ layer at (0,0) size 800x600
                     RenderInline {A} at (0,0) size 71x13 [color=#0000CC]
                       RenderText {#text} at (5,0) size 71x13
                         text run at (5,0) width 71: "Advanced Search"
-                    RenderBR {BR} at (75,10) size 1x0
+                    LayoutBR {BR} at (75,10) size 1x0
                     RenderText {#text} at (0,13) size 5x13
                       text run at (0,13) width 5: "  "
                     RenderInline {A} at (0,0) size 47x13 [color=#0000CC]
                       RenderText {#text} at (5,13) size 47x13
                         text run at (5,13) width 47: "Preferences"
-                    RenderBR {BR} at (51,23) size 1x0
+                    LayoutBR {BR} at (51,23) size 1x0
                     RenderText {#text} at (0,26) size 5x13
                       text run at (0,26) width 5: "  "
                     RenderInline {A} at (0,0) size 65x13 [color=#0000CC]
                       RenderText {#text} at (5,26) size 65x13
                         text run at (5,26) width 65: "Language Tools"
           RenderBlock (anonymous) at (2,64) size 780x33
-            RenderBR {BR} at (390,0) size 0x18
+            LayoutBR {BR} at (390,0) size 0x18
             RenderInline {FONT} at (0,0) size 146x15
               RenderInline {FONT} at (0,0) size 30x15 [color=#FF0000]
                 RenderText {#text} at (317,18) size 30x15
@@ -125,9 +125,9 @@ layer at (0,0) size 800x600
                 text run at (459,18) width 4: "."
             RenderText {#text} at (0,0) size 0x0
         RenderBlock (anonymous) at (0,154) size 784x69
-          RenderBR {BR} at (392,0) size 0x18
-          RenderBR {BR} at (392,18) size 0x18
-          RenderBR {BR} at (392,36) size 0x18
+          LayoutBR {BR} at (392,0) size 0x18
+          LayoutBR {BR} at (392,18) size 0x18
+          LayoutBR {BR} at (392,36) size 0x18
           RenderInline {FONT} at (0,0) size 310x15
             RenderInline {A} at (0,0) size 116x15 [color=#0000CC]
               RenderText {#text} at (237,54) size 116x15

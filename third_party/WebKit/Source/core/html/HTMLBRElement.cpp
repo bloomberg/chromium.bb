@@ -26,7 +26,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/rendering/RenderBR.h"
+#include "core/layout/LayoutBR.h"
 
 namespace blink {
 
@@ -65,7 +65,7 @@ LayoutObject* HTMLBRElement::createRenderer(const LayoutStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);
-    return new RenderBR(this);
+    return new LayoutBR(this);
 }
 
 }

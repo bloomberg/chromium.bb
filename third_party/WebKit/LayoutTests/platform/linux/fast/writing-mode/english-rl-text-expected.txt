@@ -8,6 +8,6 @@ layer at (0,0) size 800x600
         RenderText {#text} at (2,2) size 19x472
           text run at (2,2) width 266: "Here is some text in a vertical-rl block flow. "
           text run at (2,267) width 206: "The block direction is right-to-left."
-        RenderBR {BR} at (17,473) size 0x1
+        LayoutBR {BR} at (17,473) size 0x1
         RenderText {#text} at (22,2) size 19x190
           text run at (22,2) width 190: "This line should also be vertical."

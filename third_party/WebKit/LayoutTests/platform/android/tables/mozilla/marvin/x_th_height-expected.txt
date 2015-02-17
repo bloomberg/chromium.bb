@@ -10,7 +10,7 @@ layer at (0,0) size 785x1646
               RenderText {#text} at (2,2) size 281x19
                 text run at (2,2) width 281: "The height of this cell should be 100 pixels"
       RenderBlock (anonymous) at (0,110) size 769x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,130) size 291x210 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 289x208
           LayoutTableRow {tr} at (0,2) size 289x204
@@ -18,7 +18,7 @@ layer at (0,0) size 785x1646
               RenderText {#text} at (2,2) size 281x19
                 text run at (2,2) width 281: "The height of this cell should be 200 pixels"
       RenderBlock (anonymous) at (0,340) size 769x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,360) size 291x310 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 289x308
           LayoutTableRow {tr} at (0,2) size 289x304
@@ -26,7 +26,7 @@ layer at (0,0) size 785x1646
               RenderText {#text} at (2,2) size 281x19
                 text run at (2,2) width 281: "The height of this cell should be 300 pixels"
       RenderBlock (anonymous) at (0,670) size 769x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,690) size 291x410 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 289x408
           LayoutTableRow {tr} at (0,2) size 289x404
@@ -34,7 +34,7 @@ layer at (0,0) size 785x1646
               RenderText {#text} at (2,2) size 281x19
                 text run at (2,2) width 281: "The height of this cell should be 400 pixels"
       RenderBlock (anonymous) at (0,1100) size 769x20
-        RenderBR {br} at (0,0) size 0x19
+        LayoutBR {br} at (0,0) size 0x19
       LayoutTable {table} at (0,1120) size 291x510 [border: (1px outset #808080)]
         LayoutTableSection (anonymous) at (1,1) size 289x508
           LayoutTableRow {tr} at (0,2) size 289x504

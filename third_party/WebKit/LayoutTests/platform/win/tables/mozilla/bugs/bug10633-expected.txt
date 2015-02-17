@@ -54,7 +54,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (12,23) size 213x85 [bgcolor=#EBEBE4] [r=2 c=2 rs=1 cs=3]
               RenderBlock {P} at (0,0) size 213x85
                 LayoutImage {IMG} at (0,0) size 1x5
-                RenderBR {BR} at (1,5) size 0x0
+                LayoutBR {BR} at (1,5) size 0x0
                 RenderInline {FONT} at (0,0) size 211x64
                   RenderText {#text} at (0,5) size 211x64
                     text run at (0,5) width 123: "Search using almost "
@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
                     text run at (178,37) width 33: "state,"
                     text run at (0,53) width 128: "ZIP, or phone number."
                 RenderInline {FONT} at (0,0) size 128x32
-                  RenderBR {BR} at (128,66) size 0x0
+                  LayoutBR {BR} at (128,66) size 0x0
                   RenderText {#text} at (0,69) size 4x16
                     text run at (0,69) width 4: " "
             LayoutTableCell {TD} at (225,56) size 18x18 [r=2 c=5 rs=1 cs=1]
@@ -79,7 +79,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (257,23) size 211x53 [bgcolor=#EBEBE4] [r=2 c=8 rs=1 cs=3]
               RenderInline {FONT} at (0,0) size 206x61
                 LayoutImage {IMG} at (0,0) size 1x5
-                RenderBR {BR} at (1,5) size 0x0
+                LayoutBR {BR} at (1,5) size 0x0
                 RenderText {#text} at (0,5) size 206x48
                   text run at (0,5) width 177: "Search for businesses within a"
                   text run at (0,21) width 206: "certain distance from a location you"

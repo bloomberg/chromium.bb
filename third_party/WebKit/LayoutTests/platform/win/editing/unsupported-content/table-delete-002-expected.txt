@@ -26,25 +26,25 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (20,20) size 744x69
           RenderText {#text} at (0,0) size 68x26
             text run at (0,0) width 68: "Tests: "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (0,27) size 656x20
             text run at (0,27) width 656: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well. "
-          RenderBR {BR} at (655,43) size 1x0
+          LayoutBR {BR} at (655,43) size 1x0
           RenderInline {I} at (0,0) size 98x20
             RenderText {#text} at (0,48) size 98x20
               text run at (0,48) width 98: "For this test: "
           RenderText {#text} at (97,48) size 401x20
             text run at (97,48) width 401: "Select and delete a table and some surrounding content."
         RenderBlock (anonymous) at (20,89) size 744x21
-          RenderBR {BR} at (0,0) size 0x20
+          LayoutBR {BR} at (0,0) size 0x20
         RenderBlock {DIV} at (20,110) size 744x111
           RenderText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
-          RenderBR {BR} at (189,21) size 1x0
+          LayoutBR {BR} at (189,21) size 1x0
           RenderText {#text} at (0,27) size 700x41
             text run at (0,27) width 700: "The content in the red box must exactly match the content in the green box (except for the border"
             text run at (0,48) width 52: "color). "
-          RenderBR {BR} at (51,64) size 1x0
+          LayoutBR {BR} at (51,64) size 1x0
           RenderInline {I} at (0,0) size 98x20
             RenderText {#text} at (0,69) size 98x20
               text run at (0,69) width 98: "For this test: "

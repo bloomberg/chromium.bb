@@ -29,10 +29,10 @@ layer at (18,270) size 764x200
 layer at (18,270) size 0x90
   RenderInline (relative positioned) {SPAN} at (0,0) size 0x90 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 0x0
-    RenderBR {BR} at (0,0) size 0x18
-    RenderBR {BR} at (0,18) size 0x18
-    RenderBR {BR} at (0,36) size 0x18
-    RenderBR {BR} at (0,54) size 0x18
-    RenderBR {BR} at (0,72) size 0x18
+    LayoutBR {BR} at (0,0) size 0x18
+    LayoutBR {BR} at (0,18) size 0x18
+    LayoutBR {BR} at (0,36) size 0x18
+    LayoutBR {BR} at (0,54) size 0x18
+    LayoutBR {BR} at (0,72) size 0x18
 layer at (18,270) size 50x90
   LayoutImage {IMG} at (0,0) size 50x90 [bgcolor=#0000FF]

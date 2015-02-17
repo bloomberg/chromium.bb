@@ -6,7 +6,7 @@ layer at (0,0) size 800x1895 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       RenderBlock {DIV} at (0,0) size 600x36
         RenderText {#text} at (0,0) size 317x14
           text run at (0,0) width 317: "Table autosizing tests - single-percent-width-cell-lots-of-text.html"
-        RenderBR {BR} at (316,0) size 1x14
+        LayoutBR {BR} at (316,0) size 1x14
         RenderText {#text} at (0,14) size 506x14
           text run at (0,14) width 506: "This test passes if there is a one cell with lots of text that's autosized, and five cells that are not autosized."
       LayoutTable {TABLE} at (1,37) size 798x1857 [border: none]

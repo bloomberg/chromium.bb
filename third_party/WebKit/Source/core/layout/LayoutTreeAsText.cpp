@@ -47,7 +47,6 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
-#include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"

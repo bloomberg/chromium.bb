@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,40.72) size 784x41
         RenderText {#text} at (0,0) size 291x17
           text run at (0,0) width 291: "List color controls have different appearance."
-        RenderBR {BR} at (290,14) size 1x0
+        LayoutBR {BR} at (290,14) size 1x0
         RenderBlock {INPUT} at (0,18) size 44x23 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           RenderFlexibleBox {DIV} at (3,2) size 38x19
             RenderBlock {DIV} at (2,4) size 34x11 [bgcolor=#000000] [border: (1px solid #777777)]
@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,141.16) size 784x41
         RenderText {#text} at (0,0) size 590x17
           text run at (0,0) width 590: "List color controls have different sizes depending on font sizes. Normal color controls don't."
-        RenderBR {BR} at (589,14) size 1x0
+        LayoutBR {BR} at (589,14) size 1x0
         RenderBlock {INPUT} at (0,18) size 44x23 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           RenderFlexibleBox {DIV} at (3,2) size 38x19
             RenderBlock {DIV} at (2,4) size 34x11 [bgcolor=#00FF00] [border: (1px solid #777777)]

@@ -18,13 +18,13 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,0) size 488x102 [bgcolor=#FFFF00] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (200,11) size 88x19
                 text run at (200,11) width 88: "Table Data #1"
-              RenderBR {BR} at (287,26) size 1x0
+              LayoutBR {BR} at (287,26) size 1x0
               RenderText {#text} at (211,31) size 66x19
                 text run at (211,31) width 66: "Other cells"
-              RenderBR {BR} at (276,46) size 1x0
+              LayoutBR {BR} at (276,46) size 1x0
               RenderText {#text} at (184,51) size 120x19
                 text run at (184,51) width 120: "should be the height"
-              RenderBR {BR} at (303,66) size 1x0
+              LayoutBR {BR} at (303,66) size 1x0
               RenderText {#text} at (214,71) size 60x19
                 text run at (214,71) width 60: "of this cell"
             LayoutTableCell {TD} at (488,20) size 42x62 [bgcolor=#006000] [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]

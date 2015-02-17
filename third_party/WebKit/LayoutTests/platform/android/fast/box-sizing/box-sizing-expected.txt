@@ -14,9 +14,9 @@ layer at (0,0) size 785x966
       RenderBlock {DIV} at (5,149.88) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       RenderBlock {DIV} at (5,179.88) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       RenderBlock {DIV} at (5,209.88) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-        RenderBR {BR} at (6,6) size 0x19
-        RenderBR {BR} at (6,26) size 0x19
-        RenderBR {BR} at (6,46) size 0x19
+        LayoutBR {BR} at (6,6) size 0x19
+        LayoutBR {BR} at (6,26) size 0x19
+        LayoutBR {BR} at (6,46) size 0x19
       RenderBlock {H1} at (0,251.31) size 769x37
         RenderText {#text} at (0,0) size 177x36
           text run at (0,0) width 177: "Inline Blocks"
@@ -25,15 +25,15 @@ layer at (0,0) size 785x966
         RenderBlock {DIV} at (35,41) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
         RenderBlock {DIV} at (65,41) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
         RenderBlock {DIV} at (95,10) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-          RenderBR {BR} at (6,6) size 0x19
-          RenderBR {BR} at (6,26) size 0x19
-          RenderBR {BR} at (6,46) size 0x19
+          LayoutBR {BR} at (6,6) size 0x19
+          LayoutBR {BR} at (6,26) size 0x19
+          LayoutBR {BR} at (6,46) size 0x19
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {H1} at (0,402.19) size 769x37
         RenderText {#text} at (0,0) size 241x36
           text run at (0,0) width 241: "Positioned Blocks"
       RenderBlock (anonymous) at (0,460.63) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {H1} at (0,502.06) size 769x37
         RenderText {#text} at (0,0) size 209x36
           text run at (0,0) width 209: "Floating blocks"
@@ -41,11 +41,11 @@ layer at (0,0) size 785x966
       RenderBlock (floating) {DIV} at (35,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       RenderBlock (floating) {DIV} at (65,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       RenderBlock (floating) {DIV} at (95,570.50) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-        RenderBR {BR} at (6,6) size 0x19
-        RenderBR {BR} at (6,26) size 0x19
-        RenderBR {BR} at (6,46) size 0x19
+        LayoutBR {BR} at (6,6) size 0x19
+        LayoutBR {BR} at (6,26) size 0x19
+        LayoutBR {BR} at (6,46) size 0x19
       RenderBlock (anonymous) at (0,560.50) size 769x40
-        RenderBR {BR} at (120,0) size 0x19
+        LayoutBR {BR} at (120,0) size 0x19
       RenderBlock {H1} at (0,621.94) size 769x37
         RenderText {#text} at (0,0) size 209x36
           text run at (0,0) width 209: "Normal Images"
@@ -59,7 +59,7 @@ layer at (0,0) size 785x966
         RenderText {#text} at (0,0) size 247x36
           text run at (0,0) width 247: "Positioned Images"
       RenderBlock (anonymous) at (0,800.25) size 769x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       RenderBlock {H1} at (0,841.69) size 769x37
         RenderText {#text} at (0,0) size 219x36
           text run at (0,0) width 219: "Floating Images"
@@ -68,7 +68,7 @@ layer at (0,0) size 785x966
       LayoutImage {IMG} at (65,910.13) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       LayoutImage {IMG} at (95,910.13) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
       RenderBlock (anonymous) at (0,900.13) size 769x40
-        RenderBR {BR} at (120,0) size 0x19
+        LayoutBR {BR} at (120,0) size 0x19
       RenderBlock {HR} at (0,948.13) size 769x2 [border: (1px inset #EEEEEE)]
 layer at (13,479) size 20x20
   RenderBlock (positioned) {DIV} at (13,478.63) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
@@ -78,9 +78,9 @@ layer at (73,479) size 20x20
   RenderBlock (positioned) {DIV} at (73,478.63) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
 layer at (103,479) size 20x20
   RenderBlock (positioned) {DIV} at (103,478.63) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-    RenderBR {BR} at (6,6) size 0x19
-    RenderBR {BR} at (6,26) size 0x19
-    RenderBR {BR} at (6,46) size 0x19
+    LayoutBR {BR} at (6,6) size 0x19
+    LayoutBR {BR} at (6,26) size 0x19
+    LayoutBR {BR} at (6,46) size 0x19
 layer at (13,818) size 20x20
   LayoutImage {IMG} at (13,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
 layer at (43,818) size 20x20

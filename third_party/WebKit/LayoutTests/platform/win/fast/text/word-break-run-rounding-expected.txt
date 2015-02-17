@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (3,3) size 594x17
           text run at (3,3) width 594: "The black border should fit tightly around this one line of text with no space after the period."
       RenderBlock (anonymous) at (0,68) size 784x24
-        RenderBR {BR} at (599,0) size 1x17
+        LayoutBR {BR} at (599,0) size 1x17
       RenderBlock {P} at (0,108) size 784x18
         RenderText {#text} at (0,0) size 389x17
           text run at (0,0) width 389: "Test that text does not wrap too early due to rounding errors:"

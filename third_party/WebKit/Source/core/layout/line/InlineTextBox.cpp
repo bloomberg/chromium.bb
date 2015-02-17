@@ -24,13 +24,13 @@
 #include "core/layout/line/InlineTextBox.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutBR.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
-#include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderBlock.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
@@ -113,7 +113,7 @@ LayoutUnit InlineTextBox::lineHeight() const
     if (!isText() || !renderer().parent())
         return 0;
     if (renderer().isBR())
-        return toRenderBR(renderer()).lineHeight(isFirstLineStyle());
+        return toLayoutBR(renderer()).lineHeight(isFirstLineStyle());
     if (parent()->renderer() == renderer().parent())
         return parent()->lineHeight();
     return toRenderBoxModelObject(renderer().parent())->lineHeight(isFirstLineStyle(), isHorizontal() ? HorizontalLine : VerticalLine, PositionOnContainingLine);

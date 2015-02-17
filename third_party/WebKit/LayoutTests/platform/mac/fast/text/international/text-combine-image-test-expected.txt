@@ -72,7 +72,7 @@ layer at (166,0) size 634x600
         RenderInline {SPAN} at (0,0) size 32x232
           RenderText {#text} at (8,0) size 32x232
             text run at (8,0) width 232: "OFF=\x{5B57}\x{3042}\x{FF21}A%"
-        RenderBR {BR} at (15,231) size 18x1
+        LayoutBR {BR} at (15,231) size 18x1
         RenderInline {SPAN} at (0,0) size 32x214
           RenderInline {SPAN} at (0,0) size 32x32
             RenderCombineText {#text} at (56,0) size 32x32

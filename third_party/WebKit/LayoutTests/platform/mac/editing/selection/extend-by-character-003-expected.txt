@@ -180,7 +180,7 @@ layer at (0,0) size 800x600
             text run at (667,14) width 7: " "
             text run at (14,42) width 229: "conceived    in Liberty, "
             text run at (242,42) width 387: "and dedicated to the proposition that all "
-          RenderBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
           RenderText {#text} at (14,70) size 216x28
             text run at (14,70) width 216: "men are created equal."
         RenderText {#text} at (0,0) size 0x0

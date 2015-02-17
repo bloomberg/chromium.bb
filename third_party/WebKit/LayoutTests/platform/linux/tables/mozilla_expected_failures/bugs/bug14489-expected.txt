@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
                         text run at (118,82) width 228: "blah blah blah blah blah blah blah blah"
                         text run at (2,102) width 141: "blah blah blah blah blah"
       RenderBlock (anonymous) at (0,148) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,168) size 784x148 [border: (3px outset #808080)]
         LayoutTableSection {TBODY} at (3,3) size 778x142
           LayoutTableRow {TR} at (0,2) size 778x138
@@ -47,7 +47,7 @@ layer at (0,0) size 800x600
                         text run at (2,102) width 141: "blah blah blah blah blah"
               RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,316) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,336) size 784x184 [border: (3px outset #808080)]
         LayoutTableSection {TBODY} at (3,3) size 778x178
           LayoutTableRow {TR} at (0,2) size 778x174

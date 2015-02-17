@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 26x19
                 text run at (2,2) width 26: "auto"
       RenderBlock (anonymous) at (0,50) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 186x19
           text run at (0,20) width 186: "auto table - fixed cells honored"
       LayoutTable {TABLE} at (0,90) size 142x30 [border: (1px outset #808080)]
@@ -29,10 +29,10 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 26x19
                 text run at (2,2) width 26: "auto"
       RenderBlock (anonymous) at (0,120) size 784x40
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
         RenderText {#text} at (0,20) size 86x19
           text run at (0,20) width 86: "COLSPANS "
-        RenderBR {BR} at (86,35) size 0x0
+        LayoutBR {BR} at (86,35) size 0x0
       LayoutTable {TABLE} at (0,160) size 636x136 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 634x134
           LayoutTableRow {TR} at (0,2) size 634x104
@@ -55,7 +55,7 @@ layer at (0,0) size 800x600
               RenderText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       RenderBlock (anonymous) at (0,296) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,316) size 534x65 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 532x63
           LayoutTableRow {TR} at (0,5) size 532x24

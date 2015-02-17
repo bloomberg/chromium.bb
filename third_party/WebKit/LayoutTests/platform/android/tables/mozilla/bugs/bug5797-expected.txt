@@ -13,7 +13,7 @@ layer at (0,0) size 800x1006
               RenderText {#text} at (2,2) size 7x19
                 text run at (2,2) width 7: "y"
       RenderBlock (anonymous) at (0,30) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,50) size 784x30 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x28
           LayoutTableRow {TR} at (0,2) size 782x24
@@ -24,7 +24,7 @@ layer at (0,0) size 800x1006
               RenderText {#text} at (2,2) size 7x19
                 text run at (2,2) width 7: "y"
       RenderBlock (anonymous) at (0,80) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,100) size 855x610 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 853x608
           LayoutTableRow {TR} at (0,2) size 853x604
@@ -38,7 +38,7 @@ layer at (0,0) size 800x1006
                 text run at (2,62) width 18: "get"
                 text run at (2,82) width 39: "along?"
       RenderBlock (anonymous) at (0,710) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,730) size 784x30 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x28
           LayoutTableRow {TR} at (0,2) size 782x24
@@ -52,7 +52,7 @@ layer at (0,0) size 800x1006
               RenderText {#text} at (2,2) size 106x19
                 text run at (2,2) width 106: "I great, thank you"
       RenderBlock (anonymous) at (0,760) size 784x20
-        RenderBR {BR} at (0,0) size 0x19
+        LayoutBR {BR} at (0,0) size 0x19
       LayoutTable {TABLE} at (0,780) size 784x210 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x208
           LayoutTableRow {TR} at (0,2) size 782x204
