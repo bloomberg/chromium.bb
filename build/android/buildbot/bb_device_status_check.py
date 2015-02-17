@@ -337,8 +337,11 @@ def main():
         zip(*[DeviceInfo(dev, options) for dev in devices]))
 
   # Write device info to file for buildbot info display.
-  with open('/tmp/adb_device_info', 'w') as outfile:
-    json.dump(json_data, outfile)
+  with open('/home/chrome-bot/.adb_device_info', 'w') as f:
+    for device in json_data:
+      f.write('%s %s %s %.1fC %s%%' % (device['serial'], device['type'],
+          device['build'], float(device['battery']['temperature']) / 10,
+          device['battery']['level']))
 
   err_msg = CheckForMissingDevices(options, devices) or []
 
