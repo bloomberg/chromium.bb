@@ -37,6 +37,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebGraphicsContext.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebMIDIClientMock.h"
@@ -49,6 +50,10 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/skia_util.h"
 
 #if defined(__linux__) || defined(ANDROID)
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
@@ -1497,22 +1502,19 @@ void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {
 
 class TestPageOverlay : public WebPageOverlay {
  public:
-  explicit TestPageOverlay(WebView* web_view)
-      : web_view_(web_view) {
-  }
+  TestPageOverlay() {}
   virtual ~TestPageOverlay() {}
 
-  virtual void paintPageOverlay(WebCanvas* canvas) override  {
-    SkRect rect = SkRect::MakeWH(web_view_->size().width,
-                                 web_view_->size().height);
+  virtual void paintPageOverlay(WebGraphicsContext* context,
+                                const WebSize& webViewSize) {
+    gfx::Rect rect(webViewSize);
+    SkCanvas* canvas = context->beginDrawing(gfx::RectF(rect));
     SkPaint paint;
     paint.setColor(SK_ColorCYAN);
     paint.setStyle(SkPaint::kFill_Style);
-    canvas->drawRect(rect, paint);
+    canvas->drawRect(gfx::RectToSkRect(rect), paint);
+    context->endDrawing();
   }
-
- private:
-  WebView* web_view_;
 };
 
 TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
@@ -2871,7 +2873,7 @@ void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
 
 void TestRunner::AddWebPageOverlay() {
   if (web_view_ && !page_overlay_) {
-    page_overlay_ = new TestPageOverlay(web_view_);
+    page_overlay_ = new TestPageOverlay;
     web_view_->addPageOverlay(page_overlay_, 0);
   }
 }

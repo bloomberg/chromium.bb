@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebPageOverlay.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -23,7 +22,8 @@ class WebViewColorOverlay : public blink::WebPageOverlay {
 
  private:
   // blink::WebPageOverlay implementation:
-  virtual void paintPageOverlay(blink::WebCanvas* canvas);
+  virtual void paintPageOverlay(blink::WebGraphicsContext* context,
+                                const blink::WebSize& webViewSize);
 
   content::RenderView* render_view_;
   SkColor color_;
