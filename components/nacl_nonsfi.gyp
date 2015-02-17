@@ -58,7 +58,6 @@
             ],
 
             'link_flags': [
-              '-Wl,--start-group',
               '-lbase_nacl_nonsfi',
               '-lcommand_buffer_client_nacl',
               '-lcommand_buffer_common_nacl',
@@ -78,7 +77,6 @@
               '-lppapi_shared_nacl',
               '-lshared_memory_support_nacl',
               '-ltracing_nacl',
-              '-Wl,--end-group',
             ],
 
             'conditions': [
