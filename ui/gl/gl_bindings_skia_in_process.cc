@@ -277,6 +277,10 @@ GLvoid StubGLGenVertexArrays(GLsizei n, GLuint* arrays) {
   glGenVertexArraysOES(n, arrays);
 }
 
+GLvoid StubGLGenerateMipmap(GLenum target){
+  glGenerateMipmapEXT(target);
+}
+
 GLvoid StubGLGetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   glGetBufferParameteriv(target, pname, params);
 }
@@ -668,6 +672,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   functions->fGenQueries = StubGLGenQueries;
   functions->fGenTextures = StubGLGenTextures;
   functions->fGenVertexArrays = StubGLGenVertexArrays;
+  functions->fGenerateMipmap = StubGLGenerateMipmap;
   functions->fGetBufferParameteriv = StubGLGetBufferParameteriv;
   functions->fGetError = StubGLGetError;
   functions->fGetIntegerv = StubGLGetIntegerv;
