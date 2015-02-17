@@ -60,9 +60,9 @@ longjmp:
     movl    %esi, %eax
     /* if val is zero, we must return 1 -- otherwise return val */
     testl   %eax, %eax
-    jne     .skip
+    jne     .Lskip
     movl    $1, %eax
-.skip:
+.Lskip:
     movq    %nacl:0(%r15,%rdi), %rbx     /* restore rbx */
     movq    %nacl:8(%r15,%rdi), %rdx     /* restore rbp */
     naclrestbp %edx, %r15
