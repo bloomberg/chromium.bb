@@ -904,11 +904,6 @@ void EventHandler::stopAutoscroll()
         controller->stopAutoscroll();
 }
 
-Node* EventHandler::mousePressNode() const
-{
-    return m_mousePressNode.get();
-}
-
 bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node** stopNode, float delta, IntPoint absolutePoint)
 {
     if (!delta)

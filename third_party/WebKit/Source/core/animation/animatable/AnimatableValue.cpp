@@ -35,12 +35,6 @@
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
 
-namespace {
-
-const double defaultDistance = 1;
-
-} // namespace
-
 namespace blink {
 
 const AnimatableValue* AnimatableValue::neutralValue()
@@ -60,22 +54,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableValue::interpolate(const Anima
         return left->interpolateTo(right, fraction);
 
     return defaultInterpolateTo(left, right, fraction);
-}
-
-double AnimatableValue::distance(const AnimatableValue* left, const AnimatableValue* right)
-{
-    ASSERT(left);
-    ASSERT(right);
-
-    if (left->isSameType(right))
-        return left->distanceTo(right);
-
-    return defaultDistance;
-}
-
-double AnimatableValue::distanceTo(const AnimatableValue*) const
-{
-    return defaultDistance;
 }
 
 } // namespace blink

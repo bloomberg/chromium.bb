@@ -328,11 +328,6 @@ PassRefPtrWillBeRawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const
     return d.release();
 }
 
-PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String& type, LocalFrame* frame, const KURL& url, bool inViewSourceMode)
-{
-    return createDocument(type, DocumentInit(url, frame), inViewSourceMode);
-}
-
 PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String& type, const DocumentInit& init, bool inViewSourceMode)
 {
     if (inViewSourceMode)

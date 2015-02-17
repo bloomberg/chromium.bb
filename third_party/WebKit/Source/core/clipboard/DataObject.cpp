@@ -62,11 +62,6 @@ PassRefPtrWillBeRawPtr<DataObject> DataObject::create()
     return adoptRefWillBeNoop(new DataObject());
 }
 
-PassRefPtrWillBeRawPtr<DataObject> DataObject::copy() const
-{
-    return adoptRefWillBeNoop(new DataObject(*this));
-}
-
 DataObject::~DataObject()
 {
 }
@@ -221,12 +216,6 @@ void DataObject::addSharedBuffer(const String& name, PassRefPtr<SharedBuffer> bu
 
 DataObject::DataObject()
     : m_modifierKeyState(0)
-{
-}
-
-DataObject::DataObject(const DataObject& other)
-    : m_itemList(other.m_itemList)
-    , m_modifierKeyState(0)
 {
 }
 

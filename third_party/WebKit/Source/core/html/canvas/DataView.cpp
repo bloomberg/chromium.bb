@@ -43,12 +43,6 @@ union Value {
 
 namespace blink {
 
-PassRefPtr<DataView> DataView::create(unsigned length)
-{
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(length, sizeof(uint8_t));
-    return create(buffer.release(), 0, length);
-}
-
 PassRefPtr<DataView> DataView::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned byteLength)
 {
     RELEASE_ASSERT(byteOffset <= buffer->byteLength());
@@ -155,16 +149,6 @@ void DataView::setData(unsigned byteOffset, T value, bool littleEndian, Exceptio
     memcpy(static_cast<char*>(m_baseAddress) + byteOffset, tempValue.bytes, sizeof(T));
 }
 
-int8_t DataView::getInt8(unsigned byteOffset, ExceptionState& exceptionState)
-{
-    return getData<int8_t>(byteOffset, false, exceptionState);
-}
-
-uint8_t DataView::getUint8(unsigned byteOffset, ExceptionState& exceptionState)
-{
-    return getData<uint8_t>(byteOffset, false, exceptionState);
-}
-
 int16_t DataView::getInt16(unsigned byteOffset, bool littleEndian, ExceptionState& exceptionState)
 {
     return getData<int16_t>(byteOffset, littleEndian, exceptionState);
@@ -193,16 +177,6 @@ float DataView::getFloat32(unsigned byteOffset, bool littleEndian, ExceptionStat
 double DataView::getFloat64(unsigned byteOffset, bool littleEndian, ExceptionState& exceptionState)
 {
     return getData<double>(byteOffset, littleEndian, exceptionState);
-}
-
-void DataView::setInt8(unsigned byteOffset, int8_t value, ExceptionState& exceptionState)
-{
-    setData<int8_t>(byteOffset, value, false, exceptionState);
-}
-
-void DataView::setUint8(unsigned byteOffset, uint8_t value, ExceptionState& exceptionState)
-{
-    setData<uint8_t>(byteOffset, value, false, exceptionState);
 }
 
 void DataView::setInt16(unsigned byteOffset, short value, bool littleEndian, ExceptionState& exceptionState)

@@ -100,7 +100,6 @@ public:
     PassOwnPtr<CSSParserValueList> sinkFloatingValueList(CSSParserValueList*);
 
     CSSParserFunction* createFloatingFunction(const CSSParserString& name, PassOwnPtr<CSSParserValueList> args);
-    PassOwnPtr<CSSParserFunction> sinkFloatingFunction(CSSParserFunction*);
 
     CSSParserValue& sinkFloatingValue(CSSParserValue&);
 
@@ -288,9 +287,6 @@ private:
     Vector<OwnPtr<CSSParserSelector> > m_reusableSelectorVector;
 
     OwnPtrWillBeMember<RuleSourceDataList> m_supportsRuleDataStack;
-
-    bool isLoggingErrors();
-    void logError(const String& message, const CSSParserLocation&);
 
     BisonCSSTokenizer m_tokenizer;
 };

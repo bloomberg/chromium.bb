@@ -49,16 +49,6 @@ DragData::DragData(DataObject* data, const IntPoint& clientPosition, const IntPo
 {
 }
 
-DragData::DragData(const String&, const IntPoint& clientPosition, const IntPoint& globalPosition,
-    DragOperation sourceOperationMask, DragApplicationFlags flags)
-    : m_clientPosition(clientPosition)
-    , m_globalPosition(globalPosition)
-    , m_platformDragData(nullptr)
-    , m_draggingSourceOperationMask(sourceOperationMask)
-    , m_applicationFlags(flags)
-{
-}
-
 static bool containsHTML(const DataObject* dropData)
 {
     return dropData->types().contains(mimeTypeTextHTML);

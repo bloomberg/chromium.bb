@@ -94,8 +94,6 @@ public:
 
     void updateSelectionForMouseDrag();
 
-    Node* mousePressNode() const;
-
 #if OS(WIN)
     void startPanScrolling(LayoutObject*);
 #endif

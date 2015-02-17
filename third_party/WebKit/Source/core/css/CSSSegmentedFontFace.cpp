@@ -159,24 +159,6 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     return nullptr;
 }
 
-bool CSSSegmentedFontFace::isLoading() const
-{
-    for (const auto& fontFace : m_fontFaces) {
-        if (fontFace->loadStatus() == FontFace::Loading)
-            return true;
-    }
-    return false;
-}
-
-bool CSSSegmentedFontFace::isLoaded() const
-{
-    for (const auto& fontFace : m_fontFaces) {
-        if (fontFace->loadStatus() != FontFace::Loaded)
-            return false;
-    }
-    return true;
-}
-
 void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescription, UChar32 character)
 {
     for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin(); it != m_fontFaces.rend(); ++it) {

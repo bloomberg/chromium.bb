@@ -808,12 +808,6 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
     return element.release();
 }
 
-ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
-{
-    ElementRegistrationOptions options;
-    return registerElement(scriptState, name, options, exceptionState);
-}
-
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
@@ -4360,11 +4354,6 @@ void Document::setDesignMode(InheritedBool value)
     }
 }
 
-Document::InheritedBool Document::getDesignMode() const
-{
-    return m_designMode;
-}
-
 bool Document::inDesignMode() const
 {
     for (const Document* d = this; d; d = d->parentDocument()) {
@@ -5170,13 +5159,6 @@ DocumentLoader* Document::loader() const
         return 0;
 
     return loader;
-}
-
-IntSize Document::initialViewportSize() const
-{
-    if (!view())
-        return IntSize();
-    return view()->unscaledVisibleContentSize(IncludeScrollbars);
 }
 
 Node* eventTargetNodeForDocument(Document* doc)

@@ -57,19 +57,6 @@ PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::item(unsigned index)
     return DOMPlugin::create(data, m_frame, index);
 }
 
-bool DOMPluginArray::canGetItemsForName(const AtomicString& propertyName)
-{
-    PluginData* data = pluginData();
-    if (!data)
-        return false;
-    const Vector<PluginInfo>& plugins = data->plugins();
-    for (unsigned i = 0; i < plugins.size(); ++i) {
-        if (plugins[i].name == propertyName)
-            return true;
-    }
-    return false;
-}
-
 PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::namedItem(const AtomicString& propertyName)
 {
     PluginData* data = pluginData();

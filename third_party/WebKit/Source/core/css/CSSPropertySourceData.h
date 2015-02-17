@@ -57,10 +57,6 @@ struct CSSPropertySourceData {
 public:
     CSSPropertySourceData(const String& name, const String& value, bool important, bool disabled, bool parsedOk, const SourceRange& range);
     CSSPropertySourceData(const CSSPropertySourceData& other);
-    CSSPropertySourceData();
-
-    String toString() const;
-    unsigned hash() const;
 
     void trace(Visitor* visitor) { visitor->trace(range); }
 

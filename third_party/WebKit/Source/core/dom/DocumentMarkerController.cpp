@@ -705,32 +705,6 @@ void DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset
         node->renderer()->setShouldDoFullPaintInvalidation();
 }
 
-bool DocumentMarkerController::hasMarkers(Range* range, DocumentMarker::MarkerTypes markerTypes)
-{
-    if (!possiblyHasMarkers(markerTypes))
-        return false;
-    ASSERT(!m_markers.isEmpty());
-
-    Node* startContainer = range->startContainer();
-    ASSERT(startContainer);
-    Node* endContainer = range->endContainer();
-    ASSERT(endContainer);
-
-    Node* pastLastNode = range->pastLastNode();
-    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
-        for (const DocumentMarker* marker : markersFor(node)) {
-            if (!markerTypes.contains(marker->type()))
-                continue;
-            if (node == startContainer && marker->endOffset() <= static_cast<unsigned>(range->startOffset()))
-                continue;
-            if (node == endContainer && marker->startOffset() >= static_cast<unsigned>(range->endOffset()))
-                continue;
-            return true;
-        }
-    }
-    return false;
-}
-
 #ifndef NDEBUG
 void DocumentMarkerController::showMarkers() const
 {

@@ -44,16 +44,6 @@ EditCommand::EditCommand(Document& document)
     setEndingSelection(m_startingSelection);
 }
 
-EditCommand::EditCommand(Document* document, const VisibleSelection& startingSelection, const VisibleSelection& endingSelection)
-    : m_document(document)
-    , m_parent(nullptr)
-{
-    ASSERT(m_document);
-    ASSERT(m_document->frame());
-    setStartingSelection(startingSelection);
-    setEndingSelection(endingSelection);
-}
-
 EditCommand::~EditCommand()
 {
 }
@@ -81,11 +71,6 @@ void EditCommand::setStartingSelection(const VisibleSelection& selection)
         if (!command->m_parent || command->m_parent->isFirstCommand(command))
             break;
     }
-}
-
-void EditCommand::setStartingSelection(const VisiblePosition& position)
-{
-    setStartingSelection(VisibleSelection(position));
 }
 
 void EditCommand::setEndingSelection(const VisibleSelection& selection)

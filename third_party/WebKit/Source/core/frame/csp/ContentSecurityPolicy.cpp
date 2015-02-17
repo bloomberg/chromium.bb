@@ -546,11 +546,6 @@ bool ContentSecurityPolicy::allowAncestors(LocalFrame* frame, const KURL& url, C
     return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, url, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowChildContextFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
-{
-    return isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus);
-}
-
 bool ContentSecurityPolicy::allowWorkerContextFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     // CSP 1.1 moves workers from 'script-src' to the new 'child-src'. Measure the impact of this backwards-incompatible change.
@@ -581,22 +576,6 @@ ReflectedXSSDisposition ContentSecurityPolicy::reflectedXSSDisposition() const
             disposition = std::max(disposition, policy->reflectedXSSDisposition());
     }
     return disposition;
-}
-
-ReferrerPolicy ContentSecurityPolicy::referrerPolicy() const
-{
-    ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
-    bool first = true;
-    for (const auto& policy : m_policies) {
-        if (policy->didSetReferrerPolicy()) {
-            if (first)
-                referrerPolicy = policy->referrerPolicy();
-            else
-                referrerPolicy = mergeReferrerPolicies(referrerPolicy, policy->referrerPolicy());
-            first = false;
-        }
-    }
-    return referrerPolicy;
 }
 
 bool ContentSecurityPolicy::didSetReferrerPolicy() const

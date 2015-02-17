@@ -14,7 +14,6 @@ class AppliedTextDecoration {
 public:
     AppliedTextDecoration(TextDecoration, TextDecorationStyle, StyleColor);
     explicit AppliedTextDecoration(TextDecoration);
-    AppliedTextDecoration();
 
     TextDecoration line() const { return static_cast<TextDecoration>(m_line); }
     TextDecorationStyle style() const { return static_cast<TextDecorationStyle>(m_style); }

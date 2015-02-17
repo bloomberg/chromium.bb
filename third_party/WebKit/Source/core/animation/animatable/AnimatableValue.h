@@ -44,7 +44,6 @@ public:
     static const AnimatableValue* neutralValue();
 
     static PassRefPtrWillBeRawPtr<AnimatableValue> interpolate(const AnimatableValue*, const AnimatableValue*, double fraction);
-    static double distance(const AnimatableValue* from, const AnimatableValue* to);
     static bool usesDefaultInterpolation(const AnimatableValue* from, const AnimatableValue* to)
     {
         return !from->isSameType(to) || from->usesDefaultInterpolationWith(to);
@@ -127,8 +126,6 @@ private:
     virtual AnimatableType type() const = 0;
     // Implementations can assume that the object being compared has the same type as the object this is called on
     virtual bool equalTo(const AnimatableValue*) const = 0;
-
-    virtual double distanceTo(const AnimatableValue*) const;
 
     template <class Keyframe> friend class KeyframeEffectModel;
 };

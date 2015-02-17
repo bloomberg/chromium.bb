@@ -66,7 +66,6 @@ public:
     void addTextMatchMarker(const Range*, bool activeMatch);
 
     void copyMarkers(Node* srcNode, unsigned startOffset, int length, Node* dstNode, int delta);
-    bool hasMarkers(Range*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
 
     void prepareForDestruction();
     // When a marker partially overlaps with range, if removePartiallyOverlappingMarkers is true, we completely

@@ -75,41 +75,6 @@ CSSPropertySourceData::CSSPropertySourceData(const CSSPropertySourceData& other)
 {
 }
 
-CSSPropertySourceData::CSSPropertySourceData()
-    : name("")
-    , value("")
-    , important(false)
-    , disabled(false)
-    , parsedOk(false)
-    , range(SourceRange(0, 0))
-{
-}
-
-String CSSPropertySourceData::toString() const
-{
-    DEFINE_STATIC_LOCAL(String, emptyValue, ("e"));
-    if (!name && value == emptyValue)
-        return String();
-
-    StringBuilder result;
-    if (disabled)
-        result.appendLiteral("/* ");
-    result.append(name);
-    result.appendLiteral(": ");
-    result.append(value);
-    if (important)
-        result.appendLiteral(" !important");
-    result.append(';');
-    if (disabled)
-        result.appendLiteral(" */");
-    return result.toString();
-}
-
-unsigned CSSPropertySourceData::hash() const
-{
-    return StringHash::hash(name) + 3 * StringHash::hash(value) + 7 * important + 13 * parsedOk + 31;
-}
-
 void CSSRuleSourceData::trace(Visitor* visitor)
 {
     visitor->trace(ruleHeaderRange);

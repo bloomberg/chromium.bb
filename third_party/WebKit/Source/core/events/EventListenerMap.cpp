@@ -169,31 +169,6 @@ EventListenerVector* EventListenerMap::find(const AtomicString& eventType)
     return 0;
 }
 
-static void removeFirstListenerCreatedFromMarkup(EventListenerVector* listenerVector)
-{
-    for (size_t i = 0; i < listenerVector->size(); ++i) {
-        if (listenerVector->at(i).listener->wasCreatedFromMarkup()) {
-            listenerVector->remove(i);
-            return;
-        }
-    }
-    ASSERT_NOT_REACHED();
-}
-
-void EventListenerMap::removeFirstEventListenerCreatedFromMarkup(const AtomicString& eventType)
-{
-    assertNoActiveIterators();
-
-    for (unsigned i = 0; i < m_entries.size(); ++i) {
-        if (m_entries[i].first == eventType) {
-            removeFirstListenerCreatedFromMarkup(m_entries[i].second.get());
-            if (m_entries[i].second->isEmpty())
-                m_entries.remove(i);
-            return;
-        }
-    }
-}
-
 static void copyListenersNotCreatedFromMarkupToTarget(const AtomicString& eventType, EventListenerVector* listenerVector, EventTarget* target)
 {
     for (const auto& eventListener : *listenerVector) {
@@ -210,13 +185,6 @@ void EventListenerMap::copyEventListenersNotCreatedFromMarkupToTarget(EventTarge
 
     for (const auto& eventListener : m_entries)
         copyListenersNotCreatedFromMarkupToTarget(eventListener.first, eventListener.second.get(), target);
-}
-
-EventListenerIterator::EventListenerIterator()
-    : m_map(nullptr)
-    , m_entryIndex(0)
-    , m_index(0)
-{
 }
 
 EventListenerIterator::EventListenerIterator(EventTarget* target)

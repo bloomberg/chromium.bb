@@ -57,7 +57,6 @@ public:
     EventListenerVector* find(const AtomicString& eventType);
     Vector<AtomicString> eventTypes() const;
 
-    void removeFirstEventListenerCreatedFromMarkup(const AtomicString& eventType);
     void copyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
 
 private:
@@ -75,7 +74,6 @@ private:
 class EventListenerIterator {
     WTF_MAKE_NONCOPYABLE(EventListenerIterator);
 public:
-    EventListenerIterator();
     EventListenerIterator(EventTarget*);
 #if ENABLE(ASSERT)
     ~EventListenerIterator();

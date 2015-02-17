@@ -805,7 +805,6 @@ public:
     // designMode support
     enum InheritedBool { off = false, on = true, inherit };
     void setDesignMode(InheritedBool value);
-    InheritedBool getDesignMode() const;
     bool inDesignMode() const;
     String designMode() const;
     void setDesignMode(const String&);
@@ -958,13 +957,10 @@ public:
 
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }
 
-    IntSize initialViewportSize() const;
-
     TextAutosizer* textAutosizer();
 
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtrWillBeRawPtr<Element> createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
-    ScriptValue registerElement(ScriptState*, const AtomicString& name, ExceptionState&);
     ScriptValue registerElement(ScriptState*, const AtomicString& name, const ElementRegistrationOptions&, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
     CustomElementMicrotaskRunQueue* customElementMicrotaskRunQueue();

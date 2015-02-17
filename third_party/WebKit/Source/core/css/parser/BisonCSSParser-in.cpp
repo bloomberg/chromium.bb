@@ -435,16 +435,6 @@ CSSParserFunction* BisonCSSParser::createFloatingFunction(const CSSParserString&
     return function;
 }
 
-PassOwnPtr<CSSParserFunction> BisonCSSParser::sinkFloatingFunction(CSSParserFunction* function)
-{
-    if (function) {
-        size_t index = m_floatingFunctions.reverseFind(function);
-        ASSERT(index != kNotFound);
-        m_floatingFunctions.remove(index);
-    }
-    return adoptPtr(function);
-}
-
 CSSParserValue& BisonCSSParser::sinkFloatingValue(CSSParserValue& value)
 {
     if (value.unit == CSSParserValue::Function) {
@@ -700,27 +690,6 @@ void BisonCSSParser::endInvalidRuleHeader()
 void BisonCSSParser::reportError(const CSSParserLocation&, CSSParserError)
 {
     // FIXME: error reporting temporatily disabled.
-}
-
-bool BisonCSSParser::isLoggingErrors()
-{
-    return m_logErrors && !m_ignoreErrors;
-}
-
-void BisonCSSParser::logError(const String& message, const CSSParserLocation& location)
-{
-    unsigned lineNumberInStyleSheet;
-    unsigned columnNumber = 0;
-    if (InspectorInstrumentation::hasFrontends()) {
-        ensureLineEndings();
-        TextPosition tokenPosition = TextPosition::fromOffsetAndLineEndings(location.offset, *m_lineEndings);
-        lineNumberInStyleSheet = tokenPosition.m_line.zeroBasedInt();
-        columnNumber = (lineNumberInStyleSheet ? 0 : m_startPosition.m_column.zeroBasedInt()) + tokenPosition.m_column.zeroBasedInt();
-    } else {
-        lineNumberInStyleSheet = location.lineNumber;
-    }
-    FrameConsole& console = m_styleSheet->singleOwnerDocument()->frame()->console();
-    console.addMessage(ConsoleMessage::create(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1));
 }
 
 StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> > > popKeyframes, bool isPrefixed)

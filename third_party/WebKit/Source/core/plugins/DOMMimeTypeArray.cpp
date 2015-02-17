@@ -57,19 +57,6 @@ PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
     return DOMMimeType::create(data, m_frame, index);
 }
 
-bool DOMMimeTypeArray::canGetItemsForName(const AtomicString& propertyName)
-{
-    PluginData *data = getPluginData();
-    if (!data)
-        return false;
-    const Vector<MimeClassInfo>& mimes = data->mimes();
-    for (unsigned i = 0; i < mimes.size(); ++i) {
-        if (mimes[i].type == propertyName)
-            return true;
-    }
-    return false;
-}
-
 PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
 {
     PluginData *data = getPluginData();

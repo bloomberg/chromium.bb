@@ -21,13 +21,6 @@ AppliedTextDecoration::AppliedTextDecoration(TextDecoration line)
 {
 }
 
-AppliedTextDecoration::AppliedTextDecoration()
-    : m_line(TextDecorationUnderline)
-    , m_style(TextDecorationStyleSolid)
-    , m_color(StyleColor::currentColor())
-{
-}
-
 bool AppliedTextDecoration::operator==(const AppliedTextDecoration& o) const
 {
     return m_color == o.m_color && m_line == o.m_line && m_style == o.m_style;

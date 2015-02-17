@@ -379,13 +379,6 @@ void DataTransfer::writePlainText(const String& text)
     m_dataObject->setData(mimeTypeTextPlain, str);
 }
 
-bool DataTransfer::hasData()
-{
-    ASSERT(isForDragAndDrop());
-
-    return m_dataObject->length() > 0;
-}
-
 void DataTransfer::setAccessPolicy(DataTransferAccessPolicy policy)
 {
     // once you go numb, can never go back

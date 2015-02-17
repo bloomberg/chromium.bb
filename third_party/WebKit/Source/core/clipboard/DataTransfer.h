@@ -94,8 +94,6 @@ public:
     void writeRange(Range*, LocalFrame*);
     void writePlainText(const String&);
 
-    bool hasData();
-
     void setAccessPolicy(DataTransferAccessPolicy);
     bool canReadTypes() const;
     bool canReadData() const;

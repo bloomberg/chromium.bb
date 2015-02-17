@@ -92,10 +92,8 @@ public:
         }
     };
 
-    DocumentMarker();
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash);
     DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
-    DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, PassRefPtrWillBeRawPtr<DocumentMarkerDetails>);
     DocumentMarker(const DocumentMarker&);
 
     MarkerType type() const { return m_type; }

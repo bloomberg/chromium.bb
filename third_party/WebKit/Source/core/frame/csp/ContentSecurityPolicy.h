@@ -136,7 +136,6 @@ public:
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
     bool allowAncestors(LocalFrame*, const KURL&, ReportingStatus = SendReport) const;
-    bool allowChildContextFromSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowWorkerContextFromSource(const KURL&, ReportingStatus = SendReport) const;
 
     bool allowManifestFromSource(const KURL&, ReportingStatus = SendReport) const;
@@ -157,7 +156,6 @@ public:
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 
-    ReferrerPolicy referrerPolicy() const;
     bool didSetReferrerPolicy() const;
 
     void setOverrideAllowInlineStyle(bool);

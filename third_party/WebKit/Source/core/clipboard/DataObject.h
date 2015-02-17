@@ -56,8 +56,6 @@ public:
     static PassRefPtrWillBeRawPtr<DataObject> createFromPasteboard(PasteMode);
     static PassRefPtrWillBeRawPtr<DataObject> create();
 
-    PassRefPtrWillBeRawPtr<DataObject> copy() const;
-
     virtual ~DataObject();
 
     // DataTransferItemList support.
@@ -101,7 +99,6 @@ public:
 
 private:
     DataObject();
-    explicit DataObject(const DataObject&);
 
     PassRefPtrWillBeRawPtr<DataObjectItem> findStringItem(const String& type) const;
     bool internalAddStringItem(PassRefPtrWillBeRawPtr<DataObjectItem>);

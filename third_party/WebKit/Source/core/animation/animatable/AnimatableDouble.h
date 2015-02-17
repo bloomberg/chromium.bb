@@ -65,7 +65,6 @@ private:
     }
     virtual AnimatableType type() const override { return TypeDouble; }
     virtual bool equalTo(const AnimatableValue*) const override;
-    virtual double distanceTo(const AnimatableValue*) const override;
 
     double m_number;
     Constraint m_constraint;

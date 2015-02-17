@@ -71,15 +71,6 @@ AnimationStack::AnimationStack()
 {
 }
 
-bool AnimationStack::affects(CSSPropertyID property) const
-{
-    for (const auto& effect : m_effects) {
-        if (effect->animation() && effect->animation()->affects(property))
-            return true;
-    }
-    return false;
-}
-
 bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
 {
     for (const auto& effect : m_effects) {

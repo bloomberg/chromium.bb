@@ -75,8 +75,6 @@ private:
 
     void pruneTable();
     bool isValid() const;
-    bool isLoading() const;
-    bool isLoaded() const;
 
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<FontFace> > FontFaceList;
 
