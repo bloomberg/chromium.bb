@@ -121,7 +121,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_(extension),
       extension_id_(extension->id()),
       browser_context_(site_instance->GetBrowserContext()),
-      render_view_host_(NULL),
+      render_view_host_(nullptr),
       did_stop_loading_(false),
       document_element_available_(false),
       initial_url_(url),
@@ -163,6 +163,11 @@ ExtensionHost::~ExtensionHost() {
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
                     OnExtensionHostDestroyed(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
+  // Immediately stop observing |host_contents_| because its destruction events
+  // (like DidStopLoading, it turns out) can call back into ExtensionHost
+  // re-entrantly, when anything declared after |host_contents_| has already
+  // been destroyed.
+  content::WebContentsObserver::Observe(nullptr);
 }
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
@@ -170,7 +175,7 @@ content::RenderProcessHost* ExtensionHost::render_process_host() const {
 }
 
 RenderViewHost* ExtensionHost::render_view_host() const {
-  // TODO(mpcomplete): This can be NULL. How do we handle that?
+  // TODO(mpcomplete): This can be null. How do we handle that?
   return render_view_host_;
 }
 
@@ -262,12 +267,12 @@ void ExtensionHost::Observe(int type,
   switch (type) {
     case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
       // The extension object will be deleted after this notification has been
-      // sent. NULL it out so that dirty pointer issues don't arise in cases
+      // sent. Null it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are
       // present.
       if (extension_ == content::Details<UnloadedExtensionInfo>(details)->
           extension) {
-        extension_ = NULL;
+        extension_ = nullptr;
       }
       break;
     default:
@@ -288,7 +293,7 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
   // the same Extension at some point (one with a background page and a
   // popup, for example). When the first ExtensionHost goes away, the extension
   // is unloaded, and any other host that pointed to that extension will have
-  // its pointer to it NULLed out so that any attempt to unload a dirty pointer
+  // its pointer to it null'd out so that any attempt to unload a dirty pointer
   // will be averted.
   if (!extension_)
     return;
@@ -307,24 +312,19 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   did_stop_loading_ = true;
   OnDidStopLoading();
   if (notify) {
-    // Log metrics. It's tempting to CHECK(load_start_) here, but it's possible
-    // to get a DidStopLoading even if we never started loading, in convoluted
-    // notification and observer chains.
-    if (load_start_.get()) {
-      if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
-          UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
-                                     load_start_->Elapsed());
-        } else {
-          UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
-                                     load_start_->Elapsed());
-        }
-      } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
+    CHECK(load_start_.get());
+    if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
+                                   load_start_->Elapsed());
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
                                    load_start_->Elapsed());
       }
+    } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
+                                 load_start_->Elapsed());
     }
-
     // Send the notification last, because it might result in this being
     // deleted.
     content::NotificationService::current()->Notify(
