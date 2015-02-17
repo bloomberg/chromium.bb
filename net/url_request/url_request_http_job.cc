@@ -1016,7 +1016,10 @@ bool URLRequestHttpJob::GetMimeType(std::string* mime_type) const {
   if (!response_info_)
     return false;
 
-  return GetResponseHeaders()->GetMimeType(mime_type);
+  HttpResponseHeaders* headers = GetResponseHeaders();
+  if (!headers)
+    return false;
+  return headers->GetMimeType(mime_type);
 }
 
 bool URLRequestHttpJob::GetCharset(std::string* charset) {
