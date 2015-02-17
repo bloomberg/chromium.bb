@@ -64,6 +64,9 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // the feature via experimental web platform features.
   if (base::FieldTrialList::FindFullName("NavigationTransitions") == "Enabled")
     WebRuntimeFeatures::enableNavigationTransitions(true);
+  // Android won't be able to reliably support non-persistent notifications, the
+  // intended behavior for which is in flux by itself.
+  WebRuntimeFeatures::enableNotificationConstructor(false);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
