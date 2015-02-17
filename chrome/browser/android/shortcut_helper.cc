@@ -17,6 +17,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/android/manifest_icon_selector.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -218,6 +219,8 @@ void ShortcutHelper::AddShortcutUsingManifestIcon() {
   // Stop observing so we don't get destroyed while doing the last steps.
   Observe(NULL);
 
+  RecordAddToHomescreen();
+
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
@@ -229,6 +232,8 @@ void ShortcutHelper::AddShortcutUsingManifestIcon() {
 }
 
 void ShortcutHelper::AddShortcutUsingFavicon() {
+  RecordAddToHomescreen();
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
@@ -335,4 +340,13 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       b_value,
       info.display == content::Manifest::DISPLAY_MODE_STANDALONE,
       info.orientation);
+}
+
+void ShortcutHelper::RecordAddToHomescreen() {
+  // Record that the shortcut has been added, so no banners will be shown
+  // for this app.
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), shortcut_info_.url, shortcut_info_.url.spec(),
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+      base::Time::Now());
 }

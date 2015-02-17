@@ -107,6 +107,8 @@ class ShortcutHelper : public content::WebContentsObserver {
 
   void Destroy();
 
+  void RecordAddToHomescreen();
+
   JavaObjectWeakGlobalRef java_ref_;
 
   ShortcutInfo shortcut_info_;
