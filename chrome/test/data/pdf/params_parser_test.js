@@ -7,66 +7,83 @@ var tests = [
    * Test named destinations.
    */
   function testParamsParser() {
-    var paramsParser = new OpenPDFParamsParser();
-    // Assigning page number for #nameddests.
-    paramsParser.namedDestinations['RU'] = 26;
-    paramsParser.namedDestinations['US'] = 0;
-    paramsParser.namedDestinations['UY'] = 22;
+    var paramsParser = new OpenPDFParamsParser(function(name) {
+      if (name == 'RU')
+        paramsParser.onNamedDestinationReceived(26);
+      else if (name == 'US')
+        paramsParser.onNamedDestinationReceived(0);
+      else if (name == 'UY')
+        paramsParser.onNamedDestinationReceived(22);
+      else
+        paramsParser.onNamedDestinationReceived(-1);
+    });
 
     var url = "http://xyz.pdf";
 
     // Checking #nameddest.
-    var urlParams = paramsParser.getViewportFromUrlParams(url + "#RU");
-    chrome.test.assertEq(urlParams.page, 26);
+    paramsParser.getViewportFromUrlParams(
+        url + "#RU", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 26);
+    });
 
     // Checking #nameddest=name.
-    urlParams = paramsParser.getViewportFromUrlParams(url + "#nameddest=US");
-    chrome.test.assertEq(urlParams.page, 0);
+    paramsParser.getViewportFromUrlParams(
+        url + "#nameddest=US", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 0);
+    });
 
     // Checking #page=pagenum nameddest.The document first page has a pagenum
     // value of 1.
-    urlParams = paramsParser.getViewportFromUrlParams(url + "#page=6");
-    chrome.test.assertEq(urlParams.page, 5);
+    paramsParser.getViewportFromUrlParams(
+        url + "#page=6", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 5);
+    });
 
     // Checking #zoom=scale.
-    urlParams = paramsParser.getViewportFromUrlParams(url + "#zoom=200");
-    chrome.test.assertEq(urlParams.zoom, 2);
+    paramsParser.getViewportFromUrlParams(
+        url + "#zoom=200", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.zoom, 2);
+    });
 
     // Checking #zoom=scale,left,top.
-    urlParams = paramsParser.getViewportFromUrlParams(url +
-        "#zoom=200,100,200");
-    chrome.test.assertEq(urlParams.zoom, 2);
-    chrome.test.assertEq(urlParams.position.x, 100);
-    chrome.test.assertEq(urlParams.position.y, 200);
+    paramsParser.getViewportFromUrlParams(
+        url + "#zoom=200,100,200", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.zoom, 2);
+          chrome.test.assertEq(viewportPosition.position.x, 100);
+          chrome.test.assertEq(viewportPosition.position.y, 200);
+    });
 
     // Checking #nameddest=name and zoom=scale.
-    urlParams = paramsParser.getViewportFromUrlParams(url +
-        "#nameddest=UY&zoom=150");
-    chrome.test.assertEq(urlParams.page, 22);
-    chrome.test.assertEq(urlParams.zoom, 1.5);
+    paramsParser.getViewportFromUrlParams(
+        url + "#nameddest=UY&zoom=150", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 22);
+          chrome.test.assertEq(viewportPosition.zoom, 1.5);
+    });
 
     // Checking #page=pagenum and zoom=scale.
-    urlParams = paramsParser.getViewportFromUrlParams(url +
-        "#page=2&zoom=250");
-    chrome.test.assertEq(urlParams.page, 1);
-    chrome.test.assertEq(urlParams.zoom, 2.5);
+    paramsParser.getViewportFromUrlParams(
+        url + "#page=2&zoom=250", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 1);
+          chrome.test.assertEq(viewportPosition.zoom, 2.5);
+    });
 
     // Checking #nameddest=name and zoom=scale,left,top.
-    urlParams = paramsParser.getViewportFromUrlParams(url +
-        "#nameddest=UY&zoom=150,100,200");
-    chrome.test.assertEq(urlParams.page, 22);
-    chrome.test.assertEq(urlParams.zoom, 1.5);
-    chrome.test.assertEq(urlParams.position.x, 100);
-    chrome.test.assertEq(urlParams.position.y, 200);
+    paramsParser.getViewportFromUrlParams(
+        url + "#nameddest=UY&zoom=150,100,200", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 22);
+          chrome.test.assertEq(viewportPosition.zoom, 1.5);
+          chrome.test.assertEq(viewportPosition.position.x, 100);
+          chrome.test.assertEq(viewportPosition.position.y, 200);
+    });
 
     // Checking #page=pagenum and zoom=scale,left,top.
-    urlParams = paramsParser.getViewportFromUrlParams(url +
-        "#page=2&zoom=250,100,200");
-    chrome.test.assertEq(urlParams.page, 1);
-    chrome.test.assertEq(urlParams.zoom, 2.5);
-    chrome.test.assertEq(urlParams.position.x, 100);
-    chrome.test.assertEq(urlParams.position.y, 200);
-
+    paramsParser.getViewportFromUrlParams(
+        url + "#page=2&zoom=250,100,200", function(viewportPosition) {
+          chrome.test.assertEq(viewportPosition.page, 1);
+          chrome.test.assertEq(viewportPosition.zoom, 2.5);
+          chrome.test.assertEq(viewportPosition.position.x, 100);
+          chrome.test.assertEq(viewportPosition.position.y, 200);
+    });
     chrome.test.succeed();
   }
 ];

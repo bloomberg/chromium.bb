@@ -7,10 +7,12 @@
 /**
  * Creates a new OpenPDFParamsParser. This parses the open pdf parameters
  * passed in the url to set initial viewport settings for opening the pdf.
+ * @param {Object} getNamedDestinationsFunction The function called to fetch
+ *     the page number for a named destination.
  */
-function OpenPDFParamsParser() {
-  // A dictionary of all the named destinations in the PDF.
-  this.namedDestinations = {};
+function OpenPDFParamsParser(getNamedDestinationsFunction) {
+  this.outstandingRequests_ = [];
+  this.getNamedDestinationsFunction_ = getNamedDestinationsFunction;
 }
 
 OpenPDFParamsParser.prototype = {
@@ -52,22 +54,28 @@ OpenPDFParamsParser.prototype = {
    * See http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/
    * pdfs/pdf_open_parameters.pdf for details.
    * @param {string} url that needs to be parsed.
-   * @return {Object} A dictionary containing the viewport which should be
-   * displayed based on the URL.
+   * @param {Function} callback function to be called with viewport info.
    */
-  getViewportFromUrlParams: function(url) {
+  getViewportFromUrlParams: function(url, callback) {
     var viewportPosition = {};
+    viewportPosition['url'] = url;
     var paramIndex = url.search('#');
-    if (paramIndex == -1)
-      return viewportPosition;
+    if (paramIndex == -1) {
+      callback(viewportPosition);
+      return;
+    }
 
     var paramTokens = url.substring(paramIndex + 1).split('&');
     if ((paramTokens.length == 1) && (paramTokens[0].search('=') == -1)) {
       // Handle the case of http://foo.com/bar#NAMEDDEST. This is not
-      // explicitlymentioned except by example in the Adobe
+      // explicitly mentioned except by example in the Adobe
       // "PDF Open Parameters" document.
-      viewportPosition['page'] = this.namedDestinations[paramTokens[0]];
-      return viewportPosition;
+      this.outstandingRequests_.push({
+        callback: callback,
+        viewportPosition: viewportPosition
+      });
+      this.getNamedDestinationsFunction_(paramTokens[0]);
+      return;
     }
 
     var paramsDictionary = {};
@@ -76,12 +84,6 @@ OpenPDFParamsParser.prototype = {
       if (keyValueSplit.length != 2)
         continue;
       paramsDictionary[keyValueSplit[0]] = keyValueSplit[1];
-    }
-
-    if ('nameddest' in paramsDictionary) {
-      var page = this.namedDestinations[paramsDictionary['nameddest']];
-      if (page != undefined)
-        viewportPosition['page'] = page;
     }
 
     if ('page' in paramsDictionary) {
@@ -94,6 +96,28 @@ OpenPDFParamsParser.prototype = {
     if ('zoom' in paramsDictionary)
       this.parseZoomParam_(paramsDictionary['zoom'], viewportPosition);
 
-    return viewportPosition;
-  }
+    if (viewportPosition.page === undefined &&
+        'nameddest' in paramsDictionary) {
+      this.outstandingRequests_.push({
+        callback: callback,
+        viewportPosition: viewportPosition
+      });
+      this.getNamedDestinationsFunction_(paramsDictionary['nameddest']);
+    } else {
+      callback(viewportPosition);
+    }
+  },
+
+  /**
+   * This is called when a named destination is received and the page number
+   * corresponding to the request for which a named destination is passed.
+   * @param {number} pageNumber The page corresponding to the named destination
+   *    requested.
+   */
+  onNamedDestinationReceived: function(pageNumber) {
+    var outstandingRequest = this.outstandingRequests_.shift();
+    if (pageNumber != -1)
+      outstandingRequest.viewportPosition.page = pageNumber;
+    outstandingRequest.callback(outstandingRequest.viewportPosition);
+  },
 };

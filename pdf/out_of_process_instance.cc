@@ -140,9 +140,12 @@ const char kJSGetSelectedTextType[] = "getSelectedText";
 const char kJSGetSelectedTextReplyType[] = "getSelectedTextReply";
 const char kJSSelectedText[] = "selectedText";
 
-// List of named destinations (Plugin -> Page)
-const char kJSSetNamedDestinationsType[] = "setNamedDestinations";
-const char kJSNamedDestinations[] = "namedDestinations";
+// Get the named destination with the given name (Page -> Plugin)
+const char KJSGetNamedDestinationType[] = "getNamedDestination";
+const char KJSGetNamedDestination[] = "namedDestination";
+// Reply with the page number of the named destination (Plugin -> Page)
+const char kJSGetNamedDestinationReplyType[] = "getNamedDestinationReply";
+const char kJSNamedDestinationPageNumber[] = "pageNumber";
 
 // Selecting text in document (Plugin -> Page)
 const char kJSSetIsSelectingType[] = "setIsSelecting";
@@ -479,6 +482,15 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     pp::VarDictionary reply;
     reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
     reply.Set(pp::Var(kJSSelectedText), selected_text);
+    PostMessage(reply);
+  } else if (type == KJSGetNamedDestinationType &&
+             dict.Get(pp::Var(KJSGetNamedDestination)).is_string()) {
+    int page_number = engine_->GetNamedDestinationPage(
+        dict.Get(pp::Var(KJSGetNamedDestination)).AsString());
+    pp::VarDictionary reply;
+    reply.Set(pp::Var(kType), pp::Var(kJSGetNamedDestinationReplyType));
+    if (page_number >= 0)
+      reply.Set(pp::Var(kJSNamedDestinationPageNumber), page_number);
     PostMessage(reply);
   } else {
     NOTREACHED();
@@ -1094,14 +1106,6 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
     AppendBlankPrintPreviewPages();
     OnGeometryChanged(0, 0);
   }
-
-  pp::VarDictionary named_destinations_message;
-  pp::VarDictionary named_destinations = engine_->GetNamedDestinations();
-  named_destinations_message.Set(pp::Var(kType),
-                                 pp::Var(kJSSetNamedDestinationsType));
-  named_destinations_message.Set(pp::Var(kJSNamedDestinations),
-                                 pp::Var(named_destinations));
-  PostMessage(named_destinations_message);
 
   pp::VarDictionary bookmarks_message;
   bookmarks_message.Set(pp::Var(kType), pp::Var(kJSBookmarksType));

@@ -74,12 +74,22 @@ Navigator.prototype = {
     if (newTab) {
       this.navigateInNewTabCallback_(url);
     } else {
-      var pageNumber =
-          this.paramsParser_.getViewportFromUrlParams(url).page;
-      if (pageNumber != undefined)
-        this.viewport_.goToPage(pageNumber);
-      else
-        this.navigateInCurrentTabCallback_(url);
+      this.paramsParser_.getViewportFromUrlParams(
+          url, this.onViewportReceived_.bind(this));
     }
+  },
+
+   /**
+   * @private
+   * Called when the viewport position is received.
+   * @param {Object} viewportPosition Dictionary containing the viewport
+   *    position.
+   */
+  onViewportReceived_: function(viewportPosition) {
+    var pageNumber = viewportPosition.page;
+    if (pageNumber != undefined)
+      this.viewport_.goToPage(pageNumber);
+    else
+      this.navigateInCurrentTabCallback_(viewportPosition['url']);
   }
 };

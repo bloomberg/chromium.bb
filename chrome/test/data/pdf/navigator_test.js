@@ -34,9 +34,14 @@ var tests = [
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
                                 function() {}, function() {}, 0, 0);
 
-    var paramsParser = new OpenPDFParamsParser();
-    paramsParser.namedDestinations['US'] = 0;
-    paramsParser.namedDestinations['UY'] = 2;
+    var paramsParser = new OpenPDFParamsParser(function(name) {
+      if (name == 'US')
+        paramsParser.onNamedDestinationReceived(0);
+      else if (name == 'UY')
+        paramsParser.onNamedDestinationReceived(2);
+      else
+        paramsParser.onNamedDestinationReceived(-1);
+    });
     var url = "http://xyz.pdf";
 
     var navigateInCurrentTabCallback = new NavigateInCurrentTabCallback();

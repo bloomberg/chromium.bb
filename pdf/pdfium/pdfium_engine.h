@@ -82,7 +82,6 @@ class PDFiumEngine : public PDFEngine,
   virtual int GetNumberOfPages();
   virtual pp::VarArray GetBookmarks();
   virtual int GetNamedDestinationPage(const std::string& destination);
-  virtual pp::VarDictionary GetNamedDestinations();
   virtual int GetFirstVisiblePage();
   virtual int GetMostVisiblePage();
   virtual pp::Rect GetPageRect(int index);

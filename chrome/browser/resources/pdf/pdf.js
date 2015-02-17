@@ -190,10 +190,11 @@ function PDFViewer(streamDetails) {
   }
 
   // Parse open pdf parameters.
-  this.paramsParser_ = new OpenPDFParamsParser();
+  this.paramsParser_ =
+      new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
   this.navigator_ = new Navigator(this.streamDetails_.originalUrl,
-      this.viewport_, this.paramsParser_, onNavigateInCurrentTab,
-      onNavigateInNewTab);
+                                  this.viewport_, this.paramsParser_,
+                                  onNavigateInCurrentTab, onNavigateInNewTab);
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
 }
@@ -350,35 +351,54 @@ PDFViewer.prototype = {
    * @private
    * Notify the plugin to print.
    */
-  print_: function() { this.plugin_.postMessage({type: 'print'}); },
+  print_: function() {
+    this.plugin_.postMessage({
+      type: 'print'
+    });
+  },
 
   /**
    * @private
    * Notify the plugin to save.
    */
-  save_: function() { this.plugin_.postMessage({type: 'save'}); },
+  save_: function() {
+    this.plugin_.postMessage({
+      type: 'save'
+    });
+  },
+
+  /**
+   * Fetches the page number corresponding to the given named destination from
+   * the plugin.
+   * @param {string} name The namedDestination to fetch page number from plugin.
+   */
+  getNamedDestination_: function(name) {
+    this.plugin_.postMessage({
+      type: 'getNamedDestination',
+      namedDestination: name
+    });
+  },
 
   /**
    * @private
    * Handle open pdf parameters. This function updates the viewport as per
    * the parameters mentioned in the url while opening pdf. The order is
    * important as later actions can override the effects of previous actions.
+   * @param {Object} viewportPosition The initial position of the viewport to be
+   *     displayed.
    */
-  handleURLParams_: function() {
-    var urlParams =
-        this.paramsParser_.getViewportFromUrlParams(
-            this.streamDetails_.originalUrl);
-    if (urlParams.page)
-      this.viewport_.goToPage(urlParams.page);
-    if (urlParams.position) {
+  handleURLParams_: function(viewportPosition) {
+    if (viewportPosition.page != undefined)
+      this.viewport_.goToPage(viewportPosition.page);
+    if (viewportPosition.position) {
       // Make sure we don't cancel effect of page parameter.
       this.viewport_.position = {
-        x: this.viewport_.position.x + urlParams.position.x,
-        y: this.viewport_.position.y + urlParams.position.y
+        x: this.viewport_.position.x + viewportPosition.position.x,
+        y: this.viewport_.position.y + viewportPosition.position.y
       };
     }
-    if (urlParams.zoom)
-      this.viewport_.setZoom(urlParams.zoom);
+    if (viewportPosition.zoom)
+      this.viewport_.setZoom(viewportPosition.zoom);
   },
 
   /**
@@ -406,7 +426,8 @@ PDFViewer.prototype = {
       // Document load complete.
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
-      this.handleURLParams_();
+      this.paramsParser_.getViewportFromUrlParams(
+          this.streamDetails_.originalUrl, this.handleURLParams_.bind(this));
       this.loaded_ = true;
       this.sendScriptingMessage_({
         type: 'documentLoaded'
@@ -486,9 +507,6 @@ PDFViewer.prototype = {
         else
           this.navigator_.navigate(message.data.url, message.data.newTab);
         break;
-      case 'setNamedDestinations':
-        this.paramsParser_.namedDestinations = message.data.namedDestinations;
-        break;
       case 'setScrollPosition':
         var position = this.viewport_.position;
         if (message.data.x !== undefined)
@@ -518,6 +536,10 @@ PDFViewer.prototype = {
         break;
       case 'setIsSelecting':
         this.viewportScroller_.setEnableScrolling(message.data.isSelecting);
+        break;
+      case 'getNamedDestinationReply':
+        this.paramsParser_.onNamedDestinationReceived(
+            message.data.pageNumber);
         break;
     }
   },
