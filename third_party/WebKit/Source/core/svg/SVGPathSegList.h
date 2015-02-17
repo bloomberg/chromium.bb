@@ -146,7 +146,7 @@ public:
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGPathSegList(SVGPathElement*);

@@ -56,7 +56,7 @@ SVGFEImageElement::~SVGFEImageElement()
 #endif
 }
 
-void SVGFEImageElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEImageElement)
 {
     visitor->trace(m_preserveAspectRatio);
     SVGFilterPrimitiveStandardAttributes::trace(visitor);

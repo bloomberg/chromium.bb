@@ -36,7 +36,7 @@ public:
         SVG_UNIT_TYPE_OBJECTBOUNDINGBOX     = 2
     };
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     SVGUnitTypes(); // No instantiation.

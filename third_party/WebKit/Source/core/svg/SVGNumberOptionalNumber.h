@@ -62,7 +62,7 @@ public:
     PassRefPtrWillBeRawPtr<SVGNumber> firstNumber() { return m_firstNumber; }
     PassRefPtrWillBeRawPtr<SVGNumber> secondNumber() { return m_secondNumber; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGNumberOptionalNumber(PassRefPtrWillBeRawPtr<SVGNumber> firstNumber, PassRefPtrWillBeRawPtr<SVGNumber> secondNumber);

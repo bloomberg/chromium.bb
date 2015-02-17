@@ -40,7 +40,7 @@ SVGPathBlender::SVGPathBlender(SVGPathSource* fromSource, SVGPathSource* toSourc
     ASSERT(m_consumer);
 }
 
-void SVGPathBlender::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPathBlender)
 {
     visitor->trace(m_fromSource);
     visitor->trace(m_toSource);

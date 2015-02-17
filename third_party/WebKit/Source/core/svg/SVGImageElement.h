@@ -38,7 +38,7 @@ class SVGImageElement final : public SVGGraphicsElement,
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 public:
     DECLARE_NODE_FACTORY(SVGImageElement);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool currentFrameHasSingleSecurityOrigin() const;
 

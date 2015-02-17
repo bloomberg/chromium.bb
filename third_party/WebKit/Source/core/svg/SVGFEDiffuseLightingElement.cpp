@@ -42,7 +42,7 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& docume
     addToPropertyMap(m_in1);
 }
 
-void SVGFEDiffuseLightingElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEDiffuseLightingElement)
 {
     visitor->trace(m_diffuseConstant);
     visitor->trace(m_surfaceScale);

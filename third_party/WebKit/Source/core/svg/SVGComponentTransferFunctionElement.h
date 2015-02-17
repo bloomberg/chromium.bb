@@ -45,7 +45,7 @@ public:
     SVGAnimatedNumber* offset() { return m_offset.get(); }
     SVGAnimatedEnumeration<ComponentTransferType>* type() { return m_type.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGComponentTransferFunctionElement(const QualifiedName&, Document&);

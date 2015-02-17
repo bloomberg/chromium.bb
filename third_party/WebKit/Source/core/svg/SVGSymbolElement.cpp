@@ -33,7 +33,7 @@ inline SVGSymbolElement::SVGSymbolElement(Document& document)
     SVGFitToViewBox::initialize(this);
 }
 
-void SVGSymbolElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGSymbolElement)
 {
     SVGElement::trace(visitor);
     SVGFitToViewBox::trace(visitor);

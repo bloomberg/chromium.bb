@@ -62,7 +62,7 @@ public:
     PassRefPtrWillBeRawPtr<SVGInteger> firstInteger() { return m_firstInteger; }
     PassRefPtrWillBeRawPtr<SVGInteger> secondInteger() { return m_secondInteger; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGIntegerOptionalInteger(PassRefPtrWillBeRawPtr<SVGInteger> firstInteger, PassRefPtrWillBeRawPtr<SVGInteger> secondInteger);

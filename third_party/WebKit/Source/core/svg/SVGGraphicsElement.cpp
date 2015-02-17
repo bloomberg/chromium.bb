@@ -45,7 +45,7 @@ SVGGraphicsElement::~SVGGraphicsElement()
 {
 }
 
-void SVGGraphicsElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGGraphicsElement)
 {
     visitor->trace(m_transform);
     SVGElement::trace(visitor);

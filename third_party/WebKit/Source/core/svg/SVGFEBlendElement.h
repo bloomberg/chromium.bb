@@ -58,7 +58,7 @@ public:
     SVGAnimatedString* in2() { return m_in2.get(); }
     SVGAnimatedEnumeration<Mode>* mode() { return m_mode.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGFEBlendElement(Document&);

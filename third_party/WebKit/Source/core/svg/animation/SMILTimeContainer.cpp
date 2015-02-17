@@ -538,7 +538,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     return earliestFireTime;
 }
 
-void SMILTimeContainer::trace(Visitor* visitor)
+DEFINE_TRACE(SMILTimeContainer)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_scheduledAnimations);

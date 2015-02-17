@@ -39,7 +39,7 @@ inline SVGLineElement::SVGLineElement(Document& document)
     addToPropertyMap(m_y2);
 }
 
-void SVGLineElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGLineElement)
 {
     visitor->trace(m_x1);
     visitor->trace(m_y1);

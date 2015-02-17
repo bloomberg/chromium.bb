@@ -38,7 +38,7 @@ inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
     addToPropertyMap(m_in1);
 }
 
-void SVGFEGaussianBlurElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEGaussianBlurElement)
 {
     visitor->trace(m_stdDeviation);
     visitor->trace(m_in1);

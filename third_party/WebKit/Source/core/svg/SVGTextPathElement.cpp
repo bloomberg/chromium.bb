@@ -69,7 +69,7 @@ SVGTextPathElement::~SVGTextPathElement()
 #endif
 }
 
-void SVGTextPathElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGTextPathElement)
 {
     visitor->trace(m_startOffset);
     visitor->trace(m_method);

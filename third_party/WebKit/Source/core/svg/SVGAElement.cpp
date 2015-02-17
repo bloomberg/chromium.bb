@@ -63,7 +63,7 @@ inline SVGAElement::SVGAElement(Document& document)
     addToPropertyMap(m_svgTarget);
 }
 
-void SVGAElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAElement)
 {
     visitor->trace(m_svgTarget);
     SVGGraphicsElement::trace(visitor);

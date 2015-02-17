@@ -44,7 +44,7 @@ SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagNam
     addToPropertyMap(m_rotate);
 }
 
-void SVGTextPositioningElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGTextPositioningElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

@@ -43,7 +43,7 @@ inline SVGRectElement::SVGRectElement(Document& document)
     addToPropertyMap(m_ry);
 }
 
-void SVGRectElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGRectElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

@@ -54,7 +54,7 @@ SVGMatrixTearOff::~SVGMatrixTearOff()
 {
 }
 
-void SVGMatrixTearOff::trace(Visitor* visitor)
+DEFINE_TRACE(SVGMatrixTearOff)
 {
     visitor->trace(m_contextTransform);
 }

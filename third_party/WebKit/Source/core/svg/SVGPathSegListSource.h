@@ -34,7 +34,7 @@ class SVGPathSegListSource final : public SVGPathSource {
 public:
     SVGPathSegListSource(SVGPathSegList::ConstIterator, SVGPathSegList::ConstIterator);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual bool hasMoreData() const override;

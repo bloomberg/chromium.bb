@@ -56,7 +56,7 @@ public:
     SVGAnimatedNumber* firstNumber() { return m_firstNumber.get(); }
     SVGAnimatedNumber* secondNumber() { return m_secondNumber.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGAnimatedNumberOptionalNumber(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue);

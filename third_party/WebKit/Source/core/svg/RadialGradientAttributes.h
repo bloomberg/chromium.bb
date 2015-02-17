@@ -66,7 +66,7 @@ public:
     bool hasFy() const { return m_fySet; }
     bool hasFr() const { return m_frSet; }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_cx);
         visitor->trace(m_cy);
@@ -105,7 +105,7 @@ public:
 
     RadialGradientAttributes& attributes() { return m_attributes; }
     void set(const RadialGradientAttributes& attributes) { m_attributes = attributes; }
-    void trace(Visitor* visitor) { visitor->trace(m_attributes); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_attributes); }
 
 private:
     RadialGradientAttributesWrapper()

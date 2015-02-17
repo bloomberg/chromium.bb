@@ -188,7 +188,7 @@ public:
 
     void invalidateInstances();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     static const AtomicString& eventParameterName();
 

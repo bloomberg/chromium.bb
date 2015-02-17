@@ -42,7 +42,7 @@ class SVGFilterElement final : public SVGElement,
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGFilterElement);
 public:
     DECLARE_NODE_FACTORY(SVGFilterElement);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void setFilterRes(unsigned x, unsigned y);
     void addClient(Node*);

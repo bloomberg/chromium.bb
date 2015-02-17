@@ -47,7 +47,7 @@ public:
     virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) = 0;
     virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

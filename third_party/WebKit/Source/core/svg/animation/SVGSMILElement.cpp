@@ -56,7 +56,7 @@ public:
 
     int repeat() const { return m_repeat; }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         Event::trace(visitor);
     }
@@ -1350,12 +1350,12 @@ SVGSMILElement::Condition::~Condition()
 {
 }
 
-void SVGSMILElement::Condition::trace(Visitor* visitor)
+DEFINE_TRACE(SVGSMILElement::Condition)
 {
     visitor->trace(m_syncBase);
 }
 
-void SVGSMILElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGSMILElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_targetElement);

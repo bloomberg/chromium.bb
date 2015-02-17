@@ -99,7 +99,7 @@ inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     addToPropertyMap(m_mode);
 }
 
-void SVGFEBlendElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEBlendElement)
 {
     visitor->trace(m_in1);
     visitor->trace(m_in2);

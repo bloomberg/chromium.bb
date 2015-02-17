@@ -48,7 +48,7 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
 }
 
-void SVGViewSpec::trace(Visitor* visitor)
+DEFINE_TRACE(SVGViewSpec)
 {
     visitor->trace(m_contextElement);
     visitor->trace(m_transform);

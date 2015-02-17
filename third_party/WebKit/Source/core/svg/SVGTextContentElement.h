@@ -65,7 +65,7 @@ public:
     bool textLengthIsSpecifiedByUser() { return m_textLengthIsSpecifiedByUser; }
     SVGAnimatedEnumeration<SVGLengthAdjustType>* lengthAdjust() { return m_lengthAdjust.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGTextContentElement(const QualifiedName&, Document&);

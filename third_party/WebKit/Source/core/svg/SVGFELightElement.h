@@ -61,7 +61,7 @@ public:
     SVGAnimatedNumber* limitingConeAngle() { return m_limitingConeAngle.get(); }
     const SVGAnimatedNumber* limitingConeAngle() const { return m_limitingConeAngle.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGFELightElement(const QualifiedName&, Document&);

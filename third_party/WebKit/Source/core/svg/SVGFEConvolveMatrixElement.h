@@ -53,7 +53,7 @@ public:
     SVGAnimatedInteger* targetX() { return m_targetX.get(); }
     SVGAnimatedInteger* targetY() { return m_targetY.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGFEConvolveMatrixElement(Document&);

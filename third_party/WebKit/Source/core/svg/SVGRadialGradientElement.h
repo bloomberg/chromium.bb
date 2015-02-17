@@ -44,7 +44,7 @@ public:
     SVGAnimatedLength* fy() const { return m_fy.get(); }
     SVGAnimatedLength* fr() const { return m_fr.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGRadialGradientElement(Document&);

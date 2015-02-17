@@ -361,7 +361,7 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const
     return rootElement(*m_document);
 }
 
-void SVGDocumentExtensions::trace(Visitor* visitor)
+DEFINE_TRACE(SVGDocumentExtensions)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);

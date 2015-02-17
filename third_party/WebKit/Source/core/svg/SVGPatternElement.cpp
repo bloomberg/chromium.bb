@@ -53,7 +53,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_patternContentUnits);
 }
 
-void SVGPatternElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPatternElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

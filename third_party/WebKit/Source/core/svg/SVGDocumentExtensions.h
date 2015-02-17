@@ -75,7 +75,7 @@ public:
     static SVGSVGElement* rootElement(const Document&);
     SVGSVGElement* rootElement() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<Document> m_document;

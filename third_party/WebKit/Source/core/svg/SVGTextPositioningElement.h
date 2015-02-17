@@ -40,7 +40,7 @@ public:
     SVGAnimatedLengthList* dy() { return m_dy.get(); }
     SVGAnimatedNumberList* rotate() { return m_rotate.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGTextPositioningElement(const QualifiedName&, Document&);

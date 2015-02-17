@@ -54,7 +54,7 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& docume
     addToPropertyMap(m_yChannelSelector);
 }
 
-void SVGFEDisplacementMapElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEDisplacementMapElement)
 {
     visitor->trace(m_scale);
     visitor->trace(m_in1);

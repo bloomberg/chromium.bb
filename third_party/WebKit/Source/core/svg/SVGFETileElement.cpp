@@ -35,7 +35,7 @@ inline SVGFETileElement::SVGFETileElement(Document& document)
     addToPropertyMap(m_in1);
 }
 
-void SVGFETileElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFETileElement)
 {
     visitor->trace(m_in1);
     SVGFilterPrimitiveStandardAttributes::trace(visitor);

@@ -40,7 +40,7 @@ void SVGURIReference::initialize(SVGElement* element)
     element->addToPropertyMap(m_href);
 }
 
-void SVGURIReference::trace(Visitor* visitor)
+DEFINE_TRACE(SVGURIReference)
 {
     visitor->trace(m_href);
 }

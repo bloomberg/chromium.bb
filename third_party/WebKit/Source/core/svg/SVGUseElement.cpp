@@ -79,7 +79,7 @@ SVGUseElement::~SVGUseElement()
 #endif
 }
 
-void SVGUseElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGUseElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

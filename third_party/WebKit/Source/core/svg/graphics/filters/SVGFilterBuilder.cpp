@@ -32,7 +32,7 @@ SVGFilterBuilder::SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGr
     addBuiltinEffects();
 }
 
-void SVGFilterBuilder::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFilterBuilder)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_builtinEffects);

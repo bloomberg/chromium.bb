@@ -33,7 +33,7 @@ inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     addToPropertyMap(m_in1);
 }
 
-void SVGFEMergeNodeElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEMergeNodeElement)
 {
     visitor->trace(m_in1);
     SVGElement::trace(visitor);

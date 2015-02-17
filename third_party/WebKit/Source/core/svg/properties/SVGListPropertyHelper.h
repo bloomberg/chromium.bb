@@ -153,7 +153,7 @@ public:
     PassRefPtrWillBeRawPtr<ItemPropertyType> appendItem(PassRefPtrWillBeRawPtr<ItemPropertyType>);
     PassRefPtrWillBeRawPtr<ItemPropertyType> replaceItem(PassRefPtrWillBeRawPtr<ItemPropertyType>, size_t, ExceptionState&);
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_values);
         SVGPropertyHelper<Derived>::trace(visitor);

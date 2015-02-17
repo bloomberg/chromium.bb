@@ -32,7 +32,7 @@ static const float gOneOverThree = 1 / 3.f;
 
 namespace blink {
 
-void SVGPathParser::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPathParser)
 {
     visitor->trace(m_source);
     visitor->trace(m_consumer);

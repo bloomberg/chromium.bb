@@ -44,7 +44,7 @@ public:
     SVGAnimatedString* in2() { return m_in2.get(); }
     SVGAnimatedEnumeration<CompositeOperationType>* svgOperator() { return m_svgOperator.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGFECompositeElement(Document&);

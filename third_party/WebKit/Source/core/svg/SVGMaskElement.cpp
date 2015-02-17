@@ -56,7 +56,7 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
     addToPropertyMap(m_maskContentUnits);
 }
 
-void SVGMaskElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGMaskElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

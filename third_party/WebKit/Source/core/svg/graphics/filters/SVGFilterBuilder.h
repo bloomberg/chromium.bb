@@ -62,7 +62,7 @@ public:
     void clearEffects();
     void clearResultsRecursive(FilterEffect*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha);

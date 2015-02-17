@@ -55,7 +55,7 @@ public:
         m_parentIntegerOptionalInteger = numberOptionalInteger;
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGInteger> initialValue)

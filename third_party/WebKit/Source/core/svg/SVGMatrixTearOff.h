@@ -89,7 +89,7 @@ public:
 
     const AffineTransform& value() const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGMatrixTearOff(const AffineTransform&);

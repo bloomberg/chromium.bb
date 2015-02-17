@@ -122,7 +122,7 @@ public:
     static PassRefPtrWillBeRawPtr<SVGPathSeg> create() { ASSERT_NOT_REACHED(); return nullptr; }
     PassRefPtrWillBeRawPtr<SVGPathSeg> clone() { ASSERT_NOT_REACHED(); return nullptr; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     void commitChange();

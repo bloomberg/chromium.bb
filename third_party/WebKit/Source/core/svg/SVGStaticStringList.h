@@ -63,7 +63,7 @@ public:
     SVGStringList* value() { return m_value.get(); }
     SVGStringListTearOff* tearOff();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SVGStaticStringList(SVGElement*, const QualifiedName&);

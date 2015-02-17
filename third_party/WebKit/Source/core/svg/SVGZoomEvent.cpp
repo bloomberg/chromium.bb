@@ -70,7 +70,7 @@ const AtomicString& SVGZoomEvent::interfaceName() const
     return EventNames::SVGZoomEvent;
 }
 
-void SVGZoomEvent::trace(Visitor* visitor)
+DEFINE_TRACE(SVGZoomEvent)
 {
     UIEvent::trace(visitor);
 }

@@ -55,7 +55,7 @@ public:
         m_parentNumberOptionalNumber = numberOptionalNumber;
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGNumber> initialValue)

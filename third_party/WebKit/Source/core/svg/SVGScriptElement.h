@@ -48,7 +48,7 @@ public:
     virtual bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);

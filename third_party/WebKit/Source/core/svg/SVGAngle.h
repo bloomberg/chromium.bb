@@ -53,7 +53,7 @@ public:
     virtual void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtrWillBeRawPtr<SVGPropertyBase>, PassRefPtrWillBeRawPtr<SVGPropertyBase>, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
     virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SVGMarkerOrientEnumeration(SVGAngle*);
@@ -111,7 +111,7 @@ public:
 
     static AnimatedPropertyType classType() { return AnimatedAngle; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SVGAngle();

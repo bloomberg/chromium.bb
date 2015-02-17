@@ -59,7 +59,7 @@ public:
     void setZoomAndPan(unsigned short value) { } // read only
     void setZoomAndPan(unsigned short value, ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     SVGSVGElement* contextElement() { return m_contextElement.get(); }
 

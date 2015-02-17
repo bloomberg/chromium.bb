@@ -35,7 +35,7 @@ SVGAnimatedNumberOptionalNumber::SVGAnimatedNumberOptionalNumber(SVGElement* con
     m_secondNumber->setParentOptionalNumber(this);
 }
 
-void SVGAnimatedNumberOptionalNumber::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAnimatedNumberOptionalNumber)
 {
     visitor->trace(m_firstNumber);
     visitor->trace(m_secondNumber);

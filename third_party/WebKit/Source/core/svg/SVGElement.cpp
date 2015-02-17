@@ -1180,7 +1180,7 @@ void SVGElement::removeAllOutgoingReferences()
     outgoingReferences.clear();
 }
 
-void SVGElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_elementsWithRelativeLengths);

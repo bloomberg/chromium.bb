@@ -103,7 +103,7 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
         client->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
 }
 
-void SVGCursorElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGCursorElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_x);

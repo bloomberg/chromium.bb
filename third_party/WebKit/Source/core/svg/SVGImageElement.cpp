@@ -51,7 +51,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGImageElement)
 
-void SVGImageElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGImageElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

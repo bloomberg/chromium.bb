@@ -56,7 +56,7 @@ FEImage::FEImage(Filter* filter, TreeScope& treeScope, const String& href, PassR
 {
 }
 
-void FEImage::trace(Visitor* visitor)
+DEFINE_TRACE(FEImage)
 {
     visitor->trace(m_preserveAspectRatio);
     FilterEffect::trace(visitor);

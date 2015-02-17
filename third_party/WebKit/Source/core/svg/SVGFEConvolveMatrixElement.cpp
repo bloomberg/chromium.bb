@@ -96,7 +96,7 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     addToPropertyMap(m_targetY);
 }
 
-void SVGFEConvolveMatrixElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEConvolveMatrixElement)
 {
     visitor->trace(m_bias);
     visitor->trace(m_divisor);

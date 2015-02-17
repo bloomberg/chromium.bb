@@ -80,7 +80,7 @@ public:
 
     AffineTransform* animateMotionTransform();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void processWeakMembers(Visitor*);
 
 private:

@@ -251,7 +251,7 @@ float SVGAnimatedTypeAnimator::calculateDistance(const String& fromString, const
     return fromValue->calculateDistance(toValue, m_contextElement);
 }
 
-void SVGAnimatedTypeAnimator::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAnimatedTypeAnimator)
 {
     visitor->trace(m_animationElement);
     visitor->trace(m_contextElement);

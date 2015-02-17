@@ -63,7 +63,7 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     addToPropertyMap(m_markerUnits);
 }
 
-void SVGMarkerElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGMarkerElement)
 {
     visitor->trace(m_refX);
     visitor->trace(m_refY);

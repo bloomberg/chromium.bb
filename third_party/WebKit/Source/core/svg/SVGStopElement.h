@@ -37,7 +37,7 @@ public:
 
     SVGAnimatedNumber* offset() { return m_offset.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGStopElement(Document&);

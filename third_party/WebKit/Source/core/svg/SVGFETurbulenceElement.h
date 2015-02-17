@@ -52,7 +52,7 @@ public:
     SVGAnimatedEnumeration<TurbulenceType>* type() { return m_type.get(); }
     SVGAnimatedInteger* numOctaves() { return m_numOctaves.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGFETurbulenceElement(Document&);

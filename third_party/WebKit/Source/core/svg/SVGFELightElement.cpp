@@ -55,7 +55,7 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tagName, Document& doc
     addToPropertyMap(m_limitingConeAngle);
 }
 
-void SVGFELightElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFELightElement)
 {
     visitor->trace(m_azimuth);
     visitor->trace(m_elevation);

@@ -95,7 +95,7 @@ public:
 
     virtual AnimatedPropertyType type() const = 0;
 
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_contextElement);
     }
@@ -136,7 +136,7 @@ public:
         return Property::classType();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_target);
         SVGPropertyTearOffBase::trace(visitor);

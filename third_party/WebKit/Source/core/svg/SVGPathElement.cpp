@@ -57,7 +57,7 @@ inline SVGPathElement::SVGPathElement(Document& document)
     addToPropertyMap(m_pathSegList);
 }
 
-void SVGPathElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPathElement)
 {
     visitor->trace(m_pathLength);
     visitor->trace(m_pathSegList);

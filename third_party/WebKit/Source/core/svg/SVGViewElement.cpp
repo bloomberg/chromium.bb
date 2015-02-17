@@ -35,7 +35,7 @@ inline SVGViewElement::SVGViewElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGViewElement)
 
-void SVGViewElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGViewElement)
 {
     visitor->trace(m_viewTarget);
     SVGElement::trace(visitor);

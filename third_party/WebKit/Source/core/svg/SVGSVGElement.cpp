@@ -783,7 +783,7 @@ void SVGSVGElement::finishParsingChildren()
     sendSVGLoadEventIfPossible();
 }
 
-void SVGSVGElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGSVGElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

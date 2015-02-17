@@ -40,7 +40,7 @@ public:
     bool addAnimatedPath(unsigned repeatCount);
     bool blendAnimatedPath(float);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     bool blendMoveToSegment();

@@ -69,7 +69,7 @@ public:
 
     void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit SMILTimeContainer(SVGSVGElement& owner);

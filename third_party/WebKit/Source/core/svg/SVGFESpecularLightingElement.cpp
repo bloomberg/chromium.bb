@@ -45,7 +45,7 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& docu
     addToPropertyMap(m_in1);
 }
 
-void SVGFESpecularLightingElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFESpecularLightingElement)
 {
     visitor->trace(m_specularConstant);
     visitor->trace(m_specularExponent);

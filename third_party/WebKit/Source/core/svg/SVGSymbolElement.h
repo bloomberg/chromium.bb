@@ -34,7 +34,7 @@ class SVGSymbolElement final : public SVGElement,
 public:
     DECLARE_NODE_FACTORY(SVGSymbolElement);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGSymbolElement(Document&);

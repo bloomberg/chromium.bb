@@ -47,7 +47,7 @@ public:
 
     bool parsePathDataFromSource(PathParsingMode, bool checkForInitialMoveTo = true);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     bool decomposeArcToCubic(float, float, float, FloatPoint&, FloatPoint&, bool largeArcFlag, bool sweepFlag);

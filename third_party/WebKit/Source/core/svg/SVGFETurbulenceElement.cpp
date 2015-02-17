@@ -62,7 +62,7 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     addToPropertyMap(m_numOctaves);
 }
 
-void SVGFETurbulenceElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFETurbulenceElement)
 {
     visitor->trace(m_baseFrequency);
     visitor->trace(m_seed);

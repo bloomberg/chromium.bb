@@ -37,7 +37,7 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
     addToPropertyMap(m_r);
 }
 
-void SVGCircleElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGCircleElement)
 {
     visitor->trace(m_cx);
     visitor->trace(m_cy);

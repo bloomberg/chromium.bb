@@ -46,7 +46,7 @@ SVGStaticStringList::~SVGStaticStringList()
 {
 }
 
-void SVGStaticStringList::trace(Visitor* visitor)
+DEFINE_TRACE(SVGStaticStringList)
 {
     visitor->trace(m_value);
     visitor->trace(m_tearOff);

@@ -40,7 +40,7 @@ public:
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedEnumeration<ColorMatrixType>* type() { return m_type.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGFEColorMatrixElement(Document&);

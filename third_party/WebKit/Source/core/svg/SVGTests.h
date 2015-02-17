@@ -46,7 +46,7 @@ public:
 
     void addSupportedAttributes(HashSet<QualifiedName>&);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGTests();

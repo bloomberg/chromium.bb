@@ -37,7 +37,7 @@ SVGPathSegListSource::SVGPathSegListSource(SVGPathSegList::ConstIterator itBegin
 {
 }
 
-void SVGPathSegListSource::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPathSegListSource)
 {
     visitor->trace(m_segment);
     SVGPathSource::trace(visitor);

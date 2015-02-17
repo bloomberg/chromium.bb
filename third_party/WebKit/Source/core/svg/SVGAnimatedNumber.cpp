@@ -47,7 +47,7 @@ void SVGAnimatedNumber::synchronizeAttribute()
     SVGAnimatedProperty<SVGNumber>::synchronizeAttribute();
 }
 
-void SVGAnimatedNumber::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAnimatedNumber)
 {
     visitor->trace(m_parentNumberOptionalNumber);
     SVGAnimatedProperty<SVGNumber>::trace(visitor);

@@ -52,7 +52,7 @@ public:
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedString* result() const { return m_result.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGFilterPrimitiveStandardAttributes(const QualifiedName&, Document&);

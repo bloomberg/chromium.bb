@@ -44,7 +44,7 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     UseCounter::count(document, UseCounter::SVGForeignObjectElement);
 }
 
-void SVGForeignObjectElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGForeignObjectElement)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

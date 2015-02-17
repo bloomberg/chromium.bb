@@ -70,7 +70,7 @@ public:
     SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGFitToViewBox();

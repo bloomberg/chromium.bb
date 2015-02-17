@@ -56,7 +56,7 @@ public:
     bool hasX2() const { return m_x2Set; }
     bool hasY2() const { return m_y2Set; }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_x1);
         visitor->trace(m_y1);
@@ -89,7 +89,7 @@ public:
 
     LinearGradientAttributes& attributes() { return m_attributes; }
     void set(const LinearGradientAttributes& attributes) { m_attributes = attributes; }
-    void trace(Visitor* visitor) { visitor->trace(m_attributes); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_attributes); }
 
 private:
     LinearGradientAttributesWrapper()

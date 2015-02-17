@@ -70,7 +70,7 @@ public:
     void setSkewX(float, ExceptionState&);
     void setSkewY(float, ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SVGTransformTearOff(PassRefPtrWillBeRawPtr<SVGTransform>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);

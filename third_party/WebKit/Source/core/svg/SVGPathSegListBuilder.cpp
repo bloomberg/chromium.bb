@@ -54,7 +54,7 @@ SVGPathSegListBuilder::SVGPathSegListBuilder(SVGPathElement* pathElement, PassRe
 {
 }
 
-void SVGPathSegListBuilder::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPathSegListBuilder)
 {
     visitor->trace(m_pathElement);
     visitor->trace(m_pathSegList);

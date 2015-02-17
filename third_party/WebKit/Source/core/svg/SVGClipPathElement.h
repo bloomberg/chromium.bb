@@ -40,7 +40,7 @@ public:
 
     virtual bool supportsFocus() const override { return false; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGClipPathElement(Document&);

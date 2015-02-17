@@ -34,7 +34,7 @@ LayoutStyle* SVGElementRareData::overrideComputedStyle(Element* element, LayoutS
     return m_overrideComputedStyle.get();
 }
 
-void SVGElementRareData::trace(Visitor* visitor)
+DEFINE_TRACE(SVGElementRareData)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_outgoingReferences);
@@ -43,7 +43,7 @@ void SVGElementRareData::trace(Visitor* visitor)
     visitor->trace(m_elementInstances);
     visitor->trace(m_correspondingElement);
     visitor->trace(m_owner);
-    visitor->registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
+    visitor->template registerWeakMembers<SVGElementRareData, &SVGElementRareData::processWeakMembers>(this);
 #endif
 }
 

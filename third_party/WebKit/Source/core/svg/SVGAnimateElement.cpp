@@ -391,7 +391,7 @@ SVGAnimatedTypeAnimator* SVGAnimateElement::ensureAnimator()
     return m_animator.get();
 }
 
-void SVGAnimateElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAnimateElement)
 {
     visitor->trace(m_fromProperty);
     visitor->trace(m_toProperty);

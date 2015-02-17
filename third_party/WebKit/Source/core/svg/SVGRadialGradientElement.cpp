@@ -54,7 +54,7 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     addToPropertyMap(m_fr);
 }
 
-void SVGRadialGradientElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGRadialGradientElement)
 {
     visitor->trace(m_cx);
     visitor->trace(m_cy);

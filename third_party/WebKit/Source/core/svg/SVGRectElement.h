@@ -41,7 +41,7 @@ public:
     SVGAnimatedLength* rx() const { return m_rx.get(); }
     SVGAnimatedLength* ry() const { return m_ry.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool isPresentationAttribute(const QualifiedName&) const override;
     virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;

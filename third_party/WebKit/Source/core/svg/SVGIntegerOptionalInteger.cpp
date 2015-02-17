@@ -43,7 +43,7 @@ SVGIntegerOptionalInteger::SVGIntegerOptionalInteger(PassRefPtrWillBeRawPtr<SVGI
 {
 }
 
-void SVGIntegerOptionalInteger::trace(Visitor* visitor)
+DEFINE_TRACE(SVGIntegerOptionalInteger)
 {
     visitor->trace(m_firstInteger);
     visitor->trace(m_secondInteger);

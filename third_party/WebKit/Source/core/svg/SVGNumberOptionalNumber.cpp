@@ -43,7 +43,7 @@ SVGNumberOptionalNumber::SVGNumberOptionalNumber(PassRefPtrWillBeRawPtr<SVGNumbe
 {
 }
 
-void SVGNumberOptionalNumber::trace(Visitor* visitor)
+DEFINE_TRACE(SVGNumberOptionalNumber)
 {
     visitor->trace(m_firstNumber);
     visitor->trace(m_secondNumber);

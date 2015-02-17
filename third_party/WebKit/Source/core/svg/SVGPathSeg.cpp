@@ -41,7 +41,7 @@ SVGPathSeg::SVGPathSeg(SVGPathElement* contextElement)
 {
 }
 
-void SVGPathSeg::trace(Visitor* visitor)
+DEFINE_TRACE(SVGPathSeg)
 {
     visitor->trace(m_ownerList);
     visitor->trace(m_contextElement);

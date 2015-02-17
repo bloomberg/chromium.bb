@@ -46,7 +46,7 @@ class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathCons
 public:
     SVGPathConsumer() { }
     virtual ~SVGPathConsumer() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void incrementPathSegmentCount() = 0;
     virtual bool continueConsuming() = 0;

@@ -61,7 +61,7 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFilterElement)
 
-void SVGFilterElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFilterElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_x);

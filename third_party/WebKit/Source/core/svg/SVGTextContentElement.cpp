@@ -82,7 +82,7 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Docum
     addToPropertyMap(m_lengthAdjust);
 }
 
-void SVGTextContentElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGTextContentElement)
 {
     visitor->trace(m_textLength);
     visitor->trace(m_lengthAdjust);

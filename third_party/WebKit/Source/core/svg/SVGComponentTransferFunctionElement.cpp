@@ -61,7 +61,7 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(const Q
     addToPropertyMap(m_type);
 }
 
-void SVGComponentTransferFunctionElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGComponentTransferFunctionElement)
 {
     visitor->trace(m_tableValues);
     visitor->trace(m_slope);

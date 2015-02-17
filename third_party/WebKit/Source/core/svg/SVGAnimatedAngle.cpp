@@ -47,7 +47,7 @@ SVGAnimatedAngle::~SVGAnimatedAngle()
 {
 }
 
-void SVGAnimatedAngle::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAnimatedAngle)
 {
     visitor->trace(m_orientType);
     SVGAnimatedProperty<SVGAngle>::trace(visitor);

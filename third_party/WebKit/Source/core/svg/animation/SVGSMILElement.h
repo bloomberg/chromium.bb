@@ -120,7 +120,7 @@ public:
 
     virtual bool isSVGDiscardElement() const { return false; }
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     void addBeginTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
@@ -186,7 +186,7 @@ private:
             return adoptPtrWillBeNoop(new Condition(type, beginOrEnd, baseID, name, offset, repeat));
         }
         ~Condition();
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         Type type() const { return m_type; }
         BeginOrEnd beginOrEnd() const { return m_beginOrEnd; }

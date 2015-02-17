@@ -46,7 +46,7 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement*
     m_secondInteger->setParentOptionalInteger(this);
 }
 
-void SVGAnimatedIntegerOptionalInteger::trace(Visitor* visitor)
+DEFINE_TRACE(SVGAnimatedIntegerOptionalInteger)
 {
     visitor->trace(m_firstInteger);
     visitor->trace(m_secondInteger);

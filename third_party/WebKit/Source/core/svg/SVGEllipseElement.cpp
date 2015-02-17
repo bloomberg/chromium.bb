@@ -39,7 +39,7 @@ inline SVGEllipseElement::SVGEllipseElement(Document& document)
     addToPropertyMap(m_ry);
 }
 
-void SVGEllipseElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGEllipseElement)
 {
     visitor->trace(m_cx);
     visitor->trace(m_cy);

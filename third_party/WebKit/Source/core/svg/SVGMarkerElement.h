@@ -72,7 +72,7 @@ public:
     SVGAnimatedAngle* orientAngle() { return m_orientAngle.get(); }
     SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientAngle->orientType(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGMarkerElement(Document&);

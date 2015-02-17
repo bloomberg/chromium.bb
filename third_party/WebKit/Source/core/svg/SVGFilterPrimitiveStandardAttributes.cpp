@@ -53,7 +53,7 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(const
     addToPropertyMap(m_result);
 }
 
-void SVGFilterPrimitiveStandardAttributes::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFilterPrimitiveStandardAttributes)
 {
     visitor->trace(m_x);
     visitor->trace(m_y);

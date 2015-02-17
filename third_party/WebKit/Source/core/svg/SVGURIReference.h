@@ -55,7 +55,7 @@ public:
     // JS API
     SVGAnimatedString* href() const { return m_href.get(); }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     SVGURIReference();

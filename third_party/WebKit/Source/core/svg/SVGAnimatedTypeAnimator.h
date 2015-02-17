@@ -65,7 +65,7 @@ public:
     bool isAnimatingSVGDom() const { return m_animatedProperty; }
     bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     SVGAnimatedTypeAnimator(SVGAnimationElement*, SVGElement*);

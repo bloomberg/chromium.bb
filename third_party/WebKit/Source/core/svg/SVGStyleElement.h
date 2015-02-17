@@ -50,7 +50,7 @@ public:
     virtual String title() const override;
     void setTitle(const AtomicString&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SVGStyleElement(Document&, bool createdByParser);

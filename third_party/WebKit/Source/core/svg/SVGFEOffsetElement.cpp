@@ -39,7 +39,7 @@ inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     addToPropertyMap(m_in1);
 }
 
-void SVGFEOffsetElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGFEOffsetElement)
 {
     visitor->trace(m_dx);
     visitor->trace(m_dy);

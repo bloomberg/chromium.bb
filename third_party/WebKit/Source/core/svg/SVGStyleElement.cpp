@@ -137,7 +137,7 @@ void SVGStyleElement::childrenChanged(const ChildrenChange& change)
     StyleElement::childrenChanged(this);
 }
 
-void SVGStyleElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGStyleElement)
 {
     StyleElement::trace(visitor);
     SVGElement::trace(visitor);

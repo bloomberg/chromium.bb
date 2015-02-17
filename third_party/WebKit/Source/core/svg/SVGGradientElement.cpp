@@ -55,7 +55,7 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& d
     addToPropertyMap(m_gradientUnits);
 }
 
-void SVGGradientElement::trace(Visitor* visitor)
+DEFINE_TRACE(SVGGradientElement)
 {
     visitor->trace(m_gradientTransform);
     visitor->trace(m_spreadMethod);

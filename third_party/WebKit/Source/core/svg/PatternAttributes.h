@@ -137,7 +137,7 @@ public:
     bool hasPatternTransform() const { return m_patternTransformSet; }
     bool hasPatternContentElement() const { return m_patternContentElementSet; }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_x);
         visitor->trace(m_y);
@@ -184,7 +184,7 @@ public:
 
     PatternAttributes& attributes() { return m_attributes; }
     void set(const PatternAttributes& attributes) { m_attributes = attributes; }
-    void trace(Visitor* visitor) { visitor->trace(m_attributes); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_attributes); }
 
 private:
     PatternAttributesWrapper()
