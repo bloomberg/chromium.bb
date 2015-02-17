@@ -21,6 +21,7 @@
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +34,8 @@ namespace {
 // Build an extension to pass to the menu constructor, with the an action
 // specified by |action_key|.
 scoped_refptr<const Extension> BuildExtension(const std::string& name,
-                                              const char* action_key) {
+                                              const char* action_key,
+                                              Manifest::Location location) {
   return ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
                        .Set("name", name)
@@ -41,6 +43,7 @@ scoped_refptr<const Extension> BuildExtension(const std::string& name,
                        .Set("manifest_version", 2)
                        .Set(action_key, DictionaryBuilder().Pass()))
       .SetID(crx_file::id_util::GenerateId(name))
+      .SetLocation(location)
       .Build();
 }
 
@@ -123,10 +126,15 @@ int ExtensionContextMenuModelTest::CountExtensionItems(
 
 // Tests that applicable menu items are disabled when a ManagementPolicy
 // prohibits them.
-TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
+TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
   InitializeEmptyExtensionService();
+
+  // First, test that a component extension cannot be uninstalled by the
+  // standard management policy.
   scoped_refptr<const Extension> extension =
-      BuildExtension("extension", manifest_keys::kPageAction);
+      BuildExtension("component",
+                     manifest_keys::kBrowserAction,
+                     Manifest::COMPONENT);
   ASSERT_TRUE(extension.get());
   service()->AddExtension(extension.get());
 
@@ -134,6 +142,19 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
 
   scoped_refptr<ExtensionContextMenuModel> menu(
       new ExtensionContextMenuModel(extension.get(), browser.get()));
+
+  // Uninstallation should be disabled.
+  EXPECT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+
+  // Also test that management policy can determine whether or not
+  // policy-installed extensions can be installed/uninstalled.
+  extension = BuildExtension("extension",
+                             manifest_keys::kPageAction,
+                             Manifest::INTERNAL);
+  ASSERT_TRUE(extension.get());
+  service()->AddExtension(extension.get());
+
+  menu = new ExtensionContextMenuModel(extension.get(), browser.get());
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   system->management_policy()->UnregisterAllProviders();
@@ -149,13 +170,15 @@ TEST_F(ExtensionContextMenuModelTest, PolicyDisablesItems) {
   ASSERT_FALSE(menu->IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
 
   // Don't leave |policy_provider| dangling.
-  system->management_policy()->UnregisterAllProviders();
+  system->management_policy()->UnregisterProvider(&policy_provider);
 }
 
 TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
   InitializeEmptyExtensionService();
   scoped_refptr<const Extension> extension =
-      BuildExtension("extension", manifest_keys::kPageAction);
+      BuildExtension("extension",
+                     manifest_keys::kPageAction,
+                     Manifest::INTERNAL);
   ASSERT_TRUE(extension.get());
   service()->AddExtension(extension.get());
 
@@ -214,10 +237,14 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   InitializeEmptyExtensionService();
   scoped_refptr<const Extension> page_action =
-      BuildExtension("page_action_extension", manifest_keys::kPageAction);
+      BuildExtension("page_action_extension",
+                     manifest_keys::kPageAction,
+                     Manifest::INTERNAL);
   ASSERT_TRUE(page_action.get());
   scoped_refptr<const Extension> browser_action =
-      BuildExtension("browser_action_extension", manifest_keys::kBrowserAction);
+      BuildExtension("browser_action_extension",
+                     manifest_keys::kBrowserAction,
+                     Manifest::INTERNAL);
   ASSERT_TRUE(browser_action.get());
 
   service()->AddExtension(page_action.get());

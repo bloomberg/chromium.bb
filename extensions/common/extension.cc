@@ -24,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
@@ -271,12 +272,15 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
 }
 
 bool Extension::ShowConfigureContextMenus() const {
-  // Don't show context menu for component extensions. We might want to show
-  // options for component extension button but now there is no component
-  // extension with options. All other menu items like uninstall have
-  // no sense for component extensions.
-  return location() != Manifest::COMPONENT &&
-         location() != Manifest::EXTERNAL_COMPONENT;
+  // Normally we don't show a context menu for component actions, but when
+  // re-design is enabled we show them in the toolbar (if they have an action),
+  // and it is weird to have a random button that has no context menu when the
+  // rest do.
+  if (location() == Manifest::COMPONENT ||
+      location() == Manifest::EXTERNAL_COMPONENT)
+    return FeatureSwitch::extension_action_redesign()->IsEnabled();
+
+  return true;
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
