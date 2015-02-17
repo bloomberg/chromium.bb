@@ -292,8 +292,14 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
+// Flaky on Win/Linux.  https://crbug.com/373155.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_ScriptAndImageFeatures DISABLED_ScriptAndImageFeatures
+#else
+#define MAYBE_ScriptAndImageFeatures ScriptAndImageFeatures
+#endif
 IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest,
-                       ScriptAndImageFeatures) {
+                       MAYBE_ScriptAndImageFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
