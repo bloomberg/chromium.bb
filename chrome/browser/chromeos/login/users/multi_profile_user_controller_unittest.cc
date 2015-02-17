@@ -322,23 +322,6 @@ TEST_F(MultiProfileUserControllerTest, PrimaryBehaviorChange) {
   }
 }
 
-// Tests that owner could not be a secondary user.
-//
-// TODO (ygorshenin@, crbug.com/230018): remove or change the test when the
-// issue will be fixed.
-TEST_F(MultiProfileUserControllerTest, DISABLED_NoSecondaryOwner) {
-  LoginUser(0);
-  SetOwner(1);
-
-  MultiProfileUserController::UserAllowedInSessionReason reason;
-  EXPECT_FALSE(controller()->IsUserAllowedInSession(kUsers[1], &reason));
-  EXPECT_EQ(MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY, reason);
-
-  EXPECT_EQ(0, user_not_allowed_count());
-  LoginUser(1);
-  EXPECT_EQ(1, user_not_allowed_count());
-}
-
 TEST_F(MultiProfileUserControllerTest,
        UsedPolicyCertificatesAllowedForPrimary) {
   // Verifies that any user can sign-in as the primary user, regardless of the

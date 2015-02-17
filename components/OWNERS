@@ -205,7 +205,6 @@ per-file session_manager.gypi=antrim@chromium.org
 per-file session_manager.gypi=dpolukhin@chromium.org
 per-file session_manager.gypi=dzhioev@chromium.org
 per-file session_manager.gypi=nkostylev@chromium.org
-per-file session_manager.gypi=ygorshenin@chromium.org
 
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org
@@ -247,7 +246,6 @@ per-file user_manager.gypi=antrim@chromium.org
 per-file user_manager.gypi=dpolukhin@chromium.org
 per-file user_manager.gypi=dzhioev@chromium.org
 per-file user_manager.gypi=nkostylev@chromium.org
-per-file user_manager.gypi=ygorshenin@chromium.org
 
 per-file url_fixer.gypi=pkasting@chromium.org
 

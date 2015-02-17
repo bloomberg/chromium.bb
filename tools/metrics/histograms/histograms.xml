@@ -2185,7 +2185,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.Notification.Status"
     enum="CaptivePortalNotificationStatus">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Count of displayed and not displayed due to errors notifications about
     captive portal.
@@ -2194,14 +2194,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.Notification.UserAction"
     enum="CaptivePortalNotificationUserAction">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Count of clicked, closed and ignored captive portal notifications.
   </summary>
 </histogram>
 
 <histogram name="CaptivePortal.OOBE.DetectionDuration" units="milliseconds">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Duration of the captive portal detection process for a particular network at
     OOBE. Detection duration is recorded each time portal detection is completed
@@ -2210,7 +2210,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="CaptivePortal.OOBE.DetectionResult" enum="CaptivePortalStatus">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     The result of captive portal detection attempts performed at OOBE. Detection
     result is recorded when portal detection is completed for an active network
@@ -2220,7 +2220,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.OOBE.DiscrepancyWithShill"
     enum="CaptivePortalStatus">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     The result of captive portal detection attempts at OOBE if it diverges from
     network manager results. Detection result is recorded each time portal
@@ -2230,7 +2230,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.OOBE.PortalToOnlineTransition"
     units="milliseconds">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Number of milliseconds passed between consecutive reports for the same
     network about portal and online states.
@@ -2238,7 +2238,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="CaptivePortal.Session.DetectionDuration" units="milliseconds">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Duration of the captive portal detection process for a particular network in
     user session. Detection duration is recorded each time portal detection is
@@ -2248,7 +2248,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.Session.DetectionResult"
     enum="CaptivePortalStatus">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     The result of captive portal detection attempts performed in user session.
     Detection result is recorded when portal detection is completed for an
@@ -2259,7 +2259,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.Session.DiscrepancyWithShill"
     enum="CaptivePortalStatus">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     The result of captive portal detection attempts in session if it diverges
     from network manager results. Detection result is recorded each time portal
@@ -2269,7 +2269,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="CaptivePortal.Session.PortalToOnlineTransition"
     units="milliseconds">
-  <owner>ygorshenin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Number of milliseconds passed between consecutive reports for the same
     network about portal and online states.

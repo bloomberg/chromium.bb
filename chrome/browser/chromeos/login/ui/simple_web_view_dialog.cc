@@ -306,7 +306,7 @@ void SimpleWebViewDialog::ShowWebsiteSettings(
     const GURL& url,
     const content::SSLStatus& ssl) {
   NOTIMPLEMENTED();
-  // TODO (ygorshenin@,markusheintz@): implement this
+  // TODO (markusheintz@): implement this
 }
 
 PageActionImageView* SimpleWebViewDialog::CreatePageActionImageView(

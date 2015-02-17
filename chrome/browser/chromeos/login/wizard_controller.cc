@@ -248,15 +248,12 @@ void WizardController::Init(const std::string& first_screen_name) {
 
   // This is a hacky way to check for local state corruption, because
   // it depends on the fact that the local state is loaded
-  // synchroniously and at the first demand. IsEnterpriseManaged()
+  // synchronously and at the first demand. IsEnterpriseManaged()
   // check is required because currently powerwash is disabled for
-  // enterprise-entrolled devices.
+  // enterprise-enrolled devices.
   //
   // TODO (ygorshenin@): implement handling of the local state
   // corruption in the case of asynchronious loading.
-  //
-  // TODO (ygorshenin@): remove IsEnterpriseManaged() check once
-  // crbug.com/241313 will be fixed.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector->IsEnterpriseManaged()) {

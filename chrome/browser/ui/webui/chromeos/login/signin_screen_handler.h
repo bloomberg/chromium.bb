@@ -454,7 +454,7 @@ class SigninScreenHandler
   bool caps_lock_enabled_;
 
   // Non-owning ptr.
-  // TODO(ygorshenin@): remove this dependency.
+  // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_;
 
   // Maximized mode controller delegate.

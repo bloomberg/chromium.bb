@@ -611,12 +611,12 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
   }
 }
 
-// TODO(ygorshenin@): split this method into small parts.
-// TODO(ygorshenin@): move this logic to GaiaScreenHandler.
+// TODO(antrim@): split this method into small parts.
+// TODO(antrim@): move this logic to GaiaScreenHandler.
 void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                                               bool force_update) {
   // Do nothing once user has signed in or sign in is in progress.
-  // TODO(ygorshenin): We will end up here when processing network state
+  // TODO(antrim): We will end up here when processing network state
   // notification but no ShowSigninScreen() was called so delegate_ will be
   // NULL. Network state processing logic does not belong here.
   if (delegate_ &&

@@ -95,7 +95,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
   net::Error frame_error() const { return frame_error_; }
 
  private:
-  // TODO (ygorshenin@): remove this dependency.
+  // TODO (antrim@): remove this dependency.
   friend class SigninScreenHandler;
 
   // BaseScreenHandler implementation:
@@ -186,11 +186,11 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // extension should be used.
   void LoadAuthExtension(bool force, bool silent_load, bool offline);
 
-  // TODO (ygorshenin@): GaiaScreenHandler should implement
+  // TODO (antrim@): GaiaScreenHandler should implement
   // NetworkStateInformer::Observer.
   void UpdateState(NetworkError::ErrorReason reason);
 
-  // TODO (ygorshenin@): remove this dependency.
+  // TODO (antrim@): remove this dependency.
   void SetSigninScreenHandler(SigninScreenHandler* handler);
 
   SigninScreenHandlerDelegate* Delegate();
@@ -254,7 +254,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // Non-owning ptr to SigninScreenHandler instance. Should not be used
   // in dtor.
-  // TODO (ygorshenin@): GaiaScreenHandler shouldn't communicate with
+  // TODO (antrim@): GaiaScreenHandler shouldn't communicate with
   // signin_screen_handler directly.
   SigninScreenHandler* signin_screen_handler_;
 
