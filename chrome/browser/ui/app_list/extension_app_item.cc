@@ -181,7 +181,7 @@ void ExtensionAppItem::UpdateIcon() {
 
   // Use the app icon if the app exists. Turn the image greyscale if the app is
   // not launchable.
-  if (GetExtension()) {
+  if (GetExtension() && icon_) {
     icon = icon_->image_skia();
     const bool enabled = extensions::util::IsAppLaunchable(extension_id_,
                                                            profile_);
