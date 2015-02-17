@@ -1968,7 +1968,8 @@ void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scr
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterfaceImplementation* referencedName = impl->referencedName();
     if (referencedName) {
-        RELEASE_ASSERT(DOMDataStore::containsWrapper(referencedName, isolate));
+        if (!DOMDataStore::containsWrapper(referencedName, isolate))
+            referencedName->wrap(creationContext, isolate);
         DOMDataStore::setWrapperReference(wrapper, referencedName, isolate);
     }
     setObjectGroup(isolate, scriptWrappable, wrapper);
