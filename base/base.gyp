@@ -644,6 +644,7 @@
         'timer/mock_timer_unittest.cc',
         'timer/timer_unittest.cc',
         'tools_sanity_unittest.cc',
+        'trace_event/memory_dump_manager_unittest.cc',
         'trace_event/trace_event_argument_unittest.cc',
         'trace_event/trace_event_memory_unittest.cc',
         'trace_event/trace_event_synthetic_delay_unittest.cc',
