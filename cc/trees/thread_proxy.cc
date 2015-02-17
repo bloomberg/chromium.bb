@@ -153,6 +153,12 @@ bool ThreadProxy::IsStarted() const {
   return main().started;
 }
 
+bool ThreadProxy::CommitToActiveTree() const {
+  // With ThreadProxy we use a pending tree and activate it once it's ready to
+  // draw.
+  return false;
+}
+
 void ThreadProxy::SetLayerTreeHostClientReady() {
   TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReady");
   Proxy::ImplThreadTaskRunner()->PostTask(

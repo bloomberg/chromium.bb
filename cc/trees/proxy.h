@@ -56,6 +56,7 @@ class CC_EXPORT Proxy {
   virtual void FinishAllRendering() = 0;
 
   virtual bool IsStarted() const = 0;
+  virtual bool CommitToActiveTree() const = 0;
 
   // Will call LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted
   // with the result of this function.

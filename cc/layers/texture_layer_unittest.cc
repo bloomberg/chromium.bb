@@ -1402,10 +1402,7 @@ class TextureLayerReleaseResourcesAfterCommit
  public:
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeImpl* tree = nullptr;
-    if (host_impl->settings().impl_side_painting)
-      tree = host_impl->pending_tree();
-    else
-      tree = host_impl->active_tree();
+    tree = host_impl->sync_tree();
     tree->root_layer()->children()[0]->ReleaseResources();
   }
 };

@@ -295,7 +295,7 @@ void LayerTreeHostImpl::BeginCommit() {
   if (!settings_.impl_side_painting && output_surface_)
     output_surface_->ForceReclaimResources();
 
-  if (UsePendingTreeForSync())
+  if (settings_.impl_side_painting && !proxy_->CommitToActiveTree())
     CreatePendingTree();
 }
 
@@ -2070,12 +2070,6 @@ void LayerTreeHostImpl::DestroyTileManager() {
   tile_task_worker_pool_ = nullptr;
   rasterizer_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
-}
-
-bool LayerTreeHostImpl::UsePendingTreeForSync() const {
-  // In impl-side painting, synchronize to the pending tree so that it has
-  // time to raster before being displayed.
-  return settings_.impl_side_painting;
 }
 
 bool LayerTreeHostImpl::IsSynchronousSingleThreaded() const {

@@ -82,6 +82,12 @@ bool SingleThreadProxy::IsStarted() const {
   return layer_tree_host_impl_;
 }
 
+bool SingleThreadProxy::CommitToActiveTree() const {
+  // With SingleThreadProxy we skip the pending tree and commit directly to the
+  // active tree.
+  return true;
+}
+
 void SingleThreadProxy::SetLayerTreeHostClientReady() {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetLayerTreeHostClientReady");
   // Scheduling is controlled by the embedder in the single thread case, so
@@ -240,8 +246,6 @@ void SingleThreadProxy::DoCommit() {
 
     layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
-    layer_tree_host_impl_->CommitComplete();
-
 #if DCHECK_IS_ON()
     // In the single-threaded case, the scale and scroll deltas should never be
     // touched on the impl layer tree.
@@ -250,18 +254,17 @@ void SingleThreadProxy::DoCommit() {
     DCHECK(!scroll_info->scrolls.size());
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
-  }
 
-  if (layer_tree_host_->settings().impl_side_painting) {
-    // TODO(enne): just commit directly to the active tree.
-    //
-    // Synchronously activate during commit to satisfy any potential
-    // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
-    // might not be ready to draw, so DidActivateSyncTree must set
-    // the flag to force the tree to not draw until textures are ready.
-    NotifyReadyToActivate();
-  } else {
-    CommitComplete();
+    if (layer_tree_host_->settings().impl_side_painting) {
+      // Commit goes directly to the active tree, but we need to synchronously
+      // "activate" the tree still during commit to satisfy any potential
+      // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
+      // might not be ready to draw, so DidActivateSyncTree must set
+      // the flag to force the tree to not draw until textures are ready.
+      NotifyReadyToActivate();
+    } else {
+      CommitComplete();
+    }
   }
 }
 
@@ -269,6 +272,10 @@ void SingleThreadProxy::CommitComplete() {
   DCHECK(!layer_tree_host_impl_->pending_tree())
       << "Activation is expected to have synchronously occurred by now.";
   DCHECK(commit_blocking_task_runner_);
+
+  // Notify commit complete on the impl side after activate to satisfy any
+  // SetNextCommitWaitsForActivation calls.
+  layer_tree_host_impl_->CommitComplete();
 
   DebugScopedSetMainThread main(this);
   commit_blocking_task_runner_.reset();
@@ -433,8 +440,8 @@ void SingleThreadProxy::DidActivateSyncTree() {
   // Non-impl-side painting finishes commit in DoCommit.  Impl-side painting
   // defers until here to simulate SetNextCommitWaitsForActivation.
   if (layer_tree_host_impl_->settings().impl_side_painting) {
-    // This is required because NotifyReadyToActivate gets called when
-    // the pending tree is not actually ready in the SingleThreadProxy.
+    // This is required because NotifyReadyToActivate gets called immediately
+    // after commit since single thread commits directly to the active tree.
     layer_tree_host_impl_->SetRequiresHighResToDraw();
 
     // Synchronously call to CommitComplete. Resetting

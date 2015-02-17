@@ -135,7 +135,8 @@ class LayerTreeHostPictureTestTwinLayer
   int activates_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestTwinLayer);
+// There is no pending layers in single thread mode.
+MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestTwinLayer);
 
 class LayerTreeHostPictureTestResizeViewportWithGpuRaster
     : public LayerTreeHostPictureTest {
@@ -158,7 +159,7 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* child = impl->sync_tree()->root_layer()->children()[0];
     FakePictureLayerImpl* picture_impl =
         static_cast<FakePictureLayerImpl*>(child);
@@ -324,7 +325,8 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
   scoped_refptr<FakePictureLayer> picture_;
 };
 
-SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+// Multi-thread only since there is no recycle tree in single thread.
+MULTI_THREAD_IMPL_TEST_F(
     LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree);
 
 class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
@@ -347,7 +349,7 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->sync_tree()->root_layer();
     LayerImpl* child = root->children()[0];
     LayerImpl* gchild = child->children()[0];

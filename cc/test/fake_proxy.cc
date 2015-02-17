@@ -12,6 +12,10 @@ void FakeProxy::SetLayerTreeHost(LayerTreeHost* host) {
 
 bool FakeProxy::IsStarted() const { return true; }
 
+bool FakeProxy::CommitToActiveTree() const {
+  return false;
+}
+
 const RendererCapabilities& FakeProxy::GetRendererCapabilities() const {
   return capabilities_;
 }

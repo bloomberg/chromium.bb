@@ -546,7 +546,6 @@ class CC_EXPORT LayerTreeHostImpl
   void RecreateTreeResources();
   void EnforceZeroBudget(bool zero_budget);
 
-  bool UsePendingTreeForSync() const;
   bool IsSynchronousSingleThreaded() const;
 
   // Scroll by preferring to move the outer viewport first, only moving the
