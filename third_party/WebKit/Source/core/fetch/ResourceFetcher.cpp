@@ -719,7 +719,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     TRACE_EVENT0("blink", "ResourceFetcher::requestResource");
 
-    maybeUpgradeInsecureRequestURL(request);
+    upgradeInsecureRequest(request);
 
     KURL url = request.resourceRequest().url();
 
@@ -901,12 +901,18 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
     context().addAdditionalRequestHeaders(document(), request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
 }
 
-void ResourceFetcher::maybeUpgradeInsecureRequestURL(FetchRequest& fetchRequest)
+void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
 {
-    if (!m_document)
+    if (!m_document || !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
         return;
 
     KURL url = fetchRequest.resourceRequest().url();
+
+    // Tack a 'Prefer' header to outgoing navigational requests, as described in
+    // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
+    if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
+
     if (m_document->insecureContentPolicy() == SecurityContext::InsecureContentUpgrade && url.protocolIs("http")) {
         // We always upgrade subresource requests and nested frames, we always upgrade form
         // submissions, and we always upgrade requests whose host matches the host of the

@@ -81,7 +81,7 @@ protected:
         fetchRequest.mutableResourceRequest().setRequestContext(requestContext);
         fetchRequest.mutableResourceRequest().setFrameType(frameType);
 
-        fetcher->maybeUpgradeInsecureRequestURL(fetchRequest);
+        fetcher->upgradeInsecureRequest(fetchRequest);
 
         EXPECT_STREQ(expectedURL.string().utf8().data(), fetchRequest.resourceRequest().url().string().utf8().data());
         EXPECT_EQ(expectedURL.protocol(), fetchRequest.resourceRequest().url().protocol());
@@ -89,6 +89,20 @@ protected:
         EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());
         EXPECT_EQ(expectedURL.hasPort(), fetchRequest.resourceRequest().url().hasPort());
         EXPECT_EQ(expectedURL.path(), fetchRequest.resourceRequest().url().path());
+    }
+
+    void expectPreferHeader(const char* input, WebURLRequest::FrameType frameType, bool shouldPrefer)
+    {
+        KURL inputURL(ParsedURLString, input);
+
+        FetchRequest fetchRequest = FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+        fetchRequest.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
+        fetchRequest.mutableResourceRequest().setFrameType(frameType);
+
+        fetcher->upgradeInsecureRequest(fetchRequest);
+
+        EXPECT_STREQ(shouldPrefer ? "return=secure-representation" : "",
+            fetchRequest.resourceRequest().httpHeaderField("Prefer").utf8().data());
     }
 
     KURL secureURL;
@@ -192,6 +206,35 @@ TEST_F(ResourceFetcherTest, MonitorInsecureResourceRequests)
     expectUpgrade("ftp://example.test/image.png", "ftp://example.test/image.png");
     expectUpgrade("ftp://example.test:21/image.png", "ftp://example.test:21/image.png");
     expectUpgrade("ftp://example.test:1212/image.png", "ftp://example.test:1212/image.png");
+}
+
+TEST_F(ResourceFetcherTest, SendPreferHeader)
+{
+    struct TestCase {
+        const char* toRequest;
+        WebURLRequest::FrameType frameType;
+        bool shouldPrefer;
+    } tests[] = {
+        { "http://example.test/page.html", WebURLRequest::FrameTypeAuxiliary, true },
+        { "http://example.test/page.html", WebURLRequest::FrameTypeNested, true },
+        { "http://example.test/page.html", WebURLRequest::FrameTypeNone, false },
+        { "http://example.test/page.html", WebURLRequest::FrameTypeTopLevel, true },
+        { "https://example.test/page.html", WebURLRequest::FrameTypeAuxiliary, false },
+        { "https://example.test/page.html", WebURLRequest::FrameTypeNested, false },
+        { "https://example.test/page.html", WebURLRequest::FrameTypeNone, false },
+        { "https://example.test/page.html", WebURLRequest::FrameTypeTopLevel, false }
+    };
+
+    for (auto test : tests) {
+        document->setInsecureContentPolicy(SecurityContext::InsecureContentDoNotUpgrade);
+        expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
+
+        document->setInsecureContentPolicy(SecurityContext::InsecureContentUpgrade);
+        expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
+
+        document->setInsecureContentPolicy(SecurityContext::InsecureContentMonitor);
+        expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
+    }
 }
 
 } // namespace
