@@ -20,10 +20,6 @@ PASS typeof battery.onchargingchange == 'object' is true
 PASS typeof battery.onchargingtimechange == 'object' is true
 PASS typeof battery.ondischargingtimechange == 'object' is true
 PASS typeof battery.onlevelchange == 'object' is true
-PASS battery.hasOwnProperty('onchargingchange') is true
-PASS battery.hasOwnProperty('onchargingtimechange') is true
-PASS battery.hasOwnProperty('ondischargingtimechange') is true
-PASS battery.hasOwnProperty('onlevelchange') is true
 PASS 'onchargingchange' in battery is true
 PASS 'onchargingtimechange' in battery is true
 PASS 'ondischargingtimechange' in battery is true
