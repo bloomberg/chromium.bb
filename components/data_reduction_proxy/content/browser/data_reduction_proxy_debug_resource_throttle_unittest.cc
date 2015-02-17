@@ -75,7 +75,8 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI),
         content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO)));
+            content::BrowserThread::IO),
+        "en-US"));
     params_.reset(new TestDataReductionProxyParams(0, 0));
     resource_throttle_.reset(new TestDataReductionProxyDebugResourceThrottle(
         request_.get(), content::RESOURCE_TYPE_MAIN_FRAME,

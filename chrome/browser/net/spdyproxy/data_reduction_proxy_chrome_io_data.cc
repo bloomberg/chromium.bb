@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
+#include "chrome/browser/browser_process.h"
 #include "components/data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h"
 #endif
 
@@ -71,7 +72,8 @@ CreateDataReductionProxyChromeIOData(
                              GetProxyConfigOnIOThread,
                          base::Unretained(
                              data_reduction_proxy_io_data->configurator())),
-              ui_task_runner, io_task_runner));
+              ui_task_runner, io_task_runner,
+              g_browser_process->GetApplicationLocale()));
   data_reduction_proxy_io_data->set_debug_ui_service(
       data_reduction_proxy_ui_service.Pass());
 #endif

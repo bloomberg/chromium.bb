@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_DATA_REDUCTION_PROXY_INTERSTITIAL_HTML" file="../data_reduction_proxy/content/resources/interstitial.html" flattenhtml="true" type="chrome_html" />
+</grit-part>

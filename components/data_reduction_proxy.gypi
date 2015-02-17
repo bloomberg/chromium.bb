@@ -13,6 +13,9 @@
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
+        '../ui/base/ui_base.gyp:ui_base',
+        'components_resources.gyp:components_resources',
+        'components_strings.gyp:components_strings',
       ],
       'include_dirs': [
         '..',
@@ -21,6 +24,8 @@
         # Note: sources list duplicated in GN build.
         'data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.cc',
         'data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page.cc',
+        'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page.h',
         'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.cc',
         'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.h',
         'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.cc',

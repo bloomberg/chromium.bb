@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;.style.fontSize:fontsize">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="initial-scale=1, minimum-scale=1, width=device-width">
+    <title i18n-content="tabTitle"></title>
+    <link rel="stylesheet" href="interstitial.css">
+    <script src="../../../../ui/webui/resources/js/util.js"></script>
+    <script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
+    <script src="data_reduction_proxy.js"></script>
+    <script src="interstitial.js"></script>
+  </head>
+<body id="body" i18n-values=".style.fontFamily:fontfamily">
+  <div class="interstitial-wrapper">
+    <div class="icon" id="icon"></div>
+    <div id="main-message">
+      <h1 i18n-content="heading"></h1>
+      <p i18n-values=".innerHTML:primaryParagraph"></p>
+      <p i18n-values=".innerHTML:secondaryParagraph"></p>
+    </div>
+    <div class="nav-wrapper">
+      <button i18n-content="primaryButtonText" id="primary-button"></button>
+      <button i18n-content="secondaryButtonText" id="secondary-button"></button>
+    </div>
+  </div>
+</body>
+</html>

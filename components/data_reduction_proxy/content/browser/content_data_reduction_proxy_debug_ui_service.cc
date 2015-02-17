@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h"
 
+#include <string>
+
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.h"
 #include "net/proxy/proxy_config.h"
 
@@ -13,10 +15,12 @@ ContentDataReductionProxyDebugUIService::
 ContentDataReductionProxyDebugUIService(
     const DataReductionProxyNetworkDelegate::ProxyConfigGetter& getter,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const std::string& app_locale)
     : proxy_config_getter_(getter) {
   ui_manager_ = new DataReductionProxyDebugUIManager(ui_task_runner,
-                                                     io_task_runner);
+                                                     io_task_runner,
+                                                     app_locale);
 }
 
 ContentDataReductionProxyDebugUIService::

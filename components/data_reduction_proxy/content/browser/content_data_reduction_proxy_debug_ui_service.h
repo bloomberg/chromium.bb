@@ -35,7 +35,8 @@ class ContentDataReductionProxyDebugUIService
   ContentDataReductionProxyDebugUIService(
       const DataReductionProxyNetworkDelegate::ProxyConfigGetter& getter,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const std::string& app_locale);
 
   ~ContentDataReductionProxyDebugUIService() override;
 

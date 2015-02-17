@@ -4,6 +4,9 @@
 
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,12 +32,20 @@ class TestDataReductionProxyDebugUIManager
  public:
   TestDataReductionProxyDebugUIManager(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : DataReductionProxyDebugUIManager(ui_task_runner, io_task_runner) {
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const std::string& app_locale)
+      : DataReductionProxyDebugUIManager(
+          ui_task_runner, io_task_runner, app_locale) {
   }
 
   bool IsTabClosed(const BypassResource& resource) const override {
     return is_tab_closed_return_value_;
+  }
+
+  void ShowBlockingPage(const BypassResource& resource) override {
+    std::vector<BypassResource> resources;
+    resources.push_back(resource);
+    OnBlockingPageDone(resources, true);
   }
 
   bool is_tab_closed_return_value_;
@@ -56,7 +67,8 @@ class DataReductionProxyDebugUIManagerTest
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI),
         content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::UI));
+            content::BrowserThread::UI),
+        "en-US");
   }
 
   void OnBlockingPageDoneCallback(bool proceed) {
@@ -143,11 +155,13 @@ TEST_F(DataReductionProxyDebugUIManagerTest, OnBlockingPageDone) {
         base::Unretained(this));
     resource.render_process_host_id = 0;
     resource.render_view_id = 0;
+    std::vector<DataReductionProxyDebugUIManager::BypassResource> resources;
+    resources.push_back(resource);
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&DataReductionProxyDebugUIManager::OnBlockingPageDone,
-                   ui_manager_, resource, false));
+                   ui_manager_, resources, false));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(DONT_PROCEED, state_);
 
@@ -155,7 +169,7 @@ TEST_F(DataReductionProxyDebugUIManagerTest, OnBlockingPageDone) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&DataReductionProxyDebugUIManager::OnBlockingPageDone,
-                   ui_manager_, resource, true));
+                   ui_manager_, resources, true));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(PROCEED, state_);
 }

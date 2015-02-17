@@ -8,6 +8,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <part file="data_reduction_proxy_resources.grdp" />
       <part file="dom_distiller_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="translate_resources.grdp" />

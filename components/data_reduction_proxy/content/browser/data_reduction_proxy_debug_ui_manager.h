@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_BROWSER_DATA_REDUCTION_PROXY_DEBUG_UI_MANAGER_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CONTENT_BROWSER_DATA_REDUCTION_PROXY_DEBUG_UI_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -43,10 +44,13 @@ class DataReductionProxyDebugUIManager
 
   // The DataReductionProxyDebugUIManager handles displaying blocking pages.
   // After a page is loaded from the blocking page, another blocking page will
-  // not be shown for five minutes.
+  // not be shown for five minutes. Requires an application locale
+  // (i.e. g_browser_process->GetApplicationLocale()).|app_locale| is used to
+  // determine the language of the blocking page.
   DataReductionProxyDebugUIManager(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const std::string& app_locale);
 
   // Using |resource.render_process_host_id| and |resource.render_view_id|
   // checks if WebContents exists for the RenderViewHost retreived from these
@@ -58,8 +62,12 @@ class DataReductionProxyDebugUIManager
   // redirects, |url| is the last url in the chain.
   virtual void DisplayBlockingPage(const BypassResource& resource);
 
+  // Virtual for testing purposes.
+  virtual void ShowBlockingPage(const BypassResource& resource);
+
   // The blocking page on the UI thread has completed.
-  void OnBlockingPageDone(const BypassResource& resource, bool proceed);
+  void OnBlockingPageDone(
+      const std::vector<BypassResource>& resources, bool proceed);
 
  private:
   // Ref counted classes have private destructors to avoid any code deleting the
@@ -79,6 +87,8 @@ class DataReductionProxyDebugUIManager
 
   // A task runner to post OnBlockingPageDone to the IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  const std::string& app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyDebugUIManager);
 };

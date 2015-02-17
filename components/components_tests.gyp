@@ -29,6 +29,7 @@
                   '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
                 ],
@@ -628,6 +629,7 @@
             }],
             ['OS == "android"', {
               'sources': [
+                'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page_unittest.cc',
                 'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle_unittest.cc',
                 'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager_unittest.cc',
                 'invalidation/invalidation_service_android_unittest.cc',
