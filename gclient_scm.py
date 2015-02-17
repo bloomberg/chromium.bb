@@ -389,6 +389,20 @@ class GitWrapper(SCMWrapper):
     if mirror:
       url = mirror.mirror_path
 
+    # If we are going to introduce a new project, there is a possibility that
+    # we are syncing back to a state where the project was originally a
+    # sub-project rolled by DEPS (realistic case: crossing the Blink merge point
+    # syncing backwards, when Blink was a DEPS entry and not part of src.git).
+    # In such case, we might have a backup of the former .git folder, which can
+    # be used to avoid re-fetching the entire repo again (useful for bisects).
+    backup_dir = self.GetGitBackupDirPath()
+    target_dir = os.path.join(self.checkout_path, '.git')
+    if os.path.exists(backup_dir) and not os.path.exists(target_dir):
+      gclient_utils.safe_makedirs(self.checkout_path)
+      os.rename(backup_dir, target_dir)
+      # Reset to a clean state
+      self._Run(['reset', '--hard', 'HEAD'], options)
+
     if (not os.path.exists(self.checkout_path) or
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
@@ -798,6 +812,12 @@ class GitWrapper(SCMWrapper):
     # Equivalent to unix basename
     base_url = self.url
     return base_url[:base_url.rfind('/')] + url
+
+  def GetGitBackupDirPath(self):
+    """Returns the path where the .git folder for the current project can be
+    staged/restored. Use case: subproject moved from DEPS <-> outer project."""
+    return os.path.join(self._root_dir,
+                        'old_' + self.relpath.replace(os.sep, '_')) + '.git'
 
   def _GetMirror(self, url, options):
     """Get a git_cache.Mirror object for the argument url."""

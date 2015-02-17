@@ -1245,6 +1245,8 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     self.root_dir = '/tmp' if sys.platform != 'win32' else 't:\\tmp'
     self.relpath = 'fake'
     self.base_path = os.path.join(self.root_dir, self.relpath)
+    self.backup_base_path = os.path.join(self.root_dir,
+                                         'old_%s.git' % self.relpath)
 
   def tearDown(self):
     BaseTestCase.tearDown(self)
@@ -1354,6 +1356,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
 
     gclient_scm.os.path.isdir(
         os.path.join(self.base_path, '.git', 'hooks')).AndReturn(False)
+    gclient_scm.os.path.exists(self.backup_base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
@@ -1384,6 +1387,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
 
     gclient_scm.os.path.isdir(
         os.path.join(self.base_path, '.git', 'hooks')).AndReturn(False)
+    gclient_scm.os.path.exists(self.backup_base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
