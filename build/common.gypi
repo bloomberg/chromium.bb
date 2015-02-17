@@ -4020,6 +4020,10 @@
                     'cflags!': [
                        '-fstack-protector',  # stack protector is always enabled on arm64.
                     ],
+                  }],
+                  # TODO: Remove webview test once webview fully compiles from
+                  # Chromium. crbug.com/440793
+                  ['OS=="android" and android_webview_build==0', {
                     'ldflags': [
                       '-fuse-ld=gold',
                     ],
