@@ -21,6 +21,6 @@ namespace browser {
     // |options|  : The $(ref:OpenTabOptions) for this function.
     // |callback| : Called to indicate success or failure.
     static void openTab(OpenTabOptions options,
-                        Callback callback);
+                        optional Callback callback);
   };
 };
