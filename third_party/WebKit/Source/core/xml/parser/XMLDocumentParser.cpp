@@ -933,14 +933,31 @@ struct xmlSAX2Attributes {
     const xmlChar* end;
 };
 
-static inline void handleElementAttributes(Vector<Attribute>& prefixedAttributes, const xmlChar** libxmlAttributes, int nbAttributes, ExceptionState& exceptionState)
+static inline void handleElementAttributes(Vector<Attribute>& prefixedAttributes, const xmlChar** libxmlAttributes, int nbAttributes,
+    const HashMap<AtomicString, AtomicString>& initialPrefixToNamespaceMap, ExceptionState& exceptionState)
 {
     xmlSAX2Attributes* attributes = reinterpret_cast<xmlSAX2Attributes*>(libxmlAttributes);
     for (int i = 0; i < nbAttributes; ++i) {
         int valueLength = static_cast<int>(attributes[i].end - attributes[i].value);
         AtomicString attrValue = toAtomicString(attributes[i].value, valueLength);
-        String attrPrefix = toString(attributes[i].prefix);
-        AtomicString attrURI = attrPrefix.isEmpty() ? AtomicString() : toAtomicString(attributes[i].uri);
+        AtomicString attrPrefix = toAtomicString(attributes[i].prefix);
+        AtomicString attrURI;
+        if (!attrPrefix.isEmpty()) {
+            // If provided, use the namespace URI from libxml2 because libxml2
+            // updates its namespace table as it parses whereas the
+            // initialPrefixToNamespaceMap is the initial map from namespace
+            // prefixes to namespace URIs created by the XMLDocumentParser
+            // constructor (in the case where we are parsing an XML fragment).
+            if (attributes[i].uri) {
+                attrURI = toAtomicString(attributes[i].uri);
+            } else {
+                const HashMap<AtomicString, AtomicString>::const_iterator it = initialPrefixToNamespaceMap.find(attrPrefix);
+                if (it != initialPrefixToNamespaceMap.end())
+                    attrURI = it->value;
+                else
+                    attrURI = AtomicString();
+            }
+        }
         AtomicString attrQName = attrPrefix.isEmpty() ? toAtomicString(attributes[i].localname) : attrPrefix + ":" + toString(attributes[i].localname);
 
         QualifiedName parsedName = anyName;
@@ -992,7 +1009,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
         return;
     }
 
-    handleElementAttributes(prefixedAttributes, libxmlAttributes, nbAttributes, exceptionState);
+    handleElementAttributes(prefixedAttributes, libxmlAttributes, nbAttributes, m_prefixToNamespaceMap, exceptionState);
     setAttributes(newElement.get(), prefixedAttributes, parserContentPolicy());
     if (exceptionState.hadException()) {
         stopParsing();
