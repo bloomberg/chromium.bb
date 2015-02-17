@@ -11,38 +11,28 @@ namespace blink {
 
 namespace {
 
-bool onlyLengthToAuto(Rect* startRect, Rect* endRect)
+bool onlyInterpolateBetweenLengthAndCSSValueAuto(Rect& startRect, Rect& endRect)
 {
-    return (startRect->left()->isLength() == endRect->left()->isValueID() || endRect->left()->isLength() == startRect->left()->isValueID())
-        && (startRect->right()->isLength() == endRect->right()->isValueID() || endRect->right()->isLength() == startRect->right()->isValueID())
-        && (startRect->top()->isLength() == endRect->top()->isValueID() || endRect->top()->isLength() == startRect->top()->isValueID())
-        && (startRect->bottom()->isLength() == endRect->bottom()->isValueID() || endRect->bottom()->isLength() == startRect->bottom()->isValueID());
+    return startRect.left()->isLength() != endRect.left()->isLength()
+        && startRect.right()->isLength() != endRect.right()->isLength()
+        && startRect.top()->isLength() != endRect.top()->isLength()
+        && startRect.bottom()->isLength() != endRect.bottom()->isLength();
 }
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> LengthBoxStyleInterpolation::maybeCreateFrom(CSSValue* start, CSSValue* end, CSSPropertyID id)
+PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> LengthBoxStyleInterpolation::maybeCreateFrom(CSSValue& start, CSSValue& end, CSSPropertyID id)
 {
-    bool startRect = start->isPrimitiveValue() && toCSSPrimitiveValue(start)->isRect();
-    bool endRect = end->isPrimitiveValue() && toCSSPrimitiveValue(end)->isRect();
-    bool startAuto = start->isPrimitiveValue() && toCSSPrimitiveValue(start)->isValueID() && toCSSPrimitiveValue(start)->getValueID() == CSSValueAuto;
-    bool endAuto = end->isPrimitiveValue() && toCSSPrimitiveValue(end)->isValueID() && toCSSPrimitiveValue(end)->getValueID() == CSSValueAuto;
+    bool startRect = start.isPrimitiveValue() && toCSSPrimitiveValue(start).isRect();
+    bool endRect = end.isPrimitiveValue() && toCSSPrimitiveValue(end).isRect();
 
-    if (startAuto || endAuto) {
-        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(InterpolableBool::create(false), InterpolableBool::create(true), id, false, start, end));
-    }
     if (startRect && endRect) {
-        Rect* startRectValue = toCSSPrimitiveValue(start)->getRectValue();
-        Rect* endRectValue = toCSSPrimitiveValue(end)->getRectValue();
-
-        if (onlyLengthToAuto(startRectValue, endRectValue))
-            return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(InterpolableBool::create(false), InterpolableBool::create(true), id, false, start, end));
-        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(*start, *end, false), lengthBoxtoInterpolableValue(*end, *start, true), id, false, start, end));
+        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(start, end, false), lengthBoxtoInterpolableValue(end, start, true), id, false, &start, &end));
     }
-    if (start->isBorderImageSliceValue() && toCSSBorderImageSliceValue(start)->slices()
-        && end->isBorderImageSliceValue() && toCSSBorderImageSliceValue(end)->slices()
-        && toCSSBorderImageSliceValue(start)->m_fill == toCSSBorderImageSliceValue(end)->m_fill)
-        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(borderImageSlicetoInterpolableValue(*start), borderImageSlicetoInterpolableValue(*end), id, toCSSBorderImageSliceValue(start)->m_fill, start, end));
+    if (start.isBorderImageSliceValue() && toCSSBorderImageSliceValue(start).slices()
+        && end.isBorderImageSliceValue() && toCSSBorderImageSliceValue(end).slices()
+        && toCSSBorderImageSliceValue(start).m_fill == toCSSBorderImageSliceValue(end).m_fill)
+        return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(borderImageSlicetoInterpolableValue(start), borderImageSlicetoInterpolableValue(end), id, toCSSBorderImageSliceValue(start).m_fill, &start, &end));
     return nullptr;
 }
 
@@ -66,16 +56,28 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
     return result.release();
 }
 
+bool LengthBoxStyleInterpolation::usesDefaultInterpolation(const CSSValue& start, const CSSValue& end)
+{
+    if (!start.isPrimitiveValue() || !end.isPrimitiveValue())
+        return false;
+    const CSSPrimitiveValue& startValue = toCSSPrimitiveValue(start);
+    const CSSPrimitiveValue& endValue = toCSSPrimitiveValue(end);
+    if ((startValue.isValueID() && startValue.getValueID() == CSSValueAuto)
+        || (endValue.isValueID() && endValue.getValueID() == CSSValueAuto))
+        return true;
+    return onlyInterpolateBetweenLengthAndCSSValueAuto(*startValue.getRectValue(), *endValue.getRectValue());
+}
+
 namespace {
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> findValue(InterpolableList* lengthBox, size_t i, CSSPrimitiveValue* start[], CSSPrimitiveValue* end[])
+PassRefPtr<CSSPrimitiveValue> indexedValueToLength(InterpolableList& lengthBox, size_t i, CSSPrimitiveValue* start[], CSSPrimitiveValue* end[])
 {
-    if (lengthBox->get(i)->isBool()) {
-        if (toInterpolableBool(lengthBox->get(i))->value())
+    if (lengthBox.get(i)->isBool()) {
+        if (toInterpolableBool(lengthBox.get(i))->value())
             return end[i];
         return start[i];
     }
-    return LengthStyleInterpolation::fromInterpolableValue(*lengthBox->get(i), RangeAll);
+    return LengthStyleInterpolation::fromInterpolableValue(*lengthBox.get(i), RangeAll);
 }
 
 }
@@ -89,10 +91,10 @@ PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueT
     CSSPrimitiveValue* endSides[4] = { endRect->left(), endRect->right(), endRect->top(), endRect->bottom() };
     RefPtrWillBeRawPtr<Rect> result = Rect::create();
 
-    result->setLeft(findValue(lengthBox, 0, startSides, endSides));
-    result->setRight(findValue(lengthBox, 1, startSides, endSides));
-    result->setTop(findValue(lengthBox, 2, startSides, endSides));
-    result->setBottom(findValue(lengthBox, 3, startSides, endSides));
+    result->setLeft(indexedValueToLength(*lengthBox, 0, startSides, endSides));
+    result->setRight(indexedValueToLength(*lengthBox, 1, startSides, endSides));
+    result->setTop(indexedValueToLength(*lengthBox, 2, startSides, endSides));
+    result->setBottom(indexedValueToLength(*lengthBox, 3, startSides, endSides));
 
     return CSSPrimitiveValue::create(result.release());
 }

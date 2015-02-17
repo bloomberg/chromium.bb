@@ -13,9 +13,9 @@ namespace blink {
 
 class LengthBoxStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> maybeCreateFrom(CSSValue*, CSSValue*, CSSPropertyID);
+    static PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> maybeCreateFrom(CSSValue&, CSSValue&, CSSPropertyID);
 
-    static bool usesDefault(const CSSValue&, const CSSValue&);
+    static bool usesDefaultInterpolation(const CSSValue&, const CSSValue&);
 
     virtual void apply(StyleResolverState&) const override;
     virtual void trace(Visitor*) override;
