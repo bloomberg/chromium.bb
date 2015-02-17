@@ -11,5 +11,6 @@
     ImplementedAs=ServiceWorkerClient,
 ] interface Client {
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;
-    [Custom, RaisesException, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
+    // FIXME: Un-deprecate when the discussion on https://github.com/slightlyoff/ServiceWorker/issues/609 settles.
+    [Custom, RaisesException, DeprecateAs=ServiceWorkerClientPostMessage, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 };

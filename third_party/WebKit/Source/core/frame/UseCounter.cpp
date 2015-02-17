@@ -859,6 +859,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case SVGSVGElementUnsuspendRedrawAll:
         return "'SVGSVGElement.unsuspendRedrawAll()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedrawAll).";
 
+    case ServiceWorkerClientPostMessage:
+        return "'Client.postMessage()' is an experimental API and may change. See https://github.com/slightlyoff/ServiceWorker/issues/609.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
