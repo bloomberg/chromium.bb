@@ -38,8 +38,8 @@
 #import "core/layout/PaintInfo.h"
 #import "core/layout/style/AuthorStyleInfo.h"
 #import "core/layout/style/ShadowList.h"
-#import "core/rendering/RenderMedia.h"
-#import "core/rendering/RenderMediaControls.h"
+#import "core/layout/LayoutMedia.h"
+#import "core/layout/LayoutMediaControls.h"
 #import "core/rendering/RenderMeter.h"
 #import "core/rendering/RenderProgress.h"
 #import "core/rendering/RenderView.h"
@@ -1765,27 +1765,27 @@ bool LayoutThemeChromiumMac::shouldShowPlaceholderWhenFocused() const
 
 void LayoutThemeChromiumMac::adjustMediaSliderThumbSize(LayoutStyle& style) const
 {
-    RenderMediaControls::adjustMediaSliderThumbSize(style);
+    LayoutMediaControls::adjustMediaSliderThumbSize(style);
 }
 
 bool LayoutThemeChromiumMac::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
 String LayoutThemeChromiumMac::extraFullScreenStyleSheet()
@@ -1809,37 +1809,37 @@ bool LayoutThemeChromiumMac::paintMediaVolumeSliderContainer(LayoutObject* objec
 
 bool LayoutThemeChromiumMac::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
 String LayoutThemeChromiumMac::formatMediaControlsTime(float time) const
 {
-    return RenderMediaControls::formatMediaControlsTime(time);
+    return LayoutMediaControls::formatMediaControlsTime(time);
 }
 
 String LayoutThemeChromiumMac::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
-    return RenderMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
+    return LayoutMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
 bool LayoutThemeChromiumMac::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumMac::shouldUseFallbackTheme(const LayoutStyle& style) const

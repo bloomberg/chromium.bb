@@ -39,7 +39,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutVideo::LayoutVideo(HTMLVideoElement* video)
-    : RenderMedia(video)
+    : LayoutMedia(video)
 {
     setIntrinsicSize(calculateIntrinsicSize());
 }
@@ -56,7 +56,7 @@ LayoutSize LayoutVideo::defaultSize()
 void LayoutVideo::intrinsicSizeChanged()
 {
     if (videoElement()->shouldDisplayPosterImage())
-        RenderMedia::intrinsicSizeChanged();
+        LayoutMedia::intrinsicSizeChanged();
     updateIntrinsicSize();
 }
 
@@ -112,7 +112,7 @@ LayoutSize LayoutVideo::calculateIntrinsicSize()
 
 void LayoutVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
-    RenderMedia::imageChanged(newImage, rect);
+    LayoutMedia::imageChanged(newImage, rect);
 
     // Cache the image intrinsic size so we can continue to use it to draw the image correctly
     // even if we know the video intrinsic size but aren't able to draw video frames yet
@@ -153,7 +153,7 @@ bool LayoutVideo::acceleratedRenderingInUse()
 void LayoutVideo::layout()
 {
     updatePlayer();
-    RenderMedia::layout();
+    LayoutMedia::layout();
 }
 
 HTMLVideoElement* LayoutVideo::videoElement() const
@@ -163,7 +163,7 @@ HTMLVideoElement* LayoutVideo::videoElement() const
 
 void LayoutVideo::updateFromElement()
 {
-    RenderMedia::updateFromElement();
+    LayoutMedia::updateFromElement();
     updatePlayer();
 }
 
@@ -218,28 +218,28 @@ LayoutUnit LayoutVideo::offsetLeft() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetLeft();
-    return RenderMedia::offsetLeft();
+    return LayoutMedia::offsetLeft();
 }
 
 LayoutUnit LayoutVideo::offsetTop() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetTop();
-    return RenderMedia::offsetTop();
+    return LayoutMedia::offsetTop();
 }
 
 LayoutUnit LayoutVideo::offsetWidth() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetWidth();
-    return RenderMedia::offsetWidth();
+    return LayoutMedia::offsetWidth();
 }
 
 LayoutUnit LayoutVideo::offsetHeight() const
 {
     if (const RenderBlock* block = rendererPlaceholder(this))
         return block->offsetHeight();
-    return RenderMedia::offsetHeight();
+    return LayoutMedia::offsetHeight();
 }
 
 CompositingReasons LayoutVideo::additionalCompositingReasons() const

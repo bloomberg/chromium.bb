@@ -27,19 +27,19 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderMediaControlElements.h"
+#include "core/layout/LayoutTextTrackContainerElement.h"
 
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
 
-RenderTextTrackContainerElement::RenderTextTrackContainerElement(Element* element)
+LayoutTextTrackContainerElement::LayoutTextTrackContainerElement(Element* element)
     : RenderBlockFlow(element)
 {
 }
 
-void RenderTextTrackContainerElement::layout()
+void LayoutTextTrackContainerElement::layout()
 {
     RenderBlockFlow::layout();
     if (style()->display() == NONE)

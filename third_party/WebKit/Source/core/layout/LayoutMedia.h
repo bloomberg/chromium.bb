@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderMedia_h
-#define RenderMedia_h
+#ifndef LayoutMedia_h
+#define LayoutMedia_h
 
 #include "core/layout/LayoutImage.h"
 
@@ -32,15 +32,15 @@ namespace blink {
 
 class HTMLMediaElement;
 
-class RenderMedia : public LayoutImage {
+class LayoutMedia : public LayoutImage {
 public:
-    explicit RenderMedia(HTMLMediaElement*);
-    virtual ~RenderMedia();
+    explicit LayoutMedia(HTMLMediaElement*);
+    virtual ~LayoutMedia();
 
     LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
-    // If you have a RenderMedia, use firstChild or lastChild instead.
+    // If you have a LayoutMedia, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -60,13 +60,13 @@ private:
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
-    // FIXME: RenderMedia::layout makes assumptions about what children are allowed
+    // FIXME: LayoutMedia::layout makes assumptions about what children are allowed
     // so we can't support generated content.
     virtual bool canHaveGeneratedChildren() const override final { return false; }
     virtual bool canHaveChildren() const override final { return true; }
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override final;
 
-    virtual const char* renderName() const override { return "RenderMedia"; }
+    virtual const char* renderName() const override { return "LayoutMedia"; }
     virtual bool isImage() const override final { return false; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
@@ -75,8 +75,8 @@ private:
     LayoutObjectChildList m_children;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMedia, isMedia());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMedia, isMedia());
 
 } // namespace blink
 
-#endif // RenderMedia_h
+#endif // LayoutMedia_h

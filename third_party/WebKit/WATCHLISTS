@@ -174,7 +174,8 @@
       'filepath': 'Source/core/css/mediaControls' \
                   '|Source/core/html/.*(Audio|Media|Video)' \
                   '|Source/core/html/shadow/MediaControl' \
-                  '|Source/core/rendering/RenderMedia' \
+                  '|Source/core/layout/LayoutMedia' \
+                  '|Source/core/layout/LayoutTextTrackContainerElement' \
                   '|Source/modules/(encryptedmedia|mediasource)' \
                   '|Source/platform/drm/' \
                   '|Source/platform/graphics/media/' \

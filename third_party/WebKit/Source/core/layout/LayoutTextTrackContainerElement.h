@@ -25,8 +25,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderMediaControlElements_h
-#define RenderMediaControlElements_h
+#ifndef LayoutTextTrackContainerElement_h
+#define LayoutTextTrackContainerElement_h
 
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/rendering/RenderBlockFlow.h"
@@ -34,9 +34,9 @@
 
 namespace blink {
 
-class RenderTextTrackContainerElement final : public RenderBlockFlow {
+class LayoutTextTrackContainerElement final : public RenderBlockFlow {
 public:
-    RenderTextTrackContainerElement(Element*);
+    LayoutTextTrackContainerElement(Element*);
 
 private:
     virtual void layout() override;
@@ -45,5 +45,5 @@ private:
 
 } // namespace blink
 
-#endif // RenderMediaControlElements_h
+#endif // LayoutTextTrackContainerElement_h
 

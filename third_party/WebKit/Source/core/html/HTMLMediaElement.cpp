@@ -572,7 +572,7 @@ bool HTMLMediaElement::rendererIsNeeded(const LayoutStyle& style)
 
 LayoutObject* HTMLMediaElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderMedia(this);
+    return new LayoutMedia(this);
 }
 
 Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode* insertionPoint)

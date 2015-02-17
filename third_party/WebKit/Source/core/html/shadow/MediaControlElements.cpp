@@ -45,10 +45,10 @@
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/layout/LayoutSlider.h"
+#include "core/layout/LayoutTextTrackContainerElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/page/EventHandler.h"
-#include "core/rendering/RenderMediaControlElements.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -621,7 +621,7 @@ PassRefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> MediaControlTextTr
 
 LayoutObject* MediaControlTextTrackContainerElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderTextTrackContainerElement(this);
+    return new LayoutTextTrackContainerElement(this);
 }
 
 void MediaControlTextTrackContainerElement::updateDisplay()

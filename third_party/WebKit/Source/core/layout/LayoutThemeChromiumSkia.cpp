@@ -24,11 +24,11 @@
 #include "config.h"
 #include "core/layout/LayoutThemeChromiumSkia.h"
 
+#include "core/layout/LayoutMediaControls.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutThemeChromiumFontProvider.h"
 #include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderMediaControls.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
@@ -293,67 +293,67 @@ bool LayoutThemeChromiumSkia::paintSearchFieldResultsDecoration(LayoutObject* ma
 
 bool LayoutThemeChromiumSkia::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
 void LayoutThemeChromiumSkia::adjustSliderThumbSize(LayoutStyle& style, Element*) const
 {
-    RenderMediaControls::adjustMediaSliderThumbSize(style);
+    LayoutMediaControls::adjustMediaSliderThumbSize(style);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
+    return LayoutMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaCastButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
+    return LayoutMediaControls::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
 
 String LayoutThemeChromiumSkia::formatMediaControlsTime(float time) const
 {
-    return RenderMediaControls::formatMediaControlsTime(time);
+    return LayoutMediaControls::formatMediaControlsTime(time);
 }
 
 String LayoutThemeChromiumSkia::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
-    return RenderMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
+    return LayoutMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
 bool LayoutThemeChromiumSkia::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
+    return LayoutMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
 void LayoutThemeChromiumSkia::adjustMenuListStyle(LayoutStyle& style, Element*) const

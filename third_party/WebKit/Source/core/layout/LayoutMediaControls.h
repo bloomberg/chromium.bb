@@ -25,8 +25,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderMediaControls_h
-#define RenderMediaControls_h
+#ifndef LayoutMediaControls_h
+#define LayoutMediaControls_h
 
 #include "core/html/shadow/MediaControlElements.h"
 
@@ -37,7 +37,7 @@ struct PaintInfo;
 class IntRect;
 class LayoutObject;
 
-class RenderMediaControls {
+class LayoutMediaControls {
 public:
     static bool paintMediaControlsPart(MediaControlElementType, LayoutObject*, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(LayoutStyle&);
@@ -47,4 +47,4 @@ public:
 
 } // namespace blink
 
-#endif // RenderMediaControls_h
+#endif // LayoutMediaControls_h

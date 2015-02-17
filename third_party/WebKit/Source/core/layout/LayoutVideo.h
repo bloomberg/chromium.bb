@@ -26,13 +26,13 @@
 #ifndef LayoutVideo_h
 #define LayoutVideo_h
 
-#include "core/rendering/RenderMedia.h"
+#include "core/layout/LayoutMedia.h"
 
 namespace blink {
 
 class HTMLVideoElement;
 
-class LayoutVideo final : public RenderMedia {
+class LayoutVideo final : public LayoutMedia {
 public:
     LayoutVideo(HTMLVideoElement*);
     virtual ~LayoutVideo();
@@ -58,7 +58,7 @@ private:
 
     virtual const char* renderName() const override { return "LayoutVideo"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || RenderMedia::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || LayoutMedia::isOfType(type); }
 
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 

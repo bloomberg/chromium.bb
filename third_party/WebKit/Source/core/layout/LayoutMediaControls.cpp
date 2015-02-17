@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderMediaControls.h"
+#include "core/layout/LayoutMediaControls.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
@@ -366,7 +366,7 @@ static bool paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInf
     }
 }
 
-bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutMediaControls::paintMediaControlsPart(MediaControlElementType part, LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     switch (part) {
     case MediaMuteButton:
@@ -415,7 +415,7 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, L
 const int mediaSliderThumbHeight = 24;
 const int mediaVolumeSliderThumbHeight = 24;
 
-void RenderMediaControls::adjustMediaSliderThumbSize(LayoutStyle& style)
+void LayoutMediaControls::adjustMediaSliderThumbSize(LayoutStyle& style)
 {
     static Image* mediaSliderThumb = platformResource("mediaplayerSliderThumb");
     static Image* mediaVolumeSliderThumb = platformResource("mediaplayerVolumeSliderThumb");
@@ -464,12 +464,12 @@ static String formatChromiumMediaControlsTime(float time, float duration)
     return String::format("%s%01d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
 }
 
-String RenderMediaControls::formatMediaControlsTime(float time)
+String LayoutMediaControls::formatMediaControlsTime(float time)
 {
     return formatChromiumMediaControlsTime(time, time);
 }
 
-String RenderMediaControls::formatMediaControlsCurrentTime(float currentTime, float duration)
+String LayoutMediaControls::formatMediaControlsCurrentTime(float currentTime, float duration)
 {
     return formatChromiumMediaControlsTime(currentTime, duration);
 }

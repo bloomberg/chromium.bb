@@ -25,29 +25,29 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderMedia.h"
+#include "core/layout/LayoutMedia.h"
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
 
-RenderMedia::RenderMedia(HTMLMediaElement* video)
+LayoutMedia::LayoutMedia(HTMLMediaElement* video)
     : LayoutImage(video)
 {
     setImageResource(LayoutImageResource::create());
 }
 
-RenderMedia::~RenderMedia()
+LayoutMedia::~LayoutMedia()
 {
 }
 
-HTMLMediaElement* RenderMedia::mediaElement() const
+HTMLMediaElement* LayoutMedia::mediaElement() const
 {
     return toHTMLMediaElement(node());
 }
 
-void RenderMedia::layout()
+void LayoutMedia::layout()
 {
     LayoutSize oldSize = contentBoxRect().size();
 
@@ -71,7 +71,7 @@ void RenderMedia::layout()
     clearNeedsLayout();
 }
 
-bool RenderMedia::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutMedia::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     // The only allowed child is the media controls. The user agent stylesheet
     // (mediaControls.css) has ::-webkit-media-controls { display: flex; }. If
@@ -81,7 +81,7 @@ bool RenderMedia::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
     return child->isFlexibleBox();
 }
 
-void RenderMedia::paintReplaced(const PaintInfo&, const LayoutPoint&)
+void LayoutMedia::paintReplaced(const PaintInfo&, const LayoutPoint&)
 {
 }
 
