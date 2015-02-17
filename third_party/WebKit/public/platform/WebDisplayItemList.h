@@ -35,7 +35,7 @@ public:
     virtual ~WebDisplayItemList() { }
 
     // This grabs a ref on the passed-in SkPicture.
-    virtual void appendDrawingItem(SkPicture*, const WebFloatPoint& location) = 0;
+    virtual void appendDrawingItem(const SkPicture*) = 0;
 
     virtual void appendClipItem(const WebRect&, const WebVector<SkRRect>&) = 0;
     virtual void appendEndClipItem() = 0;

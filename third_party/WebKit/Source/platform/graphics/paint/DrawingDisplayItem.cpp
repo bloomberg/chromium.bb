@@ -17,16 +17,16 @@ void DrawingDisplayItem::replay(GraphicsContext* context)
 
 void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    // FIXME: the offset is no longer necessary and should be removed.
-    // FIXME: SkPictures are immutable - update WebDisplayItemList to take a const SkPicture*
-    list->appendDrawingItem(const_cast<SkPicture*>(m_picture.get()), FloatPoint());
+    list->appendDrawingItem(m_picture.get());
 }
 
 #ifndef NDEBUG
 void DrawingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", location: [%f,%f]", m_picture->cullRect().x(), m_picture->cullRect().y()));
+    stringBuilder.append(WTF::String::format(", rect: [%f,%f,%f,%f]",
+        m_picture->cullRect().x(), m_picture->cullRect().y(),
+        m_picture->cullRect().width(), m_picture->cullRect().height()));
 }
 #endif
 
