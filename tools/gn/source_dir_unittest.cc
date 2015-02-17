@@ -6,13 +6,7 @@
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
 
-// Fails on windows. http://crbug.com/458939
-#if defined(OS_WIN)
-#define MAYBE_ResolveRelativeFile DISABLED_ResolveRelativeFile
-#else
-#define MAYBE_ResolveRelativeFile ResolveRelativeFile
-#endif
-TEST(SourceDir, MAYBE_ResolveRelativeFile) {
+TEST(SourceDir, ResolveRelativeFile) {
   SourceDir base("//base/");
 #if defined(OS_WIN)
   base::StringPiece source_root("C:/source/root");
@@ -47,7 +41,7 @@ TEST(SourceDir, MAYBE_ResolveRelativeFile) {
   // expect an absolute path.
 #if defined(OS_WIN)
   EXPECT_TRUE(base.ResolveRelativeFile("../../foo", source_root) ==
-              SourceFile("C:/source/foo"));
+              SourceFile("/C:/source/foo"));
 #else
   EXPECT_TRUE(base.ResolveRelativeFile("../../foo", source_root) ==
               SourceFile("/source/foo"));
@@ -62,13 +56,7 @@ TEST(SourceDir, MAYBE_ResolveRelativeFile) {
 #endif
 }
 
-// Fails on windows. http://crbug.com/458939
-#if defined(OS_WIN)
-#define MAYBE_ResolveRelativeDir DISABLED_ResolveRelativeDir
-#else
-#define MAYBE_ResolveRelativeDir ResolveRelativeDir
-#endif
-TEST(SourceDir, MAYBE_ResolveRelativeDir) {
+TEST(SourceDir, ResolveRelativeDir) {
   SourceDir base("//base/");
 #if defined(OS_WIN)
   base::StringPiece source_root("C:/source/root");
@@ -97,16 +85,16 @@ TEST(SourceDir, MAYBE_ResolveRelativeDir) {
   // expect an absolute path.
 #if defined(OS_WIN)
   EXPECT_TRUE(base.ResolveRelativeDir("../../foo", source_root) ==
-              SourceDir("C:/source/foo/"));
+              SourceDir("/C:/source/foo/"));
 #else
   EXPECT_TRUE(base.ResolveRelativeDir("../../foo", source_root) ==
               SourceDir("/source/foo/"));
 #endif
 
 #if defined(OS_WIN)
-  // Note that we don't canonicalize the existing backslashes to forward
-  // slashes. This could potentially be changed in the future which would mean
-  // we should just change the expected result.
+  // Canonicalize the existing backslashes to forward slashes and add a
+  // leading slash if necessary.
+  EXPECT_TRUE(base.ResolveRelativeDir("\\C:\\foo") == SourceDir("/C:/foo/"));
   EXPECT_TRUE(base.ResolveRelativeDir("C:\\foo") == SourceDir("/C:/foo/"));
 #endif
 }

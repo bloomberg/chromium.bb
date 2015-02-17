@@ -162,9 +162,11 @@ source_set("sandbox") {
   }
 
   deps = [
-    ":copy_wow_helper",
     "//base",
   ]
+  if (cpu_arch == "x86") {
+    deps += [ ":copy_wow_helper" ]
+  }
 }
 
 if (cpu_arch == "x86") {
