@@ -49,6 +49,7 @@
 #include "net/dns/host_resolver_proc.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/udp/datagram_client_socket.h"
+#include "url/url_canon_ip.h"
 
 #if defined(OS_WIN)
 #include "net/base/winsock_init.h"
@@ -2154,7 +2155,13 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
   AddressFamily effective_address_family = info.address_family();
 
   if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED) {
-    if (probe_ipv6_support_ && !use_local_ipv6_) {
+    unsigned char ip_number[4];
+    url::Component host_comp(0, info.hostname().size());
+    int num_components;
+    if (probe_ipv6_support_ && !use_local_ipv6_ &&
+        // Don't bother IPv6 probing when resolving IPv4 literals.
+        url::IPv4AddressToNumber(info.hostname().c_str(), host_comp, ip_number,
+                                 &num_components) != url::CanonHostInfo::IPV4) {
       // Google DNS address.
       const uint8 kIPv6Address[] =
           { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
