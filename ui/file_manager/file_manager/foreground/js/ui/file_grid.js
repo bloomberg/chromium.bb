@@ -303,7 +303,7 @@ FileGrid.decorateThumbnailBox_ = function(
 
 /**
  * Sets thumbnail image to the box.
- * @param {!HTMLDivElement} thumbnail A div element to hold thumbnails.
+ * @param {!HTMLDivElement} box A div element to hold thumbnails.
  * @param {string} dataUrl Data url of thumbnail.
  * @private
  */
