@@ -104,8 +104,8 @@ class CopresenceService final : public BrowserContextKeyedAPI,
   std::map<std::string, std::string> api_keys_by_app_;
   std::map<std::string, std::string> auth_tokens_by_app_;
 
-  scoped_ptr<copresence::CopresenceManager> manager_;
   scoped_ptr<ChromeWhispernetClient> whispernet_client_;
+  scoped_ptr<copresence::CopresenceManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceService);
 };
