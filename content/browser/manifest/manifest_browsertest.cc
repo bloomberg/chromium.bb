@@ -312,4 +312,57 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, Navigation) {
   }
 }
 
+// If a page has a manifest and the page is navigated using pushState (ie. same
+// page), it should keep its manifest state.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, PushStateNavigation) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL test_url =
+      embedded_test_server()->GetURL("/manifest/dummy-manifest.html");
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    shell()->LoadURL(test_url);
+    navigation_observer.Wait();
+  }
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(content::ExecuteScript(
+        shell()->web_contents(),
+        "history.pushState({foo: \"bar\"}, 'page', 'page.html');"));
+    navigation_observer.Wait();
+  }
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
+}
+
+// If a page has a manifest and is navigated using an anchor (ie. same page), it
+// should keep its manifest state.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, AnchorNavigation) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL test_url =
+      embedded_test_server()->GetURL("/manifest/dummy-manifest.html");
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    shell()->LoadURL(test_url);
+    navigation_observer.Wait();
+  }
+
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    ASSERT_TRUE(content::ExecuteScript(
+        shell()->web_contents(),
+        "var a = document.createElement('a'); a.href='#foo';"
+        "document.body.appendChild(a); a.click();"));
+    navigation_observer.Wait();
+  }
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
+}
+
 } // namespace content
