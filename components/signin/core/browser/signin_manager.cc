@@ -74,14 +74,23 @@ SigninManager::SigninManager(SigninClient* client,
 
 void SigninManager::AddMergeSessionObserver(
     MergeSessionHelper::Observer* observer) {
-  if (merge_session_helper_)
-    merge_session_helper_->AddObserver(observer);
+  merge_session_observer_list_.AddObserver(observer);
 }
 
 void SigninManager::RemoveMergeSessionObserver(
     MergeSessionHelper::Observer* observer) {
-  if (merge_session_helper_)
-    merge_session_helper_->RemoveObserver(observer);
+  merge_session_observer_list_.RemoveObserver(observer);
+}
+
+void SigninManager::MergeSessionCompleted(const std::string& account_id,
+                                          const GoogleServiceAuthError& error) {
+  FOR_EACH_OBSERVER(MergeSessionHelper::Observer, merge_session_observer_list_,
+                    MergeSessionCompleted(account_id, error));
+}
+
+void SigninManager::GetCheckConnectionInfoCompleted(bool succeeded) {
+  FOR_EACH_OBSERVER(MergeSessionHelper::Observer, merge_session_observer_list_,
+                    GetCheckConnectionInfoCompleted(succeeded));
 }
 
 SigninManager::~SigninManager() {}
@@ -275,8 +284,10 @@ void SigninManager::Initialize(PrefService* local_state) {
 
 void SigninManager::Shutdown() {
   account_tracker_service_->RemoveObserver(this);
-  if (merge_session_helper_)
+  if (merge_session_helper_) {
     merge_session_helper_->CancelAll();
+    merge_session_helper_->RemoveObserver(this);
+  }
 
   local_state_pref_registrar_.RemoveAll();
   account_id_helper_.reset();
@@ -363,13 +374,16 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
   if (!IsAuthenticated())
     return;
 
-  // Don't execute 2 MergeSessionHelpers. New account takes priority.
-  if (merge_session_helper_.get() && merge_session_helper_->is_running())
-    merge_session_helper_->CancelAll();
+  // Don't execute two MergeSessionHelpers. New account takes priority.
+  if (merge_session_helper_) {
+    if (merge_session_helper_->is_running())
+      merge_session_helper_->CancelAll();
+    merge_session_helper_->RemoveObserver(this);
+  }
 
   merge_session_helper_.reset(new MergeSessionHelper(
       token_service_, GaiaConstants::kChromeSource,
-      client_->GetURLRequestContext(), NULL));
+      client_->GetURLRequestContext(), this));
 
   merge_session_helper_->LogIn(GetAuthenticatedAccountId());
 }
