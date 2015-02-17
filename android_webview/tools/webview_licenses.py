@@ -18,6 +18,7 @@ aren't in a third-party directory with a README.chromium file.
 
 import glob
 import imp
+import json
 import multiprocessing
 import optparse
 import os
@@ -161,11 +162,14 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
           '\n'.join(sorted(stale))
 
   if unknown:
-    return ScanResult.Errors
+    code = ScanResult.Errors
   elif stale or missing:
-    return ScanResult.Warnings
+    code = ScanResult.Warnings
   else:
-    return ScanResult.Ok
+    code = ScanResult.Ok
+
+  problem_paths = sorted(set(unknown + missing + stale))
+  return (code, problem_paths)
 
 
 def _ReadFile(full_path, mode='rU'):
@@ -241,6 +245,8 @@ def _Scan():
 
   third_party_dirs = _FindThirdPartyDirs()
 
+  problem_paths = []
+
   # First, check designated third-party directories using src/tools/licenses.py.
   all_licenses_valid = True
   for path in sorted(third_party_dirs):
@@ -249,13 +255,18 @@ def _Scan():
     except licenses.LicenseError, e:
       if not (path in known_issues.KNOWN_ISSUES):
         print 'Got LicenseError "%s" while scanning %s' % (e, path)
+        problem_paths.append(path)
         all_licenses_valid = False
 
   # Second, check for non-standard license text.
   whitelisted_files = copyright_scanner.LoadWhitelistedFilesList(InputApi())
-  licenses_check = _CheckLicenseHeaders(third_party_dirs, whitelisted_files)
+  licenses_check, more_problem_paths = _CheckLicenseHeaders(
+      third_party_dirs, whitelisted_files)
 
-  return licenses_check if all_licenses_valid else ScanResult.Errors
+  problem_paths.extend(more_problem_paths)
+
+  return (licenses_check if all_licenses_valid else ScanResult.Errors,
+          problem_paths)
 
 
 class TemplateEntryGenerator(object):
@@ -350,6 +361,7 @@ def main():
 
   parser = optparse.OptionParser(formatter=FormatterWithNewLines(),
                                  usage='%prog [options]')
+  parser.add_option('--json', help='Path to JSON output file')
   parser.description = (__doc__ +
                         '\nCommands:\n'
                         '  scan Check licenses.\n'
@@ -364,15 +376,18 @@ def main():
                         ' known_issues.py).\n'
                         '  display_copyrights Display autorship on the files'
                         ' using names provided via stdin.\n')
-  (_, args) = parser.parse_args()
+  (options, args) = parser.parse_args()
   if len(args) < 1:
     parser.print_help()
     return ScanResult.Errors
 
   if args[0] == 'scan':
-    scan_result = _Scan()
+    scan_result, problem_paths = _Scan()
     if scan_result == ScanResult.Ok:
       print 'OK!'
+    if options.json:
+      with open(options.json, 'w') as f:
+        json.dump(problem_paths, f)
     return scan_result
   elif args[0] == 'notice_deps':
     # 'set' is used to eliminate duplicate references to the same license file.

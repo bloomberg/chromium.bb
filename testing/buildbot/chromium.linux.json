@@ -554,5 +554,21 @@
       "unit_tests",
       "skia_unittests"
     ]
+  },
+  "Android Tests (dbg)": {
+    "scripts": [
+      {
+        "name": "check_licenses",
+        "script": "webview_licenses.py"
+      }
+    ]
+  },
+  "Android Tests": {
+    "scripts": [
+      {
+        "name": "check_licenses",
+        "script": "webview_licenses.py"
+      }
+    ]
   }
 }
