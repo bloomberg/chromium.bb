@@ -686,7 +686,7 @@ DirectoryContents.prototype.setFileList = function(fileList) {
  */
 DirectoryContents.prototype.createMetadataSnapshot = function() {
   var snapshot = {};
-  var entries = this.fileList_.slice();
+  var entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
   var metadata = this.context_.fileSystemMetadata.getCache(
       entries, ['modificationTime']);
   for (var i = 0; i < entries.length; i++) {
@@ -724,7 +724,7 @@ DirectoryContents.prototype.replaceContextFileList = function() {
     // Check updated files and dispatch change events.
     if (this.metadataSnapshot_) {
       var updatedIndexes = [];
-      var entries = this.fileList_.slice();
+      var entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
       var newMetadatas = this.context_.fileSystemMetadata.getCache(
           entries, ['modificationTime']);
 
