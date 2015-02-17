@@ -14,13 +14,18 @@
   "ime_path": "/usr/share/chromeos-assets/input_methods/pinyin",
   "input_components": [
     {
-    "name": "__MSG_inputmethod_pinyin__",
-    "type": "ime",
-    "id": "zh-t-i0-pinyin",
-    "indicator": "\u62FC",
-    "description": "Pinyin",
-    "language": ["zh-CN", "zh"],
-    "layouts": ["us"]
+      "name": "__MSG_inputmethod_pinyin__",
+      "type": "ime",
+      "id": "zh-t-i0-pinyin",
+      "indicator": "\u62fc",
+      "description": "Pinyin",
+      "language": [
+        "zh-CN",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ]
     }
   ],
   "options_page": "option.html",

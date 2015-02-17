@@ -14,23 +14,30 @@
     "page": "nacl_mozc.html"
   },
   "ime_path": "/usr/share/chromeos-assets/input_methods/nacl_mozc",
-  "input_components": [{
-    "name": "__MSG_inputmethod_mozc_us__",
-    "type": "ime",
-    "id": "nacl_mozc_us",
-    "indicator": "\u3042",
-    "description": "Japanese input method.",
-    "language": "ja",
-    "layouts": ["us"]
-  },{
-    "name": "__MSG_inputmethod_mozc_jp__",
-    "type": "ime",
-    "id": "nacl_mozc_jp",
-    "indicator": "\u3042",
-    "description": "Japanese input method.",
-    "language": "ja",
-    "layouts": ["jp"]
-  }],
+  "input_components": [
+    {
+      "name": "__MSG_inputmethod_mozc_us__",
+      "type": "ime",
+      "id": "nacl_mozc_us",
+      "indicator": "\u3042",
+      "description": "Japanese input method.",
+      "language": "ja",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_mozc_jp__",
+      "type": "ime",
+      "id": "nacl_mozc_jp",
+      "indicator": "\u3042",
+      "description": "Japanese input method.",
+      "language": "ja",
+      "layouts": [
+        "jp"
+      ]
+    }
+  ],
   "options_page": "options.html",
   "icons": {
     "128": "product_icon_32bpp-128.png"

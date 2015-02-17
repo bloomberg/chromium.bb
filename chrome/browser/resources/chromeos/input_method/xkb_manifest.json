@@ -22,8 +22,15 @@
       "type": "ime",
       "id": "xkb:us::eng",
       "description": "",
-      "language": ["en", "en-US", "en-AU", "en-NZ"],
-      "layouts": ["us"],
+      "language": [
+        "en",
+        "en-US",
+        "en-AU",
+        "en-NZ"
+      ],
+      "layouts": [
+        "us"
+      ],
       "input_view": "inputview.html?id=us.compact.qwerty&language=en-US&passwordLayout=us.compact.qwerty&name=keyboard_us"
     },
     {
@@ -31,8 +38,12 @@
       "type": "ime",
       "id": "xkb:us::ind",
       "description": "",
-      "language": ["id"],
-      "layouts": ["us"],
+      "language": [
+        "id"
+      ],
+      "layouts": [
+        "us"
+      ],
       "input_view": "inputview.html?id=us&language=id&passwordLayout=us&name=keyboard_us"
     },
     {
@@ -40,8 +51,12 @@
       "type": "ime",
       "id": "xkb:us::fil",
       "description": "",
-      "language": ["fil"],
-      "layouts": ["us"],
+      "language": [
+        "fil"
+      ],
+      "layouts": [
+        "us"
+      ],
       "input_view": "inputview.html?id=us&language=fil&passwordLayout=us&name=keyboard_us"
     },
     {
@@ -49,8 +64,12 @@
       "type": "ime",
       "id": "xkb:us::msa",
       "description": "",
-      "language": ["ms"],
-      "layouts": ["us"],
+      "language": [
+        "ms"
+      ],
+      "layouts": [
+        "us"
+      ],
       "input_view": "inputview.html?id=us&language=ms&passwordLayout=us&name=keyboard_us"
     },
     {
@@ -59,8 +78,13 @@
       "id": "xkb:us:intl:eng",
       "indicator": "INTL",
       "description": "",
-      "language": ["en", "en-US"],
-      "layouts": ["us(intl)"],
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
       "input_view": "inputview.html?id=us-intl&language=en-US&passwordLayout=us-intl&name=keyboard_us_international"
     },
     {
@@ -69,8 +93,12 @@
       "id": "xkb:us:intl:nld",
       "indicator": "NLD",
       "description": "",
-      "language": ["nl"],
-      "layouts": ["us(intl)"],
+      "language": [
+        "nl"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
       "input_view": "inputview.html?id=nl.compact.qwerty&language=nl&passwordLayout=nl.compact.qwerty&name=keyboard_netherlands"
     },
     {
@@ -79,8 +107,12 @@
       "id": "xkb:us:intl:por",
       "indicator": "INTL",
       "description": "",
-      "language": ["pt-BR"],
-      "layouts": ["us(intl)"],
+      "language": [
+        "pt-BR"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
       "input_view": "inputview.html?id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international"
     },
     {
@@ -89,8 +121,13 @@
       "id": "xkb:us:altgr-intl:eng",
       "indicator": "EXTD",
       "description": "",
-      "language": ["en", "en-US"],
-      "layouts": ["us(altgr-intl)"],
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(altgr-intl)"
+      ],
       "input_view": "inputview.html?id=us-altgr-intl&language=en-US&passwordLayout=us-altgr-intl&name=keyboard_us_extended"
     },
     {
@@ -99,8 +136,13 @@
       "id": "xkb:us:dvorak:eng",
       "indicator": "DV",
       "description": "",
-      "language": ["en", "en-US"],
-      "layouts": ["us(dvorak)"],
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(dvorak)"
+      ],
       "input_view": "inputview.html?id=us-dvorak&language=en-US&passwordLayout=us-dvorak&name=keyboard_us_dvorak"
     },
     {
@@ -109,8 +151,13 @@
       "id": "xkb:us:colemak:eng",
       "indicator": "CO",
       "description": "",
-      "language": ["en", "en-US"],
-      "layouts": ["us(colemak)"],
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(colemak)"
+      ],
       "input_view": "inputview.html?id=us-colemak&language=en-US&passwordLayout=us-colemak&name=keyboard_us_colemak"
     },
     {
@@ -118,8 +165,12 @@
       "type": "ime",
       "id": "xkb:be::nld",
       "description": "",
-      "language": ["nl"],
-      "layouts": ["be"],
+      "language": [
+        "nl"
+      ],
+      "layouts": [
+        "be"
+      ],
       "input_view": "inputview.html?id=be&language=nl&passwordLayout=be&name=keyboard_belgian"
     },
     {
@@ -127,8 +178,13 @@
       "type": "ime",
       "id": "xkb:fr::fra",
       "description": "",
-      "language": ["fr", "fr-FR"],
-      "layouts": ["fr"],
+      "language": [
+        "fr",
+        "fr-FR"
+      ],
+      "layouts": [
+        "fr"
+      ],
       "input_view": "inputview.html?id=fr.compact.qwerty&language=fr&passwordLayout=fr.compact.qwerty&name=keyboard_french"
     },
     {
@@ -136,8 +192,12 @@
       "type": "ime",
       "id": "xkb:be::fra",
       "description": "",
-      "language": ["fr"],
-      "layouts": ["be"],
+      "language": [
+        "fr"
+      ],
+      "layouts": [
+        "be"
+      ],
       "input_view": "inputview.html?id=be&language=fr&passwordLayout=be&name=keyboard_belgian"
     },
     {
@@ -145,8 +205,13 @@
       "type": "ime",
       "id": "xkb:ca::fra",
       "description": "",
-      "language": ["fr", "fr-CA"],
-      "layouts": ["ca"],
+      "language": [
+        "fr",
+        "fr-CA"
+      ],
+      "layouts": [
+        "ca"
+      ],
       "input_view": "inputview.html?id=ca.compact.qwerty&language=fr&passwordLayout=ca.compact.qwerty&name=keyboard_canadian_french"
     },
     {
@@ -154,8 +219,13 @@
       "type": "ime",
       "id": "xkb:ch:fr:fra",
       "description": "",
-      "language": ["fr", "fr-CH"],
-      "layouts": ["ch(fr)"],
+      "language": [
+        "fr",
+        "fr-CH"
+      ],
+      "layouts": [
+        "ch(fr)"
+      ],
       "input_view": "inputview.html?id=ch-fr&language=fr&passwordLayout=ch-fr&name=keyboard_swiss_french"
     },
     {
@@ -163,8 +233,13 @@
       "type": "ime",
       "id": "xkb:ca:multix:fra",
       "description": "",
-      "language": ["fr", "fr-CA"],
-      "layouts": ["ca(multix)"],
+      "language": [
+        "fr",
+        "fr-CA"
+      ],
+      "layouts": [
+        "ca(multix)"
+      ],
       "input_view": "inputview.html?id=ca-multix&language=fr&passwordLayout=ca-multix&name=keyboard_canadian_multilingual"
     },
     {
@@ -172,8 +247,13 @@
       "type": "ime",
       "id": "xkb:de::ger",
       "description": "",
-      "language": ["de", "de-DE"],
-      "layouts": ["de"],
+      "language": [
+        "de",
+        "de-DE"
+      ],
+      "layouts": [
+        "de"
+      ],
       "input_view": "inputview.html?id=de.compact.qwerty&language=de&passwordLayout=de.compact.qwerty&name=keyboard_german"
     },
     {
@@ -182,8 +262,13 @@
       "id": "xkb:de:neo:ger",
       "indicator": "NEO",
       "description": "",
-      "language": ["de", "de-DE"],
-      "layouts": ["de(neo)"],
+      "language": [
+        "de",
+        "de-DE"
+      ],
+      "layouts": [
+        "de(neo)"
+      ],
       "input_view": "inputview.html?id=de-neo&language=de&passwordLayout=de-neo&name=keyboard_german_neo_2"
     },
     {
@@ -191,8 +276,12 @@
       "type": "ime",
       "id": "xkb:be::ger",
       "description": "",
-      "language": ["de"],
-      "layouts": ["be"],
+      "language": [
+        "de"
+      ],
+      "layouts": [
+        "be"
+      ],
       "input_view": "inputview.html?id=be&language=de&passwordLayout=be&name=keyboard_belgian"
     },
     {
@@ -200,8 +289,13 @@
       "type": "ime",
       "id": "xkb:ch::ger",
       "description": "",
-      "language": ["de", "de-CH"],
-      "layouts": ["ch"],
+      "language": [
+        "de",
+        "de-CH"
+      ],
+      "layouts": [
+        "ch"
+      ],
       "input_view": "inputview.html?id=ch&language=de&passwordLayout=ch&name=keyboard_swiss"
     },
     {
@@ -210,8 +304,12 @@
       "id": "xkb:jp::jpn",
       "indicator": "JA",
       "description": "",
-      "language": ["ja"],
-      "layouts": ["jp"],
+      "language": [
+        "ja"
+      ],
+      "layouts": [
+        "jp"
+      ],
       "input_view": "inputview.html?id=jp&language=ja&passwordLayout=jp&name=keyboard_japanese"
     },
     {
@@ -219,8 +317,12 @@
       "type": "ime",
       "id": "xkb:ru::rus",
       "description": "",
-      "language": ["ru"],
-      "layouts": ["ru"],
+      "language": [
+        "ru"
+      ],
+      "layouts": [
+        "ru"
+      ],
       "input_view": "inputview.html?id=ru&language=ru&passwordLayout=us&name=keyboard_russian"
     },
     {
@@ -228,8 +330,12 @@
       "type": "ime",
       "id": "xkb:ru:phonetic:rus",
       "description": "",
-      "language": ["ru"],
-      "layouts": ["ru(phonetic)"],
+      "language": [
+        "ru"
+      ],
+      "layouts": [
+        "ru(phonetic)"
+      ],
       "input_view": "inputview.html?id=ru-phonetic&language=ru&passwordLayout=us&name=keyboard_russian_phonetic"
     },
     {
@@ -237,8 +343,13 @@
       "type": "ime",
       "id": "xkb:br::por",
       "description": "",
-      "language": ["pt-BR", "pt"],
-      "layouts": ["br"],
+      "language": [
+        "pt-BR",
+        "pt"
+      ],
+      "layouts": [
+        "br"
+      ],
       "input_view": "inputview.html?id=br&language=pt-BR&passwordLayout=br&name=keyboard_brazilian"
     },
     {
@@ -246,8 +357,12 @@
       "type": "ime",
       "id": "xkb:bg::bul",
       "description": "",
-      "language": ["bg"],
-      "layouts": ["bg"],
+      "language": [
+        "bg"
+      ],
+      "layouts": [
+        "bg"
+      ],
       "input_view": "inputview.html?id=bg&language=bg&passwordLayout=us&name=keyboard_bulgarian"
     },
     {
@@ -255,8 +370,12 @@
       "type": "ime",
       "id": "xkb:bg:phonetic:bul",
       "description": "",
-      "language": ["bg"],
-      "layouts": ["bg(phonetic)"],
+      "language": [
+        "bg"
+      ],
+      "layouts": [
+        "bg(phonetic)"
+      ],
       "input_view": "inputview.html?id=bg-phonetic&language=bg&passwordLayout=us&name=keyboard_bulgarian_phonetic"
     },
     {
@@ -264,8 +383,13 @@
       "type": "ime",
       "id": "xkb:ca:eng:eng",
       "description": "",
-      "language": ["en", "en-CA"],
-      "layouts": ["ca(eng)"],
+      "language": [
+        "en",
+        "en-CA"
+      ],
+      "layouts": [
+        "ca(eng)"
+      ],
       "input_view": "inputview.html?id=ca-eng.compact.qwerty&language=en-CA&passwordLayout=ca-eng.compact.qwerty&name=keyboard_canadian_english"
     },
     {
@@ -273,8 +397,12 @@
       "type": "ime",
       "id": "xkb:cz::cze",
       "description": "",
-      "language": ["cs"],
-      "layouts": ["cz"],
+      "language": [
+        "cs"
+      ],
+      "layouts": [
+        "cz"
+      ],
       "input_view": "inputview.html?id=cz&language=cs&passwordLayout=cz&name=keyboard_czech"
     },
     {
@@ -283,8 +411,12 @@
       "id": "xkb:cz:qwerty:cze",
       "indicator": "CS",
       "description": "",
-      "language": ["cs"],
-      "layouts": ["cz(qwerty)"],
+      "language": [
+        "cs"
+      ],
+      "layouts": [
+        "cz(qwerty)"
+      ],
       "input_view": "inputview.html?id=cz-qwerty&language=cs&passwordLayout=cz-qwerty&name=keyboard_czech_qwerty"
     },
     {
@@ -292,8 +424,12 @@
       "type": "ime",
       "id": "xkb:ee::est",
       "description": "",
-      "language": ["et"],
-      "layouts": ["ee"],
+      "language": [
+        "et"
+      ],
+      "layouts": [
+        "ee"
+      ],
       "input_view": "inputview.html?id=ee&language=et&passwordLayout=ee&name=keyboard_estonian"
     },
     {
@@ -301,8 +437,12 @@
       "type": "ime",
       "id": "xkb:es::spa",
       "description": "",
-      "language": ["es"],
-      "layouts": ["es"],
+      "language": [
+        "es"
+      ],
+      "layouts": [
+        "es"
+      ],
       "input_view": "inputview.html?id=es&language=es&passwordLayout=es&name=keyboard_spanish"
     },
     {
@@ -311,8 +451,12 @@
       "id": "xkb:es:cat:cat",
       "indicator": "CAS",
       "description": "",
-      "language": ["ca"],
-      "layouts": ["es(cat)"],
+      "language": [
+        "ca"
+      ],
+      "layouts": [
+        "es(cat)"
+      ],
       "input_view": "inputview.html?id=es-cat&language=ca&passwordLayout=es-cat&name=keyboard_catalan"
     },
     {
@@ -320,8 +464,12 @@
       "type": "ime",
       "id": "xkb:dk::dan",
       "description": "",
-      "language": ["da"],
-      "layouts": ["dk"],
+      "language": [
+        "da"
+      ],
+      "layouts": [
+        "dk"
+      ],
       "input_view": "inputview.html?id=dk.compact.qwerty&language=da&passwordLayout=dk.compact.qwerty&name=keyboard_danish"
     },
     {
@@ -329,8 +477,12 @@
       "type": "ime",
       "id": "xkb:gr::gre",
       "description": "",
-      "language": ["el"],
-      "layouts": ["gr"],
+      "language": [
+        "el"
+      ],
+      "layouts": [
+        "gr"
+      ],
       "input_view": "inputview.html?id=gr&language=el&passwordLayout=us&name=keyboard_greek"
     },
     {
@@ -338,8 +490,12 @@
       "type": "ime",
       "id": "xkb:il::heb",
       "description": "",
-      "language": ["he"],
-      "layouts": ["il"],
+      "language": [
+        "he"
+      ],
+      "layouts": [
+        "il"
+      ],
       "input_view": "inputview.html?id=il&language=he&passwordLayout=us&name=keyboard_hebrew"
     },
     {
@@ -348,8 +504,13 @@
       "id": "xkb:latam::spa",
       "indicator": "LA",
       "description": "",
-      "language": ["es", "es-419"],
-      "layouts": ["latam"],
+      "language": [
+        "es",
+        "es-419"
+      ],
+      "layouts": [
+        "latam"
+      ],
       "input_view": "inputview.html?id=latam&language=es&passwordLayout=latam&name=keyboard_latin_american"
     },
     {
@@ -357,8 +518,12 @@
       "type": "ime",
       "id": "xkb:lt::lit",
       "description": "",
-      "language": ["lt"],
-      "layouts": ["lt"],
+      "language": [
+        "lt"
+      ],
+      "layouts": [
+        "lt"
+      ],
       "input_view": "inputview.html?id=lt&language=lt&passwordLayout=lt&name=keyboard_lithuanian"
     },
     {
@@ -366,8 +531,12 @@
       "type": "ime",
       "id": "xkb:lv:apostrophe:lav",
       "description": "",
-      "language": ["lv"],
-      "layouts": ["lv(apostrophe)"],
+      "language": [
+        "lv"
+      ],
+      "layouts": [
+        "lv(apostrophe)"
+      ],
       "input_view": "inputview.html?id=lv-apostrophe&language=lv&passwordLayout=lv-apostrophe&name=keyboard_latvian"
     },
     {
@@ -375,8 +544,12 @@
       "type": "ime",
       "id": "xkb:hr::scr",
       "description": "",
-      "language": ["hr"],
-      "layouts": ["hr"],
+      "language": [
+        "hr"
+      ],
+      "layouts": [
+        "hr"
+      ],
       "input_view": "inputview.html?id=hr&language=hr&passwordLayout=hr&name=keyboard_croatian"
     },
     {
@@ -384,8 +557,13 @@
       "type": "ime",
       "id": "xkb:gb:extd:eng",
       "description": "",
-      "language": ["en", "en-GB"],
-      "layouts": ["gb(extd)"],
+      "language": [
+        "en",
+        "en-GB"
+      ],
+      "layouts": [
+        "gb(extd)"
+      ],
       "input_view": "inputview.html?id=gb-extd.compact.qwerty&language=en-GB&passwordLayout=gb-extd.compact.qwerty&name=keyboard_uk"
     },
     {
@@ -394,8 +572,13 @@
       "id": "xkb:gb:dvorak:eng",
       "indicator": "DV",
       "description": "",
-      "language": ["en", "en-GB"],
-      "layouts": ["gb(dvorak)"],
+      "language": [
+        "en",
+        "en-GB"
+      ],
+      "layouts": [
+        "gb(dvorak)"
+      ],
       "input_view": "inputview.html?id=gb-dvorak&language=en-GB&passwordLayout=gb-dvorak&name=keyboard_uk_dvorak"
     },
     {
@@ -403,8 +586,12 @@
       "type": "ime",
       "id": "xkb:fi::fin",
       "description": "",
-      "language": ["fi"],
-      "layouts": ["fi"],
+      "language": [
+        "fi"
+      ],
+      "layouts": [
+        "fi"
+      ],
       "input_view": "inputview.html?id=fi.compact.qwerty&language=fi&passwordLayout=fi.compact.qwerty&name=keyboard_finnish"
     },
     {
@@ -412,8 +599,12 @@
       "type": "ime",
       "id": "xkb:hu::hun",
       "description": "",
-      "language": ["hu"],
-      "layouts": ["hu"],
+      "language": [
+        "hu"
+      ],
+      "layouts": [
+        "hu"
+      ],
       "input_view": "inputview.html?id=hu&language=hu&passwordLayout=hu&name=keyboard_hungarian"
     },
     {
@@ -421,8 +612,13 @@
       "type": "ime",
       "id": "xkb:it::ita",
       "description": "",
-      "language": ["it", "it-IT"],
-      "layouts": ["it"],
+      "language": [
+        "it",
+        "it-IT"
+      ],
+      "layouts": [
+        "it"
+      ],
       "input_view": "inputview.html?id=it&language=it&passwordLayout=it&name=keyboard_italian"
     },
     {
@@ -430,8 +626,12 @@
       "type": "ime",
       "id": "xkb:is::ice",
       "description": "",
-      "language": ["is"],
-      "layouts": ["is"],
+      "language": [
+        "is"
+      ],
+      "layouts": [
+        "is"
+      ],
       "input_view": "inputview.html?id=is.compact.qwerty&language=is&passwordLayout=is.compact.qwerty&name=keyboard_icelandic"
     },
     {
@@ -439,8 +639,14 @@
       "type": "ime",
       "id": "xkb:no::nob",
       "description": "",
-      "language": ["nb", "nn", "no"],
-      "layouts": ["no"],
+      "language": [
+        "nb",
+        "nn",
+        "no"
+      ],
+      "layouts": [
+        "no"
+      ],
       "input_view": "inputview.html?id=no.compact.qwerty&language=no&passwordLayout=no.compact.qwerty&name=keyboard_norwegian"
     },
     {
@@ -448,8 +654,12 @@
       "type": "ime",
       "id": "xkb:pl::pol",
       "description": "",
-      "language": ["pl"],
-      "layouts": ["pl"],
+      "language": [
+        "pl"
+      ],
+      "layouts": [
+        "pl"
+      ],
       "input_view": "inputview.html?id=pl&language=pl&passwordLayout=pl&name=keyboard_polish"
     },
     {
@@ -457,8 +667,13 @@
       "type": "ime",
       "id": "xkb:pt::por",
       "description": "",
-      "language": ["pt-PT", "pt"],
-      "layouts": ["pt"],
+      "language": [
+        "pt-PT",
+        "pt"
+      ],
+      "layouts": [
+        "pt"
+      ],
       "input_view": "inputview.html?id=pt&language=pt-PT&passwordLayout=pt&name=keyboard_portuguese"
     },
     {
@@ -466,8 +681,12 @@
       "type": "ime",
       "id": "xkb:ro::rum",
       "description": "",
-      "language": ["ro"],
-      "layouts": ["ro"],
+      "language": [
+        "ro"
+      ],
+      "layouts": [
+        "ro"
+      ],
       "input_view": "inputview.html?id=ro&language=ro&passwordLayout=ro&name=keyboard_romanian"
     },
     {
@@ -475,8 +694,12 @@
       "type": "ime",
       "id": "xkb:se::swe",
       "description": "",
-      "language": ["sv"],
-      "layouts": ["se"],
+      "language": [
+        "sv"
+      ],
+      "layouts": [
+        "se"
+      ],
       "input_view": "inputview.html?id=se.compact.qwerty&language=sv&passwordLayout=se.compact.qwerty&name=keyboard_swedish"
     },
     {
@@ -484,8 +707,12 @@
       "type": "ime",
       "id": "xkb:sk::slo",
       "description": "",
-      "language": ["sk"],
-      "layouts": ["sk"],
+      "language": [
+        "sk"
+      ],
+      "layouts": [
+        "sk"
+      ],
       "input_view": "inputview.html?id=sk&language=sk&passwordLayout=us&name=keyboard_slovakian"
     },
     {
@@ -493,8 +720,12 @@
       "type": "ime",
       "id": "xkb:si::slv",
       "description": "",
-      "language": ["sl"],
-      "layouts": ["si"],
+      "language": [
+        "sl"
+      ],
+      "layouts": [
+        "si"
+      ],
       "input_view": "inputview.html?id=si&language=sl&passwordLayout=si&name=keyboard_slovenian"
     },
     {
@@ -502,8 +733,12 @@
       "type": "ime",
       "id": "xkb:rs::srp",
       "description": "",
-      "language": ["sr"],
-      "layouts": ["rs"],
+      "language": [
+        "sr"
+      ],
+      "layouts": [
+        "rs"
+      ],
       "input_view": "inputview.html?id=rs&language=sr&passwordLayout=us&name=keyboard_serbian"
     },
     {
@@ -511,8 +746,12 @@
       "type": "ime",
       "id": "xkb:tr::tur",
       "description": "",
-      "language": ["tr"],
-      "layouts": ["tr"],
+      "language": [
+        "tr"
+      ],
+      "layouts": [
+        "tr"
+      ],
       "input_view": "inputview.html?id=tr&language=tr&passwordLayout=tr&name=keyboard_turkish"
     },
     {
@@ -520,8 +759,12 @@
       "type": "ime",
       "id": "xkb:ua::ukr",
       "description": "",
-      "language": ["uk"],
-      "layouts": ["ua"],
+      "language": [
+        "uk"
+      ],
+      "layouts": [
+        "ua"
+      ],
       "input_view": "inputview.html?id=ua&language=uk&passwordLayout=us&name=keyboard_ukrainian"
     },
     {
@@ -529,8 +772,12 @@
       "type": "ime",
       "id": "xkb:by::bel",
       "description": "",
-      "language": ["be"],
-      "layouts": ["by"],
+      "language": [
+        "be"
+      ],
+      "layouts": [
+        "by"
+      ],
       "input_view": "inputview.html?id=by&language=be&passwordLayout=us&name=keyboard_belarusian"
     },
     {
@@ -538,8 +785,12 @@
       "type": "ime",
       "id": "xkb:am:phonetic:arm",
       "description": "",
-      "language": ["hy"],
-      "layouts": ["am"],
+      "language": [
+        "hy"
+      ],
+      "layouts": [
+        "am"
+      ],
       "input_view": "inputview.html?id=am&language=hy&passwordLayout=us&name=keyboard_armenian_phonetic"
     },
     {
@@ -547,8 +798,12 @@
       "type": "ime",
       "id": "xkb:ge::geo",
       "description": "",
-      "language": ["ka"],
-      "layouts": ["ge"],
+      "language": [
+        "ka"
+      ],
+      "layouts": [
+        "ge"
+      ],
       "input_view": "inputview.html?id=ge&language=ka&passwordLayout=us&name=keyboard_georgian"
     },
     {
@@ -556,8 +811,12 @@
       "type": "ime",
       "id": "xkb:mn::mon",
       "description": "",
-      "language": ["mn"],
-      "layouts": ["mn"],
+      "language": [
+        "mn"
+      ],
+      "layouts": [
+        "mn"
+      ],
       "input_view": "inputview.html?id=mn&language=mn&passwordLayout=us&name=keyboard_mongolian"
     },
     {
@@ -565,8 +824,12 @@
       "type": "ime",
       "id": "xkb:ie::ga",
       "description": "",
-      "language": ["ga"],
-      "layouts": ["ie"],
+      "language": [
+        "ga"
+      ],
+      "layouts": [
+        "ie"
+      ],
       "input_view": "inputview.html?id=ie.compact.qwerty&language=ga&passwordLayout=ie.compact.qwerty&name=keyboard_irish"
     }
   ],

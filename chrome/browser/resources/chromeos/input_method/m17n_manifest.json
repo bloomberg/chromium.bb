@@ -8,7 +8,9 @@
     "input"
   ],
   "background": {
-    "scripts": ["cros_vk_background.js"]
+    "scripts": [
+      "cros_vk_background.js"
+    ]
   },
   "ime_path": "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
   "input_components": [
@@ -18,7 +20,9 @@
       "id": "vkd_bn_phone",
       "description": "",
       "language": "bn",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_gujarati_phonetic__",
@@ -26,15 +30,22 @@
       "id": "vkd_gu_phone",
       "description": "",
       "language": "gu",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_devanagari_phonetic__",
       "type": "ime",
       "id": "vkd_deva_phone",
       "description": "",
-      "language": ["hi", "mr"],
-      "layouts": ["us"]
+      "language": [
+        "hi",
+        "mr"
+      ],
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_kannada_phonetic__",
@@ -42,7 +53,9 @@
       "id": "vkd_kn_phone",
       "description": "",
       "language": "kn",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_malayalam_phonetic__",
@@ -50,7 +63,9 @@
       "id": "vkd_ml_phone",
       "description": "",
       "language": "ml",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_inscript__",
@@ -58,7 +73,9 @@
       "id": "vkd_ta_inscript",
       "description": "",
       "language": "ta",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_phonetic__",
@@ -66,7 +83,9 @@
       "id": "vkd_ta_phone",
       "description": "",
       "language": "ta",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_tamil99__",
@@ -74,7 +93,9 @@
       "id": "vkd_ta_tamil99",
       "description": "",
       "language": "ta",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_typewriter__",
@@ -82,7 +103,9 @@
       "id": "vkd_ta_typewriter",
       "description": "",
       "language": "ta",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_itrans__",
@@ -90,7 +113,9 @@
       "id": "vkd_ta_itrans",
       "description": "",
       "language": "ta",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_telugu_phonetic__",
@@ -98,7 +123,9 @@
       "id": "vkd_te_phone",
       "description": "",
       "language": "te",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_ethiopic__",
@@ -106,7 +133,9 @@
       "id": "vkd_ethi",
       "description": "",
       "language": "am",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_thai_kedmanee__",
@@ -114,7 +143,9 @@
       "id": "vkd_th",
       "description": "",
       "language": "th",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_thai_pattachote__",
@@ -122,7 +153,9 @@
       "id": "vkd_th_pattajoti",
       "description": "",
       "language": "th",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_thai_tis__",
@@ -130,7 +163,9 @@
       "id": "vkd_th_tis",
       "description": "",
       "language": "th",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_persian__",
@@ -138,7 +173,9 @@
       "id": "vkd_fa",
       "description": "",
       "language": "fa",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_tcvn__",
@@ -146,7 +183,9 @@
       "id": "vkd_vi_tcvn",
       "description": "",
       "language": "vi",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_telex__",
@@ -154,7 +193,9 @@
       "id": "vkd_vi_telex",
       "description": "",
       "language": "vi",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_viqr__",
@@ -162,7 +203,9 @@
       "id": "vkd_vi_viqr",
       "description": "",
       "language": "vi",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_vni__",
@@ -170,7 +213,9 @@
       "id": "vkd_vi_vni",
       "description": "",
       "language": "vi",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     },
     {
       "name": "__MSG_keyboard_arabic__",
@@ -178,7 +223,9 @@
       "id": "vkd_ar",
       "description": "",
       "language": "ar",
-      "layouts": ["us"]
+      "layouts": [
+        "us"
+      ]
     }
   ],
   "manifest_version": 2
