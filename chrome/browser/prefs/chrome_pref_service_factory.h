@@ -81,6 +81,10 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
 // |profile_path|.
 void SchedulePrefsFilePathVerification(const base::FilePath& profile_path);
 
+// Call before startup tasks kick in to ignore the presence of a domain when
+// determining the active SettingsEnforcement group. For testing only.
+void DisableDomainCheckForTesting();
+
 // Initializes the preferences for the profile at |profile_path| with the
 // preference values in |master_prefs|. Returns true on success.
 bool InitializePrefsFromMasterPrefs(

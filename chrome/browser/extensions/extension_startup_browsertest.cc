@@ -97,6 +97,14 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     return true;
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    // Bots are on a domain, turn off the domain check for settings hardening in
+    // order to be able to test all SettingsEnforcement groups.
+    chrome_prefs::DisableDomainCheckForTesting();
+  }
+
   void TearDown() override {
     EXPECT_TRUE(base::DeleteFile(preferences_file_, false));
 

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -248,6 +249,9 @@ class FirstRunMasterPrefsWithTrackedPreferences
     : public FirstRunMasterPrefsBrowserTestT<kWithTrackedPrefs>,
       public testing::WithParamInterface<std::string> {
  public:
+  FirstRunMasterPrefsWithTrackedPreferences() {}
+
+ protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FirstRunMasterPrefsBrowserTestT::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
@@ -255,6 +259,17 @@ class FirstRunMasterPrefsWithTrackedPreferences
         std::string(chrome_prefs::internals::kSettingsEnforcementTrialName) +
             "/" + GetParam() + "/");
   }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    FirstRunMasterPrefsBrowserTestT::SetUpInProcessBrowserTestFixture();
+
+    // Bots are on a domain, turn off the domain check for settings hardening in
+    // order to be able to test all SettingsEnforcement groups.
+    chrome_prefs::DisableDomainCheckForTesting();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsWithTrackedPreferences);
 };
 
 // http://crbug.com/314221

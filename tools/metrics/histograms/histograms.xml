@@ -33438,13 +33438,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Settings.TrackedPreferencesNoEnforcementOnDomain"
     enum="BooleanEnabled">
-  <obsolete>
-    Deprecated 2014-10.
-  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Whether settings enforcement was cancelled for a machine joined to a domain.
-    Reported once per session on browser startup.
+    Reported once per session on browser startup (note: this histogram was
+    disabled for part of M40).
   </summary>
 </histogram>
 
