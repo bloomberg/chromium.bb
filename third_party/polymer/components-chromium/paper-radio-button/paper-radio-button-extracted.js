@@ -74,8 +74,7 @@
     },
     
     checkedChanged: function() {
-      this.$.onRadio.classList.toggle('fill', this.checked);
-      this.setAttribute('aria-checked', this.checked ? 'true': 'false');
+      this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
       this.fire('core-change');
     },
     
