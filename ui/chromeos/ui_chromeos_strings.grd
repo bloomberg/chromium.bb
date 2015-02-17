@@ -367,7 +367,6 @@
         http://www.magdawasiczek.pl
       </message>
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_33">
-        http://www.flickr.com/photos/ginkage
       </message>
 
       <message name="IDS_CHROMEOS_IME_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
