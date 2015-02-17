@@ -17,7 +17,7 @@
 <p>Bug 109616 - ASSERT(!renderer()->needsLayout()) when calling Element::focus() with generated content</p>
 
 <!--
-    This is testing a case where RenderQuote::updateDepth would mark the RenderQuote
+    This is testing a case where LayoutQuote::updateDepth would mark the LayoutQuote
     and its ancestors as needing layout in the middle of a layout of its ancestor.
     When its ancestor finishes the layout it will mark itself and the ancestors
     farther up as no longer needing layout. The end result is some subtree
@@ -32,7 +32,7 @@
             \
              RenderBlock (generated content) <- needsLayout
                 \
-                 RenderQuote <- needsLayout
+                 LayoutQuote <- needsLayout
 -->
 
 <div class="positioned"></div>

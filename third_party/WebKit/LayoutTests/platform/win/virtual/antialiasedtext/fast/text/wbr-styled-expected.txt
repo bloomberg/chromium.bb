@@ -24,12 +24,12 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,34) size 784x18
         RenderText {#text} at (0,0) size 128x17
           text run at (0,0) width 128: "There should be no "
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (127,0) size 100x17
           text run at (127,0) width 100: "red on this line."
       RenderBlock {P} at (0,68) size 784x18
         RenderText {#text} at (0,0) size 126x17
           text run at (0,0) width 126: "No crashing, please"
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (125,0) size 5x17
           text run at (125,0) width 5: "."

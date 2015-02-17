@@ -32,7 +32,7 @@
 #include "core/html/HTMLWBRElement.h"
 
 #include "core/HTMLNames.h"
-#include "core/rendering/RenderWordBreak.h"
+#include "core/layout/LayoutWordBreak.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ DEFINE_NODE_FACTORY(HTMLWBRElement)
 
 LayoutObject* HTMLWBRElement::createRenderer(const LayoutStyle& style)
 {
-    return new RenderWordBreak(this);
+    return new LayoutWordBreak(this);
 }
 
 }

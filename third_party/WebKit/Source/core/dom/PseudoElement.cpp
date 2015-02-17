@@ -30,8 +30,8 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutQuote.h"
 #include "core/layout/style/ContentData.h"
-#include "core/rendering/RenderQuote.h"
 
 namespace blink {
 
@@ -132,7 +132,7 @@ void PseudoElement::attach(const AttachContext& context)
         if (renderer->isChildAllowed(child, style)) {
             renderer->addChild(child);
             if (child->isQuote())
-                toRenderQuote(child)->attachQuote();
+                toLayoutQuote(child)->attachQuote();
         } else
             child->destroy();
     }

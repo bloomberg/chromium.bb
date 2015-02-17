@@ -10,6 +10,6 @@ layer at (0,0) size 800x600
         RenderBlock {A} at (1,1) size 200x25 [color=#0000EE] [bgcolor=#FFFFFF]
           RenderText {#text} at (0,3) size 20x19
             text run at (0,3) width 20: "foo"
-          RenderWordBreak {WBR} at (0,0) size 0x0
+          LayoutWordBreak {WBR} at (0,0) size 0x0
           RenderText {#text} at (20,3) size 20x19
             text run at (20,3) width 20: "bar"

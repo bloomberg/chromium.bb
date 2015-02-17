@@ -25,23 +25,23 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderWordBreak.h"
+#include "core/layout/LayoutWordBreak.h"
 
 #include "core/html/HTMLElement.h"
 
 namespace blink {
 
-RenderWordBreak::RenderWordBreak(HTMLElement* element)
+LayoutWordBreak::LayoutWordBreak(HTMLElement* element)
     : RenderText(element, StringImpl::empty())
 {
 }
 
-const char* RenderWordBreak::renderName() const
+const char* LayoutWordBreak::renderName() const
 {
-    return "RenderWordBreak";
+    return "LayoutWordBreak";
 }
 
-bool RenderWordBreak::isWordBreak() const
+bool LayoutWordBreak::isWordBreak() const
 {
     return true;
 }

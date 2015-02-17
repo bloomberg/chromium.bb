@@ -22,6 +22,6 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,86) size 100x36
         RenderText {#text} at (0,0) size 86x17
           text run at (0,0) width 86: "Lorem ipsum"
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (0,18) size 88x17
           text run at (0,18) width 88: "dolor sit amet"

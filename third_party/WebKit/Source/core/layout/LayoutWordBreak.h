@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef RenderWordBreak_h
-#define RenderWordBreak_h
+#ifndef LayoutWordBreak_h
+#define LayoutWordBreak_h
 
 #include "core/rendering/RenderText.h"
 
@@ -33,9 +33,9 @@ namespace blink {
 
 class HTMLElement;
 
-class RenderWordBreak final : public RenderText {
+class LayoutWordBreak final : public RenderText {
 public:
-    explicit RenderWordBreak(HTMLElement*);
+    explicit LayoutWordBreak(HTMLElement*);
 
     virtual const char* renderName() const override;
     virtual bool isWordBreak() const override;

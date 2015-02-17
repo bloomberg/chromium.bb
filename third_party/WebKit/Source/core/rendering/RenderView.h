@@ -35,7 +35,7 @@
 namespace blink {
 
 class LayerCompositor;
-class RenderQuote;
+class LayoutQuote;
 
 // The root of the render tree, corresponding to the CSS initial containing block.
 // It's dimensions match that of the logical viewport (which may be different from
@@ -148,8 +148,8 @@ public:
 
     IntervalArena* intervalArena();
 
-    void setRenderQuoteHead(RenderQuote* head) { m_renderQuoteHead = head; }
-    RenderQuote* renderQuoteHead() const { return m_renderQuoteHead; }
+    void setLayoutQuoteHead(LayoutQuote* head) { m_layoutQuoteHead = head; }
+    LayoutQuote* layoutQuoteHead() const { return m_layoutQuoteHead; }
 
     // FIXME: This is a work around because the current implementation of counters
     // requires walking the entire tree repeatedly and most pages don't actually use either
@@ -201,7 +201,7 @@ private:
     OwnPtr<LayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 
-    RenderQuote* m_renderQuoteHead;
+    LayoutQuote* m_layoutQuoteHead;
     unsigned m_layoutCounterCount;
 
     unsigned m_hitTestCount;

@@ -26,8 +26,8 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/LayoutImageResourceStyleImage.h"
+#include "core/layout/LayoutQuote.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderTextFragment.h"
 
 namespace blink {
@@ -93,7 +93,7 @@ LayoutObject* CounterContentData::createRenderer(Document& doc, LayoutStyle& pse
 
 LayoutObject* QuoteContentData::createRenderer(Document& doc, LayoutStyle& pseudoStyle) const
 {
-    LayoutObject* renderer = new RenderQuote(&doc, m_quote);
+    LayoutObject* renderer = new LayoutQuote(&doc, m_quote);
     renderer->setPseudoStyle(&pseudoStyle);
     return renderer;
 }

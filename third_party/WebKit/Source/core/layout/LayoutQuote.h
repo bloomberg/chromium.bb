@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef RenderQuote_h
-#define RenderQuote_h
+#ifndef LayoutQuote_h
+#define LayoutQuote_h
 
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/style/LayoutStyleConstants.h"
@@ -32,17 +32,17 @@ namespace blink {
 class Document;
 class RenderTextFragment;
 
-class RenderQuote final : public RenderInline {
+class LayoutQuote final : public RenderInline {
 public:
-    RenderQuote(Document*, const QuoteType);
-    virtual ~RenderQuote();
+    LayoutQuote(Document*, const QuoteType);
+    virtual ~LayoutQuote();
     void attachQuote();
 
 private:
     void detachQuote();
 
     virtual void willBeDestroyed() override;
-    virtual const char* renderName() const override { return "RenderQuote"; };
+    virtual const char* renderName() const override { return "LayoutQuote"; };
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || RenderInline::isOfType(type); }
     virtual void styleDidChange(StyleDifference, const LayoutStyle*) override;
     virtual void willBeRemovedFromTree() override;
@@ -57,14 +57,14 @@ private:
 
     QuoteType m_type;
     int m_depth;
-    RenderQuote* m_next;
-    RenderQuote* m_previous;
+    LayoutQuote* m_next;
+    LayoutQuote* m_previous;
     bool m_attached;
     String m_text;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutQuote, isQuote());
 
 } // namespace blink
 
-#endif // RenderQuote_h
+#endif // LayoutQuote_h

@@ -35,11 +35,11 @@
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutQuote.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/ViewPainter.h"
-#include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/TraceEvent.h"
@@ -59,7 +59,7 @@ RenderView::RenderView(Document* document)
     , m_pageLogicalHeight(0)
     , m_pageLogicalHeightChanged(false)
     , m_layoutState(0)
-    , m_renderQuoteHead(nullptr)
+    , m_layoutQuoteHead(nullptr)
     , m_layoutCounterCount(0)
     , m_hitTestCount(0)
 {

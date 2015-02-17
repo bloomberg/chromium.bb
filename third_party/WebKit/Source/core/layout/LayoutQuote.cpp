@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderQuote.h"
+#include "core/layout/LayoutQuote.h"
 
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
@@ -31,7 +31,7 @@
 
 namespace blink {
 
-RenderQuote::RenderQuote(Document* node, QuoteType quote)
+LayoutQuote::LayoutQuote(Document* node, QuoteType quote)
     : RenderInline(0)
     , m_type(quote)
     , m_depth(0)
@@ -42,25 +42,25 @@ RenderQuote::RenderQuote(Document* node, QuoteType quote)
     setDocumentForAnonymous(node);
 }
 
-RenderQuote::~RenderQuote()
+LayoutQuote::~LayoutQuote()
 {
     ASSERT(!m_attached);
     ASSERT(!m_next && !m_previous);
 }
 
-void RenderQuote::willBeDestroyed()
+void LayoutQuote::willBeDestroyed()
 {
     detachQuote();
     RenderInline::willBeDestroyed();
 }
 
-void RenderQuote::willBeRemovedFromTree()
+void LayoutQuote::willBeRemovedFromTree()
 {
     RenderInline::willBeRemovedFromTree();
     detachQuote();
 }
 
-void RenderQuote::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutQuote::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderInline::styleDidChange(diff, oldStyle);
     updateText();
@@ -234,7 +234,7 @@ const QuotesData* quotesDataForLanguage(const AtomicString& lang)
     if (lang.isNull())
         return 0;
 
-    // This could be just a hash table, but doing that adds 200k to RenderQuote.o
+    // This could be just a hash table, but doing that adds 200k to LayoutQuote.o
     Language* languagesEnd = languages + WTF_ARRAY_LENGTH(languages);
     CString lowercaseLang = lang.lower().utf8();
     Language key = { lowercaseLang.data(), 0, 0, 0, 0, 0 };
@@ -255,7 +255,7 @@ static const QuotesData* basicQuotesData()
     return staticBasicQuotes;
 }
 
-void RenderQuote::updateText()
+void LayoutQuote::updateText()
 {
     String text = computeText();
     if (m_text == text)
@@ -274,7 +274,7 @@ void RenderQuote::updateText()
     }
 }
 
-RenderTextFragment* RenderQuote::findFragmentChild() const
+RenderTextFragment* LayoutQuote::findFragmentChild() const
 {
     // We walk from the end of the child list because, if we've had a first-letter
     // renderer inserted then the remaining text will be at the end.
@@ -286,7 +286,7 @@ RenderTextFragment* RenderQuote::findFragmentChild() const
     return nullptr;
 }
 
-String RenderQuote::computeText() const
+String LayoutQuote::computeText() const
 {
     switch (m_type) {
     case NO_OPEN_QUOTE:
@@ -301,7 +301,7 @@ String RenderQuote::computeText() const
     return emptyString();
 }
 
-const QuotesData* RenderQuote::quotesData() const
+const QuotesData* LayoutQuote::quotesData() const
 {
     if (const QuotesData* customQuotes = style()->quotes())
         return customQuotes;
@@ -312,15 +312,15 @@ const QuotesData* RenderQuote::quotesData() const
     return basicQuotesData();
 }
 
-void RenderQuote::attachQuote()
+void LayoutQuote::attachQuote()
 {
     ASSERT(view());
     ASSERT(!m_attached);
     ASSERT(!m_next && !m_previous);
     ASSERT(isRooted());
 
-    if (!view()->renderQuoteHead()) {
-        view()->setRenderQuoteHead(this);
+    if (!view()->layoutQuoteHead()) {
+        view()->setLayoutQuoteHead(this);
         m_attached = true;
         return;
     }
@@ -328,9 +328,9 @@ void RenderQuote::attachQuote()
     for (LayoutObject* predecessor = previousInPreOrder(); predecessor; predecessor = predecessor->previousInPreOrder()) {
         // Skip unattached predecessors to avoid having stale m_previous pointers
         // if the previous node is never attached and is then destroyed.
-        if (!predecessor->isQuote() || !toRenderQuote(predecessor)->isAttached())
+        if (!predecessor->isQuote() || !toLayoutQuote(predecessor)->isAttached())
             continue;
-        m_previous = toRenderQuote(predecessor);
+        m_previous = toLayoutQuote(predecessor);
         m_next = m_previous->m_next;
         m_previous->m_next = this;
         if (m_next)
@@ -339,14 +339,14 @@ void RenderQuote::attachQuote()
     }
 
     if (!m_previous) {
-        m_next = view()->renderQuoteHead();
-        view()->setRenderQuoteHead(this);
+        m_next = view()->layoutQuoteHead();
+        view()->setLayoutQuoteHead(this);
         if (m_next)
             m_next->m_previous = this;
     }
     m_attached = true;
 
-    for (RenderQuote* quote = this; quote; quote = quote->m_next)
+    for (LayoutQuote* quote = this; quote; quote = quote->m_next)
         quote->updateDepth();
 
     ASSERT(!m_next || m_next->m_attached);
@@ -355,7 +355,7 @@ void RenderQuote::attachQuote()
     ASSERT(!m_previous || m_previous->m_next == this);
 }
 
-void RenderQuote::detachQuote()
+void LayoutQuote::detachQuote()
 {
     ASSERT(!m_next || m_next->m_attached);
     ASSERT(!m_previous || m_previous->m_attached);
@@ -370,11 +370,11 @@ void RenderQuote::detachQuote()
     if (m_previous)
         m_previous->m_next = m_next;
     else if (view())
-        view()->setRenderQuoteHead(m_next);
+        view()->setLayoutQuoteHead(m_next);
     if (m_next)
         m_next->m_previous = m_previous;
     if (!documentBeingDestroyed()) {
-        for (RenderQuote* quote = m_next; quote; quote = quote->m_next)
+        for (LayoutQuote* quote = m_next; quote; quote = quote->m_next)
             quote->updateDepth();
     }
     m_next = nullptr;
@@ -382,7 +382,7 @@ void RenderQuote::detachQuote()
     m_depth = 0;
 }
 
-void RenderQuote::updateDepth()
+void LayoutQuote::updateDepth()
 {
     ASSERT(m_attached);
     int oldDepth = m_depth;

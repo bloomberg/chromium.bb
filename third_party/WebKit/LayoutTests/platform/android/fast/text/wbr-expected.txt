@@ -22,7 +22,7 @@ layer at (0,0) size 800x846
       RenderBlock {DIV} at (0,142) size 302x42 [border: (1px solid #0000FF)]
         RenderText {#text} at (1,1) size 224x19
           text run at (1,1) width 224: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (1,21) size 256x19
           text run at (1,21) width 256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
       LayoutTable {TABLE} at (0,194) size 784x42
@@ -31,7 +31,7 @@ layer at (0,0) size 800x846
             LayoutTableCell {TD} at (0,0) size 258x42 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 224x19
                 text run at (1,1) width 224: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-              RenderWordBreak {WBR} at (0,0) size 0x0
+              LayoutWordBreak {WBR} at (0,0) size 0x0
               RenderText {#text} at (1,21) size 256x19
                 text run at (1,21) width 256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
             LayoutTableCell {TD} at (258,21) size 526x0 [r=0 c=1 rs=1 cs=1]
@@ -42,7 +42,7 @@ layer at (0,0) size 800x846
         RenderInline {NOBR} at (0,0) size 256x39
           RenderText {#text} at (1,1) size 224x19
             text run at (1,1) width 224: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-          RenderWordBreak {WBR} at (0,0) size 0x0
+          LayoutWordBreak {WBR} at (0,0) size 0x0
           RenderText {#text} at (1,21) size 256x19
             text run at (1,21) width 256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
       LayoutTable {TABLE} at (0,340) size 784x42
@@ -52,7 +52,7 @@ layer at (0,0) size 800x846
               RenderInline {NOBR} at (0,0) size 256x39
                 RenderText {#text} at (1,1) size 224x19
                   text run at (1,1) width 224: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                RenderWordBreak {WBR} at (0,0) size 0x0
+                LayoutWordBreak {WBR} at (0,0) size 0x0
                 RenderText {#text} at (1,21) size 256x19
                   text run at (1,21) width 256: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
             LayoutTableCell {TD} at (258,21) size 526x0 [r=0 c=1 rs=1 cs=1]
@@ -62,10 +62,10 @@ layer at (0,0) size 800x846
       RenderBlock {DIV} at (0,434) size 302x62 [border: (1px solid #0000FF)]
         RenderText {#text} at (1,1) size 168x19
           text run at (1,1) width 168: "aaaaaaaaaaaaaaaaaaaaaaaa"
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (1,21) size 192x19
           text run at (1,21) width 192: "bbbbbbbbbbbbbbbbbbbbbbbb"
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (1,41) size 168x19
           text run at (1,41) width 168: "cccccccccccccccccccccccc"
       LayoutTable {TABLE} at (0,506) size 784x62
@@ -74,10 +74,10 @@ layer at (0,0) size 800x846
             LayoutTableCell {TD} at (0,0) size 194x62 [border: (1px solid #008000)] [r=0 c=0 rs=1 cs=1]
               RenderText {#text} at (1,1) size 168x19
                 text run at (1,1) width 168: "aaaaaaaaaaaaaaaaaaaaaaaa"
-              RenderWordBreak {WBR} at (0,0) size 0x0
+              LayoutWordBreak {WBR} at (0,0) size 0x0
               RenderText {#text} at (1,21) size 192x19
                 text run at (1,21) width 192: "bbbbbbbbbbbbbbbbbbbbbbbb"
-              RenderWordBreak {WBR} at (0,0) size 0x0
+              LayoutWordBreak {WBR} at (0,0) size 0x0
               RenderText {#text} at (1,41) size 168x19
                 text run at (1,41) width 168: "cccccccccccccccccccccccc"
             LayoutTableCell {TD} at (194,31) size 590x0 [r=0 c=1 rs=1 cs=1]
@@ -88,10 +88,10 @@ layer at (0,0) size 800x846
         RenderInline {NOBR} at (0,0) size 192x59
           RenderText {#text} at (1,1) size 168x19
             text run at (1,1) width 168: "aaaaaaaaaaaaaaaaaaaaaaaa"
-          RenderWordBreak {WBR} at (0,0) size 0x0
+          LayoutWordBreak {WBR} at (0,0) size 0x0
           RenderText {#text} at (1,21) size 192x19
             text run at (1,21) width 192: "bbbbbbbbbbbbbbbbbbbbbbbb"
-          RenderWordBreak {WBR} at (0,0) size 0x0
+          LayoutWordBreak {WBR} at (0,0) size 0x0
           RenderText {#text} at (1,41) size 168x19
             text run at (1,41) width 168: "cccccccccccccccccccccccc"
       LayoutTable {TABLE} at (0,692) size 784x62
@@ -101,10 +101,10 @@ layer at (0,0) size 800x846
               RenderInline {NOBR} at (0,0) size 192x59
                 RenderText {#text} at (1,1) size 168x19
                   text run at (1,1) width 168: "aaaaaaaaaaaaaaaaaaaaaaaa"
-                RenderWordBreak {WBR} at (0,0) size 0x0
+                LayoutWordBreak {WBR} at (0,0) size 0x0
                 RenderText {#text} at (1,21) size 192x19
                   text run at (1,21) width 192: "bbbbbbbbbbbbbbbbbbbbbbbb"
-                RenderWordBreak {WBR} at (0,0) size 0x0
+                LayoutWordBreak {WBR} at (0,0) size 0x0
                 RenderText {#text} at (1,41) size 168x19
                   text run at (1,41) width 168: "cccccccccccccccccccccccc"
             LayoutTableCell {TD} at (194,31) size 590x0 [r=0 c=1 rs=1 cs=1]
@@ -114,6 +114,6 @@ layer at (0,0) size 800x846
       RenderBlock {DIV} at (0,806) size 302x22 [border: (1px solid #0000FF)]
         RenderText {#text} at (1,1) size 25x19
           text run at (1,1) width 25: "aaa "
-        RenderWordBreak {WBR} at (0,0) size 0x0
+        LayoutWordBreak {WBR} at (0,0) size 0x0
         RenderText {#text} at (26,1) size 24x19
           text run at (26,1) width 24: "bbb"
