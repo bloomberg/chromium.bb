@@ -29,6 +29,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -183,11 +184,18 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierNetworkPortalDetector);
 
+  bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-      l10n_util::GetStringUTF16(IDS_PORTAL_DETECTION_NOTIFICATION_TITLE),
-      l10n_util::GetStringFUTF16(IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE,
-                                 base::UTF8ToUTF16(network->name())),
+      l10n_util::GetStringUTF16(
+          is_wifi ?
+          IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI :
+          IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
+      l10n_util::GetStringFUTF16(
+          is_wifi ?
+          IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI :
+          IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
+          base::UTF8ToUTF16(network->name())),
       icon, base::string16() /* display_source */, notifier_id,
       message_center::RichNotificationData(),
       new NetworkPortalNotificationControllerDelegate(AsWeakPtr())));
