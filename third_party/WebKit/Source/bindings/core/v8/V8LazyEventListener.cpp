@@ -46,7 +46,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
 
 #include "wtf/StdLibExtras.h"
 
@@ -132,7 +131,6 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
         return;
 
     ScriptState::Scope scope(scriptState);
-    String listenerSource =  InspectorInstrumentation::preprocessEventListener(toDocument(executionContext)->frame(), m_code, m_sourceURL, m_functionName);
 
     // FIXME: Remove the following 'with' hack.
     //
@@ -156,7 +154,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
         "with (this[1]) {"
         "with (this[0]) {"
             "return function(" + m_eventParameterName + ") {" +
-                listenerSource + "\n" // Insert '\n' otherwise //-style comments could break the handler.
+                m_code + "\n" // Insert '\n' otherwise //-style comments could break the handler.
             "};"
         "}}}})";
 

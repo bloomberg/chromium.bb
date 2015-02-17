@@ -529,9 +529,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
     ScriptDebugListener* listener = getDebugListenerForContext(eventContext);
     if (listener) {
         v8::HandleScope scope(m_isolate);
-        if (event == v8::BeforeCompile) {
-            preprocessBeforeCompile(eventDetails);
-        } else if (event == v8::AfterCompile || event == v8::CompileError) {
+        if (event == v8::AfterCompile || event == v8::CompileError) {
             v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv);
@@ -750,16 +748,6 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
     } else {
         *result = ScriptValue(scriptState, value);
     }
-}
-
-ScriptSourceCode ScriptDebugServer::preprocess(LocalFrame*, const ScriptSourceCode&)
-{
-    return ScriptSourceCode();
-}
-
-String ScriptDebugServer::preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName)
-{
-    return source;
 }
 
 } // namespace blink

@@ -125,20 +125,6 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
     return false;
 }
 
-ScriptSourceCode preprocessImpl(InstrumentingAgents* instrumentingAgents, LocalFrame* frame, const ScriptSourceCode& sourceCode)
-{
-    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        return debuggerAgent->preprocess(frame, sourceCode);
-    return ScriptSourceCode();
-}
-
-String preprocessEventListenerImpl(InstrumentingAgents* instrumentingAgents, LocalFrame* frame, const String& source, const String& url, const String& functionName)
-{
-    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        return debuggerAgent->preprocessEventListener(frame, source, url, functionName);
-    return source;
-}
-
 void appendAsyncCallStack(ExecutionContext* executionContext, ScriptCallStack* callStack)
 {
     InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);

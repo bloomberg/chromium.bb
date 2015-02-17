@@ -1300,7 +1300,6 @@ crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFail
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
 crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
-crbug.com/394230 [ Debug ] inspector/sources/debugger/debugger-script-preprocessor.html [ Crash Pass ]
 
 # Failures that need further investigation.
 crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]

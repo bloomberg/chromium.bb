@@ -12,17 +12,5 @@ RUNNING TEST: extension_testReloadInjectsCodeWithMessage
 Page reloaded.
 Source received:
 (function(){console.log(42)})()
-RUNNING TEST: extension_testReloadPreprocessesCode
-Page reloaded.
-Page reloaded.
-With preprocessor:
-.js
-inspector-test.js.js
-debugger-test.js.js
-extensions-test.js.js
-console-test.js.js
-extensions-reload.html.js
-extensions-reload.html_onload.js
-Without preprocessor: undefined
 All tests done.
 

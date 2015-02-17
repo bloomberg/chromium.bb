@@ -100,7 +100,7 @@ public:
     void disable(ErrorString*) override;
     void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) override;
     void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
-    void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor) override;
+    void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad) override;
     void navigate(ErrorString*, const String& url, String* frameId) override;
     void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies) override;
     void deleteCookie(ErrorString*, const String& cookieName, const String& url) override;
@@ -168,7 +168,6 @@ public:
     String loaderId(DocumentLoader*);
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     LocalFrame* assertFrame(ErrorString*, const String& frameId);
-    String scriptPreprocessorSource() { return m_scriptPreprocessorSource; }
     const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
     void pageScaleFactorChanged();
@@ -207,8 +206,6 @@ private:
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;
     String m_scriptToEvaluateOnLoadOnce;
-    String m_pendingScriptPreprocessor;
-    String m_scriptPreprocessorSource;
     HashMap<LocalFrame*, String> m_frameToIdentifier;
     HashMap<String, LocalFrame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;

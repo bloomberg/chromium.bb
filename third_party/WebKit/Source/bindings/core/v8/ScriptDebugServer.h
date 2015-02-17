@@ -105,11 +105,6 @@ public:
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
     virtual void clearCompiledScripts();
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
-    virtual void setPreprocessorSource(const String&) { }
-    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) { }
-    virtual ScriptSourceCode preprocess(LocalFrame*, const ScriptSourceCode&);
-    virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
-    virtual void clearPreprocessor() { }
 
     virtual void muteWarningsAndDeprecations() { }
     virtual void unmuteWarningsAndDeprecations() { }

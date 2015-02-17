@@ -32,13 +32,11 @@
 #define PageScriptDebugServer_h
 
 #include "bindings/core/v8/ScriptDebugServer.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
 #include <v8.h>
 
 namespace blink {
 
 class Page;
-class ScriptPreprocessor;
 
 class PageScriptDebugServer final : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
@@ -66,11 +64,6 @@ public:
     void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
     void clearCompiledScripts() override;
     void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
-    void setPreprocessorSource(const String&) override;
-    void preprocessBeforeCompile(const v8::Debug::EventDetails&) override;
-    ScriptSourceCode preprocess(LocalFrame*, const ScriptSourceCode&) override;
-    String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) override;
-    void clearPreprocessor() override;
 
     void muteWarningsAndDeprecations() override;
     void unmuteWarningsAndDeprecations() override;
@@ -88,9 +81,6 @@ private:
     RawPtrWillBeMember<LocalFrame> m_pausedFrame;
     HashMap<String, String> m_compiledScriptURLs;
 
-    ScriptSourceCode m_preprocessorSourceCode;
-    OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
-    bool canPreprocess(LocalFrame*);
     static v8::Isolate* s_mainThreadIsolate;
 };
 

@@ -147,13 +147,7 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     // FIXME: what about nested objects?
     if (frame != m_pageAgent->inspectedFrame())
         return;
-
     reset();
-
-    scriptDebugServer().setPreprocessorSource(String());
-    ASSERT(m_pageAgent);
-    if (!m_pageAgent->scriptPreprocessorSource().isEmpty())
-        scriptDebugServer().setPreprocessorSource(m_pageAgent->scriptPreprocessorSource());
 }
 
 void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)

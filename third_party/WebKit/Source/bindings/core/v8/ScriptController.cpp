@@ -555,10 +555,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(const ScriptSou
     if (frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         frame()->loader().didAccessInitialDocument();
 
-    ScriptSourceCode maybeProcessedSourceCode = InspectorInstrumentation::preprocess(frame(), sourceCode);
-    const ScriptSourceCode& sourceCodeToCompile = maybeProcessedSourceCode.isNull() ? sourceCode : maybeProcessedSourceCode;
-
-    v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCodeToCompile, corsStatus, compilationFinishTime);
+    v8::Local<v8::Value> object = executeScriptAndReturnValue(scriptState->context(), sourceCode, corsStatus, compilationFinishTime);
     m_sourceURL = savedSourceURL;
 
     if (object.IsEmpty())

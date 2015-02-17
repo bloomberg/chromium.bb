@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptPreprocessor.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -75,15 +74,6 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> co
     return toLocalFrame(toFrameIfNotDetached(context));
 }
 
-void PageScriptDebugServer::setPreprocessorSource(const String& preprocessorSource)
-{
-    if (preprocessorSource.isEmpty())
-        m_preprocessorSourceCode = ScriptSourceCode();
-    else
-        m_preprocessorSourceCode = ScriptSourceCode(preprocessorSource);
-    m_scriptPreprocessor.clear();
-}
-
 PageScriptDebugServer& PageScriptDebugServer::shared()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<PageScriptDebugServer>, server, (adoptPtrWillBeNoop(new PageScriptDebugServer())));
@@ -100,7 +90,6 @@ void PageScriptDebugServer::setMainThreadIsolate(v8::Isolate* isolate)
 PageScriptDebugServer::PageScriptDebugServer()
     : ScriptDebugServer(s_mainThreadIsolate)
     , m_pausedFrame(nullptr)
-    , m_preprocessorSourceCode()
 {
 }
 
@@ -113,7 +102,6 @@ void PageScriptDebugServer::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_listenersMap);
     visitor->trace(m_pausedFrame);
-    visitor->trace(m_preprocessorSourceCode);
 #endif
     ScriptDebugServer::trace(visitor);
 }
@@ -244,85 +232,6 @@ void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> contex
 void PageScriptDebugServer::quitMessageLoopOnPause()
 {
     m_clientMessageLoop->quitNow();
-}
-
-void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetails& eventDetails)
-{
-    v8::Handle<v8::Context> eventContext = eventDetails.GetEventContext();
-    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(eventContext);
-    if (!frame)
-        return;
-
-    if (!canPreprocess(frame))
-        return;
-
-    v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
-    v8::Local<v8::Context> debugContext = v8::Debug::GetDebugContext();
-    v8::Context::Scope contextScope(debugContext);
-    v8::TryCatch tryCatch;
-    // <script> tag source and attribute value source are preprocessed before we enter V8.
-    // Avoid preprocessing any internal scripts by processing only eval source in this V8 event handler.
-    v8::Handle<v8::Value> argvEventData[] = { eventData };
-    v8::Handle<v8::Value> v8Value = callDebuggerMethod("isEvalCompilation", WTF_ARRAY_LENGTH(argvEventData), argvEventData);
-    if (v8Value.IsEmpty() || !v8Value->ToBoolean(debugContext->GetIsolate())->Value())
-        return;
-
-    // The name and source are in the JS event data.
-    String scriptName = toCoreStringWithUndefinedOrNullCheck(callDebuggerMethod("getScriptName", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
-    String script = toCoreStringWithUndefinedOrNullCheck(callDebuggerMethod("getScriptSource", WTF_ARRAY_LENGTH(argvEventData), argvEventData));
-
-    String preprocessedSource  = m_scriptPreprocessor->preprocessSourceCode(script, scriptName);
-
-    v8::Handle<v8::Value> argvPreprocessedScript[] = { eventData, v8String(debugContext->GetIsolate(), preprocessedSource) };
-    callDebuggerMethod("setScriptSource", WTF_ARRAY_LENGTH(argvPreprocessedScript), argvPreprocessedScript);
-}
-
-static bool isCreatingPreprocessor = false;
-
-bool PageScriptDebugServer::canPreprocess(LocalFrame* frame)
-{
-    ASSERT(frame);
-
-    if (m_preprocessorSourceCode.isNull() || !frame->page() || isCreatingPreprocessor)
-        return false;
-
-    // We delay the creation of the preprocessor until just before the first JS from the
-    // Web page to ensure that the debugger's console initialization code has completed.
-    if (!m_scriptPreprocessor) {
-        TemporaryChange<bool> isPreprocessing(isCreatingPreprocessor, true);
-        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(m_isolate, m_preprocessorSourceCode, frame));
-    }
-
-    if (m_scriptPreprocessor->isValid())
-        return true;
-
-    m_scriptPreprocessor.clear();
-    // Don't retry the compile if we fail one time.
-    m_preprocessorSourceCode = ScriptSourceCode();
-    return false;
-}
-
-// Source to Source processing iff debugger enabled and it has loaded a preprocessor.
-ScriptSourceCode PageScriptDebugServer::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
-{
-    if (!canPreprocess(frame))
-        return ScriptSourceCode();
-
-    String preprocessedSource = m_scriptPreprocessor->preprocessSourceCode(sourceCode.source(), sourceCode.url());
-    return ScriptSourceCode(preprocessedSource, sourceCode.url());
-}
-
-String PageScriptDebugServer::preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
-{
-    if (!canPreprocess(frame))
-        return source;
-
-    return m_scriptPreprocessor->preprocessSourceCode(source, url, functionName);
-}
-
-void PageScriptDebugServer::clearPreprocessor()
-{
-    m_scriptPreprocessor.clear();
 }
 
 void PageScriptDebugServer::muteWarningsAndDeprecations()

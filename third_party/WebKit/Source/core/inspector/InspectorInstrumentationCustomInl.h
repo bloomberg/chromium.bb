@@ -39,8 +39,6 @@ namespace InspectorInstrumentation {
 
 bool isDebuggerPausedImpl(InstrumentingAgents*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
-ScriptSourceCode preprocessImpl(InstrumentingAgents*, LocalFrame*, const ScriptSourceCode&);
-String preprocessEventListenerImpl(InstrumentingAgents*, LocalFrame*, const String& source, const String& url, const String& functionName);
 void appendAsyncCallStack(ExecutionContext*, ScriptCallStack*);
 
 bool canvasAgentEnabled(ExecutionContext*);
@@ -60,22 +58,6 @@ inline bool collectingHTMLParseErrors(Document* document)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
         return collectingHTMLParseErrorsImpl(instrumentingAgents);
     return false;
-}
-
-inline String preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(source);
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))
-        return preprocessEventListenerImpl(instrumentingAgents, frame, source, url, functionName);
-    return source;
-}
-
-inline ScriptSourceCode preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(ScriptSourceCode());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))
-        return preprocessImpl(instrumentingAgents, frame, sourceCode);
-    return ScriptSourceCode();
 }
 
 } // namespace InspectorInstrumentation

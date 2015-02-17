@@ -93,9 +93,6 @@ public:
     bool isPaused();
     void addMessageToConsole(ConsoleMessage*);
 
-    String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
-    ScriptSourceCode preprocess(LocalFrame*, const ScriptSourceCode&);
-
     // Part of the protocol.
     void enable(ErrorString*) final;
     void disable(ErrorString*) final;
