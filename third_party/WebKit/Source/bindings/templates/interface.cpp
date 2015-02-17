@@ -739,7 +739,7 @@ static void configureShadowObjectTemplate(v8::Local<v8::ObjectTemplate> templ, v
 static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
     "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, V8DOMConfiguration::OnInstance,
 };
-V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Local<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration, isolate);
+V8DOMConfiguration::installAttribute(isolate, {{method.function_template}}, v8::Local<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration);
 {%- endmacro %}
 
 
@@ -887,7 +887,7 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
     {% filter exposed(attribute.exposed_test) %}
     static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
     {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAttribute(instanceObject, prototypeObject, attributeConfiguration, isolate);
+    V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
     {% endfilter %}
     {% endfilter %}
     {% endfor %}

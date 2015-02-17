@@ -182,7 +182,7 @@ static void installV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Local<v8::F
     const V8DOMConfiguration::MethodConfiguration funcMethodConfiguration = {
         "func", TestInterfaceWillBeGarbageCollectedV8Internal::funcMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
     };
-    V8DOMConfiguration::installMethod(instanceTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), funcMethodConfiguration, isolate);
+    V8DOMConfiguration::installMethod(isolate, instanceTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), funcMethodConfiguration);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());

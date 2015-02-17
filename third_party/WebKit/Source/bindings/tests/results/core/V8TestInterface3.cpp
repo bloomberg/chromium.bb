@@ -229,31 +229,31 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> func
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
-        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
+        V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration keysMethodConfiguration = {
             "keys", TestInterface3V8Internal::keysMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, keysMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::None, keysMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration valuesMethodConfiguration = {
             "values", TestInterface3V8Internal::valuesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, valuesMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::None, valuesMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration entriesMethodConfiguration = {
             "entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, entriesMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::None, entriesMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration forEachMethodConfiguration = {
             "forEach", TestInterface3V8Internal::forEachMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
-        V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, forEachMethodConfiguration, isolate);
+        V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::None, forEachMethodConfiguration);
     }
 
     // Custom toString template

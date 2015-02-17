@@ -624,7 +624,7 @@ v8SetReturnValue(info, wrapper);
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
     "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method_length}}, {{only_exposed_to_private_script}},
 };
-V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
+V8DOMConfiguration::installMethod(isolate, {{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration);
 {%- endmacro %}
 
 {######################################}

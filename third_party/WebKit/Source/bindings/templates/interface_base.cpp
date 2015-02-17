@@ -327,9 +327,15 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
           not attribute.is_static %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
+        {% if attribute.is_expose_js_accessors %}
+        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration =\
+        {{attribute_configuration(attribute)}};
+        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, defaultSignature, accessorConfiguration);
+        {% else %}
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
+        V8DOMConfiguration::installAttribute(isolate, instanceTemplate, prototypeTemplate, attributeConfiguration);
+        {% endif %}
     }
     {% endfilter %}
     {% endfor %}
@@ -395,7 +401,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% filter exposed(iterator_method.exposed_test) %}
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
-    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
+    V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}
     {% endfilter %}{# per_context_enabled() #}
