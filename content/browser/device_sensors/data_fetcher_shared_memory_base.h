@@ -33,7 +33,7 @@ class CONTENT_EXPORT DataFetcherSharedMemoryBase {
 
   // Should be called before destruction to make sure all active
   // sensors are unregistered.
-  void StopFetchingAllDeviceData();
+  virtual void Shutdown();
 
   // Returns the shared memory handle of the device sensor data
   // duplicated into the given process. This method should only be

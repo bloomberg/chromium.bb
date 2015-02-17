@@ -56,4 +56,9 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
   return false;
 }
 
+void DataFetcherSharedMemory::Shutdown() {
+  DataFetcherSharedMemoryBase::Shutdown();
+  SensorManagerAndroid::GetInstance()->Shutdown();
+}
+
 }  // namespace content

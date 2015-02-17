@@ -35,6 +35,10 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   DataFetcherSharedMemory();
   ~DataFetcherSharedMemory() override;
 
+#if defined(OS_ANDROID)
+  void Shutdown() override;
+#endif
+
  private:
   bool Start(ConsumerType consumer_type, void* buffer) override;
   bool Stop(ConsumerType consumer_type) override;

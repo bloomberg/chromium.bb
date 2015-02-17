@@ -165,7 +165,7 @@ bool DataFetcherSharedMemoryBase::StopFetchingDeviceData(
   return true;
 }
 
-void DataFetcherSharedMemoryBase::StopFetchingAllDeviceData() {
+void DataFetcherSharedMemoryBase::Shutdown() {
   StopFetchingDeviceData(CONSUMER_TYPE_MOTION);
   StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
   StopFetchingDeviceData(CONSUMER_TYPE_LIGHT);

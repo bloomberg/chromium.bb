@@ -22,7 +22,6 @@ import org.chromium.base.VisibleForTesting;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * Android implementation of the device {motion|orientation|light} APIs.
@@ -394,13 +393,9 @@ class DeviceSensors implements SensorEventListener {
             return mSensorManagerProxy;
         }
 
-        SensorManager sensorManager = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<SensorManager>() {
-                    @Override
-                    public SensorManager call() {
-                        return (SensorManager) mAppContext.getSystemService(Context.SENSOR_SERVICE);
-                    }
-                });
+        ThreadUtils.assertOnUiThread();
+        SensorManager sensorManager =
+                (SensorManager) mAppContext.getSystemService(Context.SENSOR_SERVICE);
 
         if (sensorManager != null) {
             mSensorManagerProxy = new SensorManagerProxyImpl(sensorManager);
