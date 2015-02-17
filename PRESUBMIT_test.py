@@ -384,6 +384,33 @@ class BadExtensionsTest(unittest.TestCase):
     self.assertEqual({}, results)
 
 
+class CheckSingletonInHeadersTest(unittest.TestCase):
+  def testSingletonInArbitraryHeader(self):
+    diff_singleton_h = ['base::subtle::AtomicWord '
+                        'Singleton<Type, Traits, DifferentiatingType>::']
+    diff_foo_h = ['// Singleton<Foo> in comment.',
+                  'friend class Singleton<Foo>']
+    diff_bad_h = ['Foo* foo = Singleton<Foo>::get();']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('base/memory/singleton.h',
+                                     diff_singleton_h),
+                            MockFile('foo.h', diff_foo_h),
+                            MockFile('bad.h', diff_bad_h)]
+    warnings = PRESUBMIT._CheckSingletonInHeaders(mock_input_api,
+                                                  MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual('error', warnings[0].type)
+    self.assertTrue('Found Singleton<T>' in warnings[0].message)
+
+  def testSingletonInCC(self):
+    diff_cc = ['Foo* foo = Singleton<Foo>::get();']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('some/path/foo.cc', diff_cc)]
+    warnings = PRESUBMIT._CheckSingletonInHeaders(mock_input_api,
+                                                  MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+
 class InvalidOSMacroNamesTest(unittest.TestCase):
   def testInvalidOSMacroNames(self):
     lines = ['#if defined(OS_WINDOWS)',

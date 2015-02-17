@@ -29,6 +29,9 @@ class MockInputApi(object):
   def AffectedFiles(self, file_filter=None):
     return self.files
 
+  def AffectedSourceFiles(self, file_filter=None):
+    return self.files
+
   def PresubmitLocalPath(self):
     return os.path.dirname(__file__)
 
