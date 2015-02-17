@@ -30,6 +30,7 @@
             'CPU.h',
             'CheckedArithmetic.h',
             'Compiler.h',
+            'ContainerAnnotations.h',
             'CryptographicallyRandomNumber.cpp',
             'CryptographicallyRandomNumber.h',
             'CurrentTime.cpp',

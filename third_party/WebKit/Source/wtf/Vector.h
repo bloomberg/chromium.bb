@@ -22,6 +22,7 @@
 #define WTF_Vector_h
 
 #include "wtf/Alignment.h"
+#include "wtf/ContainerAnnotations.h"
 #include "wtf/DefaultAllocator.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
@@ -509,20 +510,28 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             if (buffer() == inlineBuffer() && other.buffer() == other.inlineBuffer()) {
                 ASSERT(m_capacity == other.m_capacity);
                 if (m_size > other.m_size) {
+                    ANNOTATE_CHANGE_SIZE(other.inlineBuffer(), inlineCapacity, other.m_size, m_size);
                     TypeOperations::swap(inlineBuffer(), inlineBuffer() + other.m_size, other.inlineBuffer());
                     TypeOperations::move(inlineBuffer() + other.m_size, inlineBuffer() + m_size, other.inlineBuffer() + other.m_size);
+                    ANNOTATE_CHANGE_SIZE(inlineBuffer(), inlineCapacity, m_size, other.m_size);
                 } else {
+                    ANNOTATE_CHANGE_SIZE(inlineBuffer(), inlineCapacity, m_size, other.m_size);
                     TypeOperations::swap(inlineBuffer(), inlineBuffer() + m_size, other.inlineBuffer());
                     TypeOperations::move(other.inlineBuffer() + m_size, other.inlineBuffer() + other.m_size, inlineBuffer() + m_size);
+                    ANNOTATE_CHANGE_SIZE(other.inlineBuffer(), inlineCapacity, other.m_size, m_size);
                 }
             } else if (buffer() == inlineBuffer()) {
+                ANNOTATE_DELETE_BUFFER(m_buffer, inlineCapacity, m_size);
                 m_buffer = other.m_buffer;
                 other.m_buffer = other.inlineBuffer();
+                ANNOTATE_NEW_BUFFER(other.m_buffer, inlineCapacity, m_size);
                 TypeOperations::move(inlineBuffer(), inlineBuffer() + m_size, other.inlineBuffer());
                 std::swap(m_capacity, other.m_capacity);
             } else if (other.buffer() == other.inlineBuffer()) {
+                ANNOTATE_DELETE_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
                 other.m_buffer = m_buffer;
                 m_buffer = inlineBuffer();
+                ANNOTATE_NEW_BUFFER(m_buffer, inlineCapacity, other.m_size);
                 TypeOperations::move(other.inlineBuffer(), other.inlineBuffer() + other.m_size, inlineBuffer());
                 std::swap(m_capacity, other.m_capacity);
             } else {
@@ -600,6 +609,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // destructor calls as long as the memory is zeroed.
             static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
             static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "cannot initialize with memset if there is a vtable");
+            ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
             m_size = 0;
         }
 
@@ -611,6 +621,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // that the class does not expect matching constructor and
             // destructor calls as long as the memory is zeroed.
             static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
+            ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
             m_size = size;
             TypeOperations::initialize(begin(), end());
         }
@@ -625,6 +636,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 if (LIKELY(!Base::buffer()))
                     return;
             }
+            ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
             if (LIKELY(m_size) && !(Allocator::isGarbageCollected && this->hasOutOfLineBuffer())) {
                 TypeOperations::destruct(begin(), end());
                 m_size = 0; // Partial protection against use-after-free.
@@ -728,6 +740,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         Vector(size_t size, const T& val)
             : Base(size)
         {
+            ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
             m_size = size;
             TypeOperations::uninitializedFill(begin(), end(), val);
         }
@@ -768,6 +781,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     Vector<T, inlineCapacity, Allocator>::Vector(const Vector& other)
         : Base(other.capacity())
     {
+        ANNOTATE_NEW_BUFFER(begin(), capacity(), other.size());
         m_size = other.size();
         TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
@@ -777,6 +791,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     Vector<T, inlineCapacity, Allocator>::Vector(const Vector<T, otherCapacity, Allocator>& other)
         : Base(other.capacity())
     {
+        ANNOTATE_NEW_BUFFER(begin(), capacity(), other.size());
         m_size = other.size();
         TypeOperations::uninitializedCopy(other.begin(), other.end(), begin());
     }
@@ -795,6 +810,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ASSERT(begin());
         }
 
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, other.size());
         std::copy(other.begin(), other.begin() + size(), begin());
         TypeOperations::uninitializedCopy(other.begin() + size(), other.end(), end());
         m_size = other.size();
@@ -821,6 +837,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ASSERT(begin());
         }
 
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, other.size());
         std::copy(other.begin(), other.begin() + size(), begin());
         TypeOperations::uninitializedCopy(other.begin() + size(), other.end(), end());
         m_size = other.size();
@@ -889,6 +906,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ASSERT(begin());
         }
 
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
         std::fill(begin(), end(), val);
         TypeOperations::uninitializedFill(end(), begin() + newSize, val);
         m_size = newSize;
@@ -946,11 +964,13 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     template<typename T, size_t inlineCapacity, typename Allocator>
     inline void Vector<T, inlineCapacity, Allocator>::resize(size_t size)
     {
-        if (size <= m_size)
+        if (size <= m_size) {
             TypeOperations::destruct(begin() + size, end());
-        else {
+            ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
+        } else {
             if (size > capacity())
                 expandCapacity(size);
+            ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
             TypeOperations::initialize(end(), begin() + size);
         }
 
@@ -963,6 +983,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ASSERT(size <= m_size);
         TypeOperations::destruct(begin() + size, end());
         clearUnusedSlots(begin() + size, end());
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
         m_size = size;
     }
 
@@ -972,6 +993,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ASSERT(size >= m_size);
         if (size > capacity())
             expandCapacity(size);
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
         TypeOperations::initialize(end(), begin() + size);
         m_size = size;
     }
@@ -983,13 +1005,20 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             return;
         T* oldBuffer = begin();
         T* oldEnd = end();
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+        size_t oldCapacity = capacity();
+#endif
         // The Allocator::isGarbageCollected check is not needed.
         // The check is just a static hint for a compiler to indicate that
         // Base::expandBuffer returns false if Allocator is a DefaultAllocator.
-        if (Allocator::isGarbageCollected && Base::expandBuffer(newCapacity))
+        if (Allocator::isGarbageCollected && Base::expandBuffer(newCapacity)) {
+            ANNOTATE_CHANGE_CAPACITY(begin(), oldCapacity, m_size, capacity());
             return;
+        }
         Base::allocateBuffer(newCapacity);
+        ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
         TypeOperations::move(oldBuffer, oldEnd, begin());
+        ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);
         Base::deallocateBuffer(oldBuffer);
     }
 
@@ -998,8 +1027,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         ASSERT(!m_size);
         ASSERT(capacity() == inlineCapacity);
-        if (initialCapacity > inlineCapacity)
+        if (initialCapacity > inlineCapacity) {
             Base::allocateBuffer(initialCapacity);
+            ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
+        }
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator>
@@ -1012,16 +1043,30 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             shrink(newCapacity);
 
         T* oldBuffer = begin();
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+        size_t oldCapacity = capacity();
+#endif
         if (newCapacity > 0) {
-            if (Base::shrinkBuffer(newCapacity))
+            if (Base::shrinkBuffer(newCapacity)) {
+                ANNOTATE_CHANGE_CAPACITY(begin(), oldCapacity, m_size, capacity());
                 return;
+            }
 
             T* oldEnd = end();
             Base::allocateBuffer(newCapacity);
-            if (begin() != oldBuffer)
+            if (begin() != oldBuffer) {
+                ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
                 TypeOperations::move(oldBuffer, oldEnd, begin());
+                ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);
+            }
         } else {
             Base::resetBufferPointer();
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+            if (oldBuffer != begin()) {
+                ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
+                ANNOTATE_DELETE_BUFFER(oldBuffer, oldCapacity, m_size);
+            }
+#endif
         }
 
         Base::deallocateBuffer(oldBuffer);
@@ -1042,6 +1087,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
         RELEASE_ASSERT(newSize >= m_size);
         T* dest = end();
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
         VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(data, &data[dataSize], dest);
         m_size = newSize;
     }
@@ -1051,6 +1097,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         ASSERT(Allocator::isAllocationAllowed());
         if (LIKELY(size() != capacity())) {
+            ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
             new (NotNull, end()) T(val);
             ++m_size;
             return;
@@ -1068,6 +1115,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ptr = expandCapacity(size() + 1, ptr);
         ASSERT(begin());
 
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
         new (NotNull, end()) T(*ptr);
         ++m_size;
     }
@@ -1079,6 +1127,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(const U& val)
     {
         ASSERT(size() < capacity());
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
         const U* ptr = &val;
         new (NotNull, end()) T(*ptr);
         ++m_size;
@@ -1101,6 +1150,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ASSERT(begin());
         }
         RELEASE_ASSERT(newSize >= m_size);
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
         T* spot = begin() + position;
         TypeOperations::moveOverlapping(spot, end(), spot + dataSize);
         VectorCopier<VectorTraits<T>::canCopyWithMemcpy, T>::uninitializedCopy(data, &data[dataSize], spot);
@@ -1117,6 +1167,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             data = expandCapacity(size() + 1, data);
             ASSERT(begin());
         }
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
         T* spot = begin() + position;
         TypeOperations::moveOverlapping(spot, end(), spot + 1);
         new (NotNull, spot) T(*data);
@@ -1155,6 +1206,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         spot->~T();
         TypeOperations::moveOverlapping(spot + 1, end(), spot);
         clearUnusedSlots(end() - 1, end());
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size - 1);
         --m_size;
     }
 
@@ -1168,6 +1220,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         TypeOperations::destruct(beginSpot, endSpot);
         TypeOperations::moveOverlapping(endSpot, end(), beginSpot);
         clearUnusedSlots(end() - length, end());
+        ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size - length);
         m_size -= length;
     }
 
