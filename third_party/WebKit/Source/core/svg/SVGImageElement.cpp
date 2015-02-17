@@ -110,9 +110,9 @@ void SVGImageElement::collectStyleForPresentationAttribute(const QualifiedName& 
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
 
     if (property == m_width)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, *m_width->currentValue());
     else if (property == m_height)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, *m_height->currentValue());
     else if (property == m_x)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
     else if (property == m_y)

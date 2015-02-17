@@ -265,15 +265,10 @@ void SVGSVGElement::collectStyleForPresentationAttribute(const QualifiedName& na
     } else if (property == m_y) {
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
     } else if (isOutermostSVGSVGElement() && (property == m_width || property == m_height)) {
-        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(LengthModeOther);
-        TrackExceptionState exceptionState;
-        length->setValueAsString(value, exceptionState);
-        if (!exceptionState.hadException()) {
-            if (property == m_width)
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
-            else if (property == m_height)
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
-        }
+        if (property == m_width)
+            addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, *m_width->currentValue());
+        else if (property == m_height)
+            addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, *m_height->currentValue());
     } else {
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
     }

@@ -91,23 +91,16 @@ bool SVGForeignObjectElement::isPresentationAttributeWithSVGDOM(const QualifiedN
 void SVGForeignObjectElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
-    if (property == m_width || property == m_height) {
-        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(LengthModeOther);
-        TrackExceptionState exceptionState;
-        length->setValueAsString(value, exceptionState);
-        if (!exceptionState.hadException()) {
-            if (property == m_width)
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, value);
-            else if (property == m_height)
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, value);
-        }
-    } else if (property == m_x) {
+    if (property == m_width)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, *m_width->currentValue());
+    else if (property == m_height)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, *m_height->currentValue());
+    else if (property == m_x)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
-    } else if (property == m_y) {
+    else if (property == m_y)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
-    } else {
+    else
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
-    }
 }
 
 void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
