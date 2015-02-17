@@ -528,12 +528,9 @@ PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()
 }
 
 Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other) {
-    // This copy constructor should only be used for Deque::prepend
-    // Assuming 'other' is to be destroyed, we transfer m_image and
-    // m_parentLayerBridge ownership rather than do a refcount dance.
     memcpy(&m_mailbox, &other.m_mailbox, sizeof(m_mailbox));
-    m_image = const_cast<MailboxInfo*>(&other)->m_image.release();
-    m_parentLayerBridge = const_cast<MailboxInfo*>(&other)->m_parentLayerBridge.release();
+    m_image = other.m_image;
+    m_parentLayerBridge = other.m_parentLayerBridge;
 }
 
 } // namespace blink
