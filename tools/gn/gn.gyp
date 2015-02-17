@@ -28,6 +28,7 @@
         'c_include_iterator.h',
         'command_args.cc',
         'command_check.cc',
+        'command_clean.cc',
         'command_desc.cc',
         'command_gen.cc',
         'command_format.cc',
