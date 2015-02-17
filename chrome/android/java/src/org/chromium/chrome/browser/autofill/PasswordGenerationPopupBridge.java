@@ -66,6 +66,7 @@ public class PasswordGenerationPopupBridge implements AdapterView.OnItemClickLis
             mPopup = new DropdownPopupWindow(mContext, containerViewDelegate);
             mPopup.setOnItemClickListener(this);
             mPopup.setOnDismissListener(this);
+            mPopup.disableHideOnOutsideTap();
         }
         mAnchorWidth = 0;
     }

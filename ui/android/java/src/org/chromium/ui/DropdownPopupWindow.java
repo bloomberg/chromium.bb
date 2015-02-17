@@ -134,20 +134,6 @@ public class DropdownPopupWindow extends ListPopupWindow {
         getListView().setDividerHeight(0);
         ApiCompatibilityUtils.setLayoutDirection(getListView(),
                 mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-
-        // HACK: The ListPopupWindow's mPopup automatically dismisses on an outside tap. There's
-        // no way to override it or prevent it, except reaching into ListPopupWindow's hidden
-        // API. This allows the C++ controller to completely control showing/hiding the popup.
-        // See http://crbug.com/400601
-        try {
-            Method setForceIgnoreOutsideTouch = ListPopupWindow.class.getMethod(
-                    "setForceIgnoreOutsideTouch", new Class[] { boolean.class });
-            setForceIgnoreOutsideTouch.invoke(this, new Object[] { true });
-        } catch (Exception e) {
-            Log.e("AutofillPopup",
-                    "ListPopupWindow.setForceIgnoreOutsideTouch not found",
-                    e);
-        }
     }
 
     @Override
@@ -161,6 +147,26 @@ public class DropdownPopupWindow extends ListPopupWindow {
      */
     public void setRtl(boolean isRtl) {
         mRtl = isRtl;
+    }
+
+    /**
+     * Disable hiding on outside tap so that tapping on a text input field associated with the popup
+     * will not hide the popup.
+     */
+    public void disableHideOnOutsideTap() {
+        // HACK: The ListPopupWindow's mPopup automatically dismisses on an outside tap. There's
+        // no way to override it or prevent it, except reaching into ListPopupWindow's hidden
+        // API. This allows the C++ controller to completely control showing/hiding the popup.
+        // See http://crbug.com/400601
+        try {
+            Method setForceIgnoreOutsideTouch = ListPopupWindow.class.getMethod(
+                    "setForceIgnoreOutsideTouch", new Class[] { boolean.class });
+            setForceIgnoreOutsideTouch.invoke(this, new Object[] { true });
+        } catch (Exception e) {
+            Log.e("AutofillPopup",
+                    "ListPopupWindow.setForceIgnoreOutsideTouch not found",
+                    e);
+        }
     }
 
     /**
