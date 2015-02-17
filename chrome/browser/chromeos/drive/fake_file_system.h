@@ -121,6 +121,8 @@ class FakeFileSystem : public FileSystemInterface {
   void Reset(const FileOperationCallback& callback) override;
   void GetPathFromResourceId(const std::string& resource_id,
                              const GetFilePathCallback& callback) override;
+  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
+                                const FreeDiskSpaceCallback& callback) override;
 
  private:
   // Helpers of GetFileContent.

@@ -235,6 +235,12 @@ void FakeFileSystem::GetPathFromResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::FreeDiskSpaceIfNeededFor(
+    int64 num_bytes,
+    const FreeDiskSpaceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 // Implementation of GetFileContent.
 void FakeFileSystem::GetFileContentAfterGetResourceEntry(
     const GetFileContentInitializedCallback& initialized_callback,

@@ -10,6 +10,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_api_util.h"
@@ -40,10 +42,10 @@
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
-#include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/cros_system_api/constants/cryptohome.h"
 
 using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
@@ -222,6 +224,16 @@ void ComputeChecksumRespondOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, hash));
+}
+
+// Calls a response callback on the UI thread.
+void GetFileMetadataRespondOnUIThread(
+    const storage::FileSystemOperation::GetMetadataCallback& callback,
+    base::File::Error result,
+    const base::File::Info& file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result, file_info));
 }
 
 }  // namespace
@@ -581,6 +593,23 @@ bool FileManagerPrivateFormatVolumeFunction::RunAsync() {
   return true;
 }
 
+// Obtains file size of URL.
+void GetFileMetadataOnIOThread(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const FileSystemURL& url,
+    const storage::FileSystemOperation::GetMetadataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  file_system_context->operation_runner()->GetMetadata(
+      url, base::Bind(&GetFileMetadataRespondOnUIThread, callback));
+}
+
+// Checks if the available space of the |path| is enough for required |bytes|.
+bool CheckLocalDiskSpaceOnIOThread(const base::FilePath& path, int64 bytes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return bytes <= base::SysInfo::AmountOfFreeDiskSpace(path) -
+                      cryptohome::kMinFreeSpaceInBytes;
+}
+
 bool FileManagerPrivateStartCopyFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -605,27 +634,88 @@ bool FileManagerPrivateStartCopyFunction::RunAsync() {
     destination_url_string += '/';
   destination_url_string += net::EscapePath(params->new_name);
 
-  storage::FileSystemURL source_url(
-      file_system_context->CrackURL(GURL(params->source_url)));
-  storage::FileSystemURL destination_url(
-      file_system_context->CrackURL(GURL(destination_url_string)));
+  source_url_ = file_system_context->CrackURL(GURL(params->source_url));
+  destination_url_ =
+      file_system_context->CrackURL(GURL(destination_url_string));
 
-  if (!source_url.is_valid() || !destination_url.is_valid()) {
+  if (!source_url_.is_valid() || !destination_url_.is_valid()) {
     // Error code in format of DOMError.name.
     SetError("EncodingError");
     return false;
   }
 
-  return BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&StartCopyOnIOThread,
-                 GetProfile(),
-                 file_system_context,
-                 source_url,
-                 destination_url),
+  // Check if the destination directory is downloads. If so, secure available
+  // spece by freeing drive caches.
+  if (destination_url_.filesystem_id() ==
+      file_manager::util::GetDownloadsMountPointName(GetProfile())) {
+    return BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &GetFileMetadataOnIOThread, file_system_context, source_url_,
+            base::Bind(
+                &FileManagerPrivateStartCopyFunction::RunAfterGetFileMetadata,
+                this)));
+  }
+
+  return BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&FileManagerPrivateStartCopyFunction::RunAfterFreeDiskSpace,
+                 this, true));
+}
+
+void FileManagerPrivateStartCopyFunction::RunAfterGetFileMetadata(
+    base::File::Error result,
+    const base::File::Info& file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (result != base::File::FILE_OK) {
+    SetError("NotFoundError");
+    SendResponse(false);
+    return;
+  }
+
+  drive::FileSystemInterface* const drive_file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (drive_file_system) {
+    drive_file_system->FreeDiskSpaceIfNeededFor(
+        file_info.size,
+        base::Bind(&FileManagerPrivateStartCopyFunction::RunAfterFreeDiskSpace,
+                   this));
+  } else {
+    const bool result = BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &CheckLocalDiskSpaceOnIOThread,
+            file_manager::util::GetDownloadsFolderForProfile(GetProfile()),
+            file_info.size),
+        base::Bind(&FileManagerPrivateStartCopyFunction::RunAfterFreeDiskSpace,
+                   this));
+    if (!result)
+      SendResponse(false);
+  }
+}
+
+void FileManagerPrivateStartCopyFunction::RunAfterFreeDiskSpace(
+    bool available) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!available) {
+    SetError("QuotaExceededError");
+    SendResponse(false);
+    return;
+  }
+
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          GetProfile(), render_view_host());
+  const bool result = BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&StartCopyOnIOThread, GetProfile(), file_system_context,
+                 source_url_, destination_url_),
       base::Bind(&FileManagerPrivateStartCopyFunction::RunAfterStartCopy,
                  this));
+  if (!result)
+    SendResponse(false);
 }
 
 void FileManagerPrivateStartCopyFunction::RunAfterStartCopy(

@@ -11,6 +11,7 @@
 
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 class GURL;
 
@@ -198,8 +199,18 @@ class FileManagerPrivateStartCopyFunction
   bool RunAsync() override;
 
  private:
+  void RunAfterGetFileMetadata(base::File::Error result,
+                               const base::File::Info& file_info);
+
+  // Part of RunAsync(). Called after FreeDiskSpaceIfNeededFor() is completed on
+  // IO thread.
+  void RunAfterFreeDiskSpace(bool available);
+
   // Part of RunAsync(). Called after Copy() is started on IO thread.
   void RunAfterStartCopy(int operation_id);
+
+  storage::FileSystemURL source_url_;
+  storage::FileSystemURL destination_url_;
 };
 
 // Implements the chrome.fileManagerPrivate.cancelCopy method.

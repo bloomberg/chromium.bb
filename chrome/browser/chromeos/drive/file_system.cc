@@ -208,6 +208,11 @@ void GetPathFromResourceIdAfterGetPath(base::FilePath* file_path,
   callback.Run(error, *file_path);
 }
 
+bool FreeDiskSpaceIfNeededForOnBlockingPool(internal::FileCache* cache,
+                                            int64 num_bytes) {
+  return cache->FreeDiskSpaceIfNeededFor(num_bytes);
+}
+
 // Excludes hosted documents from the given entries.
 // Used to implement ReadDirectory().
 void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
@@ -1023,5 +1028,16 @@ void FileSystem::GetPathFromResourceId(const std::string& resource_id,
       base::Bind(&GetPathFromResourceIdAfterGetPath,
                  base::Owned(file_path),
                  callback));
+}
+
+void FileSystem::FreeDiskSpaceIfNeededFor(
+    int64 num_bytes,
+    const FreeDiskSpaceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&FreeDiskSpaceIfNeededForOnBlockingPool, cache_, num_bytes),
+      callback);
 }
 }  // namespace drive

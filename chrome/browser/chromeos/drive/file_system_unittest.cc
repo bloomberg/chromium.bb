@@ -1028,4 +1028,33 @@ TEST_F(FileSystemTest, GetShareUrl) {
   EXPECT_TRUE(share_url.is_valid());
 }
 
+TEST_F(FileSystemTest, FreeDiskSpaceIfNeededFor) {
+  ASSERT_TRUE(LoadFullResourceList());
+
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+
+  // Make the file cached.
+  FileError error = FILE_ERROR_FAILED;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> entry;
+  file_system_->GetFile(file_in_root,
+                        google_apis::test_util::CreateCopyResultCallback(
+                            &error, &file_path, &entry));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->file_specific_info().cache_state().is_present());
+
+  bool available;
+  file_system_->FreeDiskSpaceIfNeededFor(
+      512LL << 40,
+      google_apis::test_util::CreateCopyResultCallback(&available));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  ASSERT_FALSE(available);
+
+  entry = GetResourceEntrySync(file_in_root);
+  ASSERT_TRUE(entry);
+  EXPECT_FALSE(entry->file_specific_info().cache_state().is_present());
+}
+
 }   // namespace drive

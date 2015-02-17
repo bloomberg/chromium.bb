@@ -139,6 +139,9 @@ typedef base::Callback<void(FileError error,
 typedef base::Callback<void(FileError error, const base::FilePath& file_path)>
     GetFilePathCallback;
 
+// Used to free space.
+typedef base::Callback<void(bool)> FreeDiskSpaceCallback;
+
 // The mode of opening a file.
 enum OpenMode {
   // Open the file if exists. If not, failed.
@@ -442,6 +445,12 @@ class FileSystemInterface {
   // Finds a path of an entry (a file or a directory) by |resource_id|.
   virtual void GetPathFromResourceId(const std::string& resource_id,
                                      const GetFilePathCallback& callback) = 0;
+
+  // Free drive caches if needed to secure given available spaces. |callback|
+  // takes whether given bytes are available or not.
+  virtual void FreeDiskSpaceIfNeededFor(
+      int64 num_bytes,
+      const FreeDiskSpaceCallback& callback) = 0;
 };
 
 }  // namespace drive
