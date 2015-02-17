@@ -118,6 +118,9 @@ class StartPageService : public KeyedService,
   void LoadContents();
   void UnloadContents();
 
+  // Loads the start page URL for |contents_|.
+  void LoadStartPageURL();
+
   // Fetch the Google Doodle JSON data and update the app list start page.
   void FetchDoodleJson();
 

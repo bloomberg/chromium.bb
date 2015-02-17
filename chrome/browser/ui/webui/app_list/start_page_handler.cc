@@ -126,11 +126,13 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
       HotwordService::DoesHotwordSupportLanguage(profile)) {
     OnHotwordEnabledChanged();
     pref_change_registrar_.Init(profile->GetPrefs());
+    pref_change_registrar_.RemoveAll();
     pref_change_registrar_.Add(
         prefs::kHotwordSearchEnabled,
         base::Bind(&StartPageHandler::OnHotwordEnabledChanged,
                    base::Unretained(this)));
 
+    extension_registry_observer_.RemoveAll();
     extension_registry_observer_.Add(
         extensions::ExtensionRegistry::Get(profile));
   }

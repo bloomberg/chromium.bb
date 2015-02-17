@@ -316,6 +316,8 @@ void StartPageService::UpdateRecognitionState() {
 void StartPageService::AppListShown() {
   if (!contents_) {
     LoadContents();
+  } else if (contents_->IsCrashed()) {
+    LoadStartPageURL();
   } else if (contents_->GetWebUI() &&
              !HotwordService::IsExperimentalHotwordingEnabled()) {
     // If experimental hotwording is enabled, don't call onAppListShown.
@@ -554,18 +556,23 @@ void StartPageService::LoadContents() {
   ui_zoom::ZoomController::CreateForWebContents(contents_.get());
   Observe(contents_.get());
 
-  contents_->GetController().LoadURL(
-      GURL(chrome::kChromeUIAppListStartPageURL),
-      content::Referrer(),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      std::string());
-  contents_->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
+  LoadStartPageURL();
 }
 
 void StartPageService::UnloadContents() {
   contents_.reset();
   webui_finished_loading_ = false;
+}
+
+void StartPageService::LoadStartPageURL() {
+  contents_->GetController().LoadURL(
+      GURL(chrome::kChromeUIAppListStartPageURL),
+      content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      std::string());
+
+  contents_->GetRenderViewHost()->GetView()->SetBackgroundColor(
+        SK_ColorTRANSPARENT);
 }
 
 void StartPageService::FetchDoodleJson() {
