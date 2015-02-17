@@ -4,6 +4,7 @@
 
 #include "content/browser/android/content_startup_flags.h"
 
+#include "base/android/build_info.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -69,6 +70,12 @@ void SetContentCommandLineFlags(bool single_process,
   // on such systems.
   if (base::SysInfo::IsLowEndDevice())
     parsed_command_line->AppendSwitch(switches::kInProcessGPU);
+
+  // Web Notifications are only supported on Android JellyBean and beyond.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_JELLY_BEAN) {
+    parsed_command_line->AppendSwitch(switches::kDisableNotifications);
+  }
 
   parsed_command_line->AppendSwitch(switches::kEnableViewportMeta);
   parsed_command_line->AppendSwitch(

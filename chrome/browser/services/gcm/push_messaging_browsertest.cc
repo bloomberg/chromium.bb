@@ -32,6 +32,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/window_open_disposition.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace gcm {
 
 namespace {
@@ -133,6 +137,19 @@ class NotificationAddedCallback {
   bool waiting_;
 };
 
+// The Push API depends on Web Notifications, which is only available on Android
+// Jelly Bean and later.
+bool IsPushSupported() {
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_JELLY_BEAN) {
+    DVLOG(0) << "The Push API is only supported in Android 4.1 and later.";
+    return false;
+  }
+#endif
+  return true;
+}
+
 }  // namespace
 
 class PushMessagingBrowserTest : public InProcessBrowserTest {
@@ -144,9 +161,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    command_line->AppendSwitch(
-        switches::kEnablePushMessagePayload);
-
+    command_line->AppendSwitch(switches::kEnablePushMessagePayload);
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -256,6 +271,9 @@ class PushMessagingBadManifestBrowserTest : public PushMessagingBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBadManifestBrowserTest,
                        RegisterFailsNotVisibleMessages) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -292,6 +310,9 @@ PushMessagingApplicationId PushMessagingBrowserTest::GetServiceWorkerAppId(
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        RegisterSuccessNotificationsGranted) {
+  if (!IsPushSupported())
+    return;
+
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
 
   PushMessagingApplicationId app_id = GetServiceWorkerAppId(0LL);
@@ -301,6 +322,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        RegisterSuccessNotificationsPrompt) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -317,6 +341,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        RegisterFailureNotificationsBlocked) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -332,6 +359,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoManifest) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -352,6 +382,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterFailureNoManifest) {
 // TODO(johnme): Test registering from a worker - see https://crbug.com/437298.
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterPersisted) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   // First, test that Service Worker registration IDs are assigned in order of
@@ -406,6 +439,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, RegisterPersisted) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -430,6 +466,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -469,6 +508,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -510,6 +552,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
 #if defined(ENABLE_NOTIFICATIONS)
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        PushEventEnforcesUserVisibleNotification) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -601,6 +646,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        PushEventNotificationWithoutEventWaitUntil) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -642,6 +690,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDefault) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -652,6 +703,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysGranted) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -669,6 +723,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysGranted) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDenied) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -687,6 +744,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDenied) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterSuccess) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -698,6 +758,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterSuccess) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterNetworkError) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -711,6 +774,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterNetworkError) {
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterUnknownError) {
+  if (!IsPushSupported())
+    return;
+
   std::string script_result;
 
   TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
@@ -722,5 +788,18 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterUnknownError) {
             "UnknownError: Unexpected error while trying to unregister from the"
             " push server.", script_result);
 }
+
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushUnavailableOnAndroidICS) {
+  // This test should only run on Android ICS to confirm that the Push API
+  // is not available on that version of Android.
+  if (IsPushSupported())
+    return;
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("window.PushManager", &script_result));
+  EXPECT_EQ("undefined", script_result);
+}
+#endif
 
 }  // namespace gcm

@@ -91,13 +91,6 @@ void PushMessagingServiceImpl::RegisterProfilePrefs(
 
 // static
 void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
-  // TODO(mvanouwerkerk): Make sure to remove this check at the same time as
-  // push graduates from experimental in Blink.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    return;
-  }
-
   // TODO(johnme): Consider whether push should be enabled in incognito.
   if (!profile || profile->IsOffTheRecord())
     return;

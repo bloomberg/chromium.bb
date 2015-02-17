@@ -48,8 +48,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
-  // Android does not yet support the Web Notification API. crbug.com/115320
-  WebRuntimeFeatures::enableNotifications(false);
   // Android does not yet support SharedWorker. crbug.com/154571
   WebRuntimeFeatures::enableSharedWorker(false);
   // Android does not yet support NavigatorContentUtils.
@@ -105,15 +103,19 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableMediaSource))
     WebRuntimeFeatures::enableMediaSource(false);
 
+  if (command_line.HasSwitch(switches::kDisableNotifications)) {
+    WebRuntimeFeatures::enableNotifications(false);
+
+    // Chrome's Push Messaging implementation relies on Web Notifications.
+    WebRuntimeFeatures::enablePushMessaging(false);
+  }
+
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))
     WebRuntimeFeatures::enableSharedWorker(false);
 
 #if defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kDisableWebRTC))
     WebRuntimeFeatures::enablePeerConnection(false);
-
-  if (command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
-    WebRuntimeFeatures::enableNotifications(true);
 
   // WebAudio is enabled by default on ARM and X86, if the MediaCodec
   // API is available.

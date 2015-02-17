@@ -194,6 +194,9 @@ const char kDisableMediaSource[]            = "disable-media-source";
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 
+// Disables the Web Notification and the Push APIs.
+const char kDisableNotifications[]          = "disable-notifications";
+
 // Disable rasterizer that writes directly to GPU memory.
 // Overrides the kEnableOneCopy flag.
 const char kDisableOneCopy[]                = "disable-one-copy";

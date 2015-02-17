@@ -15,6 +15,19 @@
 namespace base {
 namespace android {
 
+// This enumeration maps to the values returned by BuildInfo::sdk_int(),
+// indicating the Android release associated with a given SDK version.
+enum SdkVersion {
+  SDK_VERSION_ICE_CREAM_SANDWICH = 14,
+  SDK_VERSION_ICE_CREAM_SANDWICH_MR1 = 15,
+  SDK_VERSION_JELLY_BEAN = 16,
+  SDK_VERSION_JELLY_BEAN_MR1 = 17,
+  SDK_VERSION_JELLY_BEAN_MR2 = 18,
+  SDK_VERSION_KITKAT = 19,
+  SDK_VERSION_KITKAT_WEAR = 20,
+  SDK_VERSION_LOLLIPOP = 21
+};
+
 // BuildInfo is a singleton class that stores android build and device
 // information. It will be called from Android specific code and gets used
 // primarily in crash reporting.

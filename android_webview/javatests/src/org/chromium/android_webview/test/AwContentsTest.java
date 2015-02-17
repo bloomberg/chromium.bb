@@ -564,4 +564,21 @@ public class AwContentsTest extends AwTestBase {
         loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
         assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
     }
+
+    /**
+     * Verifies that Web Notifications and the Push API are not exposed in WebView.
+     */
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testPushAndNotificationsDisabled() throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        AwContents awContents = testView.getAwContents();
+
+        String script = "window.Notification || window.PushManager";
+
+        enableJavaScriptOnUiThread(awContents);
+        loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        assertEquals("null", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
+                script));
+    }
 }
