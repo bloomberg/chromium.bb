@@ -6750,12 +6750,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_THREADED_SCROLLING_DESCRIPTION" desc="Description for the flag to disable threaded scrolling.">
         Disabled threaded handling of scroll-related input events, forcing all such scroll events to be handled on the main thread. Note that this can dramatically hurt scrolling performance of most websites and is intended for testing purposes only.
       </message>
-      <message name="IDS_FLAGS_DISABLE_EXTENSION_INFO_DIALOG_NAME" desc="Name of the flag to disable the Extensions Info dialog on the chrome://extensions page.">
-        Disable the Extensions Info dialog.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_EXTENSION_INFO_DIALOG_DESCRIPTION" desc="Description for the flag to disable the Extensions Info dialog on the chrome://extensions page.">
-        Disables the Extensions Info dialog from being launched from the chrome://extensions page (reverts to the old-style dialog).
-      </message>
       <message name="IDS_FLAGS_BLEEDING_RENDERER_NAME" desc="Name of the 'Stacked Tabs' lab.">
         Bleeding Edge Renderer Paths - LIKELY TO CRASH YOUR BROWSER
       </message>

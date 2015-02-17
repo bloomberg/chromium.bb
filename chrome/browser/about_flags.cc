@@ -1240,15 +1240,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableGestureRequirementForMediaPlayback)
   },
 #endif
-#if defined(ENABLE_EXTENSIONS)
-  {
-    "disable-extension-info-dialog",
-    IDS_FLAGS_DISABLE_EXTENSION_INFO_DIALOG_NAME,
-    IDS_FLAGS_DISABLE_EXTENSION_INFO_DIALOG_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(extensions::switches::kDisableExtensionInfoDialog)
-  },
-#endif
 #if defined(OS_CHROMEOS)
   {
     "enable-virtual-keyboard",

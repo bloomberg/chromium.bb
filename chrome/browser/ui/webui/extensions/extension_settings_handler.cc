@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -53,7 +52,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
@@ -97,7 +95,6 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "extensions/common/switches.h"
 #include "grit/browser_resources.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
@@ -119,8 +116,7 @@ bool ShouldDisplayExtensionInfoDialog() {
 #if defined(OS_MACOSX)
   return false;
 #else
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      extensions::switches::kDisableExtensionInfoDialog);
+  return true;
 #endif
 }
 
