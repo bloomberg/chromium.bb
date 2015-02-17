@@ -244,13 +244,14 @@ void EnableDebuggingScreenHandler::OnQueryDebuggingFeatures(bool success,
   DVLOG(1) << "Enable-debugging-screen: OnQueryDebuggingFeatures"
            << ", success=" << success
            << ", features=" << features_flag;
-  if (!success || features_flag == DebugDaemonClient::DEV_FEATURES_DISABLED) {
+  if (!success ||
+      features_flag == debugd::DevFeatureFlag::DEV_FEATURES_DISABLED) {
     UpdateUIState(UI_STATE_ERROR);
     return;
   }
 
   if ((features_flag &
-       DebugDaemonClient::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED) == 0) {
+       debugd::DevFeatureFlag::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED) == 0) {
     UpdateUIState(UI_STATE_REMOVE_PROTECTION);
     return;
   }

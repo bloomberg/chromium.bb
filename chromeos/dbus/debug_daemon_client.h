@@ -5,14 +5,15 @@
 #ifndef CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
 #define CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-
-#include <map>
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace metrics {
 class PerfDataProto;
@@ -155,21 +156,12 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
       const std::string& password,
       const EnableDebuggingCallback& callback) = 0;
 
-  enum DebuggingFeature {
-    DEV_FEATURE_NONE                        = 0,
-    DEV_FEATURES_DISABLED                   = 1 << 0,
-    DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED = 1 << 1,
-    DEV_FEATURE_BOOT_FROM_USB_ENABLED       = 1 << 2,
-    DEV_FEATURE_SSH_SERVER_CONFIGURED       = 1 << 3,
-    DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET  = 1 << 4,
-    DEV_FEATURE_SYSTEM_ROOT_PASSWORD_SET    = 1 << 5,
-    DEV_FEATURE_ALL_ENABLED                 =
-        DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED |
-        DEV_FEATURE_BOOT_FROM_USB_ENABLED |
-        DEV_FEATURE_SSH_SERVER_CONFIGURED |
-        DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET |
-        DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET,
-  };
+  static const int DEV_FEATURE_NONE = 0;
+  static const int DEV_FEATURE_ALL_ENABLED =
+      debugd::DevFeatureFlag::DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED |
+      debugd::DevFeatureFlag::DEV_FEATURE_BOOT_FROM_USB_ENABLED |
+      debugd::DevFeatureFlag::DEV_FEATURE_SSH_SERVER_CONFIGURED |
+      debugd::DevFeatureFlag::DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET;
 
   // Called once QueryDebuggingFeatures() is complete. |succeeded| will be true
   // if debugging features have been successfully enabled. |feature_mask| is a

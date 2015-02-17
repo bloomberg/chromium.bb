@@ -138,11 +138,11 @@ void FakeDebugDaemonClient::QueryDebuggingFeatures(
       chromeos::switches::kSystemDevMode);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback,
-                 true,
-                 static_cast<int>(
-                     supported ? featues_mask_ :
-                                 DebugDaemonClient::DEV_FEATURES_DISABLED)));
+      base::Bind(
+          callback, true,
+          static_cast<int>(
+              supported ? featues_mask_
+                        : debugd::DevFeatureFlag::DEV_FEATURES_DISABLED)));
 }
 
 void FakeDebugDaemonClient::RemoveRootfsVerification(

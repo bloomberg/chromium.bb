@@ -517,7 +517,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     int32 feature_mask = DEV_FEATURE_NONE;
     if (!response || !dbus::MessageReader(response).PopInt32(&feature_mask)) {
-      callback.Run(false, DEV_FEATURES_DISABLED);
+      callback.Run(false, debugd::DevFeatureFlag::DEV_FEATURES_DISABLED);
       return;
     }
 
