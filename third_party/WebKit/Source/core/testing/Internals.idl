@@ -27,6 +27,7 @@
 [
     DoNotCheckConstants,
     GarbageCollected,
+    TypeChecking=Unrestricted,
 ] interface Internals {
     DOMString address(Node node);
 
