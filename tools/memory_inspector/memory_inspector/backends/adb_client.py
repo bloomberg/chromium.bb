@@ -13,6 +13,7 @@ requiring only that an adb daemon (adb start-server) is running on the host.
 import logging
 import os
 import pipes
+import re
 import socket
 import stat
 import struct
@@ -21,6 +22,15 @@ import struct
 ADB_PORT = 5037
 TIMEOUT = 5
 ADB_NOT_RUNNING_MESSAGE = 'ADB daemon not running. Run \'adb start-server\'.'
+
+"""Regular expression for matching the output of the 'getprop' Android command.
+Sample input:
+
+  [prop1]: [simple value]
+  [prop2]: [multiline
+  value]
+"""
+GETPROP_RE = re.compile(r'^\[([^\]]*)\]: \[(.*?)\]$', re.MULTILINE | re.DOTALL)
 
 
 class ADBClientError(Exception):
@@ -119,10 +129,8 @@ class ADBDevice(object):
   def __init__(self, serial):
     assert isinstance(serial, str), type(serial)
     self.serial = serial
-    self._cached_props = {}
     all_props = self.Shell(['getprop'])
-    for name, value in (line.split(': ') for line in all_props.splitlines()):
-      self._cached_props[name.strip('[]')] = value.strip('[]')
+    self._cached_props = dict(re.findall(GETPROP_RE, all_props))
 
   def GetProp(self, name, cached=False):
     if cached and name in self._cached_props:
