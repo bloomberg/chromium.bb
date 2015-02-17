@@ -43,6 +43,8 @@ class PrefService;
 
 namespace policy {
 
+struct DeviceLocalAccount;
+
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
 class DeviceStatusCollector {
  public:
@@ -99,10 +101,11 @@ class DeviceStatusCollector {
   // Callback which receives the results of the idle state check.
   void IdleStateCallback(ui::IdleState state);
 
-  // Returns true if the currently active session is an auto-launched
-  // kiosk session (this enables functionality such as network reporting).
+  // Returns the DeviceLocalAccount associated with the currently active
+  // kiosk session, if the session was auto-launched with zero delay
+  // (this enables functionality such as network reporting).
   // Virtual to allow mocking.
-  virtual bool IsAutoLaunchedKioskSession();
+  virtual scoped_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
 
   // Samples the current CPU and RAM usage and updates our cache of samples.
   void SampleResourceUsage();
@@ -110,6 +113,9 @@ class DeviceStatusCollector {
   // Returns the percentage of total CPU that each process uses. Virtual so it
   // can be mocked.
   virtual std::vector<double> GetPerProcessCPUUsage();
+
+  // Gets the version of the passed app. Virtual to allow mocking.
+  virtual std::string GetAppVersion(const std::string& app_id);
 
   // The number of days in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.

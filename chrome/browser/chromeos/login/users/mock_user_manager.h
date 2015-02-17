@@ -125,6 +125,10 @@ class MockUserManager : public ChromeUserManager {
   // MockUserManager become invalid.
   user_manager::User* CreatePublicAccountUser(const std::string& email);
 
+  // Creates a new kiosk app user. Users previously created by this
+  // MockUserManager become invalid.
+  user_manager::User* CreateKioskAppUser(const std::string& user_id);
+
   // Adds a new User instance to the back of the user list. Users previously
   // created by this MockUserManager remain valid.
   void AddUser(const std::string& email);

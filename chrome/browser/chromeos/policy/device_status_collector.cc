@@ -25,7 +25,10 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -37,9 +40,12 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -104,6 +110,30 @@ std::vector<em::VolumeInfo> GetVolumeInfo(
     }
   }
   return result;
+}
+
+// Returns the DeviceLocalAccount associated with the current kiosk session.
+// Returns null if there is no active kiosk session, or if that kiosk
+// session has been removed from policy since the session started, in which
+// case we won't report its status).
+scoped_ptr<policy::DeviceLocalAccount>
+GetCurrentKioskDeviceLocalAccount(chromeos::CrosSettings* settings) {
+  if (!user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
+    return scoped_ptr<policy::DeviceLocalAccount>();
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  const std::string user_id = user->GetUserID();
+  const std::vector<policy::DeviceLocalAccount> accounts =
+      policy::GetDeviceLocalAccounts(settings);
+
+  for (const auto& device_local_account : accounts) {
+    if (device_local_account.user_id == user_id) {
+      return make_scoped_ptr(
+          new policy::DeviceLocalAccount(device_local_account)).Pass();
+    }
+  }
+  LOG(WARNING) << "Kiosk app not found in list of device-local accounts";
+  return scoped_ptr<policy::DeviceLocalAccount>();
 }
 
 }  // namespace
@@ -240,34 +270,35 @@ void DeviceStatusCollector::UpdateReportingSettings() {
 
   // All reporting settings default to 'enabled'.
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceVersionInfo, &report_version_info_)) {
+          chromeos::kReportDeviceVersionInfo, &report_version_info_)) {
     report_version_info_ = true;
   }
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceActivityTimes, &report_activity_times_)) {
+          chromeos::kReportDeviceActivityTimes, &report_activity_times_)) {
     report_activity_times_ = true;
   }
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceBootMode, &report_boot_mode_)) {
+          chromeos::kReportDeviceBootMode, &report_boot_mode_)) {
     report_boot_mode_ = true;
   }
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceNetworkInterfaces, &report_network_interfaces_)) {
+          chromeos::kReportDeviceNetworkInterfaces,
+          &report_network_interfaces_)) {
     report_network_interfaces_ = true;
   }
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceUsers, &report_users_)) {
+          chromeos::kReportDeviceUsers, &report_users_)) {
     report_users_ = true;
   }
 
   const bool already_reporting_hardware_status = report_hardware_status_;
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceHardwareStatus, &report_hardware_status_)) {
+          chromeos::kReportDeviceHardwareStatus, &report_hardware_status_)) {
     report_hardware_status_ = true;
   }
 
   if (!cros_settings_->GetBoolean(
-      chromeos::kReportDeviceSessionStatus, &report_session_status_)) {
+          chromeos::kReportDeviceSessionStatus, &report_session_status_)) {
     report_session_status_ = true;
   }
 
@@ -389,10 +420,20 @@ void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
   last_idle_check_ = now;
 }
 
-bool DeviceStatusCollector::IsAutoLaunchedKioskSession() {
-  // TODO(atwilson): Determine if the currently active session is an
-  // autolaunched kiosk session (http://crbug.com/452968).
-  return false;
+scoped_ptr<DeviceLocalAccount>
+DeviceStatusCollector::GetAutoLaunchedKioskSessionInfo() {
+  scoped_ptr<DeviceLocalAccount> account =
+      GetCurrentKioskDeviceLocalAccount(cros_settings_);
+  if (account) {
+    chromeos::KioskAppManager::App current_app;
+    if (chromeos::KioskAppManager::Get()->GetApp(account->kiosk_app_id,
+                                                 &current_app) &&
+        current_app.was_auto_launched_with_zero_delay) {
+      return account.Pass();
+    }
+  }
+  // No auto-launched kiosk session active.
+  return scoped_ptr<DeviceLocalAccount>();
 }
 
 void DeviceStatusCollector::SampleHardwareStatus() {
@@ -605,7 +646,7 @@ void DeviceStatusCollector::GetNetworkInterfaces(
   }
 
   // Don't write any network state if we aren't in a kiosk session.
-  if (!IsAutoLaunchedKioskSession())
+  if (!GetAutoLaunchedKioskSessionInfo())
     return;
 
   // Walk the various networks and store their state in the status report.
@@ -701,9 +742,8 @@ bool DeviceStatusCollector::GetDeviceStatus(
   if (report_network_interfaces_)
     GetNetworkInterfaces(status);
 
-  if (report_users_) {
+  if (report_users_)
     GetUsers(status);
-  }
 
   if (report_hardware_status_)
     GetHardwareStatus(status);
@@ -719,7 +759,46 @@ bool DeviceStatusCollector::GetDeviceStatus(
 
 bool DeviceStatusCollector::GetDeviceSessionStatus(
     em::SessionStatusReportRequest* status) {
-  return false;
+  // Only generate session status reports if session status reporting is
+  // enabled.
+  if (!report_session_status_)
+    return false;
+
+  scoped_ptr<const DeviceLocalAccount> account =
+      GetAutoLaunchedKioskSessionInfo();
+  // Only generate session status reports if we are in an auto-launched kiosk
+  // session.
+  if (!account)
+    return false;
+
+  // Get the account ID associated with this user.
+  status->set_device_local_account_id(account->account_id);
+  em::AppStatus* app_status = status->add_installed_apps();
+  app_status->set_app_id(account->kiosk_app_id);
+
+  // Look up the app and get the version.
+  const std::string app_version = GetAppVersion(account->kiosk_app_id);
+  if (app_version.empty()) {
+    DLOG(ERROR) << "Unable to get version for extension: "
+                << account->kiosk_app_id;
+  } else {
+    app_status->set_extension_version(app_version);
+  }
+  return true;
+}
+
+std::string DeviceStatusCollector::GetAppVersion(
+    const std::string& kiosk_app_id) {
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(
+          user_manager::UserManager::Get()->GetActiveUser());
+  const extensions::ExtensionRegistry* const registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* const extension = registry->GetExtensionById(
+      kiosk_app_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (!extension)
+    return std::string();
+  return extension->VersionString();
 }
 
 void DeviceStatusCollector::OnSubmittedSuccessfully() {

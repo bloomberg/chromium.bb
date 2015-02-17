@@ -646,11 +646,12 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode
-    //   kReportDeviceLocation
-    //   kReportDeviceVersionInfo
-    //   kReportDeviceNetworkInterfaces
-    //   kReportDeviceUsers
     //   kReportDeviceHardwareStatus
+    //   kReportDeviceLocation
+    //   kReportDeviceNetworkInterfaces
+    //   kReportDeviceSessionStatus
+    //   kReportDeviceVersionInfo
+    //   kReportDeviceUsers
     //   kServiceAccountIdentity
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter

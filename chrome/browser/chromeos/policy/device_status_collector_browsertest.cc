@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -47,6 +48,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using ::testing::Return;
 using ::testing::ReturnRef;
 using base::Time;
 using base::TimeDelta;
@@ -57,6 +59,8 @@ namespace em = enterprise_management;
 namespace {
 
 const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
+const char kKioskAccountId[] = "kiosk_user@localhost";
+const char kKioskAppId[] = "kiosk_app_id";
 
 scoped_ptr<content::Geoposition> mock_position_to_return_next;
 
@@ -93,8 +97,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
           local_state,
           provider,
           location_update_requester,
-          volume_info_fetcher),
-        kiosk_mode_(false) {
+          volume_info_fetcher) {
+
     // Set the baseline time to a fixed value (1 AM) to prevent test flakiness
     // due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
@@ -129,12 +133,21 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     RefreshSampleResourceUsage();
   }
 
-  void set_kiosk_mode(bool is_kiosk) {
-    kiosk_mode_ = is_kiosk;
+  void set_kiosk_account(scoped_ptr<policy::DeviceLocalAccount> account) {
+    kiosk_account_ = account.Pass();
   }
 
-  bool IsAutoLaunchedKioskSession() override {
-    return kiosk_mode_;
+  scoped_ptr<policy::DeviceLocalAccount>
+  GetAutoLaunchedKioskSessionInfo() override {
+    if (kiosk_account_)
+      return make_scoped_ptr(new policy::DeviceLocalAccount(*kiosk_account_));
+    return scoped_ptr<policy::DeviceLocalAccount>();
+  }
+
+  std::string GetAppVersion(const std::string& app_id) override {
+    // Just return the app_id as the version - this makes it easy for tests
+    // to confirm that the correct app's version was requested.
+    return app_id;
   }
 
   void RefreshSampleResourceUsage() {
@@ -171,7 +184,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
 
   std::vector<double> mock_cpu_usage_;
 
-  bool kiosk_mode_;
+  scoped_ptr<policy::DeviceLocalAccount> kiosk_account_;
 };
 
 // Return the total number of active milliseconds contained in a device
@@ -229,7 +242,12 @@ class DeviceStatusCollectorTest : public testing::Test {
                           "device_id",
                           DEVICE_MODE_ENTERPRISE),
       user_manager_(new chromeos::MockUserManager()),
-      user_manager_enabler_(user_manager_) {
+      user_manager_enabler_(user_manager_),
+      fake_device_local_account_(
+          policy::DeviceLocalAccount::TYPE_KIOSK_APP,
+          kKioskAccountId,
+          kKioskAppId,
+          std::string() /* kiosk_app_update_url */) {
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
     scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -340,6 +358,15 @@ class DeviceStatusCollectorTest : public testing::Test {
               location.error_code());
   }
 
+  void MockRunningKioskApp(const DeviceLocalAccount& account) {
+    std::vector<DeviceLocalAccount> accounts;
+    accounts.push_back(account);
+    SetDeviceLocalAccounts(cros_settings_, accounts);
+    user_manager_->CreateKioskAppUser(account.user_id);
+    EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp()).WillRepeatedly(
+        Return(true));
+  }
+
  protected:
   // Convenience method.
   int64 ActivePeriodMilliseconds() {
@@ -367,6 +394,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   em::DeviceStatusReportRequest status_;
   scoped_ptr<TestingDeviceStatusCollector> status_collector_;
+  const policy::DeviceLocalAccount fake_device_local_account_;
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {
@@ -841,6 +869,45 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   EXPECT_EQ(0, status_.cpu_utilization_pct().size());
 }
 
+TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {
+  // Should not report session status if we don't have an active kiosk app.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceSessionStatus, true);
+  em::SessionStatusReportRequest session_status;
+  EXPECT_FALSE(status_collector_->GetDeviceSessionStatus(&session_status));
+}
+
+TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
+  // Should not report session status if session status reporting is disabled.
+  cros_settings_->SetBoolean(chromeos::kReportDeviceSessionStatus, false);
+  status_collector_->set_kiosk_account(make_scoped_ptr(
+      new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
+  // Set up a device-local account for single-app kiosk mode.
+  MockRunningKioskApp(fake_device_local_account_);
+
+  em::SessionStatusReportRequest session_status;
+  EXPECT_FALSE(status_collector_->GetDeviceSessionStatus(&session_status));
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
+  cros_settings_->SetBoolean(chromeos::kReportDeviceSessionStatus, true);
+  status_collector_->set_kiosk_account(make_scoped_ptr(
+      new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
+
+  // Set up a device-local account for single-app kiosk mode.
+  MockRunningKioskApp(fake_device_local_account_);
+
+  em::SessionStatusReportRequest session_status;
+  EXPECT_TRUE(status_collector_->GetDeviceSessionStatus(&session_status));
+  ASSERT_EQ(1, session_status.installed_apps_size());
+  EXPECT_EQ(kKioskAccountId, session_status.device_local_account_id());
+  const em::AppStatus app = session_status.installed_apps(0);
+  EXPECT_EQ(kKioskAppId, app.app_id());
+  // Test code just sets the version to the app ID.
+  EXPECT_EQ(kKioskAppId, app.extension_version());
+  EXPECT_FALSE(app.has_status());
+  EXPECT_FALSE(app.has_error());
+}
+
 // Fake device state.
 struct FakeDeviceData {
   const char* device_path;
@@ -1046,7 +1113,8 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NoNetworkStateIfNotKiosk) {
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   // Mock that we are in kiosk mode so we report network state.
-  status_collector_->set_kiosk_mode(true);
+  status_collector_->set_kiosk_account(make_scoped_ptr(
+      new policy::DeviceLocalAccount(fake_device_local_account_)).Pass());
 
   // Interfaces should be reported by default.
   GetStatus();

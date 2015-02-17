@@ -108,6 +108,14 @@ user_manager::User* MockUserManager::CreatePublicAccountUser(
   return user_list_.back();
 }
 
+user_manager::User* MockUserManager::CreateKioskAppUser(
+    const std::string& email) {
+  ClearUserList();
+  user_list_.push_back(user_manager::User::CreateKioskAppUser(email));
+  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user_list_.back());
+  return user_list_.back();
+}
+
 void MockUserManager::AddUser(const std::string& email) {
   user_manager::User* user = user_manager::User::CreateRegularUser(email);
   user_list_.push_back(user);
