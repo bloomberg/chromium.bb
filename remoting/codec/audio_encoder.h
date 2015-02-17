@@ -16,6 +16,9 @@ class AudioEncoder {
   virtual ~AudioEncoder() {}
 
   virtual scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) = 0;
+
+  // Returns average bitrate for the stream in bits per second.
+  virtual int GetBitrate() = 0;
 };
 
 }  // namespace remoting

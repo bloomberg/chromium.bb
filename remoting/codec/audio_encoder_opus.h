@@ -27,6 +27,7 @@ class AudioEncoderOpus : public AudioEncoder {
 
   // AudioEncoder interface.
   scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override;
+  int GetBitrate() override;
 
  private:
   void InitEncoder();

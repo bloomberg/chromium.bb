@@ -23,4 +23,9 @@ scoped_ptr<AudioPacket> AudioEncoderVerbatim::Encode(
   return packet.Pass();
 }
 
+int AudioEncoderVerbatim::GetBitrate() {
+  return AudioPacket::SAMPLING_RATE_48000 * AudioPacket::BYTES_PER_SAMPLE_2 *
+         AudioPacket::CHANNELS_STEREO * 8;
+}
+
 }  // namespace remoting

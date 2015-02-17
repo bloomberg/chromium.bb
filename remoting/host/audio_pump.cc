@@ -16,8 +16,11 @@
 
 namespace remoting {
 
+// Limit the data stored in the pending send buffers to 250ms.
+const int kMaxBufferedIntervalMs = 250;
+
 class AudioPump::Core {
- public:
+   public:
   Core(base::WeakPtr<AudioPump> pump,
        scoped_ptr<AudioCapturer> audio_capturer,
        scoped_ptr<AudioEncoder> audio_encoder);
@@ -25,6 +28,8 @@ class AudioPump::Core {
 
   void Start();
   void Pause(bool pause);
+
+  void OnPacketSent(int size);
 
  private:
   void EncodeAudioPacket(scoped_ptr<AudioPacket> packet);
@@ -36,23 +41,26 @@ class AudioPump::Core {
   scoped_refptr<base::SingleThreadTaskRunner> pump_task_runner_;
 
   scoped_ptr<AudioCapturer> audio_capturer_;
-
   scoped_ptr<AudioEncoder> audio_encoder_;
 
   bool enabled_;
 
+  // Number of bytes in the queue that have been encoded but haven't been sent
+  // yet.
+  int bytes_pending_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-AudioPump::Core::Core(
-    base::WeakPtr<AudioPump> pump,
-    scoped_ptr<AudioCapturer> audio_capturer,
-    scoped_ptr<AudioEncoder> audio_encoder)
+AudioPump::Core::Core(base::WeakPtr<AudioPump> pump,
+                      scoped_ptr<AudioCapturer> audio_capturer,
+                      scoped_ptr<AudioEncoder> audio_encoder)
     : pump_(pump),
       pump_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_capturer_(audio_capturer.Pass()),
       audio_encoder_(audio_encoder.Pass()),
-      enabled_(true) {
+      enabled_(true),
+      bytes_pending_(0) {
   thread_checker_.DetachFromThread();
 }
 
@@ -73,11 +81,20 @@ void AudioPump::Core::Pause(bool pause) {
   enabled_ = !pause;
 }
 
+void AudioPump::Core::OnPacketSent(int size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  bytes_pending_-= size;
+  DCHECK_GE(bytes_pending_, 0);
+}
+
 void AudioPump::Core::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(packet);
 
-  if (!enabled_)
+  int max_buffered_bytes =
+      audio_encoder_->GetBitrate() * kMaxBufferedIntervalMs / 1000 / 8;
+  if (!enabled_ || bytes_pending_ > max_buffered_bytes)
     return;
 
   scoped_ptr<AudioPacket> encoded_packet =
@@ -87,9 +104,12 @@ void AudioPump::Core::EncodeAudioPacket(scoped_ptr<AudioPacket> packet) {
   if (!encoded_packet)
     return;
 
-  pump_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&AudioPump::SendAudioPacket, pump_,
-                                         base::Passed(&encoded_packet)));
+  int packet_size = encoded_packet->ByteSize();
+  bytes_pending_ += packet_size;
+
+  pump_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AudioPump::SendAudioPacket, pump_,
+                            base::Passed(&encoded_packet), packet_size));
 }
 
 AudioPump::AudioPump(
@@ -123,11 +143,19 @@ void AudioPump::Pause(bool pause) {
       base::Bind(&Core::Pause, base::Unretained(core_.get()), pause));
 }
 
-void AudioPump::SendAudioPacket(scoped_ptr<AudioPacket> packet) {
+void AudioPump::SendAudioPacket(scoped_ptr<AudioPacket> packet, int size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(packet);
 
-  audio_stub_->ProcessAudioPacket(packet.Pass(), base::Closure());
+  audio_stub_->ProcessAudioPacket(
+      packet.Pass(),
+      base::Bind(&AudioPump::OnPacketSent, weak_factory_.GetWeakPtr(), size));
+}
+
+void AudioPump::OnPacketSent(int size) {
+  audio_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::OnPacketSent, base::Unretained(core_.get()), size));
 }
 
 }  // namespace remoting

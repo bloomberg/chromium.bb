@@ -32,11 +32,10 @@ class AudioPump {
  public:
   // The caller must ensure that the |audio_stub| is not destroyed until the
   // pump is destroyed.
-  AudioPump(
-      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
-      scoped_ptr<AudioCapturer> audio_capturer,
-      scoped_ptr<AudioEncoder> audio_encoder,
-      protocol::AudioStub* audio_stub);
+  AudioPump(scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
+            scoped_ptr<AudioCapturer> audio_capturer,
+            scoped_ptr<AudioEncoder> audio_encoder,
+            protocol::AudioStub* audio_stub);
   virtual ~AudioPump();
 
   // Pauses or resumes audio on a running session. This leaves the audio
@@ -48,7 +47,10 @@ class AudioPump {
   class Core;
 
   // Called on the network thread to send a captured packet to the audio stub.
-  void SendAudioPacket(scoped_ptr<AudioPacket> packet);
+  void SendAudioPacket(scoped_ptr<AudioPacket> packet, int size);
+
+  // Callback for BufferedSocketWriter.
+  void OnPacketSent(int size);
 
   base::ThreadChecker thread_checker_;
 

@@ -18,6 +18,7 @@ class AudioEncoderVerbatim : public AudioEncoder {
 
   // AudioEncoder implementation.
   scoped_ptr<AudioPacket> Encode(scoped_ptr<AudioPacket> packet) override;
+  int GetBitrate() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioEncoderVerbatim);

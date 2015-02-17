@@ -134,6 +134,10 @@ void AudioEncoderOpus::FetchBytesToResample(int resampler_frame_delay,
   DCHECK_LE(resampling_data_pos_, static_cast<int>(resampling_data_size_));
 }
 
+int AudioEncoderOpus::GetBitrate() {
+  return kOutputBitrateBps;
+}
+
 scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
     scoped_ptr<AudioPacket> packet) {
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
