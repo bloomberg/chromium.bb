@@ -101,9 +101,7 @@ void CSSGradientValue::sortStopsIfNeeded()
     }
 }
 
-class GradientStop {
-    ALLOW_ONLY_INLINE_ALLOCATION();
-public:
+struct GradientStop {
     Color color;
     float offset;
     bool specified;
@@ -114,7 +112,7 @@ public:
     { }
 };
 
-void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stops, const WillBeHeapVector<CSSGradientColorStop, 2>& cssGradientStops)
+static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const WillBeHeapVector<CSSGradientColorStop, 2>& cssGradientStops)
 {
     // This algorithm will replace each color interpolation hint with 9 regular
     // color stops. The color values for the new color stops will be calculated
@@ -229,7 +227,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
 
     size_t numStops = m_stops.size();
 
-    WillBeHeapVector<GradientStop> stops(numStops);
+    Vector<GradientStop> stops(numStops);
 
     float gradientLength = 0;
     bool computedGradientLength = false;
