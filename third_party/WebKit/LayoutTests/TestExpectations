@@ -1847,13 +1847,4 @@ crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFai
 crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Failure ]
 crbug.com/457137 [ Linux ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 
-crbug.com/459085 [ Mac Win Linux ] fast/borders/border-radius-mask-canvas-all.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-all.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
-crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
-
 crbug.com/459118 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
