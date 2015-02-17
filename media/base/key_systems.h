@@ -35,6 +35,8 @@ MEDIA_EXPORT bool IsSaneInitDataTypeWithContainer(
     const std::string& init_data_type,
     const std::string& container);
 
+// Use for unprefixed EME only!
+// Returns whether |key_system| is a supported key system.
 // Note: Shouldn't be used for prefixed API as the original
 // IsSupportedKeySystemWithMediaMimeType() path reports UMAs, but this path does
 // not.
@@ -44,20 +46,24 @@ MEDIA_EXPORT bool IsSupportedKeySystemWithInitDataType(
     const std::string& key_system,
     const std::string& init_data_type);
 
+// Use for prefixed EME only!
 // Returns whether |key_system| is a real supported key system that can be
 // instantiated.
 // Abstract parent |key_system| strings will return false.
 // Call IsSupportedKeySystemWithMediaMimeType() to determine whether a
 // |key_system| supports a specific type of media or to check parent key
 // systems.
-MEDIA_EXPORT bool IsConcreteSupportedKeySystem(const std::string& key_system);
+MEDIA_EXPORT bool PrefixedIsSupportedConcreteKeySystem(
+    const std::string& key_system);
 
+// Use for unprefixed EME only!
 // Returns whether |key_system| supports the specified media type and codec(s).
 MEDIA_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system);
 
+// Use for prefixed EME only!
 // Returns whether |key_system| supports the specified media type and codec(s).
 // To be used with prefixed EME only as it generates UMAs based on the query.
 MEDIA_EXPORT bool PrefixedIsSupportedKeySystemWithMediaMimeType(

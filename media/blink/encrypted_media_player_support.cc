@@ -151,7 +151,7 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
     const std::string& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!PrefixedIsSupportedConcreteKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
@@ -234,7 +234,7 @@ EncryptedMediaPlayerSupport::AddKeyInternal(
   DCHECK(key);
   DCHECK_GT(key_length, 0u);
 
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!PrefixedIsSupportedConcreteKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.empty() || key_system != current_key_system_)
@@ -266,7 +266,7 @@ WebMediaPlayer::MediaKeyException
 EncryptedMediaPlayerSupport::CancelKeyRequestInternal(
     const std::string& key_system,
     const std::string& session_id) {
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!PrefixedIsSupportedConcreteKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.empty() || key_system != current_key_system_)

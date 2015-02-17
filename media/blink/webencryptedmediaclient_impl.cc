@@ -10,13 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_permission.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
+#include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "webcontentdecryptionmodule_impl.h"
-#include "webcontentdecryptionmoduleaccess_impl.h"
 
 namespace media {
 
@@ -226,7 +226,7 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   Reporter* reporter = GetReporter(key_system);
   reporter->ReportRequested();
 
-  if (!IsConcreteSupportedKeySystem(key_system)) {
+  if (!IsSupportedKeySystem(key_system)) {
     request.requestNotSupported("Unsupported keySystem");
     return;
   }

@@ -40,8 +40,9 @@ void WebContentDecryptionModuleImpl::Create(
     return;
   }
 
+  // TODO(ddorwin): This should be a DCHECK.
   std::string key_system_ascii = base::UTF16ToASCII(key_system);
-  if (!media::IsConcreteSupportedKeySystem(key_system_ascii)) {
+  if (!media::IsSupportedKeySystem(key_system_ascii)) {
     std::string message =
         "Keysystem '" + key_system_ascii + "' is not supported.";
     result.completeWithError(
