@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -180,6 +181,7 @@ public class NotificationUIManager {
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
                 .setLargeIcon(icon)
                 .setSmallIcon(R.drawable.notification_badge)
+                .setDefaults(Notification.DEFAULT_ALL)
                 .setContentIntent(getPendingIntent(
                         NotificationConstants.ACTION_CLICK_NOTIFICATION,
                         notificationId, mLastNotificationId, notificationData))
