@@ -199,7 +199,6 @@
       'WebNode.cpp',
       'WebNodeList.cpp',
       'WebOptionElement.cpp',
-      'WebPageOverlay.cpp',
       'WebPagePopupImpl.cpp',
       'WebPagePopupImpl.h',
       'WebPageSerializer.cpp',

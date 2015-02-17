@@ -40,12 +40,7 @@ struct WebSize;
 class BLINK_EXPORT WebPageOverlay {
 public:
     // Paints page overlay contents.
-    // FIXME: Once Chromium no longer uses the WebCanvas* overload:
-    // - remove it
-    // - make the WebGraphicsContext* overload pure virtual
-    // - remove the BLINK_EXPORT tag from this class
-    virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize);
-    virtual void paintPageOverlay(WebCanvas*);
+    virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) = 0;
 
 protected:
     virtual ~WebPageOverlay() { }
