@@ -104,11 +104,6 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
     return animationObject.release();
 }
 
-static String playerId(AnimationPlayer& player)
-{
-    return String::number(player.sequenceNumber());
-}
-
 static PassRefPtr<TypeBuilder::Animation::KeyframeStyle> buildObjectForStyleRuleKeyframe(StyleRuleKeyframe* keyframe, TimingFunction& easing)
 {
     RefPtrWillBeRawPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), keyframe->mutableProperties().ensureCSSStyleDeclaration(), 0);
@@ -203,7 +198,7 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
         animationObject->setKeyframesRule(keyframeRule);
 
     RefPtr<TypeBuilder::Animation::AnimationPlayer> playerObject = TypeBuilder::Animation::AnimationPlayer::create()
-        .setId(playerId(player))
+        .setId(String::number(player.sequenceNumber()))
         .setPausedState(player.paused())
         .setPlayState(player.playState())
         .setPlaybackRate(player.playbackRate())
@@ -222,7 +217,6 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > Inspect
         Animation* animation = toAnimation(player.source());
         if (!element.contains(animation->target()))
             continue;
-        m_idToAnimationPlayer.set(playerId(player), &player);
         animationPlayersArray->addItem(buildObjectForAnimationPlayer(player));
     }
     return animationPlayersArray.release();
@@ -233,7 +227,6 @@ void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorStrin
     Element* element = m_domAgent->assertElement(errorString, nodeId);
     if (!element)
         return;
-    m_idToAnimationPlayer.clear();
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players;
     if (!includeSubtreeAnimations)
         players = ElementAnimation::getAnimationPlayers(*element);
@@ -242,48 +235,25 @@ void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorStrin
     animationPlayersArray = buildArrayForAnimationPlayers(*element, players);
 }
 
-void InspectorAnimationAgent::pauseAnimationPlayer(ErrorString* errorString, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>& animationPlayer)
-{
-    AnimationPlayer* player = assertAnimationPlayer(errorString, id);
-    if (!player)
-        return;
-    if (player->playStateInternal() == AnimationPlayer::Idle)
-        player->play();
-    player->pause();
-    animationPlayer = buildObjectForAnimationPlayer(*player);
-}
-
-void InspectorAnimationAgent::playAnimationPlayer(ErrorString* errorString, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>& animationPlayer)
-{
-    AnimationPlayer* player = assertAnimationPlayer(errorString, id);
-    if (!player)
-        return;
-    player->play();
-    animationPlayer = buildObjectForAnimationPlayer(*player);
-}
-
-void InspectorAnimationAgent::setAnimationPlayerCurrentTime(ErrorString* errorString, const String& id, double currentTime, RefPtr<TypeBuilder::Animation::AnimationPlayer>& animationPlayer)
-{
-    AnimationPlayer* player = assertAnimationPlayer(errorString, id);
-    if (!player)
-        return;
-    player->setCurrentTime(currentTime);
-    animationPlayer = buildObjectForAnimationPlayer(*player);
-}
-
-void InspectorAnimationAgent::getAnimationPlayerState(ErrorString* errorString, const String& id, double* currentTime, bool* isRunning)
-{
-    AnimationPlayer* player = assertAnimationPlayer(errorString, id);
-    if (!player)
-        return;
-    *currentTime = player->currentTime();
-    *isRunning = player->playing();
-}
-
 void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
 {
-    m_idToAnimationPlayer.set(playerId(player), &player);
-    m_frontend->animationPlayerCreated(buildObjectForAnimationPlayer(player));
+    const String& playerId = String::number(player.sequenceNumber());
+    if (m_idToAnimationPlayer.get(playerId))
+        return;
+
+    // Check threshold
+    double latestStartTime = 0;
+    for (const auto& p : m_idToAnimationPlayer.values())
+        latestStartTime = max(latestStartTime, p->startTime());
+
+    bool reset = false;
+    if (player.startTime() - latestStartTime > 1000) {
+        reset = true;
+        m_idToAnimationPlayer.clear();
+    }
+
+    m_idToAnimationPlayer.set(playerId, &player);
+    m_frontend->animationPlayerCreated(buildObjectForAnimationPlayer(player), reset);
 }
 
 AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* errorString, const String& id)

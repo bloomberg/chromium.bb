@@ -127,6 +127,7 @@ public:
     void setOverlayMessage(ErrorString*, const String*) override;
     void animationsPlaybackRate(ErrorString*, double* playbackRate) override;
     void setAnimationsPlaybackRate(ErrorString*, double playbackRate) override;
+    void setCurrentTime(ErrorString*, double currentTime) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);

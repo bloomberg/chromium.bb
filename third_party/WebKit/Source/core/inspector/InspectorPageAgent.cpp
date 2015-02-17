@@ -1491,6 +1491,11 @@ void InspectorPageAgent::setAnimationsPlaybackRate(ErrorString*, double playback
     }
 }
 
+void InspectorPageAgent::setCurrentTime(ErrorString*, double currentTime)
+{
+    inspectedFrame()->document()->timeline().setCurrentTime(currentTime);
+}
+
 void InspectorPageAgent::clearEditedResourcesContent()
 {
     m_editedResourceContent.clear();

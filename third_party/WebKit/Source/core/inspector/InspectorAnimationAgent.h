@@ -35,10 +35,6 @@ public:
 
     // Protocol method implementations.
     virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
-    virtual void pauseAnimationPlayer(ErrorString*, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
-    virtual void playAnimationPlayer(ErrorString*, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
-    virtual void setAnimationPlayerCurrentTime(ErrorString*, const String& id, double currentTime, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
-    virtual void getAnimationPlayerState(ErrorString*, const String& id, double* currentTime, bool* isRunning) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimationPlayer(AnimationPlayer&);
@@ -62,7 +58,7 @@ private:
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     InspectorFrontend::Animation* m_frontend;
-    WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer> > m_idToAnimationPlayer;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer>> m_idToAnimationPlayer;
 };
 
 }
