@@ -191,9 +191,9 @@ void PushMessagingServiceImpl::OnMessage(
     return;
   }
   // Drop message and unregister if |origin| has lost push permission.
-  if (!HasPermission(application_id.origin)) {
-    DeliverMessageCallback(app_id, application_id.origin,
-                           application_id.service_worker_registration_id,
+  if (!HasPermission(application_id.origin())) {
+    DeliverMessageCallback(app_id, application_id.origin(),
+                           application_id.service_worker_registration_id(),
                            message,
                            content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED);
     return;
@@ -225,13 +225,13 @@ void PushMessagingServiceImpl::OnMessage(
 
   content::BrowserContext::DeliverPushMessage(
       profile_,
-      application_id.origin,
-      application_id.service_worker_registration_id,
+      application_id.origin(),
+      application_id.service_worker_registration_id(),
       data,
       base::Bind(&PushMessagingServiceImpl::DeliverMessageCallback,
                  weak_factory_.GetWeakPtr(),
-                 application_id.app_id_guid, application_id.origin,
-                 application_id.service_worker_registration_id, message));
+                 application_id.app_id_guid(), application_id.origin(),
+                 application_id.service_worker_registration_id(), message));
 }
 
 void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {
@@ -550,7 +550,7 @@ void PushMessagingServiceImpl::RegisterFromWorker(
   IncreasePushRegistrationCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
   gcm_profile_service_->driver()->Register(
-      application_id.app_id_guid, sender_ids,
+      application_id.app_id_guid(), sender_ids,
       base::Bind(&PushMessagingServiceImpl::DidRegister,
                  weak_factory_.GetWeakPtr(),
                  application_id, register_callback));
@@ -607,7 +607,7 @@ void PushMessagingServiceImpl::DidRequestPermission(
   IncreasePushRegistrationCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
   gcm_profile_service_->driver()->Register(
-      application_id.app_id_guid,
+      application_id.app_id_guid(),
       sender_ids,
       base::Bind(&PushMessagingServiceImpl::DidRegister,
                  weak_factory_.GetWeakPtr(),
@@ -629,7 +629,7 @@ void PushMessagingServiceImpl::Unregister(
     return;
   }
 
-  Unregister(application_id.app_id_guid, retry_on_failure, callback);
+  Unregister(application_id.app_id_guid(), retry_on_failure, callback);
 }
 
 void PushMessagingServiceImpl::Unregister(

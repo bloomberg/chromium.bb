@@ -54,9 +54,11 @@ class PushMessagingApplicationId {
 
   bool IsValid() const;
 
-  const std::string app_id_guid;
-  const GURL origin;
-  const int64 service_worker_registration_id;
+  const std::string& app_id_guid() const { return app_id_guid_; }
+  const GURL& origin() const { return origin_; }
+  int64 service_worker_registration_id() const {
+    return service_worker_registration_id_;
+  }
 
  private:
   friend class PushMessagingApplicationIdTest;
@@ -67,6 +69,10 @@ class PushMessagingApplicationId {
   PushMessagingApplicationId(const std::string& app_id_guid,
                              const GURL& origin,
                              int64 service_worker_registration_id);
+
+  const std::string app_id_guid_;
+  const GURL origin_;
+  const int64 service_worker_registration_id_;
 };
 
 }  // namespace gcm

@@ -100,14 +100,14 @@ void PushMessagingApplicationId::PersistToDisk(Profile* profile) const {
 
   // Delete any stale entry with the same origin and Service Worker
   // registration id (hence we ensure there is a 1:1 not 1:many mapping).
-  PushMessagingApplicationId old = Get(profile, origin,
-                                       service_worker_registration_id);
+  PushMessagingApplicationId old = Get(profile, origin_,
+                                       service_worker_registration_id_);
   if (old.IsValid())
-    map->RemoveWithoutPathExpansion(old.app_id_guid, nullptr);
+    map->RemoveWithoutPathExpansion(old.app_id_guid_, nullptr);
 
-  std::string origin_and_sw_id = origin.spec() + kSeparator +
-      base::Int64ToString(service_worker_registration_id);
-  map->SetStringWithoutPathExpansion(app_id_guid, origin_and_sw_id);
+  std::string origin_and_sw_id = origin_.spec() + kSeparator +
+      base::Int64ToString(service_worker_registration_id_);
+  map->SetStringWithoutPathExpansion(app_id_guid_, origin_and_sw_id);
 }
 
 void PushMessagingApplicationId::DeleteFromDisk(Profile* profile) const {
@@ -116,21 +116,21 @@ void PushMessagingApplicationId::DeleteFromDisk(Profile* profile) const {
   DictionaryPrefUpdate update(profile->GetPrefs(),
                               prefs::kPushMessagingApplicationIdMap);
   base::DictionaryValue* map = update.Get();
-  map->RemoveWithoutPathExpansion(app_id_guid, nullptr);
+  map->RemoveWithoutPathExpansion(app_id_guid_, nullptr);
 }
 
 PushMessagingApplicationId::PushMessagingApplicationId()
-    : origin(GURL::EmptyGURL()),
-      service_worker_registration_id(-1) {
+    : origin_(GURL::EmptyGURL()),
+      service_worker_registration_id_(-1) {
 }
 
 PushMessagingApplicationId::PushMessagingApplicationId(
     const std::string& app_id_guid,
     const GURL& origin,
     int64 service_worker_registration_id)
-    : app_id_guid(app_id_guid),
-      origin(origin),
-      service_worker_registration_id(service_worker_registration_id) {
+    : app_id_guid_(app_id_guid),
+      origin_(origin),
+      service_worker_registration_id_(service_worker_registration_id) {
 }
 
 PushMessagingApplicationId::~PushMessagingApplicationId() {
@@ -138,10 +138,10 @@ PushMessagingApplicationId::~PushMessagingApplicationId() {
 
 bool PushMessagingApplicationId::IsValid() const {
   const size_t prefix_len = strlen(kPushMessagingApplicationIdPrefix);
-  return origin.is_valid() && origin.GetOrigin() == origin
-      && service_worker_registration_id >= 0
-      && !app_id_guid.compare(0, prefix_len, kPushMessagingApplicationIdPrefix)
-      && base::IsValidGUID(app_id_guid.substr(prefix_len, std::string::npos));
+  return origin_.is_valid() && origin_.GetOrigin() == origin_
+      && service_worker_registration_id_ >= 0
+      && !app_id_guid_.compare(0, prefix_len, kPushMessagingApplicationIdPrefix)
+      && base::IsValidGUID(app_id_guid_.substr(prefix_len, std::string::npos));
 }
 
 }  // namespace gcm

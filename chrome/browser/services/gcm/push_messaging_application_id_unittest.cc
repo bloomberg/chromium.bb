@@ -15,7 +15,7 @@ class PushMessagingApplicationIdTest : public testing::Test {
     // To bypass DCHECK in PushMessagingApplicationId::Generate, we just use it
     // to generate app_id_guid, and then use private constructor.
     std::string app_id_guid = gcm::PushMessagingApplicationId::Generate(
-        GURL("https://www.example.com/"), 1).app_id_guid;
+        GURL("https://www.example.com/"), 1).app_id_guid();
     return PushMessagingApplicationId(app_id_guid, origin,
                                       service_worker_registration_id);
   }
@@ -33,9 +33,9 @@ TEST_F(PushMessagingApplicationIdTest, ConstructorValidity) {
 
 TEST_F(PushMessagingApplicationIdTest, UniqueGuids) {
   EXPECT_NE(gcm::PushMessagingApplicationId::Generate(
-                GURL("https://www.example.com/"), 1).app_id_guid,
+                GURL("https://www.example.com/"), 1).app_id_guid(),
             gcm::PushMessagingApplicationId::Generate(
-                GURL("https://www.example.com/"), 1).app_id_guid);
+                GURL("https://www.example.com/"), 1).app_id_guid());
 }
 
 }  // namespace gcm
