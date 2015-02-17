@@ -22,6 +22,12 @@ function test()
         {
             var content = "<html><body><script>function f(){}<" + "/script><script>function g(){var a;window.return = 10;if (a) return;}<" + "/script></body></html>";
             InspectorTest.testPrettyPrint("text/html", content, [], next);
+        },
+
+        function generatorFormatter(next)
+        {
+            var mappingQueries = ["max", "*", "else"];
+            testJSFormatter("function *max(){ var a = yield; var b = yield; if (a > b) return a; else return b;}", mappingQueries, next);
         }
     ]);
 }

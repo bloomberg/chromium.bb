@@ -22,3 +22,19 @@ function g() {
 </script></body></html>
 ------ >8 ======
 
+Running: generatorFormatter
+====== 8< ------
+function *max() {
+    var a = yield;
+    var b = yield;
+    if (a > b)
+        return a;
+    else
+        return b;
+}
+
+------ >8 ======
+Correct mapping for <max>
+Correct mapping for <*>
+Correct mapping for <else>
+
