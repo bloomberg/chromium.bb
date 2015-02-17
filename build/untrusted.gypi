@@ -614,7 +614,13 @@
                   # library not found error. Note that pthread related code
                   # is contained in libnacl_sys_private.a, which is
                   # automatically linked.
-                  '--link_flags=--target=i686-unknown-nacl -arch x86-32-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -B>(tc_lib_dir_nonsfi_helper32) ^(link_flags) >(_link_flags) -nodefaultlibs -Wl,--start-group >@(stdlibs) -Wl,--end-group',
+                  # Place >@(stdlibs) early and group it with libraries from
+                  # link_flags. The mixture of native libs and bitcode started
+                  # having problems in LLVM 3.6, when stdlibs were grouped
+                  # separately and placed later. See:
+                  # https://code.google.com/p/nativeclient/issues/detail?id=4067
+                  # TODO(jvoung): get to the bottom of this.
+                  '--link_flags=--target=i686-unknown-nacl -arch x86-32-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -nodefaultlibs -B>(tc_lib_dir_nonsfi_helper32) -Wl,--start-group >@(stdlibs) ^(link_flags) >(_link_flags) -Wl,--end-group',
                   '--source-list=^(source_list_newlib32_nonsfi)',
                 ],
               },
@@ -922,7 +928,13 @@
                   # library not found error. Note that pthread related code
                   # is contained in libnacl_sys_private.a, which is
                   # automatically linked.
-                  '--link_flags=--target=armv7-unknown-nacl-gnueabihf -arch arm-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -B>(tc_lib_dir_nonsfi_helper_arm) ^(link_flags) >(_link_flags) -nodefaultlibs -Wl,--start-group >@(stdlibs) -Wl,--end-group',
+                  # Place >@(stdlibs) early and group it with libraries from
+                  # link_flags. The mixture of native libs and bitcode started
+                  # having problems in LLVM 3.6, when stdlibs were grouped
+                  # separately and placed later. See:
+                  # https://code.google.com/p/nativeclient/issues/detail?id=4067
+                  # TODO(jvoung): get to the bottom of this.
+                  '--link_flags=--target=armv7-unknown-nacl-gnueabihf -arch arm-nonsfi --pnacl-allow-translate --pnacl-allow-native -Wl,--noirt -Wt,--noirt -Wt,--noirtshim -nodefaultlibs -B>(tc_lib_dir_nonsfi_helper_arm) -Wl,--start-group >@(stdlibs) ^(link_flags) >(_link_flags) -Wl,--end-group',
                   '--source-list=^(source_list_newlib_arm_nonsfi)',
                 ],
               },
