@@ -5,7 +5,7 @@ layer at (0,0) size 800x524
     RenderBody {BODY} at (8,8) size 784x508
       RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 504x504
-  RenderPartObject {IFRAME} at (0,0) size 504x504 [border: (2px solid #000000)]
+  LayoutIFrame {IFRAME} at (0,0) size 504x504 [border: (2px solid #000000)]
     layer at (0,0) size 500x500
       RenderView at (0,0) size 500x500
     layer at (0,0) size 500x318
@@ -15,7 +15,7 @@ layer at (8,8) size 504x504
       RenderBlock {DIV} at (0,0) size 484x302 [border: (1px solid #000000)]
         RenderText {#text} at (0,0) size 0x0
     layer at (9,-491) size 304x904 backgroundClip at (9,9) size 467x300 clip at (9,9) size 467x300 outlineClip at (9,9) size 467x300
-      RenderPartObject {IFRAME} at (1,1) size 304x904 [border: (2px inset #EEEEEE)]
+      LayoutIFrame {IFRAME} at (1,1) size 304x904 [border: (2px inset #EEEEEE)]
         layer at (0,0) size 300x900
           RenderView at (0,0) size 300x900
         layer at (0,0) size 300x761

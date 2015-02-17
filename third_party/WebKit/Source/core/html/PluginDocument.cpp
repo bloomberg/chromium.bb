@@ -33,11 +33,11 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 
 namespace blink {
 
@@ -168,7 +168,7 @@ Widget* PluginDocument::pluginWidget()
 {
     if (m_pluginNode && m_pluginNode->renderer()) {
         ASSERT(m_pluginNode->renderer()->isEmbeddedObject());
-        return toRenderEmbeddedObject(m_pluginNode->renderer())->widget();
+        return toLayoutEmbeddedObject(m_pluginNode->renderer())->widget();
     }
     return 0;
 }

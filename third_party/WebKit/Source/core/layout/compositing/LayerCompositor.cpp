@@ -54,7 +54,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -119,7 +118,7 @@ void LayerCompositor::setCompositingModeEnabled(bool enable)
     else
         destroyRootLayer();
 
-    // Compositing also affects the answer to RenderIFrame::requiresAcceleratedCompositing(), so
+    // Compositing also affects the answer to LayoutIFrame::requiresAcceleratedCompositing(), so
     // we need to schedule a style recalc in our parent document.
     if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement())
         ownerElement->setNeedsCompositingUpdate();

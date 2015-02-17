@@ -32,14 +32,14 @@ layer at (20,20) size 644x433
             text run at (400,2) width 168: "100"
       RenderBlock (anonymous) at (41,334) size 562x0
         RenderInline {MAP} at (0,0) size 0x0
-          RenderPartObject {IFRAME} at (0,0) size 0x0
+          LayoutIFrame {IFRAME} at (0,0) size 0x0
             layer at (0,0) size 1x1
               RenderView at (0,0) size 0x0
             layer at (0,0) size 0x1
               RenderBlock {HTML} at (0,0) size 0x1
                 RenderBody {BODY} at (0,0) size 0x1
                   LayoutImage {IMG} at (0,0) size 1x1
-          RenderPartObject {IFRAME} at (0,0) size 0x0
+          LayoutIFrame {IFRAME} at (0,0) size 0x0
             layer at (0,0) size 16x2309
               RenderView at (0,0) size 0x0
             layer at (0,0) size 0x2309
@@ -190,7 +190,7 @@ layer at (20,20) size 644x433
                       text run at (0,2240) width 8: "m"
                       text run at (0,2256) width 8: "l"
                       text run at (0,2272) width 8: ">"
-          RenderPartObject {IFRAME} at (0,0) size 0x0
+          LayoutIFrame {IFRAME} at (0,0) size 0x0
             layer at (0,0) size 0x0
               RenderView at (0,0) size 0x0
             layer at (0,0) size 0x8

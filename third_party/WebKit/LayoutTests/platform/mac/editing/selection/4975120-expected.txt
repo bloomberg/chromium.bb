@@ -19,7 +19,7 @@ layer at (11,81) size 117x13
     RenderText {#text} at (0,0) size 18x13
       text run at (0,0) width 18: "foo"
 layer at (8,97) size 304x154
-  RenderPartObject {IFRAME} at (0,19) size 304x154 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,19) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

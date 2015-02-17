@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
           text run at (104,89) width 4: " "
         RenderText {#text} at (0,0) size 0x0
 layer at (8,110) size 104x104
-  RenderPartObject {IFRAME} at (0,0) size 104x104 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,0) size 104x104 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
     layer at (0,0) size 100x8
@@ -34,7 +34,7 @@ layer at (8,110) size 104x104
     layer at (0,0) size 100x100
       RenderBlock (positioned) {DIV} at (0,0) size 100x100 [bgcolor=#008000]
 layer at (116,110) size 104x104
-  RenderPartObject {IFRAME} at (108,0) size 104x104 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (108,0) size 104x104 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
     layer at (0,0) size 100x16

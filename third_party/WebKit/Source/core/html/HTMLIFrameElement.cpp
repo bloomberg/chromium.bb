@@ -31,7 +31,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/rendering/RenderIFrame.h"
+#include "core/layout/LayoutIFrame.h"
 
 namespace blink {
 
@@ -114,7 +114,7 @@ bool HTMLIFrameElement::rendererIsNeeded(const LayoutStyle& style)
 
 LayoutObject* HTMLIFrameElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderIFrame(this);
+    return new LayoutIFrame(this);
 }
 
 Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode* insertionPoint)

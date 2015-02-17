@@ -13,4 +13,4 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 75x17
           text run at (0,0) width 75: "SUCCESS!"
 layer at (28,70) size 300x150
-  RenderEmbeddedObject {OBJECT} at (20,10) size 300x150
+  LayoutEmbeddedObject {OBJECT} at (20,10) size 300x150

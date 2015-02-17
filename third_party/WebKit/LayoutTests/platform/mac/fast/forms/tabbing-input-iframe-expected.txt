@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
 layer at (11,167) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
 layer at (135,26) size 302x152
-  RenderPartObject {IFRAME} at (127,18) size 302x152 [border: (1px solid #000000)]
+  LayoutIFrame {IFRAME} at (127,18) size 302x152 [border: (1px solid #000000)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

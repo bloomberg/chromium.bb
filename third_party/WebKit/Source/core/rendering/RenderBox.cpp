@@ -634,7 +634,7 @@ bool RenderBox::canResize() const
     // We need a special case for <iframe> because they never have
     // hasOverflowClip(). However, they do "implicitly" clip their contents, so
     // we want to allow resizing them also.
-    return (hasOverflowClip() || isRenderIFrame()) && style()->resize() != RESIZE_NONE;
+    return (hasOverflowClip() || isLayoutIFrame()) && style()->resize() != RESIZE_NONE;
 }
 
 void RenderBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const

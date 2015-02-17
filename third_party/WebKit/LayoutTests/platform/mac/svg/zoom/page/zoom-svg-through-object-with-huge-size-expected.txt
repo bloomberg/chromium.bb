@@ -12,7 +12,7 @@ layer at (0,0) size 800x350
         RenderText {#text} at (0,0) size 87x13
           text run at (0,0) width 87: "Text below the rect"
 layer at (6,35) size 278x278
-  RenderEmbeddedObject {object} at (0,0) size 277.77x277.77
+  LayoutEmbeddedObject {object} at (0,0) size 277.77x277.77
     layer at (0,0) size 278x278
       RenderView at (0,0) size 278x278
     layer at (0,0) size 278x278

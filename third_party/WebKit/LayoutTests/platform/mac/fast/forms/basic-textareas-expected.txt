@@ -5,7 +5,7 @@ layer at (0,0) size 785x1426 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     RenderBody {BODY} at (0,0) size 785x1426
       RenderText {#text} at (0,0) size 0x0
 layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderPartObject {IFRAME} at (0,0) size 785x742
+  LayoutIFrame {IFRAME} at (0,0) size 785x742
     layer at (0,0) size 785x742
       RenderView at (0,0) size 785x742
     layer at (0,0) size 785x717
@@ -654,7 +654,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,13) width 183: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,26) width 134: " abcdefghijklmnopqrstuv"
 layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderPartObject {IFRAME} at (0,742) size 785x684
+  LayoutIFrame {IFRAME} at (0,742) size 785x684
     layer at (0,0) size 785x684
       RenderView at (0,0) size 785x684
     layer at (0,0) size 785x684

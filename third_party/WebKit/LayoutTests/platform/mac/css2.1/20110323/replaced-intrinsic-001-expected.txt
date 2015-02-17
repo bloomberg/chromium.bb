@@ -19,7 +19,7 @@ layer at (8,8) size 150x244 layerType: foreground only
           text run at (0,72) width 46: "border."
       RenderBlock {P} at (0,90) size 150x154
 layer at (8,98) size 300x150
-  RenderEmbeddedObject {OBJECT} at (0,0) size 300x150
+  LayoutEmbeddedObject {OBJECT} at (0,0) size 300x150
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

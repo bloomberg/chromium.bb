@@ -28,7 +28,7 @@ layer at (0,0) size 800x199
                       LayoutImage {img} at (5,5) size 138.88x69.44
                       RenderText {#text} at (0,0) size 0x0
 layer at (256,110) size 139x69
-  RenderEmbeddedObject {object} at (99.13,5) size 138.88x69.44
+  LayoutEmbeddedObject {object} at (99.13,5) size 138.88x69.44
     layer at (0,0) size 139x69
       RenderView at (0,0) size 139x69
     layer at (0,0) size 139x69

@@ -38,6 +38,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -48,7 +49,6 @@
 #include "core/plugins/PluginPlaceholder.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -172,8 +172,8 @@ void HTMLPlugInElement::attach(const AttachContext& context)
             m_imageLoader = HTMLImageLoader::create(this);
         m_imageLoader->updateFromElement();
     } else if (needsWidgetUpdate()
-        && renderEmbeddedObject()
-        && !renderEmbeddedObject()->showsUnavailablePluginIndicator()
+        && layoutEmbeddedObject()
+        && !layoutEmbeddedObject()->showsUnavailablePluginIndicator()
         && !wouldLoadAsNetscapePlugin(m_url, m_serviceType)
         && !m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = true;
@@ -267,7 +267,7 @@ LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily return
-    // a RenderEmbeddedObject or LayoutPart.
+    // a LayoutEmbeddedObject or LayoutPart.
     if (useFallbackContent())
         return LayoutObject::createObject(this, style);
 
@@ -280,7 +280,7 @@ LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
     if (usePlaceholderContent())
         return new RenderBlockFlow(this);
 
-    return new RenderEmbeddedObject(this);
+    return new LayoutEmbeddedObject(this);
 }
 
 void HTMLPlugInElement::finishParsingChildren()
@@ -378,7 +378,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     if (!r || !r->isLayoutPart())
         return;
     if (r->isEmbeddedObject()) {
-        if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
+        if (toLayoutEmbeddedObject(r)->showsUnavailablePluginIndicator())
             return;
     }
     RefPtrWillBeRawPtr<Widget> widget = toLayoutPart(r)->widget();
@@ -430,7 +430,7 @@ bool HTMLPlugInElement::rendererIsFocusable() const
 
     if (useFallbackContent() || !renderer() || !renderer()->isEmbeddedObject())
         return false;
-    return !toRenderEmbeddedObject(renderer())->showsUnavailablePluginIndicator();
+    return !toLayoutEmbeddedObject(renderer())->showsUnavailablePluginIndicator();
 }
 
 NPObject* HTMLPlugInElement::getNPObject()
@@ -462,13 +462,13 @@ bool HTMLPlugInElement::isImageType()
     return Image::supportsType(m_serviceType);
 }
 
-RenderEmbeddedObject* HTMLPlugInElement::renderEmbeddedObject() const
+LayoutEmbeddedObject* HTMLPlugInElement::layoutEmbeddedObject() const
 {
     // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
     // when using fallback content.
     if (!renderer() || !renderer()->isEmbeddedObject())
         return nullptr;
-    return toRenderEmbeddedObject(renderer());
+    return toLayoutEmbeddedObject(renderer());
 }
 
 // We don't use m_url, as it may not be the final URL that the object loads,
@@ -502,7 +502,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
         return false;
 
     // FIXME: None of this code should use renderers!
-    RenderEmbeddedObject* renderer = renderEmbeddedObject();
+    LayoutEmbeddedObject* renderer = layoutEmbeddedObject();
     ASSERT(renderer);
     if (!renderer)
         return false;
@@ -530,7 +530,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     if (!frame->loader().allowPlugins(AboutToInstantiatePlugin))
         return false;
 
-    RenderEmbeddedObject* renderer = renderEmbeddedObject();
+    LayoutEmbeddedObject* renderer = layoutEmbeddedObject();
     // FIXME: This code should not depend on renderer!
     if ((!renderer && requireRenderer) || useFallback)
         return false;
@@ -552,7 +552,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
     if (!placeholder && !widget) {
         if (renderer && !renderer->showsUnavailablePluginIndicator())
-            renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
+            renderer->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
         setPlaceholder(nullptr);
         return false;
     }
@@ -645,7 +645,7 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
         fastGetAttribute(HTMLNames::typeAttr);
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
         || !document().contentSecurityPolicy()->allowPluginType(mimeType, declaredMimeType, url)) {
-        renderEmbeddedObject()->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy);
+        layoutEmbeddedObject()->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }
 

@@ -9,7 +9,7 @@ layer at (0,0) size 800x409
       RenderBlock {div} at (0,36) size 160x160 [bgcolor=#000080]
       RenderBlock {p} at (0,212) size 784x165
 layer at (8,228) size 160x160
-  RenderPartObject {iframe} at (0,0) size 160x160 [bgcolor=#FF0000]
+  LayoutIFrame {iframe} at (0,0) size 160x160 [bgcolor=#FF0000]
     layer at (0,0) size 160x160
       RenderView at (0,0) size 160x160
     layer at (0,0) size 160x160

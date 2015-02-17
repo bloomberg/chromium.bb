@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 588x19
           text run at (0,0) width 588: "If this test passes, you should see SUCCESS twice, followed by [object HTMLDocument] twice."
 layer at (8,64) size 300x40
-  RenderPartObject {IFRAME} at (0,0) size 300x40
+  LayoutIFrame {IFRAME} at (0,0) size 300x40
     layer at (0,0) size 300x40
       RenderView at (0,0) size 300x40
     layer at (0,0) size 300x40
@@ -29,7 +29,7 @@ layer at (8,64) size 300x40
           RenderText {#text} at (0,0) size 69x19
             text run at (0,0) width 69: "SUCCESS"
 layer at (8,104) size 300x40
-  RenderPartObject {IFRAME} at (0,40) size 300x40
+  LayoutIFrame {IFRAME} at (0,40) size 300x40
     layer at (0,0) size 300x40
       RenderView at (0,0) size 300x40
     layer at (0,0) size 300x40

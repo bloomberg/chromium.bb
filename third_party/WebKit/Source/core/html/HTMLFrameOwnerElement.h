@@ -50,7 +50,7 @@ public:
 
     virtual void disconnectContentFrame();
 
-    // Most subclasses use LayoutPart (either RenderEmbeddedObject or RenderIFrame)
+    // Most subclasses use LayoutPart (either LayoutEmbeddedObject or LayoutIFrame)
     // except for HTMLObjectElement and HTMLEmbedElement which may return any
     // LayoutObject when using fallback content.
     LayoutPart* layoutPart() const;

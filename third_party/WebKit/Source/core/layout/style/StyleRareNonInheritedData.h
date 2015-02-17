@@ -201,7 +201,7 @@ public:
     unsigned m_scrollBlocksOn: 3; // WebScrollBlocksOn
 
     // Plugins require accelerated compositing for reasons external to blink.
-    // In which case, we need to update the LayoutStyle on the RenderEmbeddedObject,
+    // In which case, we need to update the LayoutStyle on the LayoutEmbeddedObject,
     // so store this bit so that the style actually changes when the plugin
     // becomes composited.
     unsigned m_requiresAcceleratedCompositingForExternalReasons: 1;

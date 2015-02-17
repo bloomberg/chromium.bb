@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
         text run at (0,194) width 398: "The above image will tell you success or failure - green or red"
       RenderBR {BR} at (397,208) size 1x0
 layer at (8,44) size 304x154
-  RenderPartObject {IFRAME} at (0,36) size 304x154 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,36) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

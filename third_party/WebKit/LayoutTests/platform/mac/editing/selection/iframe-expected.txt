@@ -197,7 +197,7 @@ layer at (0,0) size 800x600
           RenderText {#text} at (452,188) size 67x18
             text run at (452,188) width 67: " the end ..."
 layer at (58,60) size 402x202
-  RenderPartObject {IFRAME} at (50.19,0) size 402x202 [border: (1px solid #000000)]
+  LayoutIFrame {IFRAME} at (50.19,0) size 402x202 [border: (1px solid #000000)]
     layer at (0,0) size 400x200
       RenderView at (0,0) size 400x200
     layer at (0,0) size 400x200

@@ -22,7 +22,7 @@ layer at (0,0) size 785x928 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       RenderBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
 layer at (8,234) size 304x154
-  RenderPartObject {IFRAME} at (0,226) size 304x154 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,226) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150
@@ -32,7 +32,7 @@ layer at (8,234) size 304x154
 layer at (8,392) size 300x150
   LayoutVideo {VIDEO} at (0,384) size 300x150
 layer at (8,546) size 556x406 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderEmbeddedObject {EMBED} at (0,538) size 556x406 [bgcolor=#00FF00] [border: (3px solid #000000)]
+  LayoutEmbeddedObject {EMBED} at (0,538) size 556x406 [bgcolor=#00FF00] [border: (3px solid #000000)]
 layer at (8,392) size 300x150
   RenderFlexibleBox {DIV} at (0,0) size 300x150
     RenderBlock {DIV} at (0,115) size 300x35

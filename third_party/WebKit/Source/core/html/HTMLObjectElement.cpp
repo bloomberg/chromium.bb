@@ -32,15 +32,15 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/Settings.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/frame/Settings.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
 
@@ -262,7 +262,7 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
 // moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::updateWidgetInternal()
 {
-    ASSERT(!renderEmbeddedObject()->showsUnavailablePluginIndicator());
+    ASSERT(!layoutEmbeddedObject()->showsUnavailablePluginIndicator());
     ASSERT(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
     // FIXME: This should ASSERT isFinishedParsingChildren() instead.

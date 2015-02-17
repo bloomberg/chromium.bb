@@ -238,7 +238,7 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(Layer* root, LayerIdToNode
     }
     for (Layer* child = root->firstChild(); child; child = child->nextSibling())
         buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
-    if (!root->renderer()->isRenderIFrame())
+    if (!root->renderer()->isLayoutIFrame())
         return;
     FrameView* childFrameView = toFrameView(toLayoutPart(root->renderer())->widget());
     if (RenderView* childRenderView = childFrameView->renderView()) {

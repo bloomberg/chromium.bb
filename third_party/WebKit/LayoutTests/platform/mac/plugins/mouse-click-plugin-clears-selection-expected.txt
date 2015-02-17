@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,119) size 784x0
 layer at (8,8) size 100x100
-  RenderEmbeddedObject {EMBED} at (0,0) size 100x100
+  LayoutEmbeddedObject {EMBED} at (0,0) size 100x100
 layer at (11,111) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 27x13

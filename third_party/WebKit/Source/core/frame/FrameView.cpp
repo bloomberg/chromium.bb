@@ -49,6 +49,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextAutosizer.h"
@@ -66,7 +67,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -787,7 +787,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // layout without knowing about the existence of the embedded SVG document, because LayoutReplaced
     // embeddedContentBox() returns 0, as long as the embedded document isn't loaded yet. Before
     // bothering to lay out the SVG document, mark the ownerRenderer needing layout and ask its
-    // FrameView for a layout. After that the RenderEmbeddedObject (ownerRenderer) carries the
+    // FrameView for a layout. After that the LayoutEmbeddedObject (ownerRenderer) carries the
     // correct size, which RenderSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the RenderSVGRoot size has changed dynamically (eg. via <script>).
     RefPtrWillBeRawPtr<FrameView> frameView = ownerRenderer->frame()->view();
@@ -1180,7 +1180,7 @@ void FrameView::updateWidgetPositions()
         parts[i]->widgetPositionsUpdated();
 }
 
-void FrameView::addPartToUpdate(RenderEmbeddedObject& object)
+void FrameView::addPartToUpdate(LayoutEmbeddedObject& object)
 {
     ASSERT(isInPerformLayout());
     // Tell the DOM element that it needs a widget update.
@@ -2022,7 +2022,7 @@ bool FrameView::updateWidgets()
     objects.swap(m_partUpdateSet);
 
     for (const auto& embeddedObject : objects) {
-        RenderEmbeddedObject& object = *embeddedObject;
+        LayoutEmbeddedObject& object = *embeddedObject;
         HTMLPlugInElement* element = toHTMLPlugInElement(object.node());
 
         // The object may have already been destroyed (thus node cleared),

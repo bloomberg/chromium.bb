@@ -42,7 +42,7 @@ layer at (0,0) size 800x546
             RenderText {#text} at (0,17) size 31x17
               text run at (0,17) width 31: "Back"
 layer at (48,175) size 176x62
-  RenderEmbeddedObject {object} at (0,0) size 176x62
+  LayoutEmbeddedObject {object} at (0,0) size 176x62
     layer at (0,0) size 176x62
       RenderView at (0,0) size 176x62
     layer at (0,0) size 176x62
@@ -55,7 +55,7 @@ layer at (48,175) size 176x62
           LayoutSVGInlineText {#text} at (0,0) size 81x45
             chunk 1 (middle anchor) text run 1 at (45.99,46.00) startOffset 0 endOffset 3 width 80.02: "SVG"
 layer at (48,359) size 176x62
-  RenderEmbeddedObject {object} at (0,0) size 176x62
+  LayoutEmbeddedObject {object} at (0,0) size 176x62
     layer at (0,0) size 176x62
       RenderView at (0,0) size 176x62
     layer at (0,0) size 176x62

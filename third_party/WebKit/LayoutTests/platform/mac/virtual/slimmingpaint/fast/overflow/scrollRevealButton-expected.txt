@@ -12,7 +12,7 @@ layer at (0,0) size 785x1188 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,672) size 769x500
 layer at (8,526) size 304x154 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderPartObject {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150 clip at (0,0) size 285x135 scrollY 90.00 scrollWidth 308 scrollHeight 316
       RenderView at (0,0) size 300x150
     layer at (0,0) size 285x316 backgroundClip at (0,0) size 285x135 clip at (0,0) size 285x135 outlineClip at (0,0) size 285x135

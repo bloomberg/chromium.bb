@@ -56,7 +56,7 @@ class KURL;
 class Node;
 class Page;
 class RenderBox;
-class RenderEmbeddedObject;
+class LayoutEmbeddedObject;
 class LayoutObject;
 class RenderScrollbarPart;
 class RenderView;
@@ -211,7 +211,7 @@ public:
 
     void updateWidgetPositions();
 
-    void addPartToUpdate(RenderEmbeddedObject&);
+    void addPartToUpdate(LayoutEmbeddedObject&);
 
     void setPaintBehavior(PaintBehavior);
     PaintBehavior paintBehavior() const;
@@ -695,7 +695,7 @@ private:
 
     LayoutSize m_size;
 
-    typedef HashSet<RefPtr<RenderEmbeddedObject>> EmbeddedObjectSet;
+    typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
     EmbeddedObjectSet m_partUpdateSet;
 
     // FIXME: These are just "children" of the FrameView and should be RefPtrWillBeMember<Widget> instead.

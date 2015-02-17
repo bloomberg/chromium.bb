@@ -22,13 +22,13 @@
 #ifndef LayoutApplet_h
 #define LayoutApplet_h
 
-#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 
 namespace blink {
 
 class HTMLAppletElement;
 
-class LayoutApplet final : public RenderEmbeddedObject {
+class LayoutApplet final : public LayoutEmbeddedObject {
 public:
     explicit LayoutApplet(HTMLAppletElement*);
     virtual ~LayoutApplet();

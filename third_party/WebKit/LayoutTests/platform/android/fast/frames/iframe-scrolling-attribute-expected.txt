@@ -34,7 +34,7 @@ layer at (0,0) size 785x699
           text run at (204,607) width 4: " "
         RenderText {#text} at (0,0) size 0x0
 layer at (8,64) size 204x204
-  RenderPartObject {IFRAME} at (0,0) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,0) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492
@@ -47,7 +47,7 @@ layer at (8,64) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (216,64) size 204x204
-  RenderPartObject {IFRAME} at (208,0) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (208,0) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492
@@ -60,7 +60,7 @@ layer at (216,64) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (424,64) size 204x204
-  RenderPartObject {IFRAME} at (416,0) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (416,0) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492
@@ -73,7 +73,7 @@ layer at (424,64) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (8,273) size 204x204
-  RenderPartObject {IFRAME} at (0,209) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,209) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492
@@ -86,7 +86,7 @@ layer at (8,273) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (216,273) size 204x204
-  RenderPartObject {IFRAME} at (208,209) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (208,209) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492
@@ -99,7 +99,7 @@ layer at (216,273) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (424,273) size 204x204
-  RenderPartObject {IFRAME} at (416,209) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (416,209) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 200x200
     layer at (0,0) size 200x492
@@ -112,7 +112,7 @@ layer at (424,273) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (8,482) size 204x204
-  RenderPartObject {IFRAME} at (0,418) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,418) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492
@@ -125,7 +125,7 @@ layer at (8,482) size 204x204
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (216,482) size 204x204
-  RenderPartObject {IFRAME} at (208,418) size 204x204 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (208,418) size 204x204 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 408x492
       RenderView at (0,0) size 185x185
     layer at (0,0) size 185x492

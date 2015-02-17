@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,224) size 784x80
         RenderText {#text} at (0,0) size 0x0
 layer at (12,104) size 62x72
-  RenderPartObject {IFRAME} at (4,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (4,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -40,7 +40,7 @@ layer at (12,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (82,104) size 62x72
-  RenderPartObject {IFRAME} at (74,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (74,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -53,7 +53,7 @@ layer at (82,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (152,104) size 62x72
-  RenderPartObject {IFRAME} at (144,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (144,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -66,7 +66,7 @@ layer at (152,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (222,104) size 62x72
-  RenderPartObject {IFRAME} at (214,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (214,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -79,7 +79,7 @@ layer at (222,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (292,104) size 62x72
-  RenderPartObject {IFRAME} at (284,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (284,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -92,7 +92,7 @@ layer at (292,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (362,104) size 62x72
-  RenderPartObject {IFRAME} at (354,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (354,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -105,7 +105,7 @@ layer at (362,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (432,104) size 62x72
-  RenderPartObject {IFRAME} at (424,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (424,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -118,7 +118,7 @@ layer at (432,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (502,104) size 62x72
-  RenderPartObject {IFRAME} at (494,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (494,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -131,7 +131,7 @@ layer at (502,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (572,104) size 62x72
-  RenderPartObject {IFRAME} at (564,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (564,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -144,7 +144,7 @@ layer at (572,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (642,104) size 62x72
-  RenderPartObject {IFRAME} at (634,4) size 62x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (634,4) size 62x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 60x70
       RenderView at (0,0) size 60x70
     layer at (0,0) size 60x70
@@ -157,7 +157,7 @@ layer at (642,104) size 62x72
               text run at (0,16) width 0: " "
               text run at (0,32) width 24: "bar"
 layer at (12,236) size 130x72
-  RenderPartObject {IFRAME} at (4,4) size 130x72 [border: (1px solid #0000FF)]
+  LayoutIFrame {IFRAME} at (4,4) size 130x72 [border: (1px solid #0000FF)]
     layer at (0,0) size 128x70
       RenderView at (0,0) size 128x70
     layer at (0,0) size 128x70

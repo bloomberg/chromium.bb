@@ -23,54 +23,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/rendering/RenderIFrame.h"
+#ifndef LayoutIFrame_h
+#define LayoutIFrame_h
 
-#include "core/HTMLNames.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLIFrameElement.h"
-#include "core/rendering/RenderView.h"
+#include "core/layout/LayoutPart.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+class LayoutIFrame final : public LayoutPart {
+public:
+    explicit LayoutIFrame(Element*);
 
-RenderIFrame::RenderIFrame(Element* element)
-    : LayoutPart(element)
-{
-}
+private:
+    virtual bool shouldComputeSizeAsReplaced() const override;
+    virtual bool isInlineBlockOrInlineTable() const override;
 
-bool RenderIFrame::shouldComputeSizeAsReplaced() const
-{
-    return true;
-}
+    virtual void layout() override;
 
-bool RenderIFrame::isInlineBlockOrInlineTable() const
-{
-    return isInline();
-}
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutIFrame || LayoutPart::isOfType(type); }
 
-LayerType RenderIFrame::layerTypeRequired() const
-{
-    if (style()->resize() != RESIZE_NONE)
-        return NormalLayer;
-    return LayoutPart::layerTypeRequired();
-}
+    virtual const char* renderName() const override { return "LayoutIFrame"; }
 
-void RenderIFrame::layout()
-{
-    ASSERT(needsLayout());
+    virtual LayerType layerTypeRequired() const override;
+};
 
-    updateLogicalWidth();
-    // No kids to layout as a replaced element.
-    updateLogicalHeight();
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutIFrame, isLayoutIFrame());
 
-    m_overflow.clear();
-    addVisualEffectOverflow();
-    updateLayerTransformAfterLayout();
+} // namespace blink
 
-    clearNeedsLayout();
-}
-
-}
+#endif // LayoutIFrame_h

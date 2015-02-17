@@ -28,7 +28,7 @@
 namespace blink {
 
 LayoutApplet::LayoutApplet(HTMLAppletElement* applet)
-    : RenderEmbeddedObject(applet)
+    : LayoutEmbeddedObject(applet)
 {
     setInline(true);
     UseCounter::count(document(), UseCounter::HTMLAppletElement);

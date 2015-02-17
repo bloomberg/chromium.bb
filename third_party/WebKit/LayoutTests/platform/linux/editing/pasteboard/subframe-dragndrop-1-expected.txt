@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
           text run at (0,20) width 66: "after 'baz'. "
           text run at (66,20) width 204: "The result should be 'foo baz bar'."
 layer at (0,0) size 304x304
-  RenderPartObject {IFRAME} at (0,0) size 304x304 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,0) size 304x304 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x300
       RenderView at (0,0) size 300x300
     layer at (0,0) size 300x300

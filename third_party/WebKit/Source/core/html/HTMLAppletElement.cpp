@@ -120,7 +120,7 @@ void HTMLAppletElement::updateWidgetInternal()
     if (!isFinishedParsingChildren())
         return;
 
-    RenderEmbeddedObject* renderer = renderEmbeddedObject();
+    LayoutEmbeddedObject* renderer = layoutEmbeddedObject();
 
     LocalFrame* frame = document().frame();
     ASSERT(frame);
@@ -193,7 +193,7 @@ void HTMLAppletElement::updateWidgetInternal()
 
     if (!placeholder && !widget) {
         if (!renderer->showsUnavailablePluginIndicator())
-            renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
+            renderer->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
         setPlaceholder(nullptr);
     } else if (placeholder) {
         setPlaceholder(placeholder.release());
@@ -228,7 +228,7 @@ bool HTMLAppletElement::canEmbedURL(const KURL& url) const
 
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
         || !document().contentSecurityPolicy()->allowPluginType(m_serviceType, m_serviceType, url)) {
-        renderEmbeddedObject()->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy);
+        layoutEmbeddedObject()->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy);
         return false;
     }
     return true;

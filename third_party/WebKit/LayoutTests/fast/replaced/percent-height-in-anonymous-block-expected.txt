@@ -9,7 +9,7 @@ layer at (0,0) size 800x116
           RenderBlock (anonymous) at (0,0) size 100x100
             RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 100x100
-  RenderPartObject {IFRAME} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutIFrame {IFRAME} at (0,0) size 100x100 [bgcolor=#008000]
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
     layer at (0,0) size 100x100

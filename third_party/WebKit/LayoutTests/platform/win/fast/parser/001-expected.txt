@@ -40,4 +40,4 @@ layer at (0,0) size 800x600
             text run at (0,0) width 236: "Now we're back to nonbreaking text."
         RenderText {#text} at (0,0) size 0x0
 layer at (8,144) size 300x300
-  RenderEmbeddedObject {OBJECT} at (0,16) size 300x300 [bgcolor=#008000]
+  LayoutEmbeddedObject {OBJECT} at (0,16) size 300x300 [bgcolor=#008000]

@@ -61,20 +61,20 @@ layer at (9,251) size 48x45 clip at (10,252) size 35x43 scrollHeight 42
       RenderText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
 layer at (9,369) size 27x27
-  RenderPartObject {IFRAME} at (1,361) size 27x27 [border: (1px solid #000000)]
+  LayoutIFrame {IFRAME} at (1,361) size 27x27 [border: (1px solid #000000)]
     layer at (0,0) size 25x25
       RenderView at (0,0) size 25x25
     layer at (0,0) size 25x25
       RenderBlock {HTML} at (0,0) size 25x25
         RenderBody {BODY} at (8,8) size 9x9
 layer at (9,396) size 27x27
-  RenderPartObject {IFRAME} at (1,388) size 27x27 [border: (1px solid #000000)]
+  LayoutIFrame {IFRAME} at (1,388) size 27x27 [border: (1px solid #000000)]
     layer at (0,0) size 25x25
       RenderView at (0,0) size 25x25
     layer at (0,0) size 25x25
       RenderBlock {HTML} at (0,0) size 25x25
         RenderBody {BODY} at (8,8) size 9x9
 layer at (9,423) size 27x27
-  RenderEmbeddedObject {EMBED} at (1,415) size 27x27 [border: (1px solid #000000)]
+  LayoutEmbeddedObject {EMBED} at (1,415) size 27x27 [border: (1px solid #000000)]
 layer at (9,450) size 27x27
-  RenderEmbeddedObject {EMBED} at (1,442) size 27x27 [border: (1px solid #000000)]
+  LayoutEmbeddedObject {EMBED} at (1,442) size 27x27 [border: (1px solid #000000)]

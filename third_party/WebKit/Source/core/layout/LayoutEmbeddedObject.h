@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderEmbeddedObject_h
-#define RenderEmbeddedObject_h
+#ifndef LayoutEmbeddedObject_h
+#define LayoutEmbeddedObject_h
 
 #include "core/layout/LayoutPart.h"
 
@@ -31,10 +31,10 @@ class TextRun;
 
 // Renderer for embeds and objects, often, but not always, rendered via plug-ins.
 // For example, <embed src="foo.html"> does not invoke a plug-in.
-class RenderEmbeddedObject : public LayoutPart {
+class LayoutEmbeddedObject : public LayoutPart {
 public:
-    RenderEmbeddedObject(Element*);
-    virtual ~RenderEmbeddedObject();
+    LayoutEmbeddedObject(Element*);
+    virtual ~LayoutEmbeddedObject();
 
     enum PluginUnavailabilityReason {
         PluginMissing,
@@ -50,7 +50,7 @@ private:
 
     virtual void layout() override final;
 
-    virtual const char* renderName() const override { return "RenderEmbeddedObject"; }
+    virtual const char* renderName() const override { return "LayoutEmbeddedObject"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
     virtual RenderBox* embeddedContentBox() const override final;
 
@@ -67,8 +67,8 @@ private:
     String m_unavailablePluginReplacementText;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderEmbeddedObject, isEmbeddedObject());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutEmbeddedObject, isEmbeddedObject());
 
 } // namespace blink
 
-#endif // RenderEmbeddedObject_h
+#endif // LayoutEmbeddedObject_h

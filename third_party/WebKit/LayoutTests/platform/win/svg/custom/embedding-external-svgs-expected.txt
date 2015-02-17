@@ -35,7 +35,7 @@ layer at (0,0) size 800x328
             LayoutSVGPath {svg:polygon} at (96,279) size 9x9 [transform={m=((0.87,-0.50)(0.50,0.87)) t=(-9.15,15.85)}] [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 27 12 23 12"]
         RenderText {#text} at (0,0) size 0x0
 layer at (290,16) size 40x40
-  RenderEmbeddedObject {embed} at (239.69,0) size 40x40
+  LayoutEmbeddedObject {embed} at (239.69,0) size 40x40
     layer at (0,0) size 40x40
       RenderView at (0,0) size 40x40
     layer at (0,0) size 40x40
@@ -80,7 +80,7 @@ layer at (290,16) size 40x40
             LayoutSVGViewportContainer {svg} at (7,1) size 12x14
               LayoutSVGPath {polygon} at (7,1) size 12x14 [fill={[type=SOLID] [color=#000000] [opacity=0.50]}] [points="22 0 28 0 23 15 23 15"]
 layer at (252,218) size 40x40
-  RenderPartObject {iframe} at (201.89,0) size 40x40
+  LayoutIFrame {iframe} at (201.89,0) size 40x40
     layer at (0,0) size 40x40
       RenderView at (0,0) size 40x40
     layer at (0,0) size 40x40

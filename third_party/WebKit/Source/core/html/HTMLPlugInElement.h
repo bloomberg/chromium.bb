@@ -33,7 +33,7 @@ namespace blink {
 
 class HTMLImageLoader;
 class PluginPlaceholder;
-class RenderEmbeddedObject;
+class LayoutEmbeddedObject;
 class LayoutPart;
 class Widget;
 
@@ -99,7 +99,7 @@ protected:
 
     bool isImageType();
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
-    RenderEmbeddedObject* renderEmbeddedObject() const;
+    LayoutEmbeddedObject* layoutEmbeddedObject() const;
     bool allowedToLoadFrameURL(const String& url);
     bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
     bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);

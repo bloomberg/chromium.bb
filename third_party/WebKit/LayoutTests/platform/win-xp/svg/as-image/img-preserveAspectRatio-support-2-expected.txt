@@ -12,7 +12,7 @@ layer at (0,0) size 800x323
           text run at (230,215) width 4: " "
         RenderText {#text} at (0,0) size 0x0
 layer at (242,82) size 228x228
-  RenderEmbeddedObject {OBJECT} at (234,2) size 228x228 [border: (1px dashed #008000)]
+  LayoutEmbeddedObject {OBJECT} at (234,2) size 228x228 [border: (1px dashed #008000)]
     layer at (0,0) size 220x220
       RenderView at (0,0) size 220x220
     layer at (0,0) size 220x220

@@ -148,21 +148,21 @@ layer at (0,0) size 785x1398 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 11: "A"
                 text run at (2,22) width 24: "Cell"
 layer at (63,263) size 155x180
-  RenderPartObject {IFRAME} at (12,12) size 155x180 [border: (5px solid #FF0000)]
+  LayoutIFrame {IFRAME} at (12,12) size 155x180 [border: (5px solid #FF0000)]
     layer at (0,0) size 125x150
       RenderView at (0,0) size 125x150
     layer at (0,0) size 125x150
       RenderBlock {HTML} at (0,0) size 125x150
         RenderBody {BODY} at (8,8) size 109x134
 layer at (63,627) size 155x180 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderPartObject {IFRAME} at (12,12) size 155x180 [border: (5px solid #FF0000)]
+  LayoutIFrame {IFRAME} at (12,12) size 155x180 [border: (5px solid #FF0000)]
     layer at (0,0) size 125x150
       RenderView at (0,0) size 125x150
     layer at (0,0) size 125x150
       RenderBlock {HTML} at (0,0) size 125x150
         RenderBody {BODY} at (8,8) size 109x134
 layer at (63,991) size 155x180 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  RenderPartObject {IFRAME} at (12,12) size 155x180 [border: (5px solid #FF0000)]
+  LayoutIFrame {IFRAME} at (12,12) size 155x180 [border: (5px solid #FF0000)]
     layer at (0,0) size 125x150
       RenderView at (0,0) size 125x150
     layer at (0,0) size 125x150

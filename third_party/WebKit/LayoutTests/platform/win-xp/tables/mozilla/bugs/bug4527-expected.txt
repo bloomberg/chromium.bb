@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
                 text run at (82,1) width 4: " "
               RenderBlock {IMG} at (86,0) size 46x25
 layer at (134,8) size 468x60
-  RenderPartObject {IFRAME} at (0,0) size 468x60
+  LayoutIFrame {IFRAME} at (0,0) size 468x60
     layer at (0,0) size 468x60
       RenderView at (0,0) size 468x60
     layer at (0,0) size 468x60

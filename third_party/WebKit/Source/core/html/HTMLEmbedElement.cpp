@@ -33,8 +33,8 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutPart.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 
 namespace blink {
 
@@ -123,7 +123,7 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames, Vector<St
 // moved down into HTMLPluginElement.cpp
 void HTMLEmbedElement::updateWidgetInternal()
 {
-    ASSERT(!renderEmbeddedObject()->showsUnavailablePluginIndicator());
+    ASSERT(!layoutEmbeddedObject()->showsUnavailablePluginIndicator());
     ASSERT(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
 

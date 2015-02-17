@@ -13,14 +13,14 @@ layer at (0,0) size 800x600
       RenderBR {BR} at (0,74) size 0x19
       RenderText {#text} at (0,0) size 0x0
 layer at (8,68) size 788x14
-  RenderPartObject {IFRAME} at (0,60) size 788x14 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,60) size 788x14 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 784x10
       RenderView at (0,0) size 784x10
     layer at (0,0) size 784x10
       RenderBlock {HTML} at (0,0) size 784x10
         RenderBody {BODY} at (8,8) size 768x0
 layer at (8,102) size 788x14
-  RenderPartObject {IFRAME} at (0,94) size 788x14 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,94) size 788x14 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 784x10 clip at (0,0) size 769x10 scrollHeight 172
       RenderView at (0,0) size 784x10
     layer at (0,0) size 769x172 backgroundClip at (0,0) size 769x10 clip at (0,0) size 769x10 outlineClip at (0,0) size 769x10

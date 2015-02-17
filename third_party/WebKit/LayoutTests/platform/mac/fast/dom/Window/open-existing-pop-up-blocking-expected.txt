@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         text run at (304,140) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (8,8) size 304x154
-  RenderPartObject {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150
@@ -19,7 +19,7 @@ layer at (8,8) size 304x154
             text run at (0,36) width 284: "occurs, pop-up blocking will prevent it from"
             text run at (0,54) width 59: "doing so."
 layer at (316,8) size 304x154
-  RenderPartObject {IFRAME} at (308,0) size 304x154 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (308,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

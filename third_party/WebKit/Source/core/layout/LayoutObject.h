@@ -354,7 +354,7 @@ public:
     bool isRenderFullScreen() const { return isOfType(LayoutObjectRenderFullScreen); }
     bool isRenderFullScreenPlaceholder() const { return isOfType(LayoutObjectRenderFullScreenPlaceholder); }
     bool isRenderGrid() const { return isOfType(LayoutObjectRenderGrid); }
-    bool isRenderIFrame() const { return isOfType(LayoutObjectRenderIFrame); }
+    bool isLayoutIFrame() const { return isOfType(LayoutObjectLayoutIFrame); }
     bool isLayoutImage() const { return isOfType(LayoutObjectLayoutImage); }
     bool isLayoutMultiColumnSet() const { return isOfType(LayoutObjectLayoutMultiColumnSet); }
     bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
@@ -1092,7 +1092,7 @@ protected:
         LayoutObjectRenderFullScreen,
         LayoutObjectRenderFullScreenPlaceholder,
         LayoutObjectRenderGrid,
-        LayoutObjectRenderIFrame,
+        LayoutObjectLayoutIFrame,
         LayoutObjectLayoutImage,
         LayoutObjectRenderInline,
         LayoutObjectLayoutMultiColumnSet,

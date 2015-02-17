@@ -12,21 +12,21 @@ layer at (0,0) size 800x600
         text run at (344,175) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (8,28) size 170x170
-  RenderPartObject {IFRAME} at (0,20) size 170x170 [border: (10px solid #FF0000)]
+  LayoutIFrame {IFRAME} at (0,20) size 170x170 [border: (10px solid #FF0000)]
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
     layer at (0,0) size 100x100
       RenderBlock {HTML} at (0,0) size 100x100
         RenderBody {BODY} at (8,8) size 84x84
 layer at (182,28) size 170x170
-  RenderEmbeddedObject {OBJECT} at (174,20) size 170x170 [border: (10px solid #FF0000)]
+  LayoutEmbeddedObject {OBJECT} at (174,20) size 170x170 [border: (10px solid #FF0000)]
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
     layer at (0,0) size 100x100
       RenderBlock {HTML} at (0,0) size 100x100
         RenderBody {BODY} at (8,8) size 84x84
 layer at (356,28) size 170x170
-  RenderEmbeddedObject {OBJECT} at (348,20) size 170x170 [border: (10px solid #FF0000)]
+  LayoutEmbeddedObject {OBJECT} at (348,20) size 170x170 [border: (10px solid #FF0000)]
     layer at (0,0) size 100x100
       RenderView at (0,0) size 100x100
     layer at (0,0) size 100x100

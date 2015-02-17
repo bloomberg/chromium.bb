@@ -1623,7 +1623,7 @@ void LayoutObject::setStyle(PassRefPtr<LayoutStyle> style)
     if (m_style == style) {
         // We need to run through adjustStyleDifference() for iframes, plugins, and canvas so
         // style sharing is disabled for them. That should ensure that we never hit this code path.
-        ASSERT(!isRenderIFrame() && !isEmbeddedObject() && !isCanvas());
+        ASSERT(!isLayoutIFrame() && !isEmbeddedObject() && !isCanvas());
         return;
     }
 

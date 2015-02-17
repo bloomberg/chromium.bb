@@ -5,7 +5,7 @@ layer at (0,0) size 800x34
     RenderBody {BODY} at (8,8) size 784x18
       RenderText {#text} at (0,0) size 0x0
 layer at (8,22) size 0x0
-  RenderPartObject {IFRAME} at (0,14) size 0x0
+  LayoutIFrame {IFRAME} at (0,14) size 0x0
     layer at (0,0) size 0x0
       RenderView at (0,0) size 0x0
     layer at (0,0) size 0x8

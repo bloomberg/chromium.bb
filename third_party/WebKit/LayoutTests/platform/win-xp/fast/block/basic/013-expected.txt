@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         text run at (504,89) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (0,0) size 504x104
-  RenderPartObject {IFRAME} at (0,0) size 504x104 [border: (2px inset #EEEEEE)]
+  LayoutIFrame {IFRAME} at (0,0) size 504x104 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 500x100
       RenderView at (0,0) size 500x100
     layer at (0,0) size 500x100
@@ -20,7 +20,7 @@ layer at (0,0) size 504x104
             RenderText {#text} at (0,0) size 138x19
               text run at (0,0) width 138: "This text is underneath."
 layer at (0,109) size 500x100
-  RenderEmbeddedObject {OBJECT} at (0,109) size 500x100
+  LayoutEmbeddedObject {OBJECT} at (0,109) size 500x100
     layer at (0,0) size 500x100
       RenderView at (0,0) size 500x100
     layer at (0,0) size 500x100

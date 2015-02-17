@@ -40,6 +40,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayerStackingNodeIterator.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
@@ -53,7 +54,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -141,7 +141,7 @@ static WebLayer* platformLayerForPlugin(LayoutObject* renderer)
 {
     if (!renderer->isEmbeddedObject())
         return 0;
-    Widget* widget = toRenderEmbeddedObject(renderer)->widget();
+    Widget* widget = toLayoutEmbeddedObject(renderer)->widget();
     if (!widget || !widget->isPluginView())
         return 0;
     return toPluginView(widget)->platformLayer();
@@ -151,7 +151,7 @@ static WebLayer* platformLayerForPlugin(LayoutObject* renderer)
 static inline bool isAcceleratedContents(LayoutObject* renderer)
 {
     return isAcceleratedCanvas(renderer)
-        || (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing())
+        || (renderer->isEmbeddedObject() && toLayoutEmbeddedObject(renderer)->requiresAcceleratedCompositing())
         || renderer->isVideo();
 }
 
@@ -1775,7 +1775,7 @@ bool CompositedLayerMapping::paintsChildren() const
 
 static bool isCompositedPlugin(LayoutObject* renderer)
 {
-    return renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->requiresAcceleratedCompositing();
+    return renderer->isEmbeddedObject() && toLayoutEmbeddedObject(renderer)->requiresAcceleratedCompositing();
 }
 
 bool CompositedLayerMapping::hasVisibleNonCompositingDescendant(Layer* parent)

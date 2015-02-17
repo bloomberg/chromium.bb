@@ -7,4 +7,4 @@ layer at (0,0) size 800x321
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {DIV} at (0,155) size 150x150 [bgcolor=#99FF99]
 layer at (8,8) size 150x150
-  RenderEmbeddedObject {EMBED} at (0,0) size 150x150
+  LayoutEmbeddedObject {EMBED} at (0,0) size 150x150

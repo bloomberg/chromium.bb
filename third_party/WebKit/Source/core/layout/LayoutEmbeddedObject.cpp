@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
@@ -52,21 +52,21 @@ static const float replacementTextRoundedRectOpacity = 0.20f;
 static const float replacementTextRoundedRectRadius = 5;
 static const float replacementTextTextOpacity = 0.55f;
 
-RenderEmbeddedObject::RenderEmbeddedObject(Element* element)
+LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
     : LayoutPart(element)
     , m_showsUnavailablePluginIndicator(false)
 {
     view()->frameView()->setIsVisuallyNonEmpty();
 }
 
-RenderEmbeddedObject::~RenderEmbeddedObject()
+LayoutEmbeddedObject::~LayoutEmbeddedObject()
 {
 }
 
-LayerType RenderEmbeddedObject::layerTypeRequired() const
+LayerType LayoutEmbeddedObject::layerTypeRequired() const
 {
     // This can't just use LayoutPart::layerTypeRequired, because LayerCompositor
-    // doesn't loop through RenderEmbeddedObjects the way it does frames in order
+    // doesn't loop through LayoutEmbeddedObjects the way it does frames in order
     // to update the self painting bit on their Layer.
     // Also, unlike iframes, embeds don't used the usesCompositing bit on RenderView
     // in requiresAcceleratedCompositing.
@@ -75,13 +75,13 @@ LayerType RenderEmbeddedObject::layerTypeRequired() const
     return LayoutPart::layerTypeRequired();
 }
 
-static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
+static String unavailablePluginReplacementText(Node* node, LayoutEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
 {
     Locale& locale = node ? toElement(node)->locale() : Locale::defaultLocale();
     switch (pluginUnavailabilityReason) {
-    case RenderEmbeddedObject::PluginMissing:
+    case LayoutEmbeddedObject::PluginMissing:
         return locale.queryString(WebLocalizedString::MissingPluginText);
-    case RenderEmbeddedObject::PluginBlockedByContentSecurityPolicy:
+    case LayoutEmbeddedObject::PluginBlockedByContentSecurityPolicy:
         return locale.queryString(WebLocalizedString::BlockedPluginText);
     }
 
@@ -89,7 +89,7 @@ static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject:
     return String();
 }
 
-void RenderEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityReason pluginUnavailabilityReason)
+void LayoutEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityReason pluginUnavailabilityReason)
 {
     ASSERT(!m_showsUnavailablePluginIndicator);
     m_showsUnavailablePluginIndicator = true;
@@ -98,12 +98,12 @@ void RenderEmbeddedObject::setPluginUnavailabilityReason(PluginUnavailabilityRea
     m_unavailablePluginReplacementText = unavailablePluginReplacementText(node(), pluginUnavailabilityReason);
 }
 
-bool RenderEmbeddedObject::showsUnavailablePluginIndicator() const
+bool LayoutEmbeddedObject::showsUnavailablePluginIndicator() const
 {
     return m_showsUnavailablePluginIndicator;
 }
 
-void RenderEmbeddedObject::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutEmbeddedObject::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     Element* element = toElement(node());
     if (!isHTMLPlugInElement(element))
@@ -112,7 +112,7 @@ void RenderEmbeddedObject::paintContents(const PaintInfo& paintInfo, const Layou
     LayoutPart::paintContents(paintInfo, paintOffset);
 }
 
-void RenderEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (showsUnavailablePluginIndicator()) {
         LayoutReplaced::paint(paintInfo, paintOffset);
@@ -122,7 +122,7 @@ void RenderEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutPart::paint(paintInfo, paintOffset);
 }
 
-void RenderEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     if (!showsUnavailablePluginIndicator())
         return;
@@ -154,7 +154,7 @@ void RenderEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const Layou
     context->drawBidiText(font, runInfo, FloatPoint(labelX, labelY));
 }
 
-bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path& path, FloatRect& replacementTextRect, Font& font, TextRun& run, float& textWidth) const
+bool LayoutEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path& path, FloatRect& replacementTextRect, Font& font, TextRun& run, float& textWidth) const
 {
     contentRect = contentBoxRect();
     contentRect.moveBy(roundedIntPoint(accumulatedOffset));
@@ -183,7 +183,7 @@ bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumul
     return true;
 }
 
-void RenderEmbeddedObject::layout()
+void LayoutEmbeddedObject::layout()
 {
     ASSERT(needsLayout());
 
@@ -201,19 +201,19 @@ void RenderEmbeddedObject::layout()
     clearNeedsLayout();
 }
 
-bool RenderEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float)
+bool LayoutEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float)
 {
     return false;
 }
 
-CompositingReasons RenderEmbeddedObject::additionalCompositingReasons() const
+CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const
 {
     if (requiresAcceleratedCompositing())
         return CompositingReasonPlugin;
     return CompositingReasonNone;
 }
 
-RenderBox* RenderEmbeddedObject::embeddedContentBox() const
+RenderBox* LayoutEmbeddedObject::embeddedContentBox() const
 {
     if (!node() || !widget() || !widget()->isFrameView())
         return 0;
