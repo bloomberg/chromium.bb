@@ -14,6 +14,7 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -159,6 +160,7 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->pause_after_download = pause_after_download;
   params->wait_for_debugger = false;
+  params->v8_cache_options = GetV8CacheOptions();
   context_->process_manager()->AllocateWorkerProcess(
       embedded_worker_id_,
       scope,

@@ -93,6 +93,8 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
       params.wait_for_debugger ?
           blink::WebEmbeddedWorkerStartData::WaitForDebugger :
           blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
+  start_data.v8CacheOptions =
+      static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
 
   wrapper->worker()->startWorkerContext(start_data);
   workers_.AddWithID(wrapper.release(), params.embedded_worker_id);
