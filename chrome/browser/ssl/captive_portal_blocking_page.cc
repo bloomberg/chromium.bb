@@ -57,6 +57,9 @@ class ConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
   }
 
   std::string GetWiFiSSID() const override {
+    // On Windows and Mac, |WiFiService| provides an easy to use API to get the
+    // currently associated WiFi access point. |WiFiService| isn't available on
+    // Linux so |net::GetWifiSSID| is used instead.
     std::string ssid;
 #if defined(OS_WIN) || defined(OS_MACOSX)
     scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
@@ -65,6 +68,8 @@ class ConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
     wifi_service->GetConnectedNetworkSSID(&ssid, &error);
     if (!error.empty())
       return "";
+#elif defined(OS_LINUX)
+    ssid = net::GetWifiSSID();
 #endif
     // TODO(meacer): Handle non UTF8 SSIDs.
     if (!base::IsStringUTF8(ssid))
