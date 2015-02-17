@@ -1,0 +1,16 @@
+
+result: {
+  "accessibilityNode": {
+    "nodeId": "3",
+    "role": "textbox",
+    "globalStates": {
+      "invalid": "false"
+    },
+    "widgetProperties": {
+      "multiline": false,
+      "readonly": false,
+      "required": false
+    }
+  }
+}
+
