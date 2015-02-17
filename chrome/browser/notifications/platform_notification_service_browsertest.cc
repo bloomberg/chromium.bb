@@ -21,7 +21,6 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -90,7 +89,6 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   ~PlatformNotificationServiceBrowserTest() override {}
 
   // InProcessBrowserTest overrides.
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUp() override;
   void SetUpOnMainThread() override;
   void TearDown() override;
@@ -134,14 +132,6 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
       // The test server has a base directory that doesn't exist in the
       // filesystem.
       test_page_url_(std::string("files/") + kTestFileName) {
-}
-
-void PlatformNotificationServiceBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  command_line->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-
-  InProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
 void PlatformNotificationServiceBrowserTest::SetUp() {

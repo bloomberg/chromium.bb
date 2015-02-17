@@ -574,13 +574,6 @@ void ServiceWorkerVersion::DispatchNotificationClickEvent(
     const std::string& notification_id,
     const PlatformNotificationData& notification_data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
@@ -607,13 +600,6 @@ void ServiceWorkerVersion::DispatchNotificationClickEvent(
 void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
                                              const std::string& data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
