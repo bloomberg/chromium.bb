@@ -151,8 +151,7 @@ LocationLine.prototype.updateInternal_ = function(entries) {
     }
 
     // Add a separator.
-    var separator = doc.createElement('core-icon');
-    separator.setAttribute('icon', 'chevron-right');
+    var separator = doc.createElement('span');
     separator.className = 'separator';
     this.breadcrumbs_.appendChild(separator);
   }

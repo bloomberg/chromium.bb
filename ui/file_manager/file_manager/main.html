@@ -315,7 +315,7 @@
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="cancel-selection-button-wrapper">
         <paper-button id="cancel-selection-button" tabindex="-1">
-          <core-icon icon="arrow-back" style="width:16px; height:16px"></core-icon>
+          <span class="icon-arrow-back"></span>
           <span i18n-content="CANCEL_SELECTION_BUTTON_LABEL"></span>
         </paper-button>
       </div>
@@ -326,8 +326,7 @@
         <paper-ripple fit></paper-ripple>
       </button>
       <button id="search-button" class="icon-button" tabindex="8">
-        <core-icon icon="search"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <div id="search-box">
         <paper-input-decorator i18n-values="label:SEARCH_TEXT_LABEL">
@@ -338,14 +337,12 @@
       <button id="share-button" class="icon-button" command="#share" tabindex="9"
               i18n-values="aria-label:SHARE_BUTTON_LABEL"
               visibleif="full-page">
-        <core-icon icon="social:person-add"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="delete-button" class="icon-button" command="#delete" tabindex="10"
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
               visibleif="full-page">
-        <core-icon icon="delete"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="cloud-import-button"
               class="icon-button manual-display"
@@ -353,7 +350,7 @@
               i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
               hidden>
         <core-icon icon="cloud-queue"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="cloud-import-details-button"
               class="icon-button manual-display"
@@ -361,17 +358,15 @@
               i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
               hidden>
         <core-icon icon="arrow-drop-down"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="view-button" class="icon-button" tabindex="13">
-        <core-icon icon="view-module"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="gear-button" class="icon-button" tabindex="14" menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu">
-        <core-icon icon="more-vert"></core-icon>
-        <paper-ripple fit></paper-ripple>
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
     </div>
 

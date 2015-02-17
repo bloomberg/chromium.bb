@@ -282,9 +282,13 @@ body.selecting button:hover {
 
 .dialog-header .icon-button {
   -webkit-margin-end: 4px;
-  -webkit-margin-start: 0;
-  background: transparent;
+  -webkit-margin-start: 12px;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
   border: 0;
+  border-radius: 16px;
   height: 32px;
   line-height: 16px;
   min-width: 32px;
@@ -292,25 +296,34 @@ body.selecting button:hover {
   width: 32px;
 }
 
+.dialog-header .icon-button paper-ripple {
+  color: black;
+}
+
+body.selecting .dialog-header .icon-button paper-ripple {
+  rgb(90, 90, 90);
+}
+
 .dialog-header .icon-button:hover,
 .dialog-header .icon-button:focus,
 .dialog-header .combobutton:hover,
 .dialog-header .combobutton:focus {
-  background: rgba(204, 204, 204, 0.20);
+  background-color: rgba(90, 90, 90, 0.15);
 }
 
 body.selecting .dialog-header .icon-button:hover,
 body.selecting .dialog-header .icon-button:focus,
 body.selecting .dialog-header .combobutton:hover,
 body.selecting .dialog-header .combobutton:focus {
-  background: rgba(153, 153, 153, 0.20);
+  background-color: rgba(153, 153, 153, 0.20);
 }
 
 .dialog-header .icon-button[disabled]:not(.manual-display) {
   display: none !important;
 }
 
-.dialog-header core-icon {
+.dialog-header core-icon,
+.dialog-header .icon {
   height: 16px;
   width: 16px;
 }
@@ -337,6 +350,78 @@ body.selecting .dialog-header .combobutton:focus {
 
 .dialog-header button.icon-button > core-icon {
   margin: 8px;
+}
+
+#search-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/search_white.png) 1x,
+      url(../images/files/ui/2x/search_white.png) 2x);
+}
+
+body.selecting #search-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/search.png) 1x,
+      url(../images/files/ui/2x/search.png) 2x);
+}
+
+#share-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/share_white.png) 1x,
+      url(../images/files/ui/2x/share_white.png) 2x);
+}
+
+body.selecting #share-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/share.png) 1x,
+      url(../images/files/ui/2x/share.png) 2x);
+}
+
+#delete-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/delete_white.png) 1x,
+      url(../images/files/ui/2x/delete_white.png) 2x);
+}
+
+body.selecting #delete-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/delete.png) 1x,
+      url(../images/files/ui/2x/delete.png) 2x);
+}
+
+#view-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/view_list_white.png) 1x,
+      url(../images/files/ui/2x/view_list_white.png) 2x);
+}
+
+body.selecting #view-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/view_list.png) 1x,
+      url(../images/files/ui/2x/view_list.png) 2x);
+}
+
+#view-button.thumbnail {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/view_thumbnail_white.png) 1x,
+      url(../images/files/ui/2x/view_thumbnail_white.png) 2x);
+}
+
+body.selecting #view-button.thumbnail {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/view_thumbnail.png) 1x,
+      url(../images/files/ui/2x/view_thumbnail.png) 2x);
+}
+
+#gear-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/menu_white.png) 1x,
+      url(../images/files/ui/2x/menu_white.png) 2x);
+}
+
+body.selecting #gear-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/menu.png) 1x,
+      url(../images/files/ui/2x/menu.png) 2x);
 }
 
 #cloud-import-details-button {
@@ -426,8 +511,20 @@ body.selecting #files-selected-label {
 }
 
 #cancel-selection-button {
+  display: none;
+  margin: 0 8px;
   text-transform: none;
-  display: none
+}
+
+#cancel-selection-button .icon-arrow-back {
+  -webkit-margin-end: 8px;
+  background-image: -webkit-image-set(
+      url(../images/files/ui/back.png) 1x,
+      url(../images/files/ui/2x/back.png) 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 16px;
+  width: 16px;
 }
 
 #cancel-selection-button-wrapper {
@@ -622,7 +719,11 @@ body.selecting .breadcrumbs {
 
 /* The > arrow between breadcrumbs. */
 .breadcrumbs .separator {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/arrow_right_white.png) 1x,
+      url(../images/files/ui/2x/arrow_right_white.png) 2x);
   height: 16px;
+  margin: 0 5px;
   width: 16px;
 }
 

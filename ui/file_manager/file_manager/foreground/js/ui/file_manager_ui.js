@@ -369,21 +369,8 @@ FileManagerUI.prototype.relayout = function() {
 FileManagerUI.prototype.setCurrentListType = function(listType) {
   this.listContainer.setCurrentListType(listType);
 
-  var iconElement = queryRequiredElement(this.toggleViewButton, 'core-icon');
-  switch (listType) {
-    case ListContainer.ListType.DETAIL:
-      iconElement.icon = 'view-module';
-      break;
-
-    case ListContainer.ListType.THUMBNAIL:
-      iconElement.icon = 'view-list';
-      break;
-
-    default:
-      assertNotReached();
-      break;
-  }
-
+  this.toggleViewButton.classList.toggle(
+      'thumbnail', listType === ListContainer.ListType.DETAIL);
   this.relayout();
 };
 
