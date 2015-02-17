@@ -89,7 +89,7 @@ ParsedSearchResult kParsedThreeResults[] = {
     {"app1_id", "one", "http://host/icon1", true, Manifest::TYPE_PLATFORM_APP,
      1},
     {"app2_id", "two", "http://host/icon2", false, Manifest::TYPE_HOSTED_APP,
-     2},
+     1},
     {"app3_id", "three", "http://host/icon3", false,
      Manifest::TYPE_LEGACY_PACKAGED_APP, 1}};
 

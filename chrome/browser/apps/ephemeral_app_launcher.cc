@@ -93,13 +93,7 @@ bool CheckCommonLaunchCriteria(Profile* profile,
 
 // static
 bool EphemeralAppLauncher::IsFeatureEnabled() {
-  return app_list::switches::IsExperimentalAppListEnabled();
-}
-
-// static
-bool EphemeralAppLauncher::IsFeatureEnabledInWebstore() {
-  return IsFeatureEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableEphemeralAppsInWebstore);
 }
 

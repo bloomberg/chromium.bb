@@ -22,7 +22,6 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "ui/app_list/app_list_switches.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -203,7 +202,7 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
     extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
 
     // Enable ephemeral apps flag.
-    command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
+    command_line->AppendSwitch(switches::kEnableEphemeralAppsInWebstore);
   }
 
   void SetUpOnMainThread() override {
@@ -313,8 +312,6 @@ class EphemeralAppLauncherTestDisabled : public EphemeralAppLauncherTest {
 // Verifies that an ephemeral app will not be installed and launched if the
 // feature is disabled.
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTestDisabled, FeatureDisabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      app_list::switches::kDisableExperimentalAppList);
   RunLaunchTest(
       kDefaultAppCrxFilename, webstore_install::LAUNCH_FEATURE_DISABLED, false);
   EXPECT_FALSE(GetInstalledExtension(kDefaultAppId));

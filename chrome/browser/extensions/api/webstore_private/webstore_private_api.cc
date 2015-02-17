@@ -719,7 +719,7 @@ WebstorePrivateGetEphemeralAppsEnabledFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateGetEphemeralAppsEnabledFunction::Run() {
   return RespondNow(ArgumentList(GetEphemeralAppsEnabled::Results::Create(
-      EphemeralAppLauncher::IsFeatureEnabledInWebstore())));
+      EphemeralAppLauncher::IsFeatureEnabled())));
 }
 
 }  // namespace extensions

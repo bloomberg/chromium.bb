@@ -35,8 +35,6 @@
 
 namespace {
 
-const int kLaunchEphemeralAppAction = 1;
-
 // BadgedImageSource adds a webstore badge to a webstore app icon.
 class BadgedIconSource : public gfx::CanvasImageSource {
  public:
@@ -125,7 +123,7 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
     return;
   }
 
-  StartInstall(action_index == kLaunchEphemeralAppAction);
+  StartInstall();
 }
 
 scoped_ptr<SearchResult> WebstoreResult::Duplicate() const {
@@ -164,23 +162,9 @@ void WebstoreResult::UpdateActions() {
       extensions::util::IsExtensionInstalledPermanently(app_id_, profile_);
 
   if (!is_otr && !is_installed && !is_installing()) {
-    if (EphemeralAppLauncher::IsFeatureEnabled()) {
-      actions.push_back(Action(
-          l10n_util::GetStringUTF16(IDS_WEBSTORE_RESULT_INSTALL),
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE)));
-      if ((item_type_ == extensions::Manifest::TYPE_PLATFORM_APP ||
-           item_type_ == extensions::Manifest::TYPE_HOSTED_APP) &&
-          !is_paid_) {
-        actions.push_back(Action(
-            l10n_util::GetStringUTF16(IDS_WEBSTORE_RESULT_LAUNCH),
-            l10n_util::GetStringUTF16(IDS_WEBSTORE_RESULT_LAUNCH_APP_TOOLTIP)));
-      }
-    } else {
-      actions.push_back(Action(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE),
-          base::string16()));
-    }
+    actions.push_back(Action(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE),
+        base::string16()));
   }
 
   SetActions(actions);
@@ -209,21 +193,9 @@ void WebstoreResult::OnIconLoaded() {
   SetIcon(icon_);
 }
 
-void WebstoreResult::StartInstall(bool launch_ephemeral_app) {
+void WebstoreResult::StartInstall() {
   SetPercentDownloaded(0);
   SetIsInstalling(true);
-
-  if (launch_ephemeral_app) {
-    scoped_refptr<EphemeralAppLauncher> installer =
-        EphemeralAppLauncher::CreateForLauncher(
-            app_id_,
-            profile_,
-            controller_->GetAppListWindow(),
-            base::Bind(&WebstoreResult::LaunchCallback,
-                       weak_factory_.GetWeakPtr()));
-    installer->Start();
-    return;
-  }
 
   scoped_refptr<WebstoreInstaller> installer =
       new WebstoreInstaller(

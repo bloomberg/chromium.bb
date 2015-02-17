@@ -58,7 +58,7 @@ class WebstoreResult : public SearchResult,
   void SetDefaultDetails();
   void OnIconLoaded();
 
-  void StartInstall(bool launch_ephemeral_app);
+  void StartInstall();
   void InstallCallback(bool success,
                        const std::string& error,
                        extensions::webstore_install::Result result);

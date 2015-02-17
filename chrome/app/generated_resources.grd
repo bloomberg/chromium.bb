@@ -14734,17 +14734,6 @@ Do you accept?
         Discover great apps, games, extensions and themes for Google Chrome.
       </message>
 
-      <!-- WebStore search results -->
-      <message name="IDS_WEBSTORE_RESULT_INSTALL" desc="Text of button on WebStore search result for installing an extension/app.">
-        Add
-      </message>
-      <message name="IDS_WEBSTORE_RESULT_LAUNCH" desc="Text of button on WebStore search result for launching an ephemeral app.">
-        Try
-      </message>
-      <message name="IDS_WEBSTORE_RESULT_LAUNCH_APP_TOOLTIP" desc="Tooltip of button on WebStore search result for launching an ephemeral app.">
-        Try app without installing
-      </message>
-
       <!-- Extension Storage Monitor notification strings -->
       <message name="IDS_EXTENSION_STORAGE_MONITOR_TITLE" desc="The title of the notification when high disk usage is detected for an app or extension.">
         High disk usage detected
