@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
-    RenderFrameSet {FRAMESET} at (0,0) size 800x600
+    LayoutFrameSet {FRAMESET} at (0,0) size 800x600
 layer at (0,0) size 800x200
-  RenderFrame {FRAME} at (0,0) size 800x200
+  LayoutFrame {FRAME} at (0,0) size 800x200
     layer at (0,0) size 800x200
       RenderView at (0,0) size 800x200
     layer at (0,0) size 800x200
@@ -30,7 +30,7 @@ layer at (0,0) size 800x200
     layer at (0,100) size 100x100
       RenderBlock (positioned) {DIV} at (0,100) size 100x100 [bgcolor=#008000]
 layer at (0,206) size 800x394
-  RenderFrame {FRAME} at (0,206) size 800x394
+  LayoutFrame {FRAME} at (0,206) size 800x394
     layer at (0,0) size 800x394
       RenderView at (0,0) size 800x394
     layer at (0,0) size 800x394

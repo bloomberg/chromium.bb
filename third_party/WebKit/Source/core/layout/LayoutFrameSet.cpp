@@ -22,24 +22,24 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderFrameSet.h"
+#include "core/layout/LayoutFrameSet.h"
 
 #include "core/dom/Document.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameSetElement.h"
+#include "core/layout/LayoutFrame.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/EventHandler.h"
 #include "core/paint/FrameSetPainter.h"
-#include "core/rendering/RenderFrame.h"
 #include "core/rendering/RenderView.h"
 #include "platform/Cursor.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
-RenderFrameSet::RenderFrameSet(HTMLFrameSetElement* frameSet)
+LayoutFrameSet::LayoutFrameSet(HTMLFrameSetElement* frameSet)
     : RenderBox(frameSet)
     , m_isResizing(false)
     , m_isChildResizing(false)
@@ -47,33 +47,33 @@ RenderFrameSet::RenderFrameSet(HTMLFrameSetElement* frameSet)
     setInline(false);
 }
 
-RenderFrameSet::~RenderFrameSet()
+LayoutFrameSet::~LayoutFrameSet()
 {
 }
 
-RenderFrameSet::GridAxis::GridAxis()
+LayoutFrameSet::GridAxis::GridAxis()
     : m_splitBeingResized(noSplit)
 {
 }
 
-HTMLFrameSetElement* RenderFrameSet::frameSet() const
+HTMLFrameSetElement* LayoutFrameSet::frameSet() const
 {
     return toHTMLFrameSetElement(node());
 }
 
-void RenderFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFrameSet::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     FrameSetPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderFrameSet::computePreferredLogicalWidths()
+void LayoutFrameSet::computePreferredLogicalWidths()
 {
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderFrameSet::GridAxis::resize(int size)
+void LayoutFrameSet::GridAxis::resize(int size)
 {
     m_sizes.resize(size);
     m_deltas.resize(size);
@@ -86,7 +86,7 @@ void RenderFrameSet::GridAxis::resize(int size)
     m_allowBorder.resize(size + 1);
 }
 
-void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& grid, int availableLen)
+void LayoutFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& grid, int availableLen)
 {
     availableLen = max(availableLen, 0);
 
@@ -147,8 +147,9 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& gri
                 remainingLen -= gridLayout[i];
             }
         }
-    } else
+    } else {
         remainingLen -= totalFixed;
+    }
 
     // Percentage columns/rows are our second priority. Divide the remaining space proportionally
     // over all percentage columns/rows. IMPORTANT: the size of each column/row is not relative
@@ -163,8 +164,9 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& gri
                 remainingLen -= gridLayout[i];
             }
         }
-    } else
+    } else {
         remainingLen -= totalPercent;
+    }
 
     // Relative columns/rows are our last priority. Divide the remaining space proportionally
     // over all relative columns/rows. IMPORTANT: the relative value of 0* is treated as 1*.
@@ -277,7 +279,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& gri
     }
 }
 
-void RenderFrameSet::notifyFrameEdgeInfoChanged()
+void LayoutFrameSet::notifyFrameEdgeInfoChanged()
 {
     if (needsLayout())
         return;
@@ -286,7 +288,7 @@ void RenderFrameSet::notifyFrameEdgeInfoChanged()
     computeEdgeInfo();
 }
 
-void RenderFrameSet::fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int c)
+void LayoutFrameSet::fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int c)
 {
     if (edgeInfo.allowBorder(LeftFrameEdge))
         m_cols.m_allowBorder[c] = true;
@@ -307,7 +309,7 @@ void RenderFrameSet::fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int 
         m_rows.m_preventResize[r + 1] = true;
 }
 
-void RenderFrameSet::computeEdgeInfo()
+void LayoutFrameSet::computeEdgeInfo()
 {
     m_rows.m_preventResize.fill(frameSet()->noResize());
     m_rows.m_allowBorder.fill(false);
@@ -324,9 +326,9 @@ void RenderFrameSet::computeEdgeInfo()
         for (size_t c = 0; c < cols; ++c) {
             FrameEdgeInfo edgeInfo;
             if (child->isFrameSet())
-                edgeInfo = toRenderFrameSet(child)->edgeInfo();
+                edgeInfo = toLayoutFrameSet(child)->edgeInfo();
             else
-                edgeInfo = toRenderFrame(child)->edgeInfo();
+                edgeInfo = toLayoutFrame(child)->edgeInfo();
             fillFromEdgeInfo(edgeInfo, r, c);
             child = child->nextSibling();
             if (!child)
@@ -335,7 +337,7 @@ void RenderFrameSet::computeEdgeInfo()
     }
 }
 
-FrameEdgeInfo RenderFrameSet::edgeInfo() const
+FrameEdgeInfo LayoutFrameSet::edgeInfo() const
 {
     FrameEdgeInfo result(frameSet()->noResize(), true);
 
@@ -355,7 +357,7 @@ FrameEdgeInfo RenderFrameSet::edgeInfo() const
     return result;
 }
 
-void RenderFrameSet::layout()
+void LayoutFrameSet::layout()
 {
     ASSERT(needsLayout());
 
@@ -397,7 +399,7 @@ static void clearNeedsLayoutOnHiddenFrames(RenderBox* frame)
     }
 }
 
-void RenderFrameSet::positionFrames()
+void LayoutFrameSet::positionFrames()
 {
     RenderBox* child = firstChildBox();
     if (!child)
@@ -436,7 +438,7 @@ void RenderFrameSet::positionFrames()
     clearNeedsLayoutOnHiddenFrames(child);
 }
 
-void RenderFrameSet::startResizing(GridAxis& axis, int position)
+void LayoutFrameSet::startResizing(GridAxis& axis, int position)
 {
     int split = hitTestSplit(axis, position);
     if (split == noSplit || axis.m_preventResize[split]) {
@@ -447,7 +449,7 @@ void RenderFrameSet::startResizing(GridAxis& axis, int position)
     axis.m_splitResizeOffset = position - splitPosition(axis, split);
 }
 
-void RenderFrameSet::continueResizing(GridAxis& axis, int position)
+void LayoutFrameSet::continueResizing(GridAxis& axis, int position)
 {
     if (needsLayout())
         return;
@@ -462,7 +464,7 @@ void RenderFrameSet::continueResizing(GridAxis& axis, int position)
     setNeedsLayoutAndFullPaintInvalidation();
 }
 
-bool RenderFrameSet::userResize(MouseEvent* evt)
+bool LayoutFrameSet::userResize(MouseEvent* evt)
 {
     if (!m_isResizing) {
         if (needsLayout())
@@ -491,30 +493,30 @@ bool RenderFrameSet::userResize(MouseEvent* evt)
     return false;
 }
 
-void RenderFrameSet::setIsResizing(bool isResizing)
+void LayoutFrameSet::setIsResizing(bool isResizing)
 {
     m_isResizing = isResizing;
     for (LayoutObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
         if (ancestor->isFrameSet())
-            toRenderFrameSet(ancestor)->m_isChildResizing = isResizing;
+            toLayoutFrameSet(ancestor)->m_isChildResizing = isResizing;
     }
     if (LocalFrame* frame = this->frame())
         frame->eventHandler().setResizingFrameSet(isResizing ? frameSet() : 0);
 }
 
-bool RenderFrameSet::canResizeRow(const IntPoint& p) const
+bool LayoutFrameSet::canResizeRow(const IntPoint& p) const
 {
     int r = hitTestSplit(m_rows, p.y());
     return r != noSplit && !m_rows.m_preventResize[r];
 }
 
-bool RenderFrameSet::canResizeColumn(const IntPoint& p) const
+bool LayoutFrameSet::canResizeColumn(const IntPoint& p) const
 {
     int c = hitTestSplit(m_cols, p.x());
     return c != noSplit && !m_cols.m_preventResize[c];
 }
 
-int RenderFrameSet::splitPosition(const GridAxis& axis, int split) const
+int LayoutFrameSet::splitPosition(const GridAxis& axis, int split) const
 {
     if (needsLayout())
         return 0;
@@ -531,7 +533,7 @@ int RenderFrameSet::splitPosition(const GridAxis& axis, int split) const
     return position - borderThickness;
 }
 
-int RenderFrameSet::hitTestSplit(const GridAxis& axis, int position) const
+int LayoutFrameSet::hitTestSplit(const GridAxis& axis, int position) const
 {
     if (needsLayout())
         return noSplit;
@@ -553,12 +555,12 @@ int RenderFrameSet::hitTestSplit(const GridAxis& axis, int position) const
     return noSplit;
 }
 
-bool RenderFrameSet::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutFrameSet::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isFrame() || child->isFrameSet();
 }
 
-CursorDirective RenderFrameSet::getCursor(const LayoutPoint& point, Cursor& cursor) const
+CursorDirective LayoutFrameSet::getCursor(const LayoutPoint& point, Cursor& cursor) const
 {
     IntPoint roundedPoint = roundedIntPoint(point);
     if (canResizeRow(roundedPoint)) {

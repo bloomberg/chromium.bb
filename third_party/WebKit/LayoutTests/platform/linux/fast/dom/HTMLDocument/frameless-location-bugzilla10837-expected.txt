@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
-    RenderFrameSet {FRAMESET} at (0,0) size 800x600
+    LayoutFrameSet {FRAMESET} at (0,0) size 800x600
 layer at (0,0) size 397x600
-  RenderFrame {FRAME} at (0,0) size 397x600
+  LayoutFrame {FRAME} at (0,0) size 397x600
     layer at (0,0) size 397x600
       RenderView at (0,0) size 397x600
     layer at (0,0) size 397x600
@@ -14,7 +14,7 @@ layer at (0,0) size 397x600
             RenderText {#text} at (0,0) size 58x19
               text run at (0,0) width 58: "PASSED"
 layer at (403,0) size 397x600
-  RenderFrame {FRAME} at (403,0) size 397x600
+  LayoutFrame {FRAME} at (403,0) size 397x600
     layer at (0,0) size 397x600
       RenderView at (0,0) size 397x600
     layer at (0,0) size 397x600

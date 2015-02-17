@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Simon Hausmann <hausmann@kde.org>
- *           (C) 2000 Stefan Schimanski (1Stein@gmx.de)
- * Copyright (C) 2004, 2005, 2006, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -21,30 +20,31 @@
  *
  */
 
-#include "config.h"
-#include "core/rendering/RenderFrame.h"
+#ifndef LayoutFrame_h
+#define LayoutFrame_h
 
-#include "core/html/HTMLFrameElement.h"
-#include "core/frame/FrameView.h"
+#include "core/layout/LayoutFrameSet.h"
+#include "core/layout/LayoutPart.h"
 
 namespace blink {
 
-RenderFrame::RenderFrame(HTMLFrameElement* frame)
-    : LayoutPart(frame)
-{
-    setInline(false);
-}
+class HTMLFrameElement;
 
-FrameEdgeInfo RenderFrame::edgeInfo() const
-{
-    HTMLFrameElement* element = toHTMLFrameElement(node());
-    return FrameEdgeInfo(element->noResize(), element->hasFrameBorder());
-}
+class LayoutFrame final : public LayoutPart {
+public:
+    explicit LayoutFrame(HTMLFrameElement*);
 
-void RenderFrame::updateFromElement()
-{
-    if (parent() && parent()->isFrameSet())
-        toRenderFrameSet(parent())->notifyFrameEdgeInfoChanged();
-}
+    FrameEdgeInfo edgeInfo() const;
+
+private:
+    virtual const char* renderName() const override { return "LayoutFrame"; }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || LayoutPart::isOfType(type); }
+
+    virtual void updateFromElement() override;
+};
+
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrame, isFrame());
 
 } // namespace blink
+
+#endif // LayoutFrame_h

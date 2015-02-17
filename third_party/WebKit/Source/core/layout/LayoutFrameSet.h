@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderFrameSet_h
-#define RenderFrameSet_h
+#ifndef LayoutFrameSet_h
+#define LayoutFrameSet_h
 
 #include "core/rendering/RenderBox.h"
 
@@ -53,15 +53,15 @@ private:
     Vector<bool> m_allowBorder;
 };
 
-class RenderFrameSet final : public RenderBox {
+class LayoutFrameSet final : public RenderBox {
 public:
-    RenderFrameSet(HTMLFrameSetElement*);
-    virtual ~RenderFrameSet();
+    LayoutFrameSet(HTMLFrameSetElement*);
+    virtual ~LayoutFrameSet();
 
     LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
-    // If you have a RenderFrameSet, use firstChild or lastChild instead.
+    // If you have a LayoutFrameSet, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -101,7 +101,7 @@ private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return "RenderFrameSet"; }
+    virtual const char* renderName() const override { return "LayoutFrameSet"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrameSet || RenderBox::isOfType(type); }
 
     virtual void layout() override;
@@ -114,7 +114,7 @@ private:
 
     void layOutAxis(GridAxis&, const Vector<HTMLDimension>&, int availableSpace);
     void computeEdgeInfo();
-    void fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int c);
+    void fillFromEdgeInfo(const FrameEdgeInfo&, int r, int c);
     void positionFrames();
 
     int splitPosition(const GridAxis&, int split) const;
@@ -132,8 +132,8 @@ private:
     bool m_isChildResizing;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFrameSet, isFrameSet());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrameSet, isFrameSet());
 
 } // namespace blink
 
-#endif // RenderFrameSet_h
+#endif // LayoutFrameSet_h

@@ -33,8 +33,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameElement.h"
+#include "core/layout/LayoutFrameSet.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/rendering/RenderFrameSet.h"
 
 namespace blink {
 
@@ -158,7 +158,7 @@ LayoutObject* HTMLFrameSetElement::createRenderer(const LayoutStyle& style)
 {
     if (style.hasContent())
         return LayoutObject::createObject(this, style);
-    return new RenderFrameSet(this);
+    return new LayoutFrameSet(this);
 }
 
 void HTMLFrameSetElement::attach(const AttachContext& context)
@@ -184,7 +184,7 @@ void HTMLFrameSetElement::attach(const AttachContext& context)
 void HTMLFrameSetElement::defaultEventHandler(Event* evt)
 {
     if (evt->isMouseEvent() && !m_noresize && renderer() && renderer()->isFrameSet()) {
-        if (toRenderFrameSet(renderer())->userResize(toMouseEvent(evt))) {
+        if (toLayoutFrameSet(renderer())->userResize(toMouseEvent(evt))) {
             evt->setDefaultHandled();
             return;
         }

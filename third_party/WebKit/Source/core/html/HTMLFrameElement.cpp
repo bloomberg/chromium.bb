@@ -27,7 +27,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLFrameSetElement.h"
-#include "core/rendering/RenderFrame.h"
+#include "core/layout/LayoutFrame.h"
 
 namespace blink {
 
@@ -50,7 +50,7 @@ bool HTMLFrameElement::rendererIsNeeded(const LayoutStyle&)
 
 LayoutObject* HTMLFrameElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderFrame(this);
+    return new LayoutFrame(this);
 }
 
 bool HTMLFrameElement::noResize() const

@@ -28,7 +28,7 @@
 
 namespace blink {
 
-// Renderer for frames via RenderFrame and LayoutIFrame, and plug-ins via LayoutEmbeddedObject.
+// Renderer for frames via LayoutFrame and LayoutIFrame, and plug-ins via LayoutEmbeddedObject.
 class LayoutPart : public LayoutReplaced {
 public:
     explicit LayoutPart(Element*);

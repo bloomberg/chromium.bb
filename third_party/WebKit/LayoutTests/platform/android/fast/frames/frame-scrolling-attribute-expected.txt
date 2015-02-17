@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
-    RenderFrameSet {FRAMESET} at (0,0) size 800x600
+    LayoutFrameSet {FRAMESET} at (0,0) size 800x600
 layer at (0,0) size 195x145
-  RenderFrame {FRAME} at (0,0) size 195x145
+  LayoutFrame {FRAME} at (0,0) size 195x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 180x130
     layer at (0,0) size 180x492
@@ -17,7 +17,7 @@ layer at (0,0) size 195x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (201,0) size 195x145
-  RenderFrame {FRAME} at (201,0) size 195x145
+  LayoutFrame {FRAME} at (201,0) size 195x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 180x130
     layer at (0,0) size 180x492
@@ -30,7 +30,7 @@ layer at (201,0) size 195x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (402,0) size 195x145
-  RenderFrame {FRAME} at (402,0) size 195x145
+  LayoutFrame {FRAME} at (402,0) size 195x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 180x130
     layer at (0,0) size 180x492
@@ -43,7 +43,7 @@ layer at (402,0) size 195x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (603,0) size 197x145
-  RenderFrame {FRAME} at (603,0) size 197x145
+  LayoutFrame {FRAME} at (603,0) size 197x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 182x130
     layer at (0,0) size 182x492
@@ -56,7 +56,7 @@ layer at (603,0) size 197x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (0,151) size 195x145
-  RenderFrame {FRAME} at (0,151) size 195x145
+  LayoutFrame {FRAME} at (0,151) size 195x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 180x130
     layer at (0,0) size 180x492
@@ -69,7 +69,7 @@ layer at (0,151) size 195x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (201,151) size 195x145
-  RenderFrame {FRAME} at (201,151) size 195x145
+  LayoutFrame {FRAME} at (201,151) size 195x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 195x145
     layer at (0,0) size 195x492
@@ -82,7 +82,7 @@ layer at (201,151) size 195x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (402,151) size 195x145
-  RenderFrame {FRAME} at (402,151) size 195x145
+  LayoutFrame {FRAME} at (402,151) size 195x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 180x130
     layer at (0,0) size 180x492
@@ -95,7 +95,7 @@ layer at (402,151) size 195x145
               text run at (0,40) width 97: "200x200 frame."
           RenderBlock {DIV} at (0,76) size 400x400 [bgcolor=#0000FF]
 layer at (603,151) size 197x145
-  RenderFrame {FRAME} at (603,151) size 197x145
+  LayoutFrame {FRAME} at (603,151) size 197x145
     layer at (0,0) size 408x492
       RenderView at (0,0) size 182x130
     layer at (0,0) size 182x492
