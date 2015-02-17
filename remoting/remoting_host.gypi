@@ -84,6 +84,7 @@
             ['chromeos==1', {
               'dependencies' : [
                 '../cc/cc.gyp:cc',
+                '../content/content.gyp:content',
                 '../ppapi/ppapi_internal.gyp:ppapi_host',
                 '../skia/skia.gyp:skia',
                 '../ui/aura/aura.gyp:aura',

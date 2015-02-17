@@ -54,6 +54,7 @@ static_library("host") {
   if (is_chromeos) {
     deps += [
       "//cc",
+      "//content",
       "//ppapi/host",
       "//skia",
       "//ui/aura",

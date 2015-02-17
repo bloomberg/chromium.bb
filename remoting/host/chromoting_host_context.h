@@ -9,10 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
@@ -43,10 +39,7 @@ class ChromotingHostContext {
   // the IO Thread of the browser process).
   // Instead, we re-use the |url_request_context_getter| in the browser process.
   static scoped_ptr<ChromotingHostContext> CreateForChromeOS(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 #endif  // defined(OS_CHROMEOS)
 
   ~ChromotingHostContext();
