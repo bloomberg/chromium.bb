@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="gu">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="gu">
 <translation id="777702478322588152">પ્રીફેચર</translation>
 <translation id="3713769522066937702">આ પિન કોડ ફોર્મેટ ઓળખવામાં આવ્યું નથી. માન્ય પિન કોડનું ઉદાહરણ: <ph name="EXAMPLE"/>. તમારો પિન કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK"/>અહીં<ph name="END_LINK"/> શોધો.</translation>
 <translation id="7393381084163773901">શેરીનું સરનામું</translation>
@@ -8,16 +6,21 @@
 <translation id="1340068511406764697">તમારે એક પોસ્ટલ કોડ પ્રદાન કરવો આવશ્યક છે, ઉદાહરણ તરીકે <ph name="EXAMPLE"/>. તમારો પોસ્ટલ કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK"/>અહીં<ph name="END_LINK"/> શોધો.</translation>
 <translation id="6403469950615936250">આ પોસ્ટલ કોડ ફોર્મેટ ઓળખવામાં આવ્યું નથી. માન્ય પોસ્ટલ કોડનું ઉદાહરણ: <ph name="EXAMPLE"/>. તમારો પોસ્ટલ કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK"/>અહીં<ph name="END_LINK"/> શોધો.</translation>
 <translation id="6327653052522436195">શહેર</translation>
+<translation id="6271429879296260742">PIN કોડ</translation>
 <translation id="6839929833149231406">વિસ્તાર</translation>
 <translation id="3885155851504623709">પૅરિશ</translation>
 <translation id="8184169487503545976">આ પિન કોડ ફોર્મેટ ઓળખાયેલું નથી.</translation>
+<translation id="7805765407568469194">ગ્રામ / ટાઉનશીપ</translation>
 <translation id="7602447984296396718">આ સરનામાંના શેષ ભાગથી આ પિન કોડ મેળ ખાતો હોય એવું લાગતું નથી.</translation>
+<translation id="8449204988444194299">પોસ્ટ ટાઉન</translation>
 <translation id="6247152910634872706">સંસ્થા</translation>
 <translation id="2053553514270667976">પિન કોડ</translation>
+<translation id="2577522251608256362">પડોશ</translation>
 <translation id="7087282848513945231">પરગણું</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
 <translation id="7738983109397305830">આ બાકીના સરનામાંથી આ પિન કોડ મેળ ખાતો હોય એવું લાગતું નથી. તમારો પિન કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK"/>અહીં<ph name="END_LINK"/> શોધો.</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
+<translation id="6132429659673988671">ઉપનગર</translation>
 <translation id="7139724024395191329">એમિરાત</translation>
 <translation id="6970216967273061347">જીલ્લો</translation>
 <translation id="6207937957461833379">દેશ/પ્રદેશ</translation>

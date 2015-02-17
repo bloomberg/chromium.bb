@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
 <translation id="777702478322588152">Préfecture</translation>
 <translation id="3713769522066937702">Le format de ce code postal n'est pas reconnu. Exemple de code postal valide : <ph name="EXAMPLE"/>. Vous ne connaissez pas votre code postal ? Découvrez-le <ph name="BEGIN_LINK"/>en cliquant ici<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Adresse postale</translation>
@@ -8,16 +6,21 @@
 <translation id="1340068511406764697">Vous devez indiquer un code postal, par exemple <ph name="EXAMPLE"/>. Vous ne connaissez pas votre code postal ? Découvrez-le <ph name="BEGIN_LINK"/>en cliquant ici<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Le format de ce code postal n'est pas reconnu. Exemple de code postal valide : <ph name="EXAMPLE"/>. Vous ne connaissez pas votre code postal ? Découvrez-le <ph name="BEGIN_LINK"/>en cliquant ici<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Ville</translation>
+<translation id="6271429879296260742">Code d'accès</translation>
 <translation id="6839929833149231406">Région</translation>
 <translation id="3885155851504623709">Paroisse</translation>
 <translation id="8184169487503545976">Ce format de code postal n'est pas reconnu.</translation>
+<translation id="7805765407568469194">Village/Municipalité</translation>
 <translation id="7602447984296396718">Ce code postal ne semble pas correspondre au reste de cette adresse.</translation>
+<translation id="8449204988444194299">Ville postale</translation>
 <translation id="6247152910634872706">Organisation</translation>
 <translation id="2053553514270667976">Code postal</translation>
+<translation id="2577522251608256362">Quartier</translation>
 <translation id="7087282848513945231">Comté</translation>
 <translation id="2096368010154057602">Département</translation>
 <translation id="7738983109397305830">Ce code postal ne semble pas correspondre au reste de cette adresse. Vous ne connaissez pas votre code postal ? Découvrez-le <ph name="BEGIN_LINK"/>en cliquant ici<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Île</translation>
+<translation id="6132429659673988671">Banlieue</translation>
 <translation id="7139724024395191329">Émirat</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6207937957461833379">Pays/Région</translation>
