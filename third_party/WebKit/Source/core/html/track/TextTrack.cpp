@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/track/CueTimeline.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/html/track/vtt/VTTRegion.h"
@@ -143,8 +144,8 @@ bool TextTrack::isValidKindKeyword(const String& value)
 
 void TextTrack::setTrackList(TextTrackList* trackList)
 {
-    if (!trackList && mediaElement() && m_cues)
-        mediaElement()->textTrackRemoveCues(this, m_cues.get());
+    if (!trackList && cueTimeline() && m_cues)
+        cueTimeline()->removeCues(this, m_cues.get());
 
     m_trackList = trackList;
     invalidateTrackIndex();
@@ -170,8 +171,8 @@ void TextTrack::setMode(const AtomicString& mode)
 
     // If mode changes to disabled, remove this track's cues from the client
     // because they will no longer be accessible from the cues() function.
-    if (mode == disabledKeyword() && mediaElement() && m_cues)
-        mediaElement()->textTrackRemoveCues(this, m_cues.get());
+    if (mode == disabledKeyword() && cueTimeline() && m_cues)
+        cueTimeline()->removeCues(this, m_cues.get());
 
     if (mode != showingKeyword() && m_cues)
         for (size_t i = 0; i < m_cues->length(); ++i)
@@ -200,8 +201,8 @@ void TextTrack::removeAllCues()
     if (!m_cues)
         return;
 
-    if (mediaElement())
-        mediaElement()->textTrackRemoveCues(this, m_cues.get());
+    if (cueTimeline())
+        cueTimeline()->removeCues(this, m_cues.get());
 
     for (size_t i = 0; i < m_cues->length(); ++i)
         m_cues->item(i)->setTrack(0);
@@ -247,8 +248,8 @@ void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
     cue->setTrack(this);
     ensureTextTrackCueList()->add(cue);
 
-    if (mediaElement() && m_mode != disabledKeyword())
-        mediaElement()->textTrackAddCue(this, cue.get());
+    if (cueTimeline() && m_mode != disabledKeyword())
+        cueTimeline()->addCue(this, cue.get());
 }
 
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
@@ -274,8 +275,8 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
     }
 
     cue->setTrack(0);
-    if (mediaElement())
-        mediaElement()->textTrackRemoveCue(this, cue);
+    if (cueTimeline())
+        cueTimeline()->removeCue(this, cue);
 }
 
 VTTRegionList* TextTrack::ensureVTTRegionList()
@@ -351,17 +352,17 @@ void TextTrack::removeRegion(VTTRegion* region, ExceptionState &exceptionState)
 
 void TextTrack::cueWillChange(TextTrackCue* cue)
 {
-    if (!mediaElement())
+    if (!cueTimeline())
         return;
 
     // The cue may need to be repositioned in the media element's interval tree, may need to
     // be re-rendered, etc, so remove it before the modification...
-    mediaElement()->textTrackRemoveCue(this, cue);
+    cueTimeline()->removeCue(this, cue);
 }
 
 void TextTrack::cueDidChange(TextTrackCue* cue)
 {
-    if (!mediaElement())
+    if (!cueTimeline())
         return;
 
     // Make sure the TextTrackCueList order is up-to-date.
@@ -371,7 +372,7 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
     if (m_mode == disabledKeyword())
         return;
 
-    mediaElement()->textTrackAddCue(this, cue);
+    cueTimeline()->addCue(this, cue);
 }
 
 int TextTrack::trackIndex()
@@ -433,6 +434,11 @@ ExecutionContext* TextTrack::executionContext() const
 HTMLMediaElement* TextTrack::mediaElement() const
 {
     return m_trackList ? m_trackList->owner() : 0;
+}
+
+CueTimeline* TextTrack::cueTimeline() const
+{
+    return mediaElement() ? &mediaElement()->cueTimeline() : nullptr;
 }
 
 Node* TextTrack::owner() const

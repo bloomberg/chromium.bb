@@ -3039,6 +3039,8 @@
             'html/track/AudioTrackList.h',
             'html/track/AutomaticTrackSelection.cpp',
             'html/track/AutomaticTrackSelection.h',
+            'html/track/CueTimeline.cpp',
+            'html/track/CueTimeline.h',
             'html/track/InbandTextTrack.cpp',
             'html/track/InbandTextTrack.h',
             'html/track/LoadableTextTrack.cpp',

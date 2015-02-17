@@ -29,6 +29,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTrackElement.h"
+#include "core/html/track/CueTimeline.h"
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 
@@ -130,8 +131,8 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
         m_cues->add(newCues[i].release());
     }
 
-    if (mediaElement() && mode() != disabledKeyword())
-        mediaElement()->textTrackAddCues(this, m_cues.get());
+    if (cueTimeline() && mode() != disabledKeyword())
+        cueTimeline()->addCues(this, m_cues.get());
 }
 
 void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadingFailed)

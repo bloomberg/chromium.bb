@@ -30,9 +30,6 @@
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
-#include "core/html/track/TextTrackCue.h"
-#include "core/html/track/vtt/VTTCue.h"
-#include "platform/PODIntervalTree.h"
 #include "platform/Supplementable.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebMediaPlayerClient.h"
@@ -51,6 +48,7 @@ class AudioSourceProviderClient;
 #endif
 class AudioTrackList;
 class ContentType;
+class CueTimeline;
 class Event;
 class ExceptionState;
 class HTMLSourceElement;
@@ -64,10 +62,6 @@ class TextTrackList;
 class TimeRanges;
 class URLRegistry;
 class VideoTrackList;
-
-typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
-typedef CueIntervalTree::IntervalType CueInterval;
-typedef Vector<CueInterval> CueList;
 
 // FIXME: The inheritance from MediaPlayerClient here should be private inheritance.
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
@@ -178,7 +172,7 @@ public:
     PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
 
     TextTrackList* textTracks();
-    CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
+    CueTimeline& cueTimeline();
 
     void addTextTrack(TextTrack*);
     void removeTextTrack(TextTrack*);
@@ -210,14 +204,11 @@ public:
     };
     void configureTextTrackDisplay(VisibilityChangeAssumption);
     void updateTextTrackDisplay();
+    double lastSeekTime() const { return m_lastSeekTime; }
     void textTrackReadyStateChanged(TextTrack*);
 
     void textTrackKindChanged(TextTrack*);
     void textTrackModeChanged(TextTrack*);
-    void textTrackAddCues(TextTrack*, const TextTrackCueList*);
-    void textTrackRemoveCues(TextTrack*, const TextTrackCueList*);
-    void textTrackAddCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue>);
-    void textTrackRemoveCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue>);
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
@@ -267,6 +258,7 @@ public:
     void setController(PassRefPtrWillBeRawPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 
     void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleTimeupdateEvent(bool periodicEvent);
 
     // Returns the "effective media volume" value as specified in the HTML5 spec.
     double effectiveMediaVolume() const;
@@ -304,10 +296,6 @@ protected:
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
     void setControllerInternal(PassRefPtrWillBeRawPtr<MediaController>);
-
-    bool ignoreTrackDisplayUpdateRequests() const { return m_ignoreTrackDisplayUpdate > 0; }
-    void beginIgnoringTrackDisplayUpdateRequests();
-    void endIgnoringTrackDisplayUpdateRequests();
 
 private:
     void createMediaPlayer();
@@ -361,7 +349,6 @@ private:
     void checkIfSeekNeeded();
     void addPlayedRange(double start, double end);
 
-    void scheduleTimeupdateEvent(bool periodicEvent);
     void scheduleEvent(const AtomicString& eventName); // FIXME: Rename to scheduleNamedEvent for clarity.
 
     // loading
@@ -396,7 +383,6 @@ private:
     void executeDeferredLoad();
     void deferredLoadTimerFired(Timer<HTMLMediaElement>*);
 
-    void updateActiveTextTrackCues(double);
     HTMLTrackElement* showingTrackWithSameKind(HTMLTrackElement*) const;
 
     void markCaptionAndSubtitleTracksAsUnconfigured();
@@ -564,7 +550,6 @@ private:
     bool m_isFinalizing : 1;
     bool m_closeMediaSourceWhenFinalizing : 1;
 #endif
-    double m_lastTextTrackUpdateTime;
     bool m_initialPlayWithoutUserGestures : 1;
     bool m_autoplayMediaCounted : 1;
 
@@ -573,10 +558,7 @@ private:
     RefPtrWillBeMember<TextTrackList> m_textTracks;
     WillBeHeapVector<RefPtrWillBeMember<TextTrack>> m_textTracksWhenResourceSelectionBegan;
 
-    CueIntervalTree m_cueTree;
-
-    CueList m_currentlyActiveCues;
-    int m_ignoreTrackDisplayUpdate;
+    OwnPtrWillBeMember<CueTimeline> m_cueTimeline;
 
 #if ENABLE(WEB_AUDIO)
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
@@ -593,25 +575,6 @@ private:
 
     static URLRegistry* s_mediaStreamRegistry;
 };
-
-#ifndef NDEBUG
-// Template specializations required by PodIntervalTree in debug mode.
-template <>
-struct ValueToString<double> {
-    static String string(const double value)
-    {
-        return String::number(value);
-    }
-};
-
-template <>
-struct ValueToString<TextTrackCue*> {
-    static String string(TextTrackCue* const& cue)
-    {
-        return cue->toString();
-    }
-};
-#endif
 
 inline bool isHTMLMediaElement(const HTMLElement& element)
 {

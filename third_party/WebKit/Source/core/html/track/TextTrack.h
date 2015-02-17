@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class CueTimeline;
 class ExceptionState;
 class HTMLMediaElement;
 class TextTrack;
@@ -123,6 +124,8 @@ protected:
 
     virtual bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
     virtual AtomicString defaultKind() const override { return subtitlesKeyword(); }
+
+    CueTimeline* cueTimeline() const;
 
     RefPtrWillBeMember<TextTrackCueList> m_cues;
 
