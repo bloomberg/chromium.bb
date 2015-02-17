@@ -132,7 +132,7 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
       if sanitizer:
         continue
 
-      for toolchain in ('newlib', 'glibc', 'pnacl'):
+      for toolchain in ('clang-newlib', 'newlib', 'glibc', 'pnacl'):
         for arch in archs:
           for config in configs:
             RunTest(location, toolchain, config, arch)
@@ -187,7 +187,7 @@ def main(args):
 
   pepper_ver = str(int(build_version.ChromeMajorVersion()))
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
-  toolchains = ['newlib', 'glibc', 'pnacl']
+  toolchains = ['clang-newlib', 'newlib', 'glibc', 'pnacl']
   toolchains.append(getos.GetPlatform())
 
   if options.verbose:

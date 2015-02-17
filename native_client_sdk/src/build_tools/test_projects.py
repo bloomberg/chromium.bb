@@ -38,7 +38,15 @@ browser_tester_py = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'tools',
 
 
 ALL_CONFIGS = ['Debug', 'Release']
-ALL_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
+ALL_TOOLCHAINS = [
+  'newlib',
+  'glibc',
+  'pnacl',
+  'win',
+  'linux',
+  'mac',
+  'clang-newlib',
+]
 
 # Values you can filter by:
 #   name: The name of the test. (e.g. "pi_generator")

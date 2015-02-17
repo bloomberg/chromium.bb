@@ -44,7 +44,7 @@ ARCH_BASE_NAME = {
   'x86_64': 'x86'
 }
 
-NACL_TOOLCHAINS = ('newlib', 'glibc', 'pnacl', 'bionic')
+NACL_TOOLCHAINS = ('newlib', 'glibc', 'pnacl', 'bionic', 'clang-newlib')
 HOST_TOOLCHAINS = ('linux', 'mac', 'win')
 VALID_TOOLCHAINS = list(HOST_TOOLCHAINS) + list(NACL_TOOLCHAINS) + ['host']
 
@@ -57,7 +57,7 @@ VALID_TOOLCHAINS = list(HOST_TOOLCHAINS) + list(NACL_TOOLCHAINS) + ['host']
 # Most tools will be passed through directly.
 # e.g. For PNaCl foo => pnacl-foo
 #      For NaCl  foo => x86_64-nacl-foo.
-PNACL_TOOLS = {
+CLANG_TOOLS = {
   'cc': 'clang',
   'c++': 'clang++',
   'gcc': 'clang',
@@ -65,7 +65,7 @@ PNACL_TOOLS = {
   'ld': 'clang++'
 }
 
-NACL_TOOLS = {
+GCC_TOOLS = {
   'cc': 'gcc',
   'c++': 'g++',
   'gcc': 'gcc',
@@ -153,7 +153,7 @@ def GetToolchainDir(toolchain, arch=None):
   ExpectToolchain(toolchain, NACL_TOOLCHAINS)
   root = GetPosixSDKPath()
   platform = getos.GetPlatform()
-  if toolchain == 'pnacl':
+  if toolchain in ('pnacl', 'clang-newlib'):
     subdir = '%s_pnacl' % platform
   else:
     assert arch is not None
@@ -178,6 +178,8 @@ def GetToolchainBinDir(toolchain, arch=None):
 def GetSDKIncludeDirs(toolchain):
   root = GetPosixSDKPath()
   base_include = posixpath.join(root, 'include')
+  if toolchain == 'clang-newlib':
+    toolchain = 'newlib'
   return [base_include, posixpath.join(base_include, toolchain)]
 
 
@@ -197,12 +199,15 @@ def GetToolPath(toolchain, arch, tool):
 
   if toolchain == 'pnacl':
     CheckValidToolchainArch(toolchain, arch)
-    tool = PNACL_TOOLS.get(tool, tool)
+    tool = CLANG_TOOLS.get(tool, tool)
     full_tool_name = 'pnacl-%s' % tool
   else:
     CheckValidToolchainArch(toolchain, arch, arch_required=True)
     ExpectArch(arch, VALID_ARCHES)
-    tool = NACL_TOOLS.get(tool, tool)
+    if toolchain == 'clang-newlib':
+      tool = CLANG_TOOLS.get(tool, tool)
+    else:
+      tool = GCC_TOOLS.get(tool, tool)
     full_tool_name = '%s-nacl-%s' % (GetArchName(arch), tool)
   return posixpath.join(GetToolchainBinDir(toolchain, arch), full_tool_name)
 

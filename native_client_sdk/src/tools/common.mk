@@ -15,9 +15,9 @@
 # accordingly.
 #
 ifneq ($(ENABLE_BIONIC),)
-ALL_TOOLCHAINS ?= pnacl newlib glibc bionic
+ALL_TOOLCHAINS ?= pnacl newlib glibc clang-newlib bionic
 else
-ALL_TOOLCHAINS ?= pnacl newlib glibc
+ALL_TOOLCHAINS ?= pnacl newlib glibc clang-newlib
 endif
 
 VALID_TOOLCHAINS ?= $(ALL_TOOLCHAINS)
@@ -418,7 +418,7 @@ ifneq (,$(findstring $(TOOLCHAIN),win))
 include $(NACL_SDK_ROOT)/tools/host_vc.mk
 endif
 
-ifneq (,$(findstring $(TOOLCHAIN),glibc newlib bionic))
+ifneq (,$(findstring $(TOOLCHAIN),glibc newlib bionic clang-newlib))
 include $(NACL_SDK_ROOT)/tools/nacl_gcc.mk
 endif
 

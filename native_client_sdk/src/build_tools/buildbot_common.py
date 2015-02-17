@@ -10,7 +10,7 @@ import os
 import subprocess
 import sys
 
-from build_paths import SDK_SRC_DIR, NACL_DIR
+from build_paths import SDK_SRC_DIR, NACL_DIR, SRC_DIR
 
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import oshelpers
@@ -156,19 +156,26 @@ def Run(args, cwd=None, env=None, shell=False):
   sys.stderr.flush()
 
 
+def ShortFilename(filename):
+  drive = os.path.splitdrive(filename)[0]
+  if drive and drive != os.path.splitdrive(SRC_DIR)[0]:
+    return filename
+  return os.path.relpath(filename, SRC_DIR)
+
+
 def CopyDir(src, dst, excludes=('.svn', '*/.svn')):
   """Recursively copy a directory using."""
   args = ['-r', src, dst]
   for exc in excludes:
     args.append('--exclude=' + exc)
-  Trace('cp -r %s %s' % (src, dst))
+  Trace('cp -r %s %s' % (ShortFilename(src), ShortFilename(dst)))
   if os.path.abspath(src) == os.path.abspath(dst):
     ErrorExit('ERROR: Copying directory onto itself: ' + src)
   oshelpers.Copy(args)
 
 
 def CopyFile(src, dst):
-  Trace('cp %s %s' % (src, dst))
+  Trace('cp %s %s' % (ShortFilename(src), ShortFilename(dst)))
   if os.path.abspath(src) == os.path.abspath(dst):
     ErrorExit('ERROR: Copying file onto itself: ' + src)
   args = [src, dst]
@@ -177,25 +184,25 @@ def CopyFile(src, dst):
 
 def RemoveDir(dst):
   """Remove the provided path."""
-  Trace('rm -fr ' + dst)
+  Trace('rm -fr ' + ShortFilename(dst))
   oshelpers.Remove(['-fr', dst])
 
 
 def MakeDir(dst):
   """Create the path including all parent directories as needed."""
-  Trace('mkdir -p ' + dst)
+  Trace('mkdir -p ' + ShortFilename(dst))
   oshelpers.Mkdir(['-p', dst])
 
 
 def Move(src, dst):
   """Move the path src to dst."""
-  Trace('mv -f %s %s' % (src, dst))
+  Trace('mv -f %s %s' % (ShortFilename(src), ShortFilename(dst)))
   oshelpers.Move(['-f', src, dst])
 
 
 def RemoveFile(dst):
   """Remove the provided file."""
-  Trace('rm ' + dst)
+  Trace('rm ' + ShortFilename(dst))
   oshelpers.Remove(['-f', dst])
 
 

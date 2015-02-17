@@ -32,6 +32,7 @@ LIB_DICT = {
 VALID_TOOLCHAINS = [
   'bionic',
   'newlib',
+  'clang-newlib',
   'glibc',
   'pnacl',
   'win',
@@ -98,6 +99,7 @@ def ValidateToolchains(toolchains):
   if invalid_toolchains:
     buildbot_common.ErrorExit('Invalid toolchain(s): %s' % (
         ', '.join(invalid_toolchains)))
+
 
 def GetDeps(projects):
   out = {}
@@ -298,7 +300,7 @@ def main(args):
     # be the first toolchain in this list that is available in the example.
     # e.g. If an example supports newlib and glibc, then the default will be
     # newlib.
-    options.toolchain = ['pnacl', 'newlib', 'glibc', 'host']
+    options.toolchain = ['pnacl', 'newlib', 'glibc', 'host', 'clang-newlib']
     if options.experimental or options.bionic:
       options.toolchain.append('bionic')
 
