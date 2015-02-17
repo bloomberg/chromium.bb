@@ -2640,10 +2640,11 @@ class BisectOptions(object):
                             '(default), or "Debug".')
     group.add_argument('--builder_type', default=fetch_build.PERF_BUILDER,
                        choices=[fetch_build.PERF_BUILDER,
-                                fetch_build.FULL_BUILDER],
+                                fetch_build.FULL_BUILDER, ''],
                        help='Type of builder to get build from. This '
                             'determines both the bot that builds and the '
-                            'place where archived builds are downloaded from.')
+                            'place where archived builds are downloaded from. '
+                            'For local builds, an empty string can be passed.')
 
   @staticmethod
   def _AddDebugOptionsGroup(parser):
