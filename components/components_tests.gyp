@@ -44,7 +44,7 @@
           },
         },
         {
-          # GN version: //components/components_unittests
+          # GN version: //components:components_unittests
           'target_name': 'components_unittests',
           'type': '<(gtest_target_type)',
           'sources': [
