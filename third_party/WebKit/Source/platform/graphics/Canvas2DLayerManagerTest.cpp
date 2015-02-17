@@ -32,6 +32,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebTraceLocation.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -274,7 +275,7 @@ protected:
         RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(1, 1));
         OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
         FakeCanvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(webContext.get(), canvas.release(), surface.release())));
-        Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, layer.get(), true));
+        Platform::current()->currentThread()->postTask(FROM_HERE, new DeferredFrameTestTask(this, layer.get(), true));
         Platform::current()->currentThread()->enterRunLoop();
         // Verify that didProcessTask was called upon completion
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
@@ -282,23 +283,23 @@ protected:
         EXPECT_EQ(0, layer->m_flushCount);
 
         // Verify that no flushes are triggered as long as frame are fresh
-        Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, layer.get(), true));
+        Platform::current()->currentThread()->postTask(FROM_HERE, new DeferredFrameTestTask(this, layer.get(), true));
         Platform::current()->currentThread()->enterRunLoop();
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
         EXPECT_EQ(0, layer->m_flushCount);
 
-        Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, layer.get(), true));
+        Platform::current()->currentThread()->postTask(FROM_HERE, new DeferredFrameTestTask(this, layer.get(), true));
         Platform::current()->currentThread()->enterRunLoop();
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
         EXPECT_EQ(0, layer->m_flushCount);
 
         // Verify that a flush is triggered when queue is accumulating a multi-frame backlog.
-        Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, layer.get(), false));
+        Platform::current()->currentThread()->postTask(FROM_HERE, new DeferredFrameTestTask(this, layer.get(), false));
         Platform::current()->currentThread()->enterRunLoop();
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
         EXPECT_EQ(1, layer->m_flushCount);
 
-        Platform::current()->currentThread()->postTask(new DeferredFrameTestTask(this, layer.get(), false));
+        Platform::current()->currentThread()->postTask(FROM_HERE, new DeferredFrameTestTask(this, layer.get(), false));
         Platform::current()->currentThread()->enterRunLoop();
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
         EXPECT_EQ(2, layer->m_flushCount);
