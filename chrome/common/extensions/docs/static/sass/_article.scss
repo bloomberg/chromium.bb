@@ -84,9 +84,14 @@ $site-toc-width: 175px;
          }
        }
 
-       li.selected > a {
+       li.selected {
+         li {
+          display:block;
+         }
+         > a {
          font-weight: bold;
          color: $black;
+         }
        }
      } 
 
