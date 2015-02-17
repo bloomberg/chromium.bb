@@ -40,7 +40,7 @@ Object.freeze(DirectoryItemTreeBaseMethods);
 
 var TREE_ITEM_INNTER_HTML =
     '<div class="tree-row">' +
-    ' <paper-ripple fit></paper-ripple>' +
+    ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
     ' <span class="expand-icon">' +
     '  <core-icon icon="expand-more" class="expand-icon"></core-icon>' +
     ' </span>' +
