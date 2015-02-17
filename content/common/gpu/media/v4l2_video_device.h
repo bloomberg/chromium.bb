@@ -10,6 +10,7 @@
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
@@ -17,7 +18,8 @@
 
 namespace content {
 
-class V4L2Device : public base::RefCountedThreadSafe<V4L2Device> {
+class CONTENT_EXPORT V4L2Device
+    : public base::RefCountedThreadSafe<V4L2Device> {
  public:
   // Utility format conversion functions
   static media::VideoFrame::Format V4L2PixFmtToVideoFrameFormat(uint32 format);
