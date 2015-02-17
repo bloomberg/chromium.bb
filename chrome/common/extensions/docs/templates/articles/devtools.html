@@ -4,7 +4,7 @@
 
 <p>A DevTools extension adds functionality to the Chrome DevTools. It can add new
 UI panels and sidebars, interact with the inspected page, get information about
-network requests, and more. DevTools extensions have access to an additional set
+network requests, and more. View <a href="https://developer.chrome.com/devtools/docs/extensions-gallery">featured DevTools extensions</a>. DevTools extensions have access to an additional set
 of DevTools-specific extension APIs:</p>
 
 <ul>
@@ -406,8 +406,11 @@ window.addEventListener('message', function(event) {
 });
 </pre>
 
-Your message will now flow from the injected script, to the content script, to
-the background script, and finally to the DevTools page.
+<p>Your message will now flow from the injected script, to the content script, to
+the background script, and finally to the DevTools page.</p>
+
+<p>You can also consider <a href="https://github.com/GoogleChrome/devtools-docs/issues/143">two alternative message passing techniques here</a>.</p>
+
 
 <h3 id="detecting-open-close">Detecting When DevTools Opens and Closes</h3>
 
