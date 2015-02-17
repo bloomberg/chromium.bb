@@ -29,6 +29,11 @@ cr.define('inline.login', function() {
     authReadyFired = true;
   }
 
+  function onDropLink(e) {
+    // Navigate to the dropped link.
+    window.location.href = e.detail;
+  }
+
   function onNewWindow(e) {
     window.open(e.detail.targetUrl, '_blank');
     e.detail.window.discard();
@@ -48,6 +53,7 @@ cr.define('inline.login', function() {
    */
   function initialize() {
     authExtHost = new cr.login.GaiaAuthHost('signin-frame');
+    authExtHost.addEventListener('dropLink', onDropLink);
     authExtHost.addEventListener('ready', onAuthReady);
     authExtHost.addEventListener('newWindow', onNewWindow);
     authExtHost.addEventListener('resize', onResize);
