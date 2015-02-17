@@ -25,6 +25,12 @@ public class SessionConnector implements JniInterface.ConnectionListener,
     private String mHostJabberId;
 
     /**
+     * Tracks whether the connection has been established. Auto-reloading and reconnecting should
+     * only happen if connection has not yet occurred.
+     */
+    private boolean mConnected;
+
+    /**
      * @param connectionCallback Object to be notified on connection success/failure.
      * @param hostListCallback Object to be notified whenever the host list is reloaded.
      * @param hostListLoader The object used for reloading the host list.
@@ -65,7 +71,10 @@ public class SessionConnector implements JniInterface.ConnectionListener,
     @Override
     public void onConnectionState(JniInterface.ConnectionListener.State state,
             JniInterface.ConnectionListener.Error error) {
-        if (state == JniInterface.ConnectionListener.State.FAILED
+        boolean connected = mConnected;
+        mConnected = (state == JniInterface.ConnectionListener.State.CONNECTED);
+
+        if (!connected && state == JniInterface.ConnectionListener.State.FAILED
                 && error == JniInterface.ConnectionListener.Error.PEER_IS_OFFLINE) {
             // The host is offline, which may mean the JID is out of date, so refresh the host list
             // and try to connect again.
