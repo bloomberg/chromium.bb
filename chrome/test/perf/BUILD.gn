@@ -11,7 +11,6 @@ if (!is_win || link_chrome_on_windows) {
     output_name = "perf_tests"
 
     sources = [
-      "//content/browser/net/sqlite_persistent_cookie_store_perftest.cc",
       "perftests.cc",
       "url_parse_perftest.cc",
     ]
@@ -20,8 +19,6 @@ if (!is_win || link_chrome_on_windows) {
       "//base",
       "//base/allocator",
       "//base/test:test_support",
-      "//content",
-      "//net",
       "//testing/gtest",
       "//url",
     ]

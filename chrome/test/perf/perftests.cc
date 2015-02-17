@@ -4,7 +4,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/perf_test_suite.h"
-#include "chrome/common/chrome_paths.h"
 
 int main(int argc, char **argv) {
   base::PerfTestSuite suite(argc, argv);

@@ -1235,6 +1235,7 @@
             '..',
           ],
           'sources': [
+            'browser/net/sqlite_persistent_cookie_store_perftest.cc',
             'browser/renderer_host/input/input_router_impl_perftest.cc',
             'common/cc_messages_perftest.cc',
             'test/run_all_perftests.cc',

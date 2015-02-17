@@ -2885,31 +2885,17 @@
           'target_name': 'perf_tests',
           'type': 'executable',
           'dependencies': [
-            'browser',
-            'chrome_resources.gyp:chrome_resources',
-            'chrome_resources.gyp:chrome_strings',
-            'common',
-            'renderer',
-            '../content/content.gyp:content_gpu',
-            '../content/content_shell_and_tests.gyp:test_support_content',
             '../base/base.gyp:base',
-            '../base/base.gyp:test_support_base',
             '../base/base.gyp:test_support_perf',
-            '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
+            '../url/url.gyp:url_lib',
           ],
           'sources': [
             # Note: Sources list duplicated in GN build.
-            '../content/browser/net/sqlite_persistent_cookie_store_perftest.cc',
             'test/perf/perftests.cc',
             'test/perf/url_parse_perftest.cc',
           ],
           'conditions': [
-            ['use_x11==1', {
-              'dependencies': [
-                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-              ],
-            }],
             ['OS=="win"', {
               'configurations': {
                 'Debug_Base': {
@@ -2928,11 +2914,6 @@
                 }],
               ],
             }],
-            ['toolkit_views==1', {
-              'dependencies': [
-                '../ui/views/views.gyp:views',
-              ],
-            }],
             ['os_posix == 1 and OS != "mac" and OS != "android"', {
               'conditions': [
                 ['use_allocator!="none"', {
@@ -2940,11 +2921,6 @@
                     '../base/allocator/allocator.gyp:allocator',
                   ],
                 }],
-              ],
-            }],
-            ['OS=="linux" and enable_webrtc==1', {
-              'dependencies': [
-                '../third_party/libjingle/libjingle.gyp:libpeerconnection',
               ],
             }],
           ],

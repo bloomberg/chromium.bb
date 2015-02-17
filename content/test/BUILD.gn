@@ -628,6 +628,7 @@ if (!is_mac && (!is_win || link_chrome_on_windows)) {  # TODO(GYP) enable on Mac
 if (!is_mac && (!is_win || link_chrome_on_windows)) {  # TODO(GYP) enable on Mac once it links.
   test("content_perftests") {
     sources = [
+      "../browser/net/sqlite_persistent_cookie_store_perftest.cc",
       "../browser/renderer_host/input/input_router_impl_perftest.cc",
       "../common/cc_messages_perftest.cc",
       "../test/run_all_perftests.cc",
