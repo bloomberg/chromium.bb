@@ -310,7 +310,7 @@ cvox.ApiImplementation.getCurrentNode = function(callbackId) {
  * a call was made. Otherwise returns the description that the NavigationManager
  * would speak.
  * @param {Node} node The node for which to get the description.
- * @return {Array.<cvox.NavDescription>} The description array.
+ * @return {Array<cvox.NavDescription>} The description array.
  * @private
  */
 cvox.ApiImplementation.getDesc_ = function(node) {

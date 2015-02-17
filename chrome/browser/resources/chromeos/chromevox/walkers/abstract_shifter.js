@@ -34,6 +34,7 @@ cvox.AbstractShifter.prototype.next = goog.abstractMethod;
 
 /**
  * Gets the first (or last) selection for this shifter's current granularity.
+ * @param {?} sel
  * @param {{reversed: (undefined|boolean)}=} kwargs Extra arguments.
  *  reversed: If true, syncs to the end and returns a reversed selection.
  *    False by default.
@@ -63,7 +64,7 @@ cvox.AbstractShifter.prototype.getName = goog.abstractMethod;
  * Gets the current description.
  * @param {!cvox.CursorSelection} prevSel The previous selection, for context.
  * @param {!cvox.CursorSelection} sel The current selection.
- * @return {Array.<cvox.NavDescription>} The description array.
+ * @return {Array<cvox.NavDescription>} The description array.
  */
 cvox.AbstractShifter.prototype.getDescription = goog.abstractMethod;
 

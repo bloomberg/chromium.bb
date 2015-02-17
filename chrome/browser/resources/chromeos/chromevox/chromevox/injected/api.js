@@ -48,7 +48,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     * The channel between the page and content script.
     * @type {MessageChannel}
     */
-   var channel_;
+   var channel;
 
    /**
     * Tracks whether or not the ChromeVox API should be considered active.
@@ -64,7 +64,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
 
    /**
     * Map from callback ID to callback function.
-    * @type {Object.<number, function(*)>}
+    * @type {Object<number, function(*)>}
     */
    var callbackMap_ = {};
 
@@ -72,18 +72,18 @@ if (typeof(goog) != 'undefined' && goog.require) {
     * Internal function to connect to the content script.
     */
    function connect_() {
-     if (channel_) {
+     if (channel) {
        // If there is already an existing channel, close the existing ports.
-       channel_.port1.close();
-       channel_.port2.close();
-       channel_ = null;
+       channel.port1.close();
+       channel.port2.close();
+       channel = null;
      }
 
-     channel_ = new MessageChannel();
-     window.postMessage(PORT_SETUP_MSG, [channel_.port2], '*');
-     channel_.port1.onmessage = function(event) {
+     channel = new MessageChannel();
+     window.postMessage(PORT_SETUP_MSG, [channel.port2], '*');
+     channel.port1.onmessage = function(event) {
        if (event.data == DISCONNECT_MSG) {
-         channel_ = null;
+         channel = null;
        }
        try {
          var message = JSON.parse(event.data);
@@ -111,7 +111,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
      }
      message['args'] = [id].concat(message['args']);
      callbackMap_[id] = callback;
-     channel_.port1.postMessage(JSON.stringify(message));
+     channel.port1.postMessage(JSON.stringify(message));
    }
 
    /**
@@ -147,9 +147,9 @@ if (typeof(goog) != 'undefined' && goog.require) {
     *
     * @type {*}
     */
-   var implementation_ = null;
+   var implementation = null;
    if (typeof(cvox.ApiImplementation) != 'undefined') {
-     implementation_ = cvox.ApiImplementation;
+     implementation = cvox.ApiImplementation;
    }
 
 
@@ -165,7 +165,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     */
    cvox.Api.internalEnable = function() {
      isActive_ = true;
-     if (!implementation_) {
+     if (!implementation) {
        connect_();
      }
      var event = document.createEvent('UIEvents');
@@ -179,7 +179,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     */
    cvox.Api.internalDisable = function() {
      isActive_ = false;
-     channel_ = null;
+     channel = null;
      var event = document.createEvent('UIEvents');
      event.initEvent('chromeVoxUnloaded', true, false);
      document.dispatchEvent(event);
@@ -196,10 +196,10 @@ if (typeof(goog) != 'undefined' && goog.require) {
     * @return {boolean} True if ChromeVox is currently active.
     */
    cvox.Api.isChromeVoxActive = function() {
-     if (implementation_) {
+     if (implementation) {
        return isActive_;
      }
-     return !!channel_;
+     return !!channel;
    };
 
    /**
@@ -214,8 +214,8 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
-       implementation_.speak(textString, queueMode, properties);
+     if (implementation) {
+       implementation.speak(textString, queueMode, properties);
      } else {
        var message = {
          'cmd': 'speak',
@@ -237,8 +237,8 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
-       implementation_.speak(cvox.DomUtil.getName(targetNode),
+     if (implementation) {
+       implementation.speak(cvox.DomUtil.getName(targetNode),
            queueMode, properties);
      } else {
        var message = {
@@ -258,13 +258,13 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
-       implementation_.stop();
+     if (implementation) {
+       implementation.stop();
      } else {
        var message = {
          'cmd': 'stop'
        };
-       channel_.port1.postMessage(JSON.stringify(message));
+       channel.port1.postMessage(JSON.stringify(message));
      }
    };
 
@@ -309,14 +309,14 @@ if (typeof(goog) != 'undefined' && goog.require) {
      if (!cvox.Api.isChromeVoxActive()) {
        return;
      }
-     if (implementation_) {
-       implementation_.playEarcon(earcon);
+     if (implementation) {
+       implementation.playEarcon(earcon);
      } else {
        var message = {
          'cmd': 'playEarcon',
          'args': [earcon]
        };
-       channel_.port1.postMessage(JSON.stringify(message));
+       channel.port1.postMessage(JSON.stringify(message));
      }
    };
 
@@ -335,14 +335,14 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
-       implementation_.syncToNode(targetNode, speakNode);
+     if (implementation) {
+       implementation.syncToNode(targetNode, speakNode);
      } else {
        var message = {
          'cmd': 'syncToNodeRef',
          'args': [cvox.ApiUtils.makeNodeReference(targetNode), speakNode]
        };
-       channel_.port1.postMessage(JSON.stringify(message));
+       channel.port1.postMessage(JSON.stringify(message));
      }
    };
 
@@ -356,7 +356,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
+     if (implementation) {
        callback(cvox.ChromeVox.navigationManager.getCurrentNode());
      } else {
        callAsync_({'cmd': 'getCurrentNode'}, function(response) {
@@ -371,7 +371,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
     *
     * @param {Node} targetNode The node that the NodeDescriptions should be
     * spoken using the given NodeDescriptions.
-    * @param {Array.<Object>} nodeDescriptions The Array of
+    * @param {Array<Object>} nodeDescriptions The Array of
     * NodeDescriptions for the given node.
     */
    cvox.Api.setSpeechForNode = function(targetNode, nodeDescriptions) {
@@ -392,14 +392,14 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
+     if (implementation) {
        cvox.DomUtil.clickElem(targetElement, shiftKey, true);
      } else {
        var message = {
          'cmd': 'clickNodeRef',
          'args': [cvox.ApiUtils.makeNodeReference(targetElement), shiftKey]
        };
-       channel_.port1.postMessage(JSON.stringify(message));
+       channel.port1.postMessage(JSON.stringify(message));
      }
    };
 
@@ -412,7 +412,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
      if (!cvox.Api.isChromeVoxActive() || !callback) {
        return;
      }
-     if (implementation_) {
+     if (implementation) {
        callback(cvox.BuildInfo.build);
      } else {
        callAsync_({'cmd': 'getBuild'}, function(response) {
@@ -431,7 +431,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
      if (!cvox.Api.isChromeVoxActive() || !callback) {
        return;
      }
-     if (implementation_) {
+     if (implementation) {
        callback(cvox.ChromeVox.version + '');
      } else {
        callAsync_({'cmd': 'getVersion'}, function(response) {
@@ -442,13 +442,13 @@ if (typeof(goog) != 'undefined' && goog.require) {
 
    /**
     * Returns the key codes of the ChromeVox modifier keys.
-    * @param {function(Array.<number>)} callback Function to receive the keys.
+    * @param {function(Array<number>)} callback Function to receive the keys.
     */
    cvox.Api.getCvoxModifierKeys = function(callback) {
      if (!cvox.Api.isChromeVoxActive() || !callback) {
        return;
      }
-     if (implementation_) {
+     if (implementation) {
        callback(cvox.KeyUtil.cvoxModKeyCodes());
      } else {
        callAsync_({'cmd': 'getCvoxModKeys'}, function(response) {
@@ -481,7 +481,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
+     if (implementation) {
        var keySeq = cvox.KeyUtil.keyEventToKeySequence(keyEvent);
        callback(cvox.ChromeVoxKbHandler.handlerKeyMap.hasKey(keySeq));
      } else {
@@ -512,14 +512,14 @@ if (typeof(goog) != 'undefined' && goog.require) {
        return;
      }
 
-     if (implementation_) {
-       implementation_.setKeyEcho(keyEcho);
+     if (implementation) {
+       implementation.setKeyEcho(keyEcho);
      } else {
        var message = {
          'cmd': 'setKeyEcho',
          'args': [keyEcho]
        };
-       channel_.port1.postMessage(JSON.stringify(message));
+       channel.port1.postMessage(JSON.stringify(message));
      }
    };
 
@@ -552,11 +552,11 @@ if (typeof(goog) != 'undefined' && goog.require) {
      }
      var constraintList = Array.prototype.slice.call(arguments, 4);
      var args = [name, dynamic, action, prec].concat(constraintList);
-     if (implementation_) {
-       implementation_.Math.defineRule.apply(implementation_.Math, args);
+     if (implementation) {
+       implementation.Math.defineRule.apply(implementation.Math, args);
      } else {
        var msg = {'cmd': 'Math.defineRule', args: args};
-       channel_.port1.postMessage(JSON.stringify(msg));
+       channel.port1.postMessage(JSON.stringify(msg));
      }
    };
 

@@ -14,7 +14,7 @@ goog.provide('cvox.Msgs');
  */
 cvox.Msgs = function() {
   /**
-   * @type {Object.<string, string>}
+   * @type {Object<string, string>}
    * @private
    */
   this.localeNameDict_ = null;
@@ -46,7 +46,7 @@ cvox.Msgs.prototype.getLocale = function() {
  * typos early.
  *
  * @param {string} messageId The id.
- * @param {Array.<string>=} opt_subs Substitution strings.
+ * @param {Array<string>=} opt_subs Substitution strings.
  * @return {string} The message.
  */
 cvox.Msgs.prototype.getMsg = function(messageId, opt_subs) {
@@ -98,7 +98,7 @@ cvox.Msgs.prototype.getNumber = function(num) {
  */
 cvox.Msgs.prototype.getLocaleDisplayName = function(locale) {
   if (!this.localeNameDict_) {
-    this.localeNameDict_ = /** @type {Object.<string, string>} */(
+    this.localeNameDict_ = /** @type {Object<string, string>} */(
         JSON.parse(this.getMsg('locale_dict')));
   }
   var name = this.localeNameDict_[locale];

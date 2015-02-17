@@ -42,13 +42,13 @@ cvox.MathMap = function() {
   var cstrValues = this.store.getDynamicConstraintValues();
   /**
    * Array of domain names.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.allDomains = cstrValues.domain;
 
   /**
    * Array of style names.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.allStyles = cstrValues.style;
 };
@@ -92,7 +92,7 @@ cvox.MathMap.FUNCTIONS_PATH_ = cvox.MathMap.MATHMAP_PATH_ + 'functions/';
 
 /**
  * Array of JSON filenames containing symbol definitions for math speak.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @const
  * @private
  */
@@ -121,7 +121,7 @@ cvox.MathMap.SYMBOLS_FILES_ = [
 
 /**
  * Array of JSON filenames containing symbol definitions for math speak.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @const
  * @private
  */
@@ -146,8 +146,8 @@ cvox.MathMap.loadFile = function(file) {
 
 /**
  * Loads a list of JSON files.
- * @param {Array.<string>} files An array of valid filenames.
- * @return {Array.<string>} A string representing JSON array.
+ * @param {Array<string>} files An array of valid filenames.
+ * @return {Array<string>} A string representing JSON array.
  */
 cvox.MathMap.loadFiles = function(files) {
   return files.map(cvox.MathMap.loadFile);
@@ -156,8 +156,8 @@ cvox.MathMap.loadFiles = function(files) {
 
 /**
  * Creates an array of JSON objects from a list of files.
- * @param {Array.<string>} files An array of filenames.
- * @return {Array.<Object>} Array of JSON objects.
+ * @param {Array<string>} files An array of filenames.
+ * @return {Array<Object>} Array of JSON objects.
  */
 cvox.MathMap.parseFiles = function(files) {
   var strs = cvox.MathMap.loadFiles(files);

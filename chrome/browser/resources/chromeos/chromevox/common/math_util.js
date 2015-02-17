@@ -16,7 +16,7 @@ goog.require('cvox.XpathUtil');
  * Checks if a node is in a given class of MathML nodes.
  * @private
  * @param {!Node} node The node to test.
- * @param {Array.<string>} tags List of tag names.
+ * @param {Array<string>} tags List of tag names.
  * @return {boolean} True if node has a tag name included in tags.
  */
 cvox.MathUtil.isMathmlNodeOfClass_ = function(node, tags) {
@@ -28,7 +28,7 @@ cvox.MathUtil.isMathmlNodeOfClass_ = function(node, tags) {
  * Checks if a node is in a given class of MathJax nodes.
  * @private
  * @param {!Node} node The node to test.
- * @param {Array.<string>} tags List of tag names.
+ * @param {Array<string>} tags List of tag names.
  * @return {boolean} True if node has a tag name included in tags.
  */
 cvox.MathUtil.isMathjaxNodeOfClass_ = function(node, tags) {
@@ -46,7 +46,7 @@ cvox.MathUtil.isMathjaxNodeOfClass_ = function(node, tags) {
  * of MathML or MathJax nodes.
  * @private
  * @param {!Node} node The node to test.
- * @param {Array.<string>} tags List of tag names.
+ * @param {Array<string>} tags List of tag names.
  * @return {boolean} True if node has a tag name included in tags.
  */
 cvox.MathUtil.isMathNodeOfClass_ = function(node, tags) {
@@ -58,7 +58,7 @@ cvox.MathUtil.isMathNodeOfClass_ = function(node, tags) {
 
 /**
  * Array of MathML Token Elements.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.TOKEN_LIST = ['MI', 'MN', 'MO', 'MTEXT', 'MSPACE', 'MS'];
 
@@ -82,7 +82,7 @@ cvox.MathUtil.isToken = function(element) {
 
 /**
  * Array of MathML Layout Schemata.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.LAYOUT_LIST = ['MROW', 'MFRAC', 'MSQRT', 'MROOT', 'MSTYLE',
                              'MERROR', 'MPADDED', 'MPHANTOM', 'MFENCED',
@@ -113,7 +113,7 @@ cvox.MathUtil.isLayout = function(element) {
 
 /**
  * Array of MathML Script Schemata.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.SCRIPT_LIST = ['MSUB', 'MSUP', 'MSUBSUP', 'MUNDER', 'MOVER',
                              'MUNDEROVER', 'MMULTISCRIPTS', 'MPRESCRIPTS'];
@@ -143,7 +143,7 @@ cvox.MathUtil.isScript = function(element) {
 
 /**
  * Array of MathML Table and Matrix tokens.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.TABLES_LIST = ['MTABLE', 'MLABELEDTR', 'MTR', 'MTD',
                              'MALIGNGROUP', 'MALIGNMARK'];
@@ -168,7 +168,7 @@ cvox.MathUtil.isTables = function(element) {
 
 /**
  * Array of MathML Elementary Layout Schemata.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.ELEMENTARY_LIST = ['MSTACK', 'MLONGDIV', 'MSGROUP', 'MSROW',
                                  'MSCARRIES', 'MSCARRY', 'MSLINE'];
@@ -197,7 +197,7 @@ cvox.MathUtil.isElementary = function(element) {
 /**
  * Array of all valid tags in a MathML expression.
  * This is a union of all other token lists.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.MATHML_TAG_LIST = [cvox.MathUtil.TOKEN_LIST,
                                  cvox.MathUtil.LAYOUT_LIST,
@@ -221,7 +221,7 @@ cvox.MathUtil.isMathmlTag = function(element) {
 /**
  * Array of MathML Whitespace and Alignment tokens.
  * These are elements that can occur in the other token lists.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.MathUtil.WHITESPACE_LIST = ['MSROW', 'MROW', 'MSPACE',
                                  'MPHANTOM', 'MPADDED'];

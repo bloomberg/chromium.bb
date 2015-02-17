@@ -131,7 +131,7 @@ cvox.AbstractWalker.prototype.sync = goog.abstractMethod;
  * selection. Undefined behavior otherwise.
  * @param {!cvox.CursorSelection} prevSel The valid previous selection.
  * @param {!cvox.CursorSelection} sel The valid current selection.
- * @return {!Array.<!cvox.NavDescription>} The description array.
+ * @return {!Array<!cvox.NavDescription>} The description array.
  */
 cvox.AbstractWalker.prototype.getDescription = goog.abstractMethod;
 

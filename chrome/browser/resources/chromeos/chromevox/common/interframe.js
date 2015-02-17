@@ -57,14 +57,14 @@ cvox.Interframe.id;
 /**
  * Array of functions that have been registered as listeners to interframe
  * messages send to this window.
- * @type {Array.<function(Object)>}
+ * @type {Array<function(Object)>}
  */
 cvox.Interframe.listeners = [];
 
 /**
  * Maps an id to a function which gets called when a frame first sends an ack
  * for a set id msg.
- @dict {!Object.<number|string, function()>}
+ @dict {!Object<number|string, function()>}
  * @private
  */
 cvox.Interframe.idToCallback_ = {};

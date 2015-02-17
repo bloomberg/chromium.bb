@@ -24,7 +24,7 @@ cvox.SpeechRuleFunctions = function() { };
  * Private superclass of all the custom function stores.
  * @constructor
  * @param {string} prefix A prefix string for the function names.
- * @param {Object.<string, Function>} store Storage object.
+ * @param {Object<string, Function>} store Storage object.
  * @private
  */
 cvox.SpeechRuleFunctions.Store_ = function(prefix, store) {
@@ -59,7 +59,7 @@ cvox.SpeechRuleFunctions.Store_.prototype.lookup = function(name) {
 
 /**
  * Context function for use in speech rules.
- * @typedef {function(!Node): Array.<Node>}
+ * @typedef {function(!Node): Array<Node>}
  */
 cvox.SpeechRuleFunctions.CustomQuery;
 
@@ -70,7 +70,7 @@ cvox.SpeechRuleFunctions.CustomQuery;
  */
 cvox.SpeechRuleFunctions.CustomQueries = function() {
   var store =
-    /** @type {Object.<string, cvox.SpeechRuleFunctions.CustomQuery>} */ ({});
+    /** @type {Object<string, cvox.SpeechRuleFunctions.CustomQuery>} */ ({});
   goog.base(this, 'CQF', store);
 };
 goog.inherits(cvox.SpeechRuleFunctions.CustomQueries,
@@ -90,7 +90,7 @@ cvox.SpeechRuleFunctions.CustomString;
  */
 cvox.SpeechRuleFunctions.CustomStrings = function() {
   var store =
-    /** @type {Object.<string, cvox.SpeechRuleFunctions.CustomString>} */ ({});
+    /** @type {Object<string, cvox.SpeechRuleFunctions.CustomString>} */ ({});
   goog.base(this, 'CSF', store);
 };
 goog.inherits(cvox.SpeechRuleFunctions.CustomStrings,
@@ -99,7 +99,7 @@ goog.inherits(cvox.SpeechRuleFunctions.CustomStrings,
 
 /**
  * Context function for use in speech rules.
- * @typedef {function(Array.<Node>, ?string): (function(): string)}
+ * @typedef {function(Array<Node>, ?string): (function(): string)}
  */
 cvox.SpeechRuleFunctions.ContextFunction;
 
@@ -110,7 +110,7 @@ cvox.SpeechRuleFunctions.ContextFunction;
  */
 cvox.SpeechRuleFunctions.ContextFunctions = function() {
   var store =
-    /** @type {Object.<string, cvox.SpeechRuleFunctions.ContextFunction>} */
+    /** @type {Object<string, cvox.SpeechRuleFunctions.ContextFunction>} */
   ({});
   goog.base(this, 'CTXF', store);
 };

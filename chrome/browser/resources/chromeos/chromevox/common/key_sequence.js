@@ -96,7 +96,7 @@ cvox.KeySequence = function(
 // TODO(dtseng): This is incomplete; pull once we have appropriate libs.
 /**
  * Maps a keypress keycode to a keydown or keyup keycode.
- * @type {Object.<number, number>}
+ * @type {Object<number, number>}
  */
 cvox.KeySequence.KEY_PRESS_CODE = {
   39: 222,
@@ -114,7 +114,7 @@ cvox.KeySequence.KEY_PRESS_CODE = {
  * A cache of all key sequences that have been set as double-tappable. We need
  * this cache because repeated key down computations causes ChromeVox to become
  * less responsive. This list is small so we currently use an array.
- * @type {!Array.<cvox.KeySequence>}
+ * @type {!Array<cvox.KeySequence>}
  */
 cvox.KeySequence.doubleTapCache = [];
 

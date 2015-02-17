@@ -14,7 +14,7 @@ goog.provide('cvox.DomPredicates');
 
 /**
  * Checkbox.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a checkbox.
  */
 cvox.DomPredicates.checkboxPredicate = function(nodes) {
@@ -31,7 +31,7 @@ cvox.DomPredicates.checkboxPredicate = function(nodes) {
 
 /**
  * Radio button.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a radio button.
  */
 cvox.DomPredicates.radioPredicate = function(nodes) {
@@ -47,7 +47,7 @@ cvox.DomPredicates.radioPredicate = function(nodes) {
 
 /**
  * Slider.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a slider.
  */
 cvox.DomPredicates.sliderPredicate = function(nodes) {
@@ -63,7 +63,7 @@ cvox.DomPredicates.sliderPredicate = function(nodes) {
 
 /**
  * Graphic.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a graphic.
  */
 cvox.DomPredicates.graphicPredicate = function(nodes) {
@@ -79,7 +79,7 @@ cvox.DomPredicates.graphicPredicate = function(nodes) {
 
 /**
  * Button.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a button.
  */
 cvox.DomPredicates.buttonPredicate = function(nodes) {
@@ -98,7 +98,7 @@ cvox.DomPredicates.buttonPredicate = function(nodes) {
 
 /**
  * Combo box.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a combo box.
  */
 cvox.DomPredicates.comboBoxPredicate = function(nodes) {
@@ -115,7 +115,7 @@ cvox.DomPredicates.comboBoxPredicate = function(nodes) {
 
 /**
  * Editable text field.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is an editable text field.
  */
 cvox.DomPredicates.editTextPredicate = function(nodes) {
@@ -134,7 +134,7 @@ cvox.DomPredicates.editTextPredicate = function(nodes) {
 
 /**
  * Heading.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading.
  */
 cvox.DomPredicates.headingPredicate = function(nodes) {
@@ -159,7 +159,7 @@ cvox.DomPredicates.headingPredicate = function(nodes) {
 
 /**
  * Heading level 1.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading level 1.
  * TODO: handle ARIA headings with ARIA heading levels?
  */
@@ -170,7 +170,7 @@ cvox.DomPredicates.heading1Predicate = function(nodes) {
 
 /**
  * Heading level 2.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading level 2.
  */
 cvox.DomPredicates.heading2Predicate = function(nodes) {
@@ -180,7 +180,7 @@ cvox.DomPredicates.heading2Predicate = function(nodes) {
 
 /**
  * Heading level 3.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading level 3.
  */
 cvox.DomPredicates.heading3Predicate = function(nodes) {
@@ -190,7 +190,7 @@ cvox.DomPredicates.heading3Predicate = function(nodes) {
 
 /**
  * Heading level 4.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading level 4.
  */
 cvox.DomPredicates.heading4Predicate = function(nodes) {
@@ -200,7 +200,7 @@ cvox.DomPredicates.heading4Predicate = function(nodes) {
 
 /**
  * Heading level 5.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading level 5.
  */
 cvox.DomPredicates.heading5Predicate = function(nodes) {
@@ -210,7 +210,7 @@ cvox.DomPredicates.heading5Predicate = function(nodes) {
 
 /**
  * Heading level 6.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a heading level 6.
  */
 cvox.DomPredicates.heading6Predicate = function(nodes) {
@@ -220,7 +220,7 @@ cvox.DomPredicates.heading6Predicate = function(nodes) {
 
 /**
  * Link.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a link.
  */
 cvox.DomPredicates.linkPredicate = function(nodes) {
@@ -236,7 +236,7 @@ cvox.DomPredicates.linkPredicate = function(nodes) {
 
 /**
  * Table.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a data table.
  */
 cvox.DomPredicates.tablePredicate = function(nodes) {
@@ -251,7 +251,7 @@ cvox.DomPredicates.tablePredicate = function(nodes) {
 
 /**
  * Table Cell.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a table cell.
  */
 cvox.DomPredicates.cellPredicate = function(nodes) {
@@ -269,7 +269,7 @@ cvox.DomPredicates.cellPredicate = function(nodes) {
 
 /**
  * Visited link.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a visited link.
  */
 cvox.DomPredicates.visitedLinkPredicate = function(nodes) {
@@ -284,7 +284,7 @@ cvox.DomPredicates.visitedLinkPredicate = function(nodes) {
 
 /**
  * List.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a list.
  */
 cvox.DomPredicates.listPredicate = function(nodes) {
@@ -301,7 +301,7 @@ cvox.DomPredicates.listPredicate = function(nodes) {
 
 /**
  * List item.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a list item.
  */
 cvox.DomPredicates.listItemPredicate = function(nodes) {
@@ -318,7 +318,7 @@ cvox.DomPredicates.listItemPredicate = function(nodes) {
 
 /**
  * Blockquote.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a blockquote.
  */
 cvox.DomPredicates.blockquotePredicate = function(nodes) {
@@ -328,7 +328,7 @@ cvox.DomPredicates.blockquotePredicate = function(nodes) {
 
 /**
  * Form field.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is any type of form field.
  */
 cvox.DomPredicates.formFieldPredicate = function(nodes) {
@@ -343,7 +343,7 @@ cvox.DomPredicates.formFieldPredicate = function(nodes) {
 
 /**
  * ARIA landmark.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is an ARIA landmark.
  */
 cvox.DomPredicates.landmarkPredicate = function(nodes) {
@@ -375,7 +375,7 @@ cvox.DomPredicates.containsTagName_ = function(arr, tagName) {
 
 /**
  * MathML expression
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a math expression.
  */
 cvox.DomPredicates.mathPredicate = function(nodes) {
@@ -385,7 +385,7 @@ cvox.DomPredicates.mathPredicate = function(nodes) {
 /**
  * SECTION: A section is anything that indicates a new section. This includes
  * headings and landmarks.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is considered a section marker.
  */
 cvox.DomPredicates.sectionPredicate = function(nodes) {
@@ -416,7 +416,7 @@ cvox.DomPredicates.sectionPredicate = function(nodes) {
 /**
  * CONTROL: A control is anything that the user can interact with. This includes
  * form fields and links.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is considered a control.
  */
 cvox.DomPredicates.controlPredicate = function(nodes) {
@@ -434,7 +434,7 @@ cvox.DomPredicates.controlPredicate = function(nodes) {
 
 /**
  * Caption.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a caption.
  */
 cvox.DomPredicates.captionPredicate = function(nodes) {
@@ -448,7 +448,7 @@ cvox.DomPredicates.captionPredicate = function(nodes) {
 
 /**
  * Article.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a article.
  */
 cvox.DomPredicates.articlePredicate = function(nodes) {
@@ -464,7 +464,7 @@ cvox.DomPredicates.articlePredicate = function(nodes) {
 
 /**
  * Media.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a media widget (video or audio).
  */
 cvox.DomPredicates.mediaPredicate = function(nodes) {
@@ -480,7 +480,7 @@ cvox.DomPredicates.mediaPredicate = function(nodes) {
 
 /**
  * Ordered List.
- * @param {Array.<Node>} nodes An array of nodes to check.
+ * @param {Array<Node>} nodes An array of nodes to check.
  * @return {?Node} Node in the array that is a ordered list.
  */
 cvox.DomPredicates.orderedListPredicate = function(nodes) {

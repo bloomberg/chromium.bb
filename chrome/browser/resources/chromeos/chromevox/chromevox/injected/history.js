@@ -42,7 +42,7 @@ cvox.HistoryEvent = function(opt_json) {
 
   /**
    * An array of spoken output.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.spoken_ = [];
@@ -347,6 +347,7 @@ cvox.History.prototype.increaseOrDecreaseProperty =
 cvox.History.prototype.getDefaultProperty = function(property) { };
 
 
+/** TODO: add doc comment. */
 cvox.History.dumpJs = function() {
   var history = cvox.History.getInstance();
   history.addBigTextBox_();
@@ -355,7 +356,7 @@ cvox.History.dumpJs = function() {
 
 
 /**
- * @param {Array.<string>=} opt_skipCommands
+ * @param {Array<string>=} opt_skipCommands
  * @return {string} A string of Javascript output.
  * @private
  */

@@ -17,8 +17,8 @@ cvox.SemanticUtil = function() { };
 
 /**
  * Merges keys of objects into an array.
- * @param {...Object.<string, string>} objects Optional objects.
- * @return {Array.<string>} Array of all keys of the objects.
+ * @param {...Object<string, string>} objects Optional objects.
+ * @return {Array<string>} Array of all keys of the objects.
  */
 cvox.SemanticUtil.objectsToKeys = function(objects) {
   objects = Array.prototype.slice.call(arguments, 0);
@@ -29,8 +29,8 @@ cvox.SemanticUtil.objectsToKeys = function(objects) {
 
 /**
  * Merges values of objects into an array.
- * @param {...Object.<string, string>} objects Optional objects.
- * @return {Array.<string>} Array of all values of the objects.
+ * @param {...Object<string, string>} objects Optional objects.
+ * @return {Array<string>} Array of all values of the objects.
  */
 cvox.SemanticUtil.objectsToValues = function(objects) {
   objects = Array.prototype.slice.call(arguments, 0);
@@ -96,7 +96,7 @@ cvox.SemanticUtil.tagName = function(node) {
 
 /**
  * List of MathML Tags that are to be ignored.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @const
  */
 cvox.SemanticUtil.IGNORETAGS = [
@@ -107,7 +107,7 @@ cvox.SemanticUtil.IGNORETAGS = [
 
 /**
  * List of MathML Tags to be ignore if they have no children.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @const
  */
 cvox.SemanticUtil.EMPTYTAGS = ['MATH', 'MROW', 'MPADDED', 'MSTYLE'];
@@ -118,8 +118,8 @@ cvox.SemanticUtil.EMPTYTAGS = ['MATH', 'MROW', 'MPADDED', 'MSTYLE'];
  * ignored if they have empty children.
  * Observe that this is currently not recursive, i.e. will not take care of
  * pathological cases, where content is hidden in incorrectly used tags!
- * @param {Array.<Element>} nodes The node list to be cleaned.
- * @return {Array.<Element>} The cleansed list.
+ * @param {Array<Element>} nodes The node list to be cleaned.
+ * @return {Array<Element>} The cleansed list.
  */
 cvox.SemanticUtil.purgeNodes = function(nodes) {
   var nodeArray = [];

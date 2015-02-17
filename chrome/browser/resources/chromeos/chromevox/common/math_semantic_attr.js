@@ -55,7 +55,7 @@ goog.require('cvox.SemanticUtil');
 cvox.SemanticAttr = function() {
   // Punctuation Characters.
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.generalPunctuations =
       [
@@ -75,28 +75,28 @@ cvox.SemanticAttr = function() {
   this.invisibleComma_ = cvox.SemanticUtil.numberToUnicode(0x2063);
   this.generalPunctuations.push(this.invisibleComma_);
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.ellipses =
       [
         '…', '⋮', '⋯', '⋰', '⋱', '︙'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.fullStops =
       [
         '.', '﹒', '．'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.dashes =
       [
         '‒', '–', '—', '―', '〜', '︱', '︲', '﹘'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.primes =
       [
@@ -108,7 +108,7 @@ cvox.SemanticAttr = function() {
   // record pairs of opening/closing and top/bottom fences.
   /**
    * Mapping opening to closing fences.
-   * @type {Object.<string, string>}
+   * @type {Object<string, string>}
    */
   this.openClosePairs =
       {
@@ -137,7 +137,7 @@ cvox.SemanticAttr = function() {
       };
   /**
    * Mapping top to bottom fences.
-   * @type {Object.<string, string>}
+   * @type {Object<string, string>}
    */
   this.topBottomPairs =
       {
@@ -146,31 +146,31 @@ cvox.SemanticAttr = function() {
         '﹃': '﹄', '﹇': '﹈'
       };
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.leftFences = cvox.SemanticUtil.objectsToKeys(this.openClosePairs);
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.rightFences = cvox.SemanticUtil.objectsToValues(this.openClosePairs);
   this.rightFences.push('〟');
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.topFences = cvox.SemanticUtil.objectsToKeys(this.topBottomPairs);
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.bottomFences = cvox.SemanticUtil.objectsToValues(this.topBottomPairs);
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.neutralFences =
       [
         '|', '¦', '‖', '❘', '⦀', '⫴', '￤', '｜'
       ];
   /** Array of all fences.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.fences = this.neutralFences.concat(
       this.leftFences, this.rightFences, this.topFences, this.bottomFences);
@@ -178,7 +178,7 @@ cvox.SemanticAttr = function() {
   // Identifiers.
   // Latin Alphabets.
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatin =
       [
@@ -186,7 +186,7 @@ cvox.SemanticAttr = function() {
         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatin =
       [
@@ -196,7 +196,7 @@ cvox.SemanticAttr = function() {
         'ı', 'ȷ'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinFullWidth =
       [
@@ -204,7 +204,7 @@ cvox.SemanticAttr = function() {
        'Ｎ', 'Ｏ', 'Ｐ', 'Ｑ', 'Ｒ', 'Ｓ', 'Ｔ', 'Ｕ', 'Ｖ', 'Ｗ', 'Ｘ', 'Ｙ', 'Ｚ'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinFullWidth =
       [
@@ -212,7 +212,7 @@ cvox.SemanticAttr = function() {
         'ｎ', 'ｏ', 'ｐ', 'ｑ', 'ｒ', 'ｓ', 'ｔ', 'ｕ', 'ｖ', 'ｗ', 'ｘ', 'ｙ', 'ｚ'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinBold =
       [
@@ -220,7 +220,7 @@ cvox.SemanticAttr = function() {
        '𝐍', '𝐎', '𝐏', '𝐐', '𝐑', '𝐒', '𝐓', '𝐔', '𝐕', '𝐖', '𝐗', '𝐘', '𝐙'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinBold =
       [
@@ -228,7 +228,7 @@ cvox.SemanticAttr = function() {
        '𝐧', '𝐨', '𝐩', '𝐪', '𝐫', '𝐬', '𝐭', '𝐮', '𝐯', '𝐰', '𝐱', '𝐲', '𝐳'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinItalic =
       [
@@ -236,7 +236,7 @@ cvox.SemanticAttr = function() {
        '𝑁', '𝑂', '𝑃', '𝑄', '𝑅', '𝑆', '𝑇', '𝑈', '𝑉', '𝑊', '𝑋', '𝑌', '𝑍'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinItalic =
       [
@@ -246,7 +246,7 @@ cvox.SemanticAttr = function() {
        '𝚤', '𝚥'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinScript =
       [
@@ -256,7 +256,7 @@ cvox.SemanticAttr = function() {
        '℘'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinScript =
       [
@@ -266,7 +266,7 @@ cvox.SemanticAttr = function() {
        'ℓ'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinBoldScript =
       [
@@ -274,7 +274,7 @@ cvox.SemanticAttr = function() {
        '𝓝', '𝓞', '𝓟', '𝓠', '𝓡', '𝓢', '𝓣', '𝓤', '𝓥', '𝓦', '𝓧', '𝓨', '𝓩'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinBoldScript =
       [
@@ -282,7 +282,7 @@ cvox.SemanticAttr = function() {
        '𝓷', '𝓸', '𝓹', '𝓺', '𝓻', '𝓼', '𝓽', '𝓾', '𝓿', '𝔀', '𝔁', '𝔂', '𝔃'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinFraktur =
       [
@@ -290,7 +290,7 @@ cvox.SemanticAttr = function() {
        '𝔑', '𝔒', '𝔓', '𝔔', 'ℜ', '𝔖', '𝔗', '𝔘', '𝔙', '𝔚', '𝔛', '𝔜', 'ℨ'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinFraktur =
       [
@@ -298,7 +298,7 @@ cvox.SemanticAttr = function() {
        '𝔫', '𝔬', '𝔭', '𝔮', '𝔯', '𝔰', '𝔱', '𝔲', '𝔳', '𝔴', '𝔵', '𝔶', '𝔷'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinDoubleStruck =
       [
@@ -306,7 +306,7 @@ cvox.SemanticAttr = function() {
        'ℕ', '𝕆', 'ℙ', 'ℚ', 'ℝ', '𝕊', '𝕋', '𝕌', '𝕍', '𝕎', '𝕏', '𝕐', 'ℤ'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinDoubleStruck =
       [
@@ -314,7 +314,7 @@ cvox.SemanticAttr = function() {
        '𝕟', '𝕠', '𝕡', '𝕢', '𝕣', '𝕤', '𝕥', '𝕦', '𝕧', '𝕨', '𝕩', '𝕪', '𝕫'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinBoldFraktur =
       [
@@ -322,7 +322,7 @@ cvox.SemanticAttr = function() {
        '𝕹', '𝕺', '𝕻', '𝕼', '𝕽', '𝕾', '𝕿', '𝖀', '𝖁', '𝖂', '𝖃', '𝖄', '𝖅'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinBoldFraktur =
       [
@@ -330,7 +330,7 @@ cvox.SemanticAttr = function() {
        '𝖓', '𝖔', '𝖕', '𝖖', '𝖗', '𝖘', '𝖙', '𝖚', '𝖛', '𝖜', '𝖝', '𝖞', '𝖟'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinSansSerif =
       [
@@ -338,7 +338,7 @@ cvox.SemanticAttr = function() {
        '𝖭', '𝖮', '𝖯', '𝖰', '𝖱', '𝖲', '𝖳', '𝖴', '𝖵', '𝖶', '𝖷', '𝖸', '𝖹'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinSansSerif =
       [
@@ -346,7 +346,7 @@ cvox.SemanticAttr = function() {
        '𝗇', '𝗈', '𝗉', '𝗊', '𝗋', '𝗌', '𝗍', '𝗎', '𝗏', '𝗐', '𝗑', '𝗒', '𝗓'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinSansSerifBold =
       [
@@ -354,7 +354,7 @@ cvox.SemanticAttr = function() {
        '𝗡', '𝗢', '𝗣', '𝗤', '𝗥', '𝗦', '𝗧', '𝗨', '𝗩', '𝗪', '𝗫', '𝗬', '𝗭'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinSansSerifBold =
       [
@@ -362,7 +362,7 @@ cvox.SemanticAttr = function() {
        '𝗻', '𝗼', '𝗽', '𝗾', '𝗿', '𝘀', '𝘁', '𝘂', '𝘃', '𝘄', '𝘅', '𝘆', '𝘇'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinSansSerifItalic =
       [
@@ -370,7 +370,7 @@ cvox.SemanticAttr = function() {
        '𝘕', '𝘖', '𝘗', '𝘘', '𝘙', '𝘚', '𝘛', '𝘜', '𝘝', '𝘞', '𝘟', '𝘠', '𝘡'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinSansSerifItalic =
       [
@@ -378,7 +378,7 @@ cvox.SemanticAttr = function() {
        '𝘯', '𝘰', '𝘱', '𝘲', '𝘳', '𝘴', '𝘵', '𝘶', '𝘷', '𝘸', '𝘹', '𝘺', '𝘻'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalLatinMonospace =
       [
@@ -386,7 +386,7 @@ cvox.SemanticAttr = function() {
        '𝙽', '𝙾', '𝙿', '𝚀', '𝚁', '𝚂', '𝚃', '𝚄', '𝚅', '𝚆', '𝚇', '𝚈', '𝚉'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallLatinMonospace =
       [
@@ -394,7 +394,7 @@ cvox.SemanticAttr = function() {
        '𝚗', '𝚘', '𝚙', '𝚚', '𝚛', '𝚜', '𝚝', '𝚞', '𝚟', '𝚠', '𝚡', '𝚢', '𝚣'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.latinDoubleStruckItalic =
       [
@@ -403,7 +403,7 @@ cvox.SemanticAttr = function() {
 
   // Greek Alphabets
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalGreek =
       [
@@ -411,7 +411,7 @@ cvox.SemanticAttr = function() {
        'Ξ', 'Ο', 'Π', 'Ρ', 'Σ', 'Τ', 'Υ', 'Φ', 'Χ', 'Ψ', 'Ω'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallGreek =
       [
@@ -419,7 +419,7 @@ cvox.SemanticAttr = function() {
        'ξ', 'ο', 'π', 'ρ', 'ς', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalGreekBold =
       [
@@ -427,7 +427,7 @@ cvox.SemanticAttr = function() {
        '𝚵', '𝚶', '𝚷', '𝚸', '𝚺', '𝚻', '𝚼', '𝚽', '𝚾', '𝚿', '𝛀'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallGreekBold =
       [
@@ -435,7 +435,7 @@ cvox.SemanticAttr = function() {
        '𝛏', '𝛐', '𝛑', '𝛒', '𝛓', '𝛔', '𝛕', '𝛖', '𝛗', '𝛘', '𝛙', '𝛚'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalGreekItalic =
       [
@@ -443,7 +443,7 @@ cvox.SemanticAttr = function() {
        '𝛯', '𝛰', '𝛱', '𝛲', '𝛴', '𝛵', '𝛶', '𝛷', '𝛸', '𝛹', '𝛺'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallGreekItalic =
       [
@@ -451,7 +451,7 @@ cvox.SemanticAttr = function() {
        '𝜉', '𝜊', '𝜋', '𝜌', '𝜍', '𝜎', '𝜏', '𝜐', '𝜑', '𝜒', '𝜓', '𝜔'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.capitalGreekSansSerifBold =
       [
@@ -459,7 +459,7 @@ cvox.SemanticAttr = function() {
        '𝝣', '𝝤', '𝝥', '𝝦', '𝝨', '𝝩', '𝝪', '𝝫', '𝝬', '𝝭', '𝝮'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.smallGreekSansSerifBold =
       [
@@ -467,7 +467,7 @@ cvox.SemanticAttr = function() {
        '𝝽', '𝝾', '𝝿', '𝞀', '𝞁', '𝞂', '𝞃', '𝞄', '𝞅', '𝞆', '𝞇', '𝞈'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.greekDoubleStruck =
       [
@@ -476,7 +476,7 @@ cvox.SemanticAttr = function() {
 
   // Other alphabets.
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.hebrewLetters =
       [
@@ -485,7 +485,7 @@ cvox.SemanticAttr = function() {
 
   //Operator symbols
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.additions =
       [
@@ -494,7 +494,7 @@ cvox.SemanticAttr = function() {
         '◁', '⩞', '⊕'
         ];
       /**
-       * @type {Array.<string>}
+       * @type {Array<string>}
            */
   /**
    * Invisible operator for plus.
@@ -504,7 +504,7 @@ cvox.SemanticAttr = function() {
   this.invisiblePlus_ = cvox.SemanticUtil.numberToUnicode(0x2064);
   this.additions.push(this.invisiblePlus_);
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.multiplications =
       [
@@ -519,7 +519,7 @@ cvox.SemanticAttr = function() {
   this.invisibleTimes_ = cvox.SemanticUtil.numberToUnicode(0x2062);
   this.multiplications.push(this.invisibleTimes_);
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.subtractions =
       [
@@ -527,7 +527,7 @@ cvox.SemanticAttr = function() {
        '⨫', '⨬', '⨺', '⩁', '⩬', '﹣', '－', '‐', '‑'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.divisions =
       [
@@ -542,7 +542,7 @@ cvox.SemanticAttr = function() {
 
   //Relation symbols
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.equalities =
       [
@@ -552,7 +552,7 @@ cvox.SemanticAttr = function() {
        '⩴', '⩵', '⩶', '⩷', '⩸', '⋕', '⩭', '⩪', '⩫', '⩬', '﹦', '＝'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.inequalities =
       [
@@ -569,14 +569,14 @@ cvox.SemanticAttr = function() {
         '⫷', '⫸', '⫹', '⫺', '⧀', '⧁', '﹤', '﹥', '＜', '＞'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.relations =
       [
             // TODO (sorge): Add all the other relations.
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.arrows =
       [
@@ -613,7 +613,7 @@ cvox.SemanticAttr = function() {
 
   //Big operation symbols
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.sumOps =
       [
@@ -622,7 +622,7 @@ cvox.SemanticAttr = function() {
         '⨆', '⨇', '⨈', '⨉', '⨊', '⨋', '⫼', '⫿'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.intOps =
       [
@@ -630,7 +630,7 @@ cvox.SemanticAttr = function() {
         '⨐', '⨑', '⨒', '⨓', '⨔', '⨕', '⨖', '⨗', '⨘', '⨙', '⨚', '⨛', '⨜'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.prefixOps =
       // TODO (sorge) Insert nabla, differential operators etc.
@@ -638,7 +638,7 @@ cvox.SemanticAttr = function() {
         '∀', '∃'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.operatorBits =
       // TODO (sorge) What to do if single glyphs of big ops occur on their own.
@@ -652,70 +652,70 @@ cvox.SemanticAttr = function() {
   // Numbers.
   // Digits.
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsNormal =
       [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsFullWidth =
       [
         '０', '１', '２', '３', '４', '５', '６', '７', '８', '９'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsBold =
       [
         '𝟎', '𝟏', '𝟐', '𝟑', '𝟒', '𝟓', '𝟔', '𝟕', '𝟖', '𝟗'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsDoubleStruck =
       [
         '𝟘', '𝟙', '𝟚', '𝟛', '𝟜', '𝟝', '𝟞', '𝟟', '𝟠', '𝟡'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsSansSerif =
       [
         '𝟢', '𝟣', '𝟤', '𝟥', '𝟦', '𝟧', '𝟨', '𝟩', '𝟪', '𝟫'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsSansSerifBold =
       [
         '𝟬', '𝟭', '𝟮', '𝟯', '𝟰', '𝟱', '𝟲', '𝟳', '𝟴', '𝟵'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsMonospace =
       [
         '𝟶', '𝟷', '𝟸', '𝟹', '𝟺', '𝟻', '𝟼', '𝟽', '𝟾', '𝟿'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsSuperscript =
       [
         '²', '³', '¹', '⁰', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digitsSubscript =
       [
         '₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'
         ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.fractions =
       [
@@ -723,7 +723,7 @@ cvox.SemanticAttr = function() {
         '⅚', '⅛', '⅜', '⅝', '⅞', '⅟', '↉'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.enclosedNumbers =
       // Encircled numbers.
@@ -738,7 +738,7 @@ cvox.SemanticAttr = function() {
         '㉙', '㉚', '㉛', '㉜', '㉝', '㉞', '㉟', '㊱', '㊲', '㊳', '㊴',
         '㊵', '㊶', '㊷', '㊸', '㊹', '㊺', '㊻', '㊼', '㊽', '㊾', '㊿'];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.fencedNumbers =
       // Numbers in Parenthesis.
@@ -747,7 +747,7 @@ cvox.SemanticAttr = function() {
         '⒁', '⒂', '⒃', '⒄', '⒅', '⒆', '⒇'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.punctuatedNumbers =
       // Numbers with other punctuation.
@@ -756,25 +756,25 @@ cvox.SemanticAttr = function() {
        '🄀', '🄁', '🄂', '🄃', '🄄', '🄅', '🄆', '🄇', '🄈', '🄉', '🄊' // comma.
       ];
   /** Array of all single digits.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.digits = this.digitsNormal.concat(
       this.digitsFullWidth, this.digitsBold, this.digitsDoubleStruck,
       this.digitsSansSerif, this.digitsSansSerifBold, this.digitsMonospace);
   /** Array of all non-digit number symbols.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.numbers = this.fractions.concat(
       this.digitsSuperscript, this.digitsSubscript,
       this.enclosedNumbers, this.fencedNumbers, this.punctuatedNumbers);
   /** Array of all number symbols.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.allNumbers = this.digits.concat(this.numbers);
 
   // Functions.
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.trigonometricFunctions =
       [
@@ -782,7 +782,7 @@ cvox.SemanticAttr = function() {
         'arccsc', 'arcsec', 'arcsin', 'arctan'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.hyperbolicFunctions =
       [
@@ -791,21 +791,21 @@ cvox.SemanticAttr = function() {
         'arccosh', 'arccoth', 'arccsch', 'arcsech', 'arcsinh', 'arctanh'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.algebraicFunctions =
       [
         'deg', 'det', 'dim', 'hom', 'ker', 'Tr', 'tr'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.elementaryFunctions =
       [
         'log', 'ln', 'lg', 'exp', 'expt', 'gcd', 'gcd', 'arg', 'im', 're', 'Pr'
       ];
   /** All predefined prefix functions.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.prefixFunctions = this.trigonometricFunctions.concat(
       this.hyperbolicFunctions,
@@ -814,7 +814,7 @@ cvox.SemanticAttr = function() {
       );
   /** Limit functions are handled separately as they can have lower (and upper)
    * limiting expressions.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.limitFunctions =
       [
@@ -822,7 +822,7 @@ cvox.SemanticAttr = function() {
         'projlim'
       ];
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.infixFunctions =
       [
@@ -830,7 +830,7 @@ cvox.SemanticAttr = function() {
       ];
   /**
    * Default assignments of semantic attributes.
-   * @type  {Array.<{set: Array.<string>,
+   * @type  {Array<{set: Array<string>,
    *         role: cvox.SemanticAttr.Role,
    *         type: cvox.SemanticAttr.Type,
    *         font: cvox.SemanticAttr.Font}>} The semantic meaning of the symbol.

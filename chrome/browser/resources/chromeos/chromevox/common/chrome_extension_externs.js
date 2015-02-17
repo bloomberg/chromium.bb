@@ -37,10 +37,10 @@ chrome.extension.inIncognitoContext;
 
 
 /**
- * @param {string|Object.<string>=} opt_extensionIdOrConnectInfo Either the
+ * @param {string|Object<string>=} opt_extensionIdOrConnectInfo Either the
  *     extensionId to connect to, in which case connectInfo params can be
  *     passed in the next optional argument, or the connectInfo params.
- * @param {Object.<string>=} opt_connectInfo The connectInfo object,
+ * @param {Object<string>=} opt_connectInfo The connectInfo object,
  *     if arg1 was the extensionId to connect to.
  * @return {Port} New port.
  */
@@ -161,7 +161,7 @@ chrome.runtime.Manifest.Oauth2 = function() {};
 /** @type {string} */
 chrome.runtime.Manifest.Oauth2.prototype.client_id;
 
-/**@type {!Array.<string>} */
+/**@type {!Array<string>} */
 chrome.runtime.Manifest.Oauth2.prototype.scopes;
 
 
@@ -181,10 +181,10 @@ chrome.runtime.getManifest = function() {};
 chrome.runtime.getURL = function(path) {};
 
 /**
- * @param {string|!Object.<string>=} opt_extensionIdOrConnectInfo Either the
+ * @param {string|!Object<string>=} opt_extensionIdOrConnectInfo Either the
  *     extensionId to connect to, in which case connectInfo params can be
  *     passed in the next optional argument, or the connectInfo params.
- * @param {!Object.<string>=} opt_connectInfo The connectInfo object,
+ * @param {!Object<string>=} opt_connectInfo The connectInfo object,
  *     if arg1 was the extensionId to connect to.
  * @return {!Port} New port.
  */
@@ -325,7 +325,7 @@ chrome.tabs.captureVisibleTab = function(windowId, options, callback) {};
 
 /**
  * @param {number} tabId Tab Id.
- * @param {Object.<string>=} opt_connectInfo Info Object.
+ * @param {Object<string>=} opt_connectInfo Info Object.
  */
 chrome.tabs.connect = function(tabId, opt_connectInfo) {};
 
@@ -365,7 +365,7 @@ chrome.tabs.get = function(tabId, callback) {};
  * the public web pages, but there are still existing usages
  *
  * @param {number?} windowId Window id.
- * @param {function(Array.<Tab>): void} callback Callback.
+ * @param {function(Array<Tab>): void} callback Callback.
  */
 chrome.tabs.getAllInWindow = function(windowId, callback) {};
 
@@ -387,7 +387,7 @@ chrome.tabs.getSelected = function(windowId, callback) {};
 
 
 /**
- * @param {Object.<string, (number|Array.<number>)>} highlightInfo
+ * @param {Object<string, (number|Array<number>)>} highlightInfo
  *     An object with 'windowId' (number) and 'tabs'
  *     (number or array of numbers) keys.
  * @param {function(Window): void} callback Callback function invoked
@@ -407,7 +407,7 @@ chrome.tabs.insertCSS = function(tabId, details, opt_callback) {};
 
 /**
  * @param {number} tabId Tab id.
- * @param {Object.<string, number>} moveProperties An object with 'index'
+ * @param {Object<string, number>} moveProperties An object with 'index'
  *     and optional 'windowId' keys.
  * @param {function(Tab): void=} opt_callback Callback.
  */
@@ -415,18 +415,18 @@ chrome.tabs.move = function(tabId, moveProperties, opt_callback) {};
 
 
 /**
- * @param {Object.<string, (number|string)>} queryInfo An object which may have
+ * @param {Object<string, (number|string)>} queryInfo An object which may have
  *     'active', 'pinned', 'highlighted', 'status', 'title', 'url', 'windowId',
  *     and 'windowType' keys.
- * @param {function(Array.<Tab>): void=} opt_callback Callback.
- * @return {!Array.<Tab>}
+ * @param {function(Array<Tab>): void=} opt_callback Callback.
+ * @return {!Array<Tab>}
  */
 chrome.tabs.query = function(queryInfo, opt_callback) {};
 
 
 /**
  * @param {number=} opt_tabId Tab id.
- * @param {Object.<string, boolean>=} opt_reloadProperties An object which
+ * @param {Object<string, boolean>=} opt_reloadProperties An object which
  *   may have a 'bypassCache' key.
  * @param {function(): void=} opt_callback The callback function invoked
  *    after the tab has been reloaded.
@@ -435,7 +435,7 @@ chrome.tabs.reload = function(opt_tabId, opt_reloadProperties, opt_callback) {};
 
 
 /**
- * @param {number|Array.<number>} tabIds A tab ID or an array of tab IDs.
+ * @param {number|Array<number>} tabIds A tab ID or an array of tab IDs.
  * @param {function(Tab): void=} opt_callback Callback.
  */
 chrome.tabs.remove = function(tabIds, opt_callback) {};
@@ -461,7 +461,7 @@ chrome.tabs.sendRequest = function(tabId, request, opt_callback) {};
 
 /**
  * @param {number} tabId Tab id.
- * @param {Object.<string, (string|boolean)>} updateProperties An object which
+ * @param {Object<string, (string|boolean)>} updateProperties An object which
  *     may have 'url' or 'selected' key.
  * @param {function(Tab): void=} opt_callback Callback.
  */
@@ -532,7 +532,7 @@ chrome.windows.get = function(id, opt_getInfo, opt_callback) {};
 
 /**
  * @param {Object=} opt_getInfo May have 'populate' key. Or the callback.
- * @param {function(!Array.<!ChromeWindow>): void=} opt_callback Callback.
+ * @param {function(!Array<!ChromeWindow>): void=} opt_callback Callback.
  */
 chrome.windows.getAll = function(opt_getInfo, opt_callback) {};
 
@@ -598,7 +598,7 @@ chrome.i18n = {};
 
 
 /**
- * @param {function(Array.<string>): void} callback The callback function which
+ * @param {function(Array<string>): void} callback The callback function which
  *     accepts an array of the accept languages of the browser, such as
  *     'en-US','en','zh-CN'.
  */
@@ -607,7 +607,7 @@ chrome.i18n.getAcceptLanguages = function(callback) {};
 
 /**
  * @param {string} messageName
- * @param {(string|Array.<string>)=} opt_args
+ * @param {(string|Array<string>)=} opt_args
  * @return {string}
  */
 chrome.i18n.getMessage = function(messageName, opt_args) {};
@@ -664,13 +664,13 @@ TtsVoice.prototype.gender;
 TtsVoice.prototype.extensionId;
 
 
-/** @type {Array.<string>} */
+/** @type {Array<string>} */
 TtsVoice.prototype.eventTypes;
 
 
 /**
  * Gets an array of all available voices.
- * @param {function(Array.<TtsVoice>)=} opt_callback An optional callback
+ * @param {function(Array<TtsVoice>)=} opt_callback An optional callback
  *     function.
  */
 chrome.tts.getVoices = function(opt_callback) {};
@@ -708,7 +708,7 @@ chrome.history = {};
 
 
 /**
- * @param {Object.<string, string>} details Object with a 'url' key.
+ * @param {Object<string, string>} details Object with a 'url' key.
  */
 chrome.history.addUrl = function(details) {};
 
@@ -720,7 +720,7 @@ chrome.history.deleteAll = function(callback) {};
 
 
 /**
- * @param {Object.<string, string>} range Object with 'startTime'
+ * @param {Object<string, string>} range Object with 'startTime'
  *     and 'endTime' keys.
  * @param {function(): void} callback Callback function.
  */
@@ -728,25 +728,25 @@ chrome.history.deleteRange = function(range, callback) {};
 
 
 /**
- * @param {Object.<string, string>} details Object with a 'url' key.
+ * @param {Object<string, string>} details Object with a 'url' key.
  */
 chrome.history.deleteUrl = function(details) {};
 
 
 /**
- * @param {Object.<string, string>} details Object with a 'url' key.
- * @param {function(!Array.<!VisitItem>): void} callback Callback function.
- * @return {!Array.<!VisitItem>}
+ * @param {Object<string, string>} details Object with a 'url' key.
+ * @param {function(!Array<!VisitItem>): void} callback Callback function.
+ * @return {!Array<!VisitItem>}
  */
 chrome.history.getVisits = function(details, callback) {};
 
 
 /**
- * @param {Object.<string, string>} query Object with a 'text' (string)
+ * @param {Object<string, string>} query Object with a 'text' (string)
  *     key and optional 'startTime' (number), 'endTime' (number) and
  *     'maxResults' keys.
- * @param {function(!Array.<!HistoryItem>): void} callback Callback function.
- * @return {!Array.<!HistoryItem>}
+ * @param {function(!Array<!HistoryItem>): void} callback Callback function.
+ * @return {!Array<!HistoryItem>}
  */
 chrome.history.search = function(query, callback) {};
 
@@ -767,8 +767,8 @@ chrome.permissions = {};
 
 /**
  * @typedef {{
- *   permissions: (Array.<string>|undefined),
- *   origins: (Array.<string>|undefined)
+ *   permissions: (Array<string>|undefined),
+ *   origins: (Array<string>|undefined)
  * }}
 * @see http://developer.chrome.com/extensions/permissions.html#type-Permissions
 */
@@ -914,7 +914,7 @@ ChromeWindow.prototype.width;
 ChromeWindow.prototype.height;
 
 
-/** @type {Array.<Tab>} */
+/** @type {Array<Tab>} */
 ChromeWindow.prototype.tabs;
 
 
@@ -983,7 +983,7 @@ Port.prototype.sender;
 
 
 /**
- * @param {Object.<string>} obj Message object.
+ * @param {Object<string>} obj Message object.
  */
 Port.prototype.postMessage = function(obj) {};
 
@@ -1053,7 +1053,7 @@ BookmarkTreeNode.prototype.dateAdded;
 BookmarkTreeNode.prototype.dateGroupModified;
 
 
-/** @type {Array.<BookmarkTreeNode>} */
+/** @type {Array<BookmarkTreeNode>} */
 BookmarkTreeNode.prototype.children;
 
 
@@ -1229,7 +1229,7 @@ chrome.automation.AutomationNode.prototype.role;
 
 
 /**
- * @type {!Object.<chrome.automation.StateType, boolean>}
+ * @type {!Object<chrome.automation.StateType, boolean>}
  */
 chrome.automation.AutomationNode.prototype.state;
 
@@ -1246,8 +1246,8 @@ chrome.automation.AutomationNode.prototype.indexInParent;
  *     value: string,
  *     textSelStart: number,
  *     textSelEnd: number,
- *     wordStarts: Array.<number>,
- *     wordEnds: Array.<number>
+ *     wordStarts: Array<number>,
+ *     wordEnds: Array<number>
  * }}
  */
 chrome.automation.AutomationNode.prototype.attributes;
@@ -1290,7 +1290,7 @@ chrome.automation.AutomationNode.prototype.parent;
 
 
 /**
- * @type {!Array.<chrome.automation.AutomationNode>}
+ * @type {!Array<chrome.automation.AutomationNode>}
  */
 chrome.automation.AutomationNode.prototype.children;
 

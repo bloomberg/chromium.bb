@@ -49,7 +49,7 @@ cvox.ActiveIndicator = function() {
 
   /**
    * The current indicator rects.
-   * @type {Array.<ClientRect>}
+   * @type {Array<ClientRect>}
    * @private
    */
   this.rects_ = null;
@@ -57,7 +57,7 @@ cvox.ActiveIndicator = function() {
   /**
    * The most recent target of a call to syncToNode, syncToRange, or
    * syncToCursorSelection.
-   * @type {Array.<Node>|Range}
+   * @type {Array<Node>|Range}
    * @private
    */
   this.lastSyncTarget_ = null;
@@ -65,7 +65,7 @@ cvox.ActiveIndicator = function() {
   /**
    * The most recent client rects for the active indicator, so we
    * can tell when it moved.
-   * @type {ClientRectList|Array.<ClientRect>}
+   * @type {ClientRectList|Array<ClientRect>}
    * @private
    */
   this.lastClientRects_ = null;
@@ -253,7 +253,7 @@ cvox.ActiveIndicator.prototype.syncToNode = function(node) {
 
 /**
  * Move the indicator to surround the given nodes.
- * @param {Array.<Node>} nodes The new targets of the indicator.
+ * @param {Array<Node>} nodes The new targets of the indicator.
  */
 cvox.ActiveIndicator.prototype.syncToNodes = function(nodes) {
   var clientRects = this.clientRectsFromNodes_(nodes);
@@ -362,8 +362,8 @@ cvox.ActiveIndicator.prototype.handleUpdateIndicatorIfChanged_ = function() {
 };
 
 /**
- * @param {Array.<Node>} nodes An array of nodes.
- * @return {Array.<ClientRect>} An array of client rects corresponding to
+ * @param {Array<Node>} nodes An array of nodes.
+ * @return {Array<ClientRect>} An array of client rects corresponding to
  *     those nodes.
  * @private
  */
@@ -404,7 +404,8 @@ cvox.ActiveIndicator.prototype.clientRectsFromNodes_ = function(nodes) {
  * is designed to handle the slightly non-rectangular shape of a typical
  * text paragraph, but not anything more complicated than that.
  *
- * @param {ClientRectList|Array.<ClientRect>} immutableRects The object rectangles.
+ * @param {ClientRectList|Array<ClientRect>} immutableRects The object
+ *     rectangles.
  * @param {number} margin Margin in pixels.
  * @private
  */
@@ -605,7 +606,7 @@ cvox.ActiveIndicator.prototype.moveIndicator_ = function(
  * a different color. That will make it much easier to see where each piece
  * starts and ends.
  *
- * @param {Array.<ClientRect>} rects The list of rects in the region.
+ * @param {Array<ClientRect>} rects The list of rects in the region.
  *     These should already be sorted (top to bottom and left to right).
  * @param {?Element} parent If present, try to reuse the existing element
  *     (and animate the transition).

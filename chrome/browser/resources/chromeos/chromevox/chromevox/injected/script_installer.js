@@ -20,7 +20,7 @@ cvox.ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
 
 /**
  * Installs a script in the web page.
- * @param {Array.<string>} srcs An array of URLs of scripts.
+ * @param {Array<string>} srcs An array of URLs of scripts.
  * @param {string} uid A unique id.  This function won't install the same set of
  *      scripts twice.
  * @param {function()=} opt_onload A function called when the script has loaded.

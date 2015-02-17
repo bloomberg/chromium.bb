@@ -81,7 +81,7 @@ cvox.NavigationManager.prototype.reset = function() {
   this.navSpeaker_ = new cvox.NavigationSpeaker();
 
   /**
-   * @type {!Array.<Object>}
+   * @type {!Array<Object>}
    * @private
    */
   this.shifterTypes_ = [cvox.NavigationShifter,
@@ -89,7 +89,7 @@ cvox.NavigationManager.prototype.reset = function() {
                         cvox.MathShifter];
 
   /**
-   * @type {!Array.<!cvox.AbstractShifter>}
+   * @type {!Array<!cvox.AbstractShifter>}
   */
   this.shifterStack_ = [];
 
@@ -329,7 +329,7 @@ cvox.NavigationManager.prototype.hasNext_ = function() {
 
 /**
  * Delegates to NavigationShifter with current page state.
- * @param {function(Array.<Node>)} predicate A function taking an array
+ * @param {function(Array<Node>)} predicate A function taking an array
  *     of unique ancestor nodes as a parameter and returning a desired node.
  *     It returns null if that node can't be found.
  * @param {string=} opt_predicateName The programmatic name that exists in
@@ -417,7 +417,7 @@ cvox.NavigationManager.prototype.togglePageSel = function() {
 // which requires any extensive knowledge.
 /**
  * Delegates to NavigationShifter with the current page state.
- * @return {Array.<cvox.NavDescription>} The summary of the current position.
+ * @return {Array<cvox.NavDescription>} The summary of the current position.
  */
 cvox.NavigationManager.prototype.getDescription = function() {
   // Handle description of special content. Consider moving to DescriptionUtil.
@@ -633,7 +633,7 @@ cvox.NavigationManager.prototype.ensureNotSubnavigating = function() {
 
 /**
  * Delegates to NavigationSpeaker.
- * @param {Array.<cvox.NavDescription>} descriptionArray The array of
+ * @param {Array<cvox.NavDescription>} descriptionArray The array of
  *     NavDescriptions to speak.
  * @param {cvox.QueueMode} initialQueueMode The initial queue mode.
  * @param {Function} completionFunction Function to call when finished speaking.
@@ -894,7 +894,7 @@ cvox.NavigationManager.prototype.startNonCallbackReading_ =
  * Unlike getDescription, this does not shorten the position based on the
  * previous position.
  *
- * @return {Array.<cvox.NavDescription>} The summary of the current position.
+ * @return {Array<cvox.NavDescription>} The summary of the current position.
  */
 cvox.NavigationManager.prototype.getFullDescription = function() {
   if (this.pageSel_) {

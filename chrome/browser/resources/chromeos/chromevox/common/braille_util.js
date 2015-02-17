@@ -33,7 +33,7 @@ cvox.BrailleUtil.ITEM_SEPARATOR = ' ';
  * Containers are distinguished from roles by their appearance higher up in the
  * DOM tree of a selected node.
  * This list should be very short.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  */
 cvox.BrailleUtil.CONTAINER = [
   'tag_h1_brl',
@@ -54,7 +54,7 @@ cvox.BrailleUtil.CONTAINER = [
  * c: replaced with braille container role; this potentially returns whitespace,
  * so place at the beginning or end of templates for trimming.
  * v: replaced with braille value.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 cvox.BrailleUtil.TEMPLATE = {
   'base': 'c n v r s',

@@ -55,7 +55,7 @@ cvox.BrailleInputHandler = function(translatorManager) {
   this.activeTranslator_ = null;
   /**
    * Braille cells that have been typed by the user so far.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.cells_ = [];
@@ -81,7 +81,7 @@ cvox.BrailleInputHandler = function(translatorManager) {
    * List of strings that we expect to be set as preceding text of the
    * selection.  This is populated when we send text changes to the IME so that
    * our own changes don't reset the pending cells.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    * @private
    */
   this.pendingTextsBefore_ = [];
@@ -91,7 +91,7 @@ cvox.BrailleInputHandler = function(translatorManager) {
    * This is necessary because the IME is activated on the first braille
    * dots command, but we'll receive the command in parallel.  To work around
    * the race, we store the cell entered until we can submit it to the IME.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.pendingCells_ = [];

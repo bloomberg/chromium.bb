@@ -141,7 +141,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
 
 /**
  * Inject ChromeVox into a tab.
- * @param {Array.<Tab>} tabs The tab where ChromeVox scripts should be injected.
+ * @param {Array<Tab>} tabs The tab where ChromeVox scripts should be injected.
  */
 cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
   var listOfFiles;

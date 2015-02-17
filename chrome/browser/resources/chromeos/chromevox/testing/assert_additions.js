@@ -47,8 +47,8 @@ function assertException(msg, fn, error) {
 
 /**
  * Asserts that two arrays of strings are equal.
- * @param {Array.<string>} array1 The expected array.
- * @param {Array.<string>} array2 The test array.
+ * @param {Array<string>} array1 The expected array.
+ * @param {Array<string>} array2 The test array.
  */
 function assertEqualStringArrays(array1, array2) {
   var same = true;

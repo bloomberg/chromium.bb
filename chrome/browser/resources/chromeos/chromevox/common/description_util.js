@@ -23,7 +23,7 @@ goog.require('cvox.TraverseMath');
 
 /**
  * Lists all Node tagName's who's description is derived from its subtree.
- * @type {Object.<string, boolean>}
+ * @type {Object<string, boolean>}
  */
 cvox.DescriptionUtil.COLLECTION_NODE_TYPE = {
   'H1': true,
@@ -38,7 +38,7 @@ cvox.DescriptionUtil.COLLECTION_NODE_TYPE = {
  * Get a control's complete description in the same format as if you
  *     navigated to the node.
  * @param {Element} control A control.
- * @param {Array.<Node>=} opt_changedAncestors The changed ancestors that will
+ * @param {Array<Node>=} opt_changedAncestors The changed ancestors that will
  * be used to determine what needs to be spoken. If this is not provided, the
  * ancestors used to determine what needs to be spoken will just be the control
  * itself and its surrounding control if it has one.
@@ -91,7 +91,7 @@ cvox.DescriptionUtil.getControlDescription =
  * ancestor nodes. The ancestors are in order from the highest in the
  * tree to the lowest, i.e. ending with the current leaf node.
  *
- * @param {Array.<Node>} ancestorsArray An array of ancestor nodes.
+ * @param {Array<Node>} ancestorsArray An array of ancestor nodes.
  * @param {boolean} recursive Whether or not the element's subtree should
  *     be used; true by default.
  * @param {number} verbosity The verbosity setting.
@@ -182,7 +182,7 @@ cvox.DescriptionUtil.getDescriptionFromAncestors = function(
  * @param {boolean} recursive Whether or not the element's subtree should
  *     be used; true by default.
  * @param {number} verbosity The verbosity setting.
- * @return {!Array.<cvox.NavDescription>} The description of the navigation
+ * @return {!Array<cvox.NavDescription>} The description of the navigation
  * action.
  */
 cvox.DescriptionUtil.getDescriptionFromNavigation =
@@ -232,7 +232,7 @@ cvox.DescriptionUtil.getDescriptionFromNavigation =
  * This is an awkward design, and should be changed in the future.
  * @param {!cvox.CursorSelection} prevSel The previous selection.
  * @param {!cvox.CursorSelection} sel The selection.
- * @return {!Array.<!cvox.NavDescription>} The descriptions as described above.
+ * @return {!Array<!cvox.NavDescription>} The descriptions as described above.
  */
 cvox.DescriptionUtil.getCollectionDescription = function(prevSel, sel) {
   var descriptions = cvox.DescriptionUtil.getRawDescriptions_(prevSel, sel);
@@ -253,7 +253,7 @@ cvox.DescriptionUtil.subWalker_ = new cvox.BareObjectWalker();
  * Returns the descriptions that would be gotten by an object walker.
  * @param {!cvox.CursorSelection} prevSel The previous selection.
  * @param {!cvox.CursorSelection} sel The selection.
- * @return {!Array.<!cvox.NavDescription>} The descriptions.
+ * @return {!Array<!cvox.NavDescription>} The descriptions.
  * @private
  */
 cvox.DescriptionUtil.getRawDescriptions_ = function(prevSel, sel) {
@@ -303,7 +303,7 @@ cvox.DescriptionUtil.getRawDescriptions_ = function(prevSel, sel) {
  * object walker.
  * @param {?Element} prevnode The previous element if there is one.
  * @param {!Element} node The target element.
- * @return {!Array.<!cvox.NavDescription>} The descriptions.
+ * @return {!Array<!cvox.NavDescription>} The descriptions.
  */
 cvox.DescriptionUtil.getFullDescriptionsFromChildren =
     function(prevnode, node) {
@@ -352,7 +352,7 @@ cvox.DescriptionUtil.getFullDescriptionsFromChildren =
 
 /**
  * Modify the descriptions to say that it is a collection.
- * @param {Array.<cvox.NavDescription>} descriptions The descriptions.
+ * @param {Array<cvox.NavDescription>} descriptions The descriptions.
  * @private
  */
 cvox.DescriptionUtil.insertCollectionDescription_ = function(descriptions) {
@@ -387,8 +387,8 @@ cvox.DescriptionUtil.insertCollectionDescription_ = function(descriptions) {
 
 /**
  * Pulls the annotations from a description array.
- * @param {Array.<cvox.NavDescription>} descriptions The descriptions.
- * @return {Array.<string>} The annotations.
+ * @param {Array<cvox.NavDescription>} descriptions The descriptions.
+ * @return {Array<string>} The annotations.
  * @private
  */
 cvox.DescriptionUtil.getAnnotations_ = function(descriptions) {
@@ -432,7 +432,7 @@ cvox.DescriptionUtil.isAnnotationCollection_ = function(annotation) {
 
 /**
  * Determines whether to describe the exit of an ancestor chain.
- * @param {Array.<Node>} ancestors The ancestors exited during navigation.
+ * @param {Array<Node>} ancestors The ancestors exited during navigation.
  * @return {boolean} The result.
  * @private
  */
@@ -452,7 +452,7 @@ cvox.DescriptionUtil.shouldDescribeExit_ = function(ancestors) {
 /**
  * Generates a description for a math node.
  * @param {!Node} node The given node.
- * @return {!Array.<cvox.NavDescription>} A list of Navigation descriptions.
+ * @return {!Array<cvox.NavDescription>} A list of Navigation descriptions.
  */
 cvox.DescriptionUtil.getMathDescription = function(node) {
   // TODO (sorge) This function should evantually be removed. Descriptions

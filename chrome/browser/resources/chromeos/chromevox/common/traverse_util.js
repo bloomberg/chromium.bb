@@ -111,8 +111,8 @@ cvox.TraverseUtil.isHidden = function(node) {
  * @param {cvox.Cursor} cursor The cursor location where the search should
  *     start.  On exit, the cursor will be immediately to the right of the
  *     character returned.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  * @return {?string} The character found, or null if the bottom of the
  *     document has been reached.
  */
@@ -205,8 +205,8 @@ cvox.TraverseUtil.forwardsChar = function(
  * @param {cvox.Cursor} cursor The cursor location where the search should
  *     start.  On exit, the cursor will be immediately to the left of the
  *     character returned.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  * @return {?string} The previous character, or null if the top of the
  *     document has been reached.
  */
@@ -310,8 +310,8 @@ cvox.TraverseUtil.backwardsChar = function(
  *     the char.
  * @param {!cvox.Cursor} endCursor The position to start searching for the next
  *     char.  On exit, will point to the position past the char.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  *     initial and final cursor position will be pushed onto this array.
  * @param {boolean} skipWhitespace If true, will keep scanning until a
  *     non-whitespace character is found.
@@ -373,8 +373,8 @@ cvox.TraverseUtil.getNextChar = function(
  *     char. On exit, will point to the position before the char.
  * @param {!cvox.Cursor} endCursor The position to start searching for the next
  *     char. On exit, will point to the position past the char.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  *     initial and final cursor position will be pushed onto this array.
  * @param {boolean} skipWhitespace If true, will keep scanning until a
  *     non-whitespace character is found.
@@ -431,8 +431,8 @@ cvox.TraverseUtil.getPreviousChar = function(
  *     word returned.
  * @param {cvox.Cursor} endCursor The position to start searching for the next
  *     word.  On exit, will point to the end of the word returned.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  * @return {?string} The next word, or null if the bottom of the
  *     document has been reached.
  */
@@ -492,8 +492,8 @@ cvox.TraverseUtil.getNextWord = function(startCursor, endCursor,
  *     word returned.
  * @param {cvox.Cursor} endCursor On exit, will point to the end of the
  *     word returned.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  * @return {?string} The previous word, or null if the bottom of the
  *     document has been reached.
  */
@@ -546,9 +546,9 @@ cvox.TraverseUtil.getPreviousWord = function(startCursor, endCursor,
 /**
  * Given elements entered and left, and break tags, returns true if the
  *     current word should break.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {Object.<string, boolean>} breakTags Associative array of tags
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {Object<string, boolean>} breakTags Associative array of tags
  *     that should break.
  * @return {boolean} True if elementsEntered or elementsLeft include an
  *     element with one of these tags.
@@ -584,9 +584,9 @@ cvox.TraverseUtil.includesBreakTagOrSkippedNode = function(
  *     sentence.
  * @param {cvox.Cursor} endCursor The position to start searching for the next
  *     sentence.  On exit, will point to the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {Object.<string, boolean>} breakTags Associative array of tags
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {Object<string, boolean>} breakTags Associative array of tags
  *     that should break the sentence.
  * @return {?string} The next sentence, or null if the bottom of the
  *     document has been reached.
@@ -610,9 +610,9 @@ cvox.TraverseUtil.getNextSentence = function(
  * @param {cvox.Cursor} startCursor The position to start searching for the next
  *     sentence.  On exit, will point to the start of the returned string.
  * @param {cvox.Cursor} endCursor On exit, the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {Object.<string, boolean>} breakTags Associative array of tags
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {Object<string, boolean>} breakTags Associative array of tags
  *     that should break the sentence.
  * @return {?string} The previous sentence, or null if the bottom of the
  *     document has been reached.
@@ -636,9 +636,9 @@ cvox.TraverseUtil.getPreviousSentence = function(
  * @param {cvox.Cursor} startCursor On exit, marks the beginning of the line.
  * @param {cvox.Cursor} endCursor The position to start searching for the next
  *     line.  On exit, will point to the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {Object.<string, boolean>} breakTags Associative array of tags
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {Object<string, boolean>} breakTags Associative array of tags
  *     that should break the line.
  * @return {?string} The next line, or null if the bottom of the
  *     document has been reached.
@@ -682,9 +682,9 @@ cvox.TraverseUtil.getNextLine = function(
  * @param {cvox.Cursor} startCursor The position to start searching for the next
  *     line.  On exit, will point to the start of the returned string.
  * @param {cvox.Cursor} endCursor On exit, the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {Object.<string, boolean>} breakTags Associative array of tags
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {Object<string, boolean>} breakTags Associative array of tags
  *     that should break the line.
  *  @return {?string} The previous line, or null if the bottom of the
  *     document has been reached.
@@ -729,8 +729,8 @@ cvox.TraverseUtil.getPreviousLine = function(
  *     paragraph.
  * @param {cvox.Cursor} endCursor The position to start searching for the next
  *     paragraph.  On exit, will point to the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  * @return {?string} The next paragraph, or null if the bottom of the
  *     document has been reached.
  */
@@ -765,8 +765,8 @@ cvox.TraverseUtil.getNextParagraph = function(startCursor, endCursor,
  * @param {cvox.Cursor} startCursor The position to start searching for the next
  *     paragraph.  On exit, will point to the start of the returned string.
  * @param {cvox.Cursor} endCursor On exit, the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
  * @return {?string} The previous paragraph, or null if the bottom of the
  *     document has been reached.
  */
@@ -815,9 +815,9 @@ cvox.TraverseUtil.getPreviousParagraph = function(
  *     next string.
  * @param {cvox.Cursor} endCursor The position to start searching for the next
  *     string.  On exit, will point to the end of the returned string.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {function(string, string, Array.<Element>, Array.<Element>)}
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {function(string, string, Array<Element>, Array<Element>)}
  *     breakBefore Function that takes the string so far, next word to be
  *     added, and elements entered and left, and returns true if the string
  *     should be ended before adding this word.
@@ -877,9 +877,9 @@ cvox.TraverseUtil.getNextString = function(
  *     string returned.
  * @param {cvox.Cursor} endCursor On exit, will point to the end of the
  *     string returned.
- * @param {Array.<Element>} elementsEntered Any HTML elements entered.
- * @param {Array.<Element>} elementsLeft Any HTML elements left.
- * @param {function(string, string, Array.<Element>, Array.<Element>)}
+ * @param {Array<Element>} elementsEntered Any HTML elements entered.
+ * @param {Array<Element>} elementsLeft Any HTML elements left.
+ * @param {function(string, string, Array<Element>, Array<Element>)}
  *     breakBefore Function that takes the string so far, the word to be
  *     added, and nodes crossed, and returns true if the string should be
  *     ended before adding this word.

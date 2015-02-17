@@ -51,7 +51,7 @@ goog.define('goog.asserts.ENABLE_ASSERTS', goog.DEBUG);
 /**
  * Error object for failed assertions.
  * @param {string} messagePattern The pattern that was used to form message.
- * @param {!Array.<*>} messageArgs The items to substitute into the pattern.
+ * @param {!Array<*>} messageArgs The items to substitute into the pattern.
  * @constructor
  * @extends {goog.debug.Error}
  * @final
@@ -81,9 +81,9 @@ goog.asserts.AssertionError.prototype.name = 'AssertionError';
  * Throws an exception with the given message and "Assertion failed" prefixed
  * onto it.
  * @param {string} defaultMessage The message to use if givenMessage is empty.
- * @param {Array.<*>} defaultArgs The substitution arguments for defaultMessage.
+ * @param {Array<*>} defaultArgs The substitution arguments for defaultMessage.
  * @param {string|undefined} givenMessage Message supplied by the caller.
- * @param {Array.<*>} givenArgs The substitution arguments for givenMessage.
+ * @param {Array<*>} givenArgs The substitution arguments for givenMessage.
  * @throws {goog.asserts.AssertionError} When the value is not a number.
  * @private
  */

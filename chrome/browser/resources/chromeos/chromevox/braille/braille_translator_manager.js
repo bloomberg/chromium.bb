@@ -26,12 +26,12 @@ cvox.BrailleTranslatorManager = function(opt_liblouisForTest) {
       chrome.extension.getURL('braille/liblouis_nacl.nmf'),
       chrome.extension.getURL('braille/tables'));
   /**
-   * @type {!Array.<function()>}
+   * @type {!Array<function()>}
    * @private
    */
   this.changeListeners_ = [];
   /**
-   * @type {!Array.<cvox.BrailleTable.Table>}
+   * @type {!Array<cvox.BrailleTable.Table>}
    * @private
    */
   this.tables_ = [];
@@ -221,7 +221,7 @@ cvox.BrailleTranslatorManager.prototype = {
   },
 
   /**
-   * @return {!Array.<cvox.BrailleTable.Table>} The currently loaded braille
+   * @return {!Array<cvox.BrailleTable.Table>} The currently loaded braille
    *     tables, or an empty array if they are not yet loaded.
    */
   getTablesForTest: function() {

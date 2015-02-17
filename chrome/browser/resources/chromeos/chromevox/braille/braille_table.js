@@ -37,7 +37,7 @@ cvox.BrailleTable.COMMON_DEFS_FILENAME_ = 'cvox-common.cti';
 
 /**
  * Retrieves a list of all available braille tables.
- * @param {function(!Array.<cvox.BrailleTable.Table>)} callback
+ * @param {function(!Array<cvox.BrailleTable.Table>)} callback
  *     Called asynchronously with an array of tables.
  */
 cvox.BrailleTable.getAll = function(callback) {
@@ -60,7 +60,7 @@ cvox.BrailleTable.getAll = function(callback) {
       if (xhr.status == 200) {
         callback(
             appendCommonFilename(
-                /** @type {!Array.<cvox.BrailleTable.Table>} */ (
+                /** @type {!Array<cvox.BrailleTable.Table>} */ (
                     JSON.parse(xhr.responseText))));
       }
     }
@@ -71,7 +71,7 @@ cvox.BrailleTable.getAll = function(callback) {
 
 /**
  * Finds a table in a list of tables by id.
- * @param {!Array.<cvox.BrailleTable.Table>} tables tables to search in.
+ * @param {!Array<cvox.BrailleTable.Table>} tables tables to search in.
  * @param {string} id id of table to find.
  * @return {cvox.BrailleTable.Table} The found table, or null if not found.
  */
@@ -84,7 +84,7 @@ cvox.BrailleTable.forId = function(tables, id) {
  * Returns an uncontracted braille table corresponding to another, possibly
  * contracted, table.  If {@code table} is the lowest-grade table for its
  * locale and dot count, {@code table} itself is returned.
- * @param {!Array.<cvox.BrailleTable.Table>} tables tables to search in.
+ * @param {!Array<cvox.BrailleTable.Table>} tables tables to search in.
  * @param {!cvox.BrailleTable.Table} table Table to match.
  * @return {!cvox.BrailleTable.Table} Corresponding uncontracted table,
  *     or {@code table} if it is uncontracted.

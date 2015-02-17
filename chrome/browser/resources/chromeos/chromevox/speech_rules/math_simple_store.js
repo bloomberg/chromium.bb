@@ -34,7 +34,7 @@ goog.inherits(cvox.MathSimpleStore, cvox.MathStore);
  * only into a list of speech rules.
  * @param {string} name Name for the rules.
  * @param {string} str String for precondition and constraints.
- * @param {Object.<string, Object.<string, string>>} mapping Simple string
+ * @param {Object<string, Object<string, string>>} mapping Simple string
  *     mapping.
  */
 cvox.MathSimpleStore.prototype.defineRulesFromMappings = function(
@@ -58,7 +58,7 @@ cvox.MathSimpleStore.prototype.defineRulesFromMappings = function(
 cvox.MathCompoundStore = function() {
   /**
    * A set of efficient substores.
-   * @type {Object.<string, cvox.MathStore>}
+   * @type {Object<string, cvox.MathStore>}
    * @private
    */
   this.subStores_ = {};
@@ -142,7 +142,7 @@ cvox.MathCompoundStore.prototype.lookupString = function(text, dynamic) {
 
 /**
  * Get a set of all dynamic constraint values.
- * @return {!Object.<cvox.SpeechRule.DynamicCstrAttrib, Array.<string>>} The
+ * @return {!Object<cvox.SpeechRule.DynamicCstrAttrib, Array<string>>} The
  *     object with all annotations.
  */
 cvox.MathCompoundStore.prototype.getDynamicConstraintValues = function() {

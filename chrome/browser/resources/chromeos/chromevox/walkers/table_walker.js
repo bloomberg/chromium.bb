@@ -57,8 +57,8 @@ cvox.TableWalker.prototype.sync = function(sel) {
  * @override
  * @suppress {checkTypes} actual parameter 2 of
  * cvox.Msgs.prototype.getMsg does not match formal parameter
- * found   : Array.<number>
- * required: (Array.<string>|null|undefined)
+ * found   : Array<number>
+ * required: (Array<string>|null|undefined)
  */
 cvox.TableWalker.prototype.getDescription = function(prevSel, sel) {
   var position = this.syncPosition_(sel);
@@ -266,12 +266,12 @@ cvox.TableWalker.prototype.getHeaderText_ = function(sel) {
 /**
  * Returns the location description.
  * @param {!cvox.CursorSelection} sel A valid selection.
- * @return {Array.<cvox.NavDescription>} The location description.
+ * @return {Array<cvox.NavDescription>} The location description.
  * @suppress {checkTypes} actual parameter 2 of
  * cvox.Msgs.prototype.getMsg does not match
  * formal parameter
- * found   : Array.<number>
- * required: (Array.<string>|null|undefined)
+ * found   : Array<number>
+ * required: (Array<string>|null|undefined)
  * @private
  */
 cvox.TableWalker.prototype.getLocationDescription_ = function(sel) {
@@ -286,7 +286,7 @@ cvox.TableWalker.prototype.getLocationDescription_ = function(sel) {
 
 /**
  * Returns the text content of the row header(s) of the cell that contains sel.
- * @param {!Array.<number>} position The selection.
+ * @param {!Array<number>} position The selection.
  * @return {!string} The header text.
  * @private
  */
@@ -316,7 +316,7 @@ cvox.TableWalker.prototype.getRowHeaderText_ = function(position) {
 
 /**
  * Returns the text content of the col header(s) of the cell that contains sel.
- * @param {!Array.<number>} position The selection.
+ * @param {!Array<number>} position The selection.
  * @return {!string} The header text.
  * @private
  */
@@ -347,7 +347,7 @@ cvox.TableWalker.prototype.getColHeaderText_ = function(position) {
 /**
  * Returns the location info of sel within the containing table.
  * @param {!cvox.CursorSelection} sel The selection.
- * @return {Array.<number>} The location info:
+ * @return {Array<number>} The location info:
  *  [row index, row count, col index, col count].
  */
 cvox.TableWalker.prototype.getLocationInfo = function(sel) {
@@ -378,7 +378,7 @@ cvox.TableWalker.prototype.isInTable = function(sel) {
  * Wrapper for going to somewhere so that boilerplate is not repeated.
  * @param {!cvox.CursorSelection} sel The selection from which to base the
  * movement.
- * @param {function(Array.<number>):boolean} f The function to use for moving.
+ * @param {function(Array<number>):boolean} f The function to use for moving.
  * Returns true on success and false on failure.
  * @return {cvox.CursorSelection} The resulting selection.
  * @private
@@ -410,7 +410,7 @@ cvox.TableWalker.prototype.getTableNode_ = function(sel) {
 /**
  * Sync the backing traversal utility to the given selection.
  * @param {!cvox.CursorSelection} sel The selection.
- * @return {Array.<number>} The position [x, y] of the selection.
+ * @return {Array<number>} The position [x, y] of the selection.
  * @private
  */
 cvox.TableWalker.prototype.syncPosition_ = function(sel) {

@@ -43,7 +43,7 @@ cvox.NavigationHistory.prototype.reset_ = function() {
   /**
    * An array of nodes ordered from newest to oldest in the history.
    * The most recent nodes are at the start of the array.
-   * @type {Array.<Node>}
+   * @type {Array<Node>}
    * @private
    */
   this.history_ = [startNode];

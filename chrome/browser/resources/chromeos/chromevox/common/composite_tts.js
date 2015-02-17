@@ -19,7 +19,7 @@ goog.require('cvox.TtsInterface');
  */
 cvox.CompositeTts = function() {
   /**
-   * @type {Array.<cvox.TtsInterface>}
+   * @type {Array<cvox.TtsInterface>}
    * @private
    */
   this.ttsEngines_ = [];

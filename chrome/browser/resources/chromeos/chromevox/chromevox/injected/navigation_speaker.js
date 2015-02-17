@@ -38,7 +38,7 @@ cvox.NavigationSpeaker = function() {
  * Speak all of the NavDescriptions in the given array (as returned by
  * getDescription), including playing earcons.
  *
- * @param {Array.<cvox.NavDescription>} descriptionArray The array of
+ * @param {Array<cvox.NavDescription>} descriptionArray The array of
  *     NavDescriptions to speak.
  * @param {number} initialQueueMode The initial queue mode.
  * @param {Function} completionFunction Function to call when finished speaking.
@@ -118,9 +118,9 @@ cvox.NavigationSpeaker.structuredElement = function(annon) {
 
 /**
  * Reorder special annotations for structured elements to be spoken first.
- * @param {Array.<cvox.NavDescription>} descriptionArray The array of
+ * @param {Array<cvox.NavDescription>} descriptionArray The array of
  *     NavDescriptions to speak.
- * @return {Array.<cvox.NavDescription>} The reordered array.
+ * @return {Array<cvox.NavDescription>} The reordered array.
  */
 cvox.NavigationSpeaker.prototype.reorderAnnotations = function(
     descriptionArray) {

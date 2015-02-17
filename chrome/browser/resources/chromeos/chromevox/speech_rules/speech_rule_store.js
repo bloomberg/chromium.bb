@@ -44,7 +44,7 @@ cvox.SpeechRuleStore.prototype.findRule = goog.abstractMethod;
 /**
  * Retrieves all rules satisfying a given predicate.
  * @param {function(cvox.SpeechRule): boolean} pred A predicate on speech rules.
- * @return {Array.<cvox.SpeechRule>} All speech rules in the store satisfying
+ * @return {Array<cvox.SpeechRule>} All speech rules in the store satisfying
  *     pred.
  */
 cvox.SpeechRuleStore.prototype.findAllRules = goog.abstractMethod;

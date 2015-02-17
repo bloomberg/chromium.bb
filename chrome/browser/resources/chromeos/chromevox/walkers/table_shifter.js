@@ -71,8 +71,8 @@ cvox.TableShifter.prototype.getName = function() {
  * @override
  * @suppress {checkTypes} actual parameter 2 of
  * cvox.Msgs.prototype.getMsg does not match formal parameter
- * found   : Array.<number>
- * required: (Array.<string>|null|undefined)
+ * found   : Array<number>
+ * required: (Array<string>|null|undefined)
  */
 cvox.TableShifter.prototype.getDescription = function(prevSel, sel) {
   var descs = this.currentWalker_.getDescription(prevSel, sel);

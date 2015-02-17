@@ -18,7 +18,7 @@ var MockTts = function() {
 MockTts.prototype = {
   /**
    * A list of predicate, start, and end callbacks for a pending expectation.
-   * @type {!Array.<{{predicate: function(string) : boolean,
+   * @type {!Array<{{predicate: function(string) : boolean,
    *     startCallback: function() : void,
    *     endCallback: function() : void}>}
    * @private
@@ -27,7 +27,7 @@ MockTts.prototype = {
 
   /**
    * A list of strings stored whenever there are no expectations.
-   * @type {!Array.<string}
+   * @type {!Array<string}
    * @private
    */
   idleUtterances_: [],

@@ -38,7 +38,7 @@ goog.require('cvox.PlatformFilter');
 
 /**
  * Returns all of the categories in the store as an array.
- * @return {Array.<string>} The collection of categories.
+ * @return {Array<string>} The collection of categories.
  */
 cvox.CommandStore.categories = function() {
   var categorySet = {};
@@ -79,7 +79,7 @@ cvox.CommandStore.categoryForCommand = function(command) {
 /**
  * Gets all commands for a category.
  * @param {string} category The category to query.
- * @return {Array.<string>} The commands, if any.
+ * @return {Array<string>} The commands, if any.
  */
 cvox.CommandStore.commandsForCategory = function(category) {
   var ret = [];
@@ -95,7 +95,7 @@ cvox.CommandStore.commandsForCategory = function(category) {
 
 /**
  * List of commands and their properties
- * @type {Object.<string, {forward: (undefined|boolean),
+ * @type {Object<string, {forward: (undefined|boolean),
  *                         backward: (undefined|boolean),
  *                         announce: boolean,
  *                         category: (undefined|string),
@@ -678,7 +678,7 @@ cvox.CommandStore.CMD_WHITELIST = {
 
 /**
  * List of find next commands and their associated data.
- * @type {Object.<string, {predicate: string,
+ * @type {Object<string, {predicate: string,
  *                         forwardError: string,
  *                         backwardError: string}>}
  *  predicate: The name of the predicate. This must be defined in DomPredicates.

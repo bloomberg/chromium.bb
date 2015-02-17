@@ -12,7 +12,7 @@ goog.provide('cvox.StoreUtil');
 /**
  * Count list of nodes and concatenate this with the context string.
  * Returns a closure with a local state.
- * @param {Array.<Node>} nodes A node array.
+ * @param {Array<Node>} nodes A node array.
  * @param {?string} context A context string.
  * @return {function(): string} A function returning a string.
  */

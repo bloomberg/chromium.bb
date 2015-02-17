@@ -159,7 +159,7 @@ cvox.MathStore.prototype.defineRulesAlias = function(name, query, cstr) {
  * Adds a new speech rule as alias of the given rule.
  * @param {cvox.SpeechRule} rule The existing rule.
  * @param {string} query Precondition query of the rule.
- * @param {Array.<string>} cstrList List of additional constraints.
+ * @param {Array<string>} cstrList List of additional constraints.
  * @private
  */
 cvox.MathStore.prototype.addAlias_ = function(rule, query, cstrList) {
@@ -185,7 +185,7 @@ cvox.MathStore.prototype.evaluateDefault = function(node) {
  * string into components such as single characters, function names or words,
  * numbers, etc. and creates the appropriate navigation descriptions.
  * @param {string} str A string.
- * @return {!Array.<cvox.NavDescription>} Messages for the math expression.
+ * @return {!Array<cvox.NavDescription>} Messages for the math expression.
  * @private
  */
 cvox.MathStore.prototype.evaluateString_ = function(str) {
@@ -259,8 +259,8 @@ cvox.MathStore.prototype.evaluate_ = function(text) {
 
 /**
  * Removes all empty strings from an array of strings.
- * @param {Array.<string>} strs An array of strings.
- * @return {Array.<string>} The cleaned array.
+ * @param {Array<string>} strs An array of strings.
+ * @return {Array<string>} The cleaned array.
  * @private
  */
 cvox.MathStore.removeEmpty_ = function(strs) {

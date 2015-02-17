@@ -55,7 +55,7 @@ cvox.AuralStyleConverter.identity = function(value) {
  * Conversion from an aural style property to Chrome TTS property.
  * TODO(dtseng): no-op's below need to be supported by the extension API itself
  * or by ChromeVox.
- * @type {Object.<cvox.AuralProperty, string>}
+ * @type {Object<cvox.AuralProperty, string>}
  */
 cvox.AuralStyleConverter.propertyTable = {
   VOLUME: 'volume',
@@ -86,7 +86,7 @@ cvox.AuralStyleConverter.propertyTable = {
  * Conversion from an aural style value to Chrome TTS value.
  * TODO(dtseng): Conversion of aural CSS values is incomplete; everything is an
  * identity conversion at the moment.
- * @type {Object.<cvox.AuralProperty, function(*)>}
+ * @type {Object<cvox.AuralProperty, function(*)>}
  */
 cvox.AuralStyleConverter.valueTable = {
   VOLUME: cvox.AuralStyleConverter.identity,
@@ -129,7 +129,7 @@ cvox.AuralStyleConverter.convertRule = function(property, value) {
 
 /**
  * Converts an aural CSS style block to a TTS property object.
- * @param {Object.<cvox.AuralProperty, *>} style The style.
+ * @param {Object<cvox.AuralProperty, *>} style The style.
  * @return {Object} The tts property object.
  */
 cvox.AuralStyleConverter.convertStyle = function(style) {

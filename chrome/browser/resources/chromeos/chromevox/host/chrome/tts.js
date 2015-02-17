@@ -32,7 +32,7 @@ cvox.ChromeTts.callId = 1;
 
 /**
  * Maps call ids to callback functions.
- * @type {Object.<number, Function>}
+ * @type {Object<number, Function>}
  */
 cvox.ChromeTts.functionMap = new Object();
 

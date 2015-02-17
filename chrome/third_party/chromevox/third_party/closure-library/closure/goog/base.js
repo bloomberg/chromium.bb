@@ -61,7 +61,7 @@ goog.global = this;
  *   var CLOSURE_UNCOMPILED_DEFINES = {'goog.DEBUG': false};
  * </pre>
  *
- * @type {Object.<string, (string|number|boolean)>|undefined}
+ * @type {Object<string, (string|number|boolean)>|undefined}
  */
 goog.global.CLOSURE_UNCOMPILED_DEFINES;
 
@@ -82,7 +82,7 @@ goog.global.CLOSURE_UNCOMPILED_DEFINES;
  *   var CLOSURE_DEFINES = {'goog.DEBUG': false};
  * </pre>
  *
- * @type {Object.<string, (string|number|boolean)>|undefined}
+ * @type {Object<string, (string|number|boolean)>|undefined}
  */
 goog.global.CLOSURE_DEFINES;
 
@@ -570,7 +570,7 @@ goog.addSingletonGetter = function(ctor) {
  * All singleton classes that have been instantiated, for testing. Don't read
  * it directly, use the {@code goog.testing.singleton} module. The compiler
  * removes this variable if unused.
- * @type {!Array.<!Function>}
+ * @type {!Array<!Function>}
  * @private
  */
 goog.instantiatedSingletons_ = [];

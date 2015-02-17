@@ -40,14 +40,14 @@ cvox.ContentEditableExtractor = function() {
   /**
    * Map from line index to a data structure containing the start
    * and end index within the line.
-   * @type {Object.<number, {startIndex: number, endIndex: number}>}
+   * @type {Object<number, {startIndex: number, endIndex: number}>}
    * @private
    */
   this.lines_ = {};
 
   /**
    * Map from 0-based character index to 0-based line index.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.characterToLineMap_ = [];
@@ -61,7 +61,7 @@ cvox.ContentEditableExtractor.prototype.update = function(element) {
   /**
    * Map from line index to a data structure containing the start
    * and end index within the line.
-   * @type {Object.<number, {startIndex: number, endIndex: number}>}
+   * @type {Object<number, {startIndex: number, endIndex: number}>}
    */
   var lines = {0: {startIndex: 0, endIndex: 0}};
   var startCursor = new cvox.Cursor(element, 0, '');

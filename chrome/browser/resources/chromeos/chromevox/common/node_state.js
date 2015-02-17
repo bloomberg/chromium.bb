@@ -16,7 +16,7 @@ goog.provide('cvox.NodeStateUtil');
  * cvox.ChromeVox.getMsg() call. For example [list_position, 3, 5] maps to
  * getMsg('list_position', [3, 5]);
  *
- * @typedef {!Array.<!Array.<string|number>>}
+ * @typedef {!Array<!Array<string|number>>}
  */
 cvox.NodeState;
 

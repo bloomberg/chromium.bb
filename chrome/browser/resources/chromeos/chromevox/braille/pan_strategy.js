@@ -28,7 +28,7 @@ cvox.PanStrategy = function() {
   /**
    * Points before which it is desirable to break content if it doesn't fit
    * on the display.
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @private
    */
   this.breakPoints_ = [];
@@ -158,7 +158,7 @@ cvox.PanStrategy.prototype = {
    * Overridden by subclasses to provide breakpoints given translated
    * braille cell content.
    * @param {!ArrayBuffer} content New display content.
-   * @return {!Array.<number>} The points before which it is desirable to break
+   * @return {!Array<number>} The points before which it is desirable to break
    *     content if needed or the empty array if no points are more desirable
    *     than any position.
    * @private

@@ -27,7 +27,7 @@ goog.require('cvox.KeyUtil');
 goog.require('cvox.PlatformUtil');
 
 /**
- * @param {Array.<Object.<string,
+ * @param {Array<Object<string,
  *         {command: string, sequence: cvox.KeySequence}>>}
  * commandsAndKeySequences An array of pairs - KeySequences and commands.
  * @constructor
@@ -35,7 +35,7 @@ goog.require('cvox.PlatformUtil');
 cvox.KeyMap = function(commandsAndKeySequences) {
   /**
    * An array of bindings - commands and KeySequences.
-   * @type {Array.<Object.<string,
+   * @type {Array<Object<string,
    *        {command: string, sequence: cvox.KeySequence}>>}
    * @private
    */
@@ -44,7 +44,7 @@ cvox.KeyMap = function(commandsAndKeySequences) {
   /**
    * Maps a command to a key. This optimizes the process of searching for a
    * key sequence when you already know the command.
-   * @type {Object.<string, cvox.KeySequence>}
+   * @type {Object<string, cvox.KeySequence>}
    * @private
    */
   this.commandToKey_ = {};
@@ -66,7 +66,7 @@ cvox.KeyMap.KEYMAP_PATH = 'chromevox/background/keymaps/';
  * TODO(dtseng): Not really sure this belongs here, but it doesn't seem to be
  * user configurable, so it doesn't make sense to json-stringify it.
  * Should have class to siwtch among and manage multiple key maps.
- * @type {Object.<string, Object.<string, string>>}
+ * @type {Object<string, Object<string, string>>}
  * @const
  */
 cvox.KeyMap.AVAILABLE_MAP_INFO = {
@@ -101,7 +101,7 @@ cvox.KeyMap.prototype.length = function() {
 
 /**
  * Returns a copy of all KeySequences in this map.
- * @return {Array.<cvox.KeySequence>} Array of all keys.
+ * @return {Array<cvox.KeySequence>} Array of all keys.
  */
 cvox.KeyMap.prototype.keys = function() {
   return this.bindings_.map(function(binding) {
@@ -112,12 +112,12 @@ cvox.KeyMap.prototype.keys = function() {
 
 /**
  * Returns a collection of command, KeySequence bindings.
- * @return {Array.<Object.<string, cvox.KeySequence>>} Array of all command,
+ * @return {Array<Object<string, cvox.KeySequence>>} Array of all command,
  * key bindings.
  * @suppress {checkTypes} inconsistent return type
- * found   : (Array.<(Object.<{command: string,
+ * found   : (Array<(Object<{command: string,
  *                             sequence: (cvox.KeySequence|null)}>|null)>|null)
- * required: (Array.<(Object.<(cvox.KeySequence|null)>|null)>|null)
+ * required: (Array<(Object<(cvox.KeySequence|null)>|null)>|null)
  */
 cvox.KeyMap.prototype.bindings = function() {
   return this.bindings_;
@@ -220,7 +220,7 @@ cvox.KeyMap.prototype.commandForKey = function(key) {
 /**
  * Gets a key given a command.
  * @param {string} command The command to query.
- * @return {!Array.<cvox.KeySequence>} The keys associated with that command,
+ * @return {!Array<cvox.KeySequence>} The keys associated with that command,
  * if any.
  */
 cvox.KeyMap.prototype.keyForCommand = function(command) {
@@ -338,7 +338,7 @@ cvox.KeyMap.fromDefaults = function() {
 cvox.KeyMap.fromJSON = function(json) {
   try {
     var commandsAndKeySequences =
-        /** @type {Array.<Object.<string,
+        /** @type {Array<Object<string,
          *          {command: string, sequence: cvox.KeySequence}>>} */
     (JSON.parse(json).bindings);
     commandsAndKeySequences = commandsAndKeySequences.filter(function(value) {

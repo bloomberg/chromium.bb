@@ -179,7 +179,7 @@ cvox.SpeechRule.Component.fromString = function(input) {
 cvox.SpeechRule.Component.prototype.toString = function() {
   var strs = '';
   strs += cvox.SpeechRule.Type.toString(this.type);
-  strs += this.content ? ' ' +  this.content : '';
+  strs += this.content ? ' ' + this.content : '';
   var attribs = this.getAttributes();
   if (attribs.length > 0) {
     strs += ' (' + attribs.join(', ') + ')';
@@ -220,7 +220,7 @@ cvox.SpeechRule.Component.prototype.addAttributes = function(attrs) {
 
 /**
  * Transforms the attributes of an object into a list of strings.
- * @return {Array.<string>} List of translated attribute:value strings.
+ * @return {Array<string>} List of translated attribute:value strings.
  */
 cvox.SpeechRule.Component.prototype.getAttributes = function() {
   var attribs = [];
@@ -235,11 +235,11 @@ cvox.SpeechRule.Component.prototype.getAttributes = function() {
 
 /**
  * A speech rule is a collection of speech components.
- * @param {Array.<cvox.SpeechRule.Component>} components The input rule.
+ * @param {Array<cvox.SpeechRule.Component>} components The input rule.
  * @constructor
  */
 cvox.SpeechRule.Action = function(components) {
-  /** @type {Array.<cvox.SpeechRule.Component>} */
+  /** @type {Array<cvox.SpeechRule.Component>} */
   this.components = components;
 };
 
@@ -278,14 +278,14 @@ cvox.SpeechRule.Action.prototype.toString = function() {
 /**
  * Constructs a valid precondition for a speech rule.
  * @param {string} query A node selector function or xpath expression.
- * @param {Array.<string>=} opt_constraints A list of constraint functions.
+ * @param {Array<string>=} opt_constraints A list of constraint functions.
  * @constructor
  */
 cvox.SpeechRule.Precondition = function(query, opt_constraints) {
   /** @type {string} */
   this.query = query;
 
-  /** @type {!Array.<string>} */
+  /** @type {!Array<string>} */
   this.constraints = opt_constraints || [];
 };
 
@@ -306,7 +306,7 @@ cvox.SpeechRule.Precondition.prototype.toString = function() {
  * ['[t] "matrix; 3 by 3"', ' [n] ./*[1]'].
  * @param {string} str String to be split.
  * @param {string} sep Separator symbol.
- * @return {Array.<string>} A list of single component strings.
+ * @return {Array<string>} A list of single component strings.
  * @private
  */
 cvox.SpeechRule.splitString_ = function(str, sep) {
@@ -361,7 +361,7 @@ cvox.SpeechRule.DynamicCstrAttrib =
 /**
  * Dynamic constraints are a means to specialize rules that can be changed
  * dynamically by the user, for example by choosing different styles, etc.
- * @typedef {!Object.<cvox.SpeechRule.DynamicCstrAttrib, string>}
+ * @typedef {!Object<cvox.SpeechRule.DynamicCstrAttrib, string>}
  */
 cvox.SpeechRule.DynamicCstr;
 

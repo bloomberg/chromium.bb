@@ -108,7 +108,7 @@ cvox.SpeechRuleEngine.prototype.constructString = function(node, expr) {
  * Computes a speech object for a given node. Returns the empty list if
  * no node is given.
  * @param {Node} node The node to be evaluated.
- * @return {!Array.<cvox.NavDescription>} A list of navigation descriptions for
+ * @return {!Array<cvox.NavDescription>} A list of navigation descriptions for
  *   that node.
  */
 cvox.SpeechRuleEngine.prototype.evaluateNode = function(node) {
@@ -122,7 +122,7 @@ cvox.SpeechRuleEngine.prototype.evaluateNode = function(node) {
 /**
  * Applies rules recursively to compute the final speech object.
  * @param {!Node} node Node to apply the speech rule to.
- * @return {!Array.<cvox.NavDescription>} A list of Navigation descriptions.
+ * @return {!Array<cvox.NavDescription>} A list of Navigation descriptions.
  * @private
  */
 cvox.SpeechRuleEngine.prototype.evaluateTree_ = function(node) {
@@ -179,7 +179,7 @@ cvox.SpeechRuleEngine.prototype.evaluateTree_ = function(node) {
 
 /**
  * Evaluates a list of nodes into a list of navigation descriptions.
- * @param {!Array.<Node>} nodes Array of nodes.
+ * @param {!Array<Node>} nodes Array of nodes.
  * @param {string} sepFunc Name of a function used to compute a separator
  *     between every element.
  * @param {string} separator A string that is used as argument to the sepFunc or
@@ -188,7 +188,7 @@ cvox.SpeechRuleEngine.prototype.evaluateTree_ = function(node) {
  *     for every element in the list.
  * @param {string} context Additional context string that is given to the
  *     ctxtFunc function or used directly if ctxtFunc is not supplied.
- * @return {Array.<cvox.NavDescription>} A list of Navigation descriptions.
+ * @return {Array<cvox.NavDescription>} A list of Navigation descriptions.
  * @private
  */
 cvox.SpeechRuleEngine.prototype.evaluateNodeList_ = function(
@@ -237,11 +237,11 @@ cvox.SpeechRuleEngine.propMap = {'pitch': cvox.AbstractTts.RELATIVE_PITCH,
 
 /**
  * Adds personality to every Navigation Descriptions in input list.
- * @param {Array.<cvox.NavDescription>} navs A list of Navigation descriptions.
+ * @param {Array<cvox.NavDescription>} navs A list of Navigation descriptions.
  * @param {Object} props Property dictionary.
  * TODO (sorge) Fully specify, when we have finalised the speech rule
  * format.
- * @return {Array.<cvox.NavDescription>} The modified array.
+ * @return {Array<cvox.NavDescription>} The modified array.
  * @private
  */
 cvox.SpeechRuleEngine.prototype.addPersonality_ = function(navs, props) {

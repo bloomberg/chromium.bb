@@ -207,7 +207,7 @@ cvox.SelectionUtil.isRangeValid = function(range) {
  * Returns absolute top and left positions of an element.
  *
  * @param {!Node} node The element for which to compute the position.
- * @return {Array.<number>} Index 0 is the left; index 1 is the top.
+ * @return {Array<number>} Index 0 is the left; index 1 is the top.
  * @private
  */
 cvox.SelectionUtil.findPos_ = function(node) {
@@ -588,6 +588,7 @@ cvox.SelectionUtil.getText = function() {
  * if you want i18n tests to pass.
  *
  * @return {string} The text.
+ * @private
  */
 cvox.SelectionUtil.getSelectionText_ = function() {
   return '' + window.getSelection();

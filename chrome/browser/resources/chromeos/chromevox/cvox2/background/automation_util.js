@@ -157,7 +157,7 @@ AutomationUtil.findNodeUntil = function(cur, dir, pred, opt_options) {
 /**
  * Returns an array containing ancestors of node starting at root down to node.
  * @param {!AutomationNode} node
- * @return {!Array.<AutomationNode>}
+ * @return {!Array<AutomationNode>}
  */
 AutomationUtil.getAncestors = function(node) {
   var ret = [];
@@ -172,8 +172,8 @@ AutomationUtil.getAncestors = function(node) {
 /**
  * Gets the first index where the two input arrays differ. Returns -1 if they
  * do not.
- * @param {!Array.<AutomationNode>} ancestorsA
- * @param {!Array.<AutomationNode>} ancestorsB
+ * @param {!Array<AutomationNode>} ancestorsA
+ * @param {!Array<AutomationNode>} ancestorsB
  * @return {number}
  */
 AutomationUtil.getDivergence = function(ancestorsA, ancestorsB) {

@@ -23,7 +23,7 @@ cvox.Search = function() {
 
 /**
  * Selectors to match results.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 cvox.Search.selectors = {};
 
@@ -56,13 +56,13 @@ cvox.Search.index;
 
 /**
  * Array of the search results.
- * @type {Array.<Element>}
+ * @type {Array<Element>}
  */
 cvox.Search.results = [];
 
 /**
  * Array of the navigation panes.
- * @type {Array.<Element>}
+ * @type {Array<Element>}
  */
 cvox.Search.panes = [];
 

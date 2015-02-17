@@ -50,7 +50,7 @@ cvox.SemanticTree.Node = function(id) {
   /** @type {number} */
   this.id = id;
 
-  /** @type {Array.<Element>} */
+  /** @type {Array<Element>} */
   this.mathml = [];
 
   /** @type {cvox.SemanticTree.Node} */
@@ -65,7 +65,7 @@ cvox.SemanticTree.Node = function(id) {
   /** @type {cvox.SemanticAttr.Font} */
   this.font = cvox.SemanticAttr.Font.UNKNOWN;
 
-  /** @type {!Array.<cvox.SemanticTree.Node>} */
+  /** @type {!Array<cvox.SemanticTree.Node>} */
   this.childNodes = [];
 
   /** @type {string} */
@@ -73,7 +73,7 @@ cvox.SemanticTree.Node = function(id) {
 
   /** Branch nodes can store additional nodes that can be useful.
    * E.g. a node of type FENCED can have the opening and closing fences here.
-   * @type {!Array.<cvox.SemanticTree.Node>}
+   * @type {!Array<cvox.SemanticTree.Node>}
    */
   this.contentNodes = [];
 };
@@ -83,7 +83,7 @@ cvox.SemanticTree.Node = function(id) {
  * Retrieve all subnodes (including the node itself) that satisfy a given
  * predicate.
  * @param {function(cvox.SemanticTree.Node): boolean} pred The predicate.
- * @return {!Array.<cvox.SemanticTree.Node>} The nodes in the tree for which the
+ * @return {!Array<cvox.SemanticTree.Node>} The nodes in the tree for which the
  *     predicate holds.
  */
 cvox.SemanticTree.Node.prototype.querySelectorAll = function(pred) {
@@ -124,7 +124,7 @@ cvox.SemanticTree.Node.prototype.querySelectorAll = function(pred) {
    /**
     * Translates a list of nodes into XML representation.
     * @param {string} tag Name of the enclosing tag.
-    * @param {!Array.<!cvox.SemanticTree.Node>} nodes A list of nodes.
+    * @param {!Array<!cvox.SemanticTree.Node>} nodes A list of nodes.
     * @return {Node} An XML representation of the node list.
     */
    var xmlNodeList = function(tag, nodes) {
@@ -283,7 +283,7 @@ cvox.SemanticTree.Node.prototype.updateContent_ = function(content) {
  * Adds MathML nodes to the node's store of MathML nodes if necessary only, as
  * we can not necessarily assume that the MathML of the content nodes and
  * children are all disjoint.
- * @param {Array.<Node>} mmlNodes List of MathML nodes.
+ * @param {Array<Node>} mmlNodes List of MathML nodes.
  * @private
  */
 cvox.SemanticTree.Node.prototype.addMathmlNodes_ = function(mmlNodes) {
@@ -297,7 +297,7 @@ cvox.SemanticTree.Node.prototype.addMathmlNodes_ = function(mmlNodes) {
 
 /**
  * Removes MathML nodes from the node's store of MathML nodes.
- * @param {Array.<Node>} mmlNodes List of MathML nodes.
+ * @param {Array<Node>} mmlNodes List of MathML nodes.
  * @private
  */
 cvox.SemanticTree.Node.prototype.removeMathmlNodes_ = function(mmlNodes) {
@@ -493,8 +493,8 @@ cvox.SemanticTree.prototype.parseMathml_ = function(mml) {
 
 /**
  * Parse a list of MathML nodes into the semantic tree.
- * @param {Array.<Element>} mmls A list of MathML nodes.
- * @return {!Array.<cvox.SemanticTree.Node>} The list of resulting semantic
+ * @param {Array<Element>} mmls A list of MathML nodes.
+ * @return {!Array<cvox.SemanticTree.Node>} The list of resulting semantic
  *     node.
  * @private
  */
@@ -549,8 +549,8 @@ cvox.SemanticTree.prototype.makeLeafNode_ = function(mml) {
 /**
  * Create a branching node.
  * @param {!cvox.SemanticAttr.Type} type The type of the node.
- * @param {!Array.<cvox.SemanticTree.Node>} children The child nodes.
- * @param {!Array.<cvox.SemanticTree.Node>} contentNodes The content Nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} children The child nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} contentNodes The content Nodes.
  * @param {string=} content Content string if there is any.
  * @return {!cvox.SemanticTree.Node} The new node.
  * @private
@@ -577,7 +577,7 @@ cvox.SemanticTree.prototype.makeBranchNode_ = function(
 /**
  * Create a branching node for an implicit operation, currently assumed to
  * be of multiplicative type.
- * @param {!Array.<!cvox.SemanticTree.Node>} nodes The operands.
+ * @param {!Array<!cvox.SemanticTree.Node>} nodes The operands.
  * @return {!cvox.SemanticTree.Node} The new branch node.
  * @private
  */
@@ -596,7 +596,7 @@ cvox.SemanticTree.prototype.makeImplicitNode_ = function(nodes) {
 
 /**
  * Create a branching node for an infix operation.
- * @param {!Array.<cvox.SemanticTree.Node>} children The operands.
+ * @param {!Array<cvox.SemanticTree.Node>} children The operands.
  * @param {!cvox.SemanticTree.Node} opNode The operator.
  * @return {!cvox.SemanticTree.Node} The new branch node.
  * @private
@@ -612,7 +612,7 @@ cvox.SemanticTree.prototype.makeInfixNode_ = function(children, opNode) {
  * one content (thereby concatenating the content of each node into a single
  * content string) with the inner node as a child.
  * @param {!cvox.SemanticTree.Node} inner The inner node.
- * @param {!Array.<cvox.SemanticTree.Node>} nodeList List of nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} nodeList List of nodes.
  * @param {!cvox.SemanticAttr.Type} type The new type of the node.
  * @return {!cvox.SemanticTree.Node} The new branch node.
  * @private
@@ -635,7 +635,7 @@ cvox.SemanticTree.prototype.makeConcatNode_ = function(inner, nodeList, type) {
  * Example: + - a becomes (+ (- (a)))
  * Input: a  [+, -] ->  Output: content: '+ -', child: a
  * @param {!cvox.SemanticTree.Node} node The inner node.
- * @param {!Array.<cvox.SemanticTree.Node>} prefixes Prefix operators
+ * @param {!Array<cvox.SemanticTree.Node>} prefixes Prefix operators
  * from the outermost to the innermost.
  * @return {!cvox.SemanticTree.Node} The new branch node.
  * @private
@@ -662,7 +662,7 @@ cvox.SemanticTree.prototype.makePrefixNode_ = function(node, prefixes) {
  * Example: a - + becomes (((a) -) +)
  * Input: a  [-, +] ->  Output: content: '- +', child: a
  * @param {!cvox.SemanticTree.Node} node The inner node.
- * @param {!Array.<cvox.SemanticTree.Node>} postfixes Postfix operators from
+ * @param {!Array<cvox.SemanticTree.Node>} postfixes Postfix operators from
  * innermost to outermost.
  * @return {!cvox.SemanticTree.Node} The new branch node.
  * @private
@@ -683,7 +683,7 @@ cvox.SemanticTree.prototype.makePostfixNode_ = function(node, postfixes) {
  *
  * This is the main heuristic to rewrite a flat row of terms into a meaningful
  * term tree.
- * @param {!Array.<cvox.SemanticTree.Node>} nodes The list of nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} nodes The list of nodes.
  * @return {!cvox.SemanticTree.Node} The root node of the syntax tree.
  * @private
  */
@@ -702,7 +702,7 @@ cvox.SemanticTree.prototype.processRow_ = function(nodes) {
 /**
  * Constructs a syntax tree with relation and operator precedence from a list
  * of nodes.
- * @param {!Array.<!cvox.SemanticTree.Node>} nodes The list of nodes.
+ * @param {!Array<!cvox.SemanticTree.Node>} nodes The list of nodes.
  * @return {!cvox.SemanticTree.Node} The root node of the syntax tree.
  * @private
  */
@@ -732,7 +732,7 @@ cvox.SemanticTree.prototype.processRelationsInRow_ = function(nodes) {
 
 /**
  * Constructs a syntax tree with operator precedence from a list nodes.
- * @param {!Array.<!cvox.SemanticTree.Node>} nodes The list of nodes.
+ * @param {!Array<!cvox.SemanticTree.Node>} nodes The list of nodes.
  * @return {!cvox.SemanticTree.Node} The root node of the syntax tree.
  * @private
  */
@@ -762,7 +762,7 @@ cvox.SemanticTree.prototype.processOperationsInRow_ = function(nodes) {
   // At this point, we know that split.head is not empty!
   var node = this.makePrefixNode_(
       this.makeImplicitNode_(
-          /** @type {!Array.<!cvox.SemanticTree.Node>} */ (split.head)),
+          /** @type {!Array<!cvox.SemanticTree.Node>} */ (split.head)),
       prefix);
   if (!split.div) {
     return node;
@@ -774,11 +774,11 @@ cvox.SemanticTree.prototype.processOperationsInRow_ = function(nodes) {
 /**
  * Recursively constructs syntax tree with operator precedence from a list nodes
  * given a initial root node.
- * @param {!Array.<cvox.SemanticTree.Node>} nodes The list of nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} nodes The list of nodes.
  * @param {!cvox.SemanticTree.Node} root Initial tree.
  * @param {!cvox.SemanticTree.Node} lastop Last operator that has not been
  * processed yet.
- * @param {Array.<cvox.SemanticTree.Node>=} prefixes Operator nodes that will
+ * @param {Array<cvox.SemanticTree.Node>=} prefixes Operator nodes that will
  * become prefix operation (or postfix in case they come after last operand).
  * @return {!cvox.SemanticTree.Node} The root node of the syntax tree.
  * @private
@@ -918,8 +918,8 @@ cvox.SemanticTree.prototype.appendExistingOperator_ = function(root, op, node) {
  *    number of matching fences. E.g. || a|b || would be turned into a fenced
  *    node with fences || and content a|b.
  * 4. Any remaining unmatched delimiters are turned into punctuation nodes.
- * @param {!Array.<!cvox.SemanticTree.Node>} nodes The list of nodes.
- * @return {!Array.<!cvox.SemanticTree.Node>} The new list of nodes.
+ * @param {!Array<!cvox.SemanticTree.Node>} nodes The list of nodes.
+ * @return {!Array<!cvox.SemanticTree.Node>} The new list of nodes.
  * @private
  */
 cvox.SemanticTree.prototype.getFencesInRow_ = function(nodes) {
@@ -934,13 +934,13 @@ cvox.SemanticTree.prototype.getFencesInRow_ = function(nodes) {
  * Recursively processes a list of nodes and combines all the fenced expressions
  * into single nodes. It also processes singular fences, building expressions
  * that are only fenced left or right.
- * @param {!Array.<cvox.SemanticTree.Node>} fences FIFO queue of fence nodes.
- * @param {!Array.<Array.<cvox.SemanticTree.Node>>} content FIFO queue content
+ * @param {!Array<cvox.SemanticTree.Node>} fences FIFO queue of fence nodes.
+ * @param {!Array<Array<cvox.SemanticTree.Node>>} content FIFO queue content
  *     between fences.
- * @param {!Array.<cvox.SemanticTree.Node>} openStack LIFO stack of open fences.
- * @param {!Array.<!Array.<cvox.SemanticTree.Node>>} contentStack LIFO stack of
+ * @param {!Array<cvox.SemanticTree.Node>} openStack LIFO stack of open fences.
+ * @param {!Array<!Array<cvox.SemanticTree.Node>>} contentStack LIFO stack of
  *     content between fences yet to be processed.
- * @return {!Array.<cvox.SemanticTree.Node>} A list of nodes with all fenced
+ * @return {!Array<cvox.SemanticTree.Node>} A list of nodes with all fenced
  *     expressions processed.
  * @private
  */
@@ -1057,10 +1057,10 @@ cvox.SemanticTree.prototype.processFences_ = function(
 // TODO (sorge) The following could be done with linear programming.
 /**
  * Trys to combine neutral fences as much as possible.
- * @param {!Array.<!cvox.SemanticTree.Node>} fences A list of neutral fences.
- * @param {!Array.<!Array.<cvox.SemanticTree.Node>>} content Intermediate
+ * @param {!Array<!cvox.SemanticTree.Node>} fences A list of neutral fences.
+ * @param {!Array<!Array<cvox.SemanticTree.Node>>} content Intermediate
  *     content. Observe that |content| = |fences| - 1
- * @return {!Array.<cvox.SemanticTree.Node>} List of node with fully fenced
+ * @return {!Array<cvox.SemanticTree.Node>} List of node with fully fenced
  *     nodes.
  * @private
  */
@@ -1099,12 +1099,12 @@ cvox.SemanticTree.prototype.processNeutralFences_ = function(fences, content) {
  *          return: [c1 | c2 | c3 ], c4, ... cn
  * @param {!cvox.SemanticTree.Node} leftFence The left fence.
  * @param {!cvox.SemanticTree.Node} rightFence The right fence.
- * @param {!Array.<cvox.SemanticTree.Node>} midFences A list of intermediate
+ * @param {!Array<cvox.SemanticTree.Node>} midFences A list of intermediate
  *     fences.
- * @param {!Array.<!Array.<cvox.SemanticTree.Node>>} content Intermediate
+ * @param {!Array<!Array<cvox.SemanticTree.Node>>} content Intermediate
  *     content. Observe that |content| = |fences| - 1 + k where k >= 0 is the
  *     remainder.
- * @return {!Array.<!Array.<cvox.SemanticTree.Node>>} List of content nodes
+ * @return {!Array<!Array<cvox.SemanticTree.Node>>} List of content nodes
  *     where the first is the fully fenced node wrt. the given left and right
  *     fence.
  * @private
@@ -1163,7 +1163,7 @@ cvox.SemanticTree.fenceToPunct_ = function(fence) {
  * Create a fenced node.
  * @param {cvox.SemanticTree.Node} ofence Opening fence.
  * @param {cvox.SemanticTree.Node} cfence Closing fence.
- * @param {!Array.<cvox.SemanticTree.Node>} content The content
+ * @param {!Array<cvox.SemanticTree.Node>} content The content
  *     between the fences.
  * @return {!cvox.SemanticTree.Node} The new node.
  * @private
@@ -1184,8 +1184,8 @@ cvox.SemanticTree.prototype.makeHorizontalFencedNode_ = function(
 
 /**
  * Combines sequences of punctuated expressions in a list of nodes.
- * @param {!Array.<cvox.SemanticTree.Node>} nodes The list of nodes.
- * @return {!Array.<cvox.SemanticTree.Node>} The new list of nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} nodes The list of nodes.
+ * @return {!Array<cvox.SemanticTree.Node>} The new list of nodes.
  * @private
  */
 cvox.SemanticTree.prototype.getPunctuationInRow_ = function(nodes) {
@@ -1219,9 +1219,9 @@ cvox.SemanticTree.prototype.getPunctuationInRow_ = function(nodes) {
 
 /**
  * Create a punctuated node.
- * @param {!Array.<!cvox.SemanticTree.Node>} nodes List of all nodes separated
+ * @param {!Array<!cvox.SemanticTree.Node>} nodes List of all nodes separated
  * by punctuations.
- * @param {!Array.<!cvox.SemanticTree.Node>} punctuations List of all separating
+ * @param {!Array<!cvox.SemanticTree.Node>} punctuations List of all separating
  * punctations. Observe that punctations is a subset of nodes.
  * @return {!cvox.SemanticTree.Node}
  * @private
@@ -1248,7 +1248,7 @@ cvox.SemanticTree.prototype.makePunctuatedNode_ = function(
  * Creates a limit node from a sub/superscript or over/under node if the central
  * element is a big operator. Otherwise it creates the standard elements.
  * @param {string} mmlTag The tag name of the original node.
- * @param {!Array.<!cvox.SemanticTree.Node>} children The children of the
+ * @param {!Array<!cvox.SemanticTree.Node>} children The children of the
  *     original node.
  * @return {!cvox.SemanticTree.Node} The newly created limit node.
  * @private
@@ -1331,10 +1331,10 @@ cvox.SemanticTree.prototype.makeLimitNode_ = function(mmlTag, children) {
  *           symbol. If we have an explicit function application symbol
  *           following the expression we turn into a prefix function. Otherwise
  *           we decide heuristically if we could have a function application.
- * @param {!Array.<cvox.SemanticTree.Node>} restNodes The remainder list of
+ * @param {!Array<cvox.SemanticTree.Node>} restNodes The remainder list of
  *     nodes.
- * @param {!Array.<cvox.SemanticTree.Node>=} result The result node list.
- * @return {!Array.<!cvox.SemanticTree.Node>} The fully processed list.
+ * @param {!Array<cvox.SemanticTree.Node>=} result The result node list.
+ * @return {!Array<!cvox.SemanticTree.Node>} The fully processed list.
  * @private
  */
 cvox.SemanticTree.prototype.getFunctionsInRow_ = function(restNodes, result) {
@@ -1360,7 +1360,7 @@ cvox.SemanticTree.prototype.getFunctionsInRow_ = function(restNodes, result) {
 /**
  * Classifies a function wrt. the heuristic that should be applied.
  * @param {!cvox.SemanticTree.Node} funcNode The node to be classified.
- * @param {!Array.<cvox.SemanticTree.Node>} restNodes The remainder list of
+ * @param {!Array<cvox.SemanticTree.Node>} restNodes The remainder list of
  *     nodes. They can useful to look ahead if there is an explicit function
  *     application. If there is one, it will be destructively removed!
  * @return {!string} The string specifying the heuristic.
@@ -1422,10 +1422,10 @@ cvox.SemanticTree.propagatePrefixFunc_ = function(funcNode) {
  * Computes the arguments for a function from a list of nodes depending on the
  * given heuristic.
  * @param {!cvox.SemanticTree.Node} func A function node.
- * @param {!Array.<cvox.SemanticTree.Node>} rest List of nodes to choose
+ * @param {!Array<cvox.SemanticTree.Node>} rest List of nodes to choose
  *     arguments from.
  * @param {string} heuristic The heuristic to follow.
- * @return {!Array.<!cvox.SemanticTree.Node>} The function and the remainder of
+ * @return {!Array<!cvox.SemanticTree.Node>} The function and the remainder of
  *     the rest list.
  * @private
  */
@@ -1482,12 +1482,12 @@ cvox.SemanticTree.prototype.getFunctionArgs_ = function(func, rest, heuristic) {
 
 /**
  * Tail recursive function to obtain integral arguments.
- * @param {!Array.<cvox.SemanticTree.Node>} nodes List of nodes to take
+ * @param {!Array<cvox.SemanticTree.Node>} nodes List of nodes to take
  * arguments from.
- * @param {Array.<cvox.SemanticTree.Node>=} args List of integral arguments.
- * @return {{integrand: !Array.<cvox.SemanticTree.Node>,
+ * @param {Array<cvox.SemanticTree.Node>=} args List of integral arguments.
+ * @return {{integrand: !Array<cvox.SemanticTree.Node>,
  *     intvar: cvox.SemanticTree.Node,
- *     rest: !Array.<cvox.SemanticTree.Node>}}
+ *     rest: !Array<cvox.SemanticTree.Node>}}
  *     Result split into integrand, integral variable and the remaining
  *     elements.
  * @private
@@ -1664,8 +1664,8 @@ cvox.SemanticTree.generalFunctionBoundary_ = function(node) {
 
 /**
  * Rewrites tables into matrices or case statements in a list of nodes.
- * @param {!Array.<cvox.SemanticTree.Node>} nodes List of nodes to rewrite.
- * @return {!Array.<cvox.SemanticTree.Node>} The new list of nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} nodes List of nodes to rewrite.
+ * @return {!Array<cvox.SemanticTree.Node>} The new list of nodes.
  * @private
  */
 cvox.SemanticTree.prototype.processTablesInRow_ = function(nodes) {
@@ -1745,7 +1745,7 @@ cvox.SemanticTree.prototype.tableToMatrixOrVector_ = function(node) {
  * Heuristic to decide if we have a case statement: An expression with a
  * singular open fence before it.
  * @param {!cvox.SemanticTree.Node} table A table node.
- * @param {!Array.<cvox.SemanticTree.Node>} prevNodes A list of previous nodes.
+ * @param {!Array<cvox.SemanticTree.Node>} prevNodes A list of previous nodes.
  * @return {boolean} True if we believe we have a case statement.
  * @private
  */
@@ -1852,13 +1852,13 @@ cvox.SemanticTree.assignRoleToRow_ = function(row, role) {
 
 /**
  * Splits a list of nodes wrt. to a given predicate.
- * @param {Array.<cvox.SemanticTree.Node>} nodes A list of nodes.
+ * @param {Array<cvox.SemanticTree.Node>} nodes A list of nodes.
  * @param {!function(cvox.SemanticTree.Node): boolean} pred Predicate for the
  *    partitioning relation.
  * @param {boolean=} reverse If true slicing is done from the end.
- * @return {{head: !Array.<cvox.SemanticTree.Node>,
+ * @return {{head: !Array<cvox.SemanticTree.Node>,
  *           div: cvox.SemanticTree.Node,
- *           tail: !Array.<cvox.SemanticTree.Node>}} The split list.
+ *           tail: !Array<cvox.SemanticTree.Node>}} The split list.
  * @private
  */
 cvox.SemanticTree.sliceNodes_ = function(nodes, pred, reverse) {
@@ -1889,11 +1889,11 @@ cvox.SemanticTree.sliceNodes_ = function(nodes, pred, reverse) {
 /**
  * Partitions a list of nodes wrt. to a given predicate. Effectively works like
  * a PER on the ordered set of nodes.
- * @param {!Array.<!cvox.SemanticTree.Node>} nodes A list of nodes.
+ * @param {!Array<!cvox.SemanticTree.Node>} nodes A list of nodes.
  * @param {!function(cvox.SemanticTree.Node): boolean} pred Predicate for the
  *    partitioning relation.
- * @return {{rel: !Array.<cvox.SemanticTree.Node>,
- *           comp: !Array.<!Array.<cvox.SemanticTree.Node>>}}
+ * @return {{rel: !Array<cvox.SemanticTree.Node>,
+ *           comp: !Array<!Array<cvox.SemanticTree.Node>>}}
  *    The partitioning given in terms of a collection of elements satisfying
  *    the predicate and a collection of complementary sets lying inbetween the
  *    related elements. Observe that we always have |comp| = |rel| + 1.

@@ -90,7 +90,7 @@ cvox.TestTts.prototype.getUtterancesAsString = function() {
  *
  * For example, if two strings were spoken with a queue mode of FLUSH,
  * only the second string will be returned.
- * @return {Array.<string>} A list of strings representing the speech output.
+ * @return {Array<string>} A list of strings representing the speech output.
  */
 cvox.TestTts.prototype.getSpeechQueueOutput = function() {
   var queue = [];
@@ -118,7 +118,7 @@ cvox.TestTts.prototype.getSpeechQueueOutput = function() {
 
 /**
  * Return a list of strings of what was spoken by tts.speak().
- * @return {Array.<string>} A list of all utterances spoken since
+ * @return {Array<string>} A list of all utterances spoken since
  *     initialization or the last call to clearUtterances.
  */
 cvox.TestTts.prototype.getUtteranceList = function() {
@@ -131,7 +131,7 @@ cvox.TestTts.prototype.getUtteranceList = function() {
 
 /**
  * Return a list of strings of what was spoken by tts.speak().
- * @return {Array.<{text: string, queueMode: cvox.QueueMode}>}
+ * @return {Array<{text: string, queueMode: cvox.QueueMode}>}
  *     A list of info about all utterances spoken since
  *     initialization or the last call to clearUtterances.
  */

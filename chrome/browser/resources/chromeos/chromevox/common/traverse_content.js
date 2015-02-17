@@ -115,7 +115,7 @@ cvox.TraverseContent.kParagraph = 'paragraph';
 
 /**
  * A constant array of all granularities.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @const
  */
 cvox.TraverseContent.kAllGrains =

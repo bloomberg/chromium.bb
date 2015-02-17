@@ -162,7 +162,7 @@ cvox.ChromeVoxEventWatcher.init = function(doc) {
 
   /**
    * Array of events that need to be processed.
-   * @type {Array.<Event>}
+   * @type {Array<Event>}
    * @private
    */
   cvox.ChromeVoxEventWatcher.events_ = new Array();
@@ -189,7 +189,7 @@ cvox.ChromeVoxEventWatcher.init = function(doc) {
   /**
    * A list of callbacks to be called when the EventWatcher has
    * completed processing all events in its queue.
-   * @type {Array.<function()>}
+   * @type {Array<function()>}
    * @private
    */
   cvox.ChromeVoxEventWatcher.readyCallbacks_ = new Array();
@@ -470,7 +470,7 @@ cvox.ChromeVoxEventWatcher.setLastFocusedNode_ = function(element) {
 /**
  * Called when there's any mutation of the document. We use this to
  * handle live region updates.
- * @param {Array.<MutationRecord>} mutations The mutations.
+ * @param {Array<MutationRecord>} mutations The mutations.
  * @return {boolean} True if the default action should be performed.
  */
 cvox.ChromeVoxEventWatcher.mutationHandler = function(mutations) {
@@ -938,7 +938,7 @@ cvox.ChromeVoxEventWatcher.getInitialVisibility = function() {
 /**
  * Speaks the text of one live region.
  * @param {boolean} assertive True if it's an assertive live region.
- * @param {Array.<cvox.NavDescription>} messages An array of navDescriptions
+ * @param {Array<cvox.NavDescription>} messages An array of navDescriptions
  *    representing the description of the live region changes.
  * @private
  */

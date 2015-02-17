@@ -24,7 +24,7 @@ cvox.FindUtil.objectWalker_ = new cvox.BareObjectWalker();
  * Finds the next selection that matches the predicate function starting from
  * sel. Undefined if the nodes in sel are not attached to the document.
  * @param {!cvox.CursorSelection} sel The selection from which to start.
- * @param {function(Array.<Node>):Node} predicate A function taking a
+ * @param {function(Array<Node>):Node} predicate A function taking a
  * unique ancestor tree and outputting Node if the ancestor tree matches
  * the desired node to find.
  * @param {boolean=} opt_initialNode Whether to start the search from node

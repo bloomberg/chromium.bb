@@ -41,7 +41,7 @@ goog.require('cvox.ChromeVox');
  * content and functionality.
  * @constructor
  *
- * @param {Object.<{command: (string),
+ * @param {Object<{command: (string),
  *                         status: (undefined|string),
  *                         resultNode: (undefined|Node),
  *                         customCommand: (undefined|string)

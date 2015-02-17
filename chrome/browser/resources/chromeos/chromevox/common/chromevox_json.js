@@ -227,7 +227,7 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
     if (typeof cvox.ChromeVoxJSON.stringify !== 'function') {
       /**
        * @param {*} value Input object.
-       * @param {(Array.<string>|(function(string, *) : *)|null)=} replacer
+       * @param {(Array<string>|(function(string, *) : *)|null)=} replacer
        *     Replacer array or function.
        * @param {(number|string|null)=} space Whitespace character.
        * @return {string} json string which represents jsonObj.

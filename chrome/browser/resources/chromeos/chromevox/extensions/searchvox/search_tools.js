@@ -29,7 +29,7 @@ cvox.SearchTool.menuIndex;
 
 /**
  * Array of menus.
- * @type {Array.<Node>}
+ * @type {Array<Node>}
  */
 cvox.SearchTool.menus = [];
 
@@ -41,7 +41,7 @@ cvox.SearchTool.menuItemIndex;
 
 /**
  * Array of menu items for the current menu.
- * @type {Array.<Node>}
+ * @type {Array<Node>}
  */
 cvox.SearchTool.menuItems = [];
 

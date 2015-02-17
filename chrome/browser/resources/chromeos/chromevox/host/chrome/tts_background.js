@@ -66,7 +66,7 @@ cvox.TtsBackground = function(opt_enableMath) {
       parseInt(localStorage[cvox.AbstractTts.PUNCTUATION_ECHO] || 1, 10);
 
   /**
-   * @type {!Array.<{name:(string),
+   * @type {!Array<{name:(string),
    * msg:(string),
    * regexp:(RegExp),
    * clear:(boolean)}>}
@@ -108,7 +108,7 @@ cvox.TtsBackground = function(opt_enableMath) {
    * A list of punctuation characters that should always be spliced into output
    * even with literal word substitutions.
    * This is important for tts prosity.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @private
   */
   this.retainPunctuation_ =
@@ -128,11 +128,11 @@ cvox.TtsBackground = function(opt_enableMath) {
 
   try {
     /**
-     * @type {Object.<string, string>}
+     * @type {Object<string, string>}
      * @private
      * @const
      */
-    this.PHONETIC_MAP_ = /** @type {Object.<string, string>} */(
+    this.PHONETIC_MAP_ = /** @type {Object<string, string>} */(
         JSON.parse(cvox.ChromeVox.msgs.getMsg('phonetic_map')));
   } catch (e) {
     console.log('Error; unable to parse phonetic map msg.');
@@ -140,7 +140,7 @@ cvox.TtsBackground = function(opt_enableMath) {
 
   /**
    * Capturing tts event listeners.
-   * @type {Array.<cvox.TtsCapturingEventListener>}
+   * @type {Array<cvox.TtsCapturingEventListener>}
    * @private
    */
   this.capturingTtsEventListeners_ = [];
@@ -154,7 +154,7 @@ cvox.TtsBackground = function(opt_enableMath) {
 
   /**
    * The utterance queue.
-   * @type {Array.<cvox.Utterance>}
+   * @type {Array<cvox.Utterance>}
    * @private
    */
   this.utteranceQueue_ = [];
@@ -192,7 +192,7 @@ cvox.TtsBackground.PHONETIC_DELAY_MS_ = 1000;
 /**
  * The list of properties allowed to be passed to the chrome.tts.speak API.
  * Anything outside this list will be stripped.
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @private
  * @const
  */

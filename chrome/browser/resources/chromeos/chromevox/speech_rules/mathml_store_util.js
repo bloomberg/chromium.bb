@@ -26,7 +26,7 @@ cvox.MathmlStoreUtil.matchMathjaxToMathml = function(inner) {
 /**
  * Retrieve an extender symbol for a given node.
  * @param {!Node} jax The MathJax node.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.retrieveMathjaxExtender = function(jax) {
   var ext = cvox.MathmlStoreUtil.matchMathjaxToMathml(jax);
@@ -40,7 +40,7 @@ cvox.MathmlStoreUtil.retrieveMathjaxExtender = function(jax) {
 /**
  * Retrieve an extender symbol for a given node.
  * @param {!Node} jax The MathJax node.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.retrieveMathjaxLeaf = function(jax) {
   var leaf = cvox.MathmlStoreUtil.matchMathjaxToMathml(jax);
@@ -56,7 +56,7 @@ cvox.MathmlStoreUtil.retrieveMathjaxLeaf = function(jax) {
  * if it is of the right tag.
  * @param {!Node} jax The Mathjax node.
  * @param {!string} tag The required tag.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.checkMathjaxTag = function(jax, tag) {
   var node = cvox.MathmlStoreUtil.matchMathjaxToMathml(jax);
@@ -70,7 +70,7 @@ cvox.MathmlStoreUtil.checkMathjaxTag = function(jax, tag) {
 /**
  * Returns MathML node if MathJax is munder.
  * @param {!Node} jax The Mathjax node.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.checkMathjaxMunder = function(jax) {
   return cvox.MathmlStoreUtil.checkMathjaxTag(jax, 'MUNDER');
@@ -80,7 +80,7 @@ cvox.MathmlStoreUtil.checkMathjaxMunder = function(jax) {
 /**
  * Returns MathML node if MathJax is mover.
  * @param {!Node} jax The Mathjax node.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.checkMathjaxMover = function(jax) {
   return cvox.MathmlStoreUtil.checkMathjaxTag(jax, 'MOVER');
@@ -90,7 +90,7 @@ cvox.MathmlStoreUtil.checkMathjaxMover = function(jax) {
 /**
  * Returns MathML node if MathJax is msub.
  * @param {!Node} jax The Mathjax node.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.checkMathjaxMsub = function(jax) {
   return cvox.MathmlStoreUtil.checkMathjaxTag(jax, 'MSUB');
@@ -100,7 +100,7 @@ cvox.MathmlStoreUtil.checkMathjaxMsub = function(jax) {
 /**
  * Returns MathML node if MathJax is msup.
  * @param {!Node} jax The Mathjax node.
- * @return {Array.<Node>} The resulting node list.
+ * @return {Array<Node>} The resulting node list.
  */
 cvox.MathmlStoreUtil.checkMathjaxMsup = function(jax) {
   return cvox.MathmlStoreUtil.checkMathjaxTag(jax, 'MSUP');
@@ -144,7 +144,7 @@ cvox.MathmlStoreUtil.nextSeparatorFunction = function(separators) {
 
 /**
  * Computes the correct separators for each node.
- * @param {Array.<Node>} nodes A node array.
+ * @param {Array<Node>} nodes A node array.
  * @param {string} context A context string.
  * @return {function(): string} A closure that returns the next separator for an
  * mfenced expression starting with the first node in nodes.
@@ -159,7 +159,7 @@ cvox.MathmlStoreUtil.mfencedSeparators = function(nodes, context) {
 
 /**
  * Iterates over the list of content nodes of the parent of the given nodes.
- * @param {Array.<Node>} nodes A node array.
+ * @param {Array<Node>} nodes A node array.
  * @param {string} context A context string.
  * @return {function(): string} A closure that returns the content of the next
  *     content node. Returns only context string if list is exhausted.

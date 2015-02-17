@@ -76,12 +76,12 @@ cvox.BrailleDisplayManager = function(translatorManager) {
    */
   this.realDisplayState_ = this.displayState_;
   /**
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @private
    */
   this.textToBraille_ = [];
   /**
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @private
    */
   this.brailleToText_ = [];

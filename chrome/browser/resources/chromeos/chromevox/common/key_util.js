@@ -199,7 +199,7 @@ cvox.KeyUtil.modStringToKeyCode = function(keyString) {
 /**
  * Returns the key codes of a string respresentation of the ChromeVox modifiers.
  *
- * @return {Array.<number>} Array of key codes.
+ * @return {Array<number>} Array of key codes.
  */
 cvox.KeyUtil.cvoxModKeyCodes = function() {
   var modKeyCombo = cvox.ChromeVox.modKeyStr.split(/\+/g);

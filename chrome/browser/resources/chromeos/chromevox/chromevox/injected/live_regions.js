@@ -49,7 +49,7 @@ cvox.LiveRegions.VISIBILITY_TIMEOUT_MS = 50;
 
 /**
  * A mapping from announced text to the time it was last spoken.
- * @type {Object.<string, Date>}
+ * @type {Object<string, Date>}
  */
 cvox.LiveRegions.lastAnnouncedMap = {};
 
@@ -75,7 +75,7 @@ cvox.LiveRegions.lastAnnouncedTime = null;
 
 /**
  * Tracks nodes handled during mutation processing.
- * @type {!Array.<Node>}
+ * @type {!Array<Node>}
  */
 cvox.LiveRegions.nodesAlreadyHandled = [];
 
@@ -144,8 +144,8 @@ cvox.LiveRegions.init = function(pageLoadTime, queueMode, disableSpeak) {
  * This function is not reentrant, it uses some global state to keep
  * track of nodes it's already spoken once.
  *
- * @param {Array.<MutationRecord>} mutations The mutations.
- * @param {function(boolean, Array.<cvox.NavDescription>)} handler
+ * @param {Array<MutationRecord>} mutations The mutations.
+ * @param {function(boolean, Array<cvox.NavDescription>)} handler
  *     A callback function that handles each live region description found.
  *     The function is passed a boolean indicating if the live region is
  *     assertive, and an array of navdescriptions to speak.
@@ -229,7 +229,7 @@ cvox.LiveRegions.processMutations = function(mutations, handler) {
  * @param {Node} parent The parent node.
  * @param {boolean} isRemoval True if this node was removed.
  * @param {boolean} subtree True if we should check the subtree.
- * @param {function(boolean, Array.<cvox.NavDescription>)} handler
+ * @param {function(boolean, Array<cvox.NavDescription>)} handler
  *     Callback function to be called for each live region found.
  */
 cvox.LiveRegions.handleOneChangedNode = function(
@@ -293,7 +293,7 @@ cvox.LiveRegions.handleOneChangedNode = function(
  * @param {Node} node A node in a live region.
  * @param {Node} liveRoot The root of the live region this node is in.
  * @param {boolean} isRemoval True if this node was removed.
- * @param {function(boolean, Array.<cvox.NavDescription>)} handler
+ * @param {function(boolean, Array<cvox.NavDescription>)} handler
  *     Callback function to be called for each live region found.
  */
 cvox.LiveRegions.announceChangeIfVisible = function(
@@ -315,7 +315,7 @@ cvox.LiveRegions.announceChangeIfVisible = function(
  * @param {Node} node A node in a live region.
  * @param {Node} liveRoot The root of the live region this node is in.
  * @param {boolean} isRemoval True if this node was removed.
- * @param {function(boolean, Array.<cvox.NavDescription>)} handler
+ * @param {function(boolean, Array<cvox.NavDescription>)} handler
  *     Callback function to be called for each live region found.
  */
 cvox.LiveRegions.announceChange = function(
@@ -441,7 +441,7 @@ cvox.LiveRegions.announceChange = function(
  * single string, otherwise each leaf node gets its own string.
  *
  * @param {Node} node A node in a live region.
- * @return {Array.<cvox.NavDescription>} An array of NavDescriptions
+ * @return {Array<cvox.NavDescription>} An array of NavDescriptions
  *     describing atomic nodes or leaf nodes in the subtree rooted
  *     at this node.
  */

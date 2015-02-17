@@ -31,7 +31,7 @@ Background = function() {
   /**
    * A list of site substring patterns to use with ChromeVox next. Keep these
    * strings relatively specific.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @private
    */
   this.whitelist_ = ['chromevox_next_test'];
@@ -65,7 +65,7 @@ Background = function() {
 
   /**
    * Maps an automation event to its listener.
-   * @type {!Object.<EventType, function(Object) : void>}
+   * @type {!Object<EventType, function(Object) : void>}
    */
   this.listeners_ = {
     alert: this.onEventDefault,

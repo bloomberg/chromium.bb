@@ -37,7 +37,7 @@ cvox.PageSelection = function(sel) {
  * @param {!cvox.CursorSelection} prevSel Previous CursorSelection in
  * navigation.
  * @param {!cvox.CursorSelection} curSel Current CursorSelection in navigation.
- * @return {Array.<cvox.NavDescription>} The new description.
+ * @return {Array<cvox.NavDescription>} The new description.
  */
 cvox.PageSelection.prototype.getDescription =
     function(navShifter, prevSel, curSel) {
@@ -71,7 +71,7 @@ cvox.PageSelection.prototype.getDescription =
  * Use this description when you want to describe the entire selection
  * represented by this instance.
  *
- * @return {Array.<cvox.NavDescription>} The new description.
+ * @return {Array<cvox.NavDescription>} The new description.
  */
 cvox.PageSelection.prototype.getFullDescription = function() {
   return [new cvox.NavDescription(

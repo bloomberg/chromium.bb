@@ -34,7 +34,7 @@ cvox.AriaUtil.NO_ROLE_NAME = ' ';
  * Note: If you are adding a new mapping, the new message identifier needs a
  * corresponding braille message. For example, a message id 'tag_button'
  * requires another message 'tag_button_brl' within messages.js.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 cvox.AriaUtil.WIDGET_ROLE_TO_NAME = {
   'alert' : 'aria_role_alert',
@@ -79,7 +79,7 @@ cvox.AriaUtil.WIDGET_ROLE_TO_NAME = {
  * Note: If you are adding a new mapping, the new message identifier needs a
  * corresponding braille message. For example, a message id 'tag_button'
  * requires another message 'tag_button_brl' within messages.js.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 cvox.AriaUtil.STRUCTURE_ROLE_TO_NAME = {
   'article' : 'aria_role_article',
@@ -109,7 +109,7 @@ cvox.AriaUtil.STRUCTURE_ROLE_TO_NAME = {
 
 
 /**
- * @type {Array.<Object>}
+ * @type {Array<Object>}
  */
 cvox.AriaUtil.ATTRIBUTE_VALUE_TO_STATUS = [
   { name: 'aria-autocomplete', values:
@@ -381,9 +381,9 @@ cvox.AriaUtil.getStateMsgs = function(targetNode, primary) {
   for (var i = 0, attr; attr = cvox.AriaUtil.ATTRIBUTE_VALUE_TO_STATUS[i];
       i++) {
     var value = targetNode.getAttribute(attr.name);
-    var msg_id = attr.values[value];
-    if (msg_id) {
-      state.push([msg_id]);
+    var msgId = attr.values[value];
+    if (msgId) {
+      state.push([msgId]);
     }
   }
   if (targetNode.getAttribute('role') == 'grid') {
@@ -583,8 +583,8 @@ cvox.AriaUtil.getActiveDescendantId_ = function(targetNode) {
  * Returns the list of elements that are one aria-level below.
  *
  * @param {Node} parentControl The node whose descendants should be analyzed.
- * @param {Array.<string>} role The role(s) of descendant we are looking for.
- * @return {Array.<Node>} The array of matching nodes.
+ * @param {Array<string>} role The role(s) of descendant we are looking for.
+ * @return {Array<Node>} The array of matching nodes.
  */
 cvox.AriaUtil.getNextLevel = function(parentControl, role) {
   var result = [];
@@ -608,8 +608,8 @@ cvox.AriaUtil.getNextLevel = function(parentControl, role) {
  * Recursively finds the first node(s) that match the role.
  *
  * @param {Element} current The node to start looking at.
- * @param {Array.<string>} role The role(s) to match.
- * @return {Array.<Element>} The array of matching nodes.
+ * @param {Array<string>} role The role(s) to match.
+ * @return {Array<Element>} The array of matching nodes.
  */
 cvox.AriaUtil.getNextLevelItems = function(current, role) {
   if (current.nodeType != 1) { // If reached a node that is not an element.
@@ -838,7 +838,7 @@ cvox.AriaUtil.getAriaRelevant = function(node, change) {
  * node or contain this node.
  *
  * @param {Node} node The node to be checked.
- * @return {Array.<Element>} All live regions affected by this node changing.
+ * @return {Array<Element>} All live regions affected by this node changing.
  */
 cvox.AriaUtil.getLiveRegions = function(node) {
   var result = [];

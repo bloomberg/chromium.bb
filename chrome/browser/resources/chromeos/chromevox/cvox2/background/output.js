@@ -48,7 +48,7 @@ Output = function() {
   this.buffer_ = new cvox.Spannable();
   /** @type {!cvox.Spannable} */
   this.brailleBuffer_ = new cvox.Spannable();
-  /** @type {!Array.<Object>} */
+  /** @type {!Array<Object>} */
   this.locations_ = [];
   /** @type {function()} */
   this.speechStartCallback_;
@@ -65,7 +65,7 @@ Output = function() {
 
   /**
    * Speech properties to apply to the entire output.
-   * @type {!Object.<string, *>}
+   * @type {!Object<string, *>}
    */
   this.speechProperties_ = {};
 };
@@ -78,7 +78,7 @@ Output.SPACE = ' ';
 
 /**
  * Rules specifying format of AutomationNodes for output.
- * @type {!Object.<string, Object.<string, Object.<string, string>>>}
+ * @type {!Object<string, Object<string, Object<string, string>>>}
  */
 Output.RULES = {
   navigate: {
@@ -194,7 +194,7 @@ Output.RULES = {
 
 /**
  * Alias equivalent attributes.
- * @type {!Object.<string, string>}
+ * @type {!Object<string, string>}
  */
 Output.ATTRIBUTE_ALIAS = {
   name: 'value',

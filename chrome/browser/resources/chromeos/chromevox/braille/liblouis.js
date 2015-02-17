@@ -44,14 +44,14 @@ cvox.LibLouis = function(nmfPath, opt_tablesDir) {
 
   /**
    * Pending requests to construct translators.
-   * @private {!Array.<{tableName: string,
+   * @private {!Array<{tableName: string,
    *   callback: function(cvox.LibLouis.Translator)}>}
    */
   this.pendingTranslators_ = [];
 
   /**
    * Pending RPC callbacks. Maps from message IDs to callbacks.
-   * @private {!Object.<string, function(!Object)>}
+   * @private {!Object<string, function(!Object)>}
    */
   this.pendingRpcCallbacks_ = {};
 
@@ -271,7 +271,7 @@ cvox.LibLouis.Translator = function(instance, tableNames) {
 /**
  * Translates text into braille cells.
  * @param {string} text Text to be translated.
- * @param {function(ArrayBuffer, Array.<number>, Array.<number>)} callback
+ * @param {function(ArrayBuffer, Array<number>, Array<number>)} callback
  *     Callback for result.  Takes 3 parameters: the resulting cells,
  *     mapping from text to braille positions and mapping from braille to
  *     text positions.  If translation fails for any reason, all parameters are

@@ -42,7 +42,7 @@ cvox.OptionsPage.prefs;
 /**
  * A mapping from keycodes to their human readable text equivalents.
  * This is initialized in cvox.OptionsPage.init for internationalization.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 cvox.OptionsPage.KEYCODE_TO_TEXT = {
 };
@@ -50,7 +50,7 @@ cvox.OptionsPage.KEYCODE_TO_TEXT = {
 /**
  * A mapping from human readable text to keycode values.
  * This is initialized in cvox.OptionsPage.init for internationalization.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 cvox.OptionsPage.TEXT_TO_KEYCODE = {
 };
@@ -68,7 +68,7 @@ cvox.OptionsPage.init = function() {
   cvox.OptionsPage.addKeys();
   cvox.OptionsPage.populateVoicesSelect();
   cvox.BrailleTable.getAll(function(tables) {
-    /** @type {!Array.<cvox.BrailleTable.Table>} */
+    /** @type {!Array<cvox.BrailleTable.Table>} */
     cvox.OptionsPage.brailleTables = tables;
     cvox.OptionsPage.populateBrailleTablesSelect();
   });

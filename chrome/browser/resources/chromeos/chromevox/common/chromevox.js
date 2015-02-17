@@ -150,11 +150,11 @@ cvox.ChromeVox.verbosity = cvox.VERBOSITY_VERBOSE;
 cvox.ChromeVox.typingEcho = 0;
 /**
  * Echoing on key press events.
- * @type {Object.<string, boolean>}
+ * @type {Object<string, boolean>}
  */
 cvox.ChromeVox.keyEcho = {};
 /**
- * @type {Object.<string, {x:number, y:number}>}
+ * @type {Object<string, {x:number, y:number}>}
  */
 cvox.ChromeVox.position = {};
 /**
@@ -181,10 +181,10 @@ if (cvox.ChromeVox.isChromeOS) {
  * where the subsequent independent key downs (while modifier keys are down)
  * are a part of the same shortcut. This array is populated in
  * cvox.ChromeVoxKbHandler.loadKeyToFunctionsTable().
- * @type {!Array.<cvox.KeySequence>}
+ * @type {!Array<cvox.KeySequence>}
  */
 cvox.ChromeVox.sequenceSwitchKeyCodes = [];
-/** @type {Object.<string, boolean>} */
+/** @type {Object<string, boolean>} */
 cvox.ChromeVox.visitedUrls = {};
 /**
  * This function can be called before doing an operation that may trigger

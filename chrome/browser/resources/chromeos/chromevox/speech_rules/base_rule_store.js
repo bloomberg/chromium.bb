@@ -44,20 +44,20 @@ cvox.BaseRuleStore = function() {
 
   /**
    * Set of speech rules in the store.
-   * @type {!Array.<cvox.SpeechRule>}
+   * @type {!Array<cvox.SpeechRule>}
    * @private
    */
   this.speechRules_ = [];
 
   /**
    * A priority list of dynamic constraint attributes.
-   * @type {!Array.<cvox.SpeechRule.DynamicCstrAttrib>}
+   * @type {!Array<cvox.SpeechRule.DynamicCstrAttrib>}
    */
   this.dynamicCstrAttribs = [cvox.SpeechRule.DynamicCstrAttrib.STYLE];
 
   /**
    * List of TTS properties overridden by the store when it is active.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    */
   this.defaultTtsProps = [];
 };
@@ -197,7 +197,7 @@ cvox.BaseRuleStore.prototype.removeDuplicates = function(rule) {
  * Checks if we have a custom query and applies it. Otherwise returns null.
  * @param {!Node} node The initial node.
  * @param {string} funcName A function name.
- * @return {Array.<Node>} The list of resulting nodes.
+ * @return {Array<Node>} The list of resulting nodes.
  */
 cvox.BaseRuleStore.prototype.applyCustomQuery = function(
     node, funcName) {
@@ -212,7 +212,7 @@ cvox.BaseRuleStore.prototype.applyCustomQuery = function(
  * @param {!Node} node The initial node.
  * @param {string} expr An Xpath expression string or a name of a custom
  *     query.
- * @return {Array.<Node>} The list of resulting nodes.
+ * @return {Array<Node>} The list of resulting nodes.
  */
 cvox.BaseRuleStore.prototype.applySelector = function(node, expr) {
   var result = this.applyCustomQuery(node, expr);
@@ -264,7 +264,7 @@ cvox.BaseRuleStore.prototype.testDynamicConstraints = function(
   // The idea is that when we can not find a speech rule matching the value for
   // a particular attribute in the dynamic constraintwe choose the one that has
   // the value 'default'.
-  var allKeys = /** @type {Array.<cvox.SpeechRule.DynamicCstrAttrib>} */ (
+  var allKeys = /** @type {Array<cvox.SpeechRule.DynamicCstrAttrib>} */ (
       Object.keys(dynamic));
   return allKeys.every(
       function(key) {
@@ -276,7 +276,7 @@ cvox.BaseRuleStore.prototype.testDynamicConstraints = function(
 
 /**
  * Get a set of all dynamic constraint values.
- * @return {!Object.<cvox.SpeechRule.DynamicCstrAttrib, Array.<string>>} The
+ * @return {!Object<cvox.SpeechRule.DynamicCstrAttrib, Array<string>>} The
  *     object with all annotations.
  */
 cvox.BaseRuleStore.prototype.getDynamicConstraintValues = function() {
@@ -320,7 +320,7 @@ cvox.BaseRuleStore.prototype.countMatchingDynamicConstraintValues_ = function(
  * 1) that best match the dynamic constraints.
  * 2) with the most additional constraints.
  * @param {cvox.SpeechRule.DynamicCstr} dynamic Dynamic constraints.
- * @param {!Array.<cvox.SpeechRule>} rules An array of rules.
+ * @param {!Array<cvox.SpeechRule>} rules An array of rules.
  * @return {cvox.SpeechRule} The most constraint rule.
  * @private
  */
@@ -389,8 +389,8 @@ cvox.BaseRuleStore.compareDynamicConstraints_ = function(
 /**
  * Compares two static constraints (i.e., lists of precondition constraints) and
  * returns true if they are equal.
- * @param {Array.<string>} cstr1 First static constraints.
- * @param {Array.<string>} cstr2 Second static constraints.
+ * @param {Array<string>} cstr1 First static constraints.
+ * @param {Array<string>} cstr2 Second static constraints.
  * @return {boolean} True if the static constraints are equal.
  * @private
  */

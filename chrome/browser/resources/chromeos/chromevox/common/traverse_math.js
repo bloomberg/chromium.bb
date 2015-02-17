@@ -30,14 +30,14 @@ cvox.TraverseMath = function() {
 
   /**
    * Dictionary of all LaTeX elements in the page if there are any.
-   * @type {!Object.<string, !Node>}
+   * @type {!Object<string, !Node>}
    * @private
    */
   this.allTexs_ = {};
 
   /**
    * Dictionary of all MathJaxs elements in the page if there are any.
-   * @type {!Object.<string, !Node>}
+   * @type {!Object<string, !Node>}
    * @private
    */
   this.allMathjaxs_ = {};
@@ -45,7 +45,7 @@ cvox.TraverseMath = function() {
   /**
    * Dictionary of all MathJaxs elements that have not yet been translated at
    * page load or during MathJax rendering.
-   * @type {!Object.<string, !Node>}
+   * @type {!Object<string, !Node>}
    * @private
    */
   this.todoMathjaxs_ = {};
@@ -65,13 +65,13 @@ cvox.TraverseMath = function() {
 
   /**
    * List of domain names.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.allDomains = [];
 
   /**
    * List of style names.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.allStyles = [];
 
@@ -337,8 +337,8 @@ cvox.TraverseMath.prototype.nextParentChild = function(r) {
 
 /**
  * Adds a list of domains and styles to the existing one.
- * @param {Array.<string>} domains List of domain names.
- * @param {Array.<string>} styles List of style names.
+ * @param {Array<string>} domains List of domain names.
+ * @param {Array<string>} styles List of style names.
  */
 cvox.TraverseMath.prototype.addDomainsAndStyles = function(domains, styles) {
   this.allDomains.push.apply(

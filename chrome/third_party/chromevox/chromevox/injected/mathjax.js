@@ -46,7 +46,7 @@ if (typeof(goog) != 'undefined' && goog.require) {
    * Post a message to Chromevox.
    * @param {string} cmd The command to be executed in Chromevox.
    * @param {string} callbackId A string representing the callback id.
-   * @param {Object.<string, *>} args Dictionary of arguments.
+   * @param {Object<string, *>} args Dictionary of arguments.
    */
   cvox.MathJax.postMessage = function(cmd, callbackId, args) {
     channel_.port1.postMessage({'cmd': cmd, 'id': callbackId, 'args': args});

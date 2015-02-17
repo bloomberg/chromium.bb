@@ -108,7 +108,7 @@ cvox.DomUtil.TAG_TO_INFORMATION_TABLE_BRIEF_MSG = {
 
 /**
  * These tags are treated as text formatters.
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 cvox.DomUtil.FORMATTING_TAGS =
     ['B', 'BIG', 'CITE', 'CODE', 'DFN', 'EM', 'I', 'KBD', 'SAMP', 'SMALL',
@@ -946,7 +946,7 @@ cvox.DomUtil.getImageTitle = function(node) {
  * the complete set of ids they map to, so that we can skip elements that
  * just label other elements and not double-speak them. We cache this
  * result and then throw it away at the next event loop.
- * @return {Object.<string, boolean>} Set of all ids that are mapped
+ * @return {Object<string, boolean>} Set of all ids that are mapped
  *     by aria-labelledby.
  */
 cvox.DomUtil.getLabelledByTargets = function() {
@@ -1179,7 +1179,7 @@ cvox.DomUtil.computeHasContent_ = function(node) {
  * is the current node.
  *
  * @param {Node} targetNode The node to get ancestors for.
- * @return {Array.<Node>} An array of ancestors for the targetNode.
+ * @return {Array<Node>} An array of ancestors for the targetNode.
  */
 cvox.DomUtil.getAncestors = function(targetNode) {
   var ancestors = new Array();
@@ -1231,7 +1231,7 @@ cvox.DomUtil.compareAncestors = function(ancestorsA, ancestorsB) {
  * @param {Node} currentNode The current node.
  * @param {boolean=} opt_fallback True returns node's ancestors in the case
  * where node's ancestors is a subset of previousNode's ancestors.
- * @return {Array.<Node>} An array of unique ancestors for the current node
+ * @return {Array<Node>} An array of unique ancestors for the current node
  * (inclusive).
  */
 cvox.DomUtil.getUniqueAncestors = function(
@@ -1968,7 +1968,7 @@ cvox.DomUtil.getContainingTable = function(node, kwargs) {
 
 /**
  * Extracts a table node from a list of nodes.
- * @param {Array.<Node>} nodes The list of nodes.
+ * @param {Array<Node>} nodes The list of nodes.
  * @param {{allowCaptions: (undefined|boolean)}=} kwargs Optional named args.
  *  allowCaptions: If true, will return true even if inside a caption. False
  *    by default.
@@ -2211,7 +2211,7 @@ cvox.DomUtil.countNodes = function(root, p) {
  * using a depth first search.
  * @param {Node} root The root of the tree to search.
  * @param {function(Node) : boolean} p The filter function.
- * @param {Array.<Node>} rv The found nodes are added to this array.
+ * @param {Array<Node>} rv The found nodes are added to this array.
  * @param {boolean} findOne If true we exit after the first found node.
  * @param {number} maxChildCount The max child count. This is used as a kill
  * switch - if there are more nodes than this, terminate the search.
@@ -2259,7 +2259,7 @@ cvox.DomUtil.toArray = function(nodeList) {
 /**
  * Creates a new element with the same attributes and no children.
  * @param {Node|Text} node A node to clone.
- * @param {Object.<string, boolean>} skipattrs Set the attribute to true to
+ * @param {Object<string, boolean>} skipattrs Set the attribute to true to
  * skip it during cloning.
  * @return {Node|Text} The cloned node.
  */
@@ -2287,7 +2287,7 @@ cvox.DomUtil.shallowChildlessClone = function(node, skipattrs) {
 /**
  * Creates a new element with the same attributes and clones of children.
  * @param {Node|Text} node A node to clone.
- * @param {Object.<string, boolean>} skipattrs Set the attribute to true to
+ * @param {Object<string, boolean>} skipattrs Set the attribute to true to
  * skip it during cloning.
  * @return {Node|Text} The cloned node.
  */
@@ -2376,7 +2376,7 @@ cvox.DomUtil.getContainingMath = function(node) {
 
 /**
  * Extracts a math node from a list of nodes.
- * @param {Array.<Node>} nodes The list of nodes.
+ * @param {Array<Node>} nodes The list of nodes.
  * @return {Node} The math node if the list of nodes contains a math node.
  * Null if it does not.
  */
@@ -2405,8 +2405,8 @@ cvox.DomUtil.isMath = function(node) {
 
 /**
  * Specifies node classes in which we expect maths expressions a alt text.
- * @type {{tex: Array.<string>,
- *         asciimath: Array.<string>}}
+ * @type {{tex: Array<string>,
+ *         asciimath: Array<string>}}
  */
 // These are the classes for which we assume they contain Maths in the ALT or
 // TITLE attribute.
@@ -2540,7 +2540,7 @@ cvox.DomUtil.getNodeTagName = function(node) {
 /**
  * Cleaning up a list of nodes to remove empty text nodes.
  * @param {NodeList} nodes The nodes list.
- * @return {!Array.<Node|string|null>} The cleaned up list of nodes.
+ * @return {!Array<Node|string|null>} The cleaned up list of nodes.
  */
 cvox.DomUtil.purgeNodes = function(nodes) {
   return cvox.DomUtil.toArray(nodes).

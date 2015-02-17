@@ -150,7 +150,7 @@ cvox.ExtensionBridge.uniqueId = function() {
 cvox.ExtensionBridge.initBackground = function() {
   var self = cvox.ExtensionBridge;
 
-  /** @type {!Array.<Port>} @private */
+  /** @type {!Array<Port>} @private */
   self.portCache_ = [];
   /** @type {number} */
   self.nextPongId_ = 1;
@@ -164,18 +164,18 @@ cvox.ExtensionBridge.initBackground = function() {
 
     self.portCache_.push(port);
 
-    port.onMessage.addListener(
-        function(message) {
-          if (message[cvox.ExtensionBridge.PING_MSG]) {
-            var pongMessage = {};
-            pongMessage[cvox.ExtensionBridge.PONG_MSG] = self.nextPongId_++;
-            port.postMessage(pongMessage);
-	    return;
-	  }
-          for (var i = 0; i < self.messageListeners.length; i++) {
-            self.messageListeners[i](message, port);
-          }
-        });
+    port.onMessage.addListener(function(message) {
+      if (message[cvox.ExtensionBridge.PING_MSG]) {
+        var pongMessage = {};
+        pongMessage[cvox.ExtensionBridge.PONG_MSG] = self.nextPongId_++;
+        port.postMessage(pongMessage);
+        return;
+      }
+
+      for (var i = 0; i < self.messageListeners.length; i++) {
+        self.messageListeners[i](message, port);
+      }
+    });
 
     port.onDisconnect.addListener(function(message) {
       for (var i = 0; i < self.portCache_.length; i++) {
@@ -235,29 +235,27 @@ cvox.ExtensionBridge.setupBackgroundPort = function() {
   // Set up the connection to the background page.
   var self = cvox.ExtensionBridge;
   self.backgroundPort = chrome.extension.connect({name: self.PORT_NAME});
-  self.backgroundPort.onMessage.addListener(
-      function(message) {
-        if (message[cvox.ExtensionBridge.PONG_MSG]) {
-          self.gotPongFromBackgroundPage(
-              message[cvox.ExtensionBridge.PONG_MSG]);
-        } else {
-          for (var i = 0; i < self.messageListeners.length; i++) {
-            self.messageListeners[i](message, self.backgroundPort);
-          }
-        }
-      });
-  self.backgroundPort.onDisconnect.addListener(
-      function(event) {
-        // If we're not connected yet, don't give up - try again.
-        if (!self.connected) {
-          self.backgroundPort = null;
-	  return;
-	}
+  self.backgroundPort.onMessage.addListener(function(message) {
+    if (message[cvox.ExtensionBridge.PONG_MSG]) {
+      self.gotPongFromBackgroundPage(
+          message[cvox.ExtensionBridge.PONG_MSG]);
+    } else {
+      for (var i = 0; i < self.messageListeners.length; i++) {
+        self.messageListeners[i](message, self.backgroundPort);
+      }
+    }
+  });
+  self.backgroundPort.onDisconnect.addListener(function(event) {
+    // If we're not connected yet, don't give up - try again.
+    if (!self.connected) {
+      self.backgroundPort = null;
+      return;
+    }
 
-        for (var i = 0; i < self.disconnectListeners.length; i++) {
-          self.disconnectListeners[i]();
-        }
-      });
+    for (var i = 0; i < self.disconnectListeners.length; i++) {
+      self.disconnectListeners[i]();
+    }
+  });
 };
 
 /**

@@ -22,7 +22,19 @@ goog.require('cvox.TraverseUtil');
  * An object that represents an active table cell inside the shadow table.
  * @constructor
  */
-function ShadowTableNode() {}
+function ShadowTableNode() {
+  /**
+   * The cells that are row headers of the corresponding active table cell
+   * @type {!Array}
+   */
+  this.rowHeaderCells = [];
+
+  /**
+   * The cells that are column headers of the corresponding active table cell
+   * @type {!Array}
+   */
+  this.colHeaderCells = [];
+}
 
 
 /**
@@ -68,21 +80,6 @@ ShadowTableNode.prototype.activeCell;
 
 
 /**
- * The cells that are row headers of the corresponding active table cell
- * @type {!Array}
- */
-ShadowTableNode.prototype.rowHeaderCells = [];
-
-
-/**
- * The cells that are column headers of the corresponding active table cell
- * @type {!Array}
- */
-ShadowTableNode.prototype.colHeaderCells = [];
-
-
-
-/**
  * Initializes the traversal with the provided table node.
  *
  * @constructor
@@ -114,7 +111,7 @@ cvox.TraverseTable = function(tableNode) {
    * the (1,3) position, eliminating the need to check for predecessor cells
    * with rowspan/colspan every time we traverse the table.
    *
-   * @type {!Array.<Array.<ShadowTableNode>>}
+   * @type {!Array<Array<ShadowTableNode>>}
    * @private
    */
   this.shadowTable_ = [];
@@ -125,7 +122,7 @@ cvox.TraverseTable = function(tableNode) {
    * initialization and then only recalculated if the table changes.
    * This array is used by findHeaderCells() to determine table row headers
    * and column headers.
-   * @type {Array.<ShadowTableNode>}
+   * @type {Array<ShadowTableNode>}
    * @private
    */
   this.candidateHeaders_ = [];
@@ -136,7 +133,7 @@ cvox.TraverseTable = function(tableNode) {
    * other cells) then the first one will be associated with the ID. This means
    * that shadow nodes that have spanned set to true will not be included in
    * this array.
-   * @type {Array.<ShadowTableNode>}
+   * @type {Array<ShadowTableNode>}
    * @private
    */
   this.idToShadowNode_ = [];
@@ -265,7 +262,7 @@ cvox.TraverseTable.prototype.initialize = function(tableNode) {
  * Finds the cell cursor containing the specified node within the table.
  * Returns null if there is no close cell.
  * @param {!Node} node The node for which to find the cursor.
- * @return {Array.<number>} The table index for the node.
+ * @return {Array<number>} The table index for the node.
  */
 cvox.TraverseTable.prototype.findNearestCursor = function(node) {
   // TODO (stoarca): The current structure for representing the
@@ -856,7 +853,7 @@ cvox.TraverseTable.prototype.getCell = function() {
 
 /**
  * Gets the cell at the specified location.
- * @param {Array.<number>} index The index <i, j> of the required cell.
+ * @param {Array<number>} index The index <i, j> of the required cell.
  * @return {?Node} The cell <TD> or <TH> or role='gridcell' node at the
  * specified location. Null if that cell does not exist.
  */
@@ -1220,7 +1217,7 @@ cvox.TraverseTable.prototype.goToCol = function(index) {
 /**
  * Moves to the cell at the specified index <i, j> in the table. Updates the
  * cell cursor.
- * @param {Array.<number>} index The index <i, j> of the required cell.
+ * @param {Array<number>} index The index <i, j> of the required cell.
  * @return {boolean} Either:
  *    1) True if the index is valid and the update has been made.
  *    2) False if the index is not valid (either less than 0, greater than

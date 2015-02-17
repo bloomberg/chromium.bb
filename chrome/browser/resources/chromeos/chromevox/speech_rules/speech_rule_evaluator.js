@@ -23,6 +23,6 @@ cvox.SpeechRuleEvaluator = goog.abstractMethod;
 /**
  * Default evaluation of a node if no speech rule is applicable.
  * @param {!Node} node The target node (or root of subtree).
- * @return {!Array.<cvox.NavDescription>} The resulting description.
+ * @return {!Array<cvox.NavDescription>} The resulting description.
  */
 cvox.SpeechRuleEvaluator.prototype.evaluateDefault = goog.abstractMethod;

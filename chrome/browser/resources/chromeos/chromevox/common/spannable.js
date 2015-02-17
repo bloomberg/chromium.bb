@@ -25,7 +25,7 @@ cvox.Spannable = function(opt_string, opt_annotation) {
 
   /**
    * Spans (annotations).
-   * @type {!Array.<!{ value: *, start: number, end: number }>}
+   * @type {!Array<!{ value: *, start: number, end: number }>}
    * @private
    */
   this.spans_ = [];
@@ -142,7 +142,7 @@ cvox.Spannable.prototype.getSpanInstanceOf = function(constructor) {
 /**
  * Returns all span values which are an instance of a given constructor.
  * @param {!Function} constructor Constructor.
- * @return {!Array.<Object>} Array of object.
+ * @return {!Array<Object>} Array of object.
  */
 cvox.Spannable.prototype.getSpansInstanceOf = function(constructor) {
   var ret = [];
@@ -405,7 +405,7 @@ cvox.Spannable.SerializeInfo_;
 
 /**
  * The serialized format of a spannable.
- * @typedef {{string: string, spans: Array.<cvox.Spannable.SerializedSpan_>}}
+ * @typedef {{string: string, spans: Array<cvox.Spannable.SerializedSpan_>}}
  * @private
  */
 cvox.Spannable.SerializedSpannable_;
@@ -420,7 +420,7 @@ cvox.Spannable.SerializedSpan_;
 
 /**
  * Maps type names to serialization info objects.
- * @type {Object.<string, cvox.Spannable.SerializeInfo_>}
+ * @type {Object<string, cvox.Spannable.SerializeInfo_>}
  * @private
  */
 cvox.Spannable.serializableSpansByName_ = {};
