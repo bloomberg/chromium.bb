@@ -615,10 +615,12 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   ExpectUrlAndOffset(url2_, 150);
 }
 
+// Disabled for flakiness. crbug.com/378158
+//
 // The movements are equal part diagonal, horizontal, and vertical. This should
 // not trigger history navigation.
 IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       TestStaggeredDiagonalSwipe) {
+                       DISABLED_TestStaggeredDiagonalSwipe) {
   if (!IsHistorySwipingSupported())
     return;
 
