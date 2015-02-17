@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_H_
-#define COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_H_
+#ifndef COMPONENTS_AUDIO_MODEM_TEST_RANDOM_SAMPLES_H_
+#define COMPONENTS_AUDIO_MODEM_TEST_RANDOM_SAMPLES_H_
 
 #include <cstddef>
 
@@ -15,7 +15,7 @@ class AudioBus;
 class AudioBusRefCounted;
 }
 
-namespace copresence {
+namespace audio_modem {
 
 // Populate random samples given a random seed into the samples array.
 void PopulateSamples(unsigned int random_seed, size_t size, float* samples);
@@ -24,6 +24,6 @@ void PopulateSamples(unsigned int random_seed, size_t size, float* samples);
 scoped_refptr<media::AudioBusRefCounted>
     CreateRandomAudioRefCounted(int random_seed, int channels, int samples);
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_TEST_AUDIO_TEST_SUPPORT_H_
+#endif  // COMPONENTS_AUDIO_MODEM_TEST_RANDOM_SAMPLES_H_

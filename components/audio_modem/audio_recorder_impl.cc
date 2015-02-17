@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/mediums/audio/audio_recorder_impl.h"
+#include "components/audio_modem/audio_recorder_impl.h"
 
 #include <algorithm>
 #include <vector>
@@ -12,13 +12,13 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "components/copresence/public/copresence_constants.h"
+#include "components/audio_modem/public/audio_modem_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
 
-namespace copresence {
+namespace audio_modem {
 
 namespace {
 
@@ -252,4 +252,4 @@ void AudioRecorderImpl::FlushAudioLoopForTesting() {
   rl.Run();
 }
 
-}  // namespace copresence
+}  // namespace audio_modem

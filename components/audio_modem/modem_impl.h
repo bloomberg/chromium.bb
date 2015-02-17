@@ -1,48 +1,44 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_IMPL_H_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_IMPL_H_
+#ifndef COMPONENTS_AUDIO_MODEM_MODEM_IMPL_H_
+#define COMPONENTS_AUDIO_MODEM_MODEM_IMPL_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/containers/mru_cache.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "components/copresence/mediums/audio/audio_manager.h"
-#include "components/copresence/public/copresence_constants.h"
-#include "components/copresence/timed_map.h"
+#include "components/audio_modem/public/audio_modem_types.h"
+#include "components/audio_modem/public/modem.h"
+#include "media/base/audio_bus.h"
 
 namespace base {
 class Time;
 }
 
-namespace media {
-class AudioBus;
-}
-
-namespace copresence {
+namespace audio_modem {
 
 class AudioPlayer;
 class AudioRecorder;
 class WhispernetClient;
 
-// The AudioManagerImpl class manages the playback and recording of tokens. Once
-// playback or recording is started, it is up to the audio manager to handle
-// the specifics of how this is done. In the future, for example, this class
-// may pause recording and playback to implement carrier sense.
-class AudioManagerImpl final : public AudioManager {
+// The ModemImpl class manages the playback and recording of tokens.
+// Clients should not necessary expect the modem to play or record continuously.
+// In the future, it may timeslice multiple tokens, or implement carrier sense.
+class ModemImpl final : public Modem {
  public:
-  AudioManagerImpl();
-  ~AudioManagerImpl() override;
+  ModemImpl();
+  ~ModemImpl() override;
 
-  // AudioManager overrides:
-  void Initialize(WhispernetClient* whispernet_client,
+  // Modem overrides:
+  void Initialize(WhispernetClient* client,
                   const TokensCallback& tokens_cb) override;
   void StartPlaying(AudioType type) override;
   void StopPlaying(AudioType type) override;
@@ -61,8 +57,8 @@ class AudioManagerImpl final : public AudioManager {
   }
 
  private:
-  using SamplesMap = TimedMap<std::string,
-                              scoped_refptr<media::AudioBusRefCounted>>;
+  using SamplesMap = base::MRUCache<std::string,
+                                    scoped_refptr<media::AudioBusRefCounted>>;
 
   // Receives the audio samples from encoding a token.
   void OnTokenEncoded(AudioType type,
@@ -85,9 +81,9 @@ class AudioManagerImpl final : public AudioManager {
                  const std::string& token,
                  const media::AudioBus* samples);
 
-  WhispernetClient* whispernet_client_;
+  WhispernetClient* client_;
 
-  // Callbacks to send tokens back to the CopresenceManager.
+  // Callbacks to send tokens back to the client.
   TokensCallback tokens_cb_;
 
   // This cancelable callback is passed to the recorder. The recorder's
@@ -119,13 +115,13 @@ class AudioManagerImpl final : public AudioManager {
   // Cache that holds the encoded samples. After reaching its limit, the cache
   // expires the oldest samples first.
   // Indexed using enum AudioType.
-  ScopedVector<SamplesMap> samples_cache_;
+  ScopedVector<SamplesMap> samples_caches_;
 
   base::FilePath dump_tokens_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ModemImpl);
 };
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_IMPL_H_
+#endif  // COMPONENTS_AUDIO_MODEM_MODEM_IMPL_H_

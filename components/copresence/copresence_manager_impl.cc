@@ -11,14 +11,18 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/audio_modem/public/whispernet_client.h"
 #include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/handlers/directive_handler_impl.h"
 #include "components/copresence/handlers/gcm_handler_impl.h"
 #include "components/copresence/proto/rpcs.pb.h"
-#include "components/copresence/public/whispernet_client.h"
 #include "components/copresence/rpc/rpc_handler.h"
 
 using google::protobuf::RepeatedPtrField;
+
+using audio_modem::AUDIBLE;
+using audio_modem::AudioToken;
+using audio_modem::INAUDIBLE;
 
 namespace {
 
@@ -64,6 +68,7 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
           kMaxQueuedMessages) {
   DCHECK(delegate_);
   DCHECK(delegate_->GetWhispernetClient());
+  // TODO(ckehoe): Handle whispernet initialization in the whispernet component.
   delegate_->GetWhispernetClient()->Initialize(
       whispernet_init_callback_.callback());
 

@@ -7,10 +7,10 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "components/audio_modem/test/stub_whispernet_client.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
 #include "components/copresence/handlers/directive_handler_impl.h"
 #include "components/copresence/proto/data.pb.h"
-#include "components/copresence/test/stub_whispernet_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
@@ -56,8 +56,9 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
  public:
   FakeAudioDirectiveHandler() {}
 
-  void Initialize(WhispernetClient* /* whispernet_client */,
-                  const TokensCallback& /* tokens_cb */) override {}
+  void Initialize(
+      audio_modem::WhispernetClient* /* whispernet_client */,
+      const audio_modem::TokensCallback& /* tokens_cb */) override {}
 
   void AddInstruction(const Directive& directive,
                       const std::string& /* op_id */) override {
@@ -69,12 +70,13 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
     removed_operations_.push_back(op_id);
   }
 
-  const std::string PlayingToken(AudioType /* type */) const override {
+  const std::string
+  PlayingToken(audio_modem::AudioType /* type */) const override {
     NOTREACHED();
     return "";
   }
 
-  bool IsPlayingTokenHeard(AudioType /* type */) const override {
+  bool IsPlayingTokenHeard(audio_modem::AudioType /* type */) const override {
     NOTREACHED();
     return false;
   }
@@ -100,7 +102,7 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
 class DirectiveHandlerTest : public testing::Test {
  public:
   DirectiveHandlerTest()
-      : whispernet_client_(new StubWhispernetClient),
+      : whispernet_client_(new audio_modem::StubWhispernetClient),
         audio_handler_(new FakeAudioDirectiveHandler),
         directive_handler_(
             base::Bind(&IgnoreDirectiveUpdates),
@@ -108,10 +110,11 @@ class DirectiveHandlerTest : public testing::Test {
 
  protected:
   void StartDirectiveHandler() {
-    directive_handler_.Start(whispernet_client_.get(), TokensCallback());
+    directive_handler_.Start(whispernet_client_.get(),
+                             audio_modem::TokensCallback());
   }
 
-  scoped_ptr<WhispernetClient> whispernet_client_;
+  scoped_ptr<audio_modem::WhispernetClient> whispernet_client_;
   FakeAudioDirectiveHandler* audio_handler_;
   DirectiveHandlerImpl directive_handler_;
 };

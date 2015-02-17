@@ -19,7 +19,6 @@
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
-#include "components/copresence/public/whispernet_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -72,7 +71,7 @@ copresence::CopresenceManager* CopresenceService::manager() {
   return manager_.get();
 }
 
-copresence::WhispernetClient* CopresenceService::whispernet_client() {
+audio_modem::WhispernetClient* CopresenceService::whispernet_client() {
   if (!whispernet_client_ && !is_shutting_down_)
     whispernet_client_.reset(new ChromeWhispernetClient(browser_context_));
   return whispernet_client_.get();
@@ -209,7 +208,7 @@ CopresenceService::GetAPIKey(const std::string& app_id) const {
   return std::string();
 }
 
-copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
+audio_modem::WhispernetClient* CopresenceService::GetWhispernetClient() {
   return whispernet_client();
 }
 

@@ -1,11 +1,8 @@
 include_rules = [
-  "+base",
+  "+components/audio_modem/public",
+  "+components/audio_modem/test",
   "+components/gcm_driver",
-  "+content/public/browser",
-  "+content/public/test",
   "+google_apis",
-  "+media",
+  "+media/base",
   "+net",
-  "+third_party/webrtc/common_audio",
-  "+url",
 ]

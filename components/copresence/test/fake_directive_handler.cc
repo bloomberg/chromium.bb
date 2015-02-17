@@ -20,12 +20,13 @@ void FakeDirectiveHandler::RemoveDirectives(const std::string& op_id) {
   removed_directives_.push_back(op_id);
 }
 
-const std::string FakeDirectiveHandler::GetCurrentAudioToken(AudioType type)
-    const {
-  return type == AUDIBLE ? "current audible" : "current inaudible";
+const std::string
+FakeDirectiveHandler::GetCurrentAudioToken(audio_modem::AudioType type) const {
+  return type == audio_modem::AUDIBLE ? "current audible" : "current inaudible";
 }
 
-bool FakeDirectiveHandler::IsAudioTokenHeard(AudioType type) const {
+bool FakeDirectiveHandler::IsAudioTokenHeard(
+    audio_modem::AudioType type) const {
   return true;
 }
 

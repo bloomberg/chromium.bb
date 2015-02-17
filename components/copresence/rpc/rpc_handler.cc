@@ -18,6 +18,7 @@
 #undef DeviceCapabilities
 #endif
 
+#include "components/audio_modem/public/audio_modem_types.h"
 #include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/copresence_switches.h"
 #include "components/copresence/handlers/directive_handler.h"
@@ -31,6 +32,10 @@
 #include "net/http/http_status_code.h"
 
 using google::protobuf::MessageLite;
+
+using audio_modem::AUDIBLE;
+using audio_modem::AudioToken;
+using audio_modem::INAUDIBLE;
 
 // TODO(ckehoe): Return error messages for bad requests.
 

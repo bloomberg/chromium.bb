@@ -1,20 +1,21 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/test/audio_test_support.h"
+#include "components/audio_modem/test/random_samples.h"
 
 #include <cstdlib>
 
 #include "media/base/audio_bus.h"
 
-namespace copresence {
+namespace audio_modem {
 
 void PopulateSamples(unsigned int random_seed, size_t size, float* samples) {
+// On Windows, rand() is threadsafe, and rand_r() is not available.
 #if defined(OS_WIN)
   srand(random_seed);
   for (size_t i = 0; i < size; ++i)
-    samples[i] = (2.0 * rand() / RAND_MAX) - 1;
+    samples[i] = (2.0 * rand() / RAND_MAX) - 1;  // NOLINT
 #else
   for (size_t i = 0; i < size; ++i)
     samples[i] = (2.0 * rand_r(&random_seed) / RAND_MAX) - 1;
@@ -30,4 +31,4 @@ CreateRandomAudioRefCounted(int random_seed, int channels, int samples) {
   return bus;
 }
 
-}  // namespace copresence
+}  // namespace audio_modem

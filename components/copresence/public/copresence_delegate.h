@@ -18,10 +18,13 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace audio_modem {
+class WhispernetClient;
+}
+
 namespace copresence {
 
 class Message;
-class WhispernetClient;
 
 // AUDIO_FAIL indicates that we weren't able to hear the audio token that
 // we were playing.
@@ -49,8 +52,8 @@ class CopresenceDelegate {
 
   virtual const std::string GetAPIKey(const std::string& app_id) const = 0;
 
-  // Thw WhispernetClient must outlive the CopresenceManager.
-  virtual WhispernetClient* GetWhispernetClient() = 0;
+  // The WhispernetClient must outlive the CopresenceManager.
+  virtual audio_modem::WhispernetClient* GetWhispernetClient() = 0;
 
   // Clients may optionally provide a GCMDriver to receive messages from.
   // If no driver is available, this can return null.

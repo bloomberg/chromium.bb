@@ -1,16 +1,16 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_IMPL_H_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_IMPL_H_
+#ifndef COMPONENTS_AUDIO_MODEM_AUDIO_RECORDER_IMPL_H_
+#define COMPONENTS_AUDIO_MODEM_AUDIO_RECORDER_IMPL_H_
 
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/copresence/mediums/audio/audio_recorder.h"
+#include "components/audio_modem/audio_recorder.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_converter.h"
@@ -23,7 +23,7 @@ namespace media {
 class AudioBus;
 }
 
-namespace copresence {
+namespace audio_modem {
 
 // The AudioRecorder class will record audio until told to stop.
 class AudioRecorderImpl final
@@ -110,6 +110,6 @@ class AudioRecorderImpl final
   DISALLOW_COPY_AND_ASSIGN(AudioRecorderImpl);
 };
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_RECORDER_IMPL_H_
+#endif  // COMPONENTS_AUDIO_MODEM_AUDIO_RECORDER_IMPL_H_

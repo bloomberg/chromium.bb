@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "components/copresence/public/copresence_constants.h"
-#include "components/copresence/public/whispernet_client.h"
+#include "chrome/browser/copresence/chrome_whispernet_config.h"
+#include "components/audio_modem/public/whispernet_client.h"
 
 namespace content {
 class BrowserContext;
@@ -34,40 +34,39 @@ namespace media {
 class AudioBusRefCounted;
 }
 
-// This class is responsible for communication with our ledger_proxy extension
-// that talks to the whispernet audio library.
-class ChromeWhispernetClient final : public copresence::WhispernetClient {
+// This class is responsible for communication with our whispernet_proxy
+// extension that talks to the whispernet audio library.
+class ChromeWhispernetClient final : public audio_modem::WhispernetClient {
  public:
   // The browser context needs to outlive this class.
   explicit ChromeWhispernetClient(content::BrowserContext* browser_context);
   ~ChromeWhispernetClient() override;
 
   // WhispernetClient overrides:
-  void Initialize(const copresence::SuccessCallback& init_callback) override;
-  void Shutdown() override;
+  void Initialize(const audio_modem::SuccessCallback& init_callback) override;
   void EncodeToken(const std::string& token_str,
-                   copresence::AudioType type) override;
-  void DecodeSamples(copresence::AudioType type,
+                   audio_modem::AudioType type) override;
+  void DecodeSamples(audio_modem::AudioType type,
                      const std::string& samples,
                      const size_t token_length[2]) override;
   void DetectBroadcast() override;
   void RegisterTokensCallback(
-      const copresence::TokensCallback& tokens_callback) override;
+      const audio_modem::TokensCallback& tokens_callback) override;
   void RegisterSamplesCallback(
-      const copresence::SamplesCallback& samples_callback) override;
+      const audio_modem::SamplesCallback& samples_callback) override;
   void RegisterDetectBroadcastCallback(
-      const copresence::SuccessCallback& db_callback) override;
+      const audio_modem::SuccessCallback& db_callback) override;
 
-  copresence::TokensCallback GetTokensCallback() override;
-  copresence::SamplesCallback GetSamplesCallback() override;
-  copresence::SuccessCallback GetDetectBroadcastCallback() override;
-  copresence::SuccessCallback GetInitializedCallback() override;
+  audio_modem::TokensCallback GetTokensCallback() override;
+  audio_modem::SamplesCallback GetSamplesCallback() override;
+  audio_modem::SuccessCallback GetDetectBroadcastCallback() override;
+  audio_modem::SuccessCallback GetInitializedCallback() override;
 
   static const char kWhispernetProxyExtensionId[];
 
  private:
   // Fire an event to configure whispernet with the given audio parameters.
-  void AudioConfiguration(const copresence::config::AudioParamData& params);
+  void AudioConfiguration(const AudioParamData& params);
 
   void SendEventIfLoaded(scoped_ptr<extensions::Event> event);
 
@@ -78,12 +77,12 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
   content::BrowserContext* const browser_context_;
   extensions::EventRouter* const event_router_;
 
-  copresence::SuccessCallback extension_loaded_callback_;
-  copresence::SuccessCallback init_callback_;
+  audio_modem::SuccessCallback extension_loaded_callback_;
+  audio_modem::SuccessCallback init_callback_;
 
-  copresence::TokensCallback tokens_callback_;
-  copresence::SamplesCallback samples_callback_;
-  copresence::SuccessCallback db_callback_;
+  audio_modem::TokensCallback tokens_callback_;
+  audio_modem::SamplesCallback samples_callback_;
+  audio_modem::SuccessCallback db_callback_;
 
   ScopedVector<extensions::Event> queued_events_;
   bool extension_loaded_;

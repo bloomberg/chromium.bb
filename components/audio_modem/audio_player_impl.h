@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_IMPL_H_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_IMPL_H_
+#ifndef COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_IMPL_H_
+#define COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_IMPL_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "components/copresence/mediums/audio/audio_player.h"
+#include "components/audio_modem/audio_player.h"
 #include "media/audio/audio_io.h"
 
 namespace media {
@@ -19,7 +19,7 @@ class AudioBus;
 class AudioBusRefCounted;
 }
 
-namespace copresence {
+namespace audio_modem {
 
 // The AudioPlayerImpl class will play a set of samples till it is told to stop.
 class AudioPlayerImpl final
@@ -83,6 +83,6 @@ class AudioPlayerImpl final
   DISALLOW_COPY_AND_ASSIGN(AudioPlayerImpl);
 };
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_IMPL_H_
+#endif  // COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_IMPL_H_

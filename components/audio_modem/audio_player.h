@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_H_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_H_
+#ifndef COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_H_
+#define COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_H_
 
 #include <vector>
 
@@ -14,7 +14,7 @@ namespace media {
 class AudioBusRefCounted;
 }
 
-namespace copresence {
+namespace audio_modem {
 
 // The AudioPlayerImpl class will play a set of samples till it is told to stop.
 class AudioPlayer {
@@ -38,6 +38,6 @@ class AudioPlayer {
   virtual ~AudioPlayer() {}
 };
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_PLAYER_H_
+#endif  // COMPONENTS_AUDIO_MODEM_AUDIO_PLAYER_H_

@@ -11,8 +11,6 @@
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/common/extensions/api/copresence_private.h"
-#include "components/copresence/public/copresence_constants.h"
-#include "components/copresence/public/whispernet_client.h"
 #include "media/base/audio_bus.h"
 
 namespace extensions {
@@ -24,7 +22,8 @@ namespace SendInitialized = api::copresence_private::SendInitialized;
 
 // Copresence Private functions.
 
-copresence::WhispernetClient* CopresencePrivateFunction::GetWhispernetClient() {
+audio_modem::WhispernetClient*
+CopresencePrivateFunction::GetWhispernetClient() {
   CopresenceService* service =
       CopresenceService::GetFactoryInstance()->Get(browser_context());
   return service ? service->whispernet_client() : NULL;
@@ -39,9 +38,9 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
 
   scoped_ptr<SendFound::Params> params(SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  std::vector<copresence::AudioToken> tokens;
+  std::vector<audio_modem::AudioToken> tokens;
   for (size_t i = 0; i < params->tokens.size(); ++i) {
-    tokens.push_back(copresence::AudioToken(params->tokens[i]->token,
+    tokens.push_back(audio_modem::AudioToken(params->tokens[i]->token,
                                             params->tokens[i]->audible));
   }
   GetWhispernetClient()->GetTokensCallback().Run(tokens);
@@ -66,7 +65,7 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
          params->samples.size());
 
   GetWhispernetClient()->GetSamplesCallback().Run(
-      params->token.audible ? copresence::AUDIBLE : copresence::INAUDIBLE,
+      params->token.audible ? audio_modem::AUDIBLE : audio_modem::INAUDIBLE,
       params->token.token, samples);
   return RespondNow(NoArguments());
 }

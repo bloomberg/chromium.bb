@@ -28,12 +28,13 @@ class DirectiveHandlerImpl final : public DirectiveHandler {
   ~DirectiveHandlerImpl() override;
 
   // DirectiveHandler overrides.
-  void Start(WhispernetClient* whispernet_client,
-             const TokensCallback& tokens_cb) override;
+  void Start(audio_modem::WhispernetClient* whispernet_client,
+             const audio_modem::TokensCallback& tokens_cb) override;
   void AddDirective(const Directive& directive) override;
   void RemoveDirectives(const std::string& op_id) override;
-  const std::string GetCurrentAudioToken(AudioType type) const override;
-  bool IsAudioTokenHeard(AudioType type) const override;
+  const std::string
+  GetCurrentAudioToken(audio_modem::AudioType type) const override;
+  bool IsAudioTokenHeard(audio_modem::AudioType type) const override;
 
  private:
   // Starts actually running a directive.

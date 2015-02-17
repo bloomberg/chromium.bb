@@ -1,25 +1,25 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_H_
-#define COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_H_
+#ifndef COMPONENTS_AUDIO_MODEM_PUBLIC_MODEM_H_
+#define COMPONENTS_AUDIO_MODEM_PUBLIC_MODEM_H_
 
 #include <string>
 
-#include "base/callback.h"
-#include "components/copresence/public/copresence_constants.h"
+#include "base/memory/scoped_ptr.h"
+#include "components/audio_modem/public/audio_modem_types.h"
 
-namespace copresence {
+namespace audio_modem {
 
 class WhispernetClient;
 
-class AudioManager {
+class Modem {
  public:
-  virtual ~AudioManager() {}
+  virtual ~Modem() {}
 
   // Initializes the object. Do not use this object before calling this method.
-  virtual void Initialize(WhispernetClient* whispernet_client,
+  virtual void Initialize(WhispernetClient* client,
                           const TokensCallback& tokens_cb) = 0;
 
   virtual void StartPlaying(AudioType type) = 0;
@@ -36,8 +36,10 @@ class AudioManager {
   virtual bool IsPlayingTokenHeard(AudioType type) = 0;
 
   virtual void SetTokenLength(AudioType type, size_t token_length) = 0;
+
+  static scoped_ptr<Modem> Create();
 };
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_MEDIUMS_AUDIO_AUDIO_MANAGER_H_
+#endif  // COMPONENTS_AUDIO_MODEM_PUBLIC_MODEM_H_

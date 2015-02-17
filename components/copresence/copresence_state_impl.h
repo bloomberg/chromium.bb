@@ -17,7 +17,6 @@
 namespace copresence {
 
 class Directive;
-struct AudioToken;
 struct ReceivedToken;
 struct TransmittedToken;
 

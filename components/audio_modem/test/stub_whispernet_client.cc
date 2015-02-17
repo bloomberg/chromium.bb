@@ -1,10 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/test/stub_whispernet_client.h"
+#include "components/audio_modem/test/stub_whispernet_client.h"
 
-namespace copresence {
+namespace audio_modem {
 
 StubWhispernetClient::StubWhispernetClient(
     scoped_refptr<media::AudioBusRefCounted> samples,
@@ -56,4 +56,4 @@ SuccessCallback StubWhispernetClient::GetInitializedCallback() {
   return SuccessCallback();
 }
 
-}  // namespace copresence
+}  // namespace audio_modem

@@ -17,6 +17,10 @@
 #include "components/copresence/public/copresence_manager.h"
 #include "components/copresence/timed_map.h"
 
+namespace audio_modem {
+struct AudioToken;
+}
+
 namespace base {
 class Timer;
 }
@@ -32,7 +36,6 @@ class GCMHandler;
 class ReportRequest;
 class RpcHandler;
 class SubscribedMessage;
-class WhispernetClient;
 
 // The implementation for CopresenceManager. Responsible primarily for
 // client-side initialization. The RpcHandler handles all the details
@@ -58,7 +61,7 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   // Handle tokens decoded by Whispernet.
   // TODO(ckehoe): Replace AudioToken with ReceivedToken.
-  void ReceivedTokens(const std::vector<AudioToken>& tokens);
+  void ReceivedTokens(const std::vector<audio_modem::AudioToken>& tokens);
 
   // Verifies that we can hear the audio we're playing.
   // This gets called every kAudioCheckIntervalMs milliseconds.

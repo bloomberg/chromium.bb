@@ -17,8 +17,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/copresence/public/copresence_constants.h"
+#include "components/audio_modem/public/whispernet_client.h"
 #include "media/base/audio_bus.h"
+
+using audio_modem::WhispernetClient;
+using audio_modem::AUDIBLE;
+using audio_modem::INAUDIBLE;
 
 namespace {
 
@@ -29,8 +33,7 @@ const char kNineZeros[] = "MDAwMDAwMDAw";
 
 const size_t kTokenLengths[] = {6, 6};
 
-copresence::WhispernetClient* GetWhispernetClient(
-    content::BrowserContext* context) {
+WhispernetClient* GetWhispernetClient(content::BrowserContext* context) {
   extensions::CopresenceService* service =
       extensions::CopresenceService::GetFactoryInstance()->Get(context);
   return service ? service->whispernet_client() : NULL;
@@ -71,17 +74,17 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
   }
 
   void EncodeTokenAndSaveSamples(bool audible, const std::string& token) {
-    copresence::WhispernetClient* client = GetWhispernetClient(context_);
+    WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
     run_loop_.reset(new base::RunLoop());
-    client->RegisterSamplesCallback(base::Bind(
-        &ChromeWhispernetClientTest::SamplesCallback, base::Unretained(this)));
+    client->RegisterSamplesCallback(
+        base::Bind(&ChromeWhispernetClientTest::SamplesCallback,
+                   base::Unretained(this)));
     expected_token_ = token;
     expected_audible_ = audible;
 
-    client->EncodeToken(token,
-                        audible ? copresence::AUDIBLE : copresence::INAUDIBLE);
+    client->EncodeToken(token, audible ? AUDIBLE : INAUDIBLE);
     run_loop_->Run();
 
     EXPECT_GT(saved_samples_->frames(), 0);
@@ -90,7 +93,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
   void DecodeSamplesAndVerifyToken(bool expect_audible,
                                    const std::string& expected_token,
                                    const size_t token_length[2]) {
-    copresence::WhispernetClient* client = GetWhispernetClient(context_);
+    WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
     run_loop_.reset(new base::RunLoop());
@@ -113,13 +116,13 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
            sizeof(float) * saved_samples_->frames());
 
     client->DecodeSamples(
-        expect_audible ? copresence::AUDIBLE : copresence::INAUDIBLE,
+        expect_audible ? AUDIBLE : INAUDIBLE,
         AudioBusToString(samples_bus), token_length);
     run_loop_->Run();
   }
 
   void DetectBroadcast() {
-    copresence::WhispernetClient* client = GetWhispernetClient(context_);
+    WhispernetClient* client = GetWhispernetClient(context_);
     ASSERT_TRUE(client);
 
     run_loop_.reset(new base::RunLoop());
@@ -138,17 +141,17 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
   }
 
   void SamplesCallback(
-      copresence::AudioType type,
+      audio_modem::AudioType type,
       const std::string& token,
       const scoped_refptr<media::AudioBusRefCounted>& samples) {
     EXPECT_EQ(expected_token_, token);
-    EXPECT_EQ(expected_audible_, type == copresence::AUDIBLE);
+    EXPECT_EQ(expected_audible_, type == AUDIBLE);
     saved_samples_ = samples;
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();
   }
 
-  void TokensCallback(const std::vector<copresence::AudioToken>& tokens) {
+  void TokensCallback(const std::vector<audio_modem::AudioToken>& tokens) {
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();
 

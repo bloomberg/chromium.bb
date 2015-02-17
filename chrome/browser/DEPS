@@ -11,6 +11,8 @@ include_rules = [
   "+chrome_elf/dll_hash",
   "+chromeos",
   "+components/app_modal",
+  "+components/audio_modem/public",
+  "+components/audio_modem/test",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",

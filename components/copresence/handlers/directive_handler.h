@@ -8,12 +8,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/copresence/public/copresence_constants.h"
+#include "components/audio_modem/public/whispernet_client.h"
 
 namespace copresence {
 
 class Directive;
-class WhispernetClient;
 
 // The directive handler manages transmit and receive directives.
 class DirectiveHandler {
@@ -21,14 +20,14 @@ class DirectiveHandler {
   DirectiveHandler() {}
   virtual ~DirectiveHandler() {}
 
-  // Starts processing directives with the provided Whispernet client.
+  // Starts processing directives with the provided Whispernet delegate.
   // Directives will be queued until this function is called.
   // |whispernet_client| is owned by the caller and must outlive the
   // DirectiveHandler.
   // |tokens_cb| is called for all audio tokens found in recorded audio.
   // TODO(ckehoe): This is no longer needed. Merge into the constructor.
-  virtual void Start(WhispernetClient* whispernet_client,
-                     const TokensCallback& tokens_cb) = 0;
+  virtual void Start(audio_modem::WhispernetClient* whispernet_client,
+                     const audio_modem::TokensCallback& tokens_cb) = 0;
 
   // Adds a directive to handle.
   virtual void AddDirective(const Directive& directive) = 0;
@@ -36,10 +35,11 @@ class DirectiveHandler {
   // Removes any directives associated with the given operation id.
   virtual void RemoveDirectives(const std::string& op_id) = 0;
 
-  // TODO(rkc): Too many audio specific functions here.
-  // Find a better way to get this information to the copresence manager.
-  virtual const std::string GetCurrentAudioToken(AudioType type) const = 0;
-  virtual bool IsAudioTokenHeard(AudioType type) const = 0;
+  // TODO(ckehoe): Move the Modem to be owned by CopresenceManager.
+  // Then this will not need to be passed all the way down the tree.
+  virtual const std::string
+  GetCurrentAudioToken(audio_modem::AudioType type) const = 0;
+  virtual bool IsAudioTokenHeard(audio_modem::AudioType type) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DirectiveHandler);

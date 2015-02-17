@@ -7,7 +7,7 @@
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
-namespace copresence {
+namespace audio_modem {
 class WhispernetClient;
 }
 
@@ -15,7 +15,7 @@ namespace extensions {
 
 class CopresencePrivateFunction : public ChromeUIThreadExtensionFunction {
  protected:
-  copresence::WhispernetClient* GetWhispernetClient();
+  audio_modem::WhispernetClient* GetWhispernetClient();
   ~CopresencePrivateFunction() override {}
 };
 

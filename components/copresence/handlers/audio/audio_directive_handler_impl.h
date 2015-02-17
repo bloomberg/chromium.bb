@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "components/audio_modem/public/modem.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
 #include "components/copresence/public/copresence_constants.h"
 
@@ -41,20 +43,20 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
       const DirectivesCallback& update_directives_callback);
   AudioDirectiveHandlerImpl(
       const DirectivesCallback& update_directives_callback,
-      scoped_ptr<AudioManager> audio_manager,
+      scoped_ptr<audio_modem::Modem> audio_modem,
       scoped_ptr<base::Timer> timer,
       const scoped_refptr<TickClockRefCounted>& clock);
 
   ~AudioDirectiveHandlerImpl() override;
 
   // AudioDirectiveHandler overrides:
-  void Initialize(WhispernetClient* whispernet_client,
-                  const TokensCallback& tokens_cb) override;
+  void Initialize(audio_modem::WhispernetClient* whispernet_client,
+                  const audio_modem::TokensCallback& tokens_cb) override;
   void AddInstruction(const Directive& directive,
                       const std::string& op_id) override;
   void RemoveInstructions(const std::string& op_id) override;
-  const std::string PlayingToken(AudioType type) const override;
-  bool IsPlayingTokenHeard(AudioType type) const override;
+  const std::string PlayingToken(audio_modem::AudioType type) const override;
+  bool IsPlayingTokenHeard(audio_modem::AudioType type) const override;
 
  private:
   // Processes the next active instruction,
@@ -67,7 +69,7 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
   bool GetNextInstructionExpiry(base::TimeTicks* next_event);
 
   DirectivesCallback update_directives_callback_;
-  scoped_ptr<AudioManager> audio_manager_;
+  scoped_ptr<audio_modem::Modem> audio_modem_;
   scoped_ptr<base::Timer> audio_event_timer_;
   scoped_refptr<TickClockRefCounted> clock_;
 

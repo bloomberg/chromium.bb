@@ -5,31 +5,42 @@
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/copresence/chrome_whispernet_config.h"
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/api/copresence_private.h"
-#include "components/copresence/public/copresence_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 
+using audio_modem::AUDIBLE;
+using audio_modem::AudioType;
+using audio_modem::BOTH;
+using audio_modem::INAUDIBLE;
+using audio_modem::SamplesCallback;
+using audio_modem::SuccessCallback;
+using audio_modem::TokensCallback;
+
+namespace copresence_private = extensions::api::copresence_private;
+
 namespace {
 
-copresence::config::AudioParamData GetDefaultAudioConfig() {
-  copresence::config::AudioParamData config_data = {};
+AudioParamData GetDefaultAudioConfig() {
+  AudioParamData config_data = {};
   config_data.audio_dtmf.coder_sample_rate =
-      config_data.audio_dsss.coder_sample_rate = copresence::kDefaultSampleRate;
+      config_data.audio_dsss.coder_sample_rate =
+          audio_modem::kDefaultSampleRate;
   config_data.audio_dtmf.num_repetitions_to_play =
       config_data.audio_dsss.num_repetitions_to_play =
-          copresence::kDefaultRepetitions;
+          audio_modem::kDefaultRepetitions;
 
-  config_data.audio_dsss.upsampling_factor = copresence::kDefaultBitsPerSample;
+  config_data.audio_dsss.upsampling_factor = audio_modem::kDefaultBitsPerSample;
   config_data.audio_dsss.desired_carrier_frequency =
-      copresence::kDefaultCarrierFrequency;
+      audio_modem::kDefaultCarrierFrequency;
 
-  config_data.recording_channels = copresence::kDefaultChannels;
+  config_data.recording_channels = audio_modem::kDefaultChannels;
 
   return config_data;
 }
@@ -55,7 +66,7 @@ ChromeWhispernetClient::~ChromeWhispernetClient() {
 }
 
 void ChromeWhispernetClient::Initialize(
-    const copresence::SuccessCallback& init_callback) {
+    const SuccessCallback& init_callback) {
   DVLOG(3) << "Initializing whispernet proxy client.";
   init_callback_ = init_callback;
 
@@ -82,42 +93,34 @@ void ChromeWhispernetClient::Initialize(
   AudioConfiguration(GetDefaultAudioConfig());
 }
 
-void ChromeWhispernetClient::Shutdown() {
-  extension_loaded_callback_.Reset();
-  init_callback_.Reset();
-  tokens_callback_.Reset();
-  samples_callback_.Reset();
-  db_callback_.Reset();
-}
-
 void ChromeWhispernetClient::EncodeToken(const std::string& token_str,
-                                         copresence::AudioType type) {
-  extensions::api::copresence_private::EncodeTokenParameters params;
+                                         AudioType type) {
+  copresence_private::EncodeTokenParameters params;
   params.token.token = token_str;
-  params.token.audible = type == copresence::AUDIBLE;
+  params.token.audible = type == AUDIBLE;
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::api::copresence_private::OnEncodeTokenRequest::kEventName,
-      extensions::api::copresence_private::OnEncodeTokenRequest::Create(params),
+      copresence_private::OnEncodeTokenRequest::kEventName,
+      copresence_private::OnEncodeTokenRequest::Create(params),
       browser_context_));
 
   SendEventIfLoaded(event.Pass());
 }
 
-void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
+void ChromeWhispernetClient::DecodeSamples(AudioType type,
                                            const std::string& samples,
                                            const size_t token_length[2]) {
-  extensions::api::copresence_private::DecodeSamplesParameters params;
+  copresence_private::DecodeSamplesParameters params;
   params.samples.assign(samples.begin(), samples.end());
   params.decode_audible =
-      type == copresence::AUDIBLE || type == copresence::BOTH;
+      type == AUDIBLE || type == BOTH;
   params.decode_inaudible =
-      type == copresence::INAUDIBLE || type == copresence::BOTH;
-  params.audible_token_length = token_length[copresence::AUDIBLE];
-  params.inaudible_token_length = token_length[copresence::INAUDIBLE];
+      type == INAUDIBLE || type == BOTH;
+  params.audible_token_length = token_length[AUDIBLE];
+  params.inaudible_token_length = token_length[INAUDIBLE];
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::api::copresence_private::OnDecodeSamplesRequest::kEventName,
-      extensions::api::copresence_private::OnDecodeSamplesRequest::Create(
+      copresence_private::OnDecodeSamplesRequest::kEventName,
+      copresence_private::OnDecodeSamplesRequest::Create(
           params),
       browser_context_));
 
@@ -126,7 +129,7 @@ void ChromeWhispernetClient::DecodeSamples(copresence::AudioType type,
 
 void ChromeWhispernetClient::DetectBroadcast() {
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::api::copresence_private::OnDetectBroadcastRequest::kEventName,
+      copresence_private::OnDetectBroadcastRequest::kEventName,
       make_scoped_ptr(new base::ListValue()),
       browser_context_));
 
@@ -134,42 +137,40 @@ void ChromeWhispernetClient::DetectBroadcast() {
 }
 
 void ChromeWhispernetClient::RegisterTokensCallback(
-    const copresence::TokensCallback& tokens_callback) {
+    const TokensCallback& tokens_callback) {
   tokens_callback_ = tokens_callback;
 }
 
 void ChromeWhispernetClient::RegisterSamplesCallback(
-    const copresence::SamplesCallback& samples_callback) {
+    const SamplesCallback& samples_callback) {
   samples_callback_ = samples_callback;
 }
 
 void ChromeWhispernetClient::RegisterDetectBroadcastCallback(
-    const copresence::SuccessCallback& db_callback) {
+    const SuccessCallback& db_callback) {
   db_callback_ = db_callback;
 }
 
-copresence::TokensCallback ChromeWhispernetClient::GetTokensCallback() {
+TokensCallback ChromeWhispernetClient::GetTokensCallback() {
   return tokens_callback_;
 }
 
-copresence::SamplesCallback ChromeWhispernetClient::GetSamplesCallback() {
+SamplesCallback ChromeWhispernetClient::GetSamplesCallback() {
   return samples_callback_;
 }
 
-copresence::SuccessCallback
-ChromeWhispernetClient::GetDetectBroadcastCallback() {
+SuccessCallback ChromeWhispernetClient::GetDetectBroadcastCallback() {
   return db_callback_;
 }
 
-copresence::SuccessCallback ChromeWhispernetClient::GetInitializedCallback() {
+SuccessCallback ChromeWhispernetClient::GetInitializedCallback() {
   return extension_loaded_callback_;
 }
 
 // Private:
 
-void ChromeWhispernetClient::AudioConfiguration(
-    const copresence::config::AudioParamData& params) {
-  extensions::api::copresence_private::AudioParameters audio_params;
+void ChromeWhispernetClient::AudioConfiguration(const AudioParamData& params) {
+  copresence_private::AudioParameters audio_params;
 
   // We serialize AudioConfigData to a string and send it to the whispernet
   // nacl wrapper.
@@ -178,8 +179,8 @@ void ChromeWhispernetClient::AudioConfiguration(
   memcpy(vector_as_array(&audio_params.param_data), &params, params_size);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::api::copresence_private::OnConfigAudio::kEventName,
-      extensions::api::copresence_private::OnConfigAudio::Create(audio_params),
+      copresence_private::OnConfigAudio::kEventName,
+      copresence_private::OnConfigAudio::Create(audio_params),
       browser_context_));
 
   SendEventIfLoaded(event.Pass());

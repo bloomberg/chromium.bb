@@ -35,8 +35,9 @@ DirectiveHandlerImpl::DirectiveHandlerImpl(
 
 DirectiveHandlerImpl::~DirectiveHandlerImpl() {}
 
-void DirectiveHandlerImpl::Start(WhispernetClient* whispernet_client,
-                                 const TokensCallback& tokens_cb) {
+void DirectiveHandlerImpl::Start(
+    audio_modem::WhispernetClient* whispernet_client,
+    const audio_modem::TokensCallback& tokens_cb) {
   audio_handler_->Initialize(whispernet_client, tokens_cb);
   DVLOG(2) << "Directive handler starting";
 
@@ -93,13 +94,14 @@ void DirectiveHandlerImpl::RemoveDirectives(const std::string& op_id) {
   }
 }
 
-const std::string DirectiveHandlerImpl::GetCurrentAudioToken(AudioType type)
-    const {
+const std::string DirectiveHandlerImpl::GetCurrentAudioToken(
+    audio_modem::AudioType type) const {
   // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
   return is_started_ ? audio_handler_->PlayingToken(type) : "";
 }
 
-bool DirectiveHandlerImpl::IsAudioTokenHeard(AudioType type) const {
+bool DirectiveHandlerImpl::IsAudioTokenHeard(
+    audio_modem::AudioType type) const {
   return is_started_ ? audio_handler_->IsPlayingTokenHeard(type) : false;
 }
 

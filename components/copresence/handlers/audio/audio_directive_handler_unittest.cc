@@ -10,12 +10,16 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "components/audio_modem/public/modem.h"
+#include "components/audio_modem/test/random_samples.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
-#include "components/copresence/mediums/audio/audio_manager.h"
 #include "components/copresence/proto/data.pb.h"
-#include "components/copresence/test/audio_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using audio_modem::AUDIBLE;
+using audio_modem::AudioType;
+using audio_modem::INAUDIBLE;
 
 namespace copresence {
 
@@ -35,14 +39,14 @@ const Directive CreateDirective(TokenInstructionType type,
 
 }  // namespace
 
-class AudioManagerStub final : public AudioManager {
+class StubModem final : public audio_modem::Modem {
  public:
-  AudioManagerStub() {}
-  ~AudioManagerStub() override {}
+  StubModem() {}
+  ~StubModem() override {}
 
   // AudioManager overrides:
-  void Initialize(WhispernetClient* whispernet_client,
-                  const TokensCallback& tokens_cb) override {}
+  void Initialize(audio_modem::WhispernetClient* whispernet_client,
+                  const audio_modem::TokensCallback& tokens_cb) override {}
   void StartPlaying(AudioType type) override { playing_[type] = true; }
   void StopPlaying(AudioType type) override { playing_[type] = false; }
   void StartRecording(AudioType type) override { recording_[type] = true; }
@@ -60,23 +64,23 @@ class AudioManagerStub final : public AudioManager {
   bool playing_[2];
   bool recording_[2];
 
-  DISALLOW_COPY_AND_ASSIGN(AudioManagerStub);
+  DISALLOW_COPY_AND_ASSIGN(StubModem);
 };
 
 class AudioDirectiveHandlerTest : public testing::Test {
  public:
   AudioDirectiveHandlerTest() {
-    manager_ptr_ = new AudioManagerStub;
+    modem_ptr_ = new StubModem;
     timer_ptr_ = new base::MockTimer(false, false);
     clock_ptr_ = new base::SimpleTestTickClock;
 
     directive_handler_.reset(new AudioDirectiveHandlerImpl(
         base::Bind(&AudioDirectiveHandlerTest::GetDirectiveUpdates,
                    base::Unretained(this)),
-        make_scoped_ptr<AudioManager>(manager_ptr_),
+        make_scoped_ptr<audio_modem::Modem>(modem_ptr_),
         make_scoped_ptr<base::Timer>(timer_ptr_),
         make_scoped_refptr(new TickClockRefCounted(clock_ptr_))));
-    directive_handler_->Initialize(nullptr, TokensCallback());
+    directive_handler_->Initialize(nullptr, audio_modem::TokensCallback());
   }
   ~AudioDirectiveHandlerTest() override {}
 
@@ -85,9 +89,9 @@ class AudioDirectiveHandlerTest : public testing::Test {
     return current_directives_;
   }
 
-  bool IsPlaying(AudioType type) { return manager_ptr_->IsPlaying(type); }
+  bool IsPlaying(AudioType type) { return modem_ptr_->IsPlaying(type); }
 
-  bool IsRecording(AudioType type) { return manager_ptr_->IsRecording(type); }
+  bool IsRecording(AudioType type) { return modem_ptr_->IsRecording(type); }
 
   // This order is important. We want the message loop to get created before
   // our the audio directive handler since the directive list ctor (invoked
@@ -98,7 +102,7 @@ class AudioDirectiveHandlerTest : public testing::Test {
   std::vector<Directive> current_directives_;
 
   // Unowned.
-  AudioManagerStub* manager_ptr_;
+  StubModem* modem_ptr_;
   base::MockTimer* timer_ptr_;
   base::SimpleTestTickClock* clock_ptr_;
 

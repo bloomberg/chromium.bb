@@ -1,14 +1,14 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/mediums/audio/audio_player.h"
+#include "components/audio_modem/audio_player.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "components/copresence/mediums/audio/audio_player_impl.h"
-#include "components/copresence/public/copresence_constants.h"
-#include "components/copresence/test/audio_test_support.h"
+#include "components/audio_modem/audio_player_impl.h"
+#include "components/audio_modem/public/audio_modem_types.h"
+#include "components/audio_modem/test/random_samples.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
@@ -68,7 +68,7 @@ class TestAudioOutputStream : public media::AudioOutputStream {
 
 }  // namespace
 
-namespace copresence {
+namespace audio_modem {
 
 class AudioPlayerTest : public testing::Test,
                         public base::SupportsWeakPtr<AudioPlayerTest> {
@@ -208,4 +208,4 @@ TEST_F(AudioPlayerTest, PlayingEndToEndRepeated) {
   DeletePlayer();
 }
 
-}  // namespace copresence
+}  // namespace audio_modem

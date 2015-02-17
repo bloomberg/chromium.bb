@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_TEST_STUB_WHISPERNET_CLIENT_H_
-#define COMPONENTS_COPRESENCE_TEST_STUB_WHISPERNET_CLIENT_H_
+#ifndef COMPONENTS_AUDIO_MODEM_TEST_STUB_WHISPERNET_CLIENT_H_
+#define COMPONENTS_AUDIO_MODEM_TEST_STUB_WHISPERNET_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -11,11 +11,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/copresence/public/whispernet_client.h"
-#include "components/copresence/tokens.h"
+#include "components/audio_modem/public/whispernet_client.h"
 #include "media/base/audio_bus.h"
 
-namespace copresence {
+namespace audio_modem {
 
 // A simple WhispernetClient for testing.
 class StubWhispernetClient final : public WhispernetClient {
@@ -30,7 +29,6 @@ class StubWhispernetClient final : public WhispernetClient {
   ~StubWhispernetClient() override;
 
   void Initialize(const SuccessCallback& init_callback) override;
-  void Shutdown() override {}
 
   void EncodeToken(const std::string& token, AudioType type) override;
   void DecodeSamples(AudioType type,
@@ -57,6 +55,6 @@ class StubWhispernetClient final : public WhispernetClient {
   DISALLOW_COPY_AND_ASSIGN(StubWhispernetClient);
 };
 
-}  // namespace copresence
+}  // namespace audio_modem
 
-#endif  // COMPONENTS_COPRESENCE_TEST_STUB_WHISPERNET_CLIENT_H_
+#endif  // COMPONENTS_AUDIO_MODEM_TEST_STUB_WHISPERNET_CLIENT_H_

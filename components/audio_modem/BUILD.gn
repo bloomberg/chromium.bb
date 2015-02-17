@@ -1,0 +1,29 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("audio_modem") {
+  sources = [
+    "audio_player.h",
+    "audio_player_impl.cc",
+    "audio_player_impl.h",
+    "audio_recorder.h",
+    "audio_recorder_impl.cc",
+    "audio_recorder_impl.h",
+    "constants.cc",
+    "modem_impl.cc",
+    "modem_impl.h",
+    "public/modem.h",
+    "public/audio_modem_types.h",
+    "public/whispernet_client.h",
+    "audio_modem_switches.cc",
+    "audio_modem_switches.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content",
+    "//media",
+    "//third_party/webrtc/common_audio",
+  ]
+}

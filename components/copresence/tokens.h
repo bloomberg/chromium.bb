@@ -12,15 +12,6 @@
 
 namespace copresence {
 
-struct AudioToken final {
-  AudioToken(const std::string& token, bool audible)
-      : token(token),
-        audible(audible) {}
-
-  std::string token;
-  bool audible;
-};
-
 // It's an error to define these constructors inline,
 // so they're defined in tokens.cc.
 

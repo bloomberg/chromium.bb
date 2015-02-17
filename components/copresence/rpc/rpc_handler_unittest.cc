@@ -12,14 +12,14 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "components/audio_modem/public/modem.h"
+#include "components/audio_modem/test/stub_whispernet_client.h"
 #include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/handlers/directive_handler.h"
-#include "components/copresence/mediums/audio/audio_manager.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/test/fake_directive_handler.h"
-#include "components/copresence/test/stub_whispernet_client.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -29,6 +29,9 @@ using google::protobuf::RepeatedPtrField;
 using testing::ElementsAre;
 using testing::Property;
 using testing::SizeIs;
+
+using audio_modem::AudioToken;
+using audio_modem::WhispernetClient;
 
 namespace copresence {
 
@@ -44,7 +47,7 @@ void IgnoreMessages(
 class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
  public:
   RpcHandlerTest()
-      : whispernet_client_(new StubWhispernetClient),
+      : whispernet_client_(new audio_modem::StubWhispernetClient),
         // TODO(ckehoe): Use a FakeCopresenceState here
         // and test that it gets called correctly.
         state_(new CopresenceStateImpl),

@@ -18,9 +18,12 @@
 #include "components/copresence/public/copresence_delegate.h"
 #include "components/copresence/timed_map.h"
 
+namespace audio_modem {
+struct AudioToken;
+}
+
 namespace copresence {
 
-struct AudioToken;
 class CopresenceDelegate;
 class CopresenceStateImpl;
 class DirectiveHandler;
@@ -85,7 +88,7 @@ class RpcHandler {
 
   // Report a set of tokens to the server for a given medium.
   // Uses all active auth tokens (if any).
-  void ReportTokens(const std::vector<AudioToken>& tokens);
+  void ReportTokens(const std::vector<audio_modem::AudioToken>& tokens);
 
  private:
   // A queued ReportRequest along with its metadata.

@@ -1,15 +1,17 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/mediums/audio/audio_recorder.h"
+#include "components/audio_modem/audio_recorder.h"
+
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/aligned_memory.h"
 #include "base/run_loop.h"
-#include "components/copresence/mediums/audio/audio_recorder_impl.h"
-#include "components/copresence/public/copresence_constants.h"
-#include "components/copresence/test/audio_test_support.h"
+#include "components/audio_modem/audio_recorder_impl.h"
+#include "components/audio_modem/public/audio_modem_types.h"
+#include "components/audio_modem/test/random_samples.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
@@ -69,7 +71,7 @@ class TestAudioInputStream : public media::AudioInputStream {
 
 }  // namespace
 
-namespace copresence {
+namespace audio_modem {
 
 class AudioRecorderTest : public testing::Test {
  public:
@@ -197,7 +199,8 @@ class AudioRecorderTest : public testing::Test {
 // rather than setting our own params.
 // On Linux, there is a memory leak in the audio code during initialization.
 #define MAYBE_BasicRecordAndStop DISABLED_BasicRecordAndStop
-#define MAYBE_OutOfOrderRecordAndStopMultiple DISABLED_OutOfOrderRecordAndStopMultiple
+#define MAYBE_OutOfOrderRecordAndStopMultiple \
+    DISABLED_OutOfOrderRecordAndStopMultiple
 #define MAYBE_RecordingEndToEnd DISABLED_RecordingEndToEnd
 
 TEST_F(AudioRecorderTest, MAYBE_BasicRecordAndStop) {
@@ -252,4 +255,4 @@ TEST_F(AudioRecorderTest, MAYBE_RecordingEndToEnd) {
 
 // TODO(rkc): Add tests with recording different sample rates.
 
-}  // namespace copresence
+}  // namespace audio_modem
