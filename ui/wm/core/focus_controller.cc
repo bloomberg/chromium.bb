@@ -184,6 +184,9 @@ void FocusController::OnWindowVisibilityChanged(aura::Window* window,
 }
 
 void FocusController::OnWindowDestroying(aura::Window* window) {
+  // A window's modality state will interfere with focus restoration during its
+  // destruction.
+  window->ClearProperty(aura::client::kModalKey);
   WindowLostFocusFromDispositionChange(window, window->parent());
 }
 
@@ -325,9 +328,6 @@ void FocusController::SetActiveWindow(aura::Window* requested_window,
 void FocusController::WindowLostFocusFromDispositionChange(
     aura::Window* window,
     aura::Window* next) {
-  // A window's modality state will interfere with focus restoration during its
-  // destruction.
-  window->ClearProperty(aura::client::kModalKey);
   // TODO(beng): See if this function can be replaced by a call to
   //             FocusWindow().
   // Activation adjustments are handled first in the event of a disposition

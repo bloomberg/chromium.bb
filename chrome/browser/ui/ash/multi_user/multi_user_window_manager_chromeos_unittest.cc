@@ -26,6 +26,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -1120,6 +1121,56 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
   window(1)->RemoveObserver(&window_observer);
   // No resize should have been done to the window.
   EXPECT_EQ(0, window_observer.resize_calls());
+}
+
+// Test that switching between different user won't change the activated windows
+// and the property of transient windows.
+TEST_F(MultiUserWindowManagerChromeOSTest, TransientWindowActivationTest) {
+  SetUpForThisManyWindows(3);
+
+  // Create a window hierarchy like this:
+  // 0 (A)          - The normal windows
+  // |
+  // 1              - Transient child of the normal windows.
+  // |
+  // 2              - A transient child of a transient child.
+
+  multi_user_window_manager()->SetWindowOwner(window(0), "A");
+
+  ::wm::AddTransientChild(window(0), window(1));
+  window(1)->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+
+  ::wm::AddTransientChild(window(1), window(2));
+  window(2)->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+
+  aura::client::ActivationClient* activation_client =
+      aura::client::GetActivationClient(window(0)->GetRootWindow());
+
+  // Activate window #0 will activate its deepest transient child window #2.
+  activation_client->ActivateWindow(window(0));
+  EXPECT_EQ(window(2), activation_client->GetActiveWindow());
+  EXPECT_FALSE(::wm::CanActivateWindow(window(0)));
+  EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
+
+  // Change active user to User B.
+  multi_user_window_manager()->ActiveUserChanged("B");
+
+  // Change active user back to User A.
+  multi_user_window_manager()->ActiveUserChanged("A");
+  EXPECT_EQ(window(2), activation_client->GetActiveWindow());
+  EXPECT_FALSE(::wm::CanActivateWindow(window(0)));
+  EXPECT_FALSE(::wm::CanActivateWindow(window(1)));
+
+  // Test that switching user doesn't change the property of the windows.
+  EXPECT_EQ(ui::MODAL_TYPE_NONE,
+            window(0)->GetProperty(aura::client::kModalKey));
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW,
+            window(1)->GetProperty(aura::client::kModalKey));
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW,
+            window(2)->GetProperty(aura::client::kModalKey));
+
+  ::wm::RemoveTransientChild(window(0), window(1));
+  ::wm::RemoveTransientChild(window(1), window(2));
 }
 
 }  // namespace test
