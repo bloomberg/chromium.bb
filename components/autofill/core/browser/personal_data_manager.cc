@@ -980,10 +980,7 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
 }
 
 bool PersonalDataManager::IsExperimentalWalletIntegrationEnabled() const {
-  // The feature can be enabled by sync experiment *or* command line flag.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableWalletCardImport) ||
-         pref_service_->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled);
+  return pref_service_->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled);
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {

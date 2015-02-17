@@ -123,11 +123,7 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   void EnableWalletCardImport() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableWalletCardImport);
-    ScopedVector<CreditCard> unused;
-    autofill_table_->GetServerCreditCards(&unused.get());
-    autofill_table_->SetServerCreditCards(std::vector<CreditCard>());
+    prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
   }
 
   // The temporary directory should be deleted at the end to ensure that

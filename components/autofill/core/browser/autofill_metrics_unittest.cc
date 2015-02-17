@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -22,7 +21,6 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/webdata/common/web_data_results.h"
@@ -1029,11 +1027,9 @@ TEST_F(AutofillMetricsTest, AddressInteractedOnce) {
 
 // Test that we log interacted form event for credit cards only once.
 TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
-  // Enabling server card.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::autofill::switches::kEnableWalletCardImport);
   autofill_client_.GetPrefs()->SetBoolean(
-      ::autofill::prefs::kAutofillWalletImportEnabled, true);
+      prefs::kAutofillWalletSyncExperimentEnabled, true);
+
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -1146,11 +1142,8 @@ TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
 
 // Test that we log interacted form event for address only once.
 TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
-  // Enabling server card.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::autofill::switches::kEnableWalletCardImport);
   autofill_client_.GetPrefs()->SetBoolean(
-      ::autofill::prefs::kAutofillWalletImportEnabled, true);
+      prefs::kAutofillWalletSyncExperimentEnabled, true);
 
   // Set up our form data.
   FormData form;

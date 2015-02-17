@@ -49,8 +49,7 @@ const char kAutofillWalletImportStorageCheckboxState[] =
     "autofill.wallet_import_storage_checkbox_state";
 
 // Enables/disables the Wallet card and address feature. Set via sync
-// experiment. Even if this is false, the feature can still be enabled via the
-// command line flag flags::kEnableWalletCardImport.
+// experiment.
 const char kAutofillWalletSyncExperimentEnabled[] =
     "autofill.wallet_import_sync_experiment_enabled";
 

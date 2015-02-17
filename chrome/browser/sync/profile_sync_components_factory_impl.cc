@@ -217,11 +217,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new AutofillProfileDataTypeController(this, profile_));
   }
 
-  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
-           autofill::switches::kEnableWalletCardImport) ||
-       profile_->GetPrefs()->GetBoolean(
-           autofill::prefs::kAutofillWalletSyncExperimentEnabled)) &&
-       !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
+  if (profile_->GetPrefs()->GetBoolean(
+           autofill::prefs::kAutofillWalletSyncExperimentEnabled) &&
+      !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
     // The feature can be enabled by sync experiment *or* command line flag,
     // and additionally the sync type must be enabled.
     pss->RegisterDataTypeController(
