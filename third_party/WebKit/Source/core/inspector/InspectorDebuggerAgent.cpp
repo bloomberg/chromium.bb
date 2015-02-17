@@ -913,7 +913,7 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     }
 }
 
-void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
+void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.isEmpty()) {
@@ -926,7 +926,7 @@ void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const Strin
     int lineNumberValue = 0;
     int columnNumberValue = 0;
     RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue = nullptr;
-    scriptDebugServer().compileScript(injectedScript.scriptState(), expression, sourceURL, &scriptIdValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
+    scriptDebugServer().compileScript(injectedScript.scriptState(), expression, sourceURL, persistScript, &scriptIdValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
     if (!scriptIdValue && !exceptionDetailsText) {
         *errorString = "Script compilation failed";
         return;

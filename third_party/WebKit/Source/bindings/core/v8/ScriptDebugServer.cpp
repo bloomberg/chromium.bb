@@ -683,7 +683,7 @@ bool ScriptDebugServer::isPaused()
     return m_pausedScriptState;
 }
 
-void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
+void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
 {
     if (!scriptState->contextIsValid())
         return;
@@ -704,7 +704,7 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
         }
         return;
     }
-    if (script.IsEmpty())
+    if (script.IsEmpty() || !persistScript)
         return;
 
     *scriptId = String::number(script->GetUnboundScript()->GetId());

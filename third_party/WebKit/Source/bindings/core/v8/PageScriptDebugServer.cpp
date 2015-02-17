@@ -170,11 +170,11 @@ void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> c
     m_clientMessageLoop = clientMessageLoop;
 }
 
-void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
+void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
 {
     ExecutionContext* executionContext = scriptState->executionContext();
     RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
-    ScriptDebugServer::compileScript(scriptState, expression, sourceURL, scriptId, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
+    ScriptDebugServer::compileScript(scriptState, expression, sourceURL, persistScript, scriptId, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
     if (!scriptId->isNull())
         m_compiledScriptURLs.set(*scriptId, sourceURL);
 }
