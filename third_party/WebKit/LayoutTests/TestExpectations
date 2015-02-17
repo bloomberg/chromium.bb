@@ -1809,6 +1809,13 @@ crbug.com/451338 [ XP ] http/tests/fetch/workers/block-mixed-content-base-https.
 crbug.com/451338 [ XP ] http/tests/fetch/workers/fetch-body-mixin.html [ Pass Timeout ]
 crbug.com/451338 [ XP ] http/tests/fetch/workers/filtered-response.html [ Pass Timeout ]
 
+crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth.html [ Slow ]
+crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-other-https.html [ Slow ]
+crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-base-https-other-https.html [ Slow ]
+crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-nocors.html [ Slow ]
+crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-nocors-other-https.html [ Slow ]
+crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-auth-nocors-base-https-other-https.html [ Slow ]
+
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-2x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-change-resource-dpr.html [ Pass Failure ]
