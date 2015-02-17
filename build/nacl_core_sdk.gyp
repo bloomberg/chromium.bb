@@ -51,50 +51,6 @@
             '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
             '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
           ],
-          'copies': [
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_newlib/x86_64-nacl/lib32',
-              'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crti.o',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/crtn.o',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libnacl_dyncode.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libnacl_list_mappings.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libnosys.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libpthread.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libvalgrind.a',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_newlib/x86_64-nacl/lib',
-              'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crti.o',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crtn.o',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libnacl_dyncode.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libnacl_list_mappings.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libnosys.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libpthread.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libvalgrind.a',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_glibc/x86_64-nacl/lib32',
-              'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libnacl_dyncode.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libnacl_list_mappings.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libvalgrind.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libdynamic_annotations.a',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_glibc/x86_64-nacl/lib',
-              'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libnacl_dyncode.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libnacl_list_mappings.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libvalgrind.a',
-                '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libdynamic_annotations.a',
-              ],
-            },
-          ],
         }],
       ],
     },

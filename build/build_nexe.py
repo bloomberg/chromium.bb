@@ -206,7 +206,7 @@ class Builder(CommandRunner):
     # Set the toolchain directories
     self.toolchain = os.path.join(options.toolpath, tooldir)
     self.toolbin = os.path.join(self.toolchain, 'bin')
-    self.toolstamp = os.path.join(self.toolchain, 'stamp.prep')
+    self.toolstamp = os.path.join(self.toolchain, tool_subdir + '.json')
     if not IsFile(self.toolstamp):
       raise Error('Could not find toolchain prep stamp file: ' + self.toolstamp)
 

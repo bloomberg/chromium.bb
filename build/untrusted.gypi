@@ -32,7 +32,7 @@
       # would just make things uglier.
       '--product-dir', '<(PRODUCT_DIR)/xyz',
       '--config-name', '<(CONFIGURATION_NAME)',
-      '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/',
+      '-t', '<(DEPTH)/native_client/toolchain/',
       '--allow-thin-archives', '<(nacl_allow_thin_archives)',
     ],
     'common_inputs': [
@@ -105,8 +105,8 @@
           'enable_mips': 0,
           'enable_x86_32_nonsfi': 0,
           'enable_arm_nonsfi': 0,
-          'nacl_glibc_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc',
-          'nacl_newlib_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib',
+          'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc',
+          'nacl_newlib_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib',
           'tc_lib_dir_newlib32': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
           'tc_lib_dir_newlib64': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
           'tc_lib_dir_glibc32': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
@@ -167,8 +167,8 @@
           'extra_deps_newlib_arm_nonsfi': [],
           'extra_deps_bionic_arm': [],
           'native_sources': [],
-          'nacl_glibc_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_glibc',
-          'nacl_newlib_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib',
+          'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_glibc',
+          'nacl_newlib_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib',
           'tc_lib_dir_bionic_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_bionic/libarm',
           'tc_lib_dir_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
           'tc_lib_dir_irt_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/libarm',
@@ -213,8 +213,8 @@
           'extra_deps': [],
           'extra_deps_newlib_mips': [],
           'native_sources': [],
-          'nacl_glibc_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_mips_glibc',
-          'nacl_newlib_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_mips_newlib',
+          'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_mips_glibc',
+          'nacl_newlib_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_mips_newlib',
           'tc_lib_dir_newlib_mips': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libmips',
           'tc_lib_dir_irt_mips': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/libmips',
           'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
@@ -252,7 +252,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -293,7 +293,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -335,7 +335,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                     '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                  'outputs': ['>(out_newlib64)'],
@@ -379,7 +379,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -420,7 +420,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -461,7 +461,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -503,7 +503,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                     '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                  ],
                  'outputs': ['>(out_newlib32)'],
@@ -547,7 +547,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -595,7 +595,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib32_nonsfi)',
                   '^(source_list_newlib32_nonsfi)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                   '>(tc_lib_dir_nonsfi_helper32)/libnacl_sys_private.a',
                 ],
                 'outputs': ['>(out_newlib32_nonsfi)'],
@@ -653,7 +653,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib32_nonsfi)',
                   '^(source_list_newlib32_nonsfi)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/stamp.prep',
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json',
                 ],
                 'outputs': ['>(out_newlib32_nonsfi)'],
                 'action': [
@@ -700,7 +700,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -741,7 +741,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -781,7 +781,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_bionic_arm)',
                    '^(source_list_bionic_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86_nacl_arm/nacl_arm_bionic',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86_nacl_arm/nacl_arm_bionic',
                 ],
                 'outputs': ['>(out_bionic_arm)'],
                 'action': [
@@ -823,7 +823,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -867,7 +867,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -909,7 +909,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib_arm_nonsfi)',
                   '^(source_list_newlib_arm_nonsfi)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libnacl_sys_private.a',
                 ],
                 'outputs': ['>(out_newlib_arm_nonsfi)'],
@@ -965,7 +965,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib_arm_nonsfi)',
                   '^(source_list_newlib_arm_nonsfi)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/stamp.prep',
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_arm_nonsfi)'],
                 'action': [
@@ -1012,7 +1012,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -1053,7 +1053,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -1095,7 +1095,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
@@ -1139,7 +1139,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_mips)'],
                 'action': [
@@ -1186,7 +1186,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -1227,7 +1227,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -1268,7 +1268,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -1309,7 +1309,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -1350,7 +1350,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -1391,7 +1391,7 @@
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/stamp.prep',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_x86_glibc/nacl_x86_glibc.json',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -1516,7 +1516,7 @@
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
                '^(source_list_pnacl_newlib)',
-               '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+               '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
              ],
              'outputs': [
                '>(out_pnacl_newlib)',
@@ -1684,7 +1684,7 @@
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
                '^(source_list_pnacl_newlib)',
-               '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+               '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
              ],
              'outputs': ['>(out_pnacl_newlib)'],
              'action': [
@@ -1732,7 +1732,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
                   '^(source_list_pnacl_newlib_arm)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json'
                 ],
                 'outputs': ['>(out_pnacl_newlib_arm)'],
                 'action': [
@@ -1779,7 +1779,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_64)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json'
                  ],
                  'outputs': ['>(out_pnacl_newlib_x86_64)'],
                  'action': [
@@ -1821,7 +1821,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
                    '^(source_list_pnacl_newlib_x86_32)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json'
                  ],
                  'outputs': ['>(out_pnacl_newlib_x86_32)'],
                  'action': [
@@ -1867,7 +1867,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
                   '^(source_list_pnacl_newlib_mips)',
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json'
                 ],
                 'outputs': ['>(out_pnacl_newlib_mips)'],
                 'action': [
