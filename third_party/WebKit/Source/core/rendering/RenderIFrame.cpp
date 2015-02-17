@@ -37,7 +37,7 @@ namespace blink {
 using namespace HTMLNames;
 
 RenderIFrame::RenderIFrame(Element* element)
-    : RenderPart(element)
+    : LayoutPart(element)
 {
 }
 
@@ -55,7 +55,7 @@ LayerType RenderIFrame::layerTypeRequired() const
 {
     if (style()->resize() != RESIZE_NONE)
         return NormalLayer;
-    return RenderPart::layerTypeRequired();
+    return LayoutPart::layerTypeRequired();
 }
 
 void RenderIFrame::layout()

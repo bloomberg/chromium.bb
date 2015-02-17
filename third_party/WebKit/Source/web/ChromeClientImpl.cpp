@@ -47,11 +47,11 @@
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderPart.h"
 #include "modules/accessibility/AXObject.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
@@ -553,8 +553,8 @@ void ChromeClientImpl::mouseDidMoveOverElement(const HitTestResult& result)
         && (isHTMLObjectElement(*result.innerNonSharedNode())
             || isHTMLEmbedElement(*result.innerNonSharedNode()))) {
         LayoutObject* object = result.innerNonSharedNode()->renderer();
-        if (object && object->isRenderPart()) {
-            Widget* widget = toRenderPart(object)->widget();
+        if (object && object->isLayoutPart()) {
+            Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer()) {
                 WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
                 url = plugin->plugin()->linkAtPosition(result.roundedPointInInnerNodeFrame());

@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/layout/LayerStackingNode.h"
 #include "core/layout/LayerStackingNodeIterator.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositingInputsUpdater.h"
@@ -54,7 +55,6 @@
 #include "core/paint/FramePainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -107,10 +107,10 @@ void LayerCompositor::setCompositingModeEnabled(bool enable)
 
     m_compositing = enable;
 
-    // RenderPart::requiresAcceleratedCompositing is used to determine self-paintingness
+    // LayoutPart::requiresAcceleratedCompositing is used to determine self-paintingness
     // and bases it's return value for frames on the m_compositing bit here.
     if (HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement()) {
-        if (RenderPart* renderer = ownerElement->renderPart())
+        if (LayoutPart* renderer = ownerElement->layoutPart())
             renderer->layer()->updateSelfPaintingLayer();
     }
 
@@ -465,8 +465,8 @@ bool LayerCompositor::allocateOrClearCompositedLayerMapping(Layer* layer, const 
         break;
     }
 
-    if (compositedLayerMappingChanged && layer->renderer()->isRenderPart()) {
-        LayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
+    if (compositedLayerMappingChanged && layer->renderer()->isLayoutPart()) {
+        LayerCompositor* innerCompositor = frameContentsCompositor(toLayoutPart(layer->renderer()));
         if (innerCompositor && innerCompositor->staleInCompositingMode())
             innerCompositor->updateRootLayerAttachment();
     }
@@ -614,7 +614,7 @@ String LayerCompositor::layerTreeAsText(LayerTreeFlags flags)
     return layerTreeText;
 }
 
-LayerCompositor* LayerCompositor::frameContentsCompositor(RenderPart* renderer)
+LayerCompositor* LayerCompositor::frameContentsCompositor(LayoutPart* renderer)
 {
     if (!renderer->node()->isFrameOwnerElement())
         return 0;
@@ -628,7 +628,7 @@ LayerCompositor* LayerCompositor::frameContentsCompositor(RenderPart* renderer)
 }
 
 // FIXME: What does this function do? It needs a clearer name.
-bool LayerCompositor::parentFrameContentLayers(RenderPart* renderer)
+bool LayerCompositor::parentFrameContentLayers(LayoutPart* renderer)
 {
     LayerCompositor* innerCompositor = frameContentsCompositor(renderer);
     if (!innerCompositor || !innerCompositor->staleInCompositingMode() || innerCompositor->rootLayerAttachment() != RootLayerAttachedViaEnclosingFrame)

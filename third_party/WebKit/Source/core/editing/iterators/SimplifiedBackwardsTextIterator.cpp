@@ -190,7 +190,7 @@ void SimplifiedBackwardsTextIterator::advance()
                 // FIXME: What about CDATA_SECTION_NODE?
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleTextNode();
-            } else if (renderer && (renderer->isRenderPart() || TextIterator::supportsAltText(m_node))) {
+            } else if (renderer && (renderer->isLayoutPart() || TextIterator::supportsAltText(m_node))) {
                 if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleReplacedElement();
             } else {

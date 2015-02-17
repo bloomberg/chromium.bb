@@ -60,6 +60,7 @@
 #include "core/layout/HitTestingTransformState.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
@@ -67,7 +68,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderInline.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -2655,7 +2655,7 @@ bool Layer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) 
 
 bool Layer::shouldBeSelfPaintingLayer() const
 {
-    if (renderer()->isRenderPart() && toRenderPart(renderer())->requiresAcceleratedCompositing())
+    if (renderer()->isLayoutPart() && toLayoutPart(renderer())->requiresAcceleratedCompositing())
         return true;
     return m_layerType == NormalLayer
         || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())

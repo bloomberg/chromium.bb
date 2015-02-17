@@ -37,16 +37,16 @@
 namespace blink {
 
 class ChromeClient;
+class DOMWindow;
 class DOMWrapperWorld;
 class Document;
 class FrameClient;
 class FrameHost;
 class FrameOwner;
 class HTMLFrameOwnerElement;
-class DOMWindow;
+class LayoutPart;
 class KURL;
 class Page;
-class RenderPart;
 class SecurityContext;
 class Settings;
 class WindowProxy;
@@ -96,7 +96,7 @@ public:
     bool canNavigate(const Frame&);
     virtual void printNavigationErrorMessage(const Frame&, const char* reason) = 0;
 
-    RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
+    LayoutPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
     Settings* settings() const; // can be null
 

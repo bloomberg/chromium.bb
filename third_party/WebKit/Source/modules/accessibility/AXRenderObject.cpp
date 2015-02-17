@@ -51,6 +51,7 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
@@ -59,7 +60,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -413,9 +413,9 @@ bool AXRenderObject::isAttachment() const
     if (!renderer)
         return false;
     // Widgets are the replaced elements that we represent to AX as attachments
-    bool isRenderPart = renderer->isRenderPart();
-    ASSERT(!isRenderPart || (renderer->isReplaced() && !isImage()));
-    return isRenderPart;
+    bool isLayoutPart = renderer->isLayoutPart();
+    ASSERT(!isLayoutPart || (renderer->isReplaced() && !isImage()));
+    return isLayoutPart;
 }
 
 static bool isLinkable(const AXObject& object)
@@ -1648,7 +1648,7 @@ Widget* AXRenderObject::widgetForAttachmentView() const
 {
     if (!isAttachment())
         return 0;
-    return toRenderPart(m_renderer)->widget();
+    return toLayoutPart(m_renderer)->widget();
 }
 
 //

@@ -50,6 +50,7 @@ class Cursor;
 class Element;
 class FloatSize;
 class HTMLFrameOwnerElement;
+class LayoutPart;
 class LocalFrame;
 class KURL;
 class Node;
@@ -57,7 +58,6 @@ class Page;
 class RenderBox;
 class RenderEmbeddedObject;
 class LayoutObject;
-class RenderPart;
 class RenderScrollbarPart;
 class RenderView;
 class ScrollingCoordinator;
@@ -206,8 +206,8 @@ public:
     bool safeToPropagateScrollToParent() const { return m_safeToPropagateScrollToParent; }
     void setSafeToPropagateScrollToParent(bool isSafe) { m_safeToPropagateScrollToParent = isSafe; }
 
-    void addPart(RenderPart*);
-    void removePart(RenderPart*);
+    void addPart(LayoutPart*);
+    void removePart(LayoutPart*);
 
     void updateWidgetPositions();
 
@@ -605,7 +605,7 @@ private:
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
     virtual void frameRectsChanged() override;
 
-    friend class RenderPart;
+    friend class LayoutPart;
 
     bool contentsInCompositedLayer() const;
 
@@ -699,7 +699,7 @@ private:
     EmbeddedObjectSet m_partUpdateSet;
 
     // FIXME: These are just "children" of the FrameView and should be RefPtrWillBeMember<Widget> instead.
-    HashSet<RefPtr<RenderPart>> m_parts;
+    HashSet<RefPtr<LayoutPart>> m_parts;
 
     // The RefPtr cycle between LocalFrame and FrameView is broken
     // when a LocalFrame is detached by FrameLoader::detachFromParent().

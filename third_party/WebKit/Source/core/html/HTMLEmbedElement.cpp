@@ -33,8 +33,8 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutPart.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderPart.h"
 
 namespace blink {
 
@@ -52,18 +52,18 @@ PassRefPtrWillBeRawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& docu
     return element.release();
 }
 
-static inline RenderPart* findPartRenderer(const Node* n)
+static inline LayoutPart* findPartRenderer(const Node* n)
 {
     if (!n->renderer())
         n = Traversal<HTMLObjectElement>::firstAncestor(*n);
 
-    if (n && n->renderer() && n->renderer()->isRenderPart())
-        return toRenderPart(n->renderer());
+    if (n && n->renderer() && n->renderer()->isLayoutPart())
+        return toLayoutPart(n->renderer());
 
     return nullptr;
 }
 
-RenderPart* HTMLEmbedElement::existingRenderPart() const
+LayoutPart* HTMLEmbedElement::existingLayoutPart() const
 {
     return findPartRenderer(this);
 }

@@ -10,7 +10,7 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"

@@ -31,9 +31,9 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayerReflectionInfo.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 
 namespace blink {
@@ -101,8 +101,8 @@ void GraphicsLayerTreeBuilder::rebuild(Layer& layer, AncestorInfo info)
 
     if (hasCompositedLayerMapping) {
         bool parented = false;
-        if (layer.renderer()->isRenderPart())
-            parented = LayerCompositor::parentFrameContentLayers(toRenderPart(layer.renderer()));
+        if (layer.renderer()->isLayoutPart())
+            parented = LayerCompositor::parentFrameContentLayers(toLayoutPart(layer.renderer()));
 
         if (!parented)
             currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);

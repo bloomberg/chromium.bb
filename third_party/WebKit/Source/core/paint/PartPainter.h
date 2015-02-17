@@ -9,17 +9,17 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderPart;
+class LayoutPart;
 
 class PartPainter {
 public:
-    PartPainter(RenderPart& renderPart) : m_renderPart(renderPart) { }
+    PartPainter(LayoutPart& layoutPart) : m_layoutPart(layoutPart) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintContents(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderPart& m_renderPart;
+    LayoutPart& m_layoutPart;
 };
 
 } // namespace blink

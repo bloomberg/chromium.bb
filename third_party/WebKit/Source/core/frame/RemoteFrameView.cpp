@@ -6,7 +6,7 @@
 #include "core/frame/RemoteFrameView.h"
 
 #include "core/frame/RemoteFrame.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 
 namespace blink {
 
@@ -29,7 +29,7 @@ PassRefPtrWillBeRawPtr<RemoteFrameView> RemoteFrameView::create(RemoteFrame* rem
 
 void RemoteFrameView::invalidateRect(const IntRect& rect)
 {
-    RenderPart* renderer = m_remoteFrame->ownerRenderer();
+    LayoutPart* renderer = m_remoteFrame->ownerRenderer();
     if (!renderer)
         return;
 

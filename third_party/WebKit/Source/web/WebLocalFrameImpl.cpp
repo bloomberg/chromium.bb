@@ -264,7 +264,7 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
         LocalFrame* curLocalChild = toLocalFrame(curChild);
         // Ignore the text of non-visible frames.
         RenderView* contentRenderer = curLocalChild->contentRenderer();
-        RenderPart* ownerRenderer = curLocalChild->ownerRenderer();
+        LayoutPart* ownerRenderer = curLocalChild->ownerRenderer();
         if (!contentRenderer || !contentRenderer->size().width() || !contentRenderer->size().height()
             || (contentRenderer->location().x() + contentRenderer->size().width() <= 0) || (contentRenderer->location().y() + contentRenderer->size().height() <= 0)
             || (ownerRenderer && ownerRenderer->style() && ownerRenderer->style()->visibility() != VISIBLE)) {
@@ -631,7 +631,7 @@ WebSize WebLocalFrameImpl::contentsSize() const
 
 bool WebLocalFrameImpl::hasVisibleContent() const
 {
-    if (RenderPart* renderer = frame()->ownerRenderer()) {
+    if (LayoutPart* renderer = frame()->ownerRenderer()) {
         if (renderer->style()->visibility() != VISIBLE)
             return false;
     }

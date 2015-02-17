@@ -41,6 +41,7 @@
 #include "core/layout/FilterEffectRenderer.h"
 #include "core/layout/LayerStackingNodeIterator.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/KeyframeList.h"
@@ -53,7 +54,6 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -341,8 +341,8 @@ void CompositedLayerMapping::updateCompositedBounds()
 
 void CompositedLayerMapping::updateAfterPartResize()
 {
-    if (renderer()->isRenderPart()) {
-        if (LayerCompositor* innerCompositor = LayerCompositor::frameContentsCompositor(toRenderPart(renderer()))) {
+    if (renderer()->isLayoutPart()) {
+        if (LayerCompositor* innerCompositor = LayerCompositor::frameContentsCompositor(toLayoutPart(renderer()))) {
             innerCompositor->frameViewDidChangeSize();
             // We can floor this point because our frameviews are always aligned to pixel boundaries.
             ASSERT(m_compositedBounds.location() == flooredIntPoint(m_compositedBounds.location()));
@@ -534,8 +534,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
             m_graphicsLayer->setContentsToPlatformLayer(context->platformLayer());
         layerConfigChanged = true;
     }
-    if (renderer->isRenderPart())
-        layerConfigChanged = LayerCompositor::parentFrameContentLayers(toRenderPart(renderer));
+    if (renderer->isLayoutPart())
+        layerConfigChanged = LayerCompositor::parentFrameContentLayers(toLayoutPart(renderer));
 
     // Changes to either the internal hierarchy or the mask layer have an impact
     // on painting phases, so we need to update when either are updated.

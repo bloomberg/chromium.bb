@@ -44,7 +44,7 @@ const uint64_t CompositingReasonSquashingFilterMismatch                  = UINT6
 const uint64_t CompositingReasonSquashingWouldBreakPaintOrder            = UINT64_C(1) << 24;
 const uint64_t CompositingReasonSquashingVideoIsDisallowed               = UINT64_C(1) << 25;
 const uint64_t CompositingReasonSquashedLayerClipsCompositingDescendants = UINT64_C(1) << 26;
-const uint64_t CompositingReasonSquashingRenderPartIsDisallowed          = UINT64_C(1) << 27;
+const uint64_t CompositingReasonSquashingLayoutPartIsDisallowed          = UINT64_C(1) << 27;
 const uint64_t CompositingReasonSquashingReflectionIsDisallowed          = UINT64_C(1) << 28;
 const uint64_t CompositingReasonSquashingBlendingIsDisallowed            = UINT64_C(1) << 29;
 
@@ -147,7 +147,7 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     | CompositingReasonSquashingWouldBreakPaintOrder
     | CompositingReasonSquashingVideoIsDisallowed
     | CompositingReasonSquashedLayerClipsCompositingDescendants
-    | CompositingReasonSquashingRenderPartIsDisallowed
+    | CompositingReasonSquashingLayoutPartIsDisallowed
     | CompositingReasonSquashingReflectionIsDisallowed
     | CompositingReasonSquashingBlendingIsDisallowed
     | CompositingReasonTransformWithCompositedDescendants

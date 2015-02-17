@@ -63,6 +63,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/loader/FrameLoader.h"
@@ -78,7 +79,6 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
@@ -978,10 +978,10 @@ static LocalFrame* subframeForTargetNode(Node* node)
         return nullptr;
 
     LayoutObject* renderer = node->renderer();
-    if (!renderer || !renderer->isRenderPart())
+    if (!renderer || !renderer->isLayoutPart())
         return nullptr;
 
-    Widget* widget = toRenderPart(renderer)->widget();
+    Widget* widget = toLayoutPart(renderer)->widget();
     if (!widget || !widget->isFrameView())
         return nullptr;
 
@@ -2024,8 +2024,8 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
         // Figure out which view to send the event to.
         LayoutObject* target = node->renderer();
 
-        if (isOverWidget && target && target->isRenderPart()) {
-            Widget* widget = toRenderPart(target)->widget();
+        if (isOverWidget && target && target->isLayoutPart()) {
+            Widget* widget = toLayoutPart(target)->widget();
             if (widget && passWheelEventToWidget(event, *widget))
                 RETURN_WHEEL_EVENT_HANDLED();
         }
@@ -2442,10 +2442,10 @@ bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& ge
     if (!m_lastGestureScrollOverWidget)
         return false;
 
-    if (!renderer || !renderer->isRenderPart())
+    if (!renderer || !renderer->isLayoutPart())
         return false;
 
-    Widget* widget = toRenderPart(renderer)->widget();
+    Widget* widget = toLayoutPart(renderer)->widget();
 
     if (!widget || !widget->isFrameView())
         return false;
@@ -3881,7 +3881,7 @@ bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, 
 bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestResults& event)
 {
     // Figure out which view to send the event to.
-    if (!event.innerNode() || !event.innerNode()->renderer() || !event.innerNode()->renderer()->isRenderPart())
+    if (!event.innerNode() || !event.innerNode()->renderer() || !event.innerNode()->renderer()->isLayoutPart())
         return false;
     return false;
 }

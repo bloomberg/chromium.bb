@@ -51,6 +51,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutPart.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
@@ -60,7 +61,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginOcclusionSupport.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderPart.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"
@@ -311,7 +311,7 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     m_element->setNeedsCompositingUpdate();
     // Being composited or not affects the self painting layer bit
     // on the Layer.
-    if (RenderPart* renderer = m_element->renderPart()) {
+    if (LayoutPart* renderer = m_element->layoutPart()) {
         ASSERT(renderer->hasLayer());
         renderer->layer()->updateSelfPaintingLayer();
     }

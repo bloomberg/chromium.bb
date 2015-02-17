@@ -43,7 +43,6 @@ namespace blink {
 class RenderInline;
 class LayoutLayerModelObject;
 class LayoutObject;
-class RenderPart;
 
 struct PaintInfo {
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,

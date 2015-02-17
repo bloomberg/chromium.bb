@@ -37,6 +37,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/LayoutPart.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -44,7 +45,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderPart.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCountedLeakCounter.h"
 
@@ -246,7 +246,7 @@ Frame* Frame::findUnsafeParentScrollPropagationBoundary()
     return nullptr;
 }
 
-RenderPart* Frame::ownerRenderer() const
+LayoutPart* Frame::ownerRenderer() const
 {
     if (!deprecatedLocalOwner())
         return nullptr;
@@ -257,9 +257,9 @@ RenderPart* Frame::ownerRenderer() const
     // that it has started but canceled, then this can turn into an ASSERT
     // since ownerElement() would be 0 when the load is canceled.
     // https://bugs.webkit.org/show_bug.cgi?id=18585
-    if (!object->isRenderPart())
+    if (!object->isLayoutPart())
         return nullptr;
-    return toRenderPart(object);
+    return toLayoutPart(object);
 }
 
 Settings* Frame::settings() const

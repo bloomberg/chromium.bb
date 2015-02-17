@@ -39,6 +39,7 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/EventHandler.h"
@@ -48,7 +49,6 @@
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderPart.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -141,13 +141,13 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
     if (isDisabledFormControl())
         return false;
     LayoutObject* r = renderer();
-    return r && (r->isEmbeddedObject() || r->isRenderPart());
+    return r && (r->isEmbeddedObject() || r->isLayoutPart());
 }
 
 void HTMLPlugInElement::removeAllEventListeners()
 {
     HTMLFrameOwnerElement::removeAllEventListeners();
-    if (RenderPart* renderer = existingRenderPart()) {
+    if (LayoutPart* renderer = existingLayoutPart()) {
         if (Widget* widget = renderer->widget())
             widget->eventListenersRemoved();
     }
@@ -201,7 +201,7 @@ void HTMLPlugInElement::requestPluginCreationWithoutRendererIfPossible()
         || !document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType))
         return;
 
-    if (renderer() && renderer()->isRenderPart())
+    if (renderer() && renderer()->isLayoutPart())
         return;
 
     createPluginWithoutRenderer();
@@ -267,7 +267,7 @@ LayoutObject* HTMLPlugInElement::createRenderer(const LayoutStyle& style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily return
-    // a RenderEmbeddedObject or RenderPart.
+    // a RenderEmbeddedObject or LayoutPart.
     if (useFallbackContent())
         return LayoutObject::createObject(this, style);
 
@@ -324,15 +324,15 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
 
 Widget* HTMLPlugInElement::existingPluginWidget() const
 {
-    if (RenderPart* renderPart = existingRenderPart())
-        return renderPart->widget();
+    if (LayoutPart* layoutPart = existingLayoutPart())
+        return layoutPart->widget();
     return nullptr;
 }
 
 Widget* HTMLPlugInElement::pluginWidgetForJSBindings()
 {
-    if (RenderPart* renderPart = renderPartForJSBindings())
-        return renderPart->widget();
+    if (LayoutPart* layoutPart = layoutPartForJSBindings())
+        return layoutPart->widget();
     return nullptr;
 }
 
@@ -375,13 +375,13 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     // code in EventHandler; these code paths should be united.
 
     LayoutObject* r = renderer();
-    if (!r || !r->isRenderPart())
+    if (!r || !r->isLayoutPart())
         return;
     if (r->isEmbeddedObject()) {
         if (toRenderEmbeddedObject(r)->showsUnavailablePluginIndicator())
             return;
     }
-    RefPtrWillBeRawPtr<Widget> widget = toRenderPart(r)->widget();
+    RefPtrWillBeRawPtr<Widget> widget = toLayoutPart(r)->widget();
     if (!widget)
         return;
     widget->handleEvent(event);
@@ -390,13 +390,13 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
     HTMLFrameOwnerElement::defaultEventHandler(event);
 }
 
-RenderPart* HTMLPlugInElement::renderPartForJSBindings() const
+LayoutPart* HTMLPlugInElement::layoutPartForJSBindings() const
 {
     // Needs to load the plugin immediatedly because this function is called
     // when JavaScript code accesses the plugin.
     // FIXME: Check if dispatching events here is safe.
     document().updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
-    return existingRenderPart();
+    return existingLayoutPart();
 }
 
 bool HTMLPlugInElement::isKeyboardFocusable() const
@@ -518,7 +518,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
 
     // If the plug-in element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a new
-    // frame and set it as the RenderPart's widget, causing what was previously
+    // frame and set it as the LayoutPart's widget, causing what was previously
     // in the widget to be torn down.
     return loadOrRedirectSubframe(completedURL, getNameAttribute(), true, CheckContentSecurityPolicy);
 }

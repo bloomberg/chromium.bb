@@ -101,16 +101,16 @@ LayoutObject* HTMLAppletElement::createRenderer(const LayoutStyle& style)
     return new LayoutApplet(this);
 }
 
-RenderPart* HTMLAppletElement::renderPartForJSBindings() const
+LayoutPart* HTMLAppletElement::layoutPartForJSBindings() const
 {
     if (!canEmbedJava())
         return nullptr;
-    return HTMLPlugInElement::renderPartForJSBindings();
+    return HTMLPlugInElement::layoutPartForJSBindings();
 }
 
-RenderPart* HTMLAppletElement::existingRenderPart() const
+LayoutPart* HTMLAppletElement::existingLayoutPart() const
 {
-    return renderPart();
+    return layoutPart();
 }
 
 void HTMLAppletElement::updateWidgetInternal()

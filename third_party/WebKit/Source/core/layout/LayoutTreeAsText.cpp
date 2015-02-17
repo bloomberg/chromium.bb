@@ -36,6 +36,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -52,7 +53,6 @@
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
@@ -484,8 +484,8 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
         write(ts, *child, indent + 1, behavior);
     }
 
-    if (o.isRenderPart()) {
-        Widget* widget = toRenderPart(o).widget();
+    if (o.isLayoutPart()) {
+        Widget* widget = toLayoutPart(o).widget();
         if (widget && widget->isFrameView()) {
             FrameView* view = toFrameView(widget);
             RenderView* root = view->renderView();

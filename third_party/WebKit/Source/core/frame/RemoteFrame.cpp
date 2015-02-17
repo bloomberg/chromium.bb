@@ -13,7 +13,7 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/Layer.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebLayer.h"
@@ -151,7 +151,7 @@ void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
 
     ASSERT(owner());
     toHTMLFrameOwnerElement(owner())->setNeedsCompositingUpdate();
-    if (RenderPart* renderer = ownerRenderer())
+    if (LayoutPart* renderer = ownerRenderer())
         renderer->layer()->updateSelfPaintingLayer();
 }
 

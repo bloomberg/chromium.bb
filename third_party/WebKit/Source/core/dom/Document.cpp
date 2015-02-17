@@ -163,6 +163,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/CookieJar.h"
@@ -180,7 +181,6 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGTitleElement.h"
@@ -315,9 +315,9 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
 static Widget* widgetForElement(const Element& focusedElement)
 {
     LayoutObject* renderer = focusedElement.renderer();
-    if (!renderer || !renderer->isRenderPart())
+    if (!renderer || !renderer->isLayoutPart())
         return 0;
-    return toRenderPart(renderer)->widget();
+    return toLayoutPart(renderer)->widget();
 }
 
 static bool acceptsEditingFocus(const Element& element)

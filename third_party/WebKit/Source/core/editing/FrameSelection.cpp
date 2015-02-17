@@ -58,6 +58,7 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/EditorClient.h"
@@ -66,7 +67,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "platform/SecureTextInput.h"
@@ -1625,9 +1625,9 @@ static bool isFrameElement(const Node* n)
     if (!n)
         return false;
     LayoutObject* renderer = n->renderer();
-    if (!renderer || !renderer->isRenderPart())
+    if (!renderer || !renderer->isLayoutPart())
         return false;
-    Widget* widget = toRenderPart(renderer)->widget();
+    Widget* widget = toLayoutPart(renderer)->widget();
     return widget && widget->isFrameView();
 }
 

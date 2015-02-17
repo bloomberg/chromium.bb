@@ -29,7 +29,7 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderScrollbarTheme.h"
 #include "platform/graphics/GraphicsContext.h"

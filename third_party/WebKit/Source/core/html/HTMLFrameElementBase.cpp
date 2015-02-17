@@ -33,10 +33,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderPart.h"
 
 namespace blink {
 
@@ -159,7 +159,7 @@ void HTMLFrameElementBase::attach(const AttachContext& context)
 {
     HTMLFrameOwnerElement::attach(context);
 
-    if (renderPart()) {
+    if (layoutPart()) {
         if (Frame* frame = contentFrame()) {
             if (frame->isLocalFrame())
                 setWidget(toLocalFrame(frame)->view());

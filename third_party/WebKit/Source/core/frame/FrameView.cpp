@@ -49,6 +49,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -67,7 +68,6 @@
 #include "core/paint/FramePainter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderListBox.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
@@ -393,7 +393,7 @@ void FrameView::invalidateRect(const IntRect& rect)
         return;
     }
 
-    RenderPart* renderer = m_frame->ownerRenderer();
+    LayoutPart* renderer = m_frame->ownerRenderer();
     if (!renderer)
         return;
 
@@ -508,7 +508,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
     }
 
     // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-    RenderPart* frameRenderer = m_frame->ownerRenderer();
+    LayoutPart* frameRenderer = m_frame->ownerRenderer();
     if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR)) {
         customScrollbarFrame = m_frame.get();
         return true;
@@ -771,7 +771,7 @@ LayoutObject* FrameView::layoutRoot(bool onlyDuringLayout) const
 
 inline void FrameView::forceLayoutParentViewIfNeeded()
 {
-    RenderPart* ownerRenderer = m_frame->ownerRenderer();
+    LayoutPart* ownerRenderer = m_frame->ownerRenderer();
     if (!ownerRenderer || !ownerRenderer->frame())
         return;
 
@@ -1156,19 +1156,19 @@ RenderBox* FrameView::embeddedContentBox() const
 }
 
 
-void FrameView::addPart(RenderPart* object)
+void FrameView::addPart(LayoutPart* object)
 {
     m_parts.add(object);
 }
 
-void FrameView::removePart(RenderPart* object)
+void FrameView::removePart(LayoutPart* object)
 {
     m_parts.remove(object);
 }
 
 void FrameView::updateWidgetPositions()
 {
-    Vector<RefPtr<RenderPart>> parts;
+    Vector<RefPtr<LayoutPart>> parts;
     copyToVector(m_parts, parts);
 
     // Script or plugins could detach the frame so abort processing if that happens.
@@ -1401,7 +1401,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         DisablePaintInvalidationStateAsserts disabler;
         renderView()->invalidatePaintRectangle(updateRect);
     }
-    if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
+    if (LayoutPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {
             // FIXME: This block is needed for the display list merge algorithm to work correctly.
             //        Remove this once https://codereview.chromium.org/847783003/ lands.
@@ -2340,7 +2340,7 @@ bool FrameView::scrollbarsCanBeActive() const
 
 IntRect FrameView::scrollableAreaBoundingBox() const
 {
-    RenderPart* ownerRenderer = frame().ownerRenderer();
+    LayoutPart* ownerRenderer = frame().ownerRenderer();
     if (!ownerRenderer)
         return frameRect();
 
@@ -2475,7 +2475,7 @@ void FrameView::updateScrollCorner()
 
         if (!cornerStyle) {
             // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-            if (RenderPart* renderer = m_frame->ownerRenderer())
+            if (LayoutPart* renderer = m_frame->ownerRenderer())
                 cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
     }
@@ -2796,7 +2796,7 @@ IntRect FrameView::convertToContainingView(const IntRect& localRect) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our renderer in the parent view
-        RenderPart* renderer = m_frame->ownerRenderer();
+        LayoutPart* renderer = m_frame->ownerRenderer();
         if (!renderer)
             return localRect;
 
@@ -2814,7 +2814,7 @@ IntRect FrameView::convertFromContainingView(const IntRect& parentRect) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our renderer in the parent view
-        RenderPart* renderer = m_frame->ownerRenderer();
+        LayoutPart* renderer = m_frame->ownerRenderer();
         if (!renderer)
             return parentRect;
 
@@ -2832,7 +2832,7 @@ IntPoint FrameView::convertToContainingView(const IntPoint& localPoint) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our renderer in the parent view
-        RenderPart* renderer = m_frame->ownerRenderer();
+        LayoutPart* renderer = m_frame->ownerRenderer();
         if (!renderer)
             return localPoint;
 
@@ -2851,7 +2851,7 @@ IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
 {
     if (const FrameView* parentView = toFrameView(parent())) {
         // Get our renderer in the parent view
-        RenderPart* renderer = m_frame->ownerRenderer();
+        LayoutPart* renderer = m_frame->ownerRenderer();
         if (!renderer)
             return parentPoint;
 

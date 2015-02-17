@@ -34,11 +34,11 @@
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/ViewPainter.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -266,7 +266,7 @@ const LayoutObject* RenderView::pushMappingToContainer(const LayoutLayerModelObj
         offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForViewportConstrainedObjects());
 
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
-        if (RenderPart* parentDocRenderer = frame()->ownerRenderer()) {
+        if (LayoutPart* parentDocRenderer = frame()->ownerRenderer()) {
             offset = -LayoutSize(m_frameView->scrollOffset());
             offset += parentDocRenderer->contentBoxOffset();
             container = parentDocRenderer;

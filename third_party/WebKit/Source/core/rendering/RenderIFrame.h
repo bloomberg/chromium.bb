@@ -26,11 +26,11 @@
 #ifndef RenderIFrame_h
 #define RenderIFrame_h
 
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 
 namespace blink {
 
-class RenderIFrame final : public RenderPart {
+class RenderIFrame final : public LayoutPart {
 public:
     explicit RenderIFrame(Element*);
 
@@ -40,7 +40,7 @@ private:
 
     virtual void layout() override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderIFrame || RenderPart::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderIFrame || LayoutPart::isOfType(type); }
 
     virtual const char* renderName() const override { return "RenderPartObject"; } // Lying for now to avoid breaking tests
 

@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 
 #include "core/dom/AXObjectCache.h"
 #include "core/frame/FrameView.h"
@@ -39,7 +39,7 @@
 
 namespace blink {
 
-RenderPart::RenderPart(Element* element)
+LayoutPart::LayoutPart(Element* element)
     : LayoutReplaced(element)
     // Reference counting is used to prevent the part from being destroyed
     // while inside the Widget code, which might not be able to handle that.
@@ -50,13 +50,13 @@ RenderPart::RenderPart(Element* element)
     setInline(false);
 }
 
-void RenderPart::deref()
+void LayoutPart::deref()
 {
     if (--m_refCount <= 0)
         postDestroy();
 }
 
-void RenderPart::willBeDestroyed()
+void LayoutPart::willBeDestroyed()
 {
     frameView()->removePart(this);
 
@@ -72,19 +72,19 @@ void RenderPart::willBeDestroyed()
     LayoutReplaced::willBeDestroyed();
 }
 
-void RenderPart::destroy()
+void LayoutPart::destroy()
 {
     willBeDestroyed();
     clearNode();
     deref();
 }
 
-RenderPart::~RenderPart()
+LayoutPart::~LayoutPart()
 {
     ASSERT(m_refCount <= 0);
 }
 
-Widget* RenderPart::widget() const
+Widget* LayoutPart::widget() const
 {
     // Plugin widgets are stored in their DOM node. This includes HTMLAppletElement.
     Element* element = toElement(node());
@@ -95,7 +95,7 @@ Widget* RenderPart::widget() const
     return 0;
 }
 
-LayerType RenderPart::layerTypeRequired() const
+LayerType LayoutPart::layerTypeRequired() const
 {
     LayerType type = LayoutReplaced::layerTypeRequired();
     if (type != NoLayer)
@@ -103,7 +103,7 @@ LayerType RenderPart::layerTypeRequired() const
     return ForcedLayer;
 }
 
-bool RenderPart::requiresAcceleratedCompositing() const
+bool LayoutPart::requiresAcceleratedCompositing() const
 {
     // There are two general cases in which we can return true. First, if this is a plugin
     // renderer and the plugin has a layer, then we need a layer. Second, if this is
@@ -127,14 +127,14 @@ bool RenderPart::requiresAcceleratedCompositing() const
     return false;
 }
 
-bool RenderPart::needsPreferredWidthsRecalculation() const
+bool LayoutPart::needsPreferredWidthsRecalculation() const
 {
     if (LayoutReplaced::needsPreferredWidthsRecalculation())
         return true;
     return embeddedContentBox();
 }
 
-bool RenderPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     bool hadResult = result.innerNode();
     bool inside = LayoutReplaced::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, action);
@@ -145,7 +145,7 @@ bool RenderPart::nodeAtPointOverWidget(const HitTestRequest& request, HitTestRes
     return inside;
 }
 
-bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
+bool LayoutPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
     if (!widget() || !widget()->isFrameView() || !request.allowsChildFrameContent())
         return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
@@ -174,14 +174,14 @@ bool RenderPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
     return nodeAtPointOverWidget(request, result, locationInContainer, accumulatedOffset, action);
 }
 
-CompositingReasons RenderPart::additionalCompositingReasons() const
+CompositingReasons LayoutPart::additionalCompositingReasons() const
 {
     if (requiresAcceleratedCompositing())
         return CompositingReasonIFrame;
     return CompositingReasonNone;
 }
 
-void RenderPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     LayoutReplaced::styleDidChange(diff, oldStyle);
     Widget* widget = this->widget();
@@ -200,24 +200,24 @@ void RenderPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyl
     }
 }
 
-void RenderPart::layout()
+void LayoutPart::layout()
 {
     ASSERT(needsLayout());
 
     clearNeedsLayout();
 }
 
-void RenderPart::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutPart::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PartPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PartPainter(*this).paintContents(paintInfo, paintOffset);
 }
 
-CursorDirective RenderPart::getCursor(const LayoutPoint& point, Cursor& cursor) const
+CursorDirective LayoutPart::getCursor(const LayoutPoint& point, Cursor& cursor) const
 {
     if (widget() && widget()->isPluginView()) {
         // A plug-in is responsible for setting the cursor when the pointer is over it.
@@ -226,7 +226,7 @@ CursorDirective RenderPart::getCursor(const LayoutPoint& point, Cursor& cursor) 
     return LayoutReplaced::getCursor(point, cursor);
 }
 
-void RenderPart::updateOnWidgetChange()
+void LayoutPart::updateOnWidgetChange()
 {
     Widget* widget = this->widget();
     if (!widget)
@@ -247,7 +247,7 @@ void RenderPart::updateOnWidgetChange()
     }
 }
 
-void RenderPart::updateWidgetPosition()
+void LayoutPart::updateWidgetPosition()
 {
     Widget* widget = this->widget();
     if (!widget || !node()) // Check the node in case destroy() has been called.
@@ -265,7 +265,7 @@ void RenderPart::updateWidgetPosition()
     }
 }
 
-void RenderPart::widgetPositionsUpdated()
+void LayoutPart::widgetPositionsUpdated()
 {
     Widget* widget = this->widget();
     if (!widget)
@@ -273,7 +273,7 @@ void RenderPart::widgetPositionsUpdated()
     widget->widgetPositionsUpdated();
 }
 
-bool RenderPart::updateWidgetGeometry()
+bool LayoutPart::updateWidgetGeometry()
 {
     Widget* widget = this->widget();
     ASSERT(widget);
@@ -296,7 +296,7 @@ static inline IntRect roundedIntRect(const LayoutRect& rect)
     return IntRect(roundedIntPoint(rect.location()), roundedIntSize(rect.size()));
 }
 
-bool RenderPart::setWidgetGeometry(const LayoutRect& frame)
+bool LayoutPart::setWidgetGeometry(const LayoutRect& frame)
 {
     if (!node())
         return false;
@@ -309,7 +309,7 @@ bool RenderPart::setWidgetGeometry(const LayoutRect& frame)
     if (widget->frameRect() == newFrame)
         return false;
 
-    RefPtrWillBeRawPtr<RenderPart> protector(this);
+    RefPtrWillBeRawPtr<LayoutPart> protector(this);
     RefPtrWillBeRawPtr<Node> protectedNode(node());
     widget->setFrameRect(newFrame);
     return widget->frameRect().size() != newFrame.size();

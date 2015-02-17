@@ -37,7 +37,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/style/ShadowData.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"

@@ -30,7 +30,7 @@
 namespace blink {
 
 RenderFrame::RenderFrame(HTMLFrameElement* frame)
-    : RenderPart(frame)
+    : LayoutPart(frame)
 {
     setInline(false);
 }

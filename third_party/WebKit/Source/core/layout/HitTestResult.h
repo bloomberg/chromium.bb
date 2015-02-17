@@ -146,7 +146,7 @@ private:
         // determine where inside the renderer we hit on subsequent operations.
     RefPtrWillBeMember<Element> m_innerURLElement;
     RefPtrWillBeMember<Scrollbar> m_scrollbar;
-    bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a RenderPart for example).
+    bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a LayoutPart for example).
 
     mutable OwnPtrWillBeMember<NodeSet> m_rectBasedTestResult;
 };

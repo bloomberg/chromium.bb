@@ -23,7 +23,7 @@
 #ifndef RenderEmbeddedObject_h
 #define RenderEmbeddedObject_h
 
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 
 namespace blink {
 
@@ -31,7 +31,7 @@ class TextRun;
 
 // Renderer for embeds and objects, often, but not always, rendered via plug-ins.
 // For example, <embed src="foo.html"> does not invoke a plug-in.
-class RenderEmbeddedObject : public RenderPart {
+class RenderEmbeddedObject : public LayoutPart {
 public:
     RenderEmbeddedObject(Element*);
     virtual ~RenderEmbeddedObject();
@@ -51,7 +51,7 @@ private:
     virtual void layout() override final;
 
     virtual const char* renderName() const override { return "RenderEmbeddedObject"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || RenderPart::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
     virtual RenderBox* embeddedContentBox() const override final;
 
     virtual LayerType layerTypeRequired() const override final;

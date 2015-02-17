@@ -34,7 +34,7 @@ namespace blink {
 class HTMLImageLoader;
 class PluginPlaceholder;
 class RenderEmbeddedObject;
-class RenderPart;
+class LayoutPart;
 class Widget;
 
 enum PreferPlugInsForImagesOption {
@@ -58,7 +58,7 @@ public:
 
     // Returns the plugin widget, forcing layout and post-layout tasks
     // to happen synchronously (e.g. for JS bindings).
-    // See also renderPartForJSBindings().
+    // See also layoutPartForJSBindings().
     Widget* pluginWidgetForJSBindings();
 
     SharedPersistent<v8::Object>* pluginWrapper();
@@ -93,9 +93,9 @@ protected:
 
     virtual bool hasFallbackContent() const;
     virtual bool useFallbackContent() const;
-    // Create or update the RenderPart and return it, triggering layout if
+    // Create or update the LayoutPart and return it, triggering layout if
     // necessary.
-    virtual RenderPart* renderPartForJSBindings() const;
+    virtual LayoutPart* layoutPartForJSBindings() const;
 
     bool isImageType();
     bool shouldPreferPlugInsForImages() const { return m_shouldPreferPlugInsForImages; }
@@ -137,9 +137,9 @@ private:
     virtual bool hasCustomFocusLogic() const override;
     virtual bool isPluginElement() const override final;
 
-    // Return any existing RenderPart without triggering relayout, or 0 if it
+    // Return any existing LayoutPart without triggering relayout, or 0 if it
     // doesn't yet exist.
-    virtual RenderPart* existingRenderPart() const = 0;
+    virtual LayoutPart* existingLayoutPart() const = 0;
     virtual void updateWidgetInternal() = 0;
 
     bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer);

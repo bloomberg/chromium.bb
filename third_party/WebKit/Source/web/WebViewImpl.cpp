@@ -65,6 +65,7 @@
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
@@ -84,7 +85,6 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageNamespaceController.h"
 #include "modules/accessibility/AXObject.h"
@@ -3501,8 +3501,8 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
         return;
 
     LayoutObject* object = node->renderer();
-    if (object && object->isRenderPart()) {
-        Widget* widget = toRenderPart(object)->widget();
+    if (object && object->isLayoutPart()) {
+        Widget* widget = toLayoutPart(object)->widget();
         if (widget && widget->isPluginContainer()) {
             WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
             switch (action.type) {

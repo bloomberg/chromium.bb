@@ -26,10 +26,10 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
+#include "core/layout/LayoutPart.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -451,14 +451,14 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
 
     LayoutObject* renderer = scrollableFrame->renderer();
     ASSERT_TRUE(renderer);
-    ASSERT_TRUE(renderer->isRenderPart());
+    ASSERT_TRUE(renderer->isLayoutPart());
 
-    RenderPart* renderPart = toRenderPart(renderer);
-    ASSERT_TRUE(renderPart);
-    ASSERT_TRUE(renderPart->widget());
-    ASSERT_TRUE(renderPart->widget()->isFrameView());
+    LayoutPart* layoutPart = toLayoutPart(renderer);
+    ASSERT_TRUE(layoutPart);
+    ASSERT_TRUE(layoutPart->widget());
+    ASSERT_TRUE(layoutPart->widget()->isFrameView());
 
-    FrameView* innerFrameView = toFrameView(renderPart->widget());
+    FrameView* innerFrameView = toFrameView(layoutPart->widget());
     RenderView* innerRenderView = innerFrameView->renderView();
     ASSERT_TRUE(innerRenderView);
 
@@ -495,14 +495,14 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
 
     LayoutObject* renderer = scrollableFrame->renderer();
     ASSERT_TRUE(renderer);
-    ASSERT_TRUE(renderer->isRenderPart());
+    ASSERT_TRUE(renderer->isLayoutPart());
 
-    RenderPart* renderPart = toRenderPart(renderer);
-    ASSERT_TRUE(renderPart);
-    ASSERT_TRUE(renderPart->widget());
-    ASSERT_TRUE(renderPart->widget()->isFrameView());
+    LayoutPart* layoutPart = toLayoutPart(renderer);
+    ASSERT_TRUE(layoutPart);
+    ASSERT_TRUE(layoutPart->widget());
+    ASSERT_TRUE(layoutPart->widget()->isFrameView());
 
-    FrameView* innerFrameView = toFrameView(renderPart->widget());
+    FrameView* innerFrameView = toFrameView(layoutPart->widget());
     RenderView* innerRenderView = innerFrameView->renderView();
     ASSERT_TRUE(innerRenderView);
 

@@ -23,14 +23,14 @@
 #ifndef RenderFrame_h
 #define RenderFrame_h
 
+#include "core/layout/LayoutPart.h"
 #include "core/rendering/RenderFrameSet.h"
-#include "core/rendering/RenderPart.h"
 
 namespace blink {
 
 class HTMLFrameElement;
 
-class RenderFrame final : public RenderPart {
+class RenderFrame final : public LayoutPart {
 public:
     explicit RenderFrame(HTMLFrameElement*);
 
@@ -38,7 +38,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "RenderFrame"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || RenderPart::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || LayoutPart::isOfType(type); }
 
     virtual void updateFromElement() override;
 };

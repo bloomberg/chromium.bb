@@ -37,7 +37,7 @@ class DocumentLifecycle;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class Page;
-class RenderPart;
+class LayoutPart;
 class ScrollingCoordinator;
 
 enum CompositingUpdateType {
@@ -132,9 +132,9 @@ public:
 
     void setIsInWindow(bool);
 
-    static LayerCompositor* frameContentsCompositor(RenderPart*);
+    static LayerCompositor* frameContentsCompositor(LayoutPart*);
     // Return true if the layers changed.
-    static bool parentFrameContentLayers(RenderPart*);
+    static bool parentFrameContentLayers(LayoutPart*);
 
     // Update the geometry of the layers used for clipping and scrolling in frames.
     void frameViewDidChangeLocation(const IntPoint& contentsOffset);

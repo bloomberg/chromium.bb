@@ -75,9 +75,9 @@ void HTMLObjectElement::trace(Visitor* visitor)
     HTMLPlugInElement::trace(visitor);
 }
 
-RenderPart* HTMLObjectElement::existingRenderPart() const
+LayoutPart* HTMLObjectElement::existingLayoutPart() const
 {
-    return renderPart(); // This will return 0 if the renderer is not a RenderPart.
+    return layoutPart(); // This will return 0 if the renderer is not a LayoutPart.
 }
 
 bool HTMLObjectElement::isPresentationAttribute(const QualifiedName& name) const

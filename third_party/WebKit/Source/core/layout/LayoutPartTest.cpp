@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 
 #include "core/html/HTMLElement.h"
 #include "core/layout/ImageQualityController.h"
@@ -12,13 +12,21 @@
 
 namespace blink {
 
-class RenderPartTest : public RenderingTest {
+class LayoutPartTest : public RenderingTest {
 };
 
-TEST_F(RenderPartTest, DestroyUpdatesImageQualityController)
+class OverriddenLayoutPart : public LayoutPart {
+public:
+    explicit OverriddenLayoutPart(Element* element) : LayoutPart(element) { }
+
+private:
+    virtual const char* renderName() const override { return "OverriddenLayoutPart"; }
+};
+
+TEST_F(LayoutPartTest, DestroyUpdatesImageQualityController)
 {
     RefPtrWillBeRawPtr<Element> element = HTMLElement::create(HTMLNames::divTag, document());
-    LayoutObject* part = new RenderPart(element.get());
+    LayoutObject* part = new OverriddenLayoutPart(element.get());
     // The third and forth arguments are not important in this test.
     ImageQualityController::imageQualityController()->set(part, 0, this, LayoutSize(1, 1));
     EXPECT_TRUE(ImageQualityController::has(part));

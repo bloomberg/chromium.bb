@@ -42,7 +42,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/rendering/RenderPart.h"
+#include "core/layout/LayoutPart.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/Widget.h"
@@ -232,8 +232,8 @@ WebPluginContainer* WebNode::pluginContainer() const
     const Node& coreNode = *constUnwrap<Node>();
     if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
         LayoutObject* object = coreNode.renderer();
-        if (object && object->isRenderPart()) {
-            Widget* widget = toRenderPart(object)->widget();
+        if (object && object->isLayoutPart()) {
+            Widget* widget = toLayoutPart(object)->widget();
             if (widget && widget->isPluginContainer())
                 return toWebPluginContainerImpl(widget);
         }

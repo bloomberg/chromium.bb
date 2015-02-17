@@ -42,10 +42,10 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
@@ -240,7 +240,7 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(Layer* root, LayerIdToNode
         buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
     if (!root->renderer()->isRenderIFrame())
         return;
-    FrameView* childFrameView = toFrameView(toRenderPart(root->renderer())->widget());
+    FrameView* childFrameView = toFrameView(toLayoutPart(root->renderer())->widget());
     if (RenderView* childRenderView = childFrameView->renderView()) {
         if (LayerCompositor* childCompositor = childRenderView->compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);

@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RenderPart_h
-#define RenderPart_h
+#ifndef LayoutPart_h
+#define LayoutPart_h
 
 #include "core/layout/LayoutReplaced.h"
 #include "platform/Widget.h"
@@ -29,10 +29,10 @@
 namespace blink {
 
 // Renderer for frames via RenderFrame and RenderIFrame, and plug-ins via RenderEmbeddedObject.
-class RenderPart : public LayoutReplaced {
+class LayoutPart : public LayoutReplaced {
 public:
-    explicit RenderPart(Element*);
-    virtual ~RenderPart();
+    explicit LayoutPart(Element*);
+    virtual ~LayoutPart();
 
     bool requiresAcceleratedCompositing() const;
 
@@ -50,7 +50,7 @@ public:
     void widgetPositionsUpdated();
     bool updateWidgetGeometry();
 
-    virtual bool isRenderPart() const override final { return true; }
+    virtual bool isLayoutPart() const override final { return true; }
     virtual void paintContents(const PaintInfo&, const LayoutPoint&);
 
 protected:
@@ -62,8 +62,6 @@ protected:
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override final;
 
 private:
-    virtual const char* renderName() const override { return "RenderPart"; }
-
     virtual CompositingReasons additionalCompositingReasons() const override;
 
     virtual void willBeDestroyed() override final;
@@ -76,8 +74,8 @@ private:
     int m_refCount;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutPart, isLayoutPart());
 
 } // namespace blink
 
-#endif // RenderPart_h
+#endif // LayoutPart_h

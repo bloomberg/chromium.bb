@@ -387,7 +387,7 @@ public:
     virtual bool isRenderBlockFlow() const { return false; }
     virtual bool isLayoutFlowThread() const { return false; }
     virtual bool isRenderInline() const { return false; }
-    virtual bool isRenderPart() const { return false; }
+    virtual bool isLayoutPart() const { return false; }
 
     bool isDocumentElement() const { return document().documentElement() == m_node; }
     // isBody is called from RenderBox::styleWillChange and is thus quite hot.
@@ -621,7 +621,7 @@ public:
         return isPseudoElement() ? 0 : node();
     }
 
-    // FIXME: Why does RenderPart need this? crbug.com/422457
+    // FIXME: Why does LayoutPart need this? crbug.com/422457
     void clearNode() { m_node = nullptr; }
 
     // Returns the styled node that caused the generation of this renderer.
@@ -1097,7 +1097,7 @@ protected:
         LayoutObjectRenderInline,
         LayoutObjectLayoutMultiColumnSet,
         LayoutObjectLayoutMultiColumnSpannerPlaceholder,
-        LayoutObjectRenderPart,
+        LayoutObjectLayoutPart,
         LayoutObjectLayoutRegion,
         LayoutObjectRenderScrollbarPart,
         LayoutObjectRenderView,

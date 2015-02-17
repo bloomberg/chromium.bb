@@ -33,7 +33,7 @@ namespace blink {
 class LocalDOMWindow;
 class ExceptionState;
 class Frame;
-class RenderPart;
+class LayoutPart;
 class Widget;
 
 class HTMLFrameOwnerElement : public HTMLElement, public FrameOwner {
@@ -50,10 +50,10 @@ public:
 
     virtual void disconnectContentFrame();
 
-    // Most subclasses use RenderPart (either RenderEmbeddedObject or RenderIFrame)
+    // Most subclasses use LayoutPart (either RenderEmbeddedObject or RenderIFrame)
     // except for HTMLObjectElement and HTMLEmbedElement which may return any
     // LayoutObject when using fallback content.
-    RenderPart* renderPart() const;
+    LayoutPart* layoutPart() const;
 
     Document* getSVGDocument(ExceptionState&) const;
 

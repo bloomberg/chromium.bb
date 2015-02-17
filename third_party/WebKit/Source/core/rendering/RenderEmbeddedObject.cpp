@@ -53,7 +53,7 @@ static const float replacementTextRoundedRectRadius = 5;
 static const float replacementTextTextOpacity = 0.55f;
 
 RenderEmbeddedObject::RenderEmbeddedObject(Element* element)
-    : RenderPart(element)
+    : LayoutPart(element)
     , m_showsUnavailablePluginIndicator(false)
 {
     view()->frameView()->setIsVisuallyNonEmpty();
@@ -65,14 +65,14 @@ RenderEmbeddedObject::~RenderEmbeddedObject()
 
 LayerType RenderEmbeddedObject::layerTypeRequired() const
 {
-    // This can't just use RenderPart::layerTypeRequired, because LayerCompositor
+    // This can't just use LayoutPart::layerTypeRequired, because LayerCompositor
     // doesn't loop through RenderEmbeddedObjects the way it does frames in order
     // to update the self painting bit on their Layer.
     // Also, unlike iframes, embeds don't used the usesCompositing bit on RenderView
     // in requiresAcceleratedCompositing.
     if (requiresAcceleratedCompositing())
         return NormalLayer;
-    return RenderPart::layerTypeRequired();
+    return LayoutPart::layerTypeRequired();
 }
 
 static String unavailablePluginReplacementText(Node* node, RenderEmbeddedObject::PluginUnavailabilityReason pluginUnavailabilityReason)
@@ -109,7 +109,7 @@ void RenderEmbeddedObject::paintContents(const PaintInfo& paintInfo, const Layou
     if (!isHTMLPlugInElement(element))
         return;
 
-    RenderPart::paintContents(paintInfo, paintOffset);
+    LayoutPart::paintContents(paintInfo, paintOffset);
 }
 
 void RenderEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -119,7 +119,7 @@ void RenderEmbeddedObject::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     }
 
-    RenderPart::paint(paintInfo, paintOffset);
+    LayoutPart::paint(paintInfo, paintOffset);
 }
 
 void RenderEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
