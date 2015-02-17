@@ -9,16 +9,16 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderSVGRoot;
+class LayoutSVGRoot;
 
 class SVGRootPainter {
 public:
-    SVGRootPainter(RenderSVGRoot& renderSVGRoot) : m_renderSVGRoot(renderSVGRoot) { }
+    SVGRootPainter(LayoutSVGRoot& renderSVGRoot) : m_renderSVGRoot(renderSVGRoot) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderSVGRoot& m_renderSVGRoot;
+    LayoutSVGRoot& m_renderSVGRoot;
 };
 
 } // namespace blink

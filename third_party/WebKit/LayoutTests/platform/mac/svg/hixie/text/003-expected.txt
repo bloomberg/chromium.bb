@@ -13,7 +13,7 @@ layer at (8,50) size 784x162
     layer at (0,0) size 778x156
       RenderView at (0,0) size 778x156
     layer at (0,0) size 778x156
-      RenderSVGRoot {svg} at (0,0) size 372x156
+      LayoutSVGRoot {svg} at (0,0) size 372x156
         LayoutSVGText {text} at (0,-1) size 3x3 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 3x2
             chunk 1 text run 1 at (0.00,0.80) startOffset 0 endOffset 4 width 2.39: "PASS"
@@ -22,7 +22,7 @@ layer at (8,232) size 784x162
     layer at (0,0) size 778x156
       RenderView at (0,0) size 778x156
     layer at (0,0) size 778x156
-      RenderSVGRoot {svg} at (0,0) size 372x156
+      LayoutSVGRoot {svg} at (0,0) size 372x156
         LayoutSVGText {text} at (0,-100) size 2391x1151 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 2391x1151
             chunk 1 text run 1 at (0.00,800.00) startOffset 0 endOffset 4 width 2390.47: "PASS"

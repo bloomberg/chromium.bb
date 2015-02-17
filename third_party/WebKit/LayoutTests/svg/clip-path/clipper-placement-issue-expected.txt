@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (5,0) size 93x33
+  LayoutSVGRoot {svg} at (5,0) size 93x33
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (5,0) size 33x33
         LayoutSVGPath {path} at (10,10) size 20x20 [fill={[type=SOLID] [color=#000000]}] [data="M 10 10 L 30 10 L 30 30 L 10 30 L 10 10 M 11 11 L 11 29 L 29 29 L 29 11 L 11 11"]

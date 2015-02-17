@@ -30,7 +30,7 @@ layer at (25,233) size 208x76
     layer at (0,0) size 176x44
       RenderView at (0,0) size 176x44
     layer at (0,0) size 176x44
-      RenderSVGRoot {svg} at (0,0) size 176x44
+      LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (25,345) size 208x76
@@ -38,7 +38,7 @@ layer at (25,345) size 208x76
     layer at (0,0) size 176x44
       RenderView at (0,0) size 176x44
     layer at (0,0) size 176x44
-      RenderSVGRoot {svg} at (0,0) size 176x44
+      LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (25,457) size 208x76
@@ -46,7 +46,7 @@ layer at (25,457) size 208x76
     layer at (0,0) size 176x44
       RenderView at (0,0) size 176x44
     layer at (0,0) size 176x44
-      RenderSVGRoot {svg} at (0,0) size 176x44
+      LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (25,632) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
@@ -54,7 +54,7 @@ layer at (25,632) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0)
     layer at (0,0) size 176x44
       RenderView at (0,0) size 176x44
     layer at (0,0) size 176x44
-      RenderSVGRoot {svg} at (0,0) size 176x44
+      LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
 layer at (25,807) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
@@ -62,6 +62,6 @@ layer at (25,807) size 208x76 backgroundClip at (0,0) size 800x600 clip at (0,0)
     layer at (0,0) size 176x44
       RenderView at (0,0) size 176x44
     layer at (0,0) size 176x44
-      RenderSVGRoot {svg} at (0,0) size 176x44
+      LayoutSVGRoot {svg} at (0,0) size 176x44
         LayoutSVGRect {rect} at (0,0) size 176x44 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         LayoutSVGPath {path} at (26,8) size 124x28 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]

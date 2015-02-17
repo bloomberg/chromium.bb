@@ -19,7 +19,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGGradientStop.h"
+#include "core/layout/svg/LayoutSVGGradientStop.h"
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGGradientElement.h"
@@ -27,16 +27,16 @@
 
 namespace blink {
 
-RenderSVGGradientStop::RenderSVGGradientStop(SVGStopElement* element)
+LayoutSVGGradientStop::LayoutSVGGradientStop(SVGStopElement* element)
     : LayoutObject(element)
 {
 }
 
-RenderSVGGradientStop::~RenderSVGGradientStop()
+LayoutSVGGradientStop::~LayoutSVGGradientStop()
 {
 }
 
-void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     LayoutObject::styleDidChange(diff, oldStyle);
     if (!diff.hasDifference())
@@ -56,12 +56,12 @@ void RenderSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutSty
     container->removeAllClientsFromCache();
 }
 
-void RenderSVGGradientStop::layout()
+void LayoutSVGGradientStop::layout()
 {
     clearNeedsLayout();
 }
 
-SVGGradientElement* RenderSVGGradientStop::gradientElement() const
+SVGGradientElement* LayoutSVGGradientStop::gradientElement() const
 {
     ContainerNode* parentNode = node()->parentNode();
     ASSERT(parentNode);

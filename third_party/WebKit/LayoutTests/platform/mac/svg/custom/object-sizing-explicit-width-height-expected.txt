@@ -15,7 +15,7 @@ layer at (8,8) size 175x275
     layer at (0,0) size 175x275
       RenderView at (0,0) size 175x275
     layer at (0,0) size 175x275
-      RenderSVGRoot {svg} at (0,50) size 175x175
+      LayoutSVGRoot {svg} at (0,50) size 175x175
         LayoutSVGRect {rect} at (0,50) size 175x175 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=300.00] [height=300.00]
         LayoutSVGEllipse {circle} at (70,120) size 35x35 [fill={[type=SOLID] [color=#008000]}] [cx=150.00] [cy=150.00] [r=30.00]
 layer at (187,8) size 175x275
@@ -23,7 +23,7 @@ layer at (187,8) size 175x275
     layer at (0,0) size 175x275
       RenderView at (0,0) size 175x275
     layer at (0,0) size 175x275
-      RenderSVGRoot {svg} at (0,50) size 175x175
+      LayoutSVGRoot {svg} at (0,50) size 175x175
         LayoutSVGRect {rect} at (0,50) size 175x175 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=300.00] [height=300.00]
         LayoutSVGEllipse {circle} at (70,120) size 35x35 [fill={[type=SOLID] [color=#008000]}] [cx=150.00] [cy=150.00] [r=30.00]
 layer at (366,8) size 175x275
@@ -31,7 +31,7 @@ layer at (366,8) size 175x275
     layer at (0,0) size 175x275
       RenderView at (0,0) size 175x275
     layer at (0,0) size 175x275
-      RenderSVGRoot {svg} at (0,50) size 175x175
+      LayoutSVGRoot {svg} at (0,50) size 175x175
         LayoutSVGRect {rect} at (0,50) size 175x175 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=300.00] [height=300.00]
         LayoutSVGEllipse {circle} at (70,120) size 35x35 [fill={[type=SOLID] [color=#008000]}] [cx=150.00] [cy=150.00] [r=30.00]
 layer at (545,8) size 175x275
@@ -39,6 +39,6 @@ layer at (545,8) size 175x275
     layer at (0,0) size 175x275
       RenderView at (0,0) size 175x275
     layer at (0,0) size 175x275
-      RenderSVGRoot {svg} at (0,50) size 175x175
+      LayoutSVGRoot {svg} at (0,50) size 175x175
         LayoutSVGRect {rect} at (0,50) size 175x175 [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=300.00] [height=300.00]
         LayoutSVGEllipse {circle} at (70,120) size 35x35 [fill={[type=SOLID] [color=#008000]}] [cx=150.00] [cy=150.00] [r=30.00]

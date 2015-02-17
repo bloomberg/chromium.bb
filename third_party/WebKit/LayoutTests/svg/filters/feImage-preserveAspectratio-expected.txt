@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 600x250
-  RenderSVGRoot {svg} at (0,0) size 600x250
+  LayoutSVGRoot {svg} at (0,0) size 600x250
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="Default"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feImage image-size="100x100"]

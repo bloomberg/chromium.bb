@@ -20,8 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGRoot_h
-#define RenderSVGRoot_h
+#ifndef LayoutSVGRoot_h
+#define LayoutSVGRoot_h
 
 #include "core/layout/LayoutReplaced.h"
 
@@ -29,10 +29,10 @@ namespace blink {
 
 class SVGElement;
 
-class RenderSVGRoot final : public LayoutReplaced {
+class LayoutSVGRoot final : public LayoutReplaced {
 public:
-    explicit RenderSVGRoot(SVGElement*);
-    virtual ~RenderSVGRoot();
+    explicit LayoutSVGRoot(SVGElement*);
+    virtual ~LayoutSVGRoot();
 
     bool isEmbeddedThroughSVGImage() const;
     bool isEmbeddedThroughFrameContainingSVGDocument() const;
@@ -40,7 +40,7 @@ public:
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
     virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
-    // If you have a RenderSVGRoot, use firstChild or lastChild instead.
+    // If you have a LayoutSVGRoot, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
@@ -75,7 +75,7 @@ private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual const char* renderName() const override { return "RenderSVGRoot"; }
+    virtual const char* renderName() const override { return "LayoutSVGRoot"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || LayoutReplaced::isOfType(type); }
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
@@ -128,8 +128,8 @@ private:
     mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGRoot, isSVGRoot());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGRoot, isSVGRoot());
 
 } // namespace blink
 
-#endif // RenderSVGRoot_h
+#endif // LayoutSVGRoot_h

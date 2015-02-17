@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutSVGContainer::LayoutSVGContainer(SVGElement* node)
-    : RenderSVGModelObject(node)
+    : LayoutSVGModelObject(node)
     , m_objectBoundingBoxValid(false)
     , m_needsBoundariesUpdate(true)
     , m_hasNonIsolatedBlendingDescendants(false)
@@ -68,7 +68,7 @@ void LayoutSVGContainer::layout()
         m_needsBoundariesUpdate = false;
 
         // If our bounds changed, notify the parents.
-        RenderSVGModelObject::setNeedsBoundariesUpdate();
+        LayoutSVGModelObject::setNeedsBoundariesUpdate();
     }
 
     clearNeedsLayout();
@@ -76,7 +76,7 @@ void LayoutSVGContainer::layout()
 
 void LayoutSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
-    RenderSVGModelObject::addChild(child, beforeChild);
+    LayoutSVGModelObject::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
 
     bool shouldIsolateDescendants = (child->isBlendingAllowed() && child->style()->hasBlendMode()) || child->hasNonIsolatedBlendingDescendants();
@@ -87,7 +87,7 @@ void LayoutSVGContainer::addChild(LayoutObject* child, LayoutObject* beforeChild
 void LayoutSVGContainer::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
-    RenderSVGModelObject::removeChild(child);
+    LayoutSVGModelObject::removeChild(child);
 
     bool hadNonIsolatedDescendants = (child->isBlendingAllowed() && child->style()->hasBlendMode()) || child->hasNonIsolatedBlendingDescendants();
     if (hadNonIsolatedDescendants)
@@ -102,7 +102,7 @@ bool LayoutSVGContainer::selfWillPaint()
 
 void LayoutSVGContainer::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderSVGModelObject::styleDidChange(diff, oldStyle);
+    LayoutSVGModelObject::styleDidChange(diff, oldStyle);
 
     bool hadIsolation = oldStyle && !isSVGHiddenContainer() && SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(*oldStyle);
     bool isolationChanged = hadIsolation == !SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this);

@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 150x275
-  RenderSVGRoot {svg} at (9,50) size 118x200
+  LayoutSVGRoot {svg} at (9,50) size 118x200
     LayoutSVGPath {line} at (9,50) size 2x200 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=10.00] [y1=25.00] [x2=10.00] [y2=225.00]
     LayoutSVGText {text} at (10,29) size 113x27 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (58,0) size 55x27

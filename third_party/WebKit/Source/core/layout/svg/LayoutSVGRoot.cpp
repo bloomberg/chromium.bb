@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
@@ -40,7 +40,7 @@
 
 namespace blink {
 
-RenderSVGRoot::RenderSVGRoot(SVGElement* node)
+LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
     : LayoutReplaced(node)
     , m_objectBoundingBoxValid(false)
     , m_isLayoutSizeChanged(false)
@@ -51,11 +51,11 @@ RenderSVGRoot::RenderSVGRoot(SVGElement* node)
 {
 }
 
-RenderSVGRoot::~RenderSVGRoot()
+LayoutSVGRoot::~LayoutSVGRoot()
 {
 }
 
-void RenderSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
+void LayoutSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const
 {
     // Spec: http://www.w3.org/TR/SVG/coords.html#IntrinsicSizing
     // SVG needs to specify how to calculate some intrinsic sizing properties to enable inclusion within other languages.
@@ -88,12 +88,12 @@ void RenderSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, d
     }
 }
 
-bool RenderSVGRoot::isEmbeddedThroughSVGImage() const
+bool LayoutSVGRoot::isEmbeddedThroughSVGImage() const
 {
     return SVGImage::isInSVGImage(toSVGSVGElement(node()));
 }
 
-bool RenderSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const
+bool LayoutSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const
 {
     if (!node())
         return false;
@@ -114,7 +114,7 @@ static inline LayoutUnit resolveLengthAttributeForSVG(const Length& length, floa
     return static_cast<LayoutUnit>(valueForLength(length, maxSize) * (length.isFixed() ? scale : 1));
 }
 
-LayoutUnit RenderSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
+LayoutUnit LayoutSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred shouldComputePreferred) const
 {
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
@@ -136,7 +136,7 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred sho
     return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
-LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
+LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight() const
 {
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
@@ -158,7 +158,7 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
     return LayoutReplaced::computeReplacedLogicalHeight();
 }
 
-void RenderSVGRoot::layout()
+void LayoutSVGRoot::layout()
 {
     ASSERT(needsLayout());
 
@@ -197,7 +197,7 @@ void RenderSVGRoot::layout()
     clearNeedsLayout();
 }
 
-bool RenderSVGRoot::shouldApplyViewportClip() const
+bool LayoutSVGRoot::shouldApplyViewportClip() const
 {
     // the outermost svg is clipped if auto, and svg document roots are always clipped
     // When the svg is stand-alone (isDocumentElement() == true) the viewport clipping should always
@@ -208,20 +208,20 @@ bool RenderSVGRoot::shouldApplyViewportClip() const
         || this->isDocumentElement();
 }
 
-void RenderSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutSVGRoot::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     SVGRootPainter(*this).paint(paintInfo, paintOffset);
 }
 
-void RenderSVGRoot::willBeDestroyed()
+void LayoutSVGRoot::willBeDestroyed()
 {
-    RenderBlock::removePercentHeightDescendant(const_cast<RenderSVGRoot*>(this));
+    RenderBlock::removePercentHeightDescendant(const_cast<LayoutSVGRoot*>(this));
 
     SVGResourcesCache::clientDestroyed(this);
     LayoutReplaced::willBeDestroyed();
 }
 
-void RenderSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
@@ -234,12 +234,12 @@ void RenderSVGRoot::styleDidChange(StyleDifference diff, const LayoutStyle* oldS
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
-bool RenderSVGRoot::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
+bool LayoutSVGRoot::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
 }
 
-void RenderSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
+void LayoutSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     LayoutReplaced::addChild(child, beforeChild);
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
@@ -249,7 +249,7 @@ void RenderSVGRoot::addChild(LayoutObject* child, LayoutObject* beforeChild)
         descendantIsolationRequirementsChanged(DescendantIsolationRequired);
 }
 
-void RenderSVGRoot::removeChild(LayoutObject* child)
+void LayoutSVGRoot::removeChild(LayoutObject* child)
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(child);
     LayoutReplaced::removeChild(child);
@@ -259,7 +259,7 @@ void RenderSVGRoot::removeChild(LayoutObject* child)
         descendantIsolationRequirementsChanged(DescendantIsolationNeedsUpdate);
 }
 
-bool RenderSVGRoot::hasNonIsolatedBlendingDescendants() const
+bool LayoutSVGRoot::hasNonIsolatedBlendingDescendants() const
 {
     if (m_hasNonIsolatedBlendingDescendantsDirty) {
         m_hasNonIsolatedBlendingDescendants = SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(this);
@@ -268,7 +268,7 @@ bool RenderSVGRoot::hasNonIsolatedBlendingDescendants() const
     return m_hasNonIsolatedBlendingDescendants;
 }
 
-void RenderSVGRoot::descendantIsolationRequirementsChanged(DescendantIsolationState state)
+void LayoutSVGRoot::descendantIsolationRequirementsChanged(DescendantIsolationState state)
 {
     switch (state) {
     case DescendantIsolationRequired:
@@ -281,13 +281,13 @@ void RenderSVGRoot::descendantIsolationRequirementsChanged(DescendantIsolationSt
     }
 }
 
-void RenderSVGRoot::insertedIntoTree()
+void LayoutSVGRoot::insertedIntoTree()
 {
     LayoutReplaced::insertedIntoTree();
     SVGResourcesCache::clientWasAddedToTree(this, styleRef());
 }
 
-void RenderSVGRoot::willBeRemovedFromTree()
+void LayoutSVGRoot::willBeRemovedFromTree()
 {
     SVGResourcesCache::clientWillBeRemovedFromTree(this);
     LayoutReplaced::willBeRemovedFromTree();
@@ -295,7 +295,7 @@ void RenderSVGRoot::willBeRemovedFromTree()
 
 // RenderBox methods will expect coordinates w/o any transforms in coordinates
 // relative to our borderBox origin.  This method gives us exactly that.
-void RenderSVGRoot::buildLocalToBorderBoxTransform()
+void LayoutSVGRoot::buildLocalToBorderBoxTransform()
 {
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
@@ -309,7 +309,7 @@ void RenderSVGRoot::buildLocalToBorderBoxTransform()
     m_localToBorderBoxTransform = viewToBorderBoxTransform * m_localToBorderBoxTransform;
 }
 
-const AffineTransform& RenderSVGRoot::localToParentTransform() const
+const AffineTransform& LayoutSVGRoot::localToParentTransform() const
 {
     // Slightly optimized version of m_localToParentTransform = AffineTransform::translation(x(), y()) * m_localToBorderBoxTransform;
     m_localToParentTransform = m_localToBorderBoxTransform;
@@ -320,10 +320,10 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
     return m_localToParentTransform;
 }
 
-LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
-    // RenderSVGRoot::mapRectToPaintInvalidationBacking and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
+    // LayoutSVGRoot::mapRectToPaintInvalidationBacking and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
@@ -354,7 +354,7 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLa
     return rect;
 }
 
-void RenderSVGRoot::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
@@ -369,7 +369,7 @@ void RenderSVGRoot::mapRectToPaintInvalidationBacking(const LayoutLayerModelObje
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
 // to convert from SVG viewport coordinates to local CSS box coordinates.
-void RenderSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG rendering tree.
     // We used to have this ASSERT here, but we removed it when enabling layer squashing.
@@ -379,18 +379,18 @@ void RenderSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInval
     LayoutReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* RenderSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return LayoutReplaced::pushMappingToContainer(ancestorToStopAt, geometryMap);
 }
 
-void RenderSVGRoot::updateCachedBoundaries()
+void LayoutSVGRoot::updateCachedBoundaries()
 {
     SVGLayoutSupport::computeContainerBoundingBoxes(this, m_objectBoundingBox, m_objectBoundingBoxValid, m_strokeBoundingBox, m_paintInvalidationBoundingBox);
     SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
-bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint pointInParent = locationInContainer.point() - toLayoutSize(accumulatedOffset);
     LayoutPoint pointInBorderBox = pointInParent - toLayoutSize(location());

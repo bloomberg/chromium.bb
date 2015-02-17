@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (100,75) size 143x68
+  LayoutSVGRoot {svg} at (100,75) size 143x68
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="clip"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGText {text} at (100,75) size 143x68 contains 1 chunk(s)

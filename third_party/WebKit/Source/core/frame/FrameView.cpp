@@ -57,6 +57,7 @@
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/style/LayoutStyle.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -71,7 +72,6 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/HostWindow.h"
@@ -588,12 +588,12 @@ void FrameView::applyOverflowToViewportAndSetRenderer(LayoutObject* o, Scrollbar
 
     if (o->isSVGRoot()) {
         // Don't allow overflow to affect <img> and css backgrounds
-        if (toRenderSVGRoot(o)->isEmbeddedThroughSVGImage())
+        if (toLayoutSVGRoot(o)->isEmbeddedThroughSVGImage())
             return;
 
         // FIXME: evaluate if we can allow overflow for these cases too.
         // Overflow is always hidden when stand-alone SVG documents are embedded.
-        if (toRenderSVGRoot(o)->isEmbeddedThroughFrameContainingSVGDocument()) {
+        if (toLayoutSVGRoot(o)->isEmbeddedThroughFrameContainingSVGDocument()) {
             overflowX = OHIDDEN;
             overflowY = OHIDDEN;
         }
@@ -779,7 +779,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     if (!contentBox)
         return;
 
-    RenderSVGRoot* svgRoot = toRenderSVGRoot(contentBox);
+    LayoutSVGRoot* svgRoot = toLayoutSVGRoot(contentBox);
     if (svgRoot->everHadLayout() && !svgRoot->needsLayout())
         return;
 
@@ -788,8 +788,8 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // embeddedContentBox() returns 0, as long as the embedded document isn't loaded yet. Before
     // bothering to lay out the SVG document, mark the ownerRenderer needing layout and ask its
     // FrameView for a layout. After that the LayoutEmbeddedObject (ownerRenderer) carries the
-    // correct size, which RenderSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
-    // out for the first time, or when the RenderSVGRoot size has changed dynamically (eg. via <script>).
+    // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
+    // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
     RefPtrWillBeRawPtr<FrameView> frameView = ownerRenderer->frame()->view();
 
     // Mark the owner renderer as needing layout.

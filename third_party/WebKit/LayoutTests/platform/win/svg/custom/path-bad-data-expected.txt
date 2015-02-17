@@ -15,5 +15,5 @@ layer at (0,0) size 785x600
           RenderText {#text} at (0,0) size 421x21
             text run at (0,0) width 421: "Below is a rendering of the page up to the first error."
       RenderBlock (anonymous) at (0,153.88) size 769x604
-        RenderSVGRoot {svg} at (8,169) size 200x201
+        LayoutSVGRoot {svg} at (8,169) size 200x201
           LayoutSVGPath {path} at (8,169) size 200x201 [fill={[type=SOLID] [color=#008000]}] [data="M 0 0 L 200 0 L 200 200 L 0 200"]

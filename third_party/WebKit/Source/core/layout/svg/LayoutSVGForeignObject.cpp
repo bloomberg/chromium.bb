@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutSVGForeignObject::LayoutSVGForeignObject(SVGForeignObjectElement* node)
-    : RenderSVGBlock(node)
+    : LayoutSVGBlock(node)
     , m_needsTransformUpdate(true)
 {
 }
@@ -111,7 +111,7 @@ void LayoutSVGForeignObject::layout()
 
     // If our bounds changed, notify the parents.
     if (updateCachedBoundariesInParents)
-        RenderSVGBlock::setNeedsBoundariesUpdate();
+        LayoutSVGBlock::setNeedsBoundariesUpdate();
 
     // Invalidate all resources of this client if our layout changed.
     if (layoutChanged)

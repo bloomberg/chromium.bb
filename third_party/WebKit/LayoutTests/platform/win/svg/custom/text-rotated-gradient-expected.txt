@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,12) size 703x289
+  LayoutSVGRoot {svg} at (0,12) size 703x289
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceLinearGradient {linearGradient} [id="g"] [gradientUnits=userSpaceOnUse] [start=(0,0)] [end=(0,600)]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#00000080]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#00000080]
     LayoutSVGText {text} at (0,12) size 639x22 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 639x22
         chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 81 width 638.14: "You should see red, black, red, black text all rotated 45deg, translated by 100px"

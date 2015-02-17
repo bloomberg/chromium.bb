@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x249
   RenderBlock {HTML} at (0,0) size 800x249.16
     RenderBody {BODY} at (16.58,16.58) size 766.84x216
-      RenderSVGRoot {svg} at (16,16) size 1x1
+      LayoutSVGRoot {svg} at (16,16) size 1x1
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceClipper {clipPath} [id="clip1"] [clipPathUnits=userSpaceOnUse]
             LayoutSVGRect {rect} at (16,16) size 105x105 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]

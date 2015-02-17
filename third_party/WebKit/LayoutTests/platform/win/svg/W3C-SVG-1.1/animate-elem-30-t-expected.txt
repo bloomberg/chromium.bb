@@ -1,7 +1,7 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (31,1) size 407x276 [transform={m=((1.30,0.00)(0.00,1.30)) t=(20.00,0.00)}]
       LayoutSVGPath {path} at (240,52) size 54x196 [stroke={[type=SOLID] [color=#B4B4B4]}] [data="M 210 40 C 210 40 210 100 170 190"]
       LayoutSVGPath {path} at (242,226) size 14x19 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 171 188 L 181 178 L 171 174 Z"]

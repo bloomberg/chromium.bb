@@ -38,9 +38,9 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/svg/LayoutSVGModelObject.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
-#include "core/rendering/svg/RenderSVGModelObject.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -286,7 +286,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
         invalidateRelativeLengthClients();
 
-        // At the SVG/HTML boundary (aka RenderSVGRoot), the width and
+        // At the SVG/HTML boundary (aka LayoutSVGRoot), the width and
         // height attributes can affect the replaced size so we need
         // to mark it for updating.
         //
@@ -491,12 +491,12 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
             FloatPoint location;
             float zoomFactor = 1;
 
-            // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform
+            // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
             // to map an element from SVG viewport coordinates to CSS box coordinates.
-            // RenderSVGRoot's localToAbsolute method expects CSS box coordinates.
+            // LayoutSVGRoot's localToAbsolute method expects CSS box coordinates.
             // We also need to adjust for the zoom level factored into CSS coordinates (bug #96361).
             if (renderer->isSVGRoot()) {
-                location = toRenderSVGRoot(renderer)->localToBorderBoxTransform().mapPoint(location);
+                location = toLayoutSVGRoot(renderer)->localToBorderBoxTransform().mapPoint(location);
                 zoomFactor = 1 / renderer->style()->effectiveZoom();
             }
 
@@ -524,7 +524,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
 bool SVGSVGElement::rendererIsNeeded(const LayoutStyle& style)
 {
     // FIXME: We should respect display: none on the documentElement svg element
-    // but many things in FrameView and SVGImage depend on the RenderSVGRoot when
+    // but many things in FrameView and SVGImage depend on the LayoutSVGRoot when
     // they should instead depend on the RenderView.
     // https://bugs.webkit.org/show_bug.cgi?id=103493
     if (document().documentElement() == this)
@@ -535,7 +535,7 @@ bool SVGSVGElement::rendererIsNeeded(const LayoutStyle& style)
 LayoutObject* SVGSVGElement::createRenderer(const LayoutStyle&)
 {
     if (isOutermostSVGSVGElement())
-        return new RenderSVGRoot(this);
+        return new LayoutSVGRoot(this);
 
     return new LayoutSVGViewportContainer(this);
 }
@@ -617,7 +617,7 @@ FloatRect SVGSVGElement::currentViewBoxRect() const
         return useViewBox;
     if (!renderer() || !renderer()->isSVGRoot())
         return FloatRect();
-    if (!toRenderSVGRoot(renderer())->isEmbeddedThroughSVGImage())
+    if (!toLayoutSVGRoot(renderer())->isEmbeddedThroughSVGImage())
         return FloatRect();
 
     // If no viewBox is specified but non-relative width/height values, then we
@@ -631,7 +631,7 @@ FloatSize SVGSVGElement::currentViewportSize() const
         return FloatSize();
 
     if (renderer()->isSVGRoot()) {
-        LayoutRect contentBoxRect = toRenderSVGRoot(renderer())->contentBoxRect();
+        LayoutRect contentBoxRect = toLayoutSVGRoot(renderer())->contentBoxRect();
         return FloatSize(contentBoxRect.width() / renderer()->style()->effectiveZoom(), contentBoxRect.height() / renderer()->style()->effectiveZoom());
     }
 

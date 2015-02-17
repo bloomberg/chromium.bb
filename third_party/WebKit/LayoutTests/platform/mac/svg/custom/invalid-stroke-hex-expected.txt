@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,0) size 736x214
+  LayoutSVGRoot {svg} at (0,0) size 736x214
     LayoutSVGContainer {g} at (0,0) size 101x101
       LayoutSVGRect {rect} at (0,0) size 101x101 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
       LayoutSVGRect {rect} at (0,0) size 101x101 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]

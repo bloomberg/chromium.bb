@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,0) size 684x334
+  LayoutSVGRoot {svg} at (0,0) size 684x334
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="drop-shadow-1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feDropShadow stdDeviation="2.00, 2.00" dx="2.00" dy="2.00" flood-color="#008000" flood-opacity="1.00]

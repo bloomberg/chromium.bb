@@ -9,7 +9,7 @@ layer at (0,0) size 785x536
           text run at (320,0) width 236: "objectBoundingBox patterns on text."
 layer at (58,84) size 402x402
   RenderBlock {div} at (50,68) size 402x402 [border: (1px solid #000000)]
-    RenderSVGRoot {svg} at (66,58) size 480x420
+    LayoutSVGRoot {svg} at (66,58) size 480x420
       LayoutSVGResourcePattern {pattern} [id="pat1"] [patternUnits=objectBoundingBox] [patternContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (168,63) size 13x13 [fill={[type=SOLID] [color=#FF0000]}] [x=5.00] [y=5.00] [width=10.00] [height=10.00]
         LayoutSVGRect {rect} at (171,68) size 12x13 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=10.00] [width=10.00] [height=10.00]

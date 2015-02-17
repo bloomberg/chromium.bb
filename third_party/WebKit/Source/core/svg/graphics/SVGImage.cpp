@@ -36,12 +36,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/style/LayoutStyle.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFEImageElement.h"
 #include "core/svg/SVGImageElement.h"
@@ -143,7 +143,7 @@ void SVGImage::setContainerSize(const IntSize& size)
     FrameView* view = frameView();
     view->resize(this->containerSize());
 
-    RenderSVGRoot* renderer = toRenderSVGRoot(rootElement->renderer());
+    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->renderer());
     if (!renderer)
         return;
     renderer->setContainerSize(size);
@@ -155,7 +155,7 @@ IntSize SVGImage::containerSize() const
     if (!rootElement)
         return IntSize();
 
-    RenderSVGRoot* renderer = toRenderSVGRoot(rootElement->renderer());
+    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->renderer());
     if (!renderer)
         return IntSize();
 

@@ -40,13 +40,13 @@ class LayoutGeometryMap;
 class LayoutLayerModelObject;
 class LayoutObject;
 class LayoutStyle;
-class RenderSVGRoot;
+class LayoutSVGRoot;
 class StrokeData;
 class TransformState;
 
 class SVGLayoutSupport {
 public:
-    // Shares child layouting code between RenderSVGRoot/RenderSVG(Hidden)Container
+    // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
     static void layoutChildren(LayoutObject*, bool selfNeedsLayout);
 
     // Layout resources used by this node.
@@ -73,7 +73,7 @@ public:
 
     // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
     static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState*);
-    static const RenderSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
+    static const LayoutSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
     static void mapLocalToContainer(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
@@ -90,7 +90,7 @@ public:
     static bool transformToRootChanged(LayoutObject*);
 
     // FIXME: These methods do not belong here.
-    static const RenderSVGRoot* findTreeRootObject(const LayoutObject*);
+    static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);
 
     // Helper method for determining if a LayoutObject marked as text (isText()== true)
     // can/will be rendered as part of a <text>.

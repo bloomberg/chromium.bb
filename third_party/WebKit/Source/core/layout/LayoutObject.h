@@ -441,7 +441,7 @@ public:
     FlowThreadState flowThreadState() const { return m_bitfields.flowThreadState(); }
     void setFlowThreadState(FlowThreadState state) { m_bitfields.setFlowThreadState(state); }
 
-    // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
+    // FIXME: Until all SVG renders can be subclasses of LayoutSVGModelObject we have
     // to add SVG renderer methods to LayoutObject with an ASSERT_NOT_REACHED() default implementation.
     bool isSVG() const { return isOfType(LayoutObjectSVG); }
     bool isSVGRoot() const { return isOfType(LayoutObjectSVGRoot); }
@@ -463,7 +463,7 @@ public:
 
     // FIXME: Those belong into a SVG specific base-class for all renderers (see above)
     // Unfortunately we don't have such a class yet, because it's not possible for all renderers
-    // to inherit from RenderSVGObject -> LayoutObject (some need RenderBlock inheritance for instance)
+    // to inherit from LayoutSVGObject -> LayoutObject (some need RenderBlock inheritance for instance)
     virtual void setNeedsTransformUpdate() { }
     virtual void setNeedsBoundariesUpdate();
 

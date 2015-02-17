@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,0) size 460x154
+  LayoutSVGRoot {svg} at (0,0) size 460x154
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourcePattern {pattern} [id="cycle2"] [patternUnits=userSpaceOnUse] [patternContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (0,0) size 51x31 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]

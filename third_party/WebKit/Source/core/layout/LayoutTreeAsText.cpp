@@ -41,9 +41,11 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
+#include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGPath.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
@@ -53,8 +55,6 @@
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGGradientStop.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "wtf/HexNumber.h"
 #include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -436,7 +436,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
         return;
     }
     if (o.isSVGGradientStop()) {
-        writeSVGGradientStop(ts, toRenderSVGGradientStop(o), indent);
+        writeSVGGradientStop(ts, toLayoutSVGGradientStop(o), indent);
         return;
     }
     if (o.isSVGResourceContainer()) {
@@ -448,7 +448,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
         return;
     }
     if (o.isSVGRoot()) {
-        write(ts, toRenderSVGRoot(o), indent);
+        write(ts, toLayoutSVGRoot(o), indent);
         return;
     }
     if (o.isSVGText()) {

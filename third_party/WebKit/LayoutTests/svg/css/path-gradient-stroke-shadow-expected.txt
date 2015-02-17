@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (70,70) size 600x530
+  LayoutSVGRoot {svg} at (70,70) size 600x530
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
       LayoutSVGResourceFilter {filter} [id="shadow"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feBlend mode="normal"]
           [SourceGraphic]

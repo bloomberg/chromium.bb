@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 250x250
-  RenderSVGRoot {svg} at (60,60) size 160x160
+  LayoutSVGRoot {svg} at (60,60) size 160x160
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGRect {rect} at (60,60) size 50x50 [fill={[type=SOLID] [color=#FFFFFF] [opacity=0.50]}] [x=60.00] [y=60.00] [width=50.00] [height=50.00]

@@ -1,7 +1,7 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (6,46) size 431x239
       LayoutSVGPath {polyline} at (9,49) size 127x102 [stroke={[type=SOLID] [color=#000000]}] [points="10 50 35 150 60 50 85 150 110 50 135 150"]
       LayoutSVGPath {polyline} at (167,46) size 105x98 [stroke={[type=SOLID] [color=#0000FF] [stroke width=8.00]}] [points="220 50 267 84 249 140 190 140 172 84 220 50"]

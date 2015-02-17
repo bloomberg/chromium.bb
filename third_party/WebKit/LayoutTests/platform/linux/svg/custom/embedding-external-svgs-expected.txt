@@ -19,7 +19,7 @@ layer at (0,0) size 800x334
       RenderBlock {p} at (50,267) size 750x35
         RenderText {#text} at (0,15) size 36x19
           text run at (0,15) width 36: "Inline "
-        RenderSVGRoot {svg:svg} at (86,283) size 30x30
+        LayoutSVGRoot {svg:svg} at (86,283) size 30x30
           LayoutSVGContainer {svg:g} at (86,283) size 30x30
             LayoutSVGPath {svg:polygon} at (99,283) size 4x8 [fill={[type=SOLID] [color=#000000] [opacity=0.04]}] [points="22 0 28 0 27 12 23 12"]
             LayoutSVGPath {svg:polygon} at (103,284) size 8x9 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(15.85,-9.15)}] [fill={[type=SOLID] [color=#000000] [opacity=0.08]}] [points="22 0 28 0 27 12 23 12"]
@@ -39,7 +39,7 @@ layer at (273,16) size 40x40
     layer at (0,0) size 40x40
       RenderView at (0,0) size 40x40
     layer at (0,0) size 40x40
-      RenderSVGRoot {svg} at (0,0) size 40x40
+      LayoutSVGRoot {svg} at (0,0) size 40x40
         LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
           LayoutSVGPath {polygon} at (17,0) size 6x12 [fill={[type=SOLID] [color=#000000]}] [points="22 0 28 0 23 15 23 15"]
         LayoutSVGContainer {g} at (0,0) size 40x40
@@ -84,7 +84,7 @@ layer at (235,222) size 40x40
     layer at (0,0) size 40x40
       RenderView at (0,0) size 40x40
     layer at (0,0) size 40x40
-      RenderSVGRoot {svg} at (0,0) size 40x40
+      LayoutSVGRoot {svg} at (0,0) size 40x40
         LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
           LayoutSVGPath {polygon} at (17,0) size 6x12 [fill={[type=SOLID] [color=#000000]}] [points="22 0 28 0 23 15 23 15"]
         LayoutSVGContainer {g} at (0,0) size 40x40

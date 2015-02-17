@@ -11,7 +11,7 @@ CONSOLE ERROR: line 47: Error: Invalid value for <svg> attribute viewBox="0 0 30
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,36) size 800x400
+  LayoutSVGRoot {svg} at (0,36) size 800x400
     LayoutSVGContainer {g} at (0,36) size 800x400
       LayoutSVGContainer {g} at (0,36) size 800x400
         LayoutSVGText {text} at (0,22) size 397x11 contains 1 chunk(s)

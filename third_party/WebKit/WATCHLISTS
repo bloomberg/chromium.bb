@@ -131,7 +131,7 @@
       'filepath': 'Source/platform'
     },
     'svg': {
-      'filepath': 'Source/core/svg|Source/core/rendering/svg',
+      'filepath': 'Source/core/svg|Source/core/layout/svg',
     },
     'indexed_db': {
       'filepath': 'Source/modules/indexeddb/' \

@@ -24,7 +24,7 @@
 #ifndef LayoutSVGImage_h
 #define LayoutSVGImage_h
 
-#include "core/rendering/svg/RenderSVGModelObject.h"
+#include "core/layout/svg/LayoutSVGModelObject.h"
 
 class SkPicture;
 
@@ -33,7 +33,7 @@ namespace blink {
 class LayoutImageResource;
 class SVGImageElement;
 
-class LayoutSVGImage final : public RenderSVGModelObject {
+class LayoutSVGImage final : public LayoutSVGModelObject {
 public:
     explicit LayoutSVGImage(SVGImageElement*);
     virtual ~LayoutSVGImage();
@@ -49,7 +49,7 @@ public:
     RefPtr<const SkPicture>& bufferedForeground() { return m_bufferedForeground; }
 
     virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || RenderSVGModelObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type); }
 
 private:
     virtual const char* renderName() const override { return "LayoutSVGImage"; }

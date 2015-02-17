@@ -1,12 +1,12 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (10,49) size 410x230
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 1x1 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=1.00] [height=1.00]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#000000]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGImage {image} at (0,0) size 1x1
         LayoutSVGResourceRadialGradient {radialGradient} [id="g"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
         LayoutSVGText {text}

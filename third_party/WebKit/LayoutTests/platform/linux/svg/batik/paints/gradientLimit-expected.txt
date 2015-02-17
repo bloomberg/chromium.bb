@@ -1,16 +1,16 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 450x500
-  RenderSVGRoot {svg} at (0,0) size 448x498
+  LayoutSVGRoot {svg} at (0,0) size 448x498
     LayoutSVGText {text} at (159,30) size 132x18 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 132x18
         chunk 1 (middle anchor) text run 1 at (159.00,45.00) startOffset 0 endOffset 19 width 132.00: "Gradient Limit Test"
     LayoutSVGContainer {g} at (15,80) size 429x173
       LayoutSVGContainer {g} at (15,80) size 120x73
         LayoutSVGResourceLinearGradient {linearGradient} [id="closeOffsetsLinearGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(0,0.10)]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (35,80) size 80x40 [fill={[type=LINEAR-GRADIENT] [id="closeOffsetsLinearGradient"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
         LayoutSVGText {text} at (15,120) size 120x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x18
@@ -20,9 +20,9 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (17.00,150.00) startOffset 0 endOffset 16 width 116.00: "<linearGradient>"
       LayoutSVGContainer {g} at (149,80) size 152x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,0.00)}]
         LayoutSVGResourceLinearGradient {linearGradient} [id="closeOffsetsLinearGradient2"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(0,0.10)]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (185,80) size 80x40 [fill={[type=LINEAR-GRADIENT] [id="closeOffsetsLinearGradient2"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
         LayoutSVGText {text} at (-1,120) size 152x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 152x18
@@ -32,9 +32,9 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (17.00,150.00) startOffset 0 endOffset 16 width 116.00: "<linearGradient>"
       LayoutSVGContainer {g} at (15,180) size 120x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,100.00)}]
         LayoutSVGResourceRadialGradient {radialGradient} [id="closeOffsetsRadialGradient"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.10] [focalRadius=0.00]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (35,180) size 80x40 [fill={[type=RADIAL-GRADIENT] [id="closeOffsetsRadialGradient"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
         LayoutSVGText {text} at (15,120) size 120x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 120x18
@@ -44,9 +44,9 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (16.50,150.00) startOffset 0 endOffset 16 width 117.00: "<radialGradient>"
       LayoutSVGContainer {g} at (149,180) size 152x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,100.00)}]
         LayoutSVGResourceRadialGradient {radialGradient} [id="closeOffsetsRadialGradient2"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.10] [focalRadius=0.00]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (185,180) size 80x40 [fill={[type=RADIAL-GRADIENT] [id="closeOffsetsRadialGradient2"]}] [x=35.00] [y=80.00] [width=80.00] [height=40.00]
         LayoutSVGText {text} at (-1,120) size 152x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 152x18
@@ -56,8 +56,8 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (16.50,150.00) startOffset 0 endOffset 16 width 117.00: "<radialGradient>"
       LayoutSVGContainer {g} at (306,80) size 138x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,0.00)}]
         LayoutSVGResourceLinearGradient {linearGradient} [id="closeControlsLinearGradient"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(0,0)]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#FFD700]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFD700]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (335,80) size 80x41 [transform={m=((100.00,0.00)(0.00,100.00)) t=(0.00,0.00)}] [fill={[type=LINEAR-GRADIENT] [id="closeControlsLinearGradient"]}] [x=0.35] [y=0.80] [width=0.80] [height=0.40]
         LayoutSVGText {text} at (6,120) size 138x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 137x18
@@ -67,8 +67,8 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (17.00,150.00) startOffset 0 endOffset 16 width 116.00: "<linearGradient>"
       LayoutSVGContainer {g} at (316,180) size 118x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,100.00)}]
         LayoutSVGResourceRadialGradient {radialGradient} [id="smallRadiusRadialGradient"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.00] [focalRadius=0.00]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#FFD700]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFD700]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#DC143C]
         LayoutSVGRect {rect} at (335,180) size 80x40 [transform={m=((100.00,0.00)(0.00,100.00)) t=(0.00,0.00)}] [fill={[type=RADIAL-GRADIENT] [id="smallRadiusRadialGradient"]}] [x=0.35] [y=0.80] [width=0.80] [height=0.40]
         LayoutSVGText {text} at (29,120) size 92x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 92x18

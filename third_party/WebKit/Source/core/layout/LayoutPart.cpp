@@ -31,11 +31,11 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/Layer.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 
 namespace blink {
 

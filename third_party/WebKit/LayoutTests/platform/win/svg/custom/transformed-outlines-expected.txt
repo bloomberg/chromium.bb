@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (10,10) size 437x527
+  LayoutSVGRoot {svg} at (10,10) size 437x527
     LayoutSVGEllipse {circle} at (13,8) size 104x104 [fill={[type=SOLID] [color=#FFA500]}] [cx=65.00] [cy=60.00] [r=50.00]
     LayoutSVGPath {path} at (138,8) size 104x104 [fill={[type=SOLID] [color=#FFA500]}] [data="M 140 10 L 190 110 L 240 60 L 220 60 L 200 30 Z"]
     LayoutSVGContainer {g} at (268,8) size 104x104

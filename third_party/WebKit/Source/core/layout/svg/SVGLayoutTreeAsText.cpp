@@ -32,6 +32,7 @@
 
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
@@ -41,12 +42,11 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGResourcePattern.h"
 #include "core/layout/svg/LayoutSVGResourceRadialGradient.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
-#include "core/rendering/svg/RenderSVGGradientStop.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/PatternAttributes.h"
 #include "core/svg/RadialGradientAttributes.h"
@@ -379,7 +379,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape)
     return ts;
 }
 
-static TextStream& operator<<(TextStream& ts, const RenderSVGRoot& root)
+static TextStream& operator<<(TextStream& ts, const LayoutSVGRoot& root)
 {
     return writePositionAndStyle(ts, root);
 }
@@ -591,7 +591,7 @@ void writeSVGContainer(TextStream& ts, const LayoutObject& container, int indent
     writeChildren(ts, container, indent);
 }
 
-void write(TextStream& ts, const RenderSVGRoot& root, int indent)
+void write(TextStream& ts, const LayoutSVGRoot& root, int indent)
 {
     writeStandardPrefix(ts, root, indent);
     ts << root << "\n";
@@ -630,7 +630,7 @@ void write(TextStream& ts, const LayoutSVGShape& shape, int indent)
     writeResources(ts, shape, indent);
 }
 
-void writeSVGGradientStop(TextStream& ts, const RenderSVGGradientStop& stop, int indent)
+void writeSVGGradientStop(TextStream& ts, const LayoutSVGGradientStop& stop, int indent)
 {
     writeStandardPrefix(ts, stop, indent);
 

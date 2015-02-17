@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 225x425
-  RenderSVGRoot {svg} at (8,6) size 205x196
+  LayoutSVGRoot {svg} at (8,6) size 205x196
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
         LayoutSVGPath {path} at (0,0) size 1x15 [stroke={[type=SOLID] [color=#008000] [stroke width=2.00]}] [data="M 0 -15 L 0 15"]

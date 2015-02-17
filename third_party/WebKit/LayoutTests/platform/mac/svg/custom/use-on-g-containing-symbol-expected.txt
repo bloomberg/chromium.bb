@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (20,45) size 489x83
+  LayoutSVGRoot {svg} at (20,45) size 489x83
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGContainer {g} at (0,0) size 0x0
         LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0

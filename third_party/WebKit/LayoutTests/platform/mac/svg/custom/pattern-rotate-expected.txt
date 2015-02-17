@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (10,19) size 296x214
+  LayoutSVGRoot {svg} at (10,19) size 296x214
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourcePattern {pattern} [id="simpledots"] [patternUnits=objectBoundingBox] [patternContentUnits=objectBoundingBox]
         LayoutSVGEllipse {circle} at (0,0) size 1x1 [fill={[type=SOLID] [color=#FF0000]}] [cx=0.25] [cy=0.25] [r=0.15]

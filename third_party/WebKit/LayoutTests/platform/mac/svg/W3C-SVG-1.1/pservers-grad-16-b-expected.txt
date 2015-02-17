@@ -1,16 +1,16 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (19,9) size 442x281
       LayoutSVGResourceLinearGradient {linearGradient} [id="defs1"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="defs2"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#000000]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#000000]
       LayoutSVGResourceLinearGradient {linearGradient} [id="defs3"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFF00]
-        RenderSVGGradientStop {stop} [offset=0.25] [color=#FF0000]
-        RenderSVGGradientStop {stop} [offset=0.50] [color=#008000]
-        RenderSVGGradientStop {stop} [offset=0.10] [color=#0000FF]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFF00]
+        LayoutSVGGradientStop {stop} [offset=0.25] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=0.50] [color=#008000]
+        LayoutSVGGradientStop {stop} [offset=0.10] [color=#0000FF]
       LayoutSVGRect {rect} at (19,9) size 442x82 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=LINEAR-GRADIENT] [id="defs1"]}] [x=20.00] [y=10.00] [width=440.00] [height=80.00]
       LayoutSVGRect {rect} at (20,110) size 440x80 [fill={[type=LINEAR-GRADIENT] [id="defs2"]}] [x=20.00] [y=110.00] [width=440.00] [height=80.00]
       LayoutSVGRect {rect} at (20,210) size 440x80 [fill={[type=LINEAR-GRADIENT] [id="defs3"]}] [x=20.00] [y=210.00] [width=440.00] [height=80.00]

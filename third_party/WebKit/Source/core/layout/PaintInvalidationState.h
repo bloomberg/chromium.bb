@@ -13,14 +13,14 @@ namespace blink {
 
 class LayoutLayerModelObject;
 class LayoutObject;
-class RenderSVGModelObject;
+class LayoutSVGModelObject;
 class RenderView;
 
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
     PaintInvalidationState(const PaintInvalidationState& next, LayoutLayerModelObject& renderer, const LayoutLayerModelObject& paintInvalidationContainer);
-    PaintInvalidationState(const PaintInvalidationState& next, const RenderSVGModelObject& renderer);
+    PaintInvalidationState(const PaintInvalidationState& next, const LayoutSVGModelObject& renderer);
 
     explicit PaintInvalidationState(const RenderView&);
 

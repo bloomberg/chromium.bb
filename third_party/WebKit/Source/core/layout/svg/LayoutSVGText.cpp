@@ -36,11 +36,11 @@
 #include "core/layout/style/ShadowList.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/SVGTextPainter.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGTextElement.h"
 #include "core/svg/SVGTransformList.h"
@@ -54,7 +54,7 @@
 namespace blink {
 
 LayoutSVGText::LayoutSVGText(SVGTextElement* node)
-    : RenderSVGBlock(node)
+    : LayoutSVGBlock(node)
     , m_needsReordering(false)
     , m_needsPositioningValuesUpdate(false)
     , m_needsTransformUpdate(true)
@@ -210,7 +210,7 @@ void LayoutSVGText::willBeDestroyed()
     m_layoutAttributes.clear();
     m_layoutAttributesBuilder.clearTextPositioningElements();
 
-    RenderSVGBlock::willBeDestroyed();
+    LayoutSVGBlock::willBeDestroyed();
 }
 
 void LayoutSVGText::subtreeChildWillBeRemoved(LayoutObject* child, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes)
@@ -400,7 +400,7 @@ void LayoutSVGText::layout()
 
     // If our bounds changed, notify the parents.
     if (updateCachedBoundariesInParents)
-        RenderSVGBlock::setNeedsBoundariesUpdate();
+        LayoutSVGBlock::setNeedsBoundariesUpdate();
 
     clearNeedsLayout();
 }
@@ -488,7 +488,7 @@ FloatRect LayoutSVGText::paintInvalidationRectInLocalCoordinates() const
 
 void LayoutSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
-    RenderSVGBlock::addChild(child, beforeChild);
+    LayoutSVGBlock::addChild(child, beforeChild);
 
     SVGResourcesCache::clientWasAddedToTree(child, child->styleRef());
     subtreeChildWasAdded(child);
@@ -501,7 +501,7 @@ void LayoutSVGText::removeChild(LayoutObject* child)
     Vector<SVGTextLayoutAttributes*, 2> affectedAttributes;
     FontCachePurgePreventer fontCachePurgePreventer;
     subtreeChildWillBeRemoved(child, affectedAttributes);
-    RenderSVGBlock::removeChild(child);
+    LayoutSVGBlock::removeChild(child);
     subtreeChildWasRemoved(affectedAttributes);
 }
 

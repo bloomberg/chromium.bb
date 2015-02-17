@@ -1,7 +1,7 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (0,0) size 351x301
       LayoutSVGEllipse {ellipse} at (0,0) size 101x51 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=0.00] [cy=0.00] [rx=100.00] [ry=50.00]
       LayoutSVGEllipse {ellipse} at (99,99) size 2x102 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=100.00] [cy=150.00] [rx=0.00] [ry=50.00]

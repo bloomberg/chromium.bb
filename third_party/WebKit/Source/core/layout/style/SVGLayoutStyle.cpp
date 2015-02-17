@@ -214,7 +214,7 @@ bool SVGLayoutStyle::diffNeedsPaintInvalidation(const SVGLayoutStyle* other) con
             return true;
     }
 
-    // If gradient stops change, we just need to issue paint invalidations. Style updates are already handled through RenderSVGGradientSTop.
+    // If gradient stops change, we just need to issue paint invalidations. Style updates are already handled through LayoutSVGGradientSTop.
     if (stops != other->stops)
         return true;
 

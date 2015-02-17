@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,83) size 430x460
+  LayoutSVGRoot {svg} at (0,83) size 430x460
     LayoutSVGContainer {g} at (0,83) size 430x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(50.00,50.00)}]
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGText {text} at (10,6) size 128x18 contains 1 chunk(s)
@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="Grad1"] [gradientUnits=userSpaceOnUse] [start=(60,50)] [end=(60,120)]
-            RenderSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
-            RenderSVGGradientStop {stop} [offset=1.00] [color=#FFFFFF80]
+            LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
+            LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFFFF80]
         LayoutSVGRect {rect} at (80,144) size 98x86 [fill={[type=LINEAR-GRADIENT] [id="Grad1"]}] [x=60.00] [y=50.00] [width=100.00] [height=60.00]
       LayoutSVGRect {rect} at (80,144) size 98x86 [fill={[type=SOLID] [color=#00FF00]}] [x=60.00] [y=50.00] [width=100.00] [height=60.00]
         [masker="mask1"] LayoutSVGResourceMasker {mask} at (60,50) size 100x60

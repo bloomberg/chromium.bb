@@ -64,6 +64,7 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -72,7 +73,6 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "platform/LengthFunctions.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1070,7 +1070,7 @@ bool Layer::hasNonIsolatedDescendantWithBlendMode() const
     if (descendantDependentCompositingInputs().hasNonIsolatedDescendantWithBlendMode)
         return true;
     if (renderer()->isSVGRoot())
-        return toRenderSVGRoot(renderer())->hasNonIsolatedBlendingDescendants();
+        return toLayoutSVGRoot(renderer())->hasNonIsolatedBlendingDescendants();
     return false;
 }
 

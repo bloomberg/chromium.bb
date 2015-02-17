@@ -16,7 +16,7 @@ layer at (8,64) size 85x20
     layer at (0,0) size 85x20
       RenderView at (0,0) size 85x20
     layer at (0,0) size 85x20
-      RenderSVGRoot {svg} at (0,0) size 85x20
+      LayoutSVGRoot {svg} at (0,0) size 85x20
         LayoutSVGRect {rect} at (0,0) size 85x20 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=85.00] [height=20.00]
         LayoutSVGText {text} at (5,1) size 69x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 69x19
@@ -26,7 +26,7 @@ layer at (8,104) size 85x20
     layer at (0,0) size 85x20
       RenderView at (0,0) size 85x20
     layer at (0,0) size 85x20
-      RenderSVGRoot {svg} at (0,0) size 85x20
+      LayoutSVGRoot {svg} at (0,0) size 85x20
         LayoutSVGRect {rect} at (0,0) size 85x20 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=85.00] [height=20.00]
         LayoutSVGText {text} at (5,1) size 69x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 69x19

@@ -42,7 +42,7 @@
 namespace blink {
 
 LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
-    : RenderSVGModelObject(impl)
+    : LayoutSVGModelObject(impl)
     , m_needsBoundariesUpdate(true)
     , m_needsTransformUpdate(true)
     , m_imageResource(LayoutImageResource::create())
@@ -58,7 +58,7 @@ void LayoutSVGImage::destroy()
 {
     ImageQualityController::remove(this);
     m_imageResource->shutdown();
-    RenderSVGModelObject::destroy();
+    LayoutSVGModelObject::destroy();
 }
 
 FloatSize LayoutSVGImage::computeImageViewportSize(ImageResource& cachedImage) const
@@ -137,7 +137,7 @@ void LayoutSVGImage::layout()
 
     // If our bounds changed, notify the parents.
     if (transformOrBoundariesUpdate)
-        RenderSVGModelObject::setNeedsBoundariesUpdate();
+        LayoutSVGModelObject::setNeedsBoundariesUpdate();
 
     clearNeedsLayout();
 }

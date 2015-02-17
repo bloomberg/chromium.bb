@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 600x250
-  RenderSVGRoot {svg} at (10,10) size 560x215
+  LayoutSVGRoot {svg} at (10,10) size 560x215
     LayoutSVGContainer {g} at (10,10) size 560x215
       LayoutSVGContainer {use} at (10,10) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
         [filter="in"] LayoutSVGResourceFilter {filter} at (0,0) size 100x100

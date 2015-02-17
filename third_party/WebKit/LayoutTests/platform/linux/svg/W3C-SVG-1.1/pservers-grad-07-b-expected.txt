@@ -1,11 +1,11 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (10,15) size 430x249 [transform={m=((1.00,0.00)(0.00,1.50)) t=(0.00,0.00)}]
       LayoutSVGResourceLinearGradient {linearGradient} [id="Gradient"] [gradientUnits=userSpaceOnUse] [start=(10,10)] [end=(440,10)]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
       LayoutSVGRect {rect} at (10,15) size 430x90 [fill={[type=LINEAR-GRADIENT] [id="Gradient"]}] [x=10.00] [y=10.00] [width=430.00] [height=60.00]
       LayoutSVGText {text} at (10,68) size 318x28 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 318x28

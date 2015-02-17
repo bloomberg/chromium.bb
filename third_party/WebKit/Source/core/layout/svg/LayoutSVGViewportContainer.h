@@ -65,4 +65,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGViewportContainer, isSVGViewportContain
 
 } // namespace blink
 
-#endif // RenderSVGViewportContainer_h
+#endif // LayoutSVGViewportContainer_h

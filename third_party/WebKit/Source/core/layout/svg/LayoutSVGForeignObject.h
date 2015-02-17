@@ -21,13 +21,13 @@
 #ifndef LayoutSVGForeignObject_h
 #define LayoutSVGForeignObject_h
 
-#include "core/rendering/svg/RenderSVGBlock.h"
+#include "core/layout/svg/LayoutSVGBlock.h"
 
 namespace blink {
 
 class SVGForeignObjectElement;
 
-class LayoutSVGForeignObject final : public RenderSVGBlock {
+class LayoutSVGForeignObject final : public LayoutSVGBlock {
 public:
     explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
     virtual ~LayoutSVGForeignObject();
@@ -45,7 +45,7 @@ public:
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || RenderSVGBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || LayoutSVGBlock::isOfType(type); }
 
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 

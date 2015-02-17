@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderSVGModelObject_h
-#define RenderSVGModelObject_h
+#ifndef LayoutSVGModelObject_h
+#define LayoutSVGModelObject_h
 
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"
@@ -37,13 +37,13 @@
 namespace blink {
 
 // Most renderers in the SVG rendering tree will inherit from this class
-// but not all. (e.g. LayoutSVGForeignObject, RenderSVGBlock) thus methods
+// but not all. (e.g. LayoutSVGForeignObject, LayoutSVGBlock) thus methods
 // required by SVG renders need to be declared on LayoutObject, but shared
 // logic can go in this class or in SVGLayoutSupport.
 
-class RenderSVGModelObject : public LayoutObject {
+class LayoutSVGModelObject : public LayoutObject {
 public:
-    explicit RenderSVGModelObject(SVGElement*);
+    explicit LayoutSVGModelObject(SVGElement*);
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
@@ -69,7 +69,7 @@ protected:
     virtual void willBeDestroyed() override;
 
 private:
-    // RenderSVGModelObject subclasses should use element() instead.
+    // LayoutSVGModelObject subclasses should use element() instead.
     void node() const = delete;
 
     // This method should never be called, SVG uses a different nodeAtPoint method

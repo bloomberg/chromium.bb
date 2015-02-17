@@ -23,13 +23,13 @@
 #ifndef LayoutSVGContainer_h
 #define LayoutSVGContainer_h
 
-#include "core/rendering/svg/RenderSVGModelObject.h"
+#include "core/layout/svg/LayoutSVGModelObject.h"
 
 namespace blink {
 
 class SVGElement;
 
-class LayoutSVGContainer : public RenderSVGModelObject {
+class LayoutSVGContainer : public LayoutSVGModelObject {
 public:
     explicit LayoutSVGContainer(SVGElement*);
     virtual ~LayoutSVGContainer();
@@ -54,7 +54,7 @@ protected:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || RenderSVGModelObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || LayoutSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutSVGContainer"; }
 
     virtual void layout() override;

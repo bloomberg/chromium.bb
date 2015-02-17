@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/SVGStopElement.h"
 
-#include "core/rendering/svg/RenderSVGGradientStop.h"
+#include "core/layout/svg/LayoutSVGGradientStop.h"
 
 namespace blink {
 
@@ -60,7 +60,7 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
 
 LayoutObject* SVGStopElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderSVGGradientStop(this);
+    return new LayoutSVGGradientStop(this);
 }
 
 bool SVGStopElement::rendererIsNeeded(const LayoutStyle&)

@@ -194,7 +194,7 @@ static inline LayoutStyle* layoutStyleForLengthResolving(const SVGElement* conte
         currentContext = currentContext->parentNode();
     } while (currentContext);
 
-    // There must be at least a RenderSVGRoot renderer, carrying a style.
+    // There must be at least a LayoutSVGRoot renderer, carrying a style.
     ASSERT_NOT_REACHED();
     return 0;
 }

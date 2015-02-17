@@ -1,7 +1,7 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (19,39) size 442x247
       LayoutSVGContainer {g} at (19,39) size 202x247
         LayoutSVGEllipse {circle} at (49,69) size 142x142 [stroke={[type=SOLID] [color=#3366EE]}] [cx=120.00] [cy=140.00] [r=70.00]

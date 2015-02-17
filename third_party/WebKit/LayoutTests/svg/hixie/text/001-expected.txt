@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 400x400
-  RenderSVGRoot {svg} at (0,0) size 400x400
+  LayoutSVGRoot {svg} at (0,0) size 400x400
     LayoutSVGRect {rect} at (0,0) size 400x400 [fill={[type=SOLID] [color=#EEEEEE]}] [x=0.00] [y=0.00] [width=4.00] [height=4.00]
     LayoutSVGRect {rect} at (100,100) size 200x200 [fill={[type=SOLID] [color=#FF0000]}] [x=1.00] [y=1.00] [width=2.00] [height=2.00]
     LayoutSVGText {text} at (1,0) size 2x3 contains 1 chunk(s)

@@ -1,7 +1,7 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (20,25) size 432x235
       LayoutSVGContainer {g} at (20,25) size 432x235
         LayoutSVGContainer {g} at (20,25) size 202x235 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,50.00)}]

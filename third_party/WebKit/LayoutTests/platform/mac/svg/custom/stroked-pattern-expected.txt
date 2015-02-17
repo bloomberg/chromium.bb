@@ -1,11 +1,11 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (130,0) size 540x600
+  LayoutSVGRoot {svg} at (130,0) size 540x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceRadialGradient {radialGradient} [id="redToYellow"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
       LayoutSVGResourcePattern {pattern} [id="pattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
         LayoutSVGEllipse {circle} at (98,0) size 112x80 [stroke={[type=SOLID] [color=#640000] [stroke width=12.00]}] [fill={[type=RADIAL-GRADIENT] [id="redToYellow"]}] [cx=20.00] [cy=20.00] [r=40.00]
     LayoutSVGRect {rect} at (189,59) size 422x482 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern"]}] [x=50.00] [y=50.00] [width=350.00] [height=400.00]

@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 450x500
-  RenderSVGRoot {svg} at (0,0) size 448x498
+  LayoutSVGRoot {svg} at (0,0) size 448x498
     LayoutSVGText {text} at (109,35) size 232x18 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 232x18
         chunk 1 (middle anchor) text run 1 at (109.00,50.00) startOffset 0 endOffset 34 width 232.00: "patternUnits / patternContentUnits"
@@ -33,8 +33,8 @@ layer at (0,0) size 450x500
         LayoutSVGResourcePattern {pattern} [id="pattern8"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
           LayoutSVGEllipse {circle} at (0,0) size 40x40 [fill={[type=SOLID] [color=#FF0000]}] [cx=20.00] [cy=20.00] [r=20.00]
         LayoutSVGResourceRadialGradient {radialGradient} [id="redToYellow"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
-          RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-          RenderSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
+          LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
+          LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
         LayoutSVGResourcePattern {pattern} [id="pattern9"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
           LayoutSVGEllipse {circle} at (0,0) size 60x60 [fill={[type=RADIAL-GRADIENT] [id="redToYellow"]}] [cx=20.00] [cy=20.00] [r=40.00]
       LayoutSVGContainer {g} at (14,108) size 410x293 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-5.00,100.00)}]

@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGBlock_h
-#define RenderSVGBlock_h
+#ifndef LayoutSVGBlock_h
+#define LayoutSVGBlock_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
@@ -26,9 +26,9 @@ namespace blink {
 
 class SVGElement;
 
-class RenderSVGBlock : public RenderBlockFlow {
+class LayoutSVGBlock : public RenderBlockFlow {
 public:
-    explicit RenderSVGBlock(SVGElement*);
+    explicit LayoutSVGBlock(SVGElement*);
 
     virtual LayoutRect visualOverflowRect() const override final;
 
@@ -66,4 +66,4 @@ private:
 };
 
 }
-#endif
+#endif // LayoutSVGBlock_h

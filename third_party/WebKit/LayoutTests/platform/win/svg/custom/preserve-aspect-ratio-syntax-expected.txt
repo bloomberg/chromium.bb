@@ -5,7 +5,7 @@ CONSOLE ERROR: line 32: Error: Invalid value for <svg> attribute preserveAspectR
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,36) size 714x381
+  LayoutSVGRoot {svg} at (0,36) size 714x381
     LayoutSVGContainer {g} at (0,36) size 714x381
       LayoutSVGContainer {g} at (0,36) size 714x381
         LayoutSVGText {text} at (0,22) size 428x11 contains 1 chunk(s)

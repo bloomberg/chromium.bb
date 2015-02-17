@@ -26,8 +26,8 @@
 #ifndef LayoutSVGShape_h
 #define LayoutSVGShape_h
 
+#include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/SVGMarkerData.h"
-#include "core/rendering/svg/RenderSVGModelObject.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/OwnPtr.h"
@@ -45,7 +45,7 @@ enum ShapeGeometryCodePath {
     EllipseGeometryFastPath
 };
 
-class LayoutSVGShape : public RenderSVGModelObject {
+class LayoutSVGShape : public LayoutSVGModelObject {
 public:
     explicit LayoutSVGShape(SVGGraphicsElement*);
     virtual ~LayoutSVGShape();
@@ -68,7 +68,7 @@ public:
     bool hasNonScalingStroke() const { return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE; }
     Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
     AffineTransform nonScalingStrokeTransform() const;
-    virtual AffineTransform localTransform() const override final { return m_localTransform ? *m_localTransform : RenderSVGModelObject::localTransform(); }
+    virtual AffineTransform localTransform() const override final { return m_localTransform ? *m_localTransform : LayoutSVGModelObject::localTransform(); }
 
     virtual const Vector<MarkerPosition>* markerPositions() const { return 0; }
 
@@ -98,9 +98,9 @@ private:
     bool fillContains(const FloatPoint&, bool requiresFill = true, const WindRule fillRule = RULE_NONZERO);
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-    virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform ? *m_localTransform : RenderSVGModelObject::localToParentTransform(); }
+    virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform ? *m_localTransform : LayoutSVGModelObject::localToParentTransform(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGShape || RenderSVGModelObject::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGShape || LayoutSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "LayoutSVGShape"; }
 
     virtual void layout() override final;

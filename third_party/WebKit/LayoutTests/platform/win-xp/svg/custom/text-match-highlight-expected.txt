@@ -37,7 +37,7 @@ layer at (0,0) size 800x401
       RenderText {#text} at (87,60) size 41x19
         text run at (87,60) width 41: "noyou."
       LayoutBR {BR} at (128,60) size 0x19
-      RenderSVGRoot {svg} at (18,123) size 208x160
+      LayoutSVGRoot {svg} at (18,123) size 208x160
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGPath {path} at (108,88) size 350x300 [fill={[type=SOLID] [color=#000000]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
         LayoutSVGText {text} at (10,35) size 208x19 contains 1 chunk(s)

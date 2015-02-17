@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGForeignObject {foreignObject} at (0,0) size 250x200
       RenderBlock {xhtml:div} at (0,0) size 250x18
         RenderText {#text} at (0,0) size 83x17
@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 56: "[HTML]"
     LayoutSVGRect {rect} at (0,0) size 361x289 [stroke={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=250.00] [height=200.00]
     LayoutSVGForeignObject {foreignObject} at (260,0) size 250x200
-      RenderSVGRoot {svg} at (374,7) size 361x281
+      LayoutSVGRoot {svg} at (374,7) size 361x281
         LayoutSVGContainer {g} at (374,7) size 361x281 [transform={m=((3.00,0.26)(0.26,3.02)) t=(0.00,0.00)}]
           LayoutSVGText {text} at (0,1) size 83x19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 83x18

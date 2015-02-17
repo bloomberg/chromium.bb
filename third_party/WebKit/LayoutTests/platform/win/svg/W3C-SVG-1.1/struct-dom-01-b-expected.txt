@@ -1,7 +1,7 @@
 layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
-  RenderSVGRoot {svg} at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (40,86) size 284x124
       LayoutSVGRect {rect} at (50,160) size 50x50 [fill={[type=SOLID] [color=#000000]}] [x=50.00] [y=160.00] [width=50.00] [height=50.00]
       LayoutSVGRect {rect} at (40,150) size 50x50 [fill={[type=SOLID] [color=#FF0000]}] [x=40.00] [y=150.00] [width=50.00] [height=50.00]

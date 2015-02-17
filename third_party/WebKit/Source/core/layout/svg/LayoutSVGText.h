@@ -22,8 +22,8 @@
 #ifndef LayoutSVGText_h
 #define LayoutSVGText_h
 
+#include "core/layout/svg/LayoutSVGBlock.h"
 #include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
-#include "core/rendering/svg/RenderSVGBlock.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ class LayoutSVGInlineText;
 class SVGTextElement;
 class LayoutSVGInlineText;
 
-class LayoutSVGText final : public RenderSVGBlock {
+class LayoutSVGText final : public LayoutSVGBlock {
 public:
     explicit LayoutSVGText(SVGTextElement*);
     virtual ~LayoutSVGText();
@@ -60,7 +60,7 @@ public:
 
 private:
     virtual const char* renderName() const override { return "LayoutSVGText"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGText || RenderSVGBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGText || LayoutSVGBlock::isOfType(type); }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;

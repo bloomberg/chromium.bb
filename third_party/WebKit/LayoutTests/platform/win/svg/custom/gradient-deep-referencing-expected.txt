@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  RenderSVGRoot {svg} at (10,10) size 452x143
+  LayoutSVGRoot {svg} at (10,10) size 452x143
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient1f"] [gradientUnits=userSpaceOnUse] [start=(0,100)] [end=(100,100)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient1e"] [gradientUnits=userSpaceOnUse] [start=(0,100)] [end=(100,0)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient1d"] [gradientUnits=userSpaceOnUse] [start=(0,100)] [end=(100,0)]
       LayoutSVGResourceRadialGradient {radialGradient} [id="gradient1c"] [gradientUnits=userSpaceOnUse] [center=(400,300)] [focal=(400,300)] [radius=353.55] [focalRadius=0.00]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient1b"] [gradientUnits=userSpaceOnUse] [start=(0,0)] [end=(100,0)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient1a"] [gradientUnits=userSpaceOnUse] [start=(0,0)] [end=(800,0)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient1"] [gradientUnits=userSpaceOnUse] [start=(0,100)] [end=(100,100)]
       LayoutSVGResourceLinearGradient {linearGradient} [id="gradient2"] [gradientUnits=userSpaceOnUse] [start=(0,100)] [end=(100,100)]
-        RenderSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        RenderSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
+        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
+        LayoutSVGGradientStop {stop} [offset=1.00] [color=#0000FF]
     LayoutSVGRect {rect} at (50,10) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,10.00)}] [fill={[type=LINEAR-GRADIENT] [id="gradient1"]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
     LayoutSVGRect {rect} at (200,10) size 100x100 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,10.00)}] [fill={[type=LINEAR-GRADIENT] [id="gradient2"]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
     LayoutSVGText {text} at (10,136) size 452x17 contains 1 chunk(s)

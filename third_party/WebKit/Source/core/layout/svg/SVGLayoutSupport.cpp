@@ -34,12 +34,12 @@
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 
@@ -77,12 +77,12 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     }
 
     LayoutRect rect;
-    const RenderSVGRoot& svgRoot = mapRectToSVGRootForPaintInvalidation(object, paintInvalidationRect, rect);
+    const LayoutSVGRoot& svgRoot = mapRectToSVGRootForPaintInvalidation(object, paintInvalidationRect, rect);
     svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
-const RenderSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject* object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
+const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject* object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
 {
     ASSERT(object && object->isSVG() && !object->isSVGRoot());
 
@@ -97,7 +97,7 @@ const RenderSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(cons
         parent = parent->parent();
     } while (!parent->isSVGRoot());
 
-    const RenderSVGRoot& svgRoot = toRenderSVGRoot(*parent);
+    const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(*parent);
 
     paintInvalidationRect = svgRoot.localToBorderBoxTransform().mapRect(paintInvalidationRect);
     rect = enclosingIntRectIfNotEmpty(paintInvalidationRect);
@@ -117,11 +117,11 @@ void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const Lay
 
     LayoutObject* parent = object->parent();
 
-    // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform
+    // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
     // to map an element from SVG viewport coordinates to CSS box coordinates.
-    // RenderSVGRoot's mapLocalToContainer method expects CSS box coordinates.
+    // LayoutSVGRoot's mapLocalToContainer method expects CSS box coordinates.
     if (parent->isSVGRoot())
-        transformState.applyTransform(toRenderSVGRoot(parent)->localToBorderBoxTransform());
+        transformState.applyTransform(toLayoutSVGRoot(parent)->localToBorderBoxTransform());
 
     MapCoordinatesFlags mode = UseTransforms;
     parent->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
@@ -133,12 +133,12 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject*
 
     LayoutObject* parent = object->parent();
 
-    // At the SVG/HTML boundary (aka RenderSVGRoot), we apply the localToBorderBoxTransform
+    // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
     // to map an element from SVG viewport coordinates to CSS box coordinates.
-    // RenderSVGRoot's mapLocalToContainer method expects CSS box coordinates.
+    // LayoutSVGRoot's mapLocalToContainer method expects CSS box coordinates.
     if (parent->isSVGRoot()) {
         TransformationMatrix matrix(object->localToParentTransform());
-        matrix.multiply(toRenderSVGRoot(parent)->localToBorderBoxTransform());
+        matrix.multiply(toLayoutSVGRoot(parent)->localToBorderBoxTransform());
         geometryMap.push(object, matrix);
     } else {
         geometryMap.push(object, object->localToParentTransform());
@@ -189,14 +189,14 @@ void SVGLayoutSupport::computeContainerBoundingBoxes(const LayoutObject* contain
     paintInvalidationBoundingBox = strokeBoundingBox;
 }
 
-const RenderSVGRoot* SVGLayoutSupport::findTreeRootObject(const LayoutObject* start)
+const LayoutSVGRoot* SVGLayoutSupport::findTreeRootObject(const LayoutObject* start)
 {
     while (start && !start->isSVGRoot())
         start = start->parent();
 
     ASSERT(start);
     ASSERT(start->isSVGRoot());
-    return toRenderSVGRoot(start);
+    return toLayoutSVGRoot(start);
 }
 
 inline bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObject* start)
@@ -209,7 +209,7 @@ inline bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObj
     if (start->isSVGViewportContainer())
         return toLayoutSVGViewportContainer(start)->isLayoutSizeChanged();
 
-    return toRenderSVGRoot(start)->isLayoutSizeChanged();
+    return toLayoutSVGRoot(start)->isLayoutSizeChanged();
 }
 
 bool SVGLayoutSupport::transformToRootChanged(LayoutObject* ancestor)
@@ -286,7 +286,7 @@ void SVGLayoutSupport::layoutResourcesIfNeeded(const LayoutObject* object)
 
 bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object)
 {
-    // RenderSVGRoot should never query for overflow state - it should always clip itself to the initial viewport size.
+    // LayoutSVGRoot should never query for overflow state - it should always clip itself to the initial viewport size.
     ASSERT(!object->isDocumentElement());
 
     return object->style()->overflowX() == OHIDDEN || object->style()->overflowX() == OSCROLL;

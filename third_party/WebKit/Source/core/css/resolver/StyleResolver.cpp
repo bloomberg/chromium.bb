@@ -1401,7 +1401,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     if (UNLIKELY(isSVGForeignObjectElement(element))) {
-        // RenderSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should not be scaled again.
+        // LayoutSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should not be scaled again.
         //
         // FIXME: The following hijacks the zoom property for foreignObject so that children of foreignObject get the
         // correct font-size in case of zooming. 'zoom' has HighPropertyPriority, along with other font-related

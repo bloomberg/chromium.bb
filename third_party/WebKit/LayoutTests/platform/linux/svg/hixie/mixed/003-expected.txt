@@ -9,7 +9,7 @@ layer at (0,0) size 800x303
         RenderText {#text} at (0,0) size 440x19
           text run at (0,0) width 440: "It should say \"PASSED\" above and there should be a green circle below."
       RenderBlock (anonymous) at (0,74) size 784x205
-        RenderSVGRoot {svg} at (8,90) size 100x100
+        LayoutSVGRoot {svg} at (8,90) size 100x100
           LayoutSVGEllipse {circle} at (8,90) size 100x100 [fill={[type=SOLID] [color=#008000]}] [cx=50.00] [cy=50.00] [r=50.00]
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0

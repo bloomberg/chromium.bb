@@ -6,10 +6,10 @@
 #include "core/layout/PaintInvalidationState.h"
 
 #include "core/layout/Layer.h"
+#include "core/layout/svg/LayoutSVGModelObject.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/svg/RenderSVGModelObject.h"
-#include "core/rendering/svg/RenderSVGRoot.h"
 #include "platform/Partitions.h"
 
 namespace blink {
@@ -78,7 +78,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
     }
 
     if (m_cachedOffsetsEnabled && renderer.isSVGRoot()) {
-        const RenderSVGRoot& svgRoot = toRenderSVGRoot(renderer);
+        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(renderer);
         m_svgTransform = adoptPtr(new AffineTransform(svgRoot.localToBorderBoxTransform()));
         if (svgRoot.shouldApplyViewportClip())
             addClipRectRelativeToPaintOffset(LayoutSize(svgRoot.pixelSnappedSize()));
@@ -89,7 +89,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
-PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, const RenderSVGModelObject& renderer)
+PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, const LayoutSVGModelObject& renderer)
     : m_clipped(next.m_clipped)
     , m_cachedOffsetsEnabled(next.m_cachedOffsetsEnabled)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)

@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RenderSVGGradientStop_h
-#define RenderSVGGradientStop_h
+#ifndef LayoutSVGGradientStop_h
+#define LayoutSVGGradientStop_h
 
 #include "core/layout/LayoutObject.h"
 
@@ -29,12 +29,12 @@ class SVGGradientElement;
 class SVGStopElement;
 
 // This class exists mostly so we can hear about gradient stop style changes
-class RenderSVGGradientStop final : public LayoutObject {
+class LayoutSVGGradientStop final : public LayoutObject {
 public:
-    explicit RenderSVGGradientStop(SVGStopElement*);
-    virtual ~RenderSVGGradientStop();
+    explicit LayoutSVGGradientStop(SVGStopElement*);
+    virtual ~LayoutSVGGradientStop();
 
-    virtual const char* renderName() const override { return "RenderSVGGradientStop"; }
+    virtual const char* renderName() const override { return "LayoutSVGGradientStop"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGGradientStop || LayoutObject::isOfType(type); }
 
     virtual void layout() override;
@@ -54,8 +54,8 @@ private:
     SVGGradientElement* gradientElement() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderSVGGradientStop, isSVGGradientStop());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGGradientStop, isSVGGradientStop());
 
 }
 
-#endif // RenderSVGGradientStop_h
+#endif // LayoutSVGGradientStop_h
