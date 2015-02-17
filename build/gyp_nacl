@@ -18,6 +18,9 @@ except ImportError, e:
   import gyp
 
 if __name__ == '__main__':
+  if not os.environ.get('GYP_GENERATORS'):
+    os.environ['GYP_GENERATORS'] = 'ninja'
+
   args = sys.argv[1:]
 
   # If we didn't get a file, check an env var, and then fall back to
