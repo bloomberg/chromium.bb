@@ -63,6 +63,11 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   NOTIMPLEMENTED();
   return false;
 }
+
+std::string GetWifiSSID() {
+  NOTIMPLEMENTED();
+  return "";
+}
 #endif  // OS_NACL
 
 WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {

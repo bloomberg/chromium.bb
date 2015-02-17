@@ -243,4 +243,9 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   return result;
 }
 
+std::string GetWifiSSID() {
+  NOTIMPLEMENTED();
+  return "";
+}
+
 }  // namespace net

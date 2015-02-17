@@ -496,6 +496,11 @@ enum HostAddressSelectionPolicy {
 NET_EXPORT bool GetNetworkList(NetworkInterfaceList* networks,
                                int policy);
 
+// Gets the SSID of the currently associated WiFi access point if there is one.
+// Otherwise, returns empty string.
+// Currently only implemented on Linux, ChromeOS and Android.
+NET_EXPORT std::string GetWifiSSID();
+
 // General category of the IEEE 802.11 (wifi) physical layer operating mode.
 enum WifiPHYLayerProtocol {
   // No wifi support or no associated AP.

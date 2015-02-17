@@ -65,6 +65,15 @@ struct HeaderCase {
   const char* const expected;
 };
 
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS)
+const char kWiFiSSID[] = "TestWiFi";
+const char kInterfaceWithDifferentSSID[] = "wlan999";
+
+std::string TestGetInterfaceSSID(const std::string& ifname) {
+  return (ifname == kInterfaceWithDifferentSSID) ? "AnotherSSID" : kWiFiSSID;
+}
+#endif
+
 // Fills in sockaddr for the given 32-bit address (IPv4.)
 // |bytes| should be an array of length 4.
 void MakeIPv4Address(const uint8* bytes, int port, SockaddrStorage* storage) {
@@ -1305,6 +1314,56 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
 }
 
 #endif  // !OS_MACOSX && !OS_WIN && !OS_NACL
+
+TEST(NetUtilTest, GetWifiSSID) {
+  // We can't check the result of GetWifiSSID() directly, since the result
+  // will differ across machines. Simply exercise the code path and hope that it
+  // doesn't crash.
+  EXPECT_NE((const char*)NULL, GetWifiSSID().c_str());
+}
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS)
+TEST(NetUtilTest, GetWifiSSIDFromInterfaceList) {
+  NetworkInterfaceList list;
+  EXPECT_EQ(std::string(), net::internal::GetWifiSSIDFromInterfaceListInternal(
+                               list, TestGetInterfaceSSID));
+
+  NetworkInterface interface1;
+  interface1.name = "wlan0";
+  interface1.type = NetworkChangeNotifier::CONNECTION_WIFI;
+  list.push_back(interface1);
+  ASSERT_EQ(1u, list.size());
+  EXPECT_EQ(std::string(kWiFiSSID),
+            net::internal::GetWifiSSIDFromInterfaceListInternal(
+                list, TestGetInterfaceSSID));
+
+  NetworkInterface interface2;
+  interface2.name = "wlan1";
+  interface2.type = NetworkChangeNotifier::CONNECTION_WIFI;
+  list.push_back(interface2);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(std::string(kWiFiSSID),
+            net::internal::GetWifiSSIDFromInterfaceListInternal(
+                list, TestGetInterfaceSSID));
+
+  NetworkInterface interface3;
+  interface3.name = kInterfaceWithDifferentSSID;
+  interface3.type = NetworkChangeNotifier::CONNECTION_WIFI;
+  list.push_back(interface3);
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(std::string(), net::internal::GetWifiSSIDFromInterfaceListInternal(
+                               list, TestGetInterfaceSSID));
+
+  list.pop_back();
+  NetworkInterface interface4;
+  interface4.name = "eth0";
+  interface4.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
+  list.push_back(interface4);
+  ASSERT_EQ(3u, list.size());
+  EXPECT_EQ(std::string(), net::internal::GetWifiSSIDFromInterfaceListInternal(
+                               list, TestGetInterfaceSSID));
+}
+#endif  // OS_LINUX
 
 namespace {
 

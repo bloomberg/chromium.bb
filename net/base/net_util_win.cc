@@ -320,4 +320,9 @@ scoped_ptr<ScopedWifiOptions> SetWifiOptions(int options) {
   return scoped_ptr<ScopedWifiOptions>(new WifiOptionSetter(options));
 }
 
+std::string GetWifiSSID() {
+  NOTIMPLEMENTED();
+  return "";
+}
+
 }  // namespace net
