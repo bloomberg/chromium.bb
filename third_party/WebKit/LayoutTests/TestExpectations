@@ -1841,6 +1841,9 @@ crbug.com/458420 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/overflow-
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash ]
 crbug.com/458417 [ XP ] http/tests/fetch/workers/fetch.html [ Pass Timeout ]
 
+# Minor failure only on Mac 10.6 Debug.
+crbug.com/459305 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+
 # These baselines need to be reviewed and perhaps updated after the mass-rebaselining
 # on 2015-02-06 (after the change in r189636).
 crbug.com/452967 [ Mac ] compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
