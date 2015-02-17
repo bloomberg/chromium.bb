@@ -357,3 +357,11 @@ observer = new WebKitMutationObserver(function() {});
 observer.observe(element, {attributes: true});
 element.classList.remove('a', 'c');
 shouldBe('observer.takeRecords().length', '1');
+
+// iterable<DOMString>;
+createElement('a b c');
+var seen = [];
+for (var t of element.classList) {
+    seen.push(t);
+}
+shouldBeTrue("areArraysEqual(seen, ['a', 'b', 'c'])");

@@ -400,10 +400,14 @@ interface DOMTokenList
     method add
     method constructor
     method contains
+    method entries
+    method forEach
     method item
+    method keys
     method remove
     method toString
     method toggle
+    method values
 interface DataTransfer
     method clearData
     method constructor

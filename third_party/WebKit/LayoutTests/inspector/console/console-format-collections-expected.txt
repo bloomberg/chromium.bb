@@ -63,7 +63,7 @@ console-format-collections.html:35 [input, input, value: "", item: function]
 console-format-collections.html:41 [1, Array[2]]
 console-format-collections.html:44 NonArrayWithLength {keys: Array[0], length: (...)}
 console-format-collections.html:51 [1, "2"]
-console-format-collections.html:55 ["c1", "c2", "c3", item: function, contains: function, add: function, remove: function, toggle: function]
+console-format-collections.html:55 ["c1", "c2", "c3", item: function, contains: function, add: function, remove: function, toggle: function…]
 console-format-collections.html:58 [splice: function]
 console-format-collections.html:59 [splice: function]
 console-format-collections.html:61 ArrayLike {length: -5, splice: function}

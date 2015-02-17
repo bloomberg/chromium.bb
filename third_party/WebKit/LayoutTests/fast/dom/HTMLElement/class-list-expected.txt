@@ -109,6 +109,7 @@ PASS element.classList.remove("a", {toString: function() { throw new Error("user
 PASS element.className is "a b"
 PASS element.classList.remove() did not throw exception.
 PASS observer.takeRecords().length is 1
+PASS areArraysEqual(seen, ['a', 'b', 'c']) is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

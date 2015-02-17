@@ -25,6 +25,7 @@
 #ifndef DOMTokenList_h
 #define DOMTokenList_h
 
+#include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -35,7 +36,7 @@ namespace blink {
 class Element;
 class ExceptionState;
 
-class DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable {
+class DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable, public ValueIterable<String> {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     WTF_MAKE_NONCOPYABLE(DOMTokenList);
@@ -79,6 +80,9 @@ protected:
     static AtomicString addTokens(const AtomicString&, const Vector<String>&);
     static AtomicString removeToken(const AtomicString&, const AtomicString&);
     static AtomicString removeTokens(const AtomicString&, const Vector<String>&);
+
+private:
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };
 
 } // namespace blink
