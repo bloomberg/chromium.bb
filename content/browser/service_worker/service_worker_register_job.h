@@ -112,6 +112,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
   void RegisterAndContinue();
+  void ContinueWithUninstallingRegistration(
+      const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
+      ServiceWorkerStatusCode status);
   void ContinueWithRegistrationForSameScriptUrl(
       const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
       ServiceWorkerStatusCode status);
@@ -153,6 +156,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   Internal internal_;
   bool doom_installing_worker_;
   bool is_promise_resolved_;
+  bool should_uninstall_on_failure_;
   ServiceWorkerStatusCode promise_resolved_status_;
   std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;

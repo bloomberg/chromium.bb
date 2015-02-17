@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/io_buffer.h"
@@ -1251,6 +1252,155 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_EQ(third_version, registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, third_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
+}
+
+class EventCallbackHelper : public EmbeddedWorkerTestHelper {
+ public:
+  explicit EventCallbackHelper(int mock_render_process_id)
+      : EmbeddedWorkerTestHelper(mock_render_process_id),
+        install_event_result_(blink::WebServiceWorkerEventResultCompleted),
+        activate_event_result_(blink::WebServiceWorkerEventResultCompleted) {}
+
+  void OnInstallEvent(int embedded_worker_id,
+                      int request_id,
+                      int active_version_id) override {
+    if (!install_callback_.is_null())
+      install_callback_.Run();
+    SimulateSend(
+        new ServiceWorkerHostMsg_InstallEventFinished(
+            embedded_worker_id, request_id, install_event_result_));
+  }
+  void OnActivateEvent(int embedded_worker_id, int request_id) override {
+    SimulateSend(
+        new ServiceWorkerHostMsg_ActivateEventFinished(
+            embedded_worker_id, request_id, activate_event_result_));
+  }
+
+  void set_install_callback(const base::Closure& callback) {
+    install_callback_ = callback;
+  }
+  void set_install_event_result(blink::WebServiceWorkerEventResult result) {
+    install_event_result_ = result;
+  }
+  void set_activate_event_result(blink::WebServiceWorkerEventResult result) {
+    activate_event_result_ = result;
+  }
+private:
+  base::Closure install_callback_;
+  blink::WebServiceWorkerEventResult install_event_result_;
+  blink::WebServiceWorkerEventResult activate_event_result_;
+};
+
+TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
+  EventCallbackHelper* helper = new EventCallbackHelper(render_process_id_);
+  helper_.reset(helper);
+
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js");
+  GURL script2("http://www.example.com/service_worker.js?new");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  // Register another script. While installing, old_version loses controllee.
+  helper->set_install_callback(
+      base::Bind(&ServiceWorkerVersion::RemoveControllee,
+                 old_version, host.get()));
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+
+  // Verify the new version is activated.
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->active_version();
+  EXPECT_NE(old_version, new_version);
+  EXPECT_EQ(NULL, registration->installing_version());
+  EXPECT_EQ(NULL, registration->waiting_version());
+  EXPECT_EQ(new_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
+
+  EXPECT_EQ(registration, FindRegistrationForPattern(pattern));
+}
+
+TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
+  EventCallbackHelper* helper = new EventCallbackHelper(render_process_id_);
+  helper_.reset(helper);
+
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js");
+  GURL script2("http://www.example.com/service_worker.js?new");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  // Register another script that fails to install. While installing,
+  // old_version loses controllee.
+  helper->set_install_callback(
+      base::Bind(&ServiceWorkerVersion::RemoveControllee,
+                 old_version, host.get()));
+  helper->set_install_event_result(blink::WebServiceWorkerEventResultRejected);
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  // Verify the registration was uninstalled.
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_TRUE(registration->is_uninstalled());
+
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, old_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
+
+  FindRegistrationForPattern(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
+}
+
+TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
+  EventCallbackHelper* helper = new EventCallbackHelper(render_process_id_);
+  helper_.reset(helper);
+
+  GURL pattern("http://www.example.com/one/");
+  GURL script1("http://www.example.com/service_worker.js");
+  GURL script2("http://www.example.com/service_worker.js?new");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(pattern, script1);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host.get());
+  RunUnregisterJob(pattern);
+
+  // Register another script that fails to activate. While installing,
+  // old_version loses controllee.
+  helper->set_install_callback(
+      base::Bind(&ServiceWorkerVersion::RemoveControllee,
+                 old_version, host.get()));
+  helper->set_activate_event_result(blink::WebServiceWorkerEventResultRejected);
+  EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
+
+  // Verify the registration was uninstalled.
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_TRUE(registration->is_uninstalled());
+
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, old_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
+
+  FindRegistrationForPattern(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
 }
 
 }  // namespace content

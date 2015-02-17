@@ -157,11 +157,6 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   DCHECK(waiting_version());
   should_activate_when_ready_ = true;
 
-  if (is_uninstalling_) {
-    context_->storage()->NotifyDoneUninstallingRegistration(this);
-    is_uninstalling_ = false;
-  }
-
   if (!active_version() || !active_version()->HasControllee() ||
       waiting_version()->skip_waiting())
     ActivateWaitingVersion();
@@ -310,6 +305,8 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
       // But not from memory if there is a version in the pipeline.
       if (installing_version())
         is_deleted_ = false;
+      else
+        is_uninstalled_ = true;
     }
     return;
   }

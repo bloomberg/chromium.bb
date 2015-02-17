@@ -38,6 +38,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       phase_(INITIAL),
       doom_installing_worker_(false),
       is_promise_resolved_(false),
+      should_uninstall_on_failure_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {
 }
@@ -52,6 +53,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       phase_(INITIAL),
       doom_installing_worker_(false),
       is_promise_resolved_(false),
+      should_uninstall_on_failure_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
       weak_factory_(this) {
   internal_.registration = registration;
@@ -209,6 +211,14 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
     return;
   }
 
+  if (existing_registration->is_uninstalling()) {
+    existing_registration->AbortPendingClear(base::Bind(
+        &ServiceWorkerRegisterJob::ContinueWithUninstallingRegistration,
+        weak_factory_.GetWeakPtr(),
+        existing_registration));
+    return;
+  }
+
   // "Return the result of running the [[Update]] algorithm, or its equivalent,
   // passing registration as the argument."
   set_registration(existing_registration);
@@ -251,6 +261,18 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
   set_registration(new ServiceWorkerRegistration(
       pattern_, context_->storage()->NewRegistrationId(), context_));
   AssociateProviderHostsToRegistration(registration());
+  UpdateAndContinue();
+}
+
+void ServiceWorkerRegisterJob::ContinueWithUninstallingRegistration(
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK) {
+    Complete(status);
+    return;
+  }
+  should_uninstall_on_failure_ = true;
+  set_registration(existing_registration);
   UpdateAndContinue();
 }
 
@@ -432,6 +454,8 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   SetPhase(COMPLETE);
   if (status != SERVICE_WORKER_OK) {
     if (registration()) {
+      if (should_uninstall_on_failure_)
+        registration()->ClearWhenReady();
       if (new_version()) {
         registration()->UnsetVersion(new_version());
         new_version()->Doom();
