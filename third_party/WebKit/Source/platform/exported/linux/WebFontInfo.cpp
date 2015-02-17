@@ -158,10 +158,7 @@ private:
             FcPatternAddString(pattern, FC_LANG, reinterpret_cast<const FcChar8*>(locale));
         }
 
-        FcValue fcvalue;
-        fcvalue.type = FcTypeBool;
-        fcvalue.u.b = FcTrue;
-        FcPatternAdd(pattern, FC_SCALABLE, fcvalue, FcFalse);
+        FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
 
         FcConfigSubstitute(0, pattern, FcMatchPattern);
         FcDefaultSubstitute(pattern);
