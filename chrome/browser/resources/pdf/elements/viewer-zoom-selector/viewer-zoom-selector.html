@@ -1,0 +1,26 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
+<link rel="import" href="chrome://resources/polymer/paper-fab/paper-fab.html">
+<link rel="import" href="viewer-zoom-button.html">
+<link rel="import" href="viewer-zoom-slider.html">
+
+<polymer-element name="viewer-zoom-selector" on-mouseout="{{hide}}">
+<template>
+  <link rel="stylesheet" href="viewer-zoom-selector.css">
+
+  <viewer-zoom-slider id="slider" min="{{zoomMin}}" max="{{zoomMax}}"
+      value="{{zoomValue}}"></viewer-zoom-slider>
+
+  <div id="zoom-buttons">
+    <div id="buttons">
+      <!-- TODO(alexandrec): Replace with custom icons. -->
+      <viewer-zoom-button id="fit-to-page-button" icon="fullscreen-exit"
+          on-click="{{fitToPage}}"></viewer-zoom-button>
+      <viewer-zoom-button id="fit-to-width-button" icon="fullscreen"
+          on-click="{{fitToWidth}}"></viewer-zoom-button>
+    </div>
+    <paper-fab id="main-zoom" icon="search" on-mouseover="{{show}}"></paper-fab>
+  </div>
+</template>
+<script src="viewer-zoom-selector.js"></script>
+</polymer-element>

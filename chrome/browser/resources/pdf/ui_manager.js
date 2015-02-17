@@ -10,29 +10,22 @@ var HIDE_TIMEOUT = 2000;
  * Creates a UI Manager to handle transitioning of toolbars and panes.
  * @constructor
  * @param {Object} window The window containing the UI.
- * @param {Object} toolbar The toolbar element
+ * @param {Object} toolbar The toolbar element.
  * @param {Array} panes The panes that may be pulled in.
  */
 function UiManager(window, toolbar, panes) {
   this.window_ = window;
   this.toolbar_ = toolbar;
   this.panes_ = panes;
+
   this.uiTimeout_ = null;
-  this.setUpListeners_();
+
+  var userInputs = ['click', 'keydown', 'mousemove', 'scroll'];
+  for (var i = 0; i < userInputs.length; i++)
+    this.window_.addEventListener(userInputs[i], this.showUi_.bind(this));
 }
 
 UiManager.prototype = {
-
-  /**
-   * @private
-   * Add relevant listeners to trigger showing the UI again.
-   */
-  setUpListeners_: function() {
-    var userInputs = ['click', 'keydown', 'mousemove', 'scroll'];
-    for (var i = 0; i < userInputs.length; i++)
-      this.window_.addEventListener(userInputs[i], this.showUi_.bind(this));
-  },
-
   /**
    * @private
    * Display the toolbar and any pane that was previously opened.

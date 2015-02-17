@@ -86,13 +86,6 @@ function PDFViewer(streamDetails) {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
-  this.materialToolbar_ = $('material-toolbar');
-  this.bookmarksPane_ = $('bookmarks-pane');
-
-  if (this.isMaterial_) {
-    this.uiManager_ = new UiManager(window, this.materialToolbar_,
-        [this.bookmarksPane_]);
-  }
 
   // Create the viewport.
   this.viewport_ = new Viewport(window,
@@ -101,6 +94,7 @@ function PDFViewer(streamDetails) {
                                 this.beforeZoom_.bind(this),
                                 this.afterZoom_.bind(this),
                                 getScrollbarWidth());
+
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
   // positioning, acting as a viewport. The plugin renders into this viewport
@@ -113,9 +107,6 @@ function PDFViewer(streamDetails) {
   this.plugin_.addEventListener('message', this.handlePluginMessage_.bind(this),
                                 false);
 
-  if (this.isMaterial_)
-    this.plugin_.setAttribute('is-material', '');
-
   // Handle scripting messages from outside the extension that wish to interact
   // with it. We also send a message indicating that extension has loaded and
   // is ready to receive messages.
@@ -123,8 +114,6 @@ function PDFViewer(streamDetails) {
                           false);
 
   document.title = getFilenameFromURL(this.streamDetails_.originalUrl);
-  if (this.isMaterial_)
-    this.materialToolbar_.docTitle = document.title;
   this.plugin_.setAttribute('src', this.streamDetails_.originalUrl);
   this.plugin_.setAttribute('stream-url', this.streamDetails_.streamUrl);
   var headers = '';
@@ -134,34 +123,57 @@ function PDFViewer(streamDetails) {
   }
   this.plugin_.setAttribute('headers', headers);
 
+  if (this.isMaterial_)
+    this.plugin_.setAttribute('is-material', '');
+
   if (!this.streamDetails_.embedded)
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
 
   // Setup the button event listeners.
-  $('fit-to-width-button').addEventListener('click',
-      this.viewport_.fitToWidth.bind(this.viewport_));
-  $('fit-to-page-button').addEventListener('click',
-      this.viewport_.fitToPage.bind(this.viewport_));
-  $('zoom-in-button').addEventListener('click',
-      this.viewport_.zoomIn.bind(this.viewport_));
-  $('zoom-out-button').addEventListener('click',
-      this.viewport_.zoomOut.bind(this.viewport_));
+  if (!this.isMaterial_) {
+    $('fit-to-width-button').addEventListener('click',
+        this.viewport_.fitToWidth.bind(this.viewport_));
+    $('fit-to-page-button').addEventListener('click',
+        this.viewport_.fitToPage.bind(this.viewport_));
+    $('zoom-in-button').addEventListener('click',
+        this.viewport_.zoomIn.bind(this.viewport_));
+    $('zoom-out-button').addEventListener('click',
+        this.viewport_.zoomOut.bind(this.viewport_));
+    $('save-button').addEventListener('click', this.save_.bind(this));
+    $('print-button').addEventListener('click', this.print_.bind(this));
+  }
 
   if (this.isMaterial_) {
+    this.bookmarksPane_ = $('bookmarks-pane');
+
+    this.zoomSelector_ = $('zoom-selector');
+    this.zoomSelector_.zoomMin = Viewport.ZOOM_FACTOR_RANGE.min * 100;
+    this.zoomSelector_.zoomMax = Viewport.ZOOM_FACTOR_RANGE.max * 100;
+    this.zoomSelector_.addEventListener('zoom', function(e) {
+      this.viewport_.setZoom(e.detail.zoom);
+    }.bind(this));
+    this.zoomSelector_.addEventListener('fit-to-width',
+        this.viewport_.fitToWidth.bind(this.viewport_));
+    this.zoomSelector_.addEventListener('fit-to-page',
+        this.viewport_.fitToPage.bind(this.viewport_));
+
+    this.materialToolbar_ = $('material-toolbar');
+    this.materialToolbar_.docTitle = document.title;
     this.materialToolbar_.addEventListener('save', this.save_.bind(this));
     this.materialToolbar_.addEventListener('print', this.print_.bind(this));
+    this.materialToolbar_.addEventListener('rotate-right',
+        this.rotateClockwise_.bind(this));
     this.materialToolbar_.addEventListener('toggle-bookmarks', function() {
       this.bookmarksPane_.buttonToggle();
     }.bind(this));
-    this.materialToolbar_.addEventListener('rotate-right',
-        this.rotateClockwise_.bind(this));
+
     document.body.addEventListener('change-page', function(e) {
       this.viewport_.goToPage(e.detail.page);
     }.bind(this));
-  } else {
-    $('save-button').addEventListener('click', this.save_.bind(this));
-    $('print-button').addEventListener('click', this.print_.bind(this));
+
+    this.uiManager_ = new UiManager(window, this.materialToolbar_,
+                                    [this.bookmarksPane_]);
   }
 
   // Setup the keyboard event listener.
@@ -417,7 +429,8 @@ PDFViewer.prototype = {
       // Document load failed.
       this.errorScreen_.style.visibility = 'visible';
       this.sizer_.style.display = 'none';
-      this.toolbar_.style.visibility = 'hidden';
+      if (!this.isMaterial_)
+        this.toolbar_.style.visibility = 'hidden';
       if (this.passwordScreen_.active) {
         this.passwordScreen_.deny();
         this.passwordScreen_.active = false;
@@ -470,9 +483,9 @@ PDFViewer.prototype = {
               this.documentDimensions_.pageDimensions.length;
         } else {
           this.pageIndicator_.initialFadeIn();
+          this.toolbar_.initialFadeIn();
         }
 
-        this.toolbar_.initialFadeIn();
         break;
       case 'email':
         var href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
@@ -563,6 +576,8 @@ PDFViewer.prototype = {
   afterZoom_: function() {
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
+    if (this.isMaterial_)
+      this.zoomSelector_.zoomValue = 100 * zoom;
     if (this.shouldManageZoom_() && !this.setZoomInProgress_) {
       this.setZoomInProgress_ = true;
       chrome.tabs.setZoom(this.streamDetails_.tabId, zoom,
@@ -603,13 +618,15 @@ PDFViewer.prototype = {
       return;
 
     // Update the buttons selected.
-    $('fit-to-page-button').classList.remove('polymer-selected');
-    $('fit-to-width-button').classList.remove('polymer-selected');
-    if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
-      $('fit-to-page-button').classList.add('polymer-selected');
-    } else if (this.viewport_.fittingType ==
-               Viewport.FittingType.FIT_TO_WIDTH) {
-      $('fit-to-width-button').classList.add('polymer-selected');
+    if (!this.isMaterial_) {
+      $('fit-to-page-button').classList.remove('polymer-selected');
+      $('fit-to-width-button').classList.remove('polymer-selected');
+      if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+        $('fit-to-page-button').classList.add('polymer-selected');
+      } else if (this.viewport_.fittingType ==
+                 Viewport.FittingType.FIT_TO_WIDTH) {
+        $('fit-to-width-button').classList.add('polymer-selected');
+      }
     }
 
     // Offset the toolbar position so that it doesn't move if scrollbars appear.
@@ -622,13 +639,15 @@ PDFViewer.prototype = {
     var toolbarBottom = Math.max(PDFViewer.MIN_TOOLBAR_OFFSET, scrollbarWidth);
     toolbarRight -= verticalScrollbarWidth;
     toolbarBottom -= horizontalScrollbarWidth;
-    this.toolbar_.style.right = toolbarRight + 'px';
-    this.toolbar_.style.bottom = toolbarBottom + 'px';
-    // Hide the toolbar if it doesn't fit in the viewport.
-    if (this.toolbar_.offsetLeft < 0 || this.toolbar_.offsetTop < 0)
-      this.toolbar_.style.visibility = 'hidden';
-    else
-      this.toolbar_.style.visibility = 'visible';
+    if (!this.isMaterial_) {
+      this.toolbar_.style.right = toolbarRight + 'px';
+      this.toolbar_.style.bottom = toolbarBottom + 'px';
+      // Hide the toolbar if it doesn't fit in the viewport.
+      if (this.toolbar_.offsetLeft < 0 || this.toolbar_.offsetTop < 0)
+        this.toolbar_.style.visibility = 'hidden';
+      else
+        this.toolbar_.style.visibility = 'visible';
+    }
 
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();

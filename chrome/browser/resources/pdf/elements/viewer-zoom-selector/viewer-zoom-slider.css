@@ -1,0 +1,28 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  background-color: #fff;
+  border-radius: 25px;
+  overflow: visible;
+  width: 20em;
+}
+
+paper-shadow {
+  background-color: #fff;
+  border-radius: 25px;
+}
+
+:host::shadow #sliderBar::shadow #activeProgress {
+  background-color: #c8c8c8;
+}
+
+:host::shadow #sliderKnobInner::before {
+  background-color: rgb(33, 150, 243);
+}
+
+:host::shadow #sliderKnobInner {
+  background-color: #fff;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+}
