@@ -1099,15 +1099,15 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     return true;
 }
 
-WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping)
+WebRect WebViewImpl::computeBlockBound(const WebPoint& webPoint, bool ignoreClipping)
 {
     if (!mainFrameImpl())
         return WebRect();
 
-    // Use the rect-based hit test to find the node.
-    IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(rect.x, rect.y));
+    // Use the point-based hit test to find the node.
+    IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(webPoint.x, webPoint.y));
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
-    HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType, LayoutSize(rect.width, rect.height));
+    HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType);
     result.setToShadowHostIfInUserAgentShadowRoot();
 
     Node* node = result.innerNonSharedNode();
@@ -1335,9 +1335,7 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
     if (!mainFrameImpl())
         return;
 
-    WebRect rect(point.x(), point.y(), touchPointPadding, touchPointPadding);
-    WebRect blockBounds = computeBlockBounds(rect, false);
-
+    WebRect blockBounds = computeBlockBound(point, false);
     float scale;
     WebPoint scroll;
 
@@ -1370,7 +1368,7 @@ void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
     if (!mainFrameImpl())
         return;
 
-    WebRect blockBounds = computeBlockBounds(rect, true);
+    WebRect blockBounds = computeBlockBound(WebPoint(rect.x + rect.width / 2, rect.y + rect.height / 2), true);
 
     if (blockBounds.isEmpty()) {
         // Keep current scale (no need to scroll as x,y will normally already

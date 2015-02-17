@@ -128,24 +128,24 @@ using namespace blink;
 
 const int touchPointPadding = 32;
 
-#define EXPECT_RECT_EQ(a, b) \
-    do {                                   \
-        EXPECT_EQ(a.x(), b.x());           \
-        EXPECT_EQ(a.y(), b.y());           \
-        EXPECT_EQ(a.width(), b.width());   \
-        EXPECT_EQ(a.height(), b.height()); \
+#define EXPECT_RECT_EQ(expected, actual) \
+    do { \
+        EXPECT_EQ(expected.x(), actual.x()); \
+        EXPECT_EQ(expected.y(), actual.y()); \
+        EXPECT_EQ(expected.width(), actual.width()); \
+        EXPECT_EQ(expected.height(), actual.height()); \
     } while (false)
 
 #define EXPECT_POINT_EQ(expected, actual) \
     do { \
-        EXPECT_EQ((expected).x(), (actual).x()); \
-        EXPECT_EQ((expected).y(), (actual).y()); \
+        EXPECT_EQ(expected.x(), actual.x()); \
+        EXPECT_EQ(expected.y(), actual.y()); \
     } while (false)
 
 #define EXPECT_FLOAT_POINT_EQ(expected, actual) \
     do { \
-        EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
-        EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
+        EXPECT_FLOAT_EQ(expected.x(), actual.x()); \
+        EXPECT_FLOAT_EQ(expected.y(), actual.y()); \
     } while (false)
 
 
@@ -2307,18 +2307,16 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest_VirtualViewport)
 
     WebRect wideDiv(200, 100, 400, 150);
     WebRect tallDiv(200, 300, 400, 800);
-    WebRect doubleTapPointWide(wideDiv.x + 50, wideDiv.y + 50, touchPointPadding, touchPointPadding);
-    WebRect doubleTapPointTall(tallDiv.x + 50, tallDiv.y + 50, touchPointPadding, touchPointPadding);
-    WebRect wideBlockBounds;
-    WebRect tallBlockBounds;
+    WebPoint doubleTapPointWide(wideDiv.x + 50, wideDiv.y + 50);
+    WebPoint doubleTapPointTall(tallDiv.x + 50, tallDiv.y + 50);
     float scale;
     WebPoint scroll;
 
     float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
 
     // Test double-tap zooming into wide div.
-    wideBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    WebRect wideBlockBound = webViewHelper.webViewImpl()->computeBlockBound(doubleTapPointWide, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBound, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     // The div should horizontally fill the screen (modulo margins), and
     // vertically centered (modulo integer rounding).
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
@@ -2328,24 +2326,20 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest_VirtualViewport)
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), scroll, scale);
 
     // Test zoom out back to minimum scale.
-    wideBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    wideBlockBound = webViewHelper.webViewImpl()->computeBlockBound(doubleTapPointWide, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBound, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    // FIXME: Looks like we are missing EXPECTs here.
 
     scale = webViewHelper.webViewImpl()->minimumPageScaleFactor();
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), scale);
 
     // Test double-tap zooming into tall div.
-    tallBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointTall, false);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointTall.x, doubleTapPointTall.y), tallBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    WebRect tallBlockBound = webViewHelper.webViewImpl()->computeBlockBound(doubleTapPointTall, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointTall.x, doubleTapPointTall.y), tallBlockBound, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     // The div should start at the top left of the viewport.
     EXPECT_NEAR(viewportWidth / (float) tallDiv.width, scale, 0.1);
     EXPECT_NEAR(tallDiv.x, scroll.x, 20);
     EXPECT_NEAR(tallDiv.y, scroll.y, 20);
-
-    // Test for Non-doubletap scaling
-    // Test zooming into div.
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(250, 250), webViewHelper.webViewImpl()->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, doubleTapZoomAlreadyLegibleScale, scale, scroll);
-    EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomWideDivTest_VirtualViewport)
@@ -2400,8 +2394,8 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest_VirtualViewport)
     float scale;
     WebPoint scroll;
 
-    WebRect blockBounds = webViewHelper.webViewImpl()->computeBlockBounds(WebRect(point.x, point.y, 0, 0), true);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(point, blockBounds, 0, 1.0f, scale, scroll);
+    WebRect blockBound = webViewHelper.webViewImpl()->computeBlockBound(point, true);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(point, blockBound, 0, 1.0f, scale, scroll);
     EXPECT_EQ(scale, 1.0f);
     EXPECT_EQ(scroll.y, 2660);
 }
@@ -2699,18 +2693,18 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest_OldPinch)
 
     WebRect wideDiv(200, 100, 400, 150);
     WebRect tallDiv(200, 300, 400, 800);
-    WebRect doubleTapPointWide(wideDiv.x + 50, wideDiv.y + 50, touchPointPadding, touchPointPadding);
-    WebRect doubleTapPointTall(tallDiv.x + 50, tallDiv.y + 50, touchPointPadding, touchPointPadding);
-    WebRect wideBlockBounds;
-    WebRect tallBlockBounds;
+    WebPoint doubleTapPointWide(wideDiv.x + 50, wideDiv.y + 50);
+    WebPoint doubleTapPointTall(tallDiv.x + 50, tallDiv.y + 50);
+    WebRect wideBlockBound;
+    WebRect tallBlockBound;
     float scale;
     WebPoint scroll;
 
     float doubleTapZoomAlreadyLegibleScale = webViewHelper.webViewImpl()->minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
 
     // Test double-tap zooming into wide div.
-    wideBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    wideBlockBound = webViewHelper.webViewImpl()->computeBlockBound(doubleTapPointWide, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBound, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     // The div should horizontally fill the screen (modulo margins), and
     // vertically centered (modulo integer rounding).
     EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
@@ -2720,24 +2714,20 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest_OldPinch)
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), scroll, scale);
 
     // Test zoom out back to minimum scale.
-    wideBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointWide, false);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    wideBlockBound = webViewHelper.webViewImpl()->computeBlockBound(doubleTapPointWide, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointWide.x, doubleTapPointWide.y), wideBlockBound, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    // FIXME: Looks like we are missing EXPECTs here.
 
     scale = webViewHelper.webViewImpl()->minimumPageScaleFactor();
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), scale);
 
     // Test double-tap zooming into tall div.
-    tallBlockBounds = webViewHelper.webViewImpl()->computeBlockBounds(doubleTapPointTall, false);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointTall.x, doubleTapPointTall.y), tallBlockBounds, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
+    tallBlockBound = webViewHelper.webViewImpl()->computeBlockBound(doubleTapPointTall, false);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(doubleTapPointTall.x, doubleTapPointTall.y), tallBlockBound, touchPointPadding, doubleTapZoomAlreadyLegibleScale, scale, scroll);
     // The div should start at the top left of the viewport.
     EXPECT_NEAR(viewportWidth / (float) tallDiv.width, scale, 0.1);
     EXPECT_NEAR(tallDiv.x, scroll.x, 20);
     EXPECT_NEAR(tallDiv.y, scroll.y, 20);
-
-    // Test for Non-doubletap scaling
-    // Test zooming into div.
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(WebPoint(250, 250), webViewHelper.webViewImpl()->computeBlockBounds(WebRect(250, 250, 10, 10), true), 0, doubleTapZoomAlreadyLegibleScale, scale, scroll);
-    EXPECT_NEAR(viewportWidth / (float) wideDiv.width, scale, 0.1);
 }
 
 TEST_F(WebFrameTest, DivAutoZoomWideDivTest_OldPinch)
@@ -2792,8 +2782,8 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest_OldPinch)
     float scale;
     WebPoint scroll;
 
-    WebRect blockBounds = webViewHelper.webViewImpl()->computeBlockBounds(WebRect(point.x, point.y, 0, 0), true);
-    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(point, blockBounds, 0, 1.0f, scale, scroll);
+    WebRect blockBound = webViewHelper.webViewImpl()->computeBlockBound(point, true);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForBlockRect(point, blockBound, 0, 1.0f, scale, scroll);
     EXPECT_EQ(scale, 1.0f);
     EXPECT_EQ(scroll.y, 2660);
 }
@@ -2990,6 +2980,40 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest_OldPinch)
 }
 
 // ================= End Old-Style Pinch tests to be removed ===================
+
+TEST_F(WebFrameTest, BlockBoundTest)
+{
+    registerMockedHttpURLLoad("block_bound.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "block_bound.html", false, 0, 0, configurePinchVirtualViewport);
+
+    IntRect rectBack = IntRect(0, 0, 200, 200);
+    IntRect rectLeftTop = IntRect(10, 10, 80, 80);
+    IntRect rectRightBottom = IntRect(110, 110, 80, 80);
+    IntRect blockBound;
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(9, 9), true));
+    EXPECT_RECT_EQ(rectBack, blockBound);
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(10, 10), true));
+    EXPECT_RECT_EQ(rectLeftTop, blockBound);
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(50, 50), true));
+    EXPECT_RECT_EQ(rectLeftTop, blockBound);
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(89, 89), true));
+    EXPECT_RECT_EQ(rectLeftTop, blockBound);
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(90, 90), true));
+    EXPECT_RECT_EQ(rectBack, blockBound);
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(109, 109), true));
+    EXPECT_RECT_EQ(rectBack, blockBound);
+
+    blockBound = IntRect(webViewHelper.webViewImpl()->computeBlockBound(WebPoint(110, 110), true));
+    EXPECT_RECT_EQ(rectRightBottom, blockBound);
+}
 
 TEST_F(WebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
 {

@@ -193,7 +193,7 @@ public:
     virtual void setInitialFocus(bool reverse) override;
     virtual void clearFocusedElement() override;
     virtual bool scrollFocusedNodeIntoRect(const WebRect&) override;
-    virtual void zoomToFindInPageRect(const WebRect&) override;
+    virtual void zoomToFindInPageRect(const WebRect&);
     virtual void advanceFocus(bool reverse) override;
     virtual double zoomLevel() override;
     virtual double setZoomLevel(double) override;
@@ -501,8 +501,8 @@ public:
 
     WebSettingsImpl* settingsImpl();
 
-    // Returns the bounding box of the block type node touched by the WebRect.
-    WebRect computeBlockBounds(const WebRect&, bool ignoreClipping);
+    // Returns the bounding box of the block type node touched by the WebPoint.
+    WebRect computeBlockBound(const WebPoint&, bool ignoreClipping);
 
     // FIXME(bokan): Replace with PinchViewport::clampDocumentOffsetAtScale once
     // old-path is gone.
