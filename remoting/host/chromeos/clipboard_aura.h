@@ -6,7 +6,8 @@
 #define REMOTING_HOST_CLIPBOARD_AURA_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "remoting/host/clipboard.h"
 
 namespace remoting {
@@ -25,11 +26,9 @@ class ClipboardStub;
 // The public API of this class can be called in any thread as internally it
 // always posts the call to the |ui_task_runner|.  On ChromeOS, that should
 // be the UI thread of the browser process.
-//
 class ClipboardAura : public Clipboard {
  public:
-  explicit ClipboardAura(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  explicit ClipboardAura();
   ~ClipboardAura() override;
 
   // Clipboard interface.
@@ -41,10 +40,13 @@ class ClipboardAura : public Clipboard {
   void SetPollingIntervalForTesting(base::TimeDelta polling_interval);
 
  private:
-  class Core;
+  void CheckClipboardForChanges();
 
-  scoped_ptr<Core> core_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  base::ThreadChecker thread_checker_;
+  scoped_ptr<protocol::ClipboardStub> client_clipboard_;
+  base::RepeatingTimer<ClipboardAura> clipboard_polling_timer_;
+  uint64 current_change_count_;
+  base::TimeDelta polling_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardAura);
 };
