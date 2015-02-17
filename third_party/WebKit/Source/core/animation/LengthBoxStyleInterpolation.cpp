@@ -70,7 +70,7 @@ bool LengthBoxStyleInterpolation::usesDefaultInterpolation(const CSSValue& start
 
 namespace {
 
-PassRefPtr<CSSPrimitiveValue> indexedValueToLength(InterpolableList& lengthBox, size_t i, CSSPrimitiveValue* start[], CSSPrimitiveValue* end[])
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> indexedValueToLength(InterpolableList& lengthBox, size_t i, CSSPrimitiveValue* start[], CSSPrimitiveValue* end[])
 {
     if (lengthBox.get(i)->isBool()) {
         if (toInterpolableBool(lengthBox.get(i))->value())
