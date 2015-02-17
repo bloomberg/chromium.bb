@@ -530,8 +530,6 @@ void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
       custom_page_view_->SetVisible(
           app_list_main_view_->model()->custom_launcher_page_enabled());
     }
-  } else {
-    start_page_view_->OnHide();
   }
 }
 

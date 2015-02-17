@@ -338,6 +338,19 @@ bool AppListView::ShouldHandleSystemCommands() const {
   return true;
 }
 
+bool AppListView::ShouldDescendIntoChildForEventHandling(
+    gfx::NativeView child,
+    const gfx::Point& location) {
+  // While on the start page, don't descend into the custom launcher page. Since
+  // the only valid action is to open it.
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  if (contents_view->GetActiveState() == AppListModel::STATE_START)
+    return !contents_view->GetCustomPageCollapsedBounds().Contains(location);
+
+  return views::BubbleDelegateView::ShouldDescendIntoChildForEventHandling(
+      child, location);
+}
+
 void AppListView::Prerender() {
   app_list_main_view_->Prerender();
 }
@@ -433,8 +446,6 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
 
 void AppListView::InitChildWidgets() {
   DCHECK(search_box_view_);
-
-  app_list_main_view_->InitWidgets();
 
   // Create the search box widget.
   views::Widget::InitParams search_box_widget_params(

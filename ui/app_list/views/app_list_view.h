@@ -104,6 +104,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // WidgetDelegate overrides:
   bool ShouldHandleSystemCommands() const override;
+  bool ShouldDescendIntoChildForEventHandling(
+      gfx::NativeView child,
+      const gfx::Point& location) override;
 
   // Overridden from AppListViewDelegateObserver:
   void OnProfilesChanged() override;

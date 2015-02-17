@@ -224,6 +224,17 @@ void StartPageView::InitInstantContainer() {
   instant_container_->AddChildView(search_box_spacer_view_);
 }
 
+void StartPageView::MaybeOpenCustomLauncherPage() {
+  // Switch to the custom page.
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  if (!contents_view->ShouldShowCustomPageClickzone())
+    return;
+
+  int custom_page_index = contents_view->GetPageIndexForState(
+      AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+  contents_view->SetActivePage(custom_page_index);
+}
+
 void StartPageView::Reset() {
   tiles_container_->Update();
 }
@@ -242,13 +253,8 @@ TileItemView* StartPageView::all_apps_button() const {
 }
 
 void StartPageView::OnShow() {
-  UpdateCustomPageClickzoneVisibility();
   tiles_container_->Update();
   tiles_container_->ClearSelectedIndex();
-}
-
-void StartPageView::OnHide() {
-  UpdateCustomPageClickzoneVisibility();
 }
 
 void StartPageView::Layout() {
@@ -306,24 +312,42 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-gfx::Rect StartPageView::GetSearchBoxBounds() const {
-  return search_box_spacer_view_->bounds();
+bool StartPageView::OnMousePressed(const ui::MouseEvent& event) {
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  if (!contents_view->GetCustomPageCollapsedBounds().Contains(event.location()))
+    return false;
+
+  MaybeOpenCustomLauncherPage();
+  return true;
 }
 
-void StartPageView::UpdateCustomPageClickzoneVisibility() {
-  // This can get called before InitWidgets(), so we cannot guarantee that
-  // custom_page_clickzone_ will not be null.
-  views::Widget* custom_page_clickzone =
-      app_list_main_view_->GetCustomPageClickzone();
-  if (!custom_page_clickzone)
-    return;
-
-  if (app_list_main_view_->contents_view()->ShouldShowCustomPageClickzone()) {
-    custom_page_clickzone->ShowInactive();
-    return;
+bool StartPageView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  if (event.y_offset() > 0) {
+    MaybeOpenCustomLauncherPage();
+    return true;
   }
 
-  custom_page_clickzone->Hide();
+  return false;
+}
+
+void StartPageView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
+      event->details().scroll_y_hint() < 0)
+    MaybeOpenCustomLauncherPage();
+
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  if (event->type() == ui::ET_GESTURE_TAP &&
+      contents_view->GetCustomPageCollapsedBounds().Contains(event->location()))
+    MaybeOpenCustomLauncherPage();
+}
+
+void StartPageView::OnScrollEvent(ui::ScrollEvent* event) {
+  if (event->type() == ui::ET_SCROLL && event->y_offset() > 0)
+    MaybeOpenCustomLauncherPage();
+}
+
+gfx::Rect StartPageView::GetSearchBoxBounds() const {
+  return search_box_spacer_view_->bounds();
 }
 
 TileItemView* StartPageView::GetTileItemView(size_t index) {

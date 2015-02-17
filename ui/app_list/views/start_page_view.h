@@ -36,24 +36,23 @@ class APP_LIST_EXPORT StartPageView : public views::View {
   // Called when the start page view is displayed.
   void OnShow();
 
-  // Called when the start page view is hidden (while the app list is still
-  // open).
-  void OnHide();
-
   // Overridden from views::View:
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+
   // Returns search box bounds to use when the start page is active.
   gfx::Rect GetSearchBoxBounds() const;
-
-  // Updates whether the custom page clickzone is visible.
-  void UpdateCustomPageClickzoneVisibility();
 
  private:
   class StartPageTilesContainer;
 
   void InitInstantContainer();
+  void MaybeOpenCustomLauncherPage();
 
   TileItemView* GetTileItemView(size_t index);
 

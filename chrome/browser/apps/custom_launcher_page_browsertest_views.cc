@@ -20,6 +20,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
@@ -82,6 +83,37 @@ class CustomLauncherPageBrowserTest
     return app_list_view;
   }
 
+  // Set the active page on the app list, according to |state|. Does not wait
+  // for any animation or custom page to complete.
+  void SetActivePageAndVerify(app_list::AppListModel::State state) {
+    app_list::ContentsView* contents_view =
+        GetAppListView()->app_list_main_view()->contents_view();
+    contents_view->SetActivePage(contents_view->GetPageIndexForState(state));
+    EXPECT_TRUE(contents_view->IsStateActive(state));
+  }
+
+  void SetCustomLauncherPageEnabled(bool enabled) {
+    const base::string16 kLauncherPageDisableScript =
+        base::ASCIIToUTF16("disableCustomLauncherPage();");
+    const base::string16 kLauncherPageEnableScript =
+        base::ASCIIToUTF16("enableCustomLauncherPage();");
+
+    app_list::ContentsView* contents_view =
+        GetAppListView()->app_list_main_view()->contents_view();
+    views::WebView* custom_page_view =
+        static_cast<views::WebView*>(contents_view->custom_page_view());
+    content::RenderFrameHost* custom_page_frame =
+        custom_page_view->GetWebContents()->GetMainFrame();
+
+    const char* test_message =
+        enabled ? "launcherPageEnabled" : "launcherPageDisabled";
+
+    ExtensionTestMessageListener listener(test_message, false);
+    custom_page_frame->ExecuteJavaScript(enabled ? kLauncherPageEnableScript
+                                                 : kLauncherPageDisableScript);
+    listener.WaitUntilSatisfied();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomLauncherPageBrowserTest);
 };
@@ -110,6 +142,124 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 
     listener.WaitUntilSatisfied();
   }
+}
+
+// Test that the app list will switch to the custom launcher page by sending a
+// click inside the clickzone, or a mouse scroll event.
+IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
+                       EventsActivateSwitchToCustomPage) {
+  LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
+  // Use an event generator to ensure targeting is correct.
+  app_list::AppListView* app_list_view = GetAppListView();
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+  gfx::NativeWindow window = app_list_view->GetWidget()->GetNativeWindow();
+  ui::test::EventGenerator event_generator(window->GetRootWindow(), window);
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+
+  // Find the clickzone.
+  gfx::Rect bounds = contents_view->GetCustomPageCollapsedBounds();
+  bounds.Intersect(contents_view->bounds());
+  gfx::Point point_in_clickzone = bounds.CenterPoint();
+  views::View::ConvertPointToWidget(contents_view, &point_in_clickzone);
+
+  // First try clicking 10px above the clickzone.
+  gfx::Point point_above_clickzone = point_in_clickzone;
+  point_above_clickzone.set_y(bounds.y() - 10);
+  views::View::ConvertPointToWidget(contents_view, &point_above_clickzone);
+
+  event_generator.MoveMouseRelativeTo(window, point_above_clickzone);
+  event_generator.ClickLeftButton();
+
+  // Should stay on the start page.
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+
+  // Now click in the clickzone.
+  event_generator.MoveMouseRelativeTo(window, point_in_clickzone);
+  // First, try disabling the custom page view. Click should do nothing.
+  SetCustomLauncherPageEnabled(false);
+  event_generator.ClickLeftButton();
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+  // Click again with it enabled. The active state should update immediately.
+  SetCustomLauncherPageEnabled(true);
+  event_generator.ClickLeftButton();
+  EXPECT_TRUE(contents_view->IsStateActive(
+      app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+
+  // Back to the start page. And send a mouse wheel event.
+  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  // Generate wheel events above the clickzone.
+  event_generator.MoveMouseRelativeTo(window, point_above_clickzone);
+  // Scrolling left, right or up should do nothing.
+  event_generator.MoveMouseWheel(-5, 0);
+  event_generator.MoveMouseWheel(5, 0);
+  event_generator.MoveMouseWheel(0, -5);
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+  // Scroll down to open launcher page.
+  event_generator.MoveMouseWheel(0, 5);
+  EXPECT_TRUE(contents_view->IsStateActive(
+      app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+
+  // Constants for gesture/trackpad events.
+  const base::TimeDelta step_delay = base::TimeDelta::FromMilliseconds(300);
+  const int num_steps = 5;
+  const int num_fingers = 2;
+
+#if defined(OS_CHROMEOS)
+  // Gesture events need to be in host coordinates. On Desktop platforms, the
+  // Widget is the host, so nothing needs to be done. On ChromeOS, the points
+  // need to be put into screen coordinates. This works because the root window
+  // assumes it fills the screen.
+  point_in_clickzone = bounds.CenterPoint();
+  point_above_clickzone.SetPoint(point_in_clickzone.x(), bounds.y() - 10);
+  views::View::ConvertPointToScreen(contents_view, &point_above_clickzone);
+  views::View::ConvertPointToScreen(contents_view, &point_in_clickzone);
+#endif
+
+  // Back to the start page. And send a scroll gesture.
+  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  // Going down should do nothing.
+  event_generator.GestureScrollSequence(
+      point_above_clickzone, point_in_clickzone, step_delay, num_steps);
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+  // Now go up - should change state.
+  event_generator.GestureScrollSequence(
+      point_in_clickzone, point_above_clickzone, step_delay, num_steps);
+  EXPECT_TRUE(contents_view->IsStateActive(
+      app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+
+  // Back to the start page. And send a trackpad scroll event.
+  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  // Going down left, right or up should do nothing.
+  event_generator.ScrollSequence(point_in_clickzone, step_delay, -5, 0,
+                                 num_steps, num_fingers);
+  event_generator.ScrollSequence(point_in_clickzone, step_delay, 5, 0,
+                                 num_steps, num_fingers);
+  event_generator.ScrollSequence(point_in_clickzone, step_delay, 0, -5,
+                                 num_steps, num_fingers);
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+  // Scroll up to open launcher page.
+  event_generator.ScrollSequence(point_in_clickzone, step_delay, 0, 5,
+                                 num_steps, num_fingers);
+  EXPECT_TRUE(contents_view->IsStateActive(
+      app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+
+  // Back to the start page. And send a tap gesture.
+  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  // Tapping outside the clickzone should do nothing.
+  event_generator.GestureTapAt(point_above_clickzone);
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+  // Now tap in the clickzone.
+  event_generator.GestureTapAt(point_in_clickzone);
+  EXPECT_TRUE(contents_view->IsStateActive(
+      app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
 }
 
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
@@ -211,11 +361,6 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
-  const base::string16 kLauncherPageDisableScript =
-      base::ASCIIToUTF16("disableCustomLauncherPage();");
-  const base::string16 kLauncherPageEnableScript =
-      base::ASCIIToUTF16("enableCustomLauncherPage();");
-
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::AppListModel* model = app_list_view->app_list_main_view()->model();
@@ -224,35 +369,17 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
 
   views::WebView* custom_page_view =
       static_cast<views::WebView*>(contents_view->custom_page_view());
-
-  content::RenderFrameHost* custom_page_frame =
-      custom_page_view->GetWebContents()->GetMainFrame();
-  views::Widget* custom_page_click_zone =
-      app_list_view->app_list_main_view()->GetCustomPageClickzone();
-
   ASSERT_TRUE(
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
 
-  EXPECT_TRUE(custom_page_click_zone->GetLayer()->visible());
   EXPECT_TRUE(model->custom_launcher_page_enabled());
   EXPECT_TRUE(custom_page_view->visible());
-  {
-    ExtensionTestMessageListener listener("launcherPageDisabled", false);
-    custom_page_frame->ExecuteJavaScript(kLauncherPageDisableScript);
 
-    listener.WaitUntilSatisfied();
-    EXPECT_FALSE(custom_page_click_zone->GetLayer()->visible());
-    EXPECT_FALSE(model->custom_launcher_page_enabled());
-    EXPECT_FALSE(custom_page_view->visible());
-  }
+  SetCustomLauncherPageEnabled(false);
+  EXPECT_FALSE(model->custom_launcher_page_enabled());
+  EXPECT_FALSE(custom_page_view->visible());
 
-  {
-    ExtensionTestMessageListener listener("launcherPageEnabled", false);
-    custom_page_frame->ExecuteJavaScript(kLauncherPageEnableScript);
-
-    listener.WaitUntilSatisfied();
-    EXPECT_TRUE(custom_page_click_zone->GetLayer()->visible());
-    EXPECT_TRUE(model->custom_launcher_page_enabled());
-    EXPECT_TRUE(custom_page_view->visible());
-  }
+  SetCustomLauncherPageEnabled(true);
+  EXPECT_TRUE(model->custom_launcher_page_enabled());
+  EXPECT_TRUE(custom_page_view->visible());
 }
