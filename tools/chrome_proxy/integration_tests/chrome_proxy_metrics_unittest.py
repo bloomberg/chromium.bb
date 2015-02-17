@@ -7,7 +7,7 @@ import unittest
 
 from integration_tests import chrome_proxy_metrics as metrics
 from integration_tests import network_metrics_unittest as network_unittest
-from metrics import test_page_test_results
+from telemetry.unittest_util import test_page_test_results
 
 
 # Timeline events used in tests.

@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from benchmarks import silk_flags
-from metrics import gpu_timeline
 import page_sets
 from telemetry import benchmark
 from telemetry.core.platform import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
+from telemetry.web_perf.metrics import gpu_timeline
 
 TOPLEVEL_GL_CATEGORY = 'gpu_toplevel'
 TOPLEVEL_CATEGORIES = ['disabled-by-default-gpu.device',
