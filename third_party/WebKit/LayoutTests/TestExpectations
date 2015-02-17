@@ -1857,3 +1857,5 @@ crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-rad
 crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
 crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
 crbug.com/459085 [ Mac Win Linux ] virtual/slimmingpaint/fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
+
+crbug.com/459118 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
