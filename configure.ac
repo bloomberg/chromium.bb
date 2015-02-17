@@ -503,10 +503,9 @@ AM_CONDITIONAL(HAVE_LCMS, [test "x$have_lcms" = xyes])
 
 AC_PATH_PROG([wayland_scanner], [wayland-scanner])
 if test x$wayland_scanner = x; then
-	AC_MSG_ERROR([wayland-scanner is needed to compile weston])
+	PKG_CHECK_MODULES(WAYLAND_SCANNER, [wayland-scanner])
+	wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
 fi
-
-PKG_CHECK_MODULES(WAYLAND_SCANNER, wayland-scanner)
 
 AC_CONFIG_FILES([Makefile src/version.h src/weston.pc])
 
