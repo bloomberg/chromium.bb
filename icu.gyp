@@ -134,6 +134,7 @@
               ],
             }],
             [ 'icu_use_data_file_flag==1', {
+              'type': 'none',
               # Remove any assembly data file.
               'sources/': [['exclude', 'icudtl_dat']],
 
