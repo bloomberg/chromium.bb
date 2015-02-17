@@ -28,6 +28,10 @@ const char kHelpSwitch[] = "help";
 const char kHelpSwitchHelp[] =
     "display this message.";
 
+const char kInSwitch[] = "in";
+const char kInSwitchHelp[] =
+    "output only the messages in the specified list.";
+
 const char kInvertSwitch[] = "invert";
 const char kInvertSwitchHelp[] =
     "output messages NOT meeting above criteria.";
@@ -48,6 +52,7 @@ void usage() {
             << "  ipc_message_util"
             << " [--" << kStartSwitch << "=n]"
             << " [--" << kEndSwitch << "=m]"
+            << " [--" << kInSwitch << "=i,j,...]]"
             << " [--" << kRegexpSwitch << "=x]"
             << " [--" << kInvertSwitch << "]"
             << " [--" << kDumpSwitch << "]"
@@ -56,6 +61,7 @@ void usage() {
 
   std::cerr << "    --" << kStartSwitch << "  - " << kStartSwitchHelp << "\n"
             << "    --" << kEndSwitch << "    - " << kEndSwitchHelp << "\n"
+            << "    --" << kInSwitch << "     - " << kInSwitchHelp << "\n"
             << "    --" << kRegexpSwitch << " - " << kRegexpSwitchHelp << "\n"
             << "    --" << kInvertSwitch << " - " << kInvertSwitchHelp << "\n"
             << "    --" << kDumpSwitch << "   - " << kDumpSwitchHelp << "\n"
@@ -85,7 +91,7 @@ int main(int argc, char** argv) {
   size_t start_index = 0;
   if (cmd->HasSwitch(kStartSwitch)) {
     int temp = atoi(cmd->GetSwitchValueASCII(kStartSwitch).c_str());
-    if (temp > 0 )
+    if (temp > 0)
       start_index = static_cast<size_t>(temp);
   }
 
@@ -95,6 +101,9 @@ int main(int argc, char** argv) {
     if (temp > 0)
       end_index = static_cast<size_t>(temp);
   }
+
+  bool has_indices = cmd->HasSwitch(kInSwitch);
+  std::vector<bool> indices;
 
   bool has_regexp = cmd->HasSwitch(kRegexpSwitch);
   RE2 filter_pattern(cmd->GetSwitchValueASCII(kRegexpSwitch));
@@ -125,6 +134,18 @@ int main(int argc, char** argv) {
     message_vector.weak_clear();
   }
 
+  if (has_indices) {
+    indices.resize(input_message_vector.size(), false);
+    std::vector<std::string> index_strings;
+    base::SplitString(cmd->GetSwitchValueASCII(kInSwitch), ',', &index_strings);
+    for (std::vector<std::string>::iterator it = index_strings.begin();
+         it != index_strings.end(); ++it) {
+      int index = atoi(it->c_str());
+      if (index >= 0 && static_cast<size_t>(index) < indices.size())
+        indices[index] = true;
+    }
+  }
+
   ipc_fuzzer::MessageVector output_message_vector;
   std::vector<size_t> remap_vector;
 
@@ -132,6 +153,9 @@ int main(int argc, char** argv) {
     bool valid = (i >= start_index && i < end_index);
     if (valid && has_regexp) {
       valid = MessageMatches(input_message_vector[i], filter_pattern);
+    }
+    if (valid && has_indices) {
+      valid = indices[i];
     }
     if (valid != invert) {
       output_message_vector.push_back(input_message_vector[i]);
