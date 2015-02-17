@@ -6171,6 +6171,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_GPU_RASTERIZATION" desc="Description of the 'Force GPU rasterization' experiment">
         Force-enabled for all layers
       </message>
+      <message name="IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_NAME" desc="Title for the flag to enable threaded GPU rasterization.">
+        Enable threaded GPU rasterization.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable threaded GPU rasterizer.">
+        Use secondary thread for GPU rasterization of web content. Requires GPU rasterization to be enabled.
+      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_NAME" desc="Name for the flag to enable experimental security features.">
         Enable potentially annoying security features.
       </message>

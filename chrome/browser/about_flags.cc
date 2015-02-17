@@ -747,6 +747,15 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kEnableGpuRasterizationChoices)
   },
   {
+    "enable-threaded-gpu-rasterization",
+    IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_NAME,
+    IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(
+        switches::kEnableThreadedGpuRasterization,
+        switches::kDisableThreadedGpuRasterization)
+  },
+  {
     "enable-experimental-web-platform-features",
     IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME,
     IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION,
