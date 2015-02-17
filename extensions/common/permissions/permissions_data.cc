@@ -50,8 +50,7 @@ void PermissionsData::SetPolicyDelegate(PolicyDelegate* delegate) {
 // static
 bool PermissionsData::CanSilentlyIncreasePermissions(
     const Extension* extension) {
-  return extension->location() != Manifest::INTERNAL ||
-      extension->creation_flags() & Extension::WAS_INSTALLED_BY_DEFAULT;
+  return extension->location() != Manifest::INTERNAL;
 }
 
 // static
