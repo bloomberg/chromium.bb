@@ -53,8 +53,8 @@ void NetMetricsLogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   if (response_code == net::URLFetcher::RESPONSE_CODE_INVALID)
     response_code = -1;
-  on_upload_complete_.Run(response_code);
   current_fetch_.reset();
+  on_upload_complete_.Run(response_code);
 }
 
 }  // namespace metrics
