@@ -75,7 +75,7 @@ const int kExperimentalPreferredTileHeight = 100;
 
 // Padding on each side of a tile.
 const int kExperimentalTileLeftRightPadding = 10;
-const int kExperimentalTileBottomPadding = 12;
+const int kExperimentalTileBottomPadding = 6;
 const int kExperimentalTileTopPadding = 6;
 
 // Width in pixels of the area on the sides that triggers a page flip.
@@ -118,8 +118,8 @@ gfx::Insets GetTilePadding() {
     return gfx::Insets();
 
   return gfx::Insets(
-      -kExperimentalTileLeftRightPadding, -kExperimentalTileTopPadding,
-      -kExperimentalTileLeftRightPadding, -kExperimentalTileBottomPadding);
+      -kExperimentalTileTopPadding, -kExperimentalTileLeftRightPadding,
+      -kExperimentalTileBottomPadding, -kExperimentalTileLeftRightPadding);
 }
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
@@ -427,12 +427,9 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
 
 // static
 gfx::Size AppsGridView::GetTotalTileSize() {
-  gfx::Size size = GetTileViewSize();
-  if (switches::IsExperimentalAppListEnabled()) {
-    size.Enlarge(2 * kExperimentalTileLeftRightPadding,
-                 kExperimentalTileBottomPadding);
-  }
-  return size;
+  gfx::Rect rect(GetTileViewSize());
+  rect.Inset(GetTilePadding());
+  return rect.size();
 }
 
 void AppsGridView::ResetForShowApps() {
