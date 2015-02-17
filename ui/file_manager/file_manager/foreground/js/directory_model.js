@@ -122,6 +122,14 @@ DirectoryModel.prototype.getCurrentRootType = function() {
 };
 
 /**
+ * Metadata property names that are expected to be Prefetched.
+ * @return {!Array<string>}
+ */
+DirectoryModel.prototype.getPrefetchPropertyNames = function() {
+  return this.currentFileListContext_.prefetchPropertyNames;
+};
+
+/**
  * @return {boolean} True if the current directory is read only. If there is
  *     no entry set, then returns true.
  */

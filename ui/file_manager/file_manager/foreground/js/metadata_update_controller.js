@@ -6,52 +6,38 @@
  * Controller for list contents update.
  * @param {!ListContainer} listContainer
  * @param {!DirectoryModel} directoryModel
- * @param {!VolumeManagerWrapper} volumeManager
- * @param {!MetadataCache} metadataCache
- * @param {!FileWatcher} fileWatcher
- * @param {!FileOperationManager} fileOperationManager
+ * @param {!MetadataProviderCache} metadataProviderCache
+ * @param {!FileSystemMetadata} fileSystemMetadata
  * @constructor
+ * @struct
  */
 function MetadataUpdateController(listContainer,
                                   directoryModel,
-                                  volumeManager,
-                                  metadataCache,
-                                  fileWatcher,
-                                  fileOperationManager) {
+                                  metadataProviderCache,
+                                  fileSystemMetadata) {
   /**
-   * @type {!DirectoryModel}
+   * @private {!DirectoryModel}
    * @const
-   * @private
    */
   this.directoryModel_ = directoryModel;
 
   /**
-   * @type {!VolumeManagerWrapper}
+   * @private {!FileSystemMetadata}
    * @const
-   * @private
    */
-  this.volumeManager_ = volumeManager;
+  this.fileSystemMetadata_ = fileSystemMetadata;
 
   /**
-   * @type {!MetadataCache}
+   * @private {!ListContainer}
    * @const
-   * @private
-   */
-  this.metadataCache_ = metadataCache;
-
-  /**
-   * @type {!ListContainer}
-   * @const
-   * @private
    */
   this.listContainer_ = listContainer;
 
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
   this.onPreferencesChanged_();
-
-  fileWatcher.addEventListener(
-      'watcher-metadata-changed', this.onWatcherMetadataChanged_.bind(this));
+  metadataProviderCache.addEventListener(
+      'update', this.onCachedMetadataUpdate_.bind(this));
 
   // Update metadata to change 'Today' and 'Yesterday' dates.
   var today = new Date();
@@ -79,30 +65,17 @@ MetadataUpdateController.prototype.refreshCurrentDirectoryMetadata =
   var directoryEntry = this.directoryModel_.getCurrentDirEntry();
   if (!directoryEntry)
     return;
-  // We don't pass callback here. When new metadata arrives, we have an
-  // observer registered to update the UI.
 
   // TODO(dgozman): refresh content metadata only when modificationTime
   // changed.
   var isFakeEntry = util.isFakeEntry(directoryEntry);
-  var getEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
-  if (!isFakeEntry)
-    this.metadataCache_.clearRecursively(directoryEntry, '*');
-  this.metadataCache_.get(getEntries, 'filesystem|external', null);
+  var changedEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
+  this.fileSystemMetadata_.notifyEntriesChanged(changedEntries);
 
-  var visibleItems = this.listContainer_.currentList.items;
-  var visibleEntries = [];
-  for (var i = 0; i < visibleItems.length; i++) {
-    var index = this.listContainer_.currentList.getIndexOfListItem(
-        visibleItems[i]);
-    var entry = this.directoryModel_.getFileList().item(index);
-    // The following check is a workaround for the bug in list: sometimes item
-    // does not have listIndex, and therefore is not found in the list.
-    if (entry)
-      visibleEntries.push(entry);
-  }
-  // Refreshes the metadata.
-  this.metadataCache_.getLatest(visibleEntries, 'thumbnail', null);
+  // We don't pass callback here. When new metadata arrives, we have an
+  // observer registered to update the UI.
+  this.fileSystemMetadata_.get(
+      changedEntries, this.directoryModel_.getPrefetchPropertyNames());
 };
 
 /**
@@ -110,24 +83,24 @@ MetadataUpdateController.prototype.refreshCurrentDirectoryMetadata =
  * @param {Event} event Change event.
  * @private
  */
-MetadataUpdateController.prototype.onWatcherMetadataChanged_ = function(event) {
+MetadataUpdateController.prototype.onCachedMetadataUpdate_ = function(event) {
+  // TODO(hirono): Specify property name instead of metadata type.
   this.listContainer_.currentView.updateListItemsMetadata(
-      event.metadataType, event.entries);
+      'filesystem', event.entries);
+  this.listContainer_.currentView.updateListItemsMetadata(
+      'external', event.entries);
 };
 
 /**
  * @private
  */
 MetadataUpdateController.prototype.dailyUpdateModificationTime_ = function() {
-  var entries = this.directoryModel_.getFileList().slice();
-  this.metadataCache_.get(
-      entries,
-      'filesystem',
-      function() {
-        this.listContainer_.currentView.updateListItemsMetadata(
-            'filesystem', entries);
-      }.bind(this));
-
+  var entries = /** @type {!Array<!Entry>} */(
+      this.directoryModel_.getFileList().slice());
+  this.fileSystemMetadata_.get(entries, ['modificationTime']).then(function() {
+    this.listContainer_.currentView.updateListItemsMetadata(
+        'filesystem', entries);
+  }.bind(this));
   setTimeout(this.dailyUpdateModificationTime_.bind(this),
              MetadataUpdateController.MILLISECONDS_IN_DAY_);
 };
@@ -141,48 +114,4 @@ MetadataUpdateController.prototype.onPreferencesChanged_ = function() {
     this.listContainer_.table.setDateTimeFormat(use12hourClock);
     this.refreshCurrentDirectoryMetadata();
   }.bind(this));
-};
-
-/**
- * Handler of file manager operations. Called when an entry has been
- * changed.
- * This updates directory model to reflect operation result immediately (not
- * waiting for directory update event). Also, preloads thumbnails for the
- * images of new entries.
- * See also fileOperationUtil.EventRouter.
- *
- * @param {Event} event An event for the entry change.
- * @private
- */
-MetadataUpdateController.prototype.onEntriesChanged_ = function(event) {
-  var kind = event.kind;
-  var entries = event.entries;
-  if (kind !== util.EntryChangedKind.CREATED)
-    return;
-
-  var preloadThumbnail = function(entry) {
-    var locationInfo = this.volumeManager_.getLocationInfo(entry);
-    if (!locationInfo)
-      return;
-    this.metadataCache_.getOne(entry, 'thumbnail|external',
-        function(metadata) {
-          var thumbnailLoader = new ThumbnailLoader(
-              entry,
-              ThumbnailLoader.LoaderType.CANVAS,
-              metadata,
-              undefined,  // Media type.
-              [
-                ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
-                ThumbnailLoader.LoadTarget.FILE_ENTRY
-              ],
-              10);  // Very low priority.
-          thumbnailLoader.loadDetachedImage(function(success) {});
-        });
-  }.bind(this);
-
-  for (var i = 0; i < entries.length; i++) {
-    // Preload a thumbnail if the new copied entry an image.
-    if (FileType.isImage(entries[i]))
-      preloadThumbnail(entries[i]);
-  }
 };

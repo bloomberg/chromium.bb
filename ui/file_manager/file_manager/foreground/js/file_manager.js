@@ -896,10 +896,8 @@ FileManager.prototype = /** @struct */ {
     this.metadataUpdateController_ = new MetadataUpdateController(
         this.ui_.listContainer,
         this.directoryModel_,
-        this.volumeManager_,
-        this.metadataCache_,
-        this.fileWatcher_,
-        this.fileOperationManager_);
+        this.metadataProviderCache_,
+        this.fileSystemMetadata_);
 
     // Create task controller.
     this.taskController_ = new TaskController(
