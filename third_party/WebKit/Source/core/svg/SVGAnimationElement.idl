@@ -26,7 +26,9 @@
 
 // http://www.w3.org/TR/SVG2/animate.html#InterfaceSVGAnimationElement
 
-interface SVGAnimationElement : SVGElement {
+[
+    TypeChecking=Unrestricted,
+] interface SVGAnimationElement : SVGElement {
     readonly attribute SVGElement targetElement;
 
     attribute EventHandler onbegin;
@@ -41,7 +43,6 @@ interface SVGAnimationElement : SVGElement {
     void beginElementAt(float offset);
     void endElement();
     void endElementAt(float offset);
-
 };
 
 SVGAnimationElement implements SVGTests;

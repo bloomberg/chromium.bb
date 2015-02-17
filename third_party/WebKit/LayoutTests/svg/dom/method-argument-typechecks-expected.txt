@@ -7,29 +7,33 @@ SVGAnimationElement
 
 beginElementAt(float offset)
 PASS animateElm.beginElementAt(0) did not throw exception.
-FAIL animateElm.beginElementAt(NaN) should throw an exception. Was undefined.
-FAIL animateElm.beginElementAt(Infinity) should throw an exception. Was undefined.
+PASS animateElm.beginElementAt(NaN) threw exception TypeError: Failed to execute 'beginElementAt' on 'SVGAnimationElement': The provided float value is non-finite..
+PASS animateElm.beginElementAt(Infinity) threw exception TypeError: Failed to execute 'beginElementAt' on 'SVGAnimationElement': The provided float value is non-finite..
 
 endElementAt(float offset)
 PASS animateElm.endElementAt(0) did not throw exception.
-FAIL animateElm.endElementAt(NaN) should throw an exception. Was undefined.
-FAIL animateElm.endElementAt(Infinity) should throw an exception. Was undefined.
+PASS animateElm.endElementAt(NaN) threw exception TypeError: Failed to execute 'endElementAt' on 'SVGAnimationElement': The provided float value is non-finite..
+PASS animateElm.endElementAt(Infinity) threw exception TypeError: Failed to execute 'endElementAt' on 'SVGAnimationElement': The provided float value is non-finite..
 
 
 SVGFEDropShadowElement
 
 setStdDeviation(float stdDeviationX, float stdDeviationY)
 PASS dropShadow.setStdDeviation(0, 0) did not throw exception.
-FAIL dropShadow.setStdDeviation(NaN, NaN) should throw an exception. Was undefined.
-FAIL dropShadow.setStdDeviation(Infinity, Infinity) should throw an exception. Was undefined.
+PASS dropShadow.setStdDeviation(NaN, 1) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEDropShadowElement': The provided float value is non-finite..
+PASS dropShadow.setStdDeviation(Infinity, 1) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEDropShadowElement': The provided float value is non-finite..
+PASS dropShadow.setStdDeviation(1, NaN) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEDropShadowElement': The provided float value is non-finite..
+PASS dropShadow.setStdDeviation(1, Infinity) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEDropShadowElement': The provided float value is non-finite..
 
 
 SVGFEGaussianBlurElement
 
 setStdDeviation(float stdDeviationX, float stdDeviationY)
 PASS gaussian.setStdDeviation(0, 0) did not throw exception.
-FAIL gaussian.setStdDeviation(NaN, NaN) should throw an exception. Was undefined.
-FAIL gaussian.setStdDeviation(Infinity, Infinity) should throw an exception. Was undefined.
+PASS gaussian.setStdDeviation(NaN, 1) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEGaussianBlurElement': The provided float value is non-finite..
+PASS gaussian.setStdDeviation(Infinity, 1) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEGaussianBlurElement': The provided float value is non-finite..
+PASS gaussian.setStdDeviation(1, NaN) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEGaussianBlurElement': The provided float value is non-finite..
+PASS gaussian.setStdDeviation(1, Infinity) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEGaussianBlurElement': The provided float value is non-finite..
 PASS successfullyParsed is true
 
 TEST COMPLETE
