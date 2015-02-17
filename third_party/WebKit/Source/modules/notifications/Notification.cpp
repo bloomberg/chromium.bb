@@ -265,7 +265,7 @@ bool Notification::hasPendingActivity() const
     return m_state == NotificationStateShowing || m_asyncRunner.isActive();
 }
 
-void Notification::trace(Visitor* visitor)
+DEFINE_TRACE(Notification)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<Notification>::trace(visitor);
     ActiveDOMObject::trace(visitor);

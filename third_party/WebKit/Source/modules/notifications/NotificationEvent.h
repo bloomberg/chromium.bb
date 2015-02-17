@@ -35,7 +35,7 @@ public:
 
     const AtomicString& interfaceName() const override;
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     NotificationEvent();
