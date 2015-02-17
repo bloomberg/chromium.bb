@@ -818,9 +818,8 @@ void ManagePasswordsForPage(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
-  TabDialogs::FromWebContents(web_contents)
-      ->ShowManagePasswordsBubble(
-          !password_manager::ui::IsAutomaticDisplayState(controller->state()));
+  TabDialogs::FromWebContents(web_contents)->ShowManagePasswordsBubble(
+      !controller->IsAutomaticallyOpeningBubble());
 }
 
 #if defined(OS_WIN)

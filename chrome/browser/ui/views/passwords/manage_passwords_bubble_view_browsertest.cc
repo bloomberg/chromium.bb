@@ -116,7 +116,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CommandControlsBubble) {
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInManagingState) {
   SetupManagingPasswords();
+  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
   ExecuteManagePasswordsCommand();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
@@ -136,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInAutomaticState) {
   // Open with pending password: automagical!
   SetupPendingPassword();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
 
   // Bubble should not be focused by default.
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
@@ -162,9 +165,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInPendingState) {
   // Open once with pending password: automagical!
   SetupPendingPassword();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   ManagePasswordsBubbleView::CloseBubble();
   // This opening should be measured as manual.
   ExecuteManagePasswordsCommand();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
@@ -183,9 +188,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInAutomaticSaveState) {
   SetupAutomaticPassword();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   ManagePasswordsBubbleView::CloseBubble();
   // Re-opening should count as manual.
   ExecuteManagePasswordsCommand();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
 
  scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));

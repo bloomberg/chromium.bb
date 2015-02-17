@@ -44,7 +44,8 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   PrefService* prefs() { return profile_.GetPrefs(); }
 
   void PretendNeedToAskUserToSubmitURL() {
-    model_->set_state(password_manager::ui::ASK_USER_REPORT_URL_STATE);
+    model_->set_state(password_manager::ui::
+                      ASK_USER_REPORT_URL_BUBBLE_SHOWN_BEFORE_TRANSITION_STATE);
     EXPECT_FALSE(prefs()->GetBoolean(
         password_manager::prefs::kAllowToCollectURLBubbleWasShown));
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
@@ -66,10 +67,10 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
   }
 
   void PretendPasswordWaiting() {
-    model_->set_state(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
+    model_->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
     controller()->SetState(
-        password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
+        password_manager::ui::PENDING_PASSWORD_STATE);
   }
 
   void PretendCredentialsWaiting() {
@@ -140,7 +141,7 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NO_DIRECT_INTERACTION);
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE,
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
             model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
@@ -400,20 +401,4 @@ TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {
       kUIDismissalReasonMetric,
       password_manager::metrics_util::NO_DIRECT_INTERACTION,
       1);
-}
-
-TEST_F(ManagePasswordsBubbleModelTest, PasswordPendingUserDecision) {
-  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
-
-  model_->set_state(password_manager::ui::INACTIVE_STATE);
-  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
-  model_->set_state(password_manager::ui::MANAGE_STATE);
-  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
-  model_->set_state(password_manager::ui::BLACKLIST_STATE);
-  EXPECT_FALSE(password_manager::ui::IsPendingState(model_->state()));
-
-  model_->set_state(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
-  EXPECT_TRUE(password_manager::ui::IsPendingState(model_->state()));
-  model_->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
-  EXPECT_TRUE(password_manager::ui::IsPendingState(model_->state()));
 }

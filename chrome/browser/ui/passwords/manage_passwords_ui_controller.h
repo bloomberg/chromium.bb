@@ -108,6 +108,9 @@ class ManagePasswordsUIController
   // Called from the model when the bubble is displayed.
   void OnBubbleShown();
 
+  // Called from the model when the bubble is hidden.
+  void OnBubbleHidden();
+
   password_manager::ui::State state() const { return state_; }
 
   ScopedVector<autofill::PasswordForm>& federated_credentials_forms() {
@@ -127,6 +130,8 @@ class ManagePasswordsUIController
   }
 
   const GURL& origin() const { return origin_; }
+
+  bool IsAutomaticallyOpeningBubble() const { return should_pop_up_bubble_; }
 
  protected:
   explicit ManagePasswordsUIController(
@@ -177,8 +182,7 @@ class ManagePasswordsUIController
  private:
   friend class content::WebContentsUserData<ManagePasswordsUIController>;
 
-  // Shows the password bubble without user interaction. The controller MUST
-  // be in PENDING_PASSWORD_AND_BUBBLE_STATE.
+  // Shows the password bubble without user interaction.
   void ShowBubbleWithoutUserInteraction();
 
   // content::WebContentsObserver:
@@ -202,9 +206,9 @@ class ManagePasswordsUIController
   base::Callback<void(const password_manager::CredentialInfo&)>
       credentials_callback_;
 
-  // Contains true is the bubble's appeared during the last call to
+  // Contains true if the bubble is to be popped up in the next call to
   // UpdateBubbleAndIconVisibility().
-  bool bubble_shown_;
+  bool should_pop_up_bubble_;
 
   // The origin of the form we're currently dealing with; we'll use this to
   // determine which PasswordStore changes we should care about when updating

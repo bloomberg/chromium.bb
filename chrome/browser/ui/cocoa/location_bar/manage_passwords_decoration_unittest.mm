@@ -158,16 +158,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(managerActiveOnPageAndBlacklistedTests));
 
 ManagePasswordsTestCase managerActiveOnPageAndPendingTests[] = {
-    {.state = password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE,
-     .active = true,
-     .visible = true,
-     .image = IDR_SAVE_PASSWORD_ACTIVE,
-     .toolTip = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE},
-    {.state = password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE,
-     .active = false,
-     .visible = true,
-     .image = IDR_SAVE_PASSWORD_INACTIVE,
-     .toolTip = IDS_PASSWORD_MANAGER_TOOLTIP_SAVE},
     {.state = password_manager::ui::PENDING_PASSWORD_STATE,
      .active = true,
      .visible = true,

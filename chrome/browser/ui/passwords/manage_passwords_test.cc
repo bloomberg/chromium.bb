@@ -42,7 +42,6 @@ void ManagePasswordsTest::SetupManagingPasswords() {
   autofill::PasswordFormMap map;
   map[kTestUsername] = test_form();
   GetController()->OnPasswordAutofilled(map);
-  GetController()->UpdateIconAndBubbleState(view());
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
@@ -52,11 +51,6 @@ void ManagePasswordsTest::SetupPendingPassword() {
       new password_manager::PasswordFormManager(
           NULL, &client, driver.AsWeakPtr(), *test_form(), false));
   GetController()->OnPasswordSubmitted(test_form_manager.Pass());
-
-  // Wait for the command execution triggered by the automatic popup to pop up
-  // the bubble.
-  content::RunAllPendingInMessageLoop();
-  GetController()->UpdateIconAndBubbleState(view());
 }
 
 void ManagePasswordsTest::SetupAutomaticPassword() {
@@ -66,11 +60,6 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
       new password_manager::PasswordFormManager(
           NULL, &client, driver.AsWeakPtr(), *test_form(), false));
   GetController()->OnAutomaticPasswordSave(test_form_manager.Pass());
-
-  // Wait for the command execution triggered by the automatic popup to pop up
-  // the bubble.
-  content::RunAllPendingInMessageLoop();
-  GetController()->UpdateIconAndBubbleState(view());
 }
 
 void ManagePasswordsTest::SetupBlackistedPassword() {
@@ -78,7 +67,6 @@ void ManagePasswordsTest::SetupBlackistedPassword() {
   autofill::PasswordFormMap map;
   map[kTestUsername] = test_form();
   GetController()->OnBlacklistBlockedAutofill(map);
-  GetController()->UpdateIconAndBubbleState(view());
 }
 
 void ManagePasswordsTest::SetupChooseCredentials(
@@ -91,7 +79,6 @@ void ManagePasswordsTest::SetupChooseCredentials(
   GetController()->OnChooseCredentials(
       local_credentials.Pass(), federated_credentials.Pass(), origin,
       base::Bind(&ManagePasswordsTest::OnChooseCredential, this));
-  GetController()->UpdateIconAndBubbleState(view());
 }
 
 base::HistogramSamples* ManagePasswordsTest::GetSamples(

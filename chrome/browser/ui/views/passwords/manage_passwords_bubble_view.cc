@@ -960,7 +960,7 @@ void ManagePasswordsBubbleView::Close() {
 void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
-  if (password_manager::ui::IsPendingState(model()->state())) {
+  if (model()->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     if (model()->never_save_passwords())
       AddChildView(new ConfirmNeverView(this));
     else
@@ -971,7 +971,8 @@ void ManagePasswordsBubbleView::Refresh() {
     AddChildView(new BlacklistedView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
-  } else if (password_manager::ui::IsCredentialsState(model()->state())) {
+  } else if (model()->state() ==
+                 password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     AddChildView(new AccountChooserView(this));
   } else {
     AddChildView(new ManageView(this));

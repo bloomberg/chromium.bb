@@ -292,7 +292,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
     model_ = model;
     position_ = position;
     passwordForm_ = passwordForm;
-    state_ = password_manager::ui::IsPendingState(model_->state())
+    state_ = model_->state() == password_manager::ui::PENDING_PASSWORD_STATE
         ? MANAGE_PASSWORD_ITEM_STATE_PENDING
         : MANAGE_PASSWORD_ITEM_STATE_MANAGE;
     [self updateContent];

@@ -50,7 +50,7 @@
 - (void)updateState {
   // Find the next view controller.
   currentController_.reset();
-  if (password_manager::ui::IsPendingState(model_->state())) {
+  if (model_->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     currentController_.reset(
         [[ManagePasswordsBubblePendingViewController alloc]
             initWithModel:model_

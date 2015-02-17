@@ -120,9 +120,9 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 
   origin_ = controller->origin();
   state_ = controller->state();
-  if (password_manager::ui::IsPendingState(state_))
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE)
     pending_password_ = controller->PendingPassword();
-  if (password_manager::ui::IsCredentialsState(state_)) {
+  if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     local_pending_credentials_.swap(controller->local_credentials_forms());
     federated_pending_credentials_.swap(
         controller->federated_credentials_forms());
@@ -130,14 +130,14 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     best_matches_ = controller->best_matches();
   }
 
-  if (password_manager::ui::IsPendingState(state_)) {
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
   } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
-  } else if (password_manager::ui::IsCredentialsState(state_)) {
+  } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
   } else if (password_manager::ui::IsAskSubmitURLState(state_)) {
     title_ =
@@ -164,7 +164,7 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {}
 void ManagePasswordsBubbleModel::OnBubbleShown(
     ManagePasswordsBubble::DisplayReason reason) {
   if (reason == ManagePasswordsBubble::USER_ACTION) {
-    if (password_manager::ui::IsPendingState(state_)) {
+    if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
       display_disposition_ = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
     } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
       display_disposition_ = metrics_util::MANUAL_BLACKLISTED;
@@ -175,7 +175,7 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
     if (state_ == password_manager::ui::CONFIRMATION_STATE) {
       display_disposition_ =
           metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
-    } else if (password_manager::ui::IsCredentialsState(state_)) {
+    } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
       display_disposition_ = metrics_util::AUTOMATIC_CREDENTIAL_REQUEST;
     } else {
       display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
@@ -196,16 +196,21 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
 }
 
 void ManagePasswordsBubbleModel::OnBubbleHidden() {
-  if (password_manager::ui::IsCredentialsState(state_) && web_contents()) {
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      web_contents() ?
+          ManagePasswordsUIController::FromWebContents(web_contents())
+          : nullptr;
+  if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE &&
+      manage_passwords_ui_controller) {
     // It's time to run the pending callback if it wasn't called in
     // OnChooseCredentials().
-    ManagePasswordsUIController* manage_passwords_ui_controller =
-        ManagePasswordsUIController::FromWebContents(web_contents());
     manage_passwords_ui_controller->ChooseCredential(
         autofill::PasswordForm(),
         password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
     state_ = password_manager::ui::INACTIVE_STATE;
   }
+  if (manage_passwords_ui_controller)
+    manage_passwords_ui_controller->OnBubbleHidden();
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
@@ -248,7 +253,7 @@ void ManagePasswordsBubbleModel::OnDoNotCollectURLClicked() {
 void ManagePasswordsBubbleModel::OnNopeClicked() {
   dismissal_reason_ = metrics_util::CLICKED_NOPE;
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
-  if (!password_manager::ui::IsCredentialsState(state_))
+  if (state_ != password_manager::ui::CREDENTIAL_REQUEST_STATE)
     state_ = password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
