@@ -40443,6 +40443,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>TBD</summary>
 </histogram>
 
+<histogram name="V8.CodeCacheRejectReason" enum="V8CodeCacheRejectReason">
+  <owner>yangguo@chromium.org</owner>
+  <summary>
+    Reason code data has been rejected when attempting to deserialize.
+  </summary>
+</histogram>
+
 <histogram name="V8.CodeCacheSizeRatio" units="percent">
   <owner>yangguo@chromium.org</owner>
   <summary>Cache size to source size ratio when caching compiled code.</summary>
@@ -59483,6 +59490,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Locally Managed"/>
   <int value="5" label="Kiosk App"/>
   <int value="6" label="Regular Supervised"/>
+</enum>
+
+<enum name="V8CodeCacheRejectReason" type="int">
+  <int value="1" label="MAGIC_NUMBER_MISMATCH">
+    Reject due to magic number mismatch
+  </int>
+  <int value="2" label="VERSION_MISMATCH">
+    Reject due to version hash mismatch
+  </int>
+  <int value="3" label="SOURCE_MISMATCH">
+    Reject due to source hash mismatch
+  </int>
+  <int value="4" label="CPU_FEATURES_MISMATCH">
+    Reject due to CPU features mismatch
+  </int>
+  <int value="5" label="FLAGS_MISMATCH">Reject due to flags hash mismatch</int>
+  <int value="6" label="CHECKSUM_MISMATCH">Reject due to checksum mismatch</int>
 </enum>
 
 <enum name="ValidationFailures" type="int">
