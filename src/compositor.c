@@ -943,6 +943,22 @@ weston_view_move_to_plane(struct weston_view *view,
 	weston_surface_damage(view->surface);
 }
 
+/** Inflict damage on the plane where the view is visible.
+ *
+ * \param view The view that causes the damage.
+ *
+ * If the view is currently on a plane (including the primary plane),
+ * take the view's boundingbox, subtract all the opaque views that cover it,
+ * and add the remaining region as damage to the plane. This corresponds
+ * to the damage inflicted to the plane if this view disappeared.
+ *
+ * A repaint is scheduled for this view.
+ *
+ * The region of all opaque views covering this view is stored in
+ * weston_view::clip and updated by view_accumulate_damage() during
+ * weston_output_repaint(). Specifically, that region matches the
+ * scenegraph as it was last painted.
+ */
 WL_EXPORT void
 weston_view_damage_below(struct weston_view *view)
 {

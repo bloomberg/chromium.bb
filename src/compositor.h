@@ -761,7 +761,7 @@ struct weston_view {
 	struct weston_plane *plane;
 	struct weston_view *parent_view;
 
-	pixman_region32_t clip;
+	pixman_region32_t clip;          /* See weston_view_damage_below() */
 	float alpha;                     /* part of geometry, see below */
 
 	void *renderer_state;
