@@ -292,7 +292,13 @@ def interface_context(interface):
 
     context.update({
         'attributes': attributes,
-        'has_accessors': any(attribute['is_expose_js_accessors'] and attribute['should_be_exposed_to_script'] for attribute in attributes),
+        'has_accessor_configuration': any(
+            attribute['is_expose_js_accessors'] and
+            not (attribute['is_static'] or
+                 attribute['runtime_enabled_function'] or
+                 attribute['per_context_enabled_function']) and
+            attribute['should_be_exposed_to_script']
+            for attribute in attributes),
         'has_attribute_configuration': any(
              not (attribute['is_expose_js_accessors'] or
                   attribute['is_static'] or

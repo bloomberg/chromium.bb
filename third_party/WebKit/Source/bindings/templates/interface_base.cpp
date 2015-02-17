@@ -227,9 +227,15 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {##############################################################################}
 {% block install_accessors %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
-{% if has_accessors %}
+{% if has_accessor_configuration %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
-    {% for attribute in attributes if attribute.is_expose_js_accessors and attribute.should_be_exposed_to_script %}
+    {% for attribute in attributes
+       if (attribute.is_expose_js_accessors and
+           not (attribute.is_static or
+                attribute.runtime_enabled_function or
+                attribute.per_context_enabled_function or
+                attribute.exposed_test) and
+           attribute.should_be_exposed_to_script) %}
     {{attribute_configuration(attribute)}},
     {% endfor %}
 };
@@ -299,7 +305,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
         {% set accessors_name, accessors_length =
                ('%sAccessors' % v8_class,
                 'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class)
-           if has_accessors else (0, 0) %}
+           if has_accessor_configuration else (0, 0) %}
         {% set methods_name, methods_length =
                ('%sMethods' % v8_class,
                 'WTF_ARRAY_LENGTH(%sMethods)' % v8_class)
