@@ -11,6 +11,8 @@ namespace base {
 TEST(ScopedHistogramTimer, TwoTimersOneScope) {
   SCOPED_UMA_HISTOGRAM_TIMER("TestTimer0");
   SCOPED_UMA_HISTOGRAM_TIMER("TestTimer1");
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("TestLongTimer0");
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("TestLongTimer1");
 }
 
 }  // namespace base

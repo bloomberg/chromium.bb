@@ -1112,7 +1112,7 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
-  SCOPED_UMA_HISTOGRAM_TIMER("Startup.PreMainMessageLoopRunImplTime");
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   // Android updates the metrics service dynamically depending on whether the
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)

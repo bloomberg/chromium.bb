@@ -37130,7 +37130,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.PreMainMessageLoopRunImplLongTime"
+    units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    ChromeBrowserMainParts::PreMainMessageLoopRunImpl.
+  </summary>
+</histogram>
+
 <histogram name="Startup.PreMainMessageLoopRunImplTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of 2/2015.
+  </obsolete>
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
