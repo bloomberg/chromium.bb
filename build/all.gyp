@@ -1191,13 +1191,6 @@
             '../url/url.gyp:url_unittests',
           ],
         },
-        {
-          'target_name': 'webkit_builder_win',
-          'type': 'none',
-          'dependencies': [
-            'blink_tests',
-          ],
-        },
       ],  # targets
       'conditions': [
         ['branding=="Chrome"', {
