@@ -583,11 +583,6 @@ public class ContentViewCore
         return mWebContents;
     }
 
-    /* TODO(aelias): Remove this after downstream callers switch to setTopControlsHeight. */
-    public void setViewportSizeOffset(int offsetXPix, int offsetYPix) {
-        setTopControlsHeight(mTopControlsHeightPix, offsetYPix != 0);
-    }
-
     /**
      *
      * @param topControlsHeightPix       The height of the top controls in pixels.
@@ -653,7 +648,7 @@ public class ContentViewCore
         return mViewAndroid;
     }
 
-    private ImeAdapter createImeAdapter(Context context) {
+    private ImeAdapter createImeAdapter() {
         return new ImeAdapter(mInputMethodManagerWrapper,
                 new ImeAdapter.ImeAdapterDelegate() {
                     @Override
@@ -746,7 +741,7 @@ public class ContentViewCore
         setContainerViewInternals(internalDispatcher);
         mRenderCoordinates.reset();
         initPopupZoomer(mContext);
-        mImeAdapter = createImeAdapter(mContext);
+        mImeAdapter = createImeAdapter();
         attachImeAdapter();
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);

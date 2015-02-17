@@ -34,7 +34,6 @@ class RenderFrameHost;
 class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
-// TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
                             public WebContentsObserver {
  public:
