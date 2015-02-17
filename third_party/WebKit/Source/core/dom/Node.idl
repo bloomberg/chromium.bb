@@ -40,13 +40,13 @@
     [CustomElementCallbacks] attribute DOMString? nodeValue;
 
     readonly attribute unsigned short   nodeType;
-    [PerWorldBindings] readonly attribute Node             parentNode;
-    [PerWorldBindings] readonly attribute NodeList         childNodes;
-    [PerWorldBindings] readonly attribute Node             firstChild;
-    [PerWorldBindings] readonly attribute Node             lastChild;
-    [PerWorldBindings] readonly attribute Node             previousSibling;
-    [PerWorldBindings] readonly attribute Node             nextSibling;
-    [PerWorldBindings] readonly attribute Document         ownerDocument;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             parentNode;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute NodeList         childNodes;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             firstChild;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             lastChild;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             previousSibling;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Node             nextSibling;
+    [PerWorldBindings, ExposeJSAccessors] readonly attribute Document         ownerDocument;
 
     [CustomElementCallbacks, PerWorldBindings, RaisesException, TypeChecking=Interface] Node insertBefore(Node newChild, Node? refChild);
     [CustomElementCallbacks, PerWorldBindings, RaisesException, TypeChecking=Interface] Node replaceChild(Node newChild, Node oldChild);

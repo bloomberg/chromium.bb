@@ -433,6 +433,7 @@ interface DeviceOrientationEvent
     method constructor
     method initDeviceOrientationEvent
 interface Document
+    getter body
     method adoptNode
     method caretRangeFromPoint
     method constructor
@@ -477,6 +478,7 @@ interface Document
     method registerElement
     method webkitCancelFullScreen
     method webkitExitFullscreen
+    setter body
 interface DocumentFragment
     method constructor
     method getElementById
@@ -488,6 +490,8 @@ interface DocumentType
 interface DynamicsCompressorNode
     method constructor
 interface Element
+    getter id
+    getter innerHTML
     method animate
     method blur
     method closest
@@ -527,6 +531,8 @@ interface Element
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
+    setter id
+    setter innerHTML
 interface Error
     attribute message
     attribute name
@@ -1202,6 +1208,13 @@ interface Node
     attribute NOTATION_NODE
     attribute PROCESSING_INSTRUCTION_NODE
     attribute TEXT_NODE
+    getter childNodes
+    getter firstChild
+    getter lastChild
+    getter nextSibling
+    getter ownerDocument
+    getter parentNode
+    getter previousSibling
     method appendChild
     method cloneNode
     method compareDocumentPosition
