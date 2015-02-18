@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/variations/uniformity_field_trials.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/omnibox/omnibox_field_trial.h"
 
@@ -36,7 +35,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(const base::Time& install_time,
   DCHECK(!install_time.is_null());
 
   // Field trials that are shared by all platforms.
-  chrome_variations::SetupUniformityFieldTrials(install_time);
   InstantiateDynamicTrials();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
