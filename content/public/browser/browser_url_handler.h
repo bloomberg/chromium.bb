@@ -43,6 +43,11 @@ class CONTENT_EXPORT BrowserURLHandler {
                                      BrowserContext* browser_context,
                                      bool* reverse_on_redirect) = 0;
 
+  // Set the specified handler as a preliminary fixup phase to be done before
+  // rewriting.  This allows minor cleanup for the URL without having it affect
+  // the virtual URL.
+  virtual void SetFixupHandler(URLHandler handler) = 0;
+
   // Add the specified handler pair to the list of URL handlers.
   //
   // Note that normally, the reverse handler is only used if the modified URL is

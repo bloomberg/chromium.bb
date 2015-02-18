@@ -11,6 +11,10 @@ namespace content {
 class BrowserContext;
 }
 
+// A preliminary URLHandler that performs cleanup on the URL before it is
+// rewritten.  Changes that happen here will not lead to a virtual URL.
+bool FixupBrowserAboutURL(GURL* url, content::BrowserContext* browser_context);
+
 // Returns true if the given URL will be handled by the browser about handler.
 // Nowadays, these go through the webui, so the return is always false.
 // Either way, |url| will be processed by url_fixer::FixupURL, which

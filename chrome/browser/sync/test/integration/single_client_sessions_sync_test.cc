@@ -69,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
   ASSERT_TRUE(CheckInitialState(0));
 
   // We want a URL that doesn't 404 and has a non-empty title.
-  // about:version is simple to render, too.
-  const GURL url("about:version");
+  const GURL url("data:text/html,<html><title>Test</title></html>");
 
   ScopedWindowMap windows;
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, windows.GetMutable()));
@@ -103,8 +102,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
   ASSERT_TRUE(CheckInitialState(0));
 
   // We want a URL that doesn't 404 and has a non-empty title.
-  // about:version is simple to render, too.
-  const GURL url("about:version");
+  const GURL url("data:text/html,<html><title>Test</title></html>");
 
   ScopedWindowMap windows;
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, windows.GetMutable()));

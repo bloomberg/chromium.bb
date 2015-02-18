@@ -56,7 +56,7 @@ sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
 }
 
 // Note: if you modify this, make sure you modify
-// SessionModelAssociator::ShouldSyncTab to ensure the logic matches.
+// browser_sync::sessions_util::ShouldSyncTab to ensure the logic matches.
 bool ShouldSyncSessionTab(const sessions::SessionTab& tab) {
   if (tab.navigations.empty())
     return false;

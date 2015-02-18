@@ -105,6 +105,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -2262,7 +2263,8 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
   // about: handler. Must come before chrome: handler, since it will
   // rewrite about: urls to chrome: URLs and then expect chrome: to
-  // actually handle them.
+  // actually handle them.  Also relies on a preliminary fixup phase.
+  handler->SetFixupHandler(&FixupBrowserAboutURL);
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
 

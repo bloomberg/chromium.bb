@@ -166,11 +166,17 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
       bool is_renderer_initiated,
       const std::string& extra_headers,
       BrowserContext* browser_context) {
+  // Fix up the given URL before letting it be rewritten, so that any minor
+  // cleanup (e.g., removing leading dots) will not lead to a virtual URL.
+  GURL dest_url(url);
+  BrowserURLHandlerImpl::GetInstance()->FixupURLBeforeRewrite(&dest_url,
+                                                              browser_context);
+
   // Allow the browser URL handler to rewrite the URL. This will, for example,
   // remove "view-source:" from the beginning of the URL to get the URL that
   // will actually be loaded. This real URL won't be shown to the user, just
   // used internally.
-  GURL loaded_url(url);
+  GURL loaded_url(dest_url);
   bool reverse_on_redirect = false;
   BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, browser_context, &reverse_on_redirect);
@@ -184,8 +190,8 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
       base::string16(),
       transition,
       is_renderer_initiated);
-  entry->SetVirtualURL(url);
-  entry->set_user_typed_url(url);
+  entry->SetVirtualURL(dest_url);
+  entry->set_user_typed_url(dest_url);
   entry->set_update_virtual_url_with_url(reverse_on_redirect);
   entry->set_extra_headers(extra_headers);
   return entry;

@@ -16,11 +16,21 @@
 #include "chrome/common/url_constants.h"
 #include "components/url_fixer/url_fixer.h"
 
+bool FixupBrowserAboutURL(GURL* url,
+                          content::BrowserContext* browser_context) {
+  // Ensure that any cleanup done by FixupURL happens before the rewriting
+  // phase that determines the virtual URL, by including it in an initial
+  // URLHandler.  This prevents minor changes from producing a virtual URL,
+  // which could lead to a URL spoof.
+  *url = url_fixer::FixupURL(url->possibly_invalid_spec(), std::string());
+  return true;
+}
+
 bool WillHandleBrowserAboutURL(GURL* url,
                                content::BrowserContext* browser_context) {
   // TODO(msw): Eliminate "about:*" constants and literals from code and tests,
   //            then hopefully we can remove this forced fixup.
-  *url = url_fixer::FixupURL(url->possibly_invalid_spec(), std::string());
+  FixupBrowserAboutURL(url, browser_context);
 
   // Check that about: URLs are fixed up to chrome: by url_fixer::FixupURL.
   DCHECK((*url == GURL(url::kAboutBlankURL)) ||

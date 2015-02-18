@@ -88,7 +88,8 @@ BrowserURLHandlerImpl* BrowserURLHandlerImpl::GetInstance() {
   return Singleton<BrowserURLHandlerImpl>::get();
 }
 
-BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
+BrowserURLHandlerImpl::BrowserURLHandlerImpl() :
+    fixup_handler_(null_handler()) {
   AddHandlerPair(&DebugURLHandler, BrowserURLHandlerImpl::null_handler());
 
   GetContentClient()->browser()->BrowserURLHandlerCreated(this);
@@ -98,6 +99,11 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
 }
 
 BrowserURLHandlerImpl::~BrowserURLHandlerImpl() {
+}
+
+void BrowserURLHandlerImpl::SetFixupHandler(URLHandler handler) {
+  DCHECK_EQ(null_handler(), fixup_handler_);
+  fixup_handler_ = handler;
 }
 
 void BrowserURLHandlerImpl::AddHandlerPair(URLHandler handler,
@@ -116,6 +122,13 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
       return;
     }
   }
+}
+
+void BrowserURLHandlerImpl::FixupURLBeforeRewrite(
+    GURL* url,
+    BrowserContext* browser_context) {
+  if (fixup_handler_)
+    fixup_handler_(url, browser_context);
 }
 
 bool BrowserURLHandlerImpl::ReverseURLRewrite(
