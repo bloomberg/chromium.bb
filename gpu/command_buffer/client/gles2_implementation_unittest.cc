@@ -3583,12 +3583,38 @@ TEST_F(GLES2ImplementationTest, IsEnabled) {
   expected.cmd.Init(kCap, result1.id, result1.offset);
 
   EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, uint32_t(kCap)))
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_TRUE)))
       .RetiresOnSaturation();
 
   GLboolean result = gl_->IsEnabled(kCap);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_TRUE(result);
+}
+
+TEST_F(GLES2ImplementationTest, ClientWaitSync) {
+  const GLuint client_sync_id = 36;
+  struct Cmds {
+    cmds::ClientWaitSync cmd;
+  };
+
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(cmds::ClientWaitSync::Result));
+  const GLuint64 kTimeout = 0xABCDEF0123456789;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
+  expected.cmd.Init(client_sync_id, GL_SYNC_FLUSH_COMMANDS_BIT,
+                    v32_0, v32_1, result1.id, result1.offset);
+
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, uint32_t(GL_CONDITION_SATISFIED)))
+      .RetiresOnSaturation();
+
+  GLenum result = gl_->ClientWaitSync(
+      reinterpret_cast<GLsync>(client_sync_id), GL_SYNC_FLUSH_COMMANDS_BIT,
+      kTimeout);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<GLenum>(GL_CONDITION_SATISFIED), result);
 }
 
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {

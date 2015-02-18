@@ -40,6 +40,7 @@
 #define glClearColor GLES2_GET_FUN(ClearColor)
 #define glClearDepthf GLES2_GET_FUN(ClearDepthf)
 #define glClearStencil GLES2_GET_FUN(ClearStencil)
+#define glClientWaitSync GLES2_GET_FUN(ClientWaitSync)
 #define glColorMask GLES2_GET_FUN(ColorMask)
 #define glCompileShader GLES2_GET_FUN(CompileShader)
 #define glCompressedTexImage2D GLES2_GET_FUN(CompressedTexImage2D)

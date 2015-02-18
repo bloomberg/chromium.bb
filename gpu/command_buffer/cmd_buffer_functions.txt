@@ -31,6 +31,7 @@ GL_APICALL void         GL_APIENTRY glClearBufferuiv (GLenumBufferuiv buffer, GL
 GL_APICALL void         GL_APIENTRY glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 GL_APICALL void         GL_APIENTRY glClearDepthf (GLclampf depth);
 GL_APICALL void         GL_APIENTRY glClearStencil (GLint s);
+GL_APICALL GLenum       GL_APIENTRY glClientWaitSync (GLsync sync, GLbitfieldSyncFlushFlags flags, GLuint64 timeout);
 GL_APICALL void         GL_APIENTRY glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
 GL_APICALL void         GL_APIENTRY glCompileShader (GLidShader shader);
 GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenumTextureTarget target, GLint level, GLenumCompressedTextureFormat internalformat, GLsizei width, GLsizei height, GLintTextureBorder border, GLsizei imageSize, const void* data);

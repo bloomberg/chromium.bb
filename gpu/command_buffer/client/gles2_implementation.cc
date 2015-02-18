@@ -4930,6 +4930,28 @@ void GLES2Implementation::UniformBlockBinding(GLuint program,
   CheckGLError();
 }
 
+GLenum GLES2Implementation::ClientWaitSync(
+    GLsync sync, GLbitfield flags, GLuint64 timeout) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glClientWaitSync(" << sync
+                 << ", " << flags << ", " << timeout << ")");
+  typedef cmds::ClientWaitSync::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    SetGLError(GL_OUT_OF_MEMORY, "ClientWaitSync", "");
+    return GL_WAIT_FAILED;
+  }
+  *result = GL_WAIT_FAILED;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(timeout, &v32_0, &v32_1);
+  helper_->ClientWaitSync(
+      ToGLuint(sync), flags, v32_0, v32_1,
+      GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  GPU_CLIENT_LOG("returned " << *result);
+  CheckGLError();
+  return *result;
+}
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

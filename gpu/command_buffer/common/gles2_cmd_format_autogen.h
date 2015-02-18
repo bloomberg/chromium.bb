@@ -11,6 +11,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 
+#define GL_SYNC_FLUSH_COMMANDS_BIT 0x00000001
 #define GL_SYNC_GPU_COMMANDS_COMPLETE 0x9117
 
 struct ActiveTexture {
@@ -1168,6 +1169,73 @@ static_assert(offsetof(ClearStencil, header) == 0,
               "offset of ClearStencil header should be 0");
 static_assert(offsetof(ClearStencil, s) == 4,
               "offset of ClearStencil s should be 4");
+
+struct ClientWaitSync {
+  typedef ClientWaitSync ValueType;
+  static const CommandId kCmdId = kClientWaitSync;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef GLenum Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sync,
+            GLbitfield _flags,
+            GLuint _timeout_0,
+            GLuint _timeout_1,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    sync = _sync;
+    flags = _flags;
+    timeout_0 = _timeout_0;
+    timeout_1 = _timeout_1;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sync,
+            GLbitfield _flags,
+            GLuint _timeout_0,
+            GLuint _timeout_1,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_sync, _flags, _timeout_0, _timeout_1,
+                                       _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sync;
+  uint32_t flags;
+  uint32_t timeout_0;
+  uint32_t timeout_1;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+static_assert(sizeof(ClientWaitSync) == 28,
+              "size of ClientWaitSync should be 28");
+static_assert(offsetof(ClientWaitSync, header) == 0,
+              "offset of ClientWaitSync header should be 0");
+static_assert(offsetof(ClientWaitSync, sync) == 4,
+              "offset of ClientWaitSync sync should be 4");
+static_assert(offsetof(ClientWaitSync, flags) == 8,
+              "offset of ClientWaitSync flags should be 8");
+static_assert(offsetof(ClientWaitSync, timeout_0) == 12,
+              "offset of ClientWaitSync timeout_0 should be 12");
+static_assert(offsetof(ClientWaitSync, timeout_1) == 16,
+              "offset of ClientWaitSync timeout_1 should be 16");
+static_assert(offsetof(ClientWaitSync, result_shm_id) == 20,
+              "offset of ClientWaitSync result_shm_id should be 20");
+static_assert(offsetof(ClientWaitSync, result_shm_offset) == 24,
+              "offset of ClientWaitSync result_shm_offset should be 24");
 
 struct ColorMask {
   typedef ColorMask ValueType;

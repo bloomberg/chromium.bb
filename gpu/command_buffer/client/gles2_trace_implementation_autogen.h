@@ -69,6 +69,7 @@ void ClearColor(GLclampf red,
                 GLclampf alpha) override;
 void ClearDepthf(GLclampf depth) override;
 void ClearStencil(GLint s) override;
+GLenum ClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout) override;
 void ColorMask(GLboolean red,
                GLboolean green,
                GLboolean blue,

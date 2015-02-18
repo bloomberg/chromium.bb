@@ -394,6 +394,24 @@ TEST_F(GLES2FormatTest, ClearStencil) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, ClientWaitSync) {
+  cmds::ClientWaitSync& cmd = *GetBufferAs<cmds::ClientWaitSync>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLbitfield>(12),
+              static_cast<GLuint>(13), static_cast<GLuint>(14),
+              static_cast<uint32_t>(15), static_cast<uint32_t>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ClientWaitSync::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.sync);
+  EXPECT_EQ(static_cast<GLbitfield>(12), cmd.flags);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.timeout_0);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.timeout_1);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.result_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, ColorMask) {
   cmds::ColorMask& cmd = *GetBufferAs<cmds::ColorMask>();
   void* next_cmd =

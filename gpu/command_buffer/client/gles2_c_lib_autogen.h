@@ -119,6 +119,9 @@ void GLES2ClearDepthf(GLclampf depth) {
 void GLES2ClearStencil(GLint s) {
   gles2::GetGLContext()->ClearStencil(s);
 }
+GLenum GLES2ClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout) {
+  return gles2::GetGLContext()->ClientWaitSync(sync, flags, timeout);
+}
 void GLES2ColorMask(GLboolean red,
                     GLboolean green,
                     GLboolean blue,
@@ -1419,6 +1422,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glClearStencil",
      reinterpret_cast<GLES2FunctionPointer>(glClearStencil),
+    },
+    {
+     "glClientWaitSync",
+     reinterpret_cast<GLES2FunctionPointer>(glClientWaitSync),
     },
     {
      "glColorMask",

@@ -265,6 +265,97 @@ TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
 }
 
+TEST_P(GLES2DecoderTest, ClientWaitSyncValid) {
+  typedef cmds::ClientWaitSync::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::ClientWaitSync cmd;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+           shared_memory_id_, shared_memory_offset_);
+  EXPECT_CALL(*gl_,
+              ClientWaitSync(reinterpret_cast<GLsync>(kServiceSyncId),
+                             GL_SYNC_FLUSH_COMMANDS_BIT, 0))
+      .WillOnce(Return(GL_CONDITION_SATISFIED))
+      .RetiresOnSaturation();
+  *result = GL_WAIT_FAILED;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(static_cast<GLenum>(GL_CONDITION_SATISFIED), *result);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest, ClientWaitSyncNonZeroTimeoutValid) {
+  typedef cmds::ClientWaitSync::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::ClientWaitSync cmd;
+  const GLuint64 kTimeout = 0xABCDEF0123456789;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+           shared_memory_id_, shared_memory_offset_);
+  EXPECT_CALL(*gl_,
+              ClientWaitSync(reinterpret_cast<GLsync>(kServiceSyncId),
+                             GL_SYNC_FLUSH_COMMANDS_BIT, kTimeout))
+      .WillOnce(Return(GL_CONDITION_SATISFIED))
+      .RetiresOnSaturation();
+  *result = GL_WAIT_FAILED;
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(static_cast<GLenum>(GL_CONDITION_SATISFIED), *result);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest, ClientWaitSyncInvalidSyncFails) {
+  typedef cmds::ClientWaitSync::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::ClientWaitSync cmd;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmd.Init(kInvalidClientId, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+           shared_memory_id_, shared_memory_offset_);
+  *result = GL_WAIT_FAILED;
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(static_cast<GLenum>(GL_WAIT_FAILED), *result);
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, ClientWaitSyncResultNotInitFails) {
+  typedef cmds::ClientWaitSync::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::ClientWaitSync cmd;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+           shared_memory_id_, shared_memory_offset_);
+  *result = 1;  // Any value other than GL_WAIT_FAILED
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest, ClientWaitSyncBadSharedMemoryFails) {
+  typedef cmds::ClientWaitSync::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  cmds::ClientWaitSync cmd;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(0, &v32_0, &v32_1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  *result = GL_WAIT_FAILED;
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+           kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  *result = GL_WAIT_FAILED;
+  cmd.Init(client_sync_id_, GL_SYNC_FLUSH_COMMANDS_BIT, v32_0, v32_1,
+           shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   InitState init;
   InitDecoder(init);

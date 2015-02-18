@@ -70,6 +70,9 @@ virtual void ClearColor(GLclampf red,
                         GLclampf alpha) = 0;
 virtual void ClearDepthf(GLclampf depth) = 0;
 virtual void ClearStencil(GLint s) = 0;
+virtual GLenum ClientWaitSync(GLsync sync,
+                              GLbitfield flags,
+                              GLuint64 timeout) = 0;
 virtual void ColorMask(GLboolean red,
                        GLboolean green,
                        GLboolean blue,

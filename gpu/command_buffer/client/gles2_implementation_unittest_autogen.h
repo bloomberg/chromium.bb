@@ -287,6 +287,7 @@ TEST_F(GLES2ImplementationTest, ClearStencil) {
   gl_->ClearStencil(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+// TODO(zmo): Implement unit test for ClientWaitSync
 
 TEST_F(GLES2ImplementationTest, ColorMask) {
   struct Cmds {
