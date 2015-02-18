@@ -2287,7 +2287,7 @@ Even if you have downloaded files from this website before, the website might ha
           Permissions
         </message>
         <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="Text for the button that removes (uninstalls) the app or extension.">
-          Remove
+          Remove...
         </message>
         <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="Text for the button that displays the licenses for the app or extension.">
           Licenses
@@ -2299,7 +2299,7 @@ Even if you have downloaded files from this website before, the website might ha
           Version:
         </message>
         <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="Text for the button that opens the dialog to create shortcuts for the app.">
-          Create shortcuts
+          Create shortcuts...
         </message>
       </if>
       <if expr="use_titlecase">
@@ -2316,7 +2316,7 @@ Even if you have downloaded files from this website before, the website might ha
           Permissions
         </message>
         <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="In Title Case: Text for the button that removes (uninstalls) the app or extension.">
-          Remove
+          Remove...
         </message>
         <message name="IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT" desc="In Title Case: Text for the button that displays the licenses for the app or extension.">
           Licenses
@@ -2328,7 +2328,7 @@ Even if you have downloaded files from this website before, the website might ha
           Version:
         </message>
         <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app.">
-          Create Shortcuts
+          Create Shortcuts...
         </message>
       </if>
       <message name="IDS_APPLICATION_INFO_SIZE_LOADING_LABEL" desc="Text displayed instead of the app or extension's size on disk in the details section of the dialog while the size is being calculated.">
