@@ -124,6 +124,11 @@
 - (void)enterAppKitFullscreen;
 - (void)exitAppKitFullscreen;
 
+// Returns where the fullscreen button should be positioned in the window.
+// Returns NSZeroRect if there is no fullscreen button (if currently in
+// fullscreen, or if running 10.6 or 10.10+).
+- (NSRect)fullscreenButtonFrame;
+
 // Updates |layout| with the full set of parameters required to statelessly
 // determine the layout of the views managed by this controller.
 - (void)updateLayoutParameters:(BrowserWindowLayout*)layout;

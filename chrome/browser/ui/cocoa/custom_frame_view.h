@@ -54,3 +54,15 @@
 - (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
 
 @end
+
+
+@interface NSView (CustomFrameView)
+
+// Returns where the fullscreen button's origin should be positioned in window
+// coordinates.
+// We swizzle NSThemeFrame's implementation to center it vertically in the
+// tabstrip (if there is a tabstrip), and to shift it to the left of the
+// old-style avatar icon if necessary.
+- (NSPoint)_fullScreenButtonOrigin;
+
+@end

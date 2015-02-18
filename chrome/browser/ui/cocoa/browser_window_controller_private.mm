@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser_window_enter_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
+#import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -832,6 +833,28 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
+- (NSRect)fullscreenButtonFrame {
+  // NSWindowFullScreenButton is 10.7+ and results in log spam on 10.6 if used.
+  if (base::mac::IsOSSnowLeopard())
+    return NSZeroRect;
+
+  NSButton* fullscreenButton =
+      [[self window] standardWindowButton:NSWindowFullScreenButton];
+  if (!fullscreenButton)
+    return NSZeroRect;
+
+  NSRect buttonFrame = [fullscreenButton frame];
+
+  // When called from -windowWillExitFullScreen:, the button's frame may not
+  // be updated yet to match the new window size.
+  // We need to return where the button should be positioned.
+  NSView* rootView = [[[self window] contentView] superview];
+  if ([rootView respondsToSelector:@selector(_fullScreenButtonOrigin)])
+    buttonFrame.origin = [rootView _fullScreenButtonOrigin];
+
+  return buttonFrame;
+}
+
 - (void)updateLayoutParameters:(BrowserWindowLayout*)layout {
   [layout setContentViewSize:[[[self window] contentView] bounds].size];
   [layout setWindowSize:[[self window] frame].size];
@@ -845,11 +868,8 @@ willPositionSheet:(NSWindow*)sheet
       [presentationModeController_ toolbarFraction]];
 
   [layout setHasTabStrip:[self hasTabStrip]];
-  // NSWindowFullScreenButton is 10.7+ and results in log spam on 10.6 if used.
-  NSButton* fullScreenButton = base::mac::IsOSSnowLeopard() ?
-      nil : [[self window] standardWindowButton:NSWindowFullScreenButton];
-  [layout setFullscreenButtonFrame:fullScreenButton ? [fullScreenButton frame]
-                                                    : NSZeroRect];
+  [layout setFullscreenButtonFrame:[self fullscreenButtonFrame]];
+
   if ([self shouldShowAvatar]) {
     NSView* avatar = [avatarButtonController_ view];
     [layout setShouldShowAvatar:YES];
