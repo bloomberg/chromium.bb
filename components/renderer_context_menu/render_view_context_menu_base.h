@@ -163,6 +163,7 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   content::ContextMenuParams params_;
   content::WebContents* source_web_contents_;
+  content::WebContents* embedded_web_contents_;
   content::BrowserContext* browser_context_;
 
   ui::SimpleMenuModel menu_model_;

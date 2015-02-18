@@ -762,7 +762,8 @@ void RenderViewContextMenu::AppendMediaItems() {
 }
 
 void RenderViewContextMenu::AppendPluginItems() {
-  if (params_.page_url == params_.src_url) {
+  if (params_.page_url == params_.src_url ||
+      extensions::GuestViewBase::IsGuest(source_web_contents_)) {
     // Full page plugin, so show page menu items.
     if (params_.link_url.is_empty() && params_.selection_text.empty())
       AppendPageItems();
@@ -1011,25 +1012,25 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       IncognitoModePrefs::GetAvailability(prefs);
   switch (id) {
     case IDC_BACK:
-      return source_web_contents_->GetController().CanGoBack();
+      return embedded_web_contents_->GetController().CanGoBack();
 
     case IDC_FORWARD:
-      return source_web_contents_->GetController().CanGoForward();
+      return embedded_web_contents_->GetController().CanGoForward();
 
     case IDC_RELOAD: {
       CoreTabHelper* core_tab_helper =
-          CoreTabHelper::FromWebContents(source_web_contents_);
+          CoreTabHelper::FromWebContents(embedded_web_contents_);
       if (!core_tab_helper)
         return false;
 
       CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
       return !core_delegate ||
-             core_delegate->CanReloadContents(source_web_contents_);
+             core_delegate->CanReloadContents(embedded_web_contents_);
     }
 
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-      return source_web_contents_->GetController().CanViewSource();
+      return embedded_web_contents_->GetController().CanViewSource();
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
     case IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE:
@@ -1038,16 +1039,16 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsDevCommandEnabled(id);
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
-      if (source_web_contents_->GetController().GetVisibleEntry() == NULL)
+      if (embedded_web_contents_->GetController().GetVisibleEntry() == NULL)
         return false;
       // Disabled if no browser is associated (e.g. desktop notifications).
-      if (chrome::FindBrowserWithWebContents(source_web_contents_) == NULL)
+      if (chrome::FindBrowserWithWebContents(embedded_web_contents_) == NULL)
         return false;
       return true;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       ChromeTranslateClient* chrome_translate_client =
-          ChromeTranslateClient::FromWebContents(source_web_contents_);
+          ChromeTranslateClient::FromWebContents(embedded_web_contents_);
       if (!chrome_translate_client)
         return false;
       std::string original_lang =
@@ -1062,13 +1063,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return ((params_.edit_flags & WebContextMenuData::CanTranslate) != 0) &&
              !original_lang.empty() &&  // Did we receive the page language yet?
              !chrome_translate_client->GetLanguageState().IsPageTranslated() &&
-             !source_web_contents_->GetInterstitialPage() &&
+             !embedded_web_contents_->GetInterstitialPage() &&
              // There are some application locales which can't be used as a
              // target language for translation.
              translate::TranslateDownloadManager::IsSupportedLanguage(
                  target_lang) &&
              // Disable on the Instant Extended NTP.
-             !chrome::IsInstantNTP(source_web_contents_);
+             !chrome::IsInstantNTP(embedded_web_contents_);
     }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
@@ -1163,13 +1164,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_SAVE_PAGE: {
       CoreTabHelper* core_tab_helper =
-          CoreTabHelper::FromWebContents(source_web_contents_);
+          CoreTabHelper::FromWebContents(embedded_web_contents_);
       if (!core_tab_helper)
         return false;
 
       CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
       if (core_delegate &&
-          !core_delegate->CanSaveContents(source_web_contents_))
+          !core_delegate->CanSaveContents(embedded_web_contents_))
         return false;
 
       PrefService* local_state = g_browser_process->local_state();
@@ -1181,7 +1182,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // We save the last committed entry (which the user is looking at), as
       // opposed to any pending URL that hasn't committed yet.
       NavigationEntry* entry =
-          source_web_contents_->GetController().GetLastCommittedEntry();
+          embedded_web_contents_->GetController().GetLastCommittedEntry();
       return content::IsSavableURL(entry ? entry->GetURL() : GURL());
     }
 
@@ -1467,19 +1468,19 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_BACK:
-      source_web_contents_->GetController().GoBack();
+      embedded_web_contents_->GetController().GoBack();
       break;
 
     case IDC_FORWARD:
-      source_web_contents_->GetController().GoForward();
+      embedded_web_contents_->GetController().GoForward();
       break;
 
     case IDC_SAVE_PAGE:
-      source_web_contents_->OnSavePage();
+      embedded_web_contents_->OnSavePage();
       break;
 
     case IDC_RELOAD:
-      source_web_contents_->GetController().Reload(true);
+      embedded_web_contents_->GetController().Reload(true);
       break;
 
     case IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP: {
@@ -1522,7 +1523,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_VIEW_SOURCE:
-      source_web_contents_->ViewSource();
+      embedded_web_contents_->ViewSource();
       break;
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
@@ -1540,15 +1541,16 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
-      NavigationController* controller = &source_web_contents_->GetController();
+      NavigationController* controller =
+          &embedded_web_contents_->GetController();
       // Important to use GetVisibleEntry to match what's showing in the
       // omnibox.  This may return null.
       NavigationEntry* nav_entry = controller->GetVisibleEntry();
       if (!nav_entry)
         return;
       Browser* browser =
-          chrome::FindBrowserWithWebContents(source_web_contents_);
-      chrome::ShowWebsiteSettings(browser, source_web_contents_,
+          chrome::FindBrowserWithWebContents(embedded_web_contents_);
+      chrome::ShowWebsiteSettings(browser, embedded_web_contents_,
                                   nav_entry->GetURL(), nav_entry->GetSSL());
       break;
     }
@@ -1557,7 +1559,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // A translation might have been triggered by the time the menu got
       // selected, do nothing in that case.
       ChromeTranslateClient* chrome_translate_client =
-          ChromeTranslateClient::FromWebContents(source_web_contents_);
+          ChromeTranslateClient::FromWebContents(embedded_web_contents_);
       if (!chrome_translate_client ||
           chrome_translate_client->GetLanguageState().IsPageTranslated() ||
           chrome_translate_client->GetLanguageState().translation_pending()) {
