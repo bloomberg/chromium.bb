@@ -94,7 +94,7 @@ public:
     // URLRegistrable to support PublicURLs.
     virtual URLRegistry& registry() const override final;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);

@@ -122,7 +122,7 @@ public:
         controller->finishReader(reader, nextStep);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_pendingReaders);
@@ -468,7 +468,7 @@ void FileReader::fireEvent(const AtomicString& type)
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
-void FileReader::trace(Visitor* visitor)
+DEFINE_TRACE(FileReader)
 {
     visitor->trace(m_error);
     RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>::trace(visitor);

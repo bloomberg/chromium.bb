@@ -52,7 +52,7 @@ public:
     void append(File* file) { m_files.append(file); }
     Vector<String> pathsForUserVisibleFiles() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     FileList();

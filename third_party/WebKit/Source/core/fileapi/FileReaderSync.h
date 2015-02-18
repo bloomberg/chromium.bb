@@ -61,7 +61,7 @@ public:
     String readAsText(ExecutionContext*, Blob*, const String& encoding, ExceptionState&);
     String readAsDataURL(ExecutionContext*, Blob*, ExceptionState&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     FileReaderSync();

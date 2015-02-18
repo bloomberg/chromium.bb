@@ -55,7 +55,7 @@ Vector<String> FileList::pathsForUserVisibleFiles() const
     return paths;
 }
 
-void FileList::trace(Visitor* visitor)
+DEFINE_TRACE(FileList)
 {
     visitor->trace(m_files);
 }
