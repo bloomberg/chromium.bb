@@ -72,6 +72,9 @@ class MockAppCacheStorage : public AppCacheStorage {
                                                int64 response_id) override;
   AppCacheResponseWriter* CreateResponseWriter(const GURL& manifest_url,
                                                int64 group_id) override;
+  AppCacheResponseMetadataWriter* CreateResponseMetadataWriter(
+      int64 group_id,
+      int64 response_id) override;
   void DoomResponses(const GURL& manifest_url,
                      const std::vector<int64>& response_ids) override;
   void DeleteResponses(const GURL& manifest_url,

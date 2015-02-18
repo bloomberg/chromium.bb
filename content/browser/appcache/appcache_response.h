@@ -106,12 +106,14 @@ class CONTENT_EXPORT AppCacheResponseIO {
                      AppCacheDiskCacheInterface* disk_cache);
 
   virtual void OnIOComplete(int result) = 0;
+  virtual void OnOpenEntryComplete() {}
 
   bool IsIOPending() { return !callback_.is_null(); }
   void ScheduleIOCompletionCallback(int result);
   void InvokeUserCompletionCallback(int result);
   void ReadRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
   void WriteRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
+  void OpenEntryIfNeeded();
 
   const int64 response_id_;
   const int64 group_id_;
@@ -121,10 +123,12 @@ class CONTENT_EXPORT AppCacheResponseIO {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_len_;
   net::CompletionCallback callback_;
+  net::CompletionCallback open_callback_;
   base::WeakPtrFactory<AppCacheResponseIO> weak_factory_;
 
  private:
   void OnRawIOComplete(int result);
+  void OpenEntryCallback(AppCacheDiskCacheInterface::Entry** entry, int rv);
 };
 
 // Reads existing response data from storage. If the object is deleted
@@ -178,15 +182,14 @@ class CONTENT_EXPORT AppCacheResponseReader
                          AppCacheDiskCacheInterface* disk_cache);
 
   void OnIOComplete(int result) override;
+  void OnOpenEntryComplete() override;
   void ContinueReadInfo();
   void ContinueReadData();
-  void OpenEntryIfNeededAndContinue();
-  void OnOpenEntryComplete(AppCacheDiskCacheInterface::Entry** entry, int rv);
 
   int range_offset_;
   int range_length_;
   int read_position_;
-  net::CompletionCallback open_callback_;
+  int reading_metadata_size_;
   base::WeakPtrFactory<AppCacheResponseReader> weak_factory_;
 };
 
@@ -255,6 +258,47 @@ class CONTENT_EXPORT AppCacheResponseWriter
   CreationPhase creation_phase_;
   net::CompletionCallback create_callback_;
   base::WeakPtrFactory<AppCacheResponseWriter> weak_factory_;
+};
+
+// Writes metadata of the existing response to storage. If the object is deleted
+// and there is a write in progress, the implementation will return
+// immediately but will take care of any side effect of cancelling the
+// operation. In other words, instances are safe to delete at will.
+class CONTENT_EXPORT AppCacheResponseMetadataWriter
+    : public AppCacheResponseIO {
+ public:
+  ~AppCacheResponseMetadataWriter() override;
+
+  // Writes metadata to storage. Always returns the result of the write
+  // asynchronously through the 'callback'. Returns the number of bytes written
+  // or a net:: error code. Guaranteed to not perform partial writes.
+  // The writer acquires a reference to the provided 'buf' until completion at
+  // which time the callback is invoked with either a negative error code or
+  // the number of bytes written. The 'callback' is a required parameter.
+  // The contents of 'buf' are not modified.
+  // Should only be called where there is no WriteMetadata operation in
+  // progress.
+  void WriteMetadata(net::IOBuffer* buf,
+                     int buf_len,
+                     const net::CompletionCallback& callback);
+
+  // Returns true if there is a write pending.
+  bool IsWritePending() { return IsIOPending(); }
+
+ protected:
+  friend class AppCacheStorageImpl;
+  friend class content::MockAppCacheStorage;
+  // Should only be constructed by the storage class and derivatives.
+  AppCacheResponseMetadataWriter(int64 response_id,
+                                 int64 group_id,
+                                 AppCacheDiskCacheInterface* disk_cache);
+
+ private:
+  void OnIOComplete(int result) override;
+  void OnOpenEntryComplete() override;
+
+  int write_amount_;
+  base::WeakPtrFactory<AppCacheResponseMetadataWriter> weak_factory_;
 };
 
 }  // namespace content

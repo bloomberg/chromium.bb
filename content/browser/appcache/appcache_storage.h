@@ -26,6 +26,7 @@ class AppCache;
 class AppCacheEntry;
 class AppCacheGroup;
 class AppCacheQuotaClientTest;
+class AppCacheResponseMetadataWriter;
 class AppCacheResponseReader;
 class AppCacheResponseTest;
 class AppCacheResponseWriter;
@@ -168,6 +169,11 @@ class CONTENT_EXPORT AppCacheStorage {
   // establishes a new response id.
   virtual AppCacheResponseWriter* CreateResponseWriter(
       const GURL& manifest_url, int64 group_id) = 0;
+
+  // Creates a metadata writer to write metadata of response to storage.
+  virtual AppCacheResponseMetadataWriter* CreateResponseMetadataWriter(
+      int64 group_id,
+      int64 response_id) = 0;
 
   // Schedules the lazy deletion of responses and saves the ids
   // persistently such that the responses will be deleted upon restart

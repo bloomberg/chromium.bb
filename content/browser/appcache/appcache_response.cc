@@ -22,10 +22,7 @@ namespace content {
 namespace {
 
 // Disk cache entry data indices.
-enum {
-  kResponseInfoIndex,
-  kResponseContentIndex
-};
+enum { kResponseInfoIndex, kResponseContentIndex, kResponseMetadataIndex };
 
 // An IOBuffer that wraps a pickle's data. Ownership of the
 // pickle is transfered to the WrappedPickleIOBuffer object.
@@ -139,15 +136,51 @@ void AppCacheResponseIO::OnRawIOComplete(int result) {
   OnIOComplete(result);
 }
 
+void AppCacheResponseIO::OpenEntryIfNeeded() {
+  int rv;
+  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
+  if (entry_) {
+    rv = net::OK;
+  } else if (!disk_cache_) {
+    rv = net::ERR_FAILED;
+  } else {
+    entry_ptr = new AppCacheDiskCacheInterface::Entry*;
+    open_callback_ =
+        base::Bind(&AppCacheResponseIO::OpenEntryCallback,
+                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
+    rv = disk_cache_->OpenEntry(response_id_, entry_ptr, open_callback_);
+  }
+
+  if (rv != net::ERR_IO_PENDING)
+    OpenEntryCallback(entry_ptr, rv);
+}
+
+void AppCacheResponseIO::OpenEntryCallback(
+    AppCacheDiskCacheInterface::Entry** entry, int rv) {
+  DCHECK(info_buffer_.get() || buffer_.get());
+
+  if (!open_callback_.is_null()) {
+    if (rv == net::OK) {
+      DCHECK(entry);
+      entry_ = *entry;
+    }
+    open_callback_.Reset();
+  }
+  OnOpenEntryComplete();
+}
+
 
 // AppCacheResponseReader ----------------------------------------------
 
 AppCacheResponseReader::AppCacheResponseReader(
-    int64 response_id, int64 group_id, AppCacheDiskCacheInterface* disk_cache)
+    int64 response_id,
+    int64 group_id,
+    AppCacheDiskCacheInterface* disk_cache)
     : AppCacheResponseIO(response_id, group_id, disk_cache),
       range_offset_(0),
       range_length_(kint32max),
       read_position_(0),
+      reading_metadata_size_(0),
       weak_factory_(this) {
 }
 
@@ -165,15 +198,10 @@ void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
 
   info_buffer_ = info_buf;
   callback_ = callback;  // cleared on completion
-  OpenEntryIfNeededAndContinue();
+  OpenEntryIfNeeded();
 }
 
 void AppCacheResponseReader::ContinueReadInfo() {
-  if (!entry_)  {
-    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
-    return;
-  }
-
   int size = entry_->GetSize(kResponseInfoIndex);
   if (size <= 0) {
     ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
@@ -196,15 +224,10 @@ void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
   buffer_ = buf;
   buffer_len_ = buf_len;
   callback_ = callback;  // cleared on completion
-  OpenEntryIfNeededAndContinue();
+  OpenEntryIfNeeded();
 }
 
 void AppCacheResponseReader::ContinueReadData() {
-  if (!entry_)  {
-    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
-    return;
-  }
-
   if (read_position_ + buffer_len_ > range_length_) {
     // TODO(michaeln): What about integer overflows?
     DCHECK(range_length_ >= read_position_);
@@ -224,7 +247,11 @@ void AppCacheResponseReader::SetReadRange(int offset, int length) {
 
 void AppCacheResponseReader::OnIOComplete(int result) {
   if (result >= 0) {
-    if (info_buffer_.get()) {
+    if (reading_metadata_size_) {
+      DCHECK(reading_metadata_size_ == result);
+      DCHECK(info_buffer_->http_info->metadata);
+      reading_metadata_size_ = 0;
+    } else if (info_buffer_.get()) {
       // Deserialize the http info structure, ensuring we got headers.
       Pickle pickle(buffer_->data(), result);
       scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
@@ -241,6 +268,16 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       DCHECK(entry_);
       info_buffer_->response_data_size =
           entry_->GetSize(kResponseContentIndex);
+
+      int64 metadata_size = entry_->GetSize(kResponseMetadataIndex);
+      if (metadata_size > 0) {
+        reading_metadata_size_ = metadata_size;
+        info_buffer_->http_info->metadata =
+            new net::IOBufferWithSize(metadata_size);
+        ReadRaw(kResponseMetadataIndex, 0,
+                info_buffer_->http_info->metadata.get(), metadata_size);
+        return;
+      }
     } else {
       read_position_ += result;
     }
@@ -248,37 +285,11 @@ void AppCacheResponseReader::OnIOComplete(int result) {
   InvokeUserCompletionCallback(result);
 }
 
-void AppCacheResponseReader::OpenEntryIfNeededAndContinue() {
-  int rv;
-  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
-  if (entry_) {
-    rv = net::OK;
-  } else if (!disk_cache_) {
-    rv = net::ERR_FAILED;
-  } else {
-    entry_ptr = new AppCacheDiskCacheInterface::Entry*;
-    open_callback_ =
-        base::Bind(&AppCacheResponseReader::OnOpenEntryComplete,
-                   weak_factory_.GetWeakPtr(), base::Owned(entry_ptr));
-    rv = disk_cache_->OpenEntry(response_id_, entry_ptr, open_callback_);
+void AppCacheResponseReader::OnOpenEntryComplete() {
+  if (!entry_)  {
+    ScheduleIOCompletionCallback(net::ERR_CACHE_MISS);
+    return;
   }
-
-  if (rv != net::ERR_IO_PENDING)
-    OnOpenEntryComplete(entry_ptr, rv);
-}
-
-void AppCacheResponseReader::OnOpenEntryComplete(
-    AppCacheDiskCacheInterface::Entry** entry, int rv) {
-  DCHECK(info_buffer_.get() || buffer_.get());
-
-  if (!open_callback_.is_null()) {
-    if (rv == net::OK) {
-      DCHECK(entry);
-      entry_ = *entry;
-    }
-    open_callback_.Reset();
-  }
-
   if (info_buffer_.get())
     ContinueReadInfo();
   else
@@ -424,6 +435,49 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
     ContinueWriteInfo();
   else
     ContinueWriteData();
+}
+
+// AppCacheResponseMetadataWriter ----------------------------------------------
+
+AppCacheResponseMetadataWriter::AppCacheResponseMetadataWriter(
+    int64 response_id,
+    int64 group_id,
+    AppCacheDiskCacheInterface* disk_cache)
+    : AppCacheResponseIO(response_id, group_id, disk_cache),
+      write_amount_(0),
+      weak_factory_(this) {
+}
+
+AppCacheResponseMetadataWriter::~AppCacheResponseMetadataWriter() {
+}
+
+void AppCacheResponseMetadataWriter::WriteMetadata(
+    net::IOBuffer* buf,
+    int buf_len,
+    const net::CompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(!IsIOPending());
+  DCHECK(buf);
+  DCHECK(buf_len >= 0);
+  DCHECK(!buffer_.get());
+
+  buffer_ = buf;
+  write_amount_ = buf_len;
+  callback_ = callback;  // cleared on completion
+  OpenEntryIfNeeded();
+}
+
+void AppCacheResponseMetadataWriter::OnOpenEntryComplete() {
+  if (!entry_) {
+    ScheduleIOCompletionCallback(net::ERR_FAILED);
+    return;
+  }
+  WriteRaw(kResponseMetadataIndex, 0, buffer_.get(), write_amount_);
+}
+
+void AppCacheResponseMetadataWriter::OnIOComplete(int result) {
+  DCHECK(result < 0 || write_amount_ == result);
+  InvokeUserCompletionCallback(result);
 }
 
 }  // namespace content

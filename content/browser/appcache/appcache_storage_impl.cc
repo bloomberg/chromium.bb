@@ -1643,6 +1643,13 @@ AppCacheResponseWriter* AppCacheStorageImpl::CreateResponseWriter(
   return new AppCacheResponseWriter(NewResponseId(), group_id, disk_cache());
 }
 
+AppCacheResponseMetadataWriter*
+AppCacheStorageImpl::CreateResponseMetadataWriter(int64 group_id,
+                                                  int64 response_id) {
+  return new AppCacheResponseMetadataWriter(response_id, group_id,
+                                            disk_cache());
+}
+
 void AppCacheStorageImpl::DoomResponses(
     const GURL& manifest_url, const std::vector<int64>& response_ids) {
   if (response_ids.empty())

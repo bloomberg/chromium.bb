@@ -165,6 +165,13 @@ AppCacheResponseWriter* MockAppCacheStorage::CreateResponseWriter(
   return new AppCacheResponseWriter(NewResponseId(),  group_id, disk_cache());
 }
 
+AppCacheResponseMetadataWriter*
+MockAppCacheStorage::CreateResponseMetadataWriter(int64 group_id,
+                                                  int64 response_id) {
+  return new AppCacheResponseMetadataWriter(response_id, group_id,
+                                            disk_cache());
+}
+
 void MockAppCacheStorage::DoomResponses(
     const GURL& manifest_url, const std::vector<int64>& response_ids) {
   DeleteResponses(manifest_url, response_ids);

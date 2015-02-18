@@ -191,6 +191,16 @@ class AppCacheResponseTest : public testing::Test {
                                   base::Unretained(this)));
   }
 
+  void WriteResponseMetadata(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
+    EXPECT_FALSE(metadata_writer_->IsWritePending());
+    write_buffer_ = io_buffer;
+    expected_write_result_ = buf_len;
+    metadata_writer_->WriteMetadata(
+        write_buffer_.get(), buf_len,
+        base::Bind(&AppCacheResponseTest::OnMetadataWriteComplete,
+                   base::Unretained(this)));
+  }
+
   void ReadResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = io_buffer;
@@ -217,6 +227,12 @@ class AppCacheResponseTest : public testing::Test {
         --writer_deletion_count_down_ == 0) {
       writer_.reset();
     }
+    ScheduleNextTask();
+  }
+
+  void OnMetadataWriteComplete(int result) {
+    EXPECT_FALSE(metadata_writer_->IsWritePending());
+    EXPECT_EQ(expected_write_result_, result);
     ScheduleNextTask();
   }
 
@@ -371,6 +387,87 @@ class AppCacheResponseTest : public testing::Test {
     EXPECT_EQ(basic_response_size(),
               storage_delegate_->loaded_info_->response_data_size());
     TestFinished();
+  }
+
+  // Metadata -------------------------------------------------
+  void Metadata() {
+    // This tests involves multiple async steps.
+    // 1. Write a response headers and body to storage
+    //   a. headers
+    //   b. body
+    // 2. Write metadata "Metadata First" using AppCacheResponseMetadataWriter.
+    // 3. Check metadata was written.
+    // 4. Write metadata "Second".
+    // 5. Check metadata was written and was truncated .
+    // 6. Write metadata "".
+    // 7. Check metadata was deleted.
+
+    // Push tasks in reverse order.
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_VerifyMetadata,
+                            base::Unretained(this), ""));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_LoadResponseInfo,
+                            base::Unretained(this)));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_WriteMetadata,
+                            base::Unretained(this), ""));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_VerifyMetadata,
+                            base::Unretained(this), "Second"));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_LoadResponseInfo,
+                            base::Unretained(this)));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_WriteMetadata,
+                            base::Unretained(this), "Second"));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_VerifyMetadata,
+                            base::Unretained(this), "Metadata First"));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_LoadResponseInfo,
+                            base::Unretained(this)));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_WriteMetadata,
+                            base::Unretained(this), "Metadata First"));
+    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_ResetWriter,
+                            base::Unretained(this)));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL(), 0));
+    written_response_id_ = writer_->response_id();
+    WriteBasicResponse();
+  }
+
+  void Metadata_ResetWriter() {
+    writer_.reset();
+    ScheduleNextTask();
+  }
+
+  void Metadata_WriteMetadata(const char* metadata) {
+    metadata_writer_.reset(service_->storage()->CreateResponseMetadataWriter(
+        0, written_response_id_));
+    scoped_refptr<IOBuffer> buffer(new WrappedIOBuffer(metadata));
+    WriteResponseMetadata(buffer.get(), strlen(metadata));
+  }
+
+  void Metadata_LoadResponseInfo() {
+    metadata_writer_.reset();
+    storage_delegate_.reset(new MockStorageDelegate(this));
+    service_->storage()->LoadResponseInfo(GURL(), 0, written_response_id_,
+                                          storage_delegate_.get());
+  }
+
+  void Metadata_VerifyMetadata(const char* metadata) {
+    EXPECT_EQ(written_response_id_, storage_delegate_->loaded_info_id_);
+    EXPECT_TRUE(storage_delegate_->loaded_info_.get());
+    const net::HttpResponseInfo* read_head =
+        storage_delegate_->loaded_info_->http_response_info();
+    EXPECT_TRUE(read_head);
+    const int metadata_size = strlen(metadata);
+    if (metadata_size) {
+      EXPECT_TRUE(read_head->metadata.get());
+      EXPECT_EQ(metadata_size, read_head->metadata->size());
+      EXPECT_EQ(0,
+                memcmp(metadata, read_head->metadata->data(), metadata_size));
+    } else {
+      EXPECT_FALSE(read_head->metadata.get());
+    }
+    EXPECT_TRUE(CompareHttpResponseInfos(
+        write_info_buffer_->http_info.get(),
+        storage_delegate_->loaded_info_->http_response_info()));
+    EXPECT_EQ(basic_response_size(),
+              storage_delegate_->loaded_info_->response_data_size());
+    ScheduleNextTask();
   }
 
   // AmountWritten ----------------------------------------------------
@@ -667,6 +764,7 @@ class AppCacheResponseTest : public testing::Test {
 
   int64 written_response_id_;
   scoped_ptr<AppCacheResponseWriter> writer_;
+  scoped_ptr<AppCacheResponseMetadataWriter> metadata_writer_;
   scoped_refptr<HttpResponseInfoIOBuffer> write_info_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   int expected_write_result_;
@@ -690,6 +788,10 @@ TEST_F(AppCacheResponseTest, LoadResponseInfo_Miss) {
 
 TEST_F(AppCacheResponseTest, LoadResponseInfo_Hit) {
   RunTestOnIOThread(&AppCacheResponseTest::LoadResponseInfo_Hit);
+}
+
+TEST_F(AppCacheResponseTest, Metadata) {
+  RunTestOnIOThread(&AppCacheResponseTest::Metadata);
 }
 
 TEST_F(AppCacheResponseTest, AmountWritten) {
