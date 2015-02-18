@@ -759,6 +759,8 @@ struct weston_view {
 	struct wl_list link;
 	struct weston_layer_entry layer_link;
 	struct weston_plane *plane;
+
+	/* For weston_layer inheritance from another view */
 	struct weston_view *parent_view;
 
 	pixman_region32_t clip;          /* See weston_view_damage_below() */
