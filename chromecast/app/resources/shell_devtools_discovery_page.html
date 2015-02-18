@@ -2,18 +2,6 @@
 <head>
 <title>Cast shell remote debugging</title>
 <style>
-  .local-ui-link {
-    background-color: #eee;
-    border: 1px solid #ccc;
-    color: #333;
-    display: block;
-    font-family: monospace;
-    font-size: 11px;
-    margin: 4px;
-    padding: 4px;
-    width: 100%;
-  }
-
   .help {
     font-size: 11px;
   }
@@ -50,15 +38,6 @@ function appendItem(metadata) {
     frontend_link.textContent = 'Remote Debugging (AppEngine)'
     frontend_link.href = metadata.devtoolsFrontendUrl;
     item_container.appendChild(frontend_link);
-
-    var devtools_protocol_link = document.createElement('textarea');
-    devtools_protocol_link.className = 'local-ui-link';
-    devtools_protocol_link.value = metadata.devtoolsFrontendUrl.replace(
-        "https://chrome-devtools-frontend.appspot.com",
-        "chrome-devtools://devtools/remote");
-    // Highlight text when clicked.
-    devtools_protocol_link.onclick = function() { this.select(); }
-    item_container.appendChild(devtools_protocol_link);
   } else {
     frontend_header.textContent += " (already has active debugging session)";
   }
@@ -69,16 +48,9 @@ function appendItem(metadata) {
 
 <h3>Help</h3>
 <div id="help">
-  Note: there are two debugging options presented for each page above. Either
-  is a valid way to initiate a remote debugging session.
-  <ul>
-    <li>For the first option (link), you may have to select the shield icon in
-        the address bar to establish a connection. See the <a
-        href="https://support.google.com/chrome/answer/1342714?hl=en">help
-        center</a> for more information.</li>
-    <li>For the second option (textarea), simply copy/paste the URL into
-        Chrome's URL bar.</li>
-  </ul>
+  You may have to select the shield icon in the address bar to establish a connection.
+  See the <a href="https://support.google.com/chrome/answer/1342714?hl=en">help
+  center</a> for more information.
 </div>
 
 </body>
