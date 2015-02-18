@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -629,10 +630,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(ENABLE_PLUGINS)
   if (switches::OutOfProcessPdfEnabled()) {
-    if (switches::PdfMaterialUIEnabled())
-      Add(IDR_PDF_MANIFEST_MATERIAL, base::FilePath(FILE_PATH_LITERAL("pdf")));
-    else
-      Add(IDR_PDF_MANIFEST, base::FilePath(FILE_PATH_LITERAL("pdf")));
+    Add(pdf_extension_util::GetManifest(),
+        base::FilePath(FILE_PATH_LITERAL("pdf")));
   }
 #endif
 

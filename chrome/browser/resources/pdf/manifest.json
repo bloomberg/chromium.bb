@@ -1,9 +1,10 @@
+{
   // chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai
   "manifest_version": 2,
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDN6hM0rsDYGbzQPQfOygqlRtQgKUXMfnSjhIBL7LnReAVBEd7ZmKtyN2qmSasMl4HZpMhVe2rPWVVwBDl6iyNE/Kok6E6v6V3vCLGsOpQAuuNVye/3QxzIldzG/jQAdWZiyXReRVapOhZtLjGfywCvlWq7Sl/e3sbc0vWybSDI2QIDAQAB",
-  "name": "Chrome PDF Viewer",
+  "name": "<NAME>",
   "version": "1",
-  "description": "Chrome PDF Viewer",
+  "description": "",
   "offline_enabled": true,
   "incognito": "split",
   "permissions": [
@@ -21,4 +22,10 @@
       "matches": ["chrome://print/*"],
       "js": ["content_script.js"]
     }
+  ],
+  "mime_types_handler": "<INDEX>",
+  "web_accessible_resources": [
+    "index.html",
+    "<INDEX>"
   ]
+}

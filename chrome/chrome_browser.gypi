@@ -1007,6 +1007,8 @@
       'browser/net/firefox_proxy_settings.h',
       'browser/net/predictor_tab_helper.cc',
       'browser/net/predictor_tab_helper.h',
+      'browser/pdf/pdf_extension_util.cc',
+      'browser/pdf/pdf_extension_util.h',
       'browser/power/process_power_collector.cc',
       'browser/power/process_power_collector.h',
       'browser/process_singleton_modal_dialog_lock.cc',
