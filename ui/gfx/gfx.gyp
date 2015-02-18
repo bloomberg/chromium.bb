@@ -240,6 +240,8 @@
         'platform_font_win.h',
         'range/range.cc',
         'range/range.h',
+        'range/range_f.cc',
+        'range/range_f.h',
         'range/range_mac.mm',
         'range/range_win.cc',
         'render_text.cc',

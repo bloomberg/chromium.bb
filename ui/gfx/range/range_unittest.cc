@@ -4,9 +4,51 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/range/range_f.h"
 
-TEST(RangeTest, EmptyInit) {
-  gfx::Range r;
+namespace {
+
+template <typename T>
+class RangeTest : public testing::Test {
+};
+
+typedef testing::Types<gfx::Range, gfx::RangeF> RangeTypes;
+TYPED_TEST_CASE(RangeTest, RangeTypes);
+
+template <typename T>
+void TestContainsAndIntersects(const T& r1,
+                               const T& r2,
+                               const T& r3) {
+  EXPECT_TRUE(r1.Intersects(r1));
+  EXPECT_TRUE(r1.Contains(r1));
+  EXPECT_EQ(T(10, 12), r1.Intersect(r1));
+
+  EXPECT_FALSE(r1.Intersects(r2));
+  EXPECT_FALSE(r1.Contains(r2));
+  EXPECT_TRUE(r1.Intersect(r2).is_empty());
+  EXPECT_FALSE(r2.Intersects(r1));
+  EXPECT_FALSE(r2.Contains(r1));
+  EXPECT_TRUE(r2.Intersect(r1).is_empty());
+
+  EXPECT_TRUE(r1.Intersects(r3));
+  EXPECT_TRUE(r3.Intersects(r1));
+  EXPECT_TRUE(r3.Contains(r1));
+  EXPECT_FALSE(r1.Contains(r3));
+  EXPECT_EQ(T(10, 12), r1.Intersect(r3));
+  EXPECT_EQ(T(10, 12), r3.Intersect(r1));
+
+  EXPECT_TRUE(r2.Intersects(r3));
+  EXPECT_TRUE(r3.Intersects(r2));
+  EXPECT_FALSE(r3.Contains(r2));
+  EXPECT_FALSE(r2.Contains(r3));
+  EXPECT_EQ(T(5, 8), r2.Intersect(r3));
+  EXPECT_EQ(T(5, 8), r3.Intersect(r2));
+}
+
+}  // namespace
+
+TYPED_TEST(RangeTest, EmptyInit) {
+  TypeParam r;
   EXPECT_EQ(0U, r.start());
   EXPECT_EQ(0U, r.end());
   EXPECT_EQ(0U, r.length());
@@ -17,8 +59,8 @@ TEST(RangeTest, EmptyInit) {
   EXPECT_EQ(0U, r.GetMax());
 }
 
-TEST(RangeTest, StartEndInit) {
-  gfx::Range r(10, 15);
+TYPED_TEST(RangeTest, StartEndInit) {
+  TypeParam r(10, 15);
   EXPECT_EQ(10U, r.start());
   EXPECT_EQ(15U, r.end());
   EXPECT_EQ(5U, r.length());
@@ -29,8 +71,8 @@ TEST(RangeTest, StartEndInit) {
   EXPECT_EQ(15U, r.GetMax());
 }
 
-TEST(RangeTest, StartEndReversedInit) {
-  gfx::Range r(10, 5);
+TYPED_TEST(RangeTest, StartEndReversedInit) {
+  TypeParam r(10, 5);
   EXPECT_EQ(10U, r.start());
   EXPECT_EQ(5U, r.end());
   EXPECT_EQ(5U, r.length());
@@ -41,8 +83,8 @@ TEST(RangeTest, StartEndReversedInit) {
   EXPECT_EQ(10U, r.GetMax());
 }
 
-TEST(RangeTest, PositionInit) {
-  gfx::Range r(12);
+TYPED_TEST(RangeTest, PositionInit) {
+  TypeParam r(12);
   EXPECT_EQ(12U, r.start());
   EXPECT_EQ(12U, r.end());
   EXPECT_EQ(0U, r.length());
@@ -53,42 +95,45 @@ TEST(RangeTest, PositionInit) {
   EXPECT_EQ(12U, r.GetMax());
 }
 
-TEST(RangeTest, InvalidRange) {
-  gfx::Range r(gfx::Range::InvalidRange());
+TYPED_TEST(RangeTest, InvalidRange) {
+  TypeParam r(TypeParam::InvalidRange());
   EXPECT_EQ(0U, r.length());
   EXPECT_EQ(r.start(), r.end());
+  EXPECT_EQ(r.GetMax(), r.GetMin());
   EXPECT_FALSE(r.is_reversed());
   EXPECT_TRUE(r.is_empty());
   EXPECT_FALSE(r.IsValid());
+  EXPECT_EQ(r, TypeParam::InvalidRange());
+  EXPECT_TRUE(r.EqualsIgnoringDirection(TypeParam::InvalidRange()));
 }
 
-TEST(RangeTest, Equality) {
-  gfx::Range r1(10, 4);
-  gfx::Range r2(10, 4);
-  gfx::Range r3(10, 2);
+TYPED_TEST(RangeTest, Equality) {
+  TypeParam r1(10, 4);
+  TypeParam r2(10, 4);
+  TypeParam r3(10, 2);
   EXPECT_EQ(r1, r2);
   EXPECT_NE(r1, r3);
   EXPECT_NE(r2, r3);
 
-  gfx::Range r4(11, 4);
+  TypeParam r4(11, 4);
   EXPECT_NE(r1, r4);
   EXPECT_NE(r2, r4);
   EXPECT_NE(r3, r4);
 
-  gfx::Range r5(12, 5);
+  TypeParam r5(12, 5);
   EXPECT_NE(r1, r5);
   EXPECT_NE(r2, r5);
   EXPECT_NE(r3, r5);
 }
 
-TEST(RangeTest, EqualsIgnoringDirection) {
-  gfx::Range r1(10, 5);
-  gfx::Range r2(5, 10);
+TYPED_TEST(RangeTest, EqualsIgnoringDirection) {
+  TypeParam r1(10, 5);
+  TypeParam r2(5, 10);
   EXPECT_TRUE(r1.EqualsIgnoringDirection(r2));
 }
 
-TEST(RangeTest, SetStart) {
-  gfx::Range r(10, 20);
+TYPED_TEST(RangeTest, SetStart) {
+  TypeParam r(10, 20);
   EXPECT_EQ(10U, r.start());
   EXPECT_EQ(10U, r.length());
 
@@ -99,8 +144,8 @@ TEST(RangeTest, SetStart) {
   EXPECT_TRUE(r.is_reversed());
 }
 
-TEST(RangeTest, SetEnd) {
-  gfx::Range r(10, 13);
+TYPED_TEST(RangeTest, SetEnd) {
+  TypeParam r(10, 13);
   EXPECT_EQ(10U, r.start());
   EXPECT_EQ(3U, r.length());
 
@@ -110,8 +155,8 @@ TEST(RangeTest, SetEnd) {
   EXPECT_EQ(10U, r.length());
 }
 
-TEST(RangeTest, SetStartAndEnd) {
-  gfx::Range r;
+TYPED_TEST(RangeTest, SetStartAndEnd) {
+  TypeParam r;
   r.set_end(5);
   r.set_start(1);
   EXPECT_EQ(1U, r.start());
@@ -121,8 +166,8 @@ TEST(RangeTest, SetStartAndEnd) {
   EXPECT_EQ(5U, r.GetMax());
 }
 
-TEST(RangeTest, ReversedRange) {
-  gfx::Range r(10, 5);
+TYPED_TEST(RangeTest, ReversedRange) {
+  TypeParam r(10, 5);
   EXPECT_EQ(10U, r.start());
   EXPECT_EQ(5U, r.end());
   EXPECT_EQ(5U, r.length());
@@ -132,8 +177,8 @@ TEST(RangeTest, ReversedRange) {
   EXPECT_EQ(10U, r.GetMax());
 }
 
-TEST(RangeTest, SetReversedRange) {
-  gfx::Range r(10, 20);
+TYPED_TEST(RangeTest, SetReversedRange) {
+  TypeParam r(10, 20);
   r.set_start(25);
   EXPECT_EQ(25U, r.start());
   EXPECT_EQ(20U, r.end());
@@ -150,54 +195,25 @@ TEST(RangeTest, SetReversedRange) {
   EXPECT_EQ(25U, r.GetMax());
 }
 
-void TestContainsAndIntersects(const gfx::Range& r1,
-                               const gfx::Range& r2,
-                               const gfx::Range& r3) {
-  EXPECT_TRUE(r1.Intersects(r1));
-  EXPECT_TRUE(r1.Contains(r1));
-  EXPECT_EQ(gfx::Range(10, 12), r1.Intersect(r1));
-
-  EXPECT_FALSE(r1.Intersects(r2));
-  EXPECT_FALSE(r1.Contains(r2));
-  EXPECT_TRUE(r1.Intersect(r2).is_empty());
-  EXPECT_FALSE(r2.Intersects(r1));
-  EXPECT_FALSE(r2.Contains(r1));
-  EXPECT_TRUE(r2.Intersect(r1).is_empty());
-
-  EXPECT_TRUE(r1.Intersects(r3));
-  EXPECT_TRUE(r3.Intersects(r1));
-  EXPECT_TRUE(r3.Contains(r1));
-  EXPECT_FALSE(r1.Contains(r3));
-  EXPECT_EQ(gfx::Range(10, 12), r1.Intersect(r3));
-  EXPECT_EQ(gfx::Range(10, 12), r3.Intersect(r1));
-
-  EXPECT_TRUE(r2.Intersects(r3));
-  EXPECT_TRUE(r3.Intersects(r2));
-  EXPECT_FALSE(r3.Contains(r2));
-  EXPECT_FALSE(r2.Contains(r3));
-  EXPECT_EQ(gfx::Range(5, 8), r2.Intersect(r3));
-  EXPECT_EQ(gfx::Range(5, 8), r3.Intersect(r2));
-}
-
-TEST(RangeTest, ContainAndIntersect) {
+TYPED_TEST(RangeTest, ContainAndIntersect) {
   {
     SCOPED_TRACE("contain and intersect");
-    gfx::Range r1(10, 12);
-    gfx::Range r2(1, 8);
-    gfx::Range r3(5, 12);
+    TypeParam r1(10, 12);
+    TypeParam r2(1, 8);
+    TypeParam r3(5, 12);
     TestContainsAndIntersects(r1, r2, r3);
   }
   {
     SCOPED_TRACE("contain and intersect: reversed");
-    gfx::Range r1(12, 10);
-    gfx::Range r2(8, 1);
-    gfx::Range r3(12, 5);
+    TypeParam r1(12, 10);
+    TypeParam r2(8, 1);
+    TypeParam r3(12, 5);
     TestContainsAndIntersects(r1, r2, r3);
   }
   // Invalid rect tests
-  gfx::Range r1(10, 12);
-  gfx::Range r2(8, 1);
-  gfx::Range invalid = r1.Intersect(r2);
+  TypeParam r1(10, 12);
+  TypeParam r2(8, 1);
+  TypeParam invalid = r1.Intersect(r2);
   EXPECT_FALSE(invalid.IsValid());
   EXPECT_FALSE(invalid.Contains(invalid));
   EXPECT_FALSE(invalid.Contains(r1));

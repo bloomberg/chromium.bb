@@ -54,7 +54,7 @@ class GFX_EXPORT Range {
   // Returns a range that is invalid, which is {size_t_max,size_t_max}.
   static const Range InvalidRange();
 
-  // Checks if the range is valid through comparision to InvalidRange().
+  // Checks if the range is valid through comparison to InvalidRange().
   bool IsValid() const;
 
   // Getters and setters.

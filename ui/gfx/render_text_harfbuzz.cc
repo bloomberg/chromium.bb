@@ -20,13 +20,13 @@
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/harfbuzz_font_skia.h"
+#include "ui/gfx/range/range_f.h"
 #include "ui/gfx/utf16_indexing.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/font_fallback_win.h"
 #endif
 
-using gfx::internal::RangeF;
 using gfx::internal::RoundRangeF;
 
 namespace gfx {
@@ -463,8 +463,8 @@ class HarfBuzzLineBreaker {
 namespace internal {
 
 Range RoundRangeF(const RangeF& range_f) {
-  return Range(std::floor(range_f.first + 0.5f),
-               std::floor(range_f.second + 0.5f));
+  return Range(std::floor(range_f.start() + 0.5f),
+               std::floor(range_f.end() + 0.5f));
 }
 
 TextRunHarfBuzz::TextRunHarfBuzz()
@@ -721,9 +721,9 @@ Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
   // position since clients expect them to be contiguous.
   if (cursor_enabled() && run_index == run_list->size() - 1 &&
       index == (run->is_rtl ? run->range.start() : run->range.end() - 1))
-    bounds.second = std::ceil(bounds.second);
+    bounds.set_end(std::ceil(bounds.end()));
   return RoundRangeF(run->is_rtl ?
-      RangeF(bounds.second, bounds.first) : bounds);
+      RangeF(bounds.end(), bounds.start()) : bounds);
 }
 
 int RenderTextHarfBuzz::GetDisplayTextBaseline() {

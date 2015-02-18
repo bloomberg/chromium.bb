@@ -20,13 +20,13 @@ class BreakIterator;
 
 namespace gfx {
 
+class Range;
+class RangeF;
+
 namespace internal {
 
-// TODO(ckocagil): Make Range a template class and RangeF an instance of it.
-typedef std::pair<float, float> RangeF;
-
 // Applies std::round to the start and end values of the given RangeF.
-Range GFX_EXPORT RoundRangeF(const RangeF& range_f);
+GFX_EXPORT Range RoundRangeF(const RangeF& range_f);
 
 struct GFX_EXPORT TextRunHarfBuzz {
   TextRunHarfBuzz();

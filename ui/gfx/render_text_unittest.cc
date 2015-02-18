@@ -18,6 +18,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/range/range.h"
+#include "ui/gfx/range/range_f.h"
 #include "ui/gfx/render_text_harfbuzz.h"
 
 #if defined(OS_WIN)
@@ -2121,7 +2123,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemeCases) {
     auto first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
     EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(iter, 1));
     auto second_grapheme_bounds = run->GetGraphemeBounds(iter, 2);
-    EXPECT_EQ(first_grapheme_bounds.second, second_grapheme_bounds.first);
+    EXPECT_EQ(first_grapheme_bounds.end(), second_grapheme_bounds.start());
   }
 }
 
