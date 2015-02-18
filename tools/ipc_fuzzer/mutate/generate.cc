@@ -1040,18 +1040,23 @@ struct GenerateTraits<content::SyntheticGesturePacket> {
 template <>
 struct GenerateTraits<content::WebCursor> {
   static bool Generate(content::WebCursor* p, Generator* generator) {
-    blink::WebCursorInfo::Type type;
-    if (!GenerateParam(&type, generator))
-      return false;
-    content::WebCursor::CursorInfo info(type);
+    content::WebCursor::CursorInfo info;
 
-    // Omitting |externalHandle| since it is not serialized.
+    // |type| enum is not validated on de-serialization, so pick random value.
+    if (!GenerateParam(reinterpret_cast<int *>(&info.type), generator))
+      return false;
     if (!GenerateParam(&info.hotspot, generator))
       return false;
     if (!GenerateParam(&info.image_scale_factor, generator))
       return false;
     if (!GenerateParam(&info.custom_image, generator))
       return false;
+    // Omitting |externalHandle| since it is not serialized.
+
+    // Scale factor is expected to be greater than 0, otherwise we hit
+    // a check failure.
+    info.image_scale_factor = fabs(info.image_scale_factor) + 0.001;
+
     *p = content::WebCursor(info);
     return true;
   }
@@ -1290,6 +1295,16 @@ struct GenerateTraits<GURL> {
   }
 };
 
+#if defined(OS_WIN)
+template <>
+struct GenerateTraits<HWND> {
+  static bool Generate(HWND* p, Generator* generator) {
+    // TODO(aarya): This should actually generate something.
+    return true;
+  }
+};
+#endif
+
 template <>
 struct GenerateTraits<IPC::Message> {
   static bool Generate(IPC::Message *p, Generator* generator) {
@@ -1329,6 +1344,16 @@ struct GenerateTraits<IPC::ChannelHandle> {
 #endif
   }
 };
+
+#if defined(OS_WIN)
+template <>
+struct GenerateTraits<LOGFONT> {
+  static bool Generate(LOGFONT* p, Generator* generator) {
+    // TODO(aarya): This should actually generate something.
+    return true;
+  }
+};
+#endif
 
 template <>
 struct GenerateTraits<media::AudioParameters> {
