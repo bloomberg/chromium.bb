@@ -33,6 +33,10 @@ def FindSourceRoot(sdk_dir=None):
   if sdk_dir is None:
     return constants.SOURCE_ROOT
 
+  # Make sure we're looking at an actual directory.
+  if not os.path.isdir(sdk_dir):
+    return None
+
   # Find the .repo directory and return the path leading up to it, if found.
   repo_dir = osutils.FindInPathParents('.repo', os.path.abspath(sdk_dir),
                                        test_func=os.path.isdir)

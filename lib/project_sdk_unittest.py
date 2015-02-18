@@ -66,6 +66,11 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
     """Test FindSourceRoot with nested inside repo tree."""
     self.assertEqual(self.repo_dir, project_sdk.FindSourceRoot(self.nested_dir))
 
+  def testFindSourceRootSpecifiedNonexistent(self):
+    """Test FindSourceRoot refuses to scan a nonexistent path."""
+    self.assertIsNone(
+        project_sdk.FindSourceRoot(os.path.join(self.nested_dir, 'not_there')))
+
   def testFindVersionDefault(self):
     """Test FindVersion with default of CWD."""
     # Expected results are undefined, just ensure we don't crash.
