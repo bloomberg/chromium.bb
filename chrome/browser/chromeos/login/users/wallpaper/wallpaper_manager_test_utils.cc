@@ -68,6 +68,8 @@ const SkColor kLargeDefaultWallpaperColor = SK_ColorRED;
 const SkColor kSmallDefaultWallpaperColor = SK_ColorGREEN;
 const SkColor kLargeGuestWallpaperColor = SK_ColorBLUE;
 const SkColor kSmallGuestWallpaperColor = SK_ColorYELLOW;
+const SkColor kLargeChildWallpaperColor = SK_ColorCYAN;
+const SkColor kSmallChildWallpaperColor = SK_ColorMAGENTA;
 
 const SkColor kCustomWallpaperColor = SK_ColorMAGENTA;
 
@@ -186,6 +188,17 @@ void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
                     chromeos::switches::kGuestWallpaperLarge + "=" +
                     guest_large_file.value());
 
+  const base::FilePath child_small_file =
+      dir.path().Append(FILE_PATH_LITERAL("child_small.jpg"));
+  options.push_back(std::string("--") +
+                    chromeos::switches::kChildWallpaperSmall + "=" +
+                    child_small_file.value());
+  const base::FilePath child_large_file =
+      dir.path().Append(FILE_PATH_LITERAL("child_large.jpg"));
+  options.push_back(std::string("--") +
+                    chromeos::switches::kChildWallpaperLarge + "=" +
+                    child_large_file.value());
+
   ASSERT_TRUE(WriteJPEGFile(
       small_file, kWallpaperSize, kWallpaperSize, kSmallDefaultWallpaperColor));
   ASSERT_TRUE(WriteJPEGFile(
@@ -199,6 +212,15 @@ void CreateCmdlineWallpapers(const base::ScopedTempDir& dir,
                             kWallpaperSize,
                             kWallpaperSize,
                             kLargeGuestWallpaperColor));
+
+  ASSERT_TRUE(WriteJPEGFile(child_small_file,
+                            kWallpaperSize,
+                            kWallpaperSize,
+                            kSmallChildWallpaperColor));
+  ASSERT_TRUE(WriteJPEGFile(child_large_file,
+                            kWallpaperSize,
+                            kWallpaperSize,
+                            kLargeChildWallpaperColor));
 
   command_line->reset(new base::CommandLine(options));
   WallpaperManager::Get()->SetCommandLineForTesting(command_line->get());

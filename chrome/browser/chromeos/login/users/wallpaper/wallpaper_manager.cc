@@ -96,8 +96,7 @@ bool ShouldUseCustomizedDefaultWallpaper() {
   PrefService* pref_service = g_browser_process->local_state();
 
   return !(pref_service->FindPreference(
-                             prefs::kCustomizationDefaultWallpaperURL)
-               ->IsDefaultValue());
+      prefs::kCustomizationDefaultWallpaperURL)->IsDefaultValue());
 }
 
 // Returns index of the first public session user found in |users|
@@ -578,9 +577,15 @@ void WallpaperManager::DoSetDefaultWallpaper(
 
   const base::FilePath* file = NULL;
 
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_id);
+
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
     file =
         use_small ? &guest_small_wallpaper_file_ : &guest_large_wallpaper_file_;
+  } else if (user && user->GetType() == user_manager::USER_TYPE_CHILD) {
+    file =
+        use_small ? &child_small_wallpaper_file_ : &child_large_wallpaper_file_;
   } else {
     file = use_small ? &default_small_wallpaper_file_
                      : &default_large_wallpaper_file_;
@@ -634,7 +639,7 @@ void WallpaperManager::SetUserWallpaperInfo(const std::string& user_id,
 void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
                                                 bool delayed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Some unit tests come here without a UserManager or without a pref system.
+  // Some unit tests come here without a UserManager or without a pref system.q
   if (!user_manager::UserManager::IsInitialized() ||
       !g_browser_process->local_state()) {
     return;

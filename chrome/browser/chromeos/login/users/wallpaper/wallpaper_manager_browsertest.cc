@@ -119,6 +119,17 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
     WaitAsyncWallpaperLoadStarted();
   }
 
+  // Logs in |username| and sets it as child account.
+  void LogInAsChild(
+      const std::string& username, const std::string& username_hash) {
+    user_manager::UserManager::Get()->UserLoggedIn(
+        username, username_hash, false);
+    user_manager::User* user =
+        user_manager::UserManager::Get()->FindUserAndModify(username);
+    user_manager::UserManager::Get()->ChangeUserChildStatus(
+        user, true /* is_child */);
+  }
+
   int LoadedWallpapers() {
     return WallpaperManager::Get()->loaded_wallpapers();
   }
@@ -751,6 +762,33 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
       wallpaper_manager_test_utils::kLargeGuestWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallChildWallpaper) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+  CreateCmdlineWallpapers();
+  LogInAsChild(kTestUser1, kTestUser1Hash);
+  UpdateDisplay("800x600");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
+      controller_->GetWallpaper(),
+      wallpaper_manager_test_utils::kSmallChildWallpaperColor));
+}
+
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeChildWallpaper) {
+  if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
+    return;
+
+  CreateCmdlineWallpapers();
+  LogInAsChild(kTestUser1, kTestUser1Hash);
+  UpdateDisplay("1600x1200");
+  WallpaperManager::Get()->SetDefaultWallpaperNow(std::string());
+  wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
+      controller_->GetWallpaper(),
+      wallpaper_manager_test_utils::kLargeChildWallpaperColor));
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,

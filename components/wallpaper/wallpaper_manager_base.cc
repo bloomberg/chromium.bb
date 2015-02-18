@@ -1017,6 +1017,10 @@ void WallpaperManagerBase::SetDefaultWallpaperPathsFromCommandLine(
       chromeos::switches::kGuestWallpaperSmall);
   guest_large_wallpaper_file_ = command_line->GetSwitchValuePath(
       chromeos::switches::kGuestWallpaperLarge);
+  child_small_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kChildWallpaperSmall);
+  child_large_wallpaper_file_ = command_line->GetSwitchValuePath(
+      chromeos::switches::kChildWallpaperLarge);
   default_wallpaper_image_.reset();
 }
 

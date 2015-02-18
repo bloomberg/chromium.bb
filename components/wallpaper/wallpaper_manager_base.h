@@ -605,6 +605,9 @@ class WALLPAPER_EXPORT WallpaperManagerBase
   base::FilePath guest_small_wallpaper_file_;
   base::FilePath guest_large_wallpaper_file_;
 
+  base::FilePath child_small_wallpaper_file_;
+  base::FilePath child_large_wallpaper_file_;
+
   // Current decoded default image is stored in cache.
   scoped_ptr<user_manager::UserImage> default_wallpaper_image_;
 

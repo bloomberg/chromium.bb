@@ -23,6 +23,8 @@ extern const SkColor kLargeDefaultWallpaperColor;
 extern const SkColor kSmallDefaultWallpaperColor;
 extern const SkColor kLargeGuestWallpaperColor;
 extern const SkColor kSmallGuestWallpaperColor;
+extern const SkColor kLargeChildWallpaperColor;
+extern const SkColor kSmallChildWallpaperColor;
 
 // A custom color, specifically chosen to not
 // conflict with any of the default wallpaper colors.
