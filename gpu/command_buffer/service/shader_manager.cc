@@ -54,20 +54,21 @@ void Shader::DoCompile() {
   // Signify the shader has been compiled, whether or not it is valid
   // is dependent on the |valid_| member variable.
   shader_state_ = kShaderStateCompiled;
+  valid_ = false;
 
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
   const char* source_for_driver = last_compiled_source_.c_str();
   ShaderTranslatorInterface* translator = translator_.get();
   if (translator) {
-    valid_ = translator->Translate(last_compiled_source_,
-                                   &log_info_,
-                                   &translated_source_,
-                                   &attrib_map_,
-                                   &uniform_map_,
-                                   &varying_map_,
-                                   &name_map_);
-    if (!valid_) {
+    bool success = translator->Translate(last_compiled_source_,
+                                         &log_info_,
+                                         &translated_source_,
+                                         &attrib_map_,
+                                         &uniform_map_,
+                                         &varying_map_,
+                                         &name_map_);
+    if (!success) {
       return;
     }
     source_for_driver = translated_source_.c_str();
@@ -88,11 +89,14 @@ void Shader::DoCompile() {
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len == 0 || translated_source_[len] == '\0');
     translated_source_.resize(len);
+    source_for_driver = translated_source_.c_str();
   }
 
   GLint status = GL_FALSE;
   glGetShaderiv(service_id_, GL_COMPILE_STATUS, &status);
-  if (status != GL_TRUE) {
+  if (status == GL_TRUE) {
+    valid_ = true;
+  } else {
     // We cannot reach here if we are using the shader translator.
     // All invalid shaders must be rejected by the translator.
     // All translated shaders must compile.
