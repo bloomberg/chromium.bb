@@ -539,6 +539,10 @@ TEST_F(ToolbarActionsBarPopOutUnitTest, ActionsPopOutToAct) {
   scoped_refptr<const extensions::Extension> page_action2 =
       CreateAndAddExtension(
           kPageAction2, extensions::extension_action_test_util::PAGE_ACTION);
+  // The new extension was installed visible. Move it to the last index, and
+  // adjust the visible count.
+  toolbar_model()->MoveExtensionIcon(page_action2->id(), 3u);
+  toolbar_model()->SetVisibleIconCount(0);
 
   {
     // The second page action should be added to the end, and no icons should

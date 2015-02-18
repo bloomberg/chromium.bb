@@ -484,6 +484,78 @@ TEST_F(ExtensionToolbarModelUnitTest, ReorderOnPrefChange) {
   EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(2u));
 }
 
+// Test that new extensions are always visible on installation and inserted at
+// the "end" of the visible section.
+TEST_F(ExtensionToolbarModelUnitTest, NewToolbarExtensionsAreVisible) {
+  Init();
+
+  // Three extensions with actions.
+  scoped_refptr<const Extension> extension_a =
+      extension_action_test_util::CreateActionExtension(
+          "a", extension_action_test_util::BROWSER_ACTION);
+  scoped_refptr<const Extension> extension_b =
+      extension_action_test_util::CreateActionExtension(
+          "b", extension_action_test_util::BROWSER_ACTION);
+  scoped_refptr<const Extension> extension_c =
+      extension_action_test_util::CreateActionExtension(
+          "c", extension_action_test_util::BROWSER_ACTION);
+  scoped_refptr<const Extension> extension_d =
+      extension_action_test_util::CreateActionExtension(
+          "d", extension_action_test_util::BROWSER_ACTION);
+
+  // We should start off without any extensions.
+  EXPECT_EQ(0u, num_toolbar_items());
+  EXPECT_EQ(0u, toolbar_model()->visible_icon_count());
+
+  // Add one extension. It should be visible.
+  service()->AddExtension(extension_a.get());
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(extension_a.get(), GetExtensionAtIndex(0u));
+
+  // Hide all extensions.
+  toolbar_model()->SetVisibleIconCount(0);
+  EXPECT_EQ(0u, toolbar_model()->visible_icon_count());
+
+  // Add a new extension - it should be visible, so it should be in the first
+  // index. The other extension should remain hidden.
+  service()->AddExtension(extension_b.get());
+  EXPECT_EQ(2u, num_toolbar_items());
+  EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(extension_b.get(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_a.get(), GetExtensionAtIndex(1u));
+
+  // Show all extensions.
+  toolbar_model()->SetVisibleIconCount(2);
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
+
+  // Add the third extension. Since all extensions are visible, it should go in
+  // the last index.
+  service()->AddExtension(extension_c.get());
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(3u, toolbar_model()->visible_icon_count());
+  EXPECT_TRUE(toolbar_model()->all_icons_visible());
+  EXPECT_EQ(extension_b.get(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_a.get(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_c.get(), GetExtensionAtIndex(2u));
+
+  // Hide one extension (two remaining visible).
+  toolbar_model()->SetVisibleIconCount(2);
+  EXPECT_EQ(2u, toolbar_model()->visible_icon_count());
+
+  // Add a fourth extension. It should go at the end of the visible section and
+  // be visible, so it increases visible count by 1, and goes into the third
+  // index. The hidden extension should remain hidden.
+  service()->AddExtension(extension_d.get());
+  EXPECT_EQ(4u, num_toolbar_items());
+  EXPECT_EQ(3u, toolbar_model()->visible_icon_count());
+  EXPECT_EQ(extension_b.get(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_a.get(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_d.get(), GetExtensionAtIndex(2u));
+  EXPECT_EQ(extension_c.get(), GetExtensionAtIndex(3u));
+}
+
 TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarHighlightMode) {
   Init();
 

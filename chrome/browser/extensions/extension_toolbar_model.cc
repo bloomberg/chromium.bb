@@ -312,45 +312,68 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
       std::find(last_known_positions_.begin(),
                 last_known_positions_.end(),
                 extension->id()) == last_known_positions_.end();
-  size_t new_index = is_new_extension ? toolbar_items_.size() :
-      FindNewPositionFromLastKnownGood(extension);
-  toolbar_items_.insert(toolbar_items_.begin() + new_index,
-                        make_scoped_refptr(extension));
+
+  // New extensions go at the right (end) of the visible extensions. Other
+  // extensions go at their previous position.
+  size_t new_index = 0;
   if (is_new_extension) {
-    last_known_positions_.push_back(extension->id());
+    new_index = visible_icon_count();
+    // For the last-known position, we use the index of the extension that is
+    // just before this extension, plus one. (Note that this isn't the same
+    // as new_index + 1, because last_known_positions_ can include disabled
+    // extensions.)
+    int new_last_known_index =
+        new_index == 0 ? 0 :
+        std::find(last_known_positions_.begin(),
+                  last_known_positions_.end(),
+                  toolbar_items_[new_index - 1]->id()) -
+            last_known_positions_.begin() + 1;
+    last_known_positions_.insert(
+        last_known_positions_.begin() + new_last_known_index, extension->id());
     UpdatePrefs();
+  } else {
+    new_index = FindNewPositionFromLastKnownGood(extension);
   }
 
-  MaybeUpdateVisibilityPref(extension, new_index);
+  toolbar_items_.insert(toolbar_items_.begin() + new_index, extension);
 
   // If we're currently highlighting, then even though we add a browser action
   // to the full list (|toolbar_items_|, there won't be another *visible*
   // browser action, which was what the observers care about.
   if (!is_highlighting_) {
-    // If this is an incognito profile, we also have to check to make sure the
-    // overflow matches the main bar's status.
-    if (profile_->IsOffTheRecord()) {
+    FOR_EACH_OBSERVER(
+        Observer, observers_, ToolbarExtensionAdded(extension, new_index));
+
+    int visible_count_delta = 0;
+    if (is_new_extension && !all_icons_visible()) {
+      // If this is a new extension (and not all extensions are visible), we
+      // expand the toolbar out so that the new one can be seen.
+      visible_count_delta = 1;
+    } else if (profile_->IsOffTheRecord()) {
+      // If this is an incognito profile, we also have to check to make sure the
+      // overflow matches the main bar's status.
       ExtensionToolbarModel* main_model =
           ExtensionToolbarModel::Get(profile_->GetOriginalProfile());
       // Find what the index will be in the main bar. Because Observer calls are
       // nondeterministic, we can't just assume the main bar will have the
       // extension and look it up.
-      size_t main_index = is_new_extension ?
-          main_model->toolbar_items_.size() :
+      size_t main_index =
           main_model->FindNewPositionFromLastKnownGood(extension);
       bool visible = main_index < main_model->visible_icon_count();
       // We may need to adjust the visible count if the incognito bar isn't
       // showing all icons and this one is visible, or if it is showing all
       // icons and this is hidden.
       if (visible && !all_icons_visible())
-        SetVisibleIconCount(visible_icon_count() + 1);
+        visible_count_delta = 1;
       else if (!visible && all_icons_visible())
-        SetVisibleIconCount(visible_icon_count() - 1);
+        visible_count_delta = -1;
     }
 
-    FOR_EACH_OBSERVER(
-        Observer, observers_, ToolbarExtensionAdded(extension, new_index));
+    if (visible_count_delta)
+      SetVisibleIconCount(visible_icon_count() + visible_count_delta);
   }
+
+  MaybeUpdateVisibilityPref(extension, new_index);
 }
 
 void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
