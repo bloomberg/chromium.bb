@@ -189,7 +189,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
       extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
                             IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       base::UTF8ToUTF16(extension->name()));
-  extension_misc::ExtensionIcons size(extension_misc::EXTENSION_ICON_MEDIUM);
+  extension_misc::ExtensionIcons size(extension_misc::EXTENSION_ICON_LARGE);
   extensions::ExtensionResource resource =
       extensions::IconsInfo::GetIconResource(
           extension, size, ExtensionIconSet::MATCH_SMALLER);
