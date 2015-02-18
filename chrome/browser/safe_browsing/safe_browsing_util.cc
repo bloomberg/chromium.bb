@@ -547,7 +547,7 @@ UnwantedStatus GetUnwantedTrialGroup() {
     return UWS_ON_INVISIBLE;
   if (status == kOn)
     return UWS_ON;
-  return UWS_OFF;
+  return UWS_ON;
 }
 
 }  // namespace safe_browsing_util
