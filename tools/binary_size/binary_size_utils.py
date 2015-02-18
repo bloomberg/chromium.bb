@@ -23,7 +23,7 @@ def ParseNm(nm_lines):
   """
 
   # Match lines with size, symbol, optional location, optional discriminator
-  sym_re = re.compile(r'^[0-9a-f]{8,} ' # address (8+ hex digits)
+  sym_re = re.compile(r'^([0-9a-f]{8,}) ' # address (8+ hex digits)
                       '([0-9a-f]{8,}) ' # size (8+ hex digits)
                       '(.) ' # symbol type, one character
                       '([^\t]+)' # symbol name, separated from next by tab
@@ -39,12 +39,12 @@ def ParseNm(nm_lines):
     line = line.rstrip()
     match = sym_re.match(line)
     if match:
-      size, sym_type, sym = match.groups()[0:3]
+      address, size, sym_type, sym = match.groups()[0:4]
       size = int(size, 16)
       if sym_type in ('B', 'b'):
         continue  # skip all BSS for now.
-      path = match.group(4)
-      yield sym, sym_type, size, path
+      path = match.group(5)
+      yield sym, sym_type, size, path, address
       continue
     match = addr_re.match(line)
     if match:

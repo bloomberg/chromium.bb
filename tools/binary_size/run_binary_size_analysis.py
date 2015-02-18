@@ -169,7 +169,7 @@ def MakeCompactTree(symbols, symbol_path_origin_dir):
             NODE_MAX_DEPTH_KEY: 0}
   seen_symbol_with_path = False
   cwd = os.path.abspath(os.getcwd())
-  for symbol_name, symbol_type, symbol_size, file_path in symbols:
+  for symbol_name, symbol_type, symbol_size, file_path, _address in symbols:
 
     if 'vtable for ' in symbol_name:
       symbol_type = '@'  # hack to categorize these separately
@@ -231,7 +231,7 @@ def DumpCompactTree(symbols, symbol_path_origin_dir, outfile):
 
 def MakeSourceMap(symbols):
   sources = {}
-  for _sym, _symbol_type, size, path in symbols:
+  for _sym, _symbol_type, size, path, _address in symbols:
     key = None
     if path:
       key = os.path.normpath(path)
