@@ -195,7 +195,7 @@ class Config {
                        formal_type.getTypePtr())) {
       if (parm_type->getDecl()->getName() == kVisitorDispatcherName) {
         // Unresolved, but its parameter name is VisitorDispatcher.
-        return false;
+        return true;
       }
     }
 
