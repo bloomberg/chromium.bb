@@ -1673,8 +1673,6 @@ def _CreateBaseConfigs():
       base.update(profile='minimal')
     if board in _nofactory_boards:
       base.update(factory=False)
-    if board in _freon_boards:
-      base.update(vm_tests=[])
     if board in _toolchains_from_source:
       base.update(usepkg_toolchain=False)
 

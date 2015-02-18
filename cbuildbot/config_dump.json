@@ -1173,8 +1173,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -1261,7 +1260,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -1340,8 +1343,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "auron-chromium-pfq": {
         "boards": [
@@ -1361,8 +1363,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "auron-compile-only-pre-cq": {
         "archive": false,
@@ -1525,8 +1526,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "auron-full-group": {
         "child_configs": [
@@ -1554,8 +1554,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -1721,7 +1720,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron-release": {
         "afdo_use": true,
@@ -1770,7 +1771,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "auron-release-afdo": {
         "child_configs": [
@@ -2028,7 +2033,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -2160,7 +2169,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron-tot-chromium-pfq-informational": {
         "boards": [
@@ -2176,7 +2187,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_paine-chrome-pfq": {
         "boards": [
@@ -2198,8 +2211,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "auron_paine-chromium-pfq": {
         "boards": [
@@ -2219,8 +2231,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "auron_paine-compile-only-pre-cq": {
         "archive": false,
@@ -2278,8 +2289,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "auron_paine-no-vmtest-pre-cq": {
         "archive": false,
@@ -2379,7 +2389,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_paine-release": {
         "afdo_use": true,
@@ -2428,7 +2440,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "auron_paine-release-afdo": {
         "child_configs": [
@@ -2654,7 +2670,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_paine-tot-chromium-pfq-informational": {
         "boards": [
@@ -2670,7 +2688,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_yuna-chrome-pfq": {
         "boards": [
@@ -2692,8 +2712,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "auron_yuna-chromium-pfq": {
         "boards": [
@@ -2713,8 +2732,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "auron_yuna-compile-only-pre-cq": {
         "archive": false,
@@ -2772,8 +2790,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "auron_yuna-no-vmtest-pre-cq": {
         "archive": false,
@@ -2873,7 +2890,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_yuna-release": {
         "afdo_use": true,
@@ -2922,7 +2941,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "auron_yuna-release-afdo": {
         "child_configs": [
@@ -3148,7 +3171,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_yuna-tot-chromium-pfq-informational": {
         "boards": [
@@ -3164,7 +3189,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "banjo-chrome-pfq": {
         "boards": [
@@ -4635,8 +4662,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -4723,7 +4749,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -4809,8 +4839,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -4927,7 +4956,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -6640,8 +6673,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "butterfly_freon-chromium-pfq": {
         "boards": [
@@ -6661,8 +6693,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "butterfly_freon-compile-only-pre-cq": {
         "archive": false,
@@ -6720,8 +6751,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "butterfly_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -6821,7 +6851,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "butterfly_freon-release": {
         "afdo_use": true,
@@ -6870,7 +6902,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "butterfly_freon-release-afdo": {
         "child_configs": [
@@ -7096,7 +7132,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "butterfly_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -7112,7 +7150,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "candy-chrome-pfq": {
         "boards": [
@@ -7740,8 +7780,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "candy_freon-chromium-pfq": {
         "boards": [
@@ -7761,8 +7800,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "candy_freon-compile-only-pre-cq": {
         "archive": false,
@@ -7820,8 +7858,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "candy_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -7921,7 +7958,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "candy_freon-release": {
         "afdo_use": true,
@@ -7970,7 +8009,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "candy_freon-release-afdo": {
         "child_configs": [
@@ -8196,7 +8239,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "candy_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -8212,7 +8257,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "chromiumos-sdk": {
         "active_waterfall": "chromiumos",
@@ -8260,8 +8307,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "cid-chromium-pfq": {
         "boards": [
@@ -8281,8 +8327,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "cid-compile-only-pre-cq": {
         "archive": false,
@@ -8340,8 +8385,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "cid-no-vmtest-pre-cq": {
         "archive": false,
@@ -8441,7 +8485,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "cid-release": {
         "afdo_use": true,
@@ -8490,7 +8536,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "cid-release-afdo": {
         "child_configs": [
@@ -8716,7 +8766,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "cid-tot-chromium-pfq-informational": {
         "boards": [
@@ -8732,7 +8784,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "clapper-chrome-pfq": {
         "boards": [
@@ -9360,8 +9414,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "clapper_freon-chromium-pfq": {
         "boards": [
@@ -9381,8 +9434,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "clapper_freon-compile-only-pre-cq": {
         "archive": false,
@@ -9440,8 +9492,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "clapper_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -9541,7 +9592,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "clapper_freon-release": {
         "afdo_use": true,
@@ -9590,7 +9643,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "clapper_freon-release-afdo": {
         "child_configs": [
@@ -9816,7 +9873,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "clapper_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -9832,7 +9891,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "cosmos-payloads": {
         "boards": [
@@ -14074,8 +14135,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "enguarde_freon-chromium-pfq": {
         "boards": [
@@ -14095,8 +14155,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "enguarde_freon-compile-only-pre-cq": {
         "archive": false,
@@ -14154,8 +14213,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "enguarde_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -14255,7 +14313,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "enguarde_freon-release": {
         "afdo_use": true,
@@ -14304,7 +14364,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "enguarde_freon-release-afdo": {
         "child_configs": [
@@ -14530,7 +14594,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "enguarde_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -14546,7 +14612,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "expresso-chrome-pfq": {
         "boards": [
@@ -15174,8 +15242,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "expresso_freon-chromium-pfq": {
         "boards": [
@@ -15195,8 +15262,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "expresso_freon-compile-only-pre-cq": {
         "archive": false,
@@ -15254,8 +15320,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "expresso_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -15355,7 +15420,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "expresso_freon-release": {
         "afdo_use": true,
@@ -15404,7 +15471,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "expresso_freon-release-afdo": {
         "child_configs": [
@@ -15630,7 +15701,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "expresso_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -15646,7 +15719,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "external-mixed-pre-cq": {
         "child_configs": [
@@ -15730,8 +15805,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "falco-chromium-pfq": {
         "boards": [
@@ -15751,8 +15825,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "falco-compile-only-pre-cq": {
         "archive": false,
@@ -15847,8 +15920,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "falco-full-compile-paladin": {
         "active_waterfall": "chromeos",
@@ -15979,7 +16051,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "falco-release": {
         "afdo_use": true,
@@ -16028,7 +16102,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "falco-release-afdo": {
         "child_configs": [
@@ -16254,7 +16332,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "falco-tot-chromium-pfq-informational": {
         "boards": [
@@ -16270,7 +16350,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "falco_li-chrome-pfq": {
         "boards": [
@@ -16292,8 +16374,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "falco_li-chromium-pfq": {
         "boards": [
@@ -16313,8 +16394,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "falco_li-compile-only-pre-cq": {
         "archive": false,
@@ -16372,8 +16452,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "falco_li-no-vmtest-pre-cq": {
         "archive": false,
@@ -16473,7 +16552,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "falco_li-release": {
         "afdo_use": true,
@@ -16522,7 +16603,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "falco_li-release-afdo": {
         "child_configs": [
@@ -16748,7 +16833,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "falco_li-tot-chromium-pfq-informational": {
         "boards": [
@@ -16764,7 +16851,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "gizmo-chromium-pfq": {
         "boards": [
@@ -17590,8 +17679,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "glimmer_freon-chromium-pfq": {
         "boards": [
@@ -17611,8 +17699,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "glimmer_freon-compile-only-pre-cq": {
         "archive": false,
@@ -17670,8 +17757,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "glimmer_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -17771,7 +17857,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "glimmer_freon-release": {
         "afdo_use": true,
@@ -17820,7 +17908,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "glimmer_freon-release-afdo": {
         "child_configs": [
@@ -18046,7 +18138,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "glimmer_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -18062,7 +18156,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "gnawty-chrome-pfq": {
         "boards": [
@@ -18690,8 +18786,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "gnawty_freon-chromium-pfq": {
         "boards": [
@@ -18711,8 +18806,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "gnawty_freon-compile-only-pre-cq": {
         "archive": false,
@@ -18770,8 +18864,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "gnawty_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -18871,7 +18964,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "gnawty_freon-release": {
         "afdo_use": true,
@@ -18920,7 +19015,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "gnawty_freon-release-afdo": {
         "child_configs": [
@@ -19146,7 +19245,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "gnawty_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -19162,7 +19263,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "guado-chrome-pfq": {
         "boards": [
@@ -19184,8 +19287,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "guado-chromium-pfq": {
         "boards": [
@@ -19205,8 +19307,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "guado-compile-only-pre-cq": {
         "archive": false,
@@ -19264,8 +19365,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "guado-no-vmtest-pre-cq": {
         "archive": false,
@@ -19365,7 +19465,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "guado-release": {
         "afdo_use": true,
@@ -19414,7 +19516,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "guado-release-afdo": {
         "child_configs": [
@@ -19640,7 +19746,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "guado-tot-chromium-pfq-informational": {
         "boards": [
@@ -19656,7 +19764,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "internal-toolchain-major": {
         "active_waterfall": "chromeos",
@@ -19750,8 +19860,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -19867,7 +19976,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -20173,8 +20286,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "jecht-chromium-pfq": {
         "boards": [
@@ -20194,8 +20306,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "jecht-compile-only-pre-cq": {
         "archive": false,
@@ -20358,8 +20469,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "jecht-full-group": {
         "child_configs": [
@@ -20387,8 +20497,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -20582,7 +20691,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "jecht-release": {
         "afdo_use": true,
@@ -20631,7 +20742,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "jecht-release-afdo": {
         "child_configs": [
@@ -20889,7 +21004,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -21073,7 +21192,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "jecht-tot-chromium-pfq-informational": {
         "boards": [
@@ -21089,7 +21210,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "kayle-chrome-pfq": {
         "boards": [
@@ -22254,8 +22377,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "kip_freon-chromium-pfq": {
         "boards": [
@@ -22275,8 +22397,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "kip_freon-compile-only-pre-cq": {
         "archive": false,
@@ -22334,8 +22455,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "kip_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -22435,7 +22555,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "kip_freon-release": {
         "afdo_use": true,
@@ -22484,7 +22606,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "kip_freon-release-afdo": {
         "child_configs": [
@@ -22710,7 +22836,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "kip_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -22726,7 +22854,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lemmings-chrome-pfq": {
         "boards": [
@@ -23223,8 +23353,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "leon-chromium-pfq": {
         "boards": [
@@ -23244,8 +23373,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "leon-compile-only-pre-cq": {
         "archive": false,
@@ -23408,8 +23536,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "leon-no-vmtest-pre-cq": {
         "archive": false,
@@ -23511,7 +23638,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "leon-release": {
         "afdo_use": true,
@@ -23560,7 +23689,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "leon-release-afdo": {
         "child_configs": [
@@ -23786,7 +23919,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "leon-tot-chromium-pfq-informational": {
         "boards": [
@@ -23802,7 +23937,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "link-chrome-pfq": {
         "boards": [
@@ -23824,8 +23961,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "link-chromium-pfq": {
         "boards": [
@@ -23845,8 +23981,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "link-compile-only-pre-cq": {
         "archive": false,
@@ -24010,8 +24145,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "link-no-vmtest-pre-cq": {
         "archive": false,
@@ -24117,7 +24251,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "link-release": {
         "afdo_use": true,
@@ -24396,7 +24532,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "link-tot-chromium-pfq-informational": {
         "boards": [
@@ -24412,7 +24550,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "link-tot-paladin": {
         "boards": [
@@ -24457,8 +24597,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lulu-chromium-pfq": {
         "boards": [
@@ -24478,8 +24617,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lulu-compile-only-pre-cq": {
         "archive": false,
@@ -24537,8 +24675,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "lulu-no-vmtest-pre-cq": {
         "archive": false,
@@ -24638,7 +24775,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lulu-release": {
         "afdo_use": true,
@@ -24687,7 +24826,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "lulu-release-afdo": {
         "child_configs": [
@@ -24913,7 +25056,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lulu-tot-chromium-pfq-informational": {
         "boards": [
@@ -24929,7 +25074,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lumpy-chrome-perf": {
         "boards": [
@@ -25605,8 +25752,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lumpy_freon-chromium-pfq": {
         "boards": [
@@ -25626,8 +25772,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lumpy_freon-compile-only-pre-cq": {
         "archive": false,
@@ -25685,8 +25830,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "lumpy_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -25786,7 +25930,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lumpy_freon-release": {
         "afdo_use": true,
@@ -25835,7 +25981,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "lumpy_freon-release-afdo": {
         "child_configs": [
@@ -26061,7 +26211,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lumpy_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -26077,7 +26229,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "mario-incremental": {
         "active_waterfall": "chromeos",
@@ -26220,8 +26374,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "mccloud-chromium-pfq": {
         "boards": [
@@ -26241,8 +26394,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "mccloud-compile-only-pre-cq": {
         "archive": false,
@@ -26300,8 +26452,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "mccloud-no-vmtest-pre-cq": {
         "archive": false,
@@ -26401,7 +26552,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "mccloud-release": {
         "afdo_use": true,
@@ -26450,7 +26603,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "mccloud-release-afdo": {
         "child_configs": [
@@ -26676,7 +26833,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "mccloud-tot-chromium-pfq-informational": {
         "boards": [
@@ -26692,7 +26851,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "mipseb-n32-generic-chromium-pfq": {
         "boards": [
@@ -27998,8 +28159,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "monroe-chromium-pfq": {
         "boards": [
@@ -28019,8 +28179,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "monroe-compile-only-pre-cq": {
         "archive": false,
@@ -28115,8 +28274,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "monroe-no-vmtest-pre-cq": {
         "archive": false,
@@ -28218,7 +28376,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "monroe-release": {
         "afdo_use": true,
@@ -28267,7 +28427,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "monroe-release-afdo": {
         "child_configs": [
@@ -28493,7 +28657,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "monroe-tot-chromium-pfq-informational": {
         "boards": [
@@ -28509,7 +28675,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "nyan-chrome-pfq": {
         "boards": [
@@ -31440,8 +31608,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "panther-chromium-pfq": {
         "boards": [
@@ -31461,8 +31628,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "panther-compile-only-pre-cq": {
         "archive": false,
@@ -31557,8 +31723,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "panther-no-vmtest-pre-cq": {
         "archive": false,
@@ -31660,7 +31825,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "panther-release": {
         "afdo_use": true,
@@ -31709,7 +31876,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "panther-release-afdo": {
         "child_configs": [
@@ -31947,7 +32118,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "panther-tot-chromium-pfq-informational": {
         "boards": [
@@ -31963,7 +32136,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "panther_embedded-minimal-paladin": {
         "active_waterfall": "chromiumos",
@@ -33238,8 +33413,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "parrot_freon-chromium-pfq": {
         "boards": [
@@ -33259,8 +33433,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "parrot_freon-compile-only-pre-cq": {
         "archive": false,
@@ -33318,8 +33491,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "parrot_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -33419,7 +33591,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot_freon-release": {
         "afdo_use": true,
@@ -33468,7 +33642,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "parrot_freon-release-afdo": {
         "child_configs": [
@@ -33694,7 +33872,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -33710,7 +33890,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot_ivb-chrome-pfq": {
         "boards": [
@@ -33807,8 +33989,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "parrot_ivb-freon-chromium-pfq": {
         "boards": [
@@ -33828,8 +34009,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "parrot_ivb-freon-compile-only-pre-cq": {
         "archive": false,
@@ -33887,8 +34067,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "parrot_ivb-freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -33988,7 +34167,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot_ivb-freon-release": {
         "afdo_use": true,
@@ -34037,7 +34218,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "parrot_ivb-freon-release-afdo": {
         "child_configs": [
@@ -34263,7 +34448,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot_ivb-freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -34279,7 +34466,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parrot_ivb-full": {
         "archive_build_debug": true,
@@ -36610,8 +36799,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "peppy-chromium-pfq": {
         "boards": [
@@ -36631,8 +36819,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "peppy-compile-only-pre-cq": {
         "archive": false,
@@ -36727,8 +36914,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "peppy-no-vmtest-pre-cq": {
         "archive": false,
@@ -36833,7 +37019,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "peppy-release": {
         "active_waterfall": "chromeos",
@@ -36883,7 +37071,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "peppy-release-afdo": {
         "child_configs": [
@@ -37109,7 +37301,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "peppy-tot-chromium-pfq-informational": {
         "boards": [
@@ -37125,7 +37319,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "pineview-full-group": {
         "child_configs": [
@@ -38906,8 +39102,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "quawks_freon-chromium-pfq": {
         "boards": [
@@ -38927,8 +39122,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "quawks_freon-compile-only-pre-cq": {
         "archive": false,
@@ -38986,8 +39180,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "quawks_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -39087,7 +39280,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "quawks_freon-release": {
         "afdo_use": true,
@@ -39136,7 +39331,11 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "quawks_freon-release-afdo": {
         "child_configs": [
@@ -39362,7 +39561,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "quawks_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -39378,7 +39579,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rambi-a-full-group": {
         "child_configs": [
@@ -40874,8 +41077,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -41022,7 +41224,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -41213,8 +41419,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -41361,7 +41566,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -41552,8 +41761,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -41700,7 +41908,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -42315,8 +42527,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "rambi_freon-chromium-pfq": {
         "boards": [
@@ -42336,8 +42547,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "rambi_freon-compile-only-pre-cq": {
         "archive": false,
@@ -42395,8 +42605,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "rambi_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -42496,7 +42705,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rambi_freon-release": {
         "afdo_use": true,
@@ -42545,7 +42756,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "rambi_freon-release-afdo": {
         "child_configs": [
@@ -42771,7 +42986,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rambi_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -42787,7 +43004,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "refresh-packages": {
         "active_waterfall": "chromiumos",
@@ -42819,8 +43038,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "rikku-chromium-pfq": {
         "boards": [
@@ -42840,8 +43058,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "rikku-compile-only-pre-cq": {
         "archive": false,
@@ -43004,8 +43221,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "rikku-no-vmtest-pre-cq": {
         "archive": false,
@@ -43105,7 +43321,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rikku-release": {
         "afdo_use": true,
@@ -43154,7 +43372,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "rikku-release-afdo": {
         "child_configs": [
@@ -43380,7 +43602,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rikku-tot-chromium-pfq-informational": {
         "boards": [
@@ -43396,7 +43620,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "rush-chrome-pfq": {
         "boards": [
@@ -44402,8 +44628,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "samus-chromium-pfq": {
         "boards": [
@@ -44423,8 +44648,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "samus-compile-only-pre-cq": {
         "archive": false,
@@ -44587,8 +44811,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "samus-no-vmtest-pre-cq": {
         "archive": false,
@@ -44690,7 +44913,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "samus-release": {
         "active_waterfall": "chromeos",
@@ -44741,7 +44966,11 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "samus-release-afdo": {
         "child_configs": [
@@ -44967,7 +45196,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "samus-tot-chromium-pfq-informational": {
         "boards": [
@@ -44983,7 +45214,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "sandybridge-freon-full-group": {
         "child_configs": [
@@ -45011,8 +45244,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -45159,7 +45391,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -45832,8 +46068,7 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "usepkg_build_packages": false,
-                "vm_tests": []
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -46339,7 +46574,11 @@
                     "chrome_internal"
                 ],
                 "usepkg_build_packages": false,
-                "vm_tests": []
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
             },
             {
                 "afdo_use": true,
@@ -47171,8 +47410,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "squawks_freon-chromium-pfq": {
         "boards": [
@@ -47192,8 +47430,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "squawks_freon-compile-only-pre-cq": {
         "archive": false,
@@ -47251,8 +47488,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "squawks_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -47352,7 +47588,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "squawks_freon-release": {
         "afdo_use": true,
@@ -47401,7 +47639,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "squawks_freon-release-afdo": {
         "child_configs": [
@@ -47627,7 +47869,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "squawks_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -47643,7 +47887,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "storm-chrome-pfq": {
         "boards": [
@@ -48750,8 +48996,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "stout_freon-chromium-pfq": {
         "boards": [
@@ -48771,8 +49016,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "stout_freon-compile-only-pre-cq": {
         "archive": false,
@@ -48830,8 +49074,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "stout_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -48931,7 +49174,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stout_freon-release": {
         "afdo_use": true,
@@ -48980,7 +49225,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "stout_freon-release-afdo": {
         "child_configs": [
@@ -49206,7 +49455,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stout_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -49222,7 +49473,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "strago-chrome-pfq": {
         "boards": [
@@ -49244,8 +49497,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "strago-chromium-pfq": {
         "boards": [
@@ -49265,8 +49517,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "strago-compile-only-pre-cq": {
         "archive": false,
@@ -49429,8 +49680,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "strago-no-vmtest-pre-cq": {
         "archive": false,
@@ -49530,7 +49780,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "strago-release": {
         "active_waterfall": "chromeos",
@@ -49580,7 +49832,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "strago-release-afdo": {
         "child_configs": [
@@ -49806,7 +50062,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "strago-tot-chromium-pfq-informational": {
         "boards": [
@@ -49822,7 +50080,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stumpy-chrome-pfq": {
         "boards": [
@@ -50399,8 +50659,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "stumpy_freon-chromium-pfq": {
         "boards": [
@@ -50420,8 +50679,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "stumpy_freon-compile-only-pre-cq": {
         "archive": false,
@@ -50479,8 +50737,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "stumpy_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -50580,7 +50837,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stumpy_freon-release": {
         "afdo_use": true,
@@ -50629,7 +50888,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "stumpy_freon-release-afdo": {
         "child_configs": [
@@ -50855,7 +51118,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stumpy_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -50871,7 +51136,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stumpy_moblab-chrome-pfq": {
         "boards": [
@@ -51994,8 +52261,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "swanky_freon-chromium-pfq": {
         "boards": [
@@ -52015,8 +52281,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "swanky_freon-compile-only-pre-cq": {
         "archive": false,
@@ -52074,8 +52339,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "swanky_freon-no-vmtest-pre-cq": {
         "archive": false,
@@ -52175,7 +52439,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "swanky_freon-release": {
         "afdo_use": true,
@@ -52224,7 +52490,11 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "swanky_freon-release-afdo": {
         "child_configs": [
@@ -52450,7 +52720,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "swanky_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -52466,7 +52738,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "test-ap-group": {
         "child_configs": [
@@ -52519,8 +52793,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "tidus-chromium-pfq": {
         "boards": [
@@ -52540,8 +52813,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "tidus-compile-only-pre-cq": {
         "archive": false,
@@ -52599,8 +52871,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "tidus-no-vmtest-pre-cq": {
         "archive": false,
@@ -52700,7 +52971,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "tidus-release": {
         "afdo_use": true,
@@ -52749,7 +53022,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "tidus-release-afdo": {
         "child_configs": [
@@ -52975,7 +53252,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "tidus-tot-chromium-pfq-informational": {
         "boards": [
@@ -52991,7 +53270,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "toolchain-major": {
         "archive_build_debug": true,
@@ -53069,8 +53350,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "tricky-chromium-pfq": {
         "boards": [
@@ -53090,8 +53370,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "tricky-compile-only-pre-cq": {
         "archive": false,
@@ -53149,8 +53428,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "tricky-no-vmtest-pre-cq": {
         "archive": false,
@@ -53251,7 +53529,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "tricky-release": {
         "afdo_use": true,
@@ -53300,7 +53580,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "tricky-release-afdo": {
         "child_configs": [
@@ -53526,7 +53810,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "tricky-tot-chromium-pfq-informational": {
         "boards": [
@@ -53542,7 +53828,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "urara-chrome-pfq": {
         "boards": [
@@ -61595,8 +61883,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "wolf-chromium-pfq": {
         "boards": [
@@ -61616,8 +61903,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "wolf-compile-only-pre-cq": {
         "archive": false,
@@ -61712,8 +61998,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "wolf-no-vmtest-pre-cq": {
         "archive": false,
@@ -61818,7 +62103,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "wolf-release": {
         "afdo_use": true,
@@ -61867,7 +62154,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "wolf-release-afdo": {
         "child_configs": [
@@ -62093,7 +62384,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "wolf-tot-chromium-pfq-informational": {
         "boards": [
@@ -62109,7 +62402,9 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "wolf-tot-paladin": {
         "active_waterfall": "chromeos",
@@ -65635,8 +65930,7 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "zako-chromium-pfq": {
         "boards": [
@@ -65656,8 +65950,7 @@
         "uprev": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "zako-compile-only-pre-cq": {
         "archive": false,
@@ -65820,8 +66113,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "vm_tests": []
+        "usepkg_build_packages": false
     },
     "zako-no-vmtest-pre-cq": {
         "archive": false,
@@ -65921,7 +66213,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "zako-release": {
         "afdo_use": true,
@@ -65970,7 +66264,11 @@
             "chrome_internal"
         ],
         "usepkg_build_packages": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
     },
     "zako-release-afdo": {
         "child_configs": [
@@ -66196,7 +66494,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "zako-tot-chromium-pfq-informational": {
         "boards": [
@@ -66212,6 +66512,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     }
 }
