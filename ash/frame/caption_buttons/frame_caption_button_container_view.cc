@@ -151,11 +151,9 @@ void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
 void FrameCaptionButtonContainerView::SetButtonImages(
     CaptionButtonIcon icon,
     int icon_image_id,
-    int inactive_icon_image_id,
     int hovered_background_image_id,
     int pressed_background_image_id) {
   button_icon_id_map_[icon] = ButtonIconIds(icon_image_id,
-                                            inactive_icon_image_id,
                                             hovered_background_image_id,
                                             pressed_background_image_id);
   FrameCaptionButton* buttons[] = {
@@ -166,7 +164,6 @@ void FrameCaptionButtonContainerView::SetButtonImages(
       buttons[i]->SetImages(icon,
                             FrameCaptionButton::ANIMATE_NO,
                             icon_image_id,
-                            inactive_icon_image_id,
                             hovered_background_image_id,
                             pressed_background_image_id);
     }
@@ -307,7 +304,6 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
     button->SetImages(icon,
                       fcb_animate,
                       it->second.icon_image_id,
-                      it->second.inactive_icon_image_id,
                       it->second.hovered_background_image_id,
                       it->second.pressed_background_image_id);
   }
@@ -418,18 +414,15 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
 
 FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds()
     : icon_image_id(-1),
-      inactive_icon_image_id(-1),
       hovered_background_image_id(-1),
       pressed_background_image_id(-1) {
 }
 
 FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds(
     int icon_id,
-    int inactive_icon_id,
     int hovered_background_id,
     int pressed_background_id)
     : icon_image_id(icon_id),
-      inactive_icon_image_id(inactive_icon_id),
       hovered_background_image_id(hovered_background_id),
       pressed_background_image_id(pressed_background_id) {
 }

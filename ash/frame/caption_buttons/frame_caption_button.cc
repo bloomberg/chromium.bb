@@ -20,6 +20,9 @@ const int kSwapImagesAnimationDurationMs = 200;
 // animation as a ratio of |kSwapImagesAnimationDurationMs|.
 const float kFadeOutRatio = 0.5f;
 
+// The alpha to draw inactive icons with.
+const float kInactiveIconAlpha = 0.2f;
+
 }  // namespace
 
 // static
@@ -32,7 +35,6 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       paint_as_active_(false),
       alpha_(255),
       icon_image_id_(-1),
-      inactive_icon_image_id_(-1),
       hovered_background_image_id_(-1),
       pressed_background_image_id_(-1),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
@@ -49,7 +51,6 @@ FrameCaptionButton::~FrameCaptionButton() {
 void FrameCaptionButton::SetImages(CaptionButtonIcon icon,
                                    Animate animate,
                                    int icon_image_id,
-                                   int inactive_icon_image_id,
                                    int hovered_background_image_id,
                                    int pressed_background_image_id) {
   // The early return is dependant on |animate| because callers use SetImages()
@@ -57,24 +58,21 @@ void FrameCaptionButton::SetImages(CaptionButtonIcon icon,
   if (icon == icon_ &&
       (animate == ANIMATE_YES || !swap_images_animation_->is_animating()) &&
       icon_image_id == icon_image_id_ &&
-      inactive_icon_image_id == inactive_icon_image_id_ &&
       hovered_background_image_id == hovered_background_image_id_ &&
       pressed_background_image_id == pressed_background_image_id_) {
     return;
   }
 
   if (animate == ANIMATE_YES)
-    crossfade_icon_image_ = GetIconImageToPaint();
+    crossfade_icon_image_ = icon_image_;
 
   icon_ = icon;
   icon_image_id_ = icon_image_id;
-  inactive_icon_image_id_ = inactive_icon_image_id;
   hovered_background_image_id_ = hovered_background_image_id;
   pressed_background_image_id_ = pressed_background_image_id;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   icon_image_ = *rb.GetImageSkiaNamed(icon_image_id);
-  inactive_icon_image_ = *rb.GetImageSkiaNamed(inactive_icon_image_id);
   hovered_background_image_ = *rb.GetImageSkiaNamed(
       hovered_background_image_id);
   pressed_background_image_ = *rb.GetImageSkiaNamed(
@@ -127,12 +125,11 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
   if (icon_alpha < static_cast<int>(kFadeOutRatio * 255))
      crossfade_icon_alpha = static_cast<int>(255 - icon_alpha / kFadeOutRatio);
 
-  gfx::ImageSkia icon_image = GetIconImageToPaint();
   if (crossfade_icon_alpha > 0 && !crossfade_icon_image_.isNull()) {
-    gfx::Canvas icon_canvas(icon_image.size(), canvas->image_scale(), false);
+    gfx::Canvas icon_canvas(icon_image_.size(), canvas->image_scale(), false);
     SkPaint paint;
     paint.setAlpha(icon_alpha);
-    icon_canvas.DrawImageInt(icon_image, 0, 0, paint);
+    icon_canvas.DrawImageInt(icon_image_, 0, 0, paint);
 
     paint.setAlpha(crossfade_icon_alpha);
     paint.setXfermodeMode(SkXfermode::kPlus_Mode);
@@ -143,7 +140,7 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
   } else {
     if (!swap_images_animation_->is_animating())
       icon_alpha = alpha_;
-    PaintCentered(canvas, icon_image, icon_alpha);
+    PaintCentered(canvas, icon_image_, icon_alpha);
   }
 }
 
@@ -170,13 +167,12 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
   CustomButton::OnGestureEvent(event);
 }
 
-const gfx::ImageSkia& FrameCaptionButton::GetIconImageToPaint() const {
-  return paint_as_active_ ? icon_image_ : inactive_icon_image_;
-}
-
 void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
                                        const gfx::ImageSkia& to_center,
                                        int alpha) {
+  if (!paint_as_active_)
+    alpha *= kInactiveIconAlpha;
+
   SkPaint paint;
   paint.setAlpha(alpha);
   canvas->DrawImageInt(to_center,

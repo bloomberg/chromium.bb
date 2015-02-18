@@ -406,7 +406,6 @@ void BrowserHeaderPainterAsh::UpdateCaptionButtonImages() {
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_MINIMIZE,
       IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_MINIMIZE,
-      IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_MINIMIZE,
       hover_background_id,
       pressed_background_id);
 
@@ -418,25 +417,21 @@ void BrowserHeaderPainterAsh::UpdateCaptionButtonImages() {
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
       size_icon_id,
-      size_icon_id,
       hover_background_id,
       pressed_background_id);
 
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_CLOSE,
       IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_CLOSE,
-      IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_CLOSE,
       hover_background_id,
       pressed_background_id);
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
       IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_LEFT_SNAPPED,
-      IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_LEFT_SNAPPED,
       hover_background_id,
       pressed_background_id);
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_RIGHT_SNAPPED,
       IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_RIGHT_SNAPPED,
       hover_background_id,
       pressed_background_id);

@@ -53,4 +53,45 @@ TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {
             title_bounds.CenterPoint().y());
 }
 
+// Ensure the light icons are used when appropriate.
+TEST_F(DefaultHeaderPainterTest, LightIcons) {
+  scoped_ptr<Widget> w(CreateTestWidget());
+  ash::FrameCaptionButtonContainerView container(w.get());
+  views::StaticSizedView window_icon(gfx::Size(16, 16));
+  window_icon.SetBounds(0, 0, 16, 16);
+  w->SetBounds(gfx::Rect(0, 0, 500, 500));
+  w->Show();
+
+  DefaultHeaderPainter painter;
+  painter.Init(w.get(), w->non_client_view()->frame_view(), &container);
+
+  // Check by default light icons are not used.
+  painter.mode_ = HeaderPainter::MODE_ACTIVE;
+  EXPECT_EQ(false, painter.ShouldUseLightImages());
+  painter.mode_ = HeaderPainter::MODE_INACTIVE;
+  EXPECT_EQ(false, painter.ShouldUseLightImages());
+
+  // Check that setting dark colors should use light icons.
+  painter.SetFrameColors(SkColorSetRGB(0, 0, 0), SkColorSetRGB(0, 0, 0));
+  painter.mode_ = HeaderPainter::MODE_ACTIVE;
+  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  painter.mode_ = HeaderPainter::MODE_INACTIVE;
+  EXPECT_EQ(true, painter.ShouldUseLightImages());
+
+  // Check that inactive and active colors are used properly.
+  painter.SetFrameColors(SkColorSetRGB(0, 0, 0), SkColorSetRGB(255, 255, 255));
+  painter.mode_ = HeaderPainter::MODE_ACTIVE;
+  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  painter.mode_ = HeaderPainter::MODE_INACTIVE;
+  EXPECT_EQ(false, painter.ShouldUseLightImages());
+
+  // Check not so light or dark colors.
+  painter.SetFrameColors(SkColorSetRGB(70, 70, 70),
+                         SkColorSetRGB(200, 200, 200));
+  painter.mode_ = HeaderPainter::MODE_ACTIVE;
+  EXPECT_EQ(true, painter.ShouldUseLightImages());
+  painter.mode_ = HeaderPainter::MODE_INACTIVE;
+  EXPECT_EQ(false, painter.ShouldUseLightImages());
+}
+
 }  // namespace ash

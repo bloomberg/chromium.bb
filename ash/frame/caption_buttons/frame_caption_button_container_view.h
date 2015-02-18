@@ -69,7 +69,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // |icon| even if none of the buttons currently use |icon|.
   void SetButtonImages(CaptionButtonIcon icon,
                        int icon_image_id,
-                       int inactive_icon_image_id,
                        int hovered_background_image_id,
                        int pressed_background_image_id);
 
@@ -105,13 +104,11 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   struct ButtonIconIds {
     ButtonIconIds();
     ButtonIconIds(int icon_id,
-                  int inactive_icon_id,
                   int hovered_background_id,
                   int pressed_background_id);
     ~ButtonIconIds();
 
     int icon_image_id;
-    int inactive_icon_image_id;
     int hovered_background_image_id;
     int pressed_background_image_id;
   };

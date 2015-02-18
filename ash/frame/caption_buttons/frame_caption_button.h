@@ -38,7 +38,6 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   void SetImages(CaptionButtonIcon icon,
                  Animate animate,
                  int icon_image_id,
-                 int inactive_icon_image_id,
                  int hovered_background_image_id,
                  int pressed_background_image_id);
 
@@ -69,9 +68,6 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  // Returns the icon image to paint based on |paint_as_active_|.
-  const gfx::ImageSkia& GetIconImageToPaint() const;
-
   // Paints |to_center| centered within the button with |alpha|.
   void PaintCentered(gfx::Canvas* canvas,
                      const gfx::ImageSkia& to_center,
@@ -88,11 +84,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
   // The images and image ids used to paint the button.
   int icon_image_id_;
-  int inactive_icon_image_id_;
   int hovered_background_image_id_;
   int pressed_background_image_id_;
   gfx::ImageSkia icon_image_;
-  gfx::ImageSkia inactive_icon_image_;
   gfx::ImageSkia hovered_background_image_;
   gfx::ImageSkia pressed_background_image_;
 

@@ -57,6 +57,7 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, TitleIconAlignment);
+  FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, LightIcons);
 
   // gfx::AnimationDelegate override:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -74,8 +75,15 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Layout the left header view.
   void LayoutLeftHeaderView();
 
+  // Whether light caption images should be used. This is the case when the
+  // background of the frame is dark.
+  bool ShouldUseLightImages();
+
+  // Update all the images in the caption buttons.
+  void UpdateAllButtonImages();
+
   // Updates the size button's images.
-  void UpdateSizeButtonImages();
+  void UpdateSizeButtonImages(bool use_light_images);
 
   // Returns the header bounds in the coordinates of |view_|. The header is
   // assumed to be positioned at the top left corner of |view_| and to have the
