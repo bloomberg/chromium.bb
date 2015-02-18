@@ -1323,6 +1323,7 @@ interface Node
     attribute NOTATION_NODE
     attribute PROCESSING_INSTRUCTION_NODE
     attribute TEXT_NODE
+    getter baseURI
     getter childNodes
     getter firstChild
     getter lastChild

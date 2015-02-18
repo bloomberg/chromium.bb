@@ -62,7 +62,7 @@
     [MeasureAs=NodeLocalName] readonly attribute DOMString? localName; // Moved to Element and Attr in DOM4.
 
     // Introduced in DOM Level 3:
-    readonly attribute DOMString? baseURI;
+    [ExposeJSAccessors] readonly attribute DOMString? baseURI;
 
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, TreatUndefinedAs=NullString, CustomElementCallbacks] attribute DOMString textContent;
 
