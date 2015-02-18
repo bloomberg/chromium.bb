@@ -14,6 +14,12 @@ assert(is_mac || is_ios)
 import("//build/toolchain/clang.gni")
 import("//build/toolchain/goma.gni")
 
+if (use_goma) {
+  goma_prefix = "$goma_dir/gomacc "
+} else {
+  goma_prefix = ""
+}
+
 if (is_clang) {
   cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang",
                    root_build_dir)
@@ -23,6 +29,8 @@ if (is_clang) {
   cc = "gcc"
   cxx = "g++"
 }
+cc = goma_prefix + cc
+cxx = goma_prefix + cxx
 ld = cxx
 
 # This will copy the gyp-mac-tool to the build directory. We pass in the source
