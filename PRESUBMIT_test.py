@@ -691,10 +691,6 @@ class IDLParsingTest(unittest.TestCase):
 class TryServerMasterTest(unittest.TestCase):
   def testTryServerMasters(self):
     bots = {
-        'tryserver.chromium.gpu': [
-            'win_gpu',
-            'win_gpu_triggered_tests',
-        ],
         'tryserver.chromium.mac': [
             'ios_dbg_simulator',
             'ios_rel_device',
