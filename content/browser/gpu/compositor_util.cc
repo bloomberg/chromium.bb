@@ -301,10 +301,8 @@ bool IsThreadedGpuRasterizationEnabled() {
 
   if (command_line.HasSwitch(switches::kDisableThreadedGpuRasterization))
     return false;
-  if (command_line.HasSwitch(switches::kEnableThreadedGpuRasterization))
-    return true;
 
-  return false;
+  return true;
 }
 
 bool UseSurfacesEnabled() {
