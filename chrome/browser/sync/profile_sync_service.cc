@@ -1256,7 +1256,8 @@ void ProfileSyncService::OnConnectionStatusChange(
     // a new token unless sync reports a token failure. But to be safe, don't
     // schedule request if this happens.
     if (request_access_token_retry_timer_.IsRunning()) {
-      NOTREACHED();
+      // The timer to perform a request later is already running; nothing
+      // further needs to be done at this point.
     } else if (request_access_token_backoff_.failure_count() == 0) {
       // First time request without delay. Currently invalid token is used
       // to initialize sync backend and we'll always end up here. We don't
