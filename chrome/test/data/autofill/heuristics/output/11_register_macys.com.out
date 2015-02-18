@@ -8,12 +8,12 @@ EMAIL_ADDRESS | ConfirmEmailAddress | Verify Email |  | FirstName_1-default
 UNKNOWN_TYPE | Password | Password |  | FirstName_1-default
 UNKNOWN_TYPE | PasswordConfirm | Verify Password |  | FirstName_1-default
 UNKNOWN_TYPE | BirthMonth | Birth date | NOSELECTION | FirstName_1-default
-UNKNOWN_TYPE | BirthDay |  | NOSELECTION | FirstName_1-default
-UNKNOWN_TYPE | BirthYear |  | NOSELECTION | FirstName_1-default
+UNKNOWN_TYPE | BirthDay | Select the day on which you were born. | NOSELECTION | FirstName_1-default
+UNKNOWN_TYPE | BirthYear | Select the year on which you were born. | NOSELECTION | FirstName_1-default
 UNKNOWN_TYPE | Gender | Gender | NOSELECTION | FirstName_1-default
 UNKNOWN_TYPE | NewsLetter | We'll let you know about exclusive sales and events,both online and in-store. | NewsLetter | FirstName_1-default
 UNKNOWN_TYPE | MobileMarketing | Yes, please text me about exclusive sales and events, both online and in-store. We'll send your first text message within 48 hours. | MobileMarketing | FirstName_1-default
-PHONE_HOME_CITY_CODE | MobilePhoneAreaCode |  |  | FirstName_1-default
+PHONE_HOME_CITY_CODE | MobilePhoneAreaCode | Enter three number area code for your phone number. |  | FirstName_1-default
 PHONE_HOME_NUMBER | MobilePhoneExchangeNbr | - |  | FirstName_1-default
 PHONE_HOME_NUMBER | MobilePhoneSubscriberNbr | - |  | FirstName_1-default
 UNKNOWN_TYPE | addacard | Yes, I'd like to add my Macy's Card to my profile. | on | FirstName_1-default
