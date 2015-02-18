@@ -2673,7 +2673,6 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/accessibility/accessibility.gyp:accessibility',
@@ -2918,7 +2917,6 @@
           ],
           'dependencies!': [
              '../components/components.gyp:feedback_proto',
-             '../third_party/libusb/libusb.gyp:libusb',
              '../ui/events/events.gyp:events',
              'chrome_browser_ui_views.gyp:browser_ui_views',
           ],
@@ -3116,6 +3114,7 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [
             '<@(chrome_browser_ui_non_mobile_sources)',

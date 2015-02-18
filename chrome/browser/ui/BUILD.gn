@@ -61,7 +61,6 @@ static_library("ui") {
     "//skia",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
-    "//third_party/libusb",
     "//third_party/libxml",
     "//third_party/zlib",
     "//ui/accessibility",
@@ -135,8 +134,9 @@ static_library("ui") {
                     ".",
                     "//chrome")
     deps += [
-      "//device/bluetooth",
       "//components/copresence",
+      "//device/bluetooth",
+      "//third_party/libusb",
     ]
   }
 
@@ -317,7 +317,6 @@ static_library("ui") {
     deps -= [
       "//chrome/browser/ui/views",
       "//components/feedback/proto",
-      "//third_party/libusb",
       "//ui/events",
     ]
     sources += rebase_path(gypi_values.chrome_browser_ui_android_sources,
