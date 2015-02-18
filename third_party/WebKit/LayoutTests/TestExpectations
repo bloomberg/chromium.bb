@@ -1855,3 +1855,7 @@ crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFai
 
 crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Failure ]
 crbug.com/457137 [ Linux ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
+
+# Crashing on ASAN bots.
+crbug.com/459453 [ Linux ] fast/css/border-shorthand-initialize-longhands.html [ Crash Pass ]
+crbug.com/459453 [ Linux ] virtual/slimmingpaint/fast/css/border-shorthand-initialize-longhands.html [ Crash Pass ]
