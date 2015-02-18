@@ -255,6 +255,7 @@ size_t Textfield::GetCaretBlinkMs() {
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
       controller_(NULL),
+      scheduled_edit_command_(kNoCommand),
       read_only_(false),
       default_width_in_chars_(0),
       use_default_text_color_(true),
@@ -665,6 +666,9 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
+  int edit_command = scheduled_edit_command_;
+  scheduled_edit_command_ = kNoCommand;
+
   // Since HandleKeyEvent() might destroy |this|, get a weak pointer and verify
   // it isn't null before proceeding.
   base::WeakPtr<Textfield> textfield(weak_ptr_factory_.GetWeakPtr());
@@ -691,9 +695,11 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
   }
 #endif
 
-  const int command = GetCommandForKeyEvent(event, HasSelection());
-  if (!handled && IsCommandIdEnabled(command)) {
-    ExecuteCommand(command);
+  if (edit_command == kNoCommand)
+    edit_command = GetCommandForKeyEvent(event, HasSelection());
+
+  if (!handled && IsCommandIdEnabled(edit_command)) {
+    ExecuteCommand(edit_command);
     handled = true;
   }
   return handled;
@@ -1606,12 +1612,13 @@ void Textfield::OnCandidateWindowUpdated() {}
 
 void Textfield::OnCandidateWindowHidden() {}
 
-bool Textfield::IsEditingCommandEnabled(int command_id) {
+bool Textfield::IsEditCommandEnabled(int command_id) {
   return IsCommandIdEnabled(command_id);
 }
 
-void Textfield::ExecuteEditingCommand(int command_id) {
-  ExecuteCommand(command_id);
+void Textfield::SetEditCommandForNextKeyEvent(int command_id) {
+  DCHECK_EQ(kNoCommand, scheduled_edit_command_);
+  scheduled_edit_command_ = command_id;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1650,11 +1650,11 @@ void RenderWidgetHostViewAura::OnCandidateWindowHidden() {
   host_->CandidateWindowHidden();
 }
 
-bool RenderWidgetHostViewAura::IsEditingCommandEnabled(int command_id) {
+bool RenderWidgetHostViewAura::IsEditCommandEnabled(int command_id) {
   return false;
 }
 
-void RenderWidgetHostViewAura::ExecuteEditingCommand(int command_id) {
+void RenderWidgetHostViewAura::SetEditCommandForNextKeyEvent(int command_id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

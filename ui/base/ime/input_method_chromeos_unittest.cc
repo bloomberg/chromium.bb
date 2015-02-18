@@ -20,6 +20,7 @@
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
+#include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_focus_manager.h"
@@ -201,7 +202,7 @@ class SetSurroundingTextVerifier {
 
 class InputMethodChromeOSTest : public internal::InputMethodDelegate,
                                 public testing::Test,
-                                public TextInputClient {
+                                public DummyTextInputClient {
  public:
   InputMethodChromeOSTest()
       : dispatched_key_event_(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, ui::EF_NONE) {
@@ -267,18 +268,10 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     inserted_char_ = ch;
     inserted_char_flags_ = flags;
   }
-  gfx::NativeWindow GetAttachedWindow() const override {
-    return static_cast<gfx::NativeWindow>(NULL);
-  }
   TextInputType GetTextInputType() const override { return input_type_; }
   TextInputMode GetTextInputMode() const override { return input_mode_; }
-  int GetTextInputFlags() const override { return 0; }
   bool CanComposeInline() const override { return can_compose_inline_; }
   gfx::Rect GetCaretBounds() const override { return caret_bounds_; }
-  bool GetCompositionCharacterBounds(uint32 index,
-                                     gfx::Rect* rect) const override {
-    return false;
-  }
   bool HasCompositionText() const override {
     CompositionText empty;
     return composition_text_ != empty;
@@ -287,16 +280,10 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     *range = text_range_;
     return true;
   }
-  bool GetCompositionTextRange(gfx::Range* range) const override {
-    return false;
-  }
   bool GetSelectionRange(gfx::Range* range) const override {
     *range = selection_range_;
     return true;
   }
-
-  bool SetSelectionRange(const gfx::Range& range) override { return false; }
-  bool DeleteRange(const gfx::Range& range) override { return false; }
   bool GetTextFromRange(const gfx::Range& range,
                         base::string16* text) const override {
     *text = surrounding_text_.substr(range.GetMin(), range.length());
@@ -305,17 +292,6 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void OnInputMethodChanged() override {
     ++on_input_method_changed_call_count_;
   }
-  bool ChangeTextDirectionAndLayoutAlignment(
-      base::i18n::TextDirection direction) override {
-    return false;
-  }
-  void ExtendSelectionAndDelete(size_t before, size_t after) override {}
-  void EnsureCaretInRect(const gfx::Rect& rect) override {}
-  void OnCandidateWindowShown() override {}
-  void OnCandidateWindowUpdated() override {}
-  void OnCandidateWindowHidden() override {}
-  bool IsEditingCommandEnabled(int command_id) override { return false; }
-  void ExecuteEditingCommand(int command_id) override {}
 
   bool HasNativeEvent() const {
     return dispatched_key_event_.HasNativeEvent();

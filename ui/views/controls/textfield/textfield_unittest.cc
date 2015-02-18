@@ -86,7 +86,18 @@ class TestTextfield : public views::Textfield {
   bool OnKeyReleased(const ui::KeyEvent& e) override {
     key_received_ = true;
     key_handled_ = views::Textfield::OnKeyReleased(e);
+    EXPECT_FALSE(key_handled_);  // Textfield doesn't override OnKeyReleased.
     return key_handled_;
+  }
+
+  // ui::TextInputClient overrides:
+  void InsertChar(base::char16 ch, int flags) override {
+    views::Textfield::InsertChar(ch, flags);
+#if defined(OS_MACOSX)
+    // On Mac, characters are inserted directly rather than attempting to get a
+    // unicode character from the ui::KeyEvent (which isn't always possible).
+    key_received_ = true;
+#endif
   }
 
   bool key_handled() const { return key_handled_; }
@@ -1254,7 +1265,15 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   textfield_->clear();
 
   on_before_user_action_ = on_after_user_action_ = 0;
-  SendKeyEvent(ui::VKEY_A);
+
+  // Send a key to trigger MockInputMethod::DispatchKeyEvent(). Note the
+  // specific VKEY isn't used (MockInputMethod will mock a ui::VKEY_PROCESSKEY
+  // whenever it has a test composition). However, on Mac, it can't be a letter
+  // (e.g. VKEY_A) since all native character events on Mac are unicode events
+  // and don't have a meaningful ui::KeyEvent that would trigger
+  // DispatchKeyEvent().
+  SendKeyEvent(ui::VKEY_RETURN);
+
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
   EXPECT_TRUE(client->HasCompositionText());
@@ -1267,7 +1286,7 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   input_method_->SetResultTextForNextKey(UTF8ToUTF16("123"));
   on_before_user_action_ = on_after_user_action_ = 0;
   textfield_->clear();
-  SendKeyEvent(ui::VKEY_A);
+  SendKeyEvent(ui::VKEY_RETURN);
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
   EXPECT_FALSE(client->HasCompositionText());
@@ -1279,7 +1298,7 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   input_method_->Clear();
   input_method_->SetCompositionTextForNextKey(composition);
   textfield_->clear();
-  SendKeyEvent(ui::VKEY_A);
+  SendKeyEvent(ui::VKEY_RETURN);
   EXPECT_TRUE(client->HasCompositionText());
   EXPECT_STR_EQ("0123321456789", textfield_->text());
 
@@ -2076,7 +2095,7 @@ TEST_F(TextfieldTest, DestroyingTextfieldFromOnKeyEvent) {
   EXPECT_TRUE(controller.target());
 
   // Send a key to trigger OnKeyEvent().
-  SendKeyEvent('X');
+  SendKeyEvent(ui::VKEY_RETURN);
 
   EXPECT_FALSE(controller.target());
 }

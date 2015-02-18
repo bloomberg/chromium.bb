@@ -19,9 +19,8 @@ bool InputMethodMac::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 }
 
 bool InputMethodMac::DispatchKeyEvent(const ui::KeyEvent& event) {
-  // IME processing on the Mac does not go through this path.
-  NOTREACHED();
-  return false;
+  // This is used on Mac only to dispatch events post-IME.
+  return DispatchKeyEventPostIME(event);
 }
 
 void InputMethodMac::OnCaretBoundsChanged(const TextInputClient* client) {

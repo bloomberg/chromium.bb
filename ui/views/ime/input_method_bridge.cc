@@ -320,11 +320,15 @@ void InputMethodBridge::OnCandidateWindowUpdated() {
 void InputMethodBridge::OnCandidateWindowHidden() {
 }
 
-bool InputMethodBridge::IsEditingCommandEnabled(int command_id) {
-  return false;
+bool InputMethodBridge::IsEditCommandEnabled(int command_id) {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->IsEditCommandEnabled(command_id) : false;
 }
 
-void InputMethodBridge::ExecuteEditingCommand(int command_id) {
+void InputMethodBridge::SetEditCommandForNextKeyEvent(int command_id) {
+  TextInputClient* client = GetTextInputClient();
+  if (client)
+    client->SetEditCommandForNextKeyEvent(command_id);
 }
 
 // Overridden from FocusChangeListener.

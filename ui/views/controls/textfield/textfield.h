@@ -304,8 +304,8 @@ class VIEWS_EXPORT Textfield : public View,
   void OnCandidateWindowShown() override;
   void OnCandidateWindowUpdated() override;
   void OnCandidateWindowHidden() override;
-  bool IsEditingCommandEnabled(int command_id) override;
-  void ExecuteEditingCommand(int command_id) override;
+  bool IsEditCommandEnabled(int command_id) override;
+  void SetEditCommandForNextKeyEvent(int command_id) override;
 
  protected:
   // Returns the TextfieldModel's text/cursor/selection rendering model.
@@ -389,6 +389,12 @@ class VIEWS_EXPORT Textfield : public View,
 
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
+
+  // If non-zero, an edit command to execute on the next key event. When set,
+  // the key event is still passed to |controller_|, but otherwise ignored in
+  // favor of the edit command. Set via SetEditCommandForNextKeyEvent() during
+  // dispatch of that key event (see comment in TextInputClient).
+  int scheduled_edit_command_;
 
   // True if this Textfield cannot accept input and is read-only.
   bool read_only_;

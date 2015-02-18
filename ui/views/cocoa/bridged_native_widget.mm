@@ -453,8 +453,6 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
 // BridgedNativeWidget, internal::InputMethodDelegate:
 
 void BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
-  // Mac key events don't go through this, but some unit tests that use
-  // MockInputMethod do.
   DCHECK(focus_manager_);
   native_widget_mac_->GetWidget()->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
   if (!key.handled())

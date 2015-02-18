@@ -55,8 +55,8 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   void OnCandidateWindowUpdated() override;
   void OnCandidateWindowHidden() override;
 
-  bool IsEditingCommandEnabled(int command_id) override;
-  void ExecuteEditingCommand(int command_id) override;
+  bool IsEditCommandEnabled(int command_id) override;
+  void SetEditCommandForNextKeyEvent(int command_id) override;
 
  private:
   // Invoked when text is typed. Tries to change the selection appropriately.

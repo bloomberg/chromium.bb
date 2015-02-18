@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -153,21 +154,19 @@ gfx::Point MovePointToWindow(const NSPoint& point,
       return;
   }
 
-  // If there's an active TextInputClient, it ignores the key and processes the
-  // logical editing action.
+  // If there's an active TextInputClient, schedule the editing command to be
+  // performed.
   if (commandId && textInputClient_ &&
-      textInputClient_->IsEditingCommandEnabled(commandId)) {
-    textInputClient_->ExecuteEditingCommand(commandId);
-    return;
-  }
+      textInputClient_->IsEditCommandEnabled(commandId))
+    textInputClient_->SetEditCommandForNextKeyEvent(commandId);
 
-  // Otherwise, process the action as a regular key event.
+  // Generate a synthetic event with the keycode toolkit-views expects.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
-  hostedView_->GetWidget()->OnKeyEvent(&event);
+  hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
 }
 
 - (void)cut:(id)sender {
-  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_CUT));
+  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_CUT));
   [self handleAction:IDS_APP_CUT
              keyCode:ui::VKEY_X
              domCode:ui::DomCode::KEY_X
@@ -175,7 +174,7 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 }
 
 - (void)copy:(id)sender {
-  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_COPY));
+  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_COPY));
   [self handleAction:IDS_APP_COPY
              keyCode:ui::VKEY_C
              domCode:ui::DomCode::KEY_C
@@ -183,7 +182,7 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 }
 
 - (void)paste:(id)sender {
-  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_PASTE));
+  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_PASTE));
   [self handleAction:IDS_APP_PASTE
              keyCode:ui::VKEY_V
              domCode:ui::DomCode::KEY_V
@@ -191,7 +190,7 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 }
 
 - (void)selectAll:(id)sender {
-  DCHECK(textInputClient_->IsEditingCommandEnabled(IDS_APP_SELECT_ALL));
+  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_SELECT_ALL));
   [self handleAction:IDS_APP_SELECT_ALL
              keyCode:ui::VKEY_A
              domCode:ui::DomCode::KEY_A
@@ -622,13 +621,13 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   SEL action = [item action];
 
   if (action == @selector(cut:))
-    return textInputClient_->IsEditingCommandEnabled(IDS_APP_CUT);
+    return textInputClient_->IsEditCommandEnabled(IDS_APP_CUT);
   if (action == @selector(copy:))
-    return textInputClient_->IsEditingCommandEnabled(IDS_APP_COPY);
+    return textInputClient_->IsEditCommandEnabled(IDS_APP_COPY);
   if (action == @selector(paste:))
-    return textInputClient_->IsEditingCommandEnabled(IDS_APP_PASTE);
+    return textInputClient_->IsEditCommandEnabled(IDS_APP_PASTE);
   if (action == @selector(selectAll:))
-    return textInputClient_->IsEditingCommandEnabled(IDS_APP_SELECT_ALL);
+    return textInputClient_->IsEditCommandEnabled(IDS_APP_SELECT_ALL);
 
   return NO;
 }
