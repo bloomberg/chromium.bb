@@ -14,8 +14,8 @@
    'conditions': [
      ['OS=="linux"', {
        'bootstrap_sources_native': [
-         'native/egl_native_aura.cc',
          'native/egl_native.cc',
+         'native/egl_native_aura.cc',
          'native/egl_native_x11.cc',
        ],
      }],
@@ -84,9 +84,9 @@
         '../../third_party/khronos/khronos.gyp:khronos_headers',
       ],
       'sources': [
-        'native/main.cc',
         'native/egl_native.cc',
         'native/egl_native_windowless.cc',
+        'native/main.cc',
         '<@(bootstrap_sources_native)',
       ],
       'defines': [

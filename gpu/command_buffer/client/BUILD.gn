@@ -70,25 +70,25 @@ gles2_c_lib_source_files = [
   "gles2_c_lib.cc",
   "gles2_c_lib_autogen.h",
   "gles2_c_lib_export.h",
-  "gles2_lib.h",
   "gles2_lib.cc",
+  "gles2_lib.h",
 ]
 
 gles2_implementation_source_files = [
   "buffer_tracker.cc",
   "buffer_tracker.h",
-  "client_context_state.h",
   "client_context_state.cc",
+  "client_context_state.h",
   "client_context_state_autogen.h",
   "client_context_state_impl_autogen.h",
   "gles2_impl_export.h",
-  "gles2_implementation_autogen.h",
   "gles2_implementation.cc",
   "gles2_implementation.h",
+  "gles2_implementation_autogen.h",
   "gles2_implementation_impl_autogen.h",
-  "gles2_trace_implementation_autogen.h",
   "gles2_trace_implementation.cc",
   "gles2_trace_implementation.h",
+  "gles2_trace_implementation_autogen.h",
   "gles2_trace_implementation_impl_autogen.h",
   "gpu_switches.cc",
   "gpu_switches.h",
@@ -148,8 +148,8 @@ component("gles2_implementation") {
 
 component("gl_in_process_context") {
   sources = [
-    "gl_in_process_context.h",
     "gl_in_process_context.cc",
+    "gl_in_process_context.h",
     "gl_in_process_context_export.h",
   ]
 
