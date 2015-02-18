@@ -5,6 +5,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted.h"
@@ -219,6 +220,11 @@ int RendererMain(const MainFunctionParams& parameters) {
       base::MessageLoop::current()->Run();
       TRACE_EVENT_END_ETW("RendererMain.START_MSG_LOOP", 0, 0);
     }
+#if defined(LEAK_SANITIZER)
+    // Run leak detection before RenderProcessImpl goes out of scope. This helps
+    // ignore shutdown-only leaks.
+    __lsan_do_leak_check();
+#endif
   }
   platform.PlatformUninitialize();
   TRACE_EVENT_END_ETW("RendererMain", 0, "");
