@@ -155,7 +155,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
     ScriptState* scriptState = ScriptState::current(isolate);
-    String errorMessage = toCoreString(message->Get());
+    String errorMessage = toCoreStringWithNullCheck(message->Get());
     RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, message->GetLineNumber(), message->GetStartColumn() + 1, &scriptState->world());
 
     String messageForConsole = extractMessageForConsole(data);
@@ -252,7 +252,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         lineNumber = message->GetLineNumber();
         columnNumber = message->GetStartColumn() + 1;
         resourceName = extractResourceName(message, window->document());
-        errorMessage = toCoreString(message->Get());
+        errorMessage = toCoreStringWithNullCheck(message->Get());
         callStack = extractCallStack(isolate, message, &scriptId);
     } else if (!exception.IsEmpty() && exception->IsInt32()) {
         // For Smi's the message would be empty.
@@ -300,7 +300,8 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
         scriptId = message->GetScriptOrigin().ScriptID()->Value();
         lineNumber = message->GetLineNumber();
         columnNumber = message->GetStartColumn() + 1;
-        errorMessage = toCoreString(message->Get());
+        // message->Get() can be empty here. https://crbug.com/450330
+        errorMessage = toCoreStringWithNullCheck(message->Get());
     }
     scriptController->rejectedPromises()->add(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr);
 }
@@ -445,7 +446,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     ScriptState* scriptState = ScriptState::current(isolate);
     // During the frame teardown, there may not be a valid context.
     if (ExecutionContext* context = scriptState->executionContext()) {
-        String errorMessage = toCoreString(message->Get());
+        String errorMessage = toCoreStringWithNullCheck(message->Get());
         TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName());
         int scriptId = 0;
         RefPtrWillBeRawPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
