@@ -384,6 +384,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
           PluginMetadata::SECURITY_STATUS_REQUIRES_AUTHORIZATION &&
       plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
       plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS &&
+      plugin.type != WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN &&
       !always_authorize_plugins_.GetValue() &&
       plugin_setting != CONTENT_SETTING_BLOCK &&
       uses_default_content_setting &&
