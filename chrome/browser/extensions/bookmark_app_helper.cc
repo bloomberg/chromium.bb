@@ -422,11 +422,11 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 
   // Pin the app to the relevant launcher depending on the OS.
   Profile* current_profile = profile_->GetOriginalProfile();
-  chrome::HostDesktopType desktop = browser->host_desktop_type();
 
 // On Mac, shortcuts are automatically created for hosted apps when they are
-// installed, so there is no need to call this again."
+// installed, so there is no need to create them again.
 #if !defined(OS_MACOSX)
+  chrome::HostDesktopType desktop = browser->host_desktop_type();
   if (desktop != chrome::HOST_DESKTOP_TYPE_ASH) {
     web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX)
@@ -446,28 +446,12 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   }
 #endif
 
-  // Show the newly installed app in the app launcher, in finder (on Mac) or
-  // chrome://apps.
-  if (IsAppLauncherEnabled()) {
-    AppListService::Get(desktop)
-        ->ShowForAppInstall(current_profile, extension->id(), false);
 #if defined(OS_MACOSX)
-  } else if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kDisableHostedAppShimCreation)) {
-    web_app::RevealAppShimInFinderForApp(profile_, extension);
-#endif
-  } else {
-    chrome::NavigateParams params(current_profile,
-                                  GURL(chrome::kChromeUIAppsURL),
-                                  ui::PAGE_TRANSITION_LINK);
-    params.disposition = SINGLETON_TAB;
-    chrome::Navigate(&params);
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-        content::Source<content::WebContents>(params.target_contents),
-        content::Details<const std::string>(&extension->id()));
+    web_app::RevealAppShimInFinderForApp(current_profile, extension);
   }
+#endif
 
   callback_.Run(extension, web_app_info_);
 }
