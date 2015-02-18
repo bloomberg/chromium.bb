@@ -41,7 +41,7 @@
     [ImplementedAs=getBBoxFromJavascript] SVGRect getBBox();
     [ImplementedAs=getCTMFromJavascript] SVGMatrix getCTM();
     [ImplementedAs=getScreenCTMFromJavascript] SVGMatrix getScreenCTM();
-    [RaisesException] SVGMatrix getTransformToElement(SVGElement element);
+    [RaisesException, MeasureAs=SVGGraphicsElementGetTransformToElement] SVGMatrix getTransformToElement(SVGElement element);
 };
 
 SVGGraphicsElement implements SVGTests;
