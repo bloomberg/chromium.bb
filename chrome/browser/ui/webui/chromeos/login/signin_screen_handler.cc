@@ -232,26 +232,13 @@ SigninScreenHandler::SigninScreenHandler(
     NetworkErrorModel* network_error_model,
     CoreOobeActor* core_oobe_actor,
     GaiaScreenHandler* gaia_screen_handler)
-    : ui_state_(UI_STATE_UNKNOWN),
-      delegate_(NULL),
-      native_window_delegate_(NULL),
-      show_on_init_(false),
-      oobe_ui_(false),
-      is_account_picker_showing_first_time_(false),
-      network_state_informer_(network_state_informer),
-      webui_visible_(false),
-      preferences_changed_delayed_(false),
+    : network_state_informer_(network_state_informer),
       network_error_model_(network_error_model),
       core_oobe_actor_(core_oobe_actor),
-      is_first_update_state_call_(true),
-      offline_login_active_(false),
-      last_network_state_(NetworkStateInformer::UNKNOWN),
-      has_pending_auth_ui_(false),
       caps_lock_enabled_(chromeos::input_method::InputMethodManager::Get()
                              ->GetImeKeyboard()
                              ->CapsLockIsEnabled()),
       gaia_screen_handler_(gaia_screen_handler),
-      oobe_ui_observer_added_(false),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
@@ -557,6 +544,10 @@ void SigninScreenHandler::SetFocusPODCallbackForTesting(
   test_focus_pod_callback_ = callback;
 }
 
+void SigninScreenHandler::ZeroOfflineTimeoutForTesting() {
+  zero_offline_timeout_for_test_ = true;
+}
+
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::ShowImpl() {
@@ -648,7 +639,8 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         update_state_closure_.callback(),
-        base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
+        base::TimeDelta::FromSeconds(
+            zero_offline_timeout_for_test_ ? 0 : kOfflineTimeoutSec));
     return;
   }
 

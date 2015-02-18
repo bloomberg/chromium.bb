@@ -164,6 +164,10 @@ class OobeUI : public OobeDisplay,
     return signin_screen_handler_;
   }
 
+  NetworkStateInformer* network_state_informer_for_test() const {
+    return network_state_informer_.get();
+  }
+
  private:
   // Initializes |screen_ids_| and |screen_names_| structures.
   void InitializeScreenMaps();

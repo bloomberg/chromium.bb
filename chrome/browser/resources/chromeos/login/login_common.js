@@ -307,6 +307,13 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Shows the add user dialog. Used in browser tests.
+   */
+  Oobe.showAddUserForTesting = function() {
+    chrome.send('showAddUser');
+  };
+
+  /**
    * Hotrod requisition for telemetry.
    */
   Oobe.remoraRequisitionForTesting = function() {

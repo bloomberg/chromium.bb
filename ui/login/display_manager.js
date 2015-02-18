@@ -30,6 +30,7 @@
 /** @const */ var SCREEN_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_TERMS_OF_SERVICE = 'terms-of-service';
 /** @const */ var SCREEN_WRONG_HWID = 'wrong-hwid';
+/** @const */ var SCREEN_DEVICE_DISABLED = 'device-disabled';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -626,6 +627,10 @@ cr.define('cr.ui.login', function() {
      * @param {Object} screen Screen params dict, e.g. {id: screenId, data: {}}.
      */
     showScreen: function(screen) {
+      // Do not allow any other screen to clobber the device disabled screen.
+      if (this.currentScreen.id == SCREEN_DEVICE_DISABLED)
+        return;
+
       var screenId = screen.id;
 
       // Make sure the screen is decorated.

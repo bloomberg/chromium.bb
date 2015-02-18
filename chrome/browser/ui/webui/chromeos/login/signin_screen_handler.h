@@ -240,6 +240,12 @@ class SigninScreenHandler
 
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
+  // To avoid spurious error messages on flaky networks, the offline message is
+  // only shown if the network is offline for a threshold number of seconds.
+  // This method reduces the threshold to zero, allowing the offline message to
+  // show instantaneously in tests.
+  void ZeroOfflineTimeoutForTesting();
+
  private:
   enum UIState {
     UI_STATE_UNKNOWN = 0,
@@ -410,36 +416,37 @@ class SigninScreenHandler
       const std::string& username) const;
 
   // Current UI state of the signin screen.
-  UIState ui_state_;
+  UIState ui_state_ = UI_STATE_UNKNOWN;
 
   // A delegate that glues this handler with backend LoginDisplay.
-  SigninScreenHandlerDelegate* delegate_;
+  SigninScreenHandlerDelegate* delegate_ = nullptr;
 
   // A delegate used to get gfx::NativeWindow.
-  NativeWindowDelegate* native_window_delegate_;
+  NativeWindowDelegate* native_window_delegate_ = nullptr;
 
   // Whether screen should be shown right after initialization.
-  bool show_on_init_;
+  bool show_on_init_ = false;
 
   // Keeps whether screen should be shown for OOBE.
-  bool oobe_ui_;
+  bool oobe_ui_ = false;
 
   // Is account picker being shown for the first time.
-  bool is_account_picker_showing_first_time_;
+  bool is_account_picker_showing_first_time_ = false;
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   // Set to true once |LOGIN_WEBUI_VISIBLE| notification is observed.
-  bool webui_visible_;
-  bool preferences_changed_delayed_;
+  bool webui_visible_ = false;
+  bool preferences_changed_delayed_ = false;
 
   NetworkErrorModel* network_error_model_;
   CoreOobeActor* core_oobe_actor_;
 
-  bool is_first_update_state_call_;
-  bool offline_login_active_;
-  NetworkStateInformer::State last_network_state_;
+  bool is_first_update_state_call_ = false;
+  bool offline_login_active_ = false;
+  NetworkStateInformer::State last_network_state_ =
+      NetworkStateInformer::UNKNOWN;
 
   base::CancelableClosure update_state_closure_;
   base::CancelableClosure connecting_closure_;
@@ -449,7 +456,7 @@ class SigninScreenHandler
   // Whether there is an auth UI pending. This flag is set on receiving
   // NOTIFICATION_AUTH_NEEDED and reset on either NOTIFICATION_AUTH_SUPPLIED or
   // NOTIFICATION_AUTH_CANCELLED.
-  bool has_pending_auth_ui_;
+  bool has_pending_auth_ui_ = false;
 
   bool caps_lock_enabled_;
 
@@ -461,7 +468,7 @@ class SigninScreenHandler
   scoped_ptr<TouchViewControllerDelegate> max_mode_delegate_;
 
   // Whether consumer management enrollment is in progress.
-  bool is_enrolling_consumer_management_;
+  bool is_enrolling_consumer_management_ = false;
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;
@@ -470,7 +477,9 @@ class SigninScreenHandler
   base::Closure test_focus_pod_callback_;
 
   // True if SigninScreenHandler has already been added to OobeUI observers.
-  bool oobe_ui_observer_added_;
+  bool oobe_ui_observer_added_ = false;
+
+  bool zero_offline_timeout_for_test_ = false;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 
