@@ -1571,9 +1571,6 @@ const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 // True if a desktop sync session was found for this user.
 const char kNtpPromoDesktopSessionFound[] = "ntp.promo_desktop_session_found";
 
-// Last time of update of promo_resource_cache.
-const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
-
 // Which bookmarks folder should be visible on the new tab page v4.
 const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 

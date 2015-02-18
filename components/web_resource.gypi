@@ -24,6 +24,8 @@
         'web_resource/web_resource_pref_names.h',
         'web_resource/web_resource_service.cc',
         'web_resource/web_resource_service.h',
+        'web_resource/web_resource_switches.cc',
+        'web_resource/web_resource_switches.h',
       ],
     },
     {

@@ -264,7 +264,6 @@ extern const char kProfilingAtStart[];
 extern const char kProfilingFile[];
 extern const char kProfilingFlush[];
 extern const char kProfilingOutputFile[];
-extern const char kPromoServerURL[];
 extern const char kProxyAutoDetect[];
 extern const char kProxyBypassList[];
 extern const char kProxyPacUrl[];

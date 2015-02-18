@@ -550,7 +550,6 @@ extern const char kNtpCollapsedSyncPromo[];
 extern const char kNtpDateResourceServer[];
 extern const char kNtpMostVisitedURLsBlacklist[];
 extern const char kNtpPromoDesktopSessionFound[];
-extern const char kNtpPromoResourceCacheUpdate[];
 extern const char kNtpShownBookmarksFolder[];
 extern const char kNtpShownPage[];
 extern const char kNtpTipsResourceServer[];

@@ -9,4 +9,7 @@ namespace prefs {
 // A boolean pref of the EULA accepted flag.
 const char kEulaAccepted[] = "EulaAccepted";
 
+// Last time of update of promo_resource_cache.
+const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
+
 }  // namespace prefs

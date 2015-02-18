@@ -8,6 +8,7 @@
 namespace prefs {
 
 extern const char kEulaAccepted[];
+extern const char kNtpPromoResourceCacheUpdate[];
 
 }  // namespace prefs
 
