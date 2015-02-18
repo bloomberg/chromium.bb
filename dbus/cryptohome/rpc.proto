@@ -47,6 +47,11 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_BOOT_ATTRIBUTE_NOT_FOUND = 18;
   CRYPTOHOME_ERROR_BOOT_ATTRIBUTES_CANNOT_SIGN = 19;
   CRYPTOHOME_ERROR_TPM_EK_NOT_AVAILABLE = 20;
+  CRYPTOHOME_ERROR_ATTESTATION_NOT_READY = 21;
+  CRYPTOHOME_ERROR_CANNOT_CONNECT_TO_CA = 22;
+  CRYPTOHOME_ERROR_CA_REFUSED_ENROLLMENT = 23;
+  CRYPTOHOME_ERROR_CA_REFUSED_CERTIFICATE = 24;
+  CRYPTOHOME_ERROR_INTERNAL_ATTESTATION_ERROR = 25;
 }
 
 message AccountIdentifier {
@@ -264,4 +269,7 @@ message GetEndorsementInfoReply {
   optional bytes ek_public_key = 1;
   // The endorsement certificate (X.509).
   optional bytes ek_certificate = 2;
+}
+
+message InitializeCastKeyRequest {
 }
