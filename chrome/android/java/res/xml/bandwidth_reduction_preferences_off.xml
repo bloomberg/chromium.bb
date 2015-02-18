@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto" >
+                  xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/reduce_data_usage_description" />
@@ -18,8 +18,11 @@
     <org.chromium.chrome.browser.preferences.HyperlinkPreference
         android:key="data_reduction_experiment_link"
         android:title="@string/learn_more"
-        app:url="@string/data_reduction_experiment_link_url" />
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+        chrome:url="@string/data_reduction_experiment_link_url"
+        chrome:imitateWebLink="true" />
+    <org.chromium.chrome.browser.preferences.HyperlinkPreference
         android:key="data_reduction_learn_more"
-        android:title="@string/learn_more" />
+        android:title="@string/learn_more"
+        chrome:url="@string/reduce_data_usage_learn_url"
+        chrome:imitateWebLink="true" />
 </PreferenceScreen>

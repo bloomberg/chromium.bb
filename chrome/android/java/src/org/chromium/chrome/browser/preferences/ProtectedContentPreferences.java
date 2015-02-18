@@ -9,11 +9,6 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.TextPaint;
-import android.text.style.ClickableSpan;
-import android.view.View;
 import android.widget.Toast;
 
 import org.chromium.chrome.R;
@@ -35,30 +30,6 @@ public class ProtectedContentPreferences extends PreferenceFragment implements
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.protected_content_preferences);
         getActivity().setTitle(R.string.protected_content);
-
-        // Open learn more URL on clicking learn more.
-        Preference learnMorePreference =
-                getPreferenceScreen().findPreference("protected_content_learn_more");
-        SpannableStringBuilder clickableText = new SpannableStringBuilder(
-                learnMorePreference.getTitle());
-        ClickableSpan onLinkClicked = new ClickableSpan() {
-            @Override
-            public void onClick(View view) {
-                ((Preferences) getActivity()).showUrl(R.string.help,
-                        R.string.protected_content_learn_more_url);
-            }
-
-            // Change link formatting to use no underline
-            @Override
-            public void updateDrawState(TextPaint textPaint) {
-                textPaint.setColor(textPaint.linkColor);
-                textPaint.setUnderlineText(false);
-            }
-        };
-        clickableText.setSpan(onLinkClicked, 0, clickableText.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        learnMorePreference.setTitle(clickableText);
-
 
         ChromeSwitchPreference protectedContentSwitch =
                 (ChromeSwitchPreference) findPreference(PREF_PROTECTED_CONTENT_SWITCH);

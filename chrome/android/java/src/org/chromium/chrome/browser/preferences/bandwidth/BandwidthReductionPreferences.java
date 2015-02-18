@@ -13,12 +13,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.format.DateUtils;
-import android.text.style.ClickableSpan;
-import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UmaBridge;
@@ -27,7 +22,6 @@ import org.chromium.chrome.browser.infobar.DataReductionProxyInfoBar;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.third_party.android.datausagechart.NetworkStats;
 import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
@@ -151,27 +145,6 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
                 getPreferenceScreen().removePreference(
                         findPreference("data_reduction_experiment_link"));
             }
-
-            Preference learnMorePreference = findPreference("data_reduction_learn_more");
-            SpannableStringBuilder learnMoreSpannable =
-                    new SpannableStringBuilder(learnMorePreference.getTitle());
-            ClickableSpan onLearnMoreClicked = new ClickableSpan() {
-                @Override
-                public void onClick(View view) {
-                    ((Preferences) getActivity()).showUrl(R.string.learn_more,
-                            R.string.reduce_data_usage_learn_url);
-                }
-
-                // Change link formatting to use no underline
-                @Override
-                public void updateDrawState(TextPaint textPaint) {
-                    textPaint.setColor(textPaint.linkColor);
-                    textPaint.setUnderlineText(false);
-                }
-            };
-            learnMoreSpannable.setSpan(onLearnMoreClicked, 0, learnMoreSpannable.length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            learnMorePreference.setTitle(learnMoreSpannable);
         }
         mIsEnabled = isEnabled;
     }
