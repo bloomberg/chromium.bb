@@ -72,6 +72,9 @@ class BookmarkAppBubbleView : public views::BubbleDelegateView,
   // Update the state of the Add button.
   void UpdateAddButtonState();
 
+  // Get the string ID to use for the bubble title.
+  int TitleStringId();
+
   // Get the trimmed contents of the title text field.
   base::string16 GetTrimmedTitle();
 

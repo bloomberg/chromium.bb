@@ -2190,16 +2190,32 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Bookmark app bubble -->
-      <if expr="use_titlecase">
-        <message name="IDS_BOOKMARK_APP_BUBBLE_TITLE" desc="Title of the bubble to add a bookmark app.">
-          Add Shortcut
+      <if expr="is_win">
+        <message name="IDS_ADD_TO_TASKBAR_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the taskbar.">
+          Add to taskbar
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_ADD_TO_APPLICATIONS_BUBBLE_TITLE" desc="Title of the bubble adding a bookmark app to the Applications Folder.">
+          Add to Applications
+        </message>
+      </if>
+      <if expr="use_ash">
+        <message name="IDS_ADD_TO_SHELF_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
+          Add to shelf
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_BOOKMARK_APP_BUBBLE_TITLE" desc="Title of the bubble to add a bookmark app.">
-          Add shortcut
+        <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
+          Add to desktop
         </message>
       </if>
+      <if expr="use_titlecase">
+        <message name="IDS_ADD_TO_DESKTOP_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
+          Add to Desktop
+        </message>
+      </if>
+
       <message name="IDS_BOOKMARK_APP_AX_BUBBLE_NAME_LABEL" desc="Text preceding the name of a bookmark app, read by spoken feedback.">
         Shortcut name
       </message>

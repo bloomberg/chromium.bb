@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
@@ -102,7 +103,7 @@ BookmarkAppBubbleView::BookmarkAppBubbleView(
 
 void BookmarkAppBubbleView::Init() {
   views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_TITLE));
+      l10n_util::GetStringUTF16(TitleStringId()));
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   title_label->SetFontList(rb->GetFontList(ui::ResourceBundle::MediumFont));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -218,7 +219,7 @@ bool BookmarkAppBubbleView::AcceleratorPressed(
 
 void BookmarkAppBubbleView::GetAccessibleState(ui::AXViewState* state) {
   views::BubbleDelegateView::GetAccessibleState(state);
-  state->name = l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_TITLE);
+  state->name = l10n_util::GetStringUTF16(TitleStringId());
 }
 
 gfx::Size BookmarkAppBubbleView::GetMinimumSize() const {
@@ -251,6 +252,22 @@ void BookmarkAppBubbleView::HandleButtonPressed(views::Button* sender) {
 
 void BookmarkAppBubbleView::UpdateAddButtonState() {
   add_button_->SetEnabled(!GetTrimmedTitle().empty());
+}
+
+int BookmarkAppBubbleView::TitleStringId() {
+#if defined(OS_WIN)
+    int string_id = IDS_ADD_TO_TASKBAR_BUBBLE_TITLE;
+#else
+    int string_id = IDS_ADD_TO_DESKTOP_BUBBLE_TITLE;
+#endif
+#if defined(USE_ASH)
+    if (chrome::GetHostDesktopTypeForNativeWindow(
+            anchor_widget()->GetNativeWindow()) ==
+        chrome::HOST_DESKTOP_TYPE_ASH) {
+      string_id = IDS_ADD_TO_SHELF_BUBBLE_TITLE;
+    }
+#endif
+    return string_id;
 }
 
 base::string16 BookmarkAppBubbleView::GetTrimmedTitle() {

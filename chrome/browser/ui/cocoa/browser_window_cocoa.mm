@@ -536,7 +536,8 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
     const WebApplicationInfo& web_app_info,
     const ShowBookmarkAppBubbleCallback& callback) {
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-  [alert setMessageText:l10n_util::GetNSString(IDS_BOOKMARK_APP_BUBBLE_TITLE)];
+  [alert setMessageText:l10n_util::GetNSString(
+      IDS_ADD_TO_APPLICATIONS_BUBBLE_TITLE)];
   [alert setAlertStyle:NSInformationalAlertStyle];
 
   NSButton* continue_button =
