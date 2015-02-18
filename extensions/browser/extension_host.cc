@@ -4,13 +4,8 @@
 
 #include "extensions/browser/extension_host.h"
 
-#include <list>
-
-#include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -30,11 +25,13 @@
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_host_observer.h"
+#include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/serial_extension_host_queue.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -53,65 +50,16 @@ using content::WebContents;
 
 namespace extensions {
 
-// Helper class that rate-limits the creation of renderer processes for
-// ExtensionHosts, to avoid blocking the UI.
-class ExtensionHost::ProcessCreationQueue {
- public:
-  static ProcessCreationQueue* GetInstance() {
-    return Singleton<ProcessCreationQueue>::get();
-  }
+namespace {
 
-  // Add a host to the queue for RenderView creation.
-  void CreateSoon(ExtensionHost* host) {
-    queue_.push_back(host);
-    PostTask();
-  }
-
-  // Remove a host from the queue (in case it's being deleted).
-  void Remove(ExtensionHost* host) {
-    Queue::iterator it = std::find(queue_.begin(), queue_.end(), host);
-    if (it != queue_.end())
-      queue_.erase(it);
-  }
-
- private:
-  friend class Singleton<ProcessCreationQueue>;
-  friend struct DefaultSingletonTraits<ProcessCreationQueue>;
-  ProcessCreationQueue()
-      : pending_create_(false),
-        ptr_factory_(this) {}
-
-  // Queue up a delayed task to process the next ExtensionHost in the queue.
-  void PostTask() {
-    if (!pending_create_) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&ProcessCreationQueue::ProcessOneHost,
-                     ptr_factory_.GetWeakPtr()));
-      pending_create_ = true;
-    }
-  }
-
-  // Create the RenderView for the next host in the queue.
-  void ProcessOneHost() {
-    pending_create_ = false;
-    if (queue_.empty())
-      return;  // can happen on shutdown
-
-    queue_.front()->CreateRenderViewNow();
-    queue_.pop_front();
-
-    if (!queue_.empty())
-      PostTask();
-  }
-
-  typedef std::list<ExtensionHost*> Queue;
-  Queue queue_;
-  bool pending_create_;
-  base::WeakPtrFactory<ProcessCreationQueue> ptr_factory_;
+// Singleton which wraps our current ExtensionHostQueue implementation.
+struct QueueWrapper {
+  QueueWrapper() : queue(new SerialExtensionHostQueue()) {}
+  scoped_ptr<ExtensionHostQueue> queue;
 };
+base::LazyInstance<QueueWrapper> g_queue_wrapper = LAZY_INSTANCE_INITIALIZER;
 
-////////////////
-// ExtensionHost
+}  // namespace
 
 ExtensionHost::ExtensionHost(const Extension* extension,
                              SiteInstance* site_instance,
@@ -162,7 +110,7 @@ ExtensionHost::~ExtensionHost() {
       content::Details<ExtensionHost>(this));
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
                     OnExtensionHostDestroyed(this));
-  ProcessCreationQueue::GetInstance()->Remove(this);
+  g_queue_wrapper.Get().queue->Remove(this);
   // Immediately stop observing |host_contents_| because its destruction events
   // (like DidStopLoading, it turns out) can call back into ExtensionHost
   // re-entrantly, when anything declared after |host_contents_| has already
@@ -190,15 +138,8 @@ void ExtensionHost::CreateRenderViewSoon() {
     // to defer.
     CreateRenderViewNow();
   } else {
-    ProcessCreationQueue::GetInstance()->CreateSoon(this);
+    g_queue_wrapper.Get().queue->Add(this);
   }
-}
-
-void ExtensionHost::Close() {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      content::Source<BrowserContext>(browser_context_),
-      content::Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::CreateRenderViewNow() {
@@ -218,6 +159,13 @@ void ExtensionHost::CreateRenderViewNow() {
     // Connect orphaned dev-tools instances.
     delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
+}
+
+void ExtensionHost::Close() {
+  content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+      content::Source<BrowserContext>(browser_context_),
+      content::Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::AddObserver(ExtensionHostObserver* observer) {

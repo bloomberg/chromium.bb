@@ -34,6 +34,7 @@ namespace extensions {
 class Extension;
 class ExtensionHostDelegate;
 class ExtensionHostObserver;
+class ExtensionHostQueue;
 class WindowController;
 
 // This class is the browser component of an extension component's RenderView.
@@ -48,8 +49,6 @@ class ExtensionHost : public content::WebContentsDelegate,
                       public ExtensionFunctionDispatcher::Delegate,
                       public content::NotificationObserver {
  public:
-  class ProcessCreationQueue;
-
   ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
                 const GURL& url, ViewType host_type);
@@ -77,6 +76,10 @@ class ExtensionHost : public content::WebContentsDelegate,
   // navigating to this host's url. Uses host_view for the RenderViewHost's view
   // (can be NULL). This happens delayed to avoid locking the UI.
   void CreateRenderViewSoon();
+
+  // DO NOT CALL THIS. Always use CreateRenderViewSoon().
+  // (Unless you're implementing an ExtensionHostQueue).
+  void CreateRenderViewNow();
 
   // Closes this host (results in [possibly asynchronous] deletion).
   void Close();
@@ -144,11 +147,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   virtual bool IsBackgroundPage() const;
 
  private:
-  friend class ProcessCreationQueue;
-
-  // Actually create the RenderView for this host. See CreateRenderViewSoon.
-  void CreateRenderViewNow();
-
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void OnEventAck(int message_id);
