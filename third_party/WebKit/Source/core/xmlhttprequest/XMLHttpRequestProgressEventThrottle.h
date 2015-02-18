@@ -77,7 +77,7 @@ public:
     void suspend();
     void resume();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     // The main purpose of this class is to throttle the "progress"

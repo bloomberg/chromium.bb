@@ -185,7 +185,7 @@ public:
         }
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_owner);
         visitor->trace(m_stream);
@@ -272,7 +272,7 @@ public:
         m_loader.cancel();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_xhr);
     }
@@ -1788,7 +1788,7 @@ ExecutionContext* XMLHttpRequest::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-void XMLHttpRequest::trace(Visitor* visitor)
+DEFINE_TRACE(XMLHttpRequest)
 {
     visitor->trace(m_responseBlob);
     visitor->trace(m_responseLegacyStream);

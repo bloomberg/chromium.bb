@@ -71,7 +71,7 @@ void XMLHttpRequestUpload::handleRequestError(const AtomicString& type)
     dispatchEventAndLoadEnd(type, lengthComputable, m_lastBytesSent, m_lastTotalBytesToBeSent);
 }
 
-void XMLHttpRequestUpload::trace(Visitor* visitor)
+DEFINE_TRACE(XMLHttpRequestUpload)
 {
     visitor->trace(m_xmlHttpRequest);
     XMLHttpRequestEventTarget::trace(visitor);

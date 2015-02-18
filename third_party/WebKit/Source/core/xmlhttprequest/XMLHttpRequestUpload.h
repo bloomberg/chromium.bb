@@ -64,7 +64,7 @@ public:
 
     void handleRequestError(const AtomicString&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);

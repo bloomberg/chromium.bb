@@ -148,7 +148,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     class BlobLoader;

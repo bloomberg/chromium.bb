@@ -144,7 +144,7 @@ void XMLHttpRequestProgressEventThrottle::resume()
     startOneShot(0, FROM_HERE);
 }
 
-void XMLHttpRequestProgressEventThrottle::trace(Visitor* visitor)
+DEFINE_TRACE(XMLHttpRequestProgressEventThrottle)
 {
     visitor->trace(m_target);
 }
