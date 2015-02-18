@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/net_log.h"
@@ -267,6 +268,11 @@ void UpdatePublicResetAddressMismatchHistogram(
 }
 
 const char* GetConnectionDescriptionString() {
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicConnectionLogger GetConnectionDescriptionString"));
+
   NetworkChangeNotifier::ConnectionType type =
       NetworkChangeNotifier::GetConnectionType();
   const char* description = NetworkChangeNotifier::ConnectionTypeToString(type);

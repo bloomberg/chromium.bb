@@ -1163,7 +1163,7 @@ int QuicStreamFactory::CreateSession(
   }
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile6(
+  tracked_objects::ScopedTracker tracking_profile61(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 QuicStreamFactory::CreateSession61"));
 
@@ -1172,6 +1172,12 @@ int QuicStreamFactory::CreateSession(
       server_info.Pass(), config,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
+
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile62(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicStreamFactory::CreateSession62"));
+
   all_sessions_[*session] = server_id;  // owning pointer
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.

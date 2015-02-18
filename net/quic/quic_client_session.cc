@@ -177,12 +177,16 @@ QuicClientSession::QuicClientSession(
       going_away_(false),
       weak_factory_(this) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicClientSession::QuicClientSession"));
+          "422516 QuicClientSession::QuicClientSession1"));
 
   connection->set_debug_visitor(logger_);
   IPEndPoint address;
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 QuicClientSession::QuicClientSession2"));
   if (socket && socket->GetLocalAddress(&address) == OK &&
       address.GetFamily() == ADDRESS_FAMILY_IPV6) {
     connection->set_max_packet_length(
