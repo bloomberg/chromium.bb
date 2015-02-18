@@ -32,6 +32,7 @@
     Custom=ToV8,
     ImplementedAs=DOMWindow,
     PrimaryGlobal,
+    TypeChecking=Unrestricted,
 ] interface Window : EventTarget {
     // DOM Level 0
     readonly attribute Screen screen;
@@ -95,11 +96,11 @@
     readonly attribute double pageXOffset;
     readonly attribute double pageYOffset;
 
-    void scrollBy(double x, double y);
+    void scrollBy(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy([Default=Undefined] optional ScrollToOptions scrollToOptions);
-    void scrollTo(double x, double y);
+    void scrollTo(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo([Default=Undefined] optional ScrollToOptions scrollToOptions);
-    void scroll(double x, double y);
+    void scroll(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scroll([Default=Undefined] optional ScrollToOptions scrollOptions);
     void moveBy(optional long x, optional long y);
     void moveTo(optional long x, optional long y); // FIXME: Arguments should not be optional, or should have defaults.

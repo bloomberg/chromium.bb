@@ -18,7 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface Element : Node {
+[
+    TypeChecking=Unrestricted,
+] interface Element : Node {
 
     // DOM Level 1 Core
 
@@ -69,16 +71,16 @@ interface Element : Node {
     readonly attribute long clientWidth;
     readonly attribute long clientHeight;
 
-    attribute double scrollLeft;
-    attribute double scrollTop;
+    attribute unrestricted double scrollLeft;
+    attribute unrestricted double scrollTop;
     readonly attribute long scrollWidth;
     readonly attribute long scrollHeight;
 
-    [RuntimeEnabled=CSSOMSmoothScroll] void scroll(double x, double y);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scroll(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scroll(optional ScrollToOptions scrollToOptions);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(double x, double y);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions scrollToOptions);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(double x, double y);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions scrollToOptions);
 
     void focus();
