@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
 
+#include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
@@ -82,6 +83,7 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   int dir = 0;
   bool cursor_at_end_of_searchbox =
       search_box_->GetCursorPosition() == search_box_->text().length();
+  const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       if (event.IsShiftDown())
@@ -96,13 +98,13 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
       // ignore the keypress if the user has clicked somewhere in the middle of
       // the searchbox.
       if (cursor_at_end_of_searchbox)
-        dir = -1;
+        dir = -forward_dir;
       break;
     case ui::VKEY_RIGHT:
       // Only move right if the search box text cursor is at the end of the
       // text.
       if (cursor_at_end_of_searchbox)
-        dir = 1;
+        dir = forward_dir;
       break;
     default:
       break;

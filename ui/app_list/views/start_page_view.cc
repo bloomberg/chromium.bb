@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/start_page_view.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item.h"
@@ -274,13 +275,14 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
       tiles_container_->child_at(selected_index)->OnKeyPressed(event))
     return true;
 
+  const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
   int dir = 0;
   switch (event.key_code()) {
     case ui::VKEY_LEFT:
-      dir = -1;
+      dir = -forward_dir;
       break;
     case ui::VKEY_RIGHT:
-      dir = 1;
+      dir = forward_dir;
       break;
     case ui::VKEY_DOWN:
       // Down selects the first tile if nothing is selected.
