@@ -66,6 +66,8 @@
         'metrics/metrics_switches.h',
         'metrics/persisted_logs.cc',
         'metrics/persisted_logs.h',
+        'metrics/url_constants.cc',
+        'metrics/url_constants.h',
       ],
       'conditions': [
         ['chromeos==1', {

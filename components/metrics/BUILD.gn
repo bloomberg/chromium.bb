@@ -48,6 +48,8 @@ source_set("metrics") {
     "metrics_switches.h",
     "persisted_logs.cc",
     "persisted_logs.h",
+    "url_constants.cc",
+    "url_constants.h",
   ]
 
   public_deps = [

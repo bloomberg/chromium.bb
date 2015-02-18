@@ -67,8 +67,6 @@ class ChromeMetricsServiceClient
   void StartGatheringMetrics(const base::Closure& done_callback) override;
   void CollectFinalMetrics(const base::Closure& done_callback) override;
   scoped_ptr<metrics::MetricsLogUploader> CreateUploader(
-      const std::string& server_url,
-      const std::string& mime_type,
       const base::Callback<void(int)>& on_upload_complete) override;
   base::string16 GetRegistryBackupKey() override;
 

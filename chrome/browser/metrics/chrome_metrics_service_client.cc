@@ -36,6 +36,7 @@
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
+#include "components/metrics/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
@@ -236,12 +237,12 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
 
 scoped_ptr<metrics::MetricsLogUploader>
 ChromeMetricsServiceClient::CreateUploader(
-    const std::string& server_url,
-    const std::string& mime_type,
     const base::Callback<void(int)>& on_upload_complete) {
   return scoped_ptr<metrics::MetricsLogUploader>(
       new metrics::NetMetricsLogUploader(
-          g_browser_process->system_request_context(), server_url, mime_type,
+          g_browser_process->system_request_context(),
+          metrics::kDefaultMetricsServerUrl,
+          metrics::kDefaultMetricsMimeType,
           on_upload_complete));
 }
 

@@ -32,8 +32,6 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   void StartGatheringMetrics(const base::Closure& done_callback) override;
   void CollectFinalMetrics(const base::Closure& done_callback) override;
   scoped_ptr<MetricsLogUploader> CreateUploader(
-      const std::string& server_url,
-      const std::string& mime_type,
       const base::Callback<void(int)>& on_upload_complete) override;
 
   const std::string& get_client_id() const { return client_id_; }

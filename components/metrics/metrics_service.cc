@@ -227,12 +227,6 @@ const size_t kUploadLogAvoidRetransmitSize = 100 * 1024;
 // Interval, in minutes, between state saves.
 const int kSaveStateIntervalMinutes = 5;
 
-// The metrics server's URL.
-const char kServerUrl[] = "https://clients4.google.com/uma/v2";
-
-// The MIME type for the uploaded metrics data.
-const char kMimeType[] = "application/vnd.chrome.uma";
-
 enum ResponseStatus {
   UNKNOWN_FAILURE,
   SUCCESS,
@@ -1021,7 +1015,6 @@ void MetricsService::SendStagedLog() {
 
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
-        kServerUrl, kMimeType,
         base::Bind(&MetricsService::OnLogUploadComplete,
                    self_ptr_factory_.GetWeakPtr()));
   }

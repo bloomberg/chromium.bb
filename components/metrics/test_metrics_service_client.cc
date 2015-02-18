@@ -65,8 +65,6 @@ void TestMetricsServiceClient::CollectFinalMetrics(
 }
 
 scoped_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
-    const std::string& server_url,
-    const std::string& mime_type,
     const base::Callback<void(int)>& on_upload_complete) {
   return scoped_ptr<MetricsLogUploader>();
 }
