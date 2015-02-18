@@ -685,7 +685,7 @@ class ChromiumOSDevice(RemoteDevice):
     self.path = self._GetPath()
     self.lsb_release = self._GetLSBRelease()
     self.board = self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
-    # TODO(garnold) Use the actual SDK version field, once known (brillo:113).
+    # TODO(garnold) Use the actual SDK version field, once known (brillo:280).
     self.sdk_version = self.lsb_release.get('CHROMEOS_RELEASE_VERSION', '')
 
   def _GetPath(self):
