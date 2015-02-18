@@ -14575,7 +14575,7 @@ Do you accept?
             Uninstall...
           </message>
           <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-            Search
+            Search or type URL
           </message>
           <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
             Search, or say "Ok Google"
