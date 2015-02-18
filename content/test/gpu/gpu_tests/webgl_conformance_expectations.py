@@ -49,6 +49,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
         ['win7', 'intel', 'nvidia'], bug=373972)
 
+    # Win8 / NVIDIA failures
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-array-buffer-view.html',
+        ['win', 'nvidia'], bug=459265)
+
     # Win / AMD failures
     self.Fail('conformance/textures/texparameter-test.html',
         ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
