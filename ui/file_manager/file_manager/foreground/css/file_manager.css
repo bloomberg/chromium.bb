@@ -1003,14 +1003,14 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
 
 .copied .badge {
   background-image: -webkit-image-set(
-      url(../images/files/ui/copied_badge.png) 1x,
-      url(../images/files/ui/2x/copied_badge.png) 2x);
+      url(../images/files/ui/cloud_import_syncing.png) 1x,
+      url(../images/files/ui/2x/cloud_import_syncing.png) 2x);
 }
 
 .imported .badge {
   background-image: -webkit-image-set(
-      url(../images/files/ui/drive_badge.png) 1x,
-      url(../images/files/ui/2x/drive_badge.png) 2x);
+      url(../images/files/ui/service_drive.png) 1x,
+      url(../images/files/ui/2x/service_drive.png) 2x);
   height: 16px;
   position: absolute;
   right: 7px;

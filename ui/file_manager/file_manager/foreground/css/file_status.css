@@ -12,28 +12,12 @@
 
 [file-status-icon='copied'] {
   background-image: -webkit-image-set(
-      url(../images/files/ui/copied_badge_gray.png) 1x,
-      url(../images/files/ui/2x/copied_badge_gray.png) 2x);
-}
-
-tree:focus .tree-item[selected] > .tree-row > [file-status-icon='copied'],
-list:focus [selected] [file-status-icon='copied'],
-list.autocomplete-suggestions [selected] [file-status-icon='copied'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/copied_badge.png) 1x,
-      url(../images/files/ui/2x/copied_badge.png) 2x);
+      url(../images/files/ui/cloud_import_syncing.png) 1x,
+      url(../images/files/ui/2x/cloud_import_syncing.png) 2x);
 }
 
 [file-status-icon='imported'] {
   background-image: -webkit-image-set(
-      url(../images/files/ui/drive_badge.png) 1x,
-      url(../images/files/ui/2x/drive_badge.png) 2x);
-}
-
-tree:focus .tree-item[selected] > .tree-row > [file-status-icon='imported'],
-list:focus [selected] [file-status-icon='imported'],
-list.autocomplete-suggestions [selected] [file-status-icon='imported'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/drive_badge_white.png) 1x,
-      url(../images/files/ui/2x/drive_badge_white.png) 2x);
+      url(../images/files/ui/service_drive.png) 1x,
+      url(../images/files/ui/2x/service_drive.png) 2x);
 }
