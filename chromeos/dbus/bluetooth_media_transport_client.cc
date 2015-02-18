@@ -20,28 +20,33 @@ namespace {
 // later.
 const char kBluetoothMediaTransportInterface[] = "org.bluez.MediaTransport1";
 
+// Constants used to indicate exceptional error conditions.
+const char kNoResponseError[] = "org.chromium.Error.NoResponse";
+const char kUnexpectedResponse[] = "org.chromium.Error.UnexpectedResponse";
+
 // Method names of Media Transport interface.
 const char kAcquire[] = "Acquire";
 const char kTryAcquire[] = "TryAcquire";
 const char kRelease[] = "Release";
 
-// Property names of Media Transport interface.
-const char kDeviceProperty[] = "Device";
-const char kUUIDProperty[] = "UUID";
-const char kCodecProperty[] = "Codec";
-const char kConfigurationProperty[] = "Configuration";
-const char kStateProperty[] = "State";
-const char kDelayProperty[] = "Delay";
-const char kVolumeProperty[] = "Volume";
-
 }  // namespace
 
 namespace chromeos {
 
-const char BluetoothMediaTransportClient::kNoResponseError[] =
-    "org.chromium.Error.NoResponse";
-const char BluetoothMediaTransportClient::kUnexpectedResponse[] =
-    "org.chromium.Error.UnexpectedResponse";
+// static
+const char BluetoothMediaTransportClient::kDeviceProperty[] = "Device";
+const char BluetoothMediaTransportClient::kUUIDProperty[] = "UUID";
+const char BluetoothMediaTransportClient::kCodecProperty[] = "Codec";
+const char BluetoothMediaTransportClient::kConfigurationProperty[] =
+    "Configuration";
+const char BluetoothMediaTransportClient::kStateProperty[] = "State";
+const char BluetoothMediaTransportClient::kDelayProperty[] = "Delay";
+const char BluetoothMediaTransportClient::kVolumeProperty[] = "Volume";
+
+// static
+const char BluetoothMediaTransportClient::kStateIdle[] = "idle";
+const char BluetoothMediaTransportClient::kStatePending[] = "pending";
+const char BluetoothMediaTransportClient::kStateActive[] = "active";
 
 BluetoothMediaTransportClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,

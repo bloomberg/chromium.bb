@@ -73,6 +73,21 @@ class CHROMEOS_EXPORT BluetoothMediaTransportClient : public DBusClient {
         const std::string& property_name) {}
   };
 
+  // TODO(mcchou): Move all static constants to service_constants.h.
+  // Constants used for the names of Media Transport's properties.
+  static const char kDeviceProperty[];
+  static const char kUUIDProperty[];
+  static const char kCodecProperty[];
+  static const char kConfigurationProperty[];
+  static const char kStateProperty[];
+  static const char kDelayProperty[];
+  static const char kVolumeProperty[];
+
+  // All possible states of a valid media transport object.
+  static const char kStateIdle[];
+  static const char kStatePending[];
+  static const char kStateActive[];
+
   ~BluetoothMediaTransportClient() override;
 
   // The ErrorCallback is used by media transport API methods to indicate
@@ -114,10 +129,6 @@ class CHROMEOS_EXPORT BluetoothMediaTransportClient : public DBusClient {
                        const ErrorCallback& error_callback) = 0;
 
   static BluetoothMediaTransportClient* Create();
-
-  // Constants used to indicate exceptional error conditions.
-  static const char kNoResponseError[];
-  static const char kUnexpectedResponse[];
 
  protected:
   BluetoothMediaTransportClient();

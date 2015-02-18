@@ -54,6 +54,12 @@ class CHROMEOS_EXPORT BluetoothMediaClient : public DBusClient {
     virtual void MediaRemoved(const dbus::ObjectPath& object_path) {}
   };
 
+  // Constants used to indicate exceptional error conditions.
+  static const char kNoResponseError[];
+
+  // The string representation for the 128-bit UUID for A2DP Sink.
+  static const char kBluetoothAudioSinkUUID[];
+
   ~BluetoothMediaClient() override;
 
   // The ErrorCallback is used by media API methods to indicate failure.
@@ -88,12 +94,6 @@ class CHROMEOS_EXPORT BluetoothMediaClient : public DBusClient {
   // included, since they are not used. These two methods may be added later.
 
   static BluetoothMediaClient* Create();
-
-  // Constants used to indicate exceptional error conditions.
-  static const char kNoResponseError[];
-
-  // The string representation for the 128-bit UUID for A2DP Sink.
-  static const char kBluetoothAudioSinkUUID[];
 
  protected:
   BluetoothMediaClient();

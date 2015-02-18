@@ -23,6 +23,8 @@
 
 namespace chromeos {
 
+class BluetoothAudioSinkChromeOSTest;
+
 class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
     : public device::BluetoothAudioSink,
       public device::BluetoothAdapter::Observer,
@@ -34,6 +36,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
       scoped_refptr<device::BluetoothAdapter> adapter);
 
   // device::BluetoothAudioSink overrides.
+  // Unregisters a BluetoothAudioSink. |callback| should handle
+  // the clean-up after the audio sink is deleted successfully, otherwise
+  // |error_callback| will be called.
+  void Unregister(
+      const base::Closure& callback,
+      const device::BluetoothAudioSink::ErrorCallback& error_callback) override;
   void AddObserver(BluetoothAudioSink::Observer* observer) override;
   void RemoveObserver(BluetoothAudioSink::Observer* observer) override;
   device::BluetoothAudioSink::State GetState() const override;
@@ -53,12 +61,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
 
   // BluetoothMediaEndpointServiceProvider::Delegate overrides.
   void SetConfiguration(const dbus::ObjectPath& transport_path,
-                        const dbus::MessageReader& properties) override;
+                        const TransportProperties& properties) override;
   void SelectConfiguration(
       const std::vector<uint8_t>& capabilities,
       const SelectConfigurationCallback& callback) override;
   void ClearConfiguration(const dbus::ObjectPath& transport_path) override;
-  void Release() override;
+  void Released() override;
 
   // Registers a BluetoothAudioSink. User applications can use |options| to
   // configure the audio sink. |callback| will be executed if the audio sink is
@@ -69,12 +77,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
       const base::Closure& callback,
       const device::BluetoothAudioSink::ErrorCallback& error_callback);
 
-  // Unregisters a BluetoothAudioSink. |callback| should handle
-  // the clean-up after the audio sink is deleted successfully, otherwise
-  // |error_callback| will be called.
-  void Unregister(
-      const base::Closure& callback,
-      const device::BluetoothAudioSink::ErrorCallback& error_callback) override;
+  // Returns a pointer to the media endpoint object. This function should be
+  // used for testing purpose only.
+  BluetoothMediaEndpointServiceProvider* GetEndpointServiceProvider();
 
  private:
   ~BluetoothAudioSinkChromeOS() override;
@@ -97,6 +102,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // Reads from the file descriptor acquired via Media Transport object and
   // notify |observer_| while the audio data is available.
   void ReadFromFD();
+
+  // Helper functions to clean up media, media transport and media endpoint.
+  // Called when the |state_| changes to either STATE_INVALID or
+  // STATE_DISCONNECTED.
+  void ResetMedia();
+  void ResetTransport();
+  void ResetEndpoint();
 
   // The connection state between the BluetoothAudioSinkChromeOS and the remote
   // device.

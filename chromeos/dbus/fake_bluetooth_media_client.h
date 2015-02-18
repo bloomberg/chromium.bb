@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_BLUETOOTH_MEDIA_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_BLUETOOTH_MEDIA_CLIENT_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
@@ -37,7 +39,25 @@ class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) override;
 
+  // Makes the media object visible/invisible to emulate the addition/removal
+  // events.
+  void SetVisible(bool visible);
+
+  // Sets the registration state for a given media endpoint path.
+  void SetEndpointRegistered(const dbus::ObjectPath& endpoint_path,
+                             bool registered);
+
  private:
+  // Indicates whether the media object is visible or not.
+  bool visible_;
+
+  // The path of the media object.
+  dbus::ObjectPath object_path_;
+
+  // Pairs of endpoint paths and bool values indicating whether or not endpoints
+  // are registered.
+  std::map<dbus::ObjectPath, bool> endpoints_;
+
   // List of observers interested in event notifications from us.
   ObserverList<BluetoothMediaClient::Observer> observers_;
 

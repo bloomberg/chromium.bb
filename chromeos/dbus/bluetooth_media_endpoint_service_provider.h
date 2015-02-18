@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_BLUETOOTH_MEDIA_ENDPOINT_SERVICE_PROVIDER_H_
 #define CHROMEOS_DBUS_BLUETOOTH_MEDIA_ENDPOINT_SERVICE_PROVIDER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -33,6 +34,40 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProvider {
   // Source.
   class Delegate {
    public:
+    // Transport-specific properties.
+    struct CHROMEOS_EXPORT TransportProperties {
+      TransportProperties();
+      ~TransportProperties();
+
+      // The path to the device object which the transport is connected to.
+      dbus::ObjectPath device;
+
+      // The UUID of the profile which the transport is for.
+      std::string uuid;
+
+      // The Codec value agreed by the remote device and used by the media
+      // transport.
+      uint8_t codec;
+
+      // The configuration used by the media transport.
+      std::vector<uint8_t> configuration;
+
+      // The state of the transport. The values can be one of the following:
+      // "idle": not streaming
+      // "pending": streaming but not acquired
+      // "active": streaming and acquired
+      std::string state;
+
+      // The unit of transport is in 1/10 millisecond. Optional.
+      scoped_ptr<uint16_t> delay;
+
+      // The volume level of the transport. Optional.
+      scoped_ptr<uint16_t> volume;
+
+     private:
+      DISALLOW_COPY_AND_ASSIGN(TransportProperties);
+    };
+
     virtual ~Delegate() {}
 
     // SelectConfigurationCallback is used for the SelectConfiguration() method,
@@ -47,7 +82,7 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProvider {
     // MediaTransport object, and |properties| are the properties for that
     // MediaTransport object.
     virtual void SetConfiguration(const dbus::ObjectPath& transport_path,
-                                  const dbus::MessageReader& properties) = 0;
+                                  const TransportProperties& properties) = 0;
 
     // This method will be called when an Audio Source connects to an Audio Sink
     // and asks it to decide the configuration to be used during the oncoming
@@ -69,8 +104,10 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProvider {
     // This method will be called when the Bluetooth daemon unregisters the
     // Media Endpoint. Media Endpoint objects can use this method to clean up
     // tasks. There is no need to unregister the endpoint, since when this
-    // method gets called, that endpoint has been unregistered.
-    virtual void Release() = 0;
+    // method gets called, that endpoint has been unregistered. This corresponds
+    // to the org.bluez.MediaEndpoint1.Release and is renamed to avoid
+    // a conflict with base::RefCounted<T>.
+    virtual void Released() = 0;
   };
 
   virtual ~BluetoothMediaEndpointServiceProvider();

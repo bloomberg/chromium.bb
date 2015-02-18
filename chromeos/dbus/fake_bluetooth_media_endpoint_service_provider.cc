@@ -4,30 +4,38 @@
 
 #include "chromeos/dbus/fake_bluetooth_media_endpoint_service_provider.h"
 
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_bluetooth_media_client.h"
+#include "chromeos/dbus/fake_bluetooth_media_transport_client.h"
+
+using dbus::ObjectPath;
+
 namespace chromeos {
 
-// TODO(mcchou): Add the logic of the behavior.
 FakeBluetoothMediaEndpointServiceProvider::
-    FakeBluetoothMediaEndpointServiceProvider(
-    const dbus::ObjectPath object_path, Delegate* delegate)
-    : object_path_(object_path) , delegate_(delegate) {
+    FakeBluetoothMediaEndpointServiceProvider(const ObjectPath& object_path,
+                                              Delegate* delegate)
+    : visible_(false), object_path_(object_path), delegate_(delegate) {
   VLOG(1) << "Create Bluetooth Media Endpoint: " << object_path_.value();
-  // TODO(mcchou): Use the FakeBluetoothMediaClient in DBusThreadManager
-  // to register the FakeBluetoothMediaEndpoint object.
 }
 
 FakeBluetoothMediaEndpointServiceProvider::
     ~FakeBluetoothMediaEndpointServiceProvider() {
   VLOG(1) << "Cleaning up Bluetooth Media Endpoint: " << object_path_.value();
-  // TODO(mcchou): Use the FakeBluetoothMediaClient in DBusThreadManager
-  // to unregister the FakeBluetoothMediaEndpoint object.
 }
 
 void FakeBluetoothMediaEndpointServiceProvider::SetConfiguration(
-    const dbus::ObjectPath& transport_path,
-    const dbus::MessageReader& properties) {
+    const ObjectPath& transport_path,
+    const Delegate::TransportProperties& properties) {
   VLOG(1) << object_path_.value() << ": SetConfiguration for "
           << transport_path.value();
+
+  // Makes the transport object valid for the given endpoint path.
+  FakeBluetoothMediaTransportClient* transport =
+      static_cast<FakeBluetoothMediaTransportClient*>(
+          DBusThreadManager::Get()->GetBluetoothMediaTransportClient());
+  transport->SetValid(object_path_, true);
+
   delegate_->SetConfiguration(transport_path, properties);
 }
 
@@ -39,15 +47,15 @@ void FakeBluetoothMediaEndpointServiceProvider::SelectConfiguration(
 }
 
 void FakeBluetoothMediaEndpointServiceProvider::ClearConfiguration(
-    const dbus::ObjectPath& transport_path) {
-  VLOG(1) << object_path_.value() << ": ClearConfiguration for"
+    const ObjectPath& transport_path) {
+  VLOG(1) << object_path_.value() << ": ClearConfiguration on "
           << transport_path.value();
   delegate_->ClearConfiguration(transport_path);
 }
 
-void FakeBluetoothMediaEndpointServiceProvider::Release() {
-  VLOG(1) << object_path_.value() << ": Release";
-  delegate_->Release();
+void FakeBluetoothMediaEndpointServiceProvider::Released() {
+  VLOG(1) << object_path_.value() << ": Released";
+  delegate_->Released();
 }
 
 }  // namespace chromeos
