@@ -132,6 +132,9 @@ protected:
     virtual void setTargetElement(SVGElement*);
     virtual void setAttributeName(const QualifiedName&);
 
+    void schedule();
+    void unscheduleIfScheduled();
+
 private:
     virtual void buildPendingResource() override;
     void clearResourceAndEventBaseReferences();
@@ -243,6 +246,7 @@ private:
     bool m_hasEndEventConditions;
 
     bool m_isWaitingForFirstInterval;
+    bool m_isScheduled;
 
     using TimeDependentSet = WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>;
     TimeDependentSet m_syncBaseDependents;

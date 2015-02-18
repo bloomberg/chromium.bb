@@ -278,6 +278,7 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
         return;
 
     if (!targetElement) {
+        ASSERT(!m_animator);
         m_animatedProperty.clear();
         return;
     }
@@ -289,6 +290,7 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
         // CSS properties animation code-path.
         removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
         m_animatedProperty.clear();
+        m_animator.clear();
         return;
     }
 
@@ -300,6 +302,7 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
     }
 
     m_animatedProperty.clear();
+    m_animator.clear();
 }
 
 void SVGAnimateElement::applyResultsToTarget()

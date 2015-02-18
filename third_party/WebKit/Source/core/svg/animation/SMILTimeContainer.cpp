@@ -83,6 +83,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation, SVGElement* target, 
     ASSERT(animation->timeContainer() == this);
     ASSERT(target);
     ASSERT(animation->hasValidAttributeName());
+    ASSERT(animation->hasValidAttributeType());
 
 #if ENABLE(ASSERT)
     ASSERT(!m_preventScheduledAnimationsChanges);
@@ -479,14 +480,11 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
             ASSERT(animation->timeContainer() == this);
             ASSERT(animation->targetElement());
             ASSERT(animation->hasValidAttributeName());
+            ASSERT(animation->hasValidAttributeType());
 
             // Results are accumulated to the first animation that animates and contributes to a particular element/attribute pair.
-            // FIXME: we should ensure that resultElement is of an appropriate type.
-            if (!resultElement) {
-                if (!animation->hasValidAttributeType())
-                    continue;
+            if (!resultElement)
                 resultElement = animation;
-            }
 
             // This will calculate the contribution from the animation and add it to the resultsElement.
             if (!animation->progress(elapsed, resultElement, seekToTime) && resultElement == animation)

@@ -173,7 +173,7 @@ private:
     virtual void animationAttributeChanged() override;
     void setAttributeType(const AtomicString&);
 
-    void checkInvalidCSSAttributeType(SVGElement*);
+    void checkInvalidCSSAttributeType();
 
     virtual bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) = 0;
     virtual bool calculateFromAndToValues(const String& fromString, const String& toString) = 0;

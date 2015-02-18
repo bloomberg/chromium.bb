@@ -330,7 +330,7 @@ void SVGAnimationElement::setAttributeType(const AtomicString& attributeType)
         m_attributeType = AttributeTypeXML;
     else
         m_attributeType = AttributeTypeAuto;
-    checkInvalidCSSAttributeType(targetElement());
+    checkInvalidCSSAttributeType();
 }
 
 String SVGAnimationElement::toValue() const
@@ -704,18 +704,32 @@ void SVGAnimationElement::determinePropertyValueTypes(const String& from, const 
 void SVGAnimationElement::setTargetElement(SVGElement* target)
 {
     SVGSMILElement::setTargetElement(target);
-    checkInvalidCSSAttributeType(target);
+    checkInvalidCSSAttributeType();
 }
 
 void SVGAnimationElement::setAttributeName(const QualifiedName& attributeName)
 {
     SVGSMILElement::setAttributeName(attributeName);
-    checkInvalidCSSAttributeType(targetElement());
+    checkInvalidCSSAttributeType();
 }
 
-void SVGAnimationElement::checkInvalidCSSAttributeType(SVGElement* target)
+void SVGAnimationElement::checkInvalidCSSAttributeType()
 {
-    m_hasInvalidCSSAttributeType = target && hasValidAttributeName() && attributeType() == AttributeTypeCSS && !isTargetAttributeCSSProperty(target, attributeName());
+    bool hasInvalidCSSAttributeType = targetElement() && hasValidAttributeName() && attributeType() == AttributeTypeCSS && !isTargetAttributeCSSProperty(targetElement(), attributeName());
+
+    if (hasInvalidCSSAttributeType != m_hasInvalidCSSAttributeType) {
+        if (hasInvalidCSSAttributeType)
+            unscheduleIfScheduled();
+
+        m_hasInvalidCSSAttributeType = hasInvalidCSSAttributeType;
+
+        if (!hasInvalidCSSAttributeType)
+            schedule();
+    }
+
+    // Clear values that may depend on the previous target.
+    if (targetElement())
+        clearAnimatedType(targetElement());
 }
 
 }
