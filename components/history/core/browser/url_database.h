@@ -137,7 +137,7 @@ class URLDatabase {
    public:
     URLEnumerator();
 
-    // Retreives the next url. Returns false if no more urls are available
+    // Retrieves the next url. Returns false if no more urls are available.
     bool GetNextURL(URLRow* r);
 
    private:
@@ -152,8 +152,6 @@ class URLDatabase {
   // having their URL manually typed more than once, or having been visited
   // more than 3 times.
   bool InitURLEnumeratorForSignificant(URLEnumerator* enumerator);
-
-  // Favicons ------------------------------------------------------------------
 
   // Autocomplete --------------------------------------------------------------
 

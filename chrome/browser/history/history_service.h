@@ -29,7 +29,6 @@
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "sql/init_status.h"
 #include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
@@ -39,18 +38,12 @@ class AndroidHistoryProviderService;
 #endif
 
 class GURL;
-class HistoryService;
 class PageUsageRequest;
-class Profile;
 class SkBitmap;
 
 namespace base {
 class FilePath;
 class Thread;
-}
-
-namespace visitedlink {
-class VisitedLinkMaster;
 }
 
 namespace history {
@@ -71,6 +64,7 @@ class InMemoryURLIndexTest;
 struct KeywordSearchTermVisit;
 class PageUsageData;
 class URLDatabase;
+class VisitDelegate;
 class VisitFilter;
 class WebHistoryService;
 
@@ -81,19 +75,18 @@ class WebHistoryService;
 //
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
-class HistoryService : public syncer::SyncableService,
-                       public KeyedService,
-                       public visitedlink::VisitedLinkDelegate {
+class HistoryService : public syncer::SyncableService, public KeyedService {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<history::PageUsageData*> PageUsageDataList;
 
-  // Must call Init after construction. The |history::HistoryClient| object
-  // must be valid for the whole lifetime of |HistoryService|.
-  HistoryService(history::HistoryClient* client, Profile* profile);
-  // The empty constructor is provided only for testing.
+  // Must call Init after construction. The empty constructor provided only for
+  // unit tests. When using the full constructor, |history_client| and |profile|
+  // should only be null during testing, while |visit_delegate| may be null if
+  // the embedder use another way to track visited links.
   HistoryService();
-
+  HistoryService(history::HistoryClient* history_client,
+                 scoped_ptr<history::VisitDelegate> visit_delegate);
   ~HistoryService() override;
 
   // Initializes the history service, returning true on success. On false, do
@@ -119,7 +112,7 @@ class HistoryService : public syncer::SyncableService,
   void ClearCachedDataForContextID(history::ContextID context_id);
 
   // Triggers the backend to load if it hasn't already, and then returns the
-  // in-memory URL database. The returned pointer MAY BE NULL if the in-memory
+  // in-memory URL database. The returned pointer may be null if the in-memory
   // database has not been loaded yet. This pointer is owned by the history
   // system. Callers should not store or cache this value.
   //
@@ -161,7 +154,7 @@ class HistoryService : public syncer::SyncableService,
   // are only unique inside a given context, so we need that to differentiate
   // them.
   //
-  // The context/page ids can be NULL if there is no meaningful tracking
+  // The context/page ids can be null if there is no meaningful tracking
   // information that can be performed on the given URL. The 'nav_entry_id'
   // should be the unique ID of the current navigation entry in the given
   // process.
@@ -393,9 +386,8 @@ class HistoryService : public syncer::SyncableService,
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
-  typedef base::Callback<void(
-      scoped_ptr<std::vector<history::DownloadRow> >)>
-          DownloadQueryCallback;
+  typedef base::Callback<void(scoped_ptr<std::vector<history::DownloadRow>>)>
+      DownloadQueryCallback;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
@@ -550,16 +542,13 @@ class HistoryService : public syncer::SyncableService,
   // Called on shutdown, this will tell the history backend to complete and
   // will release pointers to it. No other functions should be called once
   // cleanup has happened that may dispatch to the history thread (because it
-  // will be NULL).
+  // will be null).
   //
   // In practice, this will be called by the service manager (BrowserProcess)
   // when it is being destroyed. Because that reference is being destroyed, it
   // should be impossible for anybody else to call the service, even if it is
   // still in memory (pending requests may be holding a reference to us).
   void Cleanup();
-
-  // Implementation of visitedlink::VisitedLinkDelegate.
-  void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
@@ -812,13 +801,13 @@ class HistoryService : public syncer::SyncableService,
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
 
+  // The history service will inform its VisitDelegate of URLs recorded and
+  // removed from the history database. This may be null during testing.
+  scoped_ptr<history::VisitDelegate> visit_delegate_;
+
   // The history client, may be null when testing. The object should otherwise
   // outlive |HistoryService|.
   history::HistoryClient* history_client_;
-
-  // Used for propagating link highlighting data across renderers. May be null
-  // in tests.
-  scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
 
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.

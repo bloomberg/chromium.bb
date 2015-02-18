@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
+#include "chrome/browser/history/content_visit_delegate.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -54,8 +55,9 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
     return NULL;
   }
 
-  HistoryService* history_service = new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile), profile);
+  HistoryService* history_service =
+      new HistoryService(ChromeHistoryClientFactory::GetForProfile(profile),
+                         scoped_ptr<history::VisitDelegate>());
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {

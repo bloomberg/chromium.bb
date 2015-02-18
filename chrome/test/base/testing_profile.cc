@@ -23,6 +23,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
+#include "chrome/browser/history/content_visit_delegate.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -214,9 +215,10 @@ KeyedService* BuildFaviconService(content::BrowserContext* profile) {
 }
 
 KeyedService* BuildHistoryService(content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   HistoryService* history_service = new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile), profile);
+      ChromeHistoryClientFactory::GetForProfile(profile),
+      scoped_ptr<history::VisitDelegate>(new ContentVisitDelegate(profile)));
   return history_service;
 }
 

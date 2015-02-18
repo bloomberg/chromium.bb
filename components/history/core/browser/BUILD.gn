@@ -62,6 +62,8 @@ static_library("browser") {
     "url_utils.h",
     "visit_database.cc",
     "visit_database.h",
+    "visit_delegate.cc",
+    "visit_delegate.h",
     "visit_filter.cc",
     "visit_filter.h",
     "visit_tracker.cc",

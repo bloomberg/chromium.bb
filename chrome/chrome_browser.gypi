@@ -1521,6 +1521,8 @@
       'browser/history/chrome_history_client.h',
       'browser/history/chrome_history_client_factory.cc',
       'browser/history/chrome_history_client_factory.h',
+      'browser/history/content_visit_delegate.cc',
+      'browser/history/content_visit_delegate.h',
       'browser/history/delete_directive_handler.cc',
       'browser/history/delete_directive_handler.h',
       'browser/history/history_backend.cc',

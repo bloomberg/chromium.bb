@@ -42,12 +42,10 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/visit_database.h"
+#include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/browser/visit_filter.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/common/thumbnail_score.h"
-#include "components/visitedlink/browser/visitedlink_master.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "sync/api/sync_error_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -81,26 +79,6 @@ void RunWithVisibleVisitCountToHostResult(
     const history::VisibleVisitCountToHostResult* result) {
   callback.Run(result->success, result->count, result->first_visit);
 }
-
-// Extract history::URLRows into GURLs for VisitedLinkMaster.
-class URLIteratorFromURLRows
-    : public visitedlink::VisitedLinkMaster::URLIterator {
- public:
-  explicit URLIteratorFromURLRows(const history::URLRows& url_rows)
-      : itr_(url_rows.begin()),
-        end_(url_rows.end()) {
-  }
-
-  const GURL& NextURL() override { return (itr_++)->url(); }
-
-  bool HasNextURL() const override { return itr_ != end_; }
-
- private:
-  history::URLRows::const_iterator itr_;
-  history::URLRows::const_iterator end_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLIteratorFromURLRows);
-};
 
 // Callback from WebHistoryService::ExpireWebHistory().
 void ExpireWebHistoryComplete(bool success) {
@@ -214,18 +192,18 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 // history thread.
 HistoryService::HistoryService()
     : thread_(new base::Thread(kHistoryThreadName)),
-      history_client_(NULL),
+      history_client_(nullptr),
       backend_loaded_(false),
       no_db_(false),
       weak_ptr_factory_(this) {
 }
 
 HistoryService::HistoryService(
-    history::HistoryClient* history_client, Profile* profile)
+    history::HistoryClient* history_client,
+    scoped_ptr<history::VisitDelegate> visit_delegate)
     : thread_(new base::Thread(kHistoryThreadName)),
+      visit_delegate_(visit_delegate.Pass()),
       history_client_(history_client),
-      visitedlink_master_(new visitedlink::VisitedLinkMaster(
-          profile, this, true)),
       backend_loaded_(false),
       no_db_(false),
       weak_ptr_factory_(this) {
@@ -253,7 +231,7 @@ void HistoryService::ClearCachedDataForContextID(
 
 history::URLDatabase* HistoryService::InMemoryDatabase() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return in_memory_backend_ ? in_memory_backend_->db() : NULL;
+  return in_memory_backend_ ? in_memory_backend_->db() : nullptr;
 }
 
 bool HistoryService::GetTypedCountForURL(const GURL& url, int* typed_count) {
@@ -404,7 +382,7 @@ void HistoryService::AddPage(const GURL& url,
                              history::VisitSource visit_source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   AddPage(
-      history::HistoryAddPageArgs(url, time, NULL, 0, GURL(),
+      history::HistoryAddPageArgs(url, time, nullptr, 0, GURL(),
                                   history::RedirectList(),
                                   ui::PAGE_TRANSITION_LINK,
                                   visit_source, false));
@@ -421,19 +399,17 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
   if (!CanAddURL(add_page_args.url))
     return;
 
-  // Add link & all redirects to visited link list.
-  if (visitedlink_master_) {
-    visitedlink_master_->AddURL(add_page_args.url);
-
+  // Inform VisitedDelegate of all links and redirects.
+  if (visit_delegate_) {
     if (!add_page_args.redirects.empty()) {
-      // We should not be asked to add a page in the middle of a redirect chain.
-      DCHECK_EQ(add_page_args.url,
-                add_page_args.redirects[add_page_args.redirects.size() - 1]);
-
-      // We need the !redirects.empty() condition above since size_t is unsigned
-      // and will wrap around when we subtract one from a 0 size.
-      for (size_t i = 0; i < add_page_args.redirects.size() - 1; i++)
-        visitedlink_master_->AddURL(add_page_args.redirects[i]);
+      // We should not be asked to add a page in the middle of a redirect chain,
+      // and thus add_page_args.url should be the last element in the array
+      // add_page_args.redirects which mean we can use VisitDelegate::AddURLs()
+      // with the whole array.
+      DCHECK_EQ(add_page_args.url, add_page_args.redirects.back());
+      visit_delegate_->AddURLs(add_page_args.redirects);
+    } else {
+      visit_delegate_->AddURL(add_page_args.url);
     }
   }
 
@@ -487,9 +463,9 @@ void HistoryService::AddPageWithDetails(const GURL& url,
   if (!CanAddURL(url))
     return;
 
-  // Add to the visited links system.
-  if (visitedlink_master_)
-    visitedlink_master_->AddURL(url);
+  // Inform VisitDelegate of the URL.
+  if (visit_delegate_)
+    visit_delegate_->AddURL(url);
 
   history::URLRow row(url);
   row.set_title(title);
@@ -510,15 +486,14 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
                                          history::VisitSource visit_source) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Add to the visited links system.
-  if (visitedlink_master_) {
+
+  // Inform the VisitDelegate of the URLs
+  if (!info.empty() && visit_delegate_) {
     std::vector<GURL> urls;
     urls.reserve(info.size());
-    for (history::URLRows::const_iterator i = info.begin(); i != info.end();
-         ++i)
-      urls.push_back(i->url());
-
-    visitedlink_master_->AddURLs(urls);
+    for (const auto& row : info)
+      urls.push_back(row.url());
+    visit_delegate_->AddURLs(urls);
   }
 
   ScheduleTask(PRIORITY_NORMAL,
@@ -750,7 +725,7 @@ void HistoryService::QueryDownloads(
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<history::DownloadRow>* rows =
     new std::vector<history::DownloadRow>();
-  scoped_ptr<std::vector<history::DownloadRow> > scoped_rows(rows);
+  scoped_ptr<std::vector<history::DownloadRow>> scoped_rows(rows);
   // Beware! The first Bind() does not simply |scoped_rows.get()| because
   // base::Passed(&scoped_rows) nullifies |scoped_rows|, and compilers do not
   // guarantee that the first Bind's arguments are evaluated before the second
@@ -936,24 +911,16 @@ void HistoryService::Cleanup() {
     ScheduleTask(PRIORITY_NORMAL, closing_task);
     closing_task.Reset();
     HistoryBackend* raw_ptr = history_backend_.get();
-    history_backend_ = NULL;
+    history_backend_ = nullptr;
     thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
   }
 
   // Delete the thread, which joins with the background thread. We defensively
-  // NULL the pointer before deleting it in case somebody tries to use it
+  // nullptr the pointer before deleting it in case somebody tries to use it
   // during shutdown, but this shouldn't happen.
   base::Thread* thread = thread_;
-  thread_ = NULL;
+  thread_ = nullptr;
   delete thread;
-}
-
-void HistoryService::RebuildTable(
-    const scoped_refptr<URLEnumerator>& enumerator) {
-  DCHECK(thread_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::IterateURLs,
-                                           history_backend_.get(), enumerator));
 }
 
 bool HistoryService::Init(
@@ -991,10 +958,8 @@ bool HistoryService::Init(
                base::Bind(&HistoryBackend::Init, history_backend_.get(),
                           languages, no_db_, history_database_params));
 
-  if (visitedlink_master_) {
-    bool result = visitedlink_master_->Init();
-    DCHECK(result);
-  }
+  if (visit_delegate_ && !visit_delegate_->Init(this))
+    return false;
 
   return true;
 }
@@ -1220,21 +1185,23 @@ void HistoryService::NotifyURLsDeleted(bool all_history,
   if (!thread_)
     return;
 
-  // Update the visited link system for deleted URLs. We will update the
-  // visited link system for added URLs as soon as we get the add
-  // notification (we don't have to wait for the backend, which allows us to
-  // be faster to update the state).
+  // Inform the VisitDelegate of the deleted URLs. We will inform the delegate
+  // of added URLs as soon as we get the add notification (we don't have to wait
+  // for the backend, which allows us to be faster to update the state).
   //
   // For deleted URLs, we don't typically know what will be deleted since
   // delete notifications are by time. We would also like to be more
   // respectful of privacy and never tell the user something is gone when it
   // isn't. Therefore, we update the delete URLs after the fact.
-  if (visitedlink_master_) {
+  if (visit_delegate_) {
     if (all_history) {
-      visitedlink_master_->DeleteAllURLs();
+      visit_delegate_->DeleteAllURLs();
     } else {
-      URLIteratorFromURLRows iterator(deleted_rows);
-      visitedlink_master_->DeleteURLs(&iterator);
+      std::vector<GURL> urls;
+      urls.reserve(deleted_rows.size());
+      for (const auto& row : deleted_rows)
+        urls.push_back(row.url());
+      visit_delegate_->DeleteURLs(urls);
     }
   }
 

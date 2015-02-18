@@ -25,7 +25,6 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/visit_tracker.h"
-#include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "sql/init_status.h"
 
 #if defined(OS_ANDROID)
@@ -220,9 +219,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ScheduleAutocomplete(const base::Callback<
       void(history::HistoryBackend*, history::URLDatabase*)>& callback);
 
-  void IterateURLs(
-      const scoped_refptr<visitedlink::VisitedLinkDelegate::URLEnumerator>&
-          enumerator);
   void QueryURL(const GURL& url,
                 bool want_visits,
                 QueryURLResult* query_url_result);

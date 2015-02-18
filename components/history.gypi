@@ -85,6 +85,8 @@
         'history/core/browser/url_utils.h',
         'history/core/browser/visit_database.cc',
         'history/core/browser/visit_database.h',
+        'history/core/browser/visit_delegate.cc',
+        'history/core/browser/visit_delegate.h',
         'history/core/browser/visit_filter.cc',
         'history/core/browser/visit_filter.h',
         'history/core/browser/visit_tracker.cc',

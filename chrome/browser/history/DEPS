@@ -29,8 +29,6 @@ include_rules = [
   "!chrome/browser/ui/browser_finder.h",
   "!components/bookmarks/browser/bookmark_utils.h",
   "!components/dom_distiller/core/url_constants.h",
-  "!components/visitedlink/browser/visitedlink_delegate.h",
-  "!components/visitedlink/browser/visitedlink_master.h",
 ]
 
 specific_include_rules = {
@@ -53,6 +51,11 @@ specific_include_rules = {
     "+chrome/browser/ui/profile_error_dialog.h",
     "+components/bookmarks/browser",
     "+components/keyed_service/content",
+  ],
+  # Those files will move to //components/history/content/browser and thus
+  # can depend on //content even indirectly.
+  'content_.*\.(cc|h)': [
+    "+components/visitedlink/browser",
   ],
   # TODO(sdefresne): Bring this list to zero.
   #

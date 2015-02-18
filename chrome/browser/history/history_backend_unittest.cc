@@ -22,6 +22,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/history/content_visit_delegate.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
@@ -3041,8 +3042,8 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   GURL url("http://www.google.com");
   HistoryClientMock history_client;
   history_client.AddBookmark(url);
-  scoped_ptr<HistoryService> service(
-      new HistoryService(&history_client, profile.get()));
+  scoped_ptr<HistoryService> service(new HistoryService(
+      &history_client, scoped_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(
       service->Init(profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
                     TestHistoryDatabaseParamsForPath(profile->GetPath())));

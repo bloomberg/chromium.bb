@@ -172,8 +172,7 @@ bool QueuedHistoryDBTask::is_canceled() {
   return is_canceled_.Run();
 }
 
-bool QueuedHistoryDBTask::Run(HistoryBackend* backend,
-                                        HistoryDatabase* db) {
+bool QueuedHistoryDBTask::Run(HistoryBackend* backend, HistoryDatabase* db) {
   return task_->RunOnDBThread(backend, db);
 }
 
@@ -922,23 +921,6 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
   url_info.set_hidden(true);
 
   db_->AddURL(url_info);
-}
-
-void HistoryBackend::IterateURLs(
-    const scoped_refptr<visitedlink::VisitedLinkDelegate::URLEnumerator>&
-    iterator) {
-  if (db_) {
-    HistoryDatabase::URLEnumerator e;
-    if (db_->InitURLEnumeratorForEverything(&e)) {
-      URLRow info;
-      while (e.GetNextURL(&info)) {
-        iterator->OnURL(info.url());
-      }
-      iterator->OnComplete(true);  // Success.
-      return;
-    }
-  }
-  iterator->OnComplete(false);  // Failure.
 }
 
 bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {

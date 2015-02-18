@@ -113,11 +113,10 @@ class HistoryBackendMock : public HistoryBackend {
 
 class HistoryServiceMock : public HistoryService {
  public:
-  HistoryServiceMock(history::HistoryClient* client, Profile* profile)
-      : HistoryService(client, profile), backend_(NULL) {}
+  HistoryServiceMock() : HistoryService(), backend_(nullptr) {}
 
-  virtual void ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
-                              base::CancelableTaskTracker* tracker) override {
+  void ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
+                      base::CancelableTaskTracker* tracker) override {
     history::HistoryDBTask* task_raw = task.get();
     task_runner_->PostTaskAndReply(
         FROM_HERE,
@@ -144,7 +143,7 @@ class HistoryServiceMock : public HistoryService {
   }
 
  private:
-  virtual ~HistoryServiceMock() {}
+  ~HistoryServiceMock() override {}
 
   void RunTaskOnDBThread(history::HistoryDBTask* task) {
     EXPECT_TRUE(task->RunOnDBThread(backend_.get(), NULL));
@@ -162,7 +161,7 @@ KeyedService* BuildFakeProfileInvalidationProvider(
 }
 
 KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryServiceMock(NULL, static_cast<Profile*>(profile));
+  return new HistoryServiceMock;
 }
 
 class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {

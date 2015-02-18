@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/chrome_history_client_factory.h"
+#include "chrome/browser/history/content_visit_delegate.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,7 +78,8 @@ KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_ptr<HistoryService> history_service(new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile), profile));
+      ChromeHistoryClientFactory::GetForProfile(profile),
+      scoped_ptr<history::VisitDelegate>(new ContentVisitDelegate(profile))));
   if (!history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
