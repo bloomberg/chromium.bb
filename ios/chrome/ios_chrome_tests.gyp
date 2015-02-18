@@ -36,11 +36,14 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
         'ios_chrome.gyp:ios_chrome_browser',
       ],
       'sources': [
+        'browser/net/mock_image_fetcher.h',
+        'browser/net/mock_image_fetcher.mm',
         'test/ios_chrome_unit_test_suite.cc',
         'test/ios_chrome_unit_test_suite.h',
         'test/run_all_unittests.cc',
