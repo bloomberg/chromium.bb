@@ -1,0 +1,8 @@
+{
+  "Condition": "$SUPPORTS_SXS",
+  "Processes": {
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.exe": {
+      "running": false
+    }
+  }
+}

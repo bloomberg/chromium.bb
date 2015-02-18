@@ -1,0 +1,19 @@
+{
+  "Condition": "$SUPPORTS_SXS",
+  "Files": {
+    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application": {
+      "exists": false
+    }
+  },
+  "RegistryEntries": {
+    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY_SXS": {
+      "exists": "forbidden"
+    },
+    "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME_SXS": {
+      "exists": "forbidden"
+    },
+    "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME_SXS$USER_SPECIFIC_REGISTRY_SUFFIX": {
+      "exists": "forbidden"
+    }
+  }
+}

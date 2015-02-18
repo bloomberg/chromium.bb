@@ -71,13 +71,13 @@ class RegistryVerifier(verifier.Verifier):
                                    _winreg.KEY_QUERY_VALUE)
     except WindowsError:
       # Key doesn't exist. See that it matches the expectation.
-      assert expectation['exists'] is not 'required', ('Registry key %s is '
-                                                       'missing' % key)
+      assert expectation['exists'] != 'required', ('Registry key %s is '
+                                                   'missing' % key)
       # Values are not checked if the missing key's existence is optional.
       return
     # The key exists, see that it matches the expectation.
-    assert expectation['exists'] is not 'forbidden', ('Registry key %s exists' %
-                                                      key)
+    assert expectation['exists'] != 'forbidden', ('Registry key %s exists' %
+                                                  key)
 
     # Verify the expected values.
     if 'values' not in expectation:
