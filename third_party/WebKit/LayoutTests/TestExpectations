@@ -1847,3 +1847,6 @@ crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFai
 
 crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Failure ]
 crbug.com/457137 [ Linux ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
+
+# These need a manual rebaseline after crbug.com/459555
+crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
