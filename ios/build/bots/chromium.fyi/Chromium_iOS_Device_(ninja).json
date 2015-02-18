@@ -3,13 +3,13 @@
     "smut"
   ],
   "comments": [
-    "Builder for 64-bit devices using ninja."
+    "Builder for fat binaries using ninja."
   ],
   "xcode version": "5.1.1",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
     "clang_xcode": "0",
-    "target_subarch": "arm64"
+    "target_subarch": "both"
   },
   "compiler": "ninja",
   "configuration": "Release",
