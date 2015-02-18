@@ -260,6 +260,36 @@ UScriptCode getScript(int ucs4)
     return script;
 }
 
+const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
+{
+    static const UChar* emojiFonts[] = {L"Segoe UI Emoji", L"Segoe UI Symbol"};
+    static const UChar* symbolFont = L"Segoe UI Symbol";
+    const UChar* emojiFont = 0;
+    static bool initialized = false;
+    if (!initialized) {
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(emojiFonts); i++) {
+            if (isFontPresent(emojiFonts[i], fontManager)) {
+                emojiFont = emojiFonts[i];
+                break;
+            }
+        }
+        initialized = true;
+    }
+
+    UBlockCode block = ublock_getCode(ucs4);
+    switch (block) {
+    case UBLOCK_EMOTICONS:
+        return emojiFont;
+    case UBLOCK_PLAYING_CARDS:
+    case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS:
+    case UBLOCK_TRANSPORT_AND_MAP_SYMBOLS:
+    case UBLOCK_ALCHEMICAL_SYMBOLS:
+        return symbolFont;
+    default:
+        return 0;
+    };
+}
+
 } // namespace
 
 // FIXME: this is font fallback code version 0.1
@@ -311,6 +341,11 @@ const UChar* getFallbackFamily(UChar32 character,
     SkFontMgr* fontManager)
 {
     ASSERT(character);
+    ASSERT(fontManager);
+    const UChar* family = getFontBasedOnUnicodeBlock(character, fontManager);
+    if (family)
+        return family;
+
     UScriptCode script = getScript(character);
 
     // For the full-width ASCII characters (U+FF00 - U+FF5E), use the font for
@@ -323,7 +358,7 @@ const UChar* getFallbackFamily(UChar32 character,
     if (script == USCRIPT_COMMON)
         script = getScriptBasedOnUnicodeBlock(character);
 
-    const UChar* family = getFontFamilyForScript(script, generic, fontManager);
+    family = getFontFamilyForScript(script, generic, fontManager);
     // Another lame work-around to cover non-BMP characters.
     // If the font family for script is not found or the character is
     // not in BMP (> U+FFFF), we resort to the hard-coded list of
