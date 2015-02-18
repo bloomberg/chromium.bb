@@ -39,7 +39,7 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
-  virtual ~V4L2SliceVideoDecodeAccelerator() override;
+  ~V4L2SliceVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
   bool Initialize(media::VideoCodecProfile profile,

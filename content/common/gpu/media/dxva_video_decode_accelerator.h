@@ -50,19 +50,19 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Does not take ownership of |client| which must outlive |*this|.
   explicit DXVAVideoDecodeAccelerator(
       const base::Callback<bool(void)>& make_context_current);
-  virtual ~DXVAVideoDecodeAccelerator();
+  ~DXVAVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(media::VideoCodecProfile profile,
-                          Client* client) override;
-  virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
-  virtual void AssignPictureBuffers(
+  bool Initialize(media::VideoCodecProfile profile,
+                  Client* client) override;
+  void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
+  void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  virtual void ReusePictureBuffer(int32 picture_buffer_id) override;
-  virtual void Flush() override;
-  virtual void Reset() override;
-  virtual void Destroy() override;
-  virtual bool CanDecodeOnIOThread() override;
+  void ReusePictureBuffer(int32 picture_buffer_id) override;
+  void Flush() override;
+  void Reset() override;
+  void Destroy() override;
+  bool CanDecodeOnIOThread() override;
   GLenum GetSurfaceInternalFormat() const override;
 
  private:

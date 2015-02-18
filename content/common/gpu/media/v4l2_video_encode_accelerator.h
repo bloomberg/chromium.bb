@@ -43,23 +43,23 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
     : public media::VideoEncodeAccelerator {
  public:
   explicit V4L2VideoEncodeAccelerator(const scoped_refptr<V4L2Device>& device);
-  virtual ~V4L2VideoEncodeAccelerator();
+  ~V4L2VideoEncodeAccelerator() override;
 
   // media::VideoEncodeAccelerator implementation.
-  virtual std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+  std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       GetSupportedProfiles() override;
-  virtual bool Initialize(media::VideoFrame::Format format,
-                          const gfx::Size& input_visible_size,
-                          media::VideoCodecProfile output_profile,
-                          uint32 initial_bitrate,
-                          Client* client) override;
-  virtual void Encode(const scoped_refptr<media::VideoFrame>& frame,
-                      bool force_keyframe) override;
-  virtual void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer)
+  bool Initialize(media::VideoFrame::Format format,
+                  const gfx::Size& input_visible_size,
+                  media::VideoCodecProfile output_profile,
+                  uint32 initial_bitrate,
+                  Client* client) override;
+  void Encode(const scoped_refptr<media::VideoFrame>& frame,
+              bool force_keyframe) override;
+  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer)
       override;
-  virtual void RequestEncodingParametersChange(uint32 bitrate,
-                                               uint32 framerate) override;
-  virtual void Destroy() override;
+  void RequestEncodingParametersChange(uint32 bitrate,
+                                       uint32 framerate) override;
+  void Destroy() override;
 
  private:
   // Auto-destroy reference for BitstreamBuffer, for tracking buffers passed to
