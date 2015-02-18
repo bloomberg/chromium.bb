@@ -11,19 +11,19 @@ void DerivedClass::WebKitModifiedSomething() {}
 
 class ImplementationInterimClass : public BaseClass {
  public:
-  // Should not warn about pure virtual methods.
+  // Should warn about pure virtual methods.
   virtual void SomeMethod() = 0;
 };
 
 class ImplementationDerivedClass : public ImplementationInterimClass,
                                    public webkit_glue::WebKitObserverImpl {
  public:
-  // Should not warn about destructors.
+  // Should warn about destructors.
   virtual ~ImplementationDerivedClass() {}
   // Should warn.
   virtual void SomeMethod();
   // Should not warn if marked as override.
-  virtual void SomeOtherMethod() override;
+  void SomeOtherMethod() override;
   // Should not warn for inline implementations in implementation files.
   virtual void SomeInlineMethod() {}
   // Should not warn if overriding a method whose origin is blink.

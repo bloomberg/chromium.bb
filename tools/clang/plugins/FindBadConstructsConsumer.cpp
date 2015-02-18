@@ -331,8 +331,7 @@ bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
         // magic to try to make sure SetUp()/TearDown() aren't capitalized
         // incorrectly, but having the plugin enforce override is also nice.
         (InTestingNamespace(overridden) &&
-         (!options_.strict_virtual_specifiers ||
-          !IsGtestTestFixture(overridden->getParent())))) {
+         !IsGtestTestFixture(overridden->getParent()))) {
       return true;
     }
   }
@@ -393,20 +392,13 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   OverrideAttr* override_attr = method->getAttr<OverrideAttr>();
   FinalAttr* final_attr = method->getAttr<FinalAttr>();
 
-  if (method->isPure() && !options_.strict_virtual_specifiers)
-    return;
-
   if (IsMethodInBannedOrTestingNamespace(method))
-    return;
-
-  if (isa<CXXDestructorDecl>(method) && !options_.strict_virtual_specifiers)
     return;
 
   SourceManager& manager = instance().getSourceManager();
 
   // Complain if a method is annotated virtual && (override || final).
-  if (has_virtual && (override_attr || final_attr) &&
-      options_.strict_virtual_specifiers) {
+  if (has_virtual && (override_attr || final_attr)) {
     diagnostic().Report(method->getLocStart(),
                         diag_redundant_virtual_specifier_)
         << "'virtual'"
@@ -436,14 +428,14 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     }
   }
 
-  if (final_attr && override_attr && options_.strict_virtual_specifiers) {
+  if (final_attr && override_attr) {
     diagnostic().Report(override_attr->getLocation(),
                         diag_redundant_virtual_specifier_)
         << override_attr << final_attr
         << FixItHint::CreateRemoval(override_attr->getRange());
   }
 
-  if (final_attr && !is_override && options_.strict_virtual_specifiers) {
+  if (final_attr && !is_override) {
     diagnostic().Report(method->getLocStart(),
                         diag_base_method_virtual_and_final_)
         << FixItRemovalForVirtual(manager, method)

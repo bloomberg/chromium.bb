@@ -107,7 +107,7 @@ class DerivedProtectedToPublicInHeader
     : public ProtectedRefCountedVirtualDtorInHeader {
  public:
   DerivedProtectedToPublicInHeader() {}
-  virtual ~DerivedProtectedToPublicInHeader() {}
+  ~DerivedProtectedToPublicInHeader() override {}
 };
 
 // Unsafe; A grandchild ends up implicitly exposing their parent and
@@ -146,10 +146,10 @@ class ImplementsAPublicInterface
     : public APublicInterface,
       public base::RefCounted<ImplementsAPublicInterface> {
  public:
-  virtual void DoFoo() override {}
+  void DoFoo() override {}
 
  protected:
-  virtual ~ImplementsAPublicInterface() {}
+  ~ImplementsAPublicInterface() override {}
 
  private:
   friend class base::RefCounted<ImplementsAPublicInterface>;
@@ -165,7 +165,7 @@ class ImplementsAnImplicitInterface
     : public AnImplicitInterface,
       public base::RefCounted<ImplementsAnImplicitInterface> {
  public:
-  virtual void DoBar() override {}
+  void DoBar() override {}
 
  private:
   friend class base::RefCounted<ImplementsAnImplicitInterface>;
@@ -177,11 +177,11 @@ class PrivatelyImplementsAPublicInterface
     : private APublicInterface,
       public base::RefCounted<PrivatelyImplementsAPublicInterface> {
  public:
-  virtual void DoFoo() override {}
+  void DoFoo() override {}
 
  private:
   friend class base::RefCounted<PrivatelyImplementsAPublicInterface>;
-  virtual ~PrivatelyImplementsAPublicInterface() {}
+  ~PrivatelyImplementsAPublicInterface() override {}
 };
 
 // Unsafe.
@@ -192,7 +192,7 @@ class BaseInterface {
 };
 class DerivedInterface : public BaseInterface {
  protected:
-  virtual ~DerivedInterface() {}
+  ~DerivedInterface() override {}
 };
 class SomeOtherInterface {
  public:
@@ -211,13 +211,13 @@ class UnsafeInheritanceChain
       public RefcountedType {
  public:
   // DerivedInterface
-  virtual void DoFoo() override {}
+  void DoFoo() override {}
 
   // SomeOtherInterface
-  virtual void DoBar() override {}
+  void DoBar() override {}
 
  protected:
-  virtual ~UnsafeInheritanceChain() {}
+  ~UnsafeInheritanceChain() override {}
 };
 
 #endif  // BASE_REFCOUNTED_H_

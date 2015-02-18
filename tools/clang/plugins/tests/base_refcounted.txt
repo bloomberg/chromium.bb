@@ -15,7 +15,7 @@ In file included from base_refcounted.cpp:5:
   ~ProtectedRefCountedDtorInHeader() {}
   ^
 ./base_refcounted.h:110:3: warning: [chromium-style] Classes that are ref-counted should have destructors that are declared protected or private.
-  virtual ~DerivedProtectedToPublicInHeader() {}
+  ~DerivedProtectedToPublicInHeader() override {}
   ^
 ./base_refcounted.h:107:7: note: [chromium-style] 'DerivedProtectedToPublicInHeader' inherits from 'ProtectedRefCountedVirtualDtorInHeader' here
     : public ProtectedRefCountedVirtualDtorInHeader {
@@ -61,7 +61,7 @@ class AnImplicitInterface {
   ^
 ./base_refcounted.h:204:3: warning: [chromium-style] Classes that are ref-counted and have non-private destructors should declare their destructor virtual.
 base_refcounted.cpp:16:3: warning: [chromium-style] Classes that are ref-counted should have destructors that are declared protected or private.
-  virtual ~AnonymousDerivedProtectedToPublicInImpl() {}
+  ~AnonymousDerivedProtectedToPublicInImpl() override {}
   ^
 base_refcounted.cpp:13:7: note: [chromium-style] 'AnonymousDerivedProtectedToPublicInImpl' inherits from 'ProtectedRefCountedVirtualDtorInHeader' here
     : public ProtectedRefCountedVirtualDtorInHeader {

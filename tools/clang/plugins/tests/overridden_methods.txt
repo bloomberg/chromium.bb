@@ -1,4 +1,12 @@
 In file included from overridden_methods.cpp:5:
+./overridden_methods.h:25:28: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual void SomeMethod() = 0;
+                           ^
+                            override
+./overridden_methods.h:46:26: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual ~DerivedClass() {}
+                         ^
+                          override
 ./overridden_methods.h:48:28: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeMethod();
                            ^
@@ -31,6 +39,14 @@ In file included from overridden_methods.cpp:5:
   virtual void SomeMethodWithCommentAndBody() {}  // This is a comment.
                                              ^
                                               override
+overridden_methods.cpp:15:28: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual void SomeMethod() = 0;
+                           ^
+                            override
+overridden_methods.cpp:22:40: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual ~ImplementationDerivedClass() {}
+                                       ^
+                                        override
 overridden_methods.cpp:24:28: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeMethod();
                            ^
@@ -63,4 +79,4 @@ overridden_methods.cpp:43:46: warning: [chromium-style] Overriding method must b
   virtual void SomeMethodWithCommentAndBody() {}  // This is a comment.
                                              ^
                                               override
-16 warnings generated.
+20 warnings generated.

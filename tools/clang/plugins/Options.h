@@ -11,13 +11,11 @@ struct Options {
   Options()
       : check_base_classes(false),
         check_enum_last_value(false),
-        strict_virtual_specifiers(false),
         with_ast_visitor(false),
         check_templates(false) {}
 
   bool check_base_classes;
   bool check_enum_last_value;
-  bool strict_virtual_specifiers;
   bool with_ast_visitor;
   bool check_templates;
 };
