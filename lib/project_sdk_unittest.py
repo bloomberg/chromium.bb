@@ -38,6 +38,18 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
     osutils.Touch(real_manifest_path, makedirs=True)
     os.symlink(real_manifest_path, sym_manifest_path)
 
+    # Build a repo with a malformed version.
+    self.malformed_version = 'foobar'
+    self.malformed_repo_dir = os.path.join(self.tempdir, 'malformed_repo')
+    osutils.SafeMakedirs(os.path.join(self.malformed_repo_dir, '.repo'))
+    real_manifest_path = os.path.join(
+        self.malformed_repo_dir, '.repo', 'sub-dir',
+        '%s.xml' % self.malformed_version)
+    sym_manifest_path = os.path.join(self.malformed_repo_dir, '.repo',
+                                     'manifest.xml')
+    osutils.Touch(real_manifest_path, makedirs=True)
+    os.symlink(real_manifest_path, sym_manifest_path)
+
   def testFindSourceRootCurrentRepo(self):
     """Test FindSourceRoot with default of CWD."""
     self.assertEqual(constants.SOURCE_ROOT, project_sdk.FindSourceRoot())
@@ -70,3 +82,7 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
   def testFindVersionSpecifiedNested(self):
     """Test FindVersion with nested inside repo tree."""
     self.assertEqual(self.version, project_sdk.FindVersion(self.nested_dir))
+
+  def testFindVersionMalformed(self):
+    """Test FindVersion with malformed version string."""
+    self.assertIsNone(project_sdk.FindVersion(self.malformed_repo_dir))

@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os
+import re
 
 from chromite.lib import osutils
 
@@ -67,5 +68,13 @@ def FindVersion(sdk_dir=None):
   # e.g. 6759.0.0.xml
   manifest_file = os.path.basename(expanded_manifest)
 
-  # Return 6759.0.0
-  return os.path.splitext(manifest_file)[0]
+  # e.g. 6759.0.0
+  version = os.path.splitext(manifest_file)[0]
+
+  # Make sure this is an official SDK version.
+  # TODO(garnold) Remove once we stabilize version number extraction
+  # (brillo:262).
+  if not re.match(r'^\d+\.\d+\.\d+$', version):
+    return None
+
+  return version
