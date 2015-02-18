@@ -55,7 +55,8 @@ public:
 protected:
     virtual SkData* onRefEncodedData() override;
     virtual bool onGetInfo(SkImageInfo*) override;
-    virtual bool onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount) override;
+    // TODO (scroggo): rename to onGetPixels once Skia is updated.
+    virtual Result onGetPixelsEnum(const SkImageInfo&, void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount) override;
     virtual bool onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace*) override;
 
 private:
