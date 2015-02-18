@@ -8,6 +8,8 @@ Eventually, this will be based on adb_wrapper.
 """
 # pylint: disable=unused-argument
 
+import collections
+import itertools
 import logging
 import multiprocessing
 import os
@@ -1306,14 +1308,54 @@ class DeviceUtils(object):
       retries: number of retries
 
     Returns:
-      A 2-tuple containing:
-        - A dict containing the overall memory usage statistics for the PID.
-        - A dict containing memory usage statistics broken down by mapping.
+      A dict containing memory usage statistics for the PID. May include:
+        Size, Rss, Pss, Shared_Clean, Shared_Dirty, Private_Clean,
+        Private_Dirty, VmHWM
 
     Raises:
       CommandTimeoutError on timeout.
     """
-    return self.old_interface.GetMemoryUsageForPid(pid)
+    result = collections.defaultdict(int)
+
+    try:
+      result.update(self._GetMemoryUsageForPidFromSmaps(pid))
+    except device_errors.CommandFailedError:
+      logging.exception('Error getting memory usage from smaps')
+
+    try:
+      result.update(self._GetMemoryUsageForPidFromStatus(pid))
+    except device_errors.CommandFailedError:
+      logging.exception('Error getting memory usage from status')
+
+    return result
+
+  def _GetMemoryUsageForPidFromSmaps(self, pid):
+    SMAPS_COLUMNS = (
+        'Size', 'Rss', 'Pss', 'Shared_Clean', 'Shared_Dirty', 'Private_Clean',
+        'Private_Dirty')
+
+    showmap_out = self.RunShellCommand(
+        ['showmap', str(pid)], as_root=True, check_return=True)
+    if not showmap_out:
+      raise device_errors.CommandFailedError('No output from showmap')
+
+    split_totals = showmap_out[-1].split()
+    if (not split_totals
+        or len(split_totals) != 9
+        or split_totals[-1] != 'TOTAL'):
+      raise device_errors.CommandFailedError(
+          'Invalid output from showmap: %s' % '\n'.join(showmap_out))
+
+    return dict(itertools.izip(SMAPS_COLUMNS, (int(n) for n in split_totals)))
+
+  def _GetMemoryUsageForPidFromStatus(self, pid):
+    for line in self.ReadFile(
+        '/proc/%s/status' % str(pid), as_root=True).splitlines():
+      if line.startswith('VmHWM:'):
+        return {'VmHWM': int(line.split()[1])}
+    else:
+      raise device_errors.CommandFailedError(
+          'Could not find memory peak value for pid %s', str(pid))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetLogcatMonitor(self, timeout=None, retries=None, *args, **kwargs):

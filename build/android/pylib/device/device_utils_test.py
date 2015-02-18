@@ -39,7 +39,7 @@ sys.path.append(os.path.join(
 import mock # pylint: disable=F0401
 
 
-class DeviceUtilsTest(unittest.TestCase):
+class DeviceUtilsInitTest(unittest.TestCase):
 
   def testInitWithStr(self):
     serial_as_str = str('0123456789abcdef')
@@ -121,79 +121,6 @@ class _PatchedFunction(object):
     self.mocked = mocked
 
 
-class DeviceUtilsOldImplTest(unittest.TestCase):
-
-  class AndroidCommandsCalls(object):
-
-    def __init__(self, test_case, cmd_ret, comp):
-      self._cmds = cmd_ret
-      self._comp = comp
-      self._run_command = _PatchedFunction()
-      self._test_case = test_case
-      self._total_received = 0
-
-    def __enter__(self):
-      self._run_command.patched = mock.patch(
-          'run_command.RunCommand',
-          side_effect=lambda c, **kw: self._ret(c))
-      self._run_command.mocked = self._run_command.patched.__enter__()
-
-    def _ret(self, actual_cmd):
-      if sys.exc_info()[0] is None:
-        on_failure_fmt = ('\n'
-                          '  received command: %s\n'
-                          '  expected command: %s')
-        self._test_case.assertGreater(
-            len(self._cmds), self._total_received,
-            msg=on_failure_fmt % (actual_cmd, None))
-        expected_cmd, ret = self._cmds[self._total_received]
-        self._total_received += 1
-        self._test_case.assertTrue(
-            self._comp(expected_cmd, actual_cmd),
-            msg=on_failure_fmt % (actual_cmd, expected_cmd))
-        return ret
-      return ''
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-      self._run_command.patched.__exit__(exc_type, exc_val, exc_tb)
-      if exc_type is None:
-        on_failure = "adb commands don't match.\nExpected:%s\nActual:%s" % (
-            ''.join('\n  %s' % c for c, _ in self._cmds),
-            ''.join('\n  %s' % a[0]
-                    for _, a, kw in self._run_command.mocked.mock_calls))
-        self._test_case.assertEqual(
-          len(self._cmds), len(self._run_command.mocked.mock_calls),
-          msg=on_failure)
-        for (expected_cmd, _r), (_n, actual_args, actual_kwargs) in zip(
-            self._cmds, self._run_command.mocked.mock_calls):
-          self._test_case.assertEqual(1, len(actual_args), msg=on_failure)
-          self._test_case.assertTrue(self._comp(expected_cmd, actual_args[0]),
-                                     msg=on_failure)
-          self._test_case.assertTrue('timeout_time' in actual_kwargs,
-                                     msg=on_failure)
-          self._test_case.assertTrue('retry_count' in actual_kwargs,
-                                     msg=on_failure)
-
-  def assertNoAdbCalls(self):
-    return type(self).AndroidCommandsCalls(self, [], str.__eq__)
-
-  def assertCalls(self, cmd, ret, comp=str.__eq__):
-    return type(self).AndroidCommandsCalls(self, [(cmd, ret)], comp)
-
-  def assertCallsSequence(self, cmd_ret, comp=str.__eq__):
-    return type(self).AndroidCommandsCalls(self, cmd_ret, comp)
-
-  def setUp(self):
-    self._get_adb_path_patch = mock.patch('pylib.constants.GetAdbPath',
-                                          mock.Mock(return_value='adb'))
-    self._get_adb_path_patch.start()
-    self.device = device_utils.DeviceUtils(
-        '0123456789abcdef', default_timeout=1, default_retries=0)
-
-  def tearDown(self):
-    self._get_adb_path_patch.stop()
-
-
 def _AdbWrapperMock(test_serial):
   adb = mock.Mock(spec=adb_wrapper.AdbWrapper)
   adb.__str__ = mock.Mock(return_value=test_serial)
@@ -201,7 +128,7 @@ def _AdbWrapperMock(test_serial):
   return adb
 
 
-class DeviceUtilsNewImplTest(mock_calls.TestCase):
+class DeviceUtilsTest(mock_calls.TestCase):
 
   def setUp(self):
     self.adb = _AdbWrapperMock('0123456789abcdef')
@@ -230,7 +157,7 @@ class DeviceUtilsNewImplTest(mock_calls.TestCase):
         msg, str(self.device)))
 
 
-class DeviceUtilsIsOnlineTest(DeviceUtilsNewImplTest):
+class DeviceUtilsIsOnlineTest(DeviceUtilsTest):
 
   def testIsOnline_true(self):
     with self.assertCall(self.call.adb.GetState(), 'device'):
@@ -245,7 +172,7 @@ class DeviceUtilsIsOnlineTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.IsOnline())
 
 
-class DeviceUtilsHasRootTest(DeviceUtilsNewImplTest):
+class DeviceUtilsHasRootTest(DeviceUtilsTest):
 
   def testHasRoot_true(self):
     with self.assertCall(self.call.adb.Shell('ls /root'), 'foo\n'):
@@ -256,7 +183,7 @@ class DeviceUtilsHasRootTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.HasRoot())
 
 
-class DeviceUtilsEnableRootTest(DeviceUtilsNewImplTest):
+class DeviceUtilsEnableRootTest(DeviceUtilsTest):
 
   def testEnableRoot_succeeds(self):
     with self.assertCalls(
@@ -279,7 +206,7 @@ class DeviceUtilsEnableRootTest(DeviceUtilsNewImplTest):
         self.device.EnableRoot()
 
 
-class DeviceUtilsIsUserBuildTest(DeviceUtilsNewImplTest):
+class DeviceUtilsIsUserBuildTest(DeviceUtilsTest):
 
   def testIsUserBuild_yes(self):
     with self.assertCall(
@@ -292,7 +219,7 @@ class DeviceUtilsIsUserBuildTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.IsUserBuild())
 
 
-class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsTest):
 
   def testGetExternalStoragePath_succeeds(self):
     with self.assertCall(
@@ -306,7 +233,7 @@ class DeviceUtilsGetExternalStoragePathTest(DeviceUtilsNewImplTest):
         self.device.GetExternalStoragePath()
 
 
-class DeviceUtilsGetApplicationPathTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGetApplicationPathTest(DeviceUtilsTest):
 
   def testGetApplicationPath_exists(self):
     with self.assertCalls(
@@ -333,7 +260,7 @@ class DeviceUtilsGetApplicationPathTest(DeviceUtilsNewImplTest):
 
 
 @mock.patch('time.sleep', mock.Mock())
-class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
+class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
 
   def testWaitUntilFullyBooted_succeedsNoWifi(self):
     with self.assertCalls(
@@ -443,7 +370,7 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
 
 
 @mock.patch('time.sleep', mock.Mock())
-class DeviceUtilsRebootTest(DeviceUtilsNewImplTest):
+class DeviceUtilsRebootTest(DeviceUtilsTest):
 
   def testReboot_nonBlocking(self):
     with self.assertCalls(
@@ -469,7 +396,7 @@ class DeviceUtilsRebootTest(DeviceUtilsNewImplTest):
       self.device.Reboot(block=True, wifi=True)
 
 
-class DeviceUtilsInstallTest(DeviceUtilsNewImplTest):
+class DeviceUtilsInstallTest(DeviceUtilsTest):
 
   def testInstall_noPriorInstall(self):
     with self.assertCalls(
@@ -526,7 +453,7 @@ class DeviceUtilsInstallTest(DeviceUtilsNewImplTest):
         self.device.Install('/fake/test/app.apk', retries=0)
 
 
-class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
+class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
 
   def setUp(self):
     super(DeviceUtilsRunShellCommandTest, self).setUp()
@@ -656,7 +583,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
                         self.device.RunShellCommand(cmd, check_return=False))
 
 
-class DeviceUtilsGetDevicePieWrapper(DeviceUtilsNewImplTest):
+class DeviceUtilsGetDevicePieWrapper(DeviceUtilsTest):
 
   def testGetDevicePieWrapper_jb(self):
     with self.assertCall(
@@ -675,7 +602,7 @@ class DeviceUtilsGetDevicePieWrapper(DeviceUtilsNewImplTest):
 
 
 @mock.patch('time.sleep', mock.Mock())
-class DeviceUtilsKillAllTest(DeviceUtilsNewImplTest):
+class DeviceUtilsKillAllTest(DeviceUtilsTest):
 
   def testKillAll_noMatchingProcesses(self):
     with self.assertCall(self.call.adb.Shell('ps'),
@@ -726,7 +653,7 @@ class DeviceUtilsKillAllTest(DeviceUtilsNewImplTest):
           self.device.KillAll('some.process', signum=signal.SIGTERM))
 
 
-class DeviceUtilsStartActivityTest(DeviceUtilsNewImplTest):
+class DeviceUtilsStartActivityTest(DeviceUtilsTest):
 
   def testStartActivity_actionOnly(self):
     test_intent = intent.Intent(action='android.intent.action.VIEW')
@@ -890,7 +817,7 @@ class DeviceUtilsStartActivityTest(DeviceUtilsNewImplTest):
       self.device.StartActivity(test_intent)
 
 
-class DeviceUtilsStartInstrumentationTest(DeviceUtilsNewImplTest):
+class DeviceUtilsStartInstrumentationTest(DeviceUtilsTest):
 
   def testStartInstrumentation_nothing(self):
     with self.assertCalls(
@@ -932,7 +859,7 @@ class DeviceUtilsStartInstrumentationTest(DeviceUtilsNewImplTest):
           finish=False, raw=False, extras={'foo': 'Foo', 'bar': 'Bar'})
 
 
-class DeviceUtilsBroadcastIntentTest(DeviceUtilsNewImplTest):
+class DeviceUtilsBroadcastIntentTest(DeviceUtilsTest):
 
   def testBroadcastIntent_noExtras(self):
     test_intent = intent.Intent(action='test.package.with.an.INTENT')
@@ -960,7 +887,7 @@ class DeviceUtilsBroadcastIntentTest(DeviceUtilsNewImplTest):
       self.device.BroadcastIntent(test_intent)
 
 
-class DeviceUtilsGoHomeTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGoHomeTest(DeviceUtilsTest):
 
   def testGoHome(self):
     with self.assertCall(
@@ -970,7 +897,7 @@ class DeviceUtilsGoHomeTest(DeviceUtilsNewImplTest):
       self.device.GoHome()
 
 
-class DeviceUtilsForceStopTest(DeviceUtilsNewImplTest):
+class DeviceUtilsForceStopTest(DeviceUtilsTest):
 
   def testForceStop(self):
     with self.assertCall(
@@ -979,7 +906,7 @@ class DeviceUtilsForceStopTest(DeviceUtilsNewImplTest):
       self.device.ForceStop('this.is.a.test.package')
 
 
-class DeviceUtilsClearApplicationStateTest(DeviceUtilsNewImplTest):
+class DeviceUtilsClearApplicationStateTest(DeviceUtilsTest):
 
   def testClearApplicationState_packageDoesntExist(self):
     with self.assertCalls(
@@ -1012,14 +939,14 @@ class DeviceUtilsClearApplicationStateTest(DeviceUtilsNewImplTest):
       self.device.ClearApplicationState('this.package.exists')
 
 
-class DeviceUtilsSendKeyEventTest(DeviceUtilsNewImplTest):
+class DeviceUtilsSendKeyEventTest(DeviceUtilsTest):
 
   def testSendKeyEvent(self):
     with self.assertCall(self.call.adb.Shell('input keyevent 66'), ''):
       self.device.SendKeyEvent(66)
 
 
-class DeviceUtilsPushChangedFilesIndividuallyTest(DeviceUtilsNewImplTest):
+class DeviceUtilsPushChangedFilesIndividuallyTest(DeviceUtilsTest):
 
   def testPushChangedFilesIndividually_empty(self):
     test_files = []
@@ -1041,7 +968,7 @@ class DeviceUtilsPushChangedFilesIndividuallyTest(DeviceUtilsNewImplTest):
       self.device._PushChangedFilesIndividually(test_files)
 
 
-class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsNewImplTest):
+class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsTest):
 
   def testPushChangedFilesZipped_empty(self):
     test_files = []
@@ -1080,7 +1007,7 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsNewImplTest):
          ('/test/host/path/file2', '/test/device/path/file2')])
 
 
-class DeviceUtilsFileExistsTest(DeviceUtilsNewImplTest):
+class DeviceUtilsFileExistsTest(DeviceUtilsTest):
 
   def testFileExists_usingTest_fileExists(self):
     with self.assertCall(
@@ -1096,7 +1023,7 @@ class DeviceUtilsFileExistsTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.FileExists('/does/not/exist'))
 
 
-class DeviceUtilsPullFileTest(DeviceUtilsNewImplTest):
+class DeviceUtilsPullFileTest(DeviceUtilsTest):
 
   def testPullFile_existsOnDevice(self):
     with mock.patch('os.path.exists', return_value=True):
@@ -1117,7 +1044,7 @@ class DeviceUtilsPullFileTest(DeviceUtilsNewImplTest):
                                '/test/file/host/path')
 
 
-class DeviceUtilsReadFileTest(DeviceUtilsNewImplTest):
+class DeviceUtilsReadFileTest(DeviceUtilsTest):
 
   def testReadFile_exists(self):
     with self.assertCall(
@@ -1145,7 +1072,7 @@ class DeviceUtilsReadFileTest(DeviceUtilsNewImplTest):
                                as_root=True))
 
 
-class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
+class DeviceUtilsWriteFileTest(DeviceUtilsTest):
 
   def testWriteFileWithPush_success(self):
     tmp_host = MockTempFile('/tmp/file/on.host')
@@ -1208,7 +1135,7 @@ class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
       self.device.WriteFile('/test/file', 'contents', as_root=True)
 
 
-class DeviceUtilsLsTest(DeviceUtilsNewImplTest):
+class DeviceUtilsLsTest(DeviceUtilsTest):
 
   def testLs_directory(self):
     result = [('.', adb_wrapper.DeviceStat(16889, 4096, 1417436123)),
@@ -1226,7 +1153,7 @@ class DeviceUtilsLsTest(DeviceUtilsNewImplTest):
                         self.device.Ls('/data/local/tmp/testfile.txt'))
 
 
-class DeviceUtilsStatTest(DeviceUtilsNewImplTest):
+class DeviceUtilsStatTest(DeviceUtilsTest):
 
   def testStat_file(self):
     result = [('.', adb_wrapper.DeviceStat(16889, 4096, 1417436123)),
@@ -1256,7 +1183,7 @@ class DeviceUtilsStatTest(DeviceUtilsNewImplTest):
         self.device.Stat('/data/local/tmp/does.not.exist.txt')
 
 
-class DeviceUtilsSetJavaAssertsTest(DeviceUtilsNewImplTest):
+class DeviceUtilsSetJavaAssertsTest(DeviceUtilsTest):
 
   def testSetJavaAsserts_enable(self):
     with self.assertCalls(
@@ -1296,7 +1223,7 @@ class DeviceUtilsSetJavaAssertsTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.SetJavaAsserts(True))
 
 
-class DeviceUtilsGetPropTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGetPropTest(DeviceUtilsTest):
 
   def testGetProp_exists(self):
     with self.assertCall(
@@ -1330,7 +1257,7 @@ class DeviceUtilsGetPropTest(DeviceUtilsNewImplTest):
                                            cache=True, retries=3))
 
 
-class DeviceUtilsSetPropTest(DeviceUtilsNewImplTest):
+class DeviceUtilsSetPropTest(DeviceUtilsTest):
 
   def testSetProp(self):
     with self.assertCall(
@@ -1351,7 +1278,7 @@ class DeviceUtilsSetPropTest(DeviceUtilsNewImplTest):
         self.device.SetProp('test.property', 'new_value', check=True)
 
 
-class DeviceUtilsGetPidsTest(DeviceUtilsNewImplTest):
+class DeviceUtilsGetPidsTest(DeviceUtilsTest):
 
   def testGetPids_noMatches(self):
     with self.assertCall(self.call.adb.Shell('ps'),
@@ -1387,7 +1314,7 @@ class DeviceUtilsGetPidsTest(DeviceUtilsNewImplTest):
           self.device.GetPids('exact.match'))
 
 
-class DeviceUtilsTakeScreenshotTest(DeviceUtilsNewImplTest):
+class DeviceUtilsTakeScreenshotTest(DeviceUtilsTest):
 
   def testTakeScreenshot_fileNameProvided(self):
     with self.assertCalls(
@@ -1401,22 +1328,18 @@ class DeviceUtilsTakeScreenshotTest(DeviceUtilsNewImplTest):
       self.device.TakeScreenshot('/test/host/screenshot.png')
 
 
-class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsOldImplTest):
+class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsTest):
 
   def setUp(self):
     super(DeviceUtilsGetMemoryUsageForPidTest, self).setUp()
-    self.device.old_interface._privileged_command_runner = (
-        self.device.old_interface.RunShellCommand)
-    self.device.old_interface._protected_file_access_method_initialized = True
 
   def testGetMemoryUsageForPid_validPid(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell 'showmap 1234'",
-         '100 101 102 103 104 105 106 107 TOTAL\r\n'),
-        ("adb -s 0123456789abcdef shell "
-            "'cat \"/proc/1234/status\" 2> /dev/null'",
-         'VmHWM: 1024 kB')
-        ]):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['showmap', '1234'], as_root=True, check_return=True),
+         ['100 101 102 103 104 105 106 107 TOTAL']),
+        (self.call.device.ReadFile('/proc/1234/status', as_root=True),
+         'VmHWM: 1024 kB\n')):
       self.assertEqual(
           {
             'Size': 100,
@@ -1430,14 +1353,36 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsOldImplTest):
           },
           self.device.GetMemoryUsageForPid(1234))
 
-  def testGetMemoryUsageForPid_invalidPid(self):
+  def testGetMemoryUsageForPid_noSmaps(self):
     with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'showmap 4321'",
-        'cannot open /proc/4321/smaps: No such file or directory\r\n'):
-      self.assertEqual({}, self.device.GetMemoryUsageForPid(4321))
+        (self.call.device.RunShellCommand(
+            ['showmap', '4321'], as_root=True, check_return=True),
+         ['cannot open /proc/4321/smaps: No such file or directory']),
+        (self.call.device.ReadFile('/proc/4321/status', as_root=True),
+         'VmHWM: 1024 kb\n')):
+      self.assertEquals({'VmHWM': 1024}, self.device.GetMemoryUsageForPid(4321))
+
+  def testGetMemoryUsageForPid_noStatus(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['showmap', '4321'], as_root=True, check_return=True),
+         ['100 101 102 103 104 105 106 107 TOTAL']),
+        (self.call.device.ReadFile('/proc/4321/status', as_root=True),
+         self.CommandError())):
+      self.assertEquals(
+          {
+            'Size': 100,
+            'Rss': 101,
+            'Pss': 102,
+            'Shared_Clean': 103,
+            'Shared_Dirty': 104,
+            'Private_Clean': 105,
+            'Private_Dirty': 106,
+          },
+          self.device.GetMemoryUsageForPid(4321))
 
 
-class DeviceUtilsStrTest(DeviceUtilsNewImplTest):
+class DeviceUtilsStrTest(DeviceUtilsTest):
 
   def testStr_returnsSerial(self):
     with self.assertCalls(
