@@ -68,7 +68,6 @@ function testCopySuccess() {
   assertEquals('copy', item.type);
   assertEquals(true, item.single);
   assertEquals(100, item.progressRateInPercent);
-  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy cancel.
@@ -113,7 +112,6 @@ function testCopyCancel() {
   assertEquals('copy', item.type);
   assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
-  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy target exists error.
@@ -139,7 +137,6 @@ function testCopyTargetExistsError() {
   assertEquals('copy', item.type);
   assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
-  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy file system error.
@@ -165,7 +162,6 @@ function testCopyFileSystemError() {
   assertEquals('copy', item.type);
   assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
-  assertEquals(1, background.closeRequestCount);
 }
 
 // Test for copy unexpected error.
@@ -191,5 +187,4 @@ function testCopyUnexpectedError() {
   assertEquals('copy', item.type);
   assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
-  assertEquals(1, background.closeRequestCount);
 }

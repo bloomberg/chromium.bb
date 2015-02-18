@@ -22,22 +22,6 @@ function BackgroundBase() {
 }
 
 /**
- * Checks the current condition of background page.
- * @return {boolean} True if the background page can be closed. False if not.
- */
-BackgroundBase.prototype.canClose = function() {
-  return true;
-};
-
-/**
- * Checks the current condition of background page and closes it if possible.
- */
-BackgroundBase.prototype.tryClose = function() {
-  if (this.canClose())
-    window.close();
-};
-
-/**
  * Gets similar windows, it means with the same initial url.
  * @param {string} url URL that the obtained windows have.
  * @return {Array.<chrome.app.window.AppWindow>} List of similar windows.

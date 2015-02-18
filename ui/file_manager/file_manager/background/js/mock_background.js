@@ -9,12 +9,4 @@
 function MockBackground() {
   this.fileOperationManager = new MockFileOperationManager();
   this.progressCenter = new MockProgressCenter();
-  this.closeRequestCount = 0;
 }
-
-/**
- * Increments the close request counter.
- */
-MockBackground.prototype.tryClose = function() {
-  this.closeRequestCount++;
-};

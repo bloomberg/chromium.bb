@@ -163,9 +163,6 @@ FileOperationHandler.getType_ = function(operationType) {
 FileOperationHandler.prototype.onCopyProgress_ = function(event) {
   var EventType = fileOperationUtil.EventRouter.EventType;
   event = /** @type {FileOperationProgressEvent} */ (event);
-  // If the copy is finished, may be we can close the background page.
-  if (event.reason !== EventType.BEGIN && event.reason !== EventType.PROGRESS)
-    this.background_.tryClose();
 
   // Update progress center.
   var progressCenter = this.progressCenter_;
@@ -231,9 +228,6 @@ FileOperationHandler.prototype.onCopyProgress_ = function(event) {
 FileOperationHandler.prototype.onDeleteProgress_ = function(event) {
   var EventType = fileOperationUtil.EventRouter.EventType;
   event = /** @type {FileOperationProgressEvent} */ (event);
-  // If the copy is finished, may be we can close the background page.
-  if (event.reason !== EventType.BEGIN && event.reason !== EventType.PROGRESS)
-    this.background_.tryClose();
 
   // Update progress center.
   var progressCenter = this.progressCenter_;

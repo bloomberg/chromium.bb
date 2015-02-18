@@ -224,8 +224,6 @@ AppWindowWrapper.prototype.onClosed_ = function() {
 
   // Remove the window from the set.
   delete window.background.appWindows[this.id_];
-
-  window.background.tryClose();
 };
 
 /**

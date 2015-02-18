@@ -71,8 +71,3 @@ DirectoryChangeEvent.prototype.newDirEntry;
 
 /** @type {boolean} */
 DirectoryChangeEvent.prototype.volumeChanged;
-
-/**
- * @type {boolean}
- */
-Window.prototype.closing;

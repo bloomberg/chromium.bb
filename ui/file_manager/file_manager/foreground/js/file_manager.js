@@ -1267,9 +1267,6 @@ FileManager.prototype = /** @struct */ {
     }
     this.backgroundPage_.background.progressCenter.removePanel(
         this.ui_.progressCenterPanel);
-    window.closing = true;
-    if (this.backgroundPage_)
-      this.backgroundPage_.background.tryClose();
   };
 
   /**

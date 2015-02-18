@@ -69,9 +69,6 @@ function FileBrowserBackground() {
    * @type {!DriveSyncHandler}
    */
   this.driveSyncHandler = new DriveSyncHandler(this.progressCenter);
-  this.driveSyncHandler.addEventListener(
-      DriveSyncHandler.COMPLETED_EVENT,
-      function() { this.tryClose(); }.bind(this));
 
   /**
    * Provides support for scaning media devices as part of Cloud Import.
@@ -105,13 +102,6 @@ function FileBrowserBackground() {
    */
   this.stringData = null;
 
-  /**
-   * Last time when the background page can close.
-   *
-   * @private {?number}
-   */
-  this.lastTimeCanClose_ = null;
-
   // Initialize handlers.
   chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
   chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
@@ -128,14 +118,6 @@ function FileBrowserBackground() {
     this.initializationPromise_.then(callback);
   }.bind(this));
 }
-
-/**
- * A number of delay milliseconds from the first call of tryClose to the actual
- * close action.
- * @const {number}
- * @private
- */
-FileBrowserBackground.CLOSE_DELAY_MS_ = 5000;
 
 FileBrowserBackground.prototype.__proto__ = BackgroundBase.prototype;
 
@@ -172,47 +154,6 @@ FileBrowserBackground.prototype.startInitialization_ = function() {
  */
 FileBrowserBackground.prototype.ready = function(callback) {
   this.initializationPromise_.then(callback);
-};
-
-/**
- * Checks the current condition of background page.
- * @return {boolean} True if the background page is closable, false if not.
- */
-FileBrowserBackground.prototype.canClose = function() {
-  // If the file operation is going, the background page cannot close.
-  if ((this.fileOperationManager &&
-       this.fileOperationManager.hasQueuedTasks()) ||
-      this.driveSyncHandler.syncing) {
-    this.lastTimeCanClose_ = null;
-    return false;
-  }
-
-  var views = chrome.extension.getViews();
-  var closing = false;
-  for (var i = 0; i < views.length; i++) {
-    // If the window that is not the background page itself and it is not
-    // closing, the background page cannot close.
-    if (views[i] !== window && !views[i].closing) {
-      this.lastTimeCanClose_ = null;
-      return false;
-    }
-    closing = closing || views[i].closing;
-  }
-
-  // If some windows are closing, or the background page can close but could not
-  // 5 seconds ago, We need more time for sure.
-  if (closing ||
-      this.lastTimeCanClose_ === null ||
-      (Date.now() - this.lastTimeCanClose_ <
-           FileBrowserBackground.CLOSE_DELAY_MS_)) {
-    if (this.lastTimeCanClose_ === null)
-      this.lastTimeCanClose_ = Date.now();
-    setTimeout(this.tryClose.bind(this), FileBrowserBackground.CLOSE_DELAY_MS_);
-    return false;
-  }
-
-  // Otherwise we can close the background page.
-  return true;
 };
 
 /**
