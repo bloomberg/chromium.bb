@@ -1,0 +1,12 @@
+{
+  "name": "Platform App Test: <extensionview> connect api call",
+  "version": "1",
+  "permissions": [
+    "extensionview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

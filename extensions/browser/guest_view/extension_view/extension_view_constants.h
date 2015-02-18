@@ -11,7 +11,11 @@ namespace extensionview {
 extern const char kAPINamespace[];
 
 // Attributes.
+extern const char kAttributeExtension[];
 extern const char kAttributeSrc[];
+
+// Events.
+extern const char kEventLoadCommit[];
 
 }  // namespace extensionview
 

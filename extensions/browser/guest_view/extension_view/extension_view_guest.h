@@ -38,6 +38,13 @@ class ExtensionViewGuest
   int GetTaskPrefix() const override;
 
   // content::WebContentsObserver implementation.
+  void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
@@ -53,6 +60,7 @@ class ExtensionViewGuest
   scoped_ptr<extensions::ExtensionViewGuestDelegate>
       extension_view_guest_delegate_;
   GURL view_page_;
+  GURL extension_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewGuest);
 };

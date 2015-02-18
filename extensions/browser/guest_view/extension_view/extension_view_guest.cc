@@ -5,6 +5,7 @@
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 
 #include "base/metrics/user_metrics.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -40,11 +41,18 @@ extensions::GuestViewBase* ExtensionViewGuest::Create(
 
 void ExtensionViewGuest::NavigateGuest(const std::string& src,
                                        bool force_navigation) {
-  if (src.empty())
-    return;
+  GURL url = extension_url_.Resolve(src);
 
-  GURL url(src);
-  if (!url.is_valid() && !force_navigation && (url == view_page_))
+  // If the URL is not valid, about:blank, or the same origin as the extension,
+  // then navigate to about:blank.
+  bool url_not_allowed = (url != GURL(url::kAboutBlankURL)) &&
+      (url.GetOrigin() != extension_url_.GetOrigin());
+  if (!url.is_valid() || url_not_allowed) {
+    NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
+    return;
+  }
+
+  if (!force_navigation && (view_page_ == url))
     return;
 
   web_contents()->GetRenderProcessHost()->FilterURL(false, &url);
@@ -63,20 +71,27 @@ bool ExtensionViewGuest::CanRunInDetachedState() const {
 void ExtensionViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
-  std::string str;
-  if (!create_params.GetString(extensionview::kAttributeSrc, &str)) {
+  // Gets the extension ID.
+  std::string extension_id;
+  create_params.GetString(extensionview::kAttributeExtension, &extension_id);
+
+  if (!crx_file::id_util::IdIsValid(extension_id)) {
     callback.Run(nullptr);
     return;
   }
 
-  GURL source(str);
-  if (!source.is_valid()) {
+  // Gets the extension URL.
+  extension_url_ =
+      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+
+  if (!extension_url_.is_valid()) {
     callback.Run(nullptr);
     return;
   }
 
   content::SiteInstance* view_site_instance =
-      content::SiteInstance::CreateForURL(browser_context(), source);
+      content::SiteInstance::CreateForURL(browser_context(),
+                                          extension_url_);
 
   WebContents::CreateParams params(browser_context(), view_site_instance);
   params.guest_delegate = this;
@@ -107,6 +122,29 @@ int ExtensionViewGuest::GetTaskPrefix() const {
 }
 
 // content::WebContentsObserver implementation.
+void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  if (!render_frame_host->GetParent())
+    view_page_ = url;
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetString(guestview::kUrl, url.spec());
+  DispatchEventToView(
+      new GuestViewBase::Event(extensionview::kEventLoadCommit, args.Pass()));
+}
+
+void ExtensionViewGuest::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (attached() && (params.url.GetOrigin() != view_page_.GetOrigin())) {
+    base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EVG"));
+    web_contents()->GetRenderProcessHost()->Shutdown(
+        content::RESULT_CODE_KILLED_BAD_MESSAGE, false /* wait */);
+  }
+}
+
 bool ExtensionViewGuest::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionViewGuest, message)

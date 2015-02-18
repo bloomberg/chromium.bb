@@ -10,6 +10,10 @@ namespace extensionview {
 extern const char kAPINamespace[] = "extensionViewInternal";
 
 // Attributes.
+const char kAttributeExtension[] = "extension";
 const char kAttributeSrc[] = "src";
+
+// Events.
+const char kEventLoadCommit[] = "extensionViewInternal.onLoadCommit";
 
 }  // namespace extensionview

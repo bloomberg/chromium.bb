@@ -57,9 +57,8 @@ ExtensionViewAttribute.prototype.defineProperty = function() {
 // Called when the attribute's value changes.
 ExtensionViewAttribute.prototype.maybeHandleMutation =
     function(oldValue, newValue) {
-  if (this.ignoreMutation) {
+  if (this.ignoreMutation)
     return;
-  }
 
   this.handleMutation(oldValue, newValue);
 }
@@ -68,12 +67,27 @@ ExtensionViewAttribute.prototype.maybeHandleMutation =
 ExtensionViewAttribute.prototype.handleMutation =
     function(oldValue, newValue) {};
 
+ExtensionViewAttribute.prototype.reset = function() {
+  this.setValueIgnoreMutation();
+}
+
+// Attribute that handles extension binded to the extensionview.
+function ExtensionAttribute(extensionViewImpl) {
+  ExtensionViewAttribute.call(this, ExtensionViewConstants.ATTRIBUTE_EXTENSION,
+                              extensionViewImpl);
+}
+
+ExtensionAttribute.prototype.__proto__ = ExtensionViewAttribute.prototype;
+
+ExtensionAttribute.prototype.handleMutation = function(oldValue, newValue) {
+  this.setValueIgnoreMutation(oldValue);
+}
+
 // Attribute that handles the location and navigation of the extensionview.
 function SrcAttribute(extensionViewImpl) {
   ExtensionViewAttribute.call(this, ExtensionViewConstants.ATTRIBUTE_SRC,
                               extensionViewImpl);
   this.setupMutationObserver();
-  this.beforeFirstNavigation = true;
 }
 
 SrcAttribute.prototype.__proto__ = ExtensionViewAttribute.prototype;
@@ -115,20 +129,11 @@ SrcAttribute.prototype.parse = function() {
   if (!this.extensionViewImpl.elementAttached || !this.getValue())
     return;
 
-  if (!this.extensionViewImpl.guest.getId()) {
-    if (this.beforeFirstNavigation) {
-      this.beforeFirstNavigation = false;
-      this.extensionViewImpl.createGuest();
-    }
+  if (!this.extensionViewImpl.guest.getId())
     return;
-  }
 
   ExtensionViewInternal.navigate(this.extensionViewImpl.guest.getId(),
                                  this.getValue());
-};
-
-SrcAttribute.prototype.reset = function() {
-  this.beforeFirstNavigation = true;
 };
 
 // -----------------------------------------------------------------------------
@@ -136,6 +141,8 @@ SrcAttribute.prototype.reset = function() {
 // Sets up all of the extensionview attributes.
 ExtensionViewImpl.prototype.setupExtensionViewAttributes = function() {
   this.attributes = {};
+  this.attributes[ExtensionViewConstants.ATTRIBUTE_EXTENSION] =
+      new ExtensionAttribute(this);
   this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC] =
       new SrcAttribute(this);
 };

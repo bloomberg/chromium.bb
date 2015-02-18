@@ -125,5 +125,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest,
 
 // Tests that verify that <extensionview> can navigate to different sources.
 IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/extension_view/src_attribute"));
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/extension_view/src_attribute"));
+}
+
+// Tests that verify that <extensionview> can call the connect function.
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ConnectAPICall) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/extension_view/connect_api"));
+}
+
+// Tests that verify that <extensionview> does not change extension ID if
+// someone tries to change it in JavaScript.
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimExtensionAttribute) {
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/extension_view/extension_attribute"));
 }

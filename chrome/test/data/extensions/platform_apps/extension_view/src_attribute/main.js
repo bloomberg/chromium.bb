@@ -9,7 +9,6 @@ var checkSrc = function(element, expectedValue) {
 onload = function() {
   chrome.test.runTests([
     function extensionView() {
-      chrome.test.succeed();
       var expectedSrcOne = 'data:text/html,<body>One</body>';
       var expectedSrcTwo = 'data:text/html,<body>Two</body>';
 
@@ -18,6 +17,7 @@ onload = function() {
 
       extensionview.setAttribute('src', expectedSrcTwo);
       checkSrc(extensionview, expectedSrcTwo);
+      chrome.test.succeed();
     }
   ]);
 };

@@ -7,6 +7,7 @@
 // Container for the extensionview constants.
 var ExtensionViewConstants = {
 
+  ATTRIBUTE_EXTENSION: 'extension',
   ATTRIBUTE_SRC: 'src',
 };
 

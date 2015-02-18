@@ -341,6 +341,7 @@ void Dispatcher::DidCreateScriptContext(
 
   if (context->GetAvailability("extensionViewInternal").is_available()) {
     module_system->Require("extensionView");
+    module_system->Require("extensionViewApiMethods");
     module_system->Require("extensionViewAttributes");
   }
 
@@ -593,10 +594,14 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestViewContainer",
                                      IDR_GUEST_VIEW_CONTAINER_JS));
   resources.push_back(std::make_pair("extensionView", IDR_EXTENSION_VIEW_JS));
+  resources.push_back(std::make_pair("extensionViewApiMethods",
+                                     IDR_EXTENSION_VIEW_API_METHODS_JS));
   resources.push_back(std::make_pair("extensionViewAttributes",
                                      IDR_EXTENSION_VIEW_ATTRIBUTES_JS));
   resources.push_back(std::make_pair("extensionViewConstants",
                                      IDR_EXTENSION_VIEW_CONSTANTS_JS));
+  resources.push_back(std::make_pair("extensionViewEvents",
+      IDR_EXTENSION_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair(
       "extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));

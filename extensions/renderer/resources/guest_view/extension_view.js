@@ -7,12 +7,15 @@
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
+var ExtensionViewEvents = require('extensionViewEvents').ExtensionViewEvents;
 var ExtensionViewInternal =
     require('extensionViewInternal').ExtensionViewInternal;
 
 function ExtensionViewImpl(extensionviewElement) {
   GuestViewContainer.call(this, extensionviewElement, 'extensionview');
   this.setupExtensionViewAttributes();
+
+  new ExtensionViewEvents(this, this.viewInstanceId);
 }
 
 ExtensionViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -20,9 +23,7 @@ ExtensionViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
 ExtensionViewImpl.VIEW_TYPE = 'ExtensionView';
 
 ExtensionViewImpl.setupElement = function(proto) {
-  var apiMethods = [
-    'navigate'
-  ];
+  var apiMethods = ExtensionViewImpl.getApiMethods();
 
   GuestViewContainer.forwardApiMethods(proto, apiMethods);
 };
@@ -31,10 +32,6 @@ ExtensionViewImpl.prototype.createGuest = function() {
   this.guest.create(this.buildParams(), function() {
     this.attachWindow();
   }.bind(this));
-};
-
-ExtensionViewImpl.prototype.onElementAttached = function() {
-  this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC].parse();
 };
 
 ExtensionViewImpl.prototype.buildContainerParams = function() {
@@ -51,13 +48,23 @@ ExtensionViewImpl.prototype.handleAttributeMutation = function(
   if (!this.attributes[attributeName])
     return;
 
-  // Let the changed attribute handle its own mutation;
+  // Let the changed attribute handle its own mutation.
   this.attributes[attributeName].maybeHandleMutation(oldValue, newValue);
 };
 
 ExtensionViewImpl.prototype.onElementDetached = function() {
   this.guest.destroy();
-  this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC].reset();
+
+  // Reset all attributes.
+  for (var i in this.attributes) {
+    this.attributes[i].reset();
+  }
+};
+
+// Updates src upon loadcommit.
+ExtensionViewImpl.prototype.onLoadCommit = function(url) {
+  this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC].
+      setValueIgnoreMutation(url);
 };
 
 GuestViewContainer.registerElement(ExtensionViewImpl);
