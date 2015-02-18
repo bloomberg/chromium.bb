@@ -37,7 +37,7 @@ DOMParser::DOMParser(Document& document)
 {
 }
 
-void DOMParser::trace(Visitor* visitor)
+DEFINE_TRACE(DOMParser)
 {
     visitor->trace(m_contextDocument);
 }

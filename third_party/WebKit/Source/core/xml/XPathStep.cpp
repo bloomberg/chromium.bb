@@ -56,7 +56,7 @@ Step::~Step()
 {
 }
 
-void Step::trace(Visitor* visitor)
+DEFINE_TRACE(Step)
 {
     visitor->trace(m_nodeTest);
     visitor->trace(m_predicates);

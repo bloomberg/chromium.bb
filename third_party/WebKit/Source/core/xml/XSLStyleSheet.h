@@ -99,7 +99,7 @@ public:
     virtual KURL baseURL() const override { return m_finalURL; }
     virtual bool isLoading() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     XSLStyleSheet(Node* parentNode, const String& originalURL, const KURL& finalURL, bool embedded);

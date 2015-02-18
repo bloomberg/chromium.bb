@@ -39,7 +39,7 @@ class NodeSet : public NoBaseWillBeGarbageCollected<NodeSet> {
 public:
     static PassOwnPtrWillBeRawPtr<NodeSet> create() { return adoptPtrWillBeNoop(new NodeSet); }
     static PassOwnPtrWillBeRawPtr<NodeSet> create(const NodeSet&);
-    void trace(Visitor* visitor) { visitor->trace(m_nodes); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_nodes); }
 
     size_t size() const { return m_nodes.size(); }
     bool isEmpty() const { return !m_nodes.size(); }

@@ -42,7 +42,7 @@ public:
     static PassRefPtrWillBeRawPtr<ValueData> create(const NodeSet& nodeSet) { return adoptRefWillBeNoop(new ValueData(nodeSet)); }
     static PassRefPtrWillBeRawPtr<ValueData> create(PassOwnPtrWillBeRawPtr<NodeSet> nodeSet) { return adoptRefWillBeNoop(new ValueData(nodeSet)); }
     static PassRefPtrWillBeRawPtr<ValueData> create(const String& string) { return adoptRefWillBeNoop(new ValueData(string)); }
-    void trace(Visitor*);
+    DECLARE_TRACE();
     NodeSet& nodeSet() { return *m_nodeSet; }
 
     String m_string;
@@ -70,7 +70,7 @@ public:
     Value(const String& value) : m_type(StringValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) { }
     Value(const NodeSet& value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create(value)) { }
     Value(Node* value) : m_type(NodeSetValue), m_bool(false), m_number(0), m_data(ValueData::create()) { m_data->nodeSet().append(value); }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // This is needed to safely implement constructing from bool - with normal
     // function overloading, any pointer type would match.

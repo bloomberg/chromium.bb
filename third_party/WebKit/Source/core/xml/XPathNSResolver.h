@@ -40,7 +40,7 @@ class XPathNSResolver : public RefCountedWillBeGarbageCollectedFinalized<XPathNS
 public:
     virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     XPathNSResolver() { }

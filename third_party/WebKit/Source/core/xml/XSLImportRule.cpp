@@ -109,7 +109,7 @@ void XSLImportRule::loadSheet()
         setXSLStyleSheet(absHref, resource->response().url(), UTF8Encoding().decode(data->data(), data->size()));
 }
 
-void XSLImportRule::trace(Visitor* visitor)
+DEFINE_TRACE(XSLImportRule)
 {
     visitor->trace(m_parentStyleSheet);
     visitor->trace(m_styleSheet);

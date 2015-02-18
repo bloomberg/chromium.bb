@@ -77,7 +77,7 @@ public:
 
     typedef HashMap<String, String> ParameterMap;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     XSLTProcessor(Document& document)

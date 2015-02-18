@@ -41,7 +41,7 @@ class XMLErrors {
     DISALLOW_ALLOCATION();
 public:
     explicit XMLErrors(Document*);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // Exposed for callbacks:
     enum ErrorType { ErrorTypeWarning, ErrorTypeNonFatal, ErrorTypeFatal };

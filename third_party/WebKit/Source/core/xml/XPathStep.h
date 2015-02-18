@@ -76,7 +76,7 @@ public:
             ASSERT(o.m_mergedPredicates.isEmpty());
             return *this;
         }
-        void trace(Visitor* visitor) { visitor->trace(m_mergedPredicates); }
+        DEFINE_INLINE_TRACE() { visitor->trace(m_mergedPredicates); }
 
         Kind kind() const { return m_kind; }
         const AtomicString& data() const { return m_data; }
@@ -96,7 +96,7 @@ public:
     Step(Axis, const NodeTest&);
     Step(Axis, const NodeTest&, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >&);
     virtual ~Step();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void optimize();
 

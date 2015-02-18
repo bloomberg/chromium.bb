@@ -77,7 +77,7 @@ public:
         return adoptRefWillBeNoop(new XMLDocumentParser(fragment, element, parserContentPolicy));
     }
     virtual ~XMLDocumentParser();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Exposed for callbacks:
     void handleError(XMLErrors::ErrorType, const char* message, TextPosition);

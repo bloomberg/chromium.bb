@@ -51,7 +51,7 @@ Expression::~Expression()
 {
 }
 
-void Expression::trace(Visitor* visitor)
+DEFINE_TRACE(Expression)
 {
     visitor->trace(m_subExpressions);
     ParseNode::trace(visitor);

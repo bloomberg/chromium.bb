@@ -40,7 +40,7 @@ public:
 
     String serializeToString(Node*);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     XMLSerializer() { }

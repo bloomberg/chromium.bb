@@ -41,7 +41,7 @@ class Filter final : public Expression {
 public:
     Filter(PassOwnPtrWillBeRawPtr<Expression>, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >&);
     virtual ~Filter();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual Value evaluate(EvaluationContext&) const override;
 
@@ -56,7 +56,7 @@ class LocationPath final : public Expression {
 public:
     LocationPath();
     virtual ~LocationPath();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual Value evaluate(EvaluationContext&) const override;
     void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
@@ -75,7 +75,7 @@ class Path final : public Expression {
 public:
     Path(Expression*, LocationPath*);
     virtual ~Path();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual Value evaluate(EvaluationContext&) const override;
 

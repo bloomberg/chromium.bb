@@ -56,7 +56,7 @@ public:
     static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
     PassRefPtrWillBeRawPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     XPathExpression();

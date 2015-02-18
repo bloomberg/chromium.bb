@@ -162,7 +162,7 @@ void XSLTProcessor::reset()
     m_parameters.clear();
 }
 
-void XSLTProcessor::trace(Visitor* visitor)
+DEFINE_TRACE(XSLTProcessor)
 {
     visitor->trace(m_stylesheet);
     visitor->trace(m_stylesheetRootNode);

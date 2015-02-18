@@ -40,7 +40,7 @@ public:
     }
 
     virtual ~XSLImportRule();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     const String& href() const { return m_strHref; }
     XSLStyleSheet* styleSheet() const { return m_styleSheet.get(); }

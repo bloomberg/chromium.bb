@@ -50,7 +50,7 @@ XMLErrors::XMLErrors(Document* document)
 {
 }
 
-void XMLErrors::trace(Visitor* visitor)
+DEFINE_TRACE(XMLErrors)
 {
     visitor->trace(m_document);
 }

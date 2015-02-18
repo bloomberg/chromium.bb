@@ -50,7 +50,7 @@ Filter::~Filter()
 {
 }
 
-void Filter::trace(Visitor* visitor)
+DEFINE_TRACE(Filter)
 {
     visitor->trace(m_expr);
     visitor->trace(m_predicates);
@@ -97,7 +97,7 @@ LocationPath::~LocationPath()
 #endif
 }
 
-void LocationPath::trace(Visitor* visitor)
+DEFINE_TRACE(LocationPath)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_steps);
@@ -217,7 +217,7 @@ Path::~Path()
 {
 }
 
-void Path::trace(Visitor* visitor)
+DEFINE_TRACE(Path)
 {
     visitor->trace(m_filter);
     visitor->trace(m_path);

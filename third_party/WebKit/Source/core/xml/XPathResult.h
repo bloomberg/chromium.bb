@@ -81,7 +81,7 @@ public:
 
     const XPath::Value& value() const { return m_value; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     XPathResult(XPath::EvaluationContext&, const XPath::Value&);

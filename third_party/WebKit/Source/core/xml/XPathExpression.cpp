@@ -58,7 +58,7 @@ PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const 
     return expr.release();
 }
 
-void XPathExpression::trace(Visitor* visitor)
+DEFINE_TRACE(XPathExpression)
 {
     visitor->trace(m_topExpression);
 }

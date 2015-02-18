@@ -53,7 +53,7 @@ public:
 class ParseNode : public NoBaseWillBeGarbageCollectedFinalized<ParseNode> {
 public:
     virtual ~ParseNode() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 class Expression : public ParseNode {
@@ -61,7 +61,7 @@ class Expression : public ParseNode {
 public:
     Expression();
     virtual ~Expression();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual Value evaluate(EvaluationContext&) const = 0;
 

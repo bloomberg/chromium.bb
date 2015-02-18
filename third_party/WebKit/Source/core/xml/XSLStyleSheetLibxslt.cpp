@@ -324,7 +324,7 @@ void XSLStyleSheet::markAsProcessed()
     m_stylesheetDocTaken = true;
 }
 
-void XSLStyleSheet::trace(Visitor* visitor)
+DEFINE_TRACE(XSLStyleSheet)
 {
     visitor->trace(m_ownerNode);
     visitor->trace(m_children);

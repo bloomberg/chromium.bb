@@ -42,7 +42,7 @@ public:
 
     virtual AtomicString lookupNamespaceURI(const String& prefix) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit NativeXPathNSResolver(PassRefPtrWillBeRawPtr<Node>);

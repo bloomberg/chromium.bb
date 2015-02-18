@@ -65,7 +65,7 @@ XPathResult::XPathResult(EvaluationContext& context, const Value& value)
     ASSERT_NOT_REACHED();
 }
 
-void XPathResult::trace(Visitor* visitor)
+DEFINE_TRACE(XPathResult)
 {
     visitor->trace(m_value);
     visitor->trace(m_nodeSet);

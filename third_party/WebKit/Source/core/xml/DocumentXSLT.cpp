@@ -196,7 +196,7 @@ DocumentXSLT& DocumentXSLT::from(DocumentSupplementable& document)
     return *supplement;
 }
 
-void DocumentXSLT::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentXSLT)
 {
     visitor->trace(m_transformSourceDocument);
     DocumentSupplement::trace(visitor);

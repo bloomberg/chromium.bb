@@ -54,7 +54,7 @@ public:
     PassRefPtrWillBeRawPtr<XPathResult> evaluate(const String& expression, Node* contextNode,
         PassRefPtrWillBeRawPtr<XPathNSResolver>, unsigned short type, XPathResult*, ExceptionState&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     XPathEvaluator() { }

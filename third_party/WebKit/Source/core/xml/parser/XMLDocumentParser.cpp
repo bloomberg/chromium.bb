@@ -855,7 +855,7 @@ XMLDocumentParser::~XMLDocumentParser()
         m_pendingScript->removeClient(this);
 }
 
-void XMLDocumentParser::trace(Visitor* visitor)
+DEFINE_TRACE(XMLDocumentParser)
 {
     visitor->trace(m_currentNode);
 #if ENABLE(OILPAN)

@@ -73,7 +73,7 @@ PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSup
     return suplement.m_xpathEvaluator->evaluate(expression, contextNode, resolver, type, result, exceptionState);
 }
 
-void DocumentXPathEvaluator::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentXPathEvaluator)
 {
     visitor->trace(m_xpathEvaluator);
     DocumentSupplement::trace(visitor);
