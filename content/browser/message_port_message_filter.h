@@ -15,6 +15,8 @@
 #undef SendMessage
 #endif
 
+struct ViewMsg_PostMessage_Params;
+
 namespace content {
 
 // Filter for MessagePort related IPC messages (creating and destroying a
@@ -47,6 +49,10 @@ class CONTENT_EXPORT MessagePortMessageFilter
   void UpdateMessagePortsWithNewRoutes(
       const std::vector<int>& message_port_ids,
       std::vector<int>* new_routing_ids);
+
+  void RouteMessageEventWithMessagePorts(
+      int routing_id,
+      const ViewMsg_PostMessage_Params& params);
 
  protected:
   // This is protected, so we can define sub classes for testing.

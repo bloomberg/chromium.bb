@@ -63,6 +63,7 @@ MessagePortService::~MessagePortService() {
 void MessagePortService::UpdateMessagePort(int message_port_id,
                                            MessagePortDelegate* delegate,
                                            int routing_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;

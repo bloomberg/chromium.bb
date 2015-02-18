@@ -41,7 +41,6 @@
 #include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 #include "content/browser/message_port_message_filter.h"
-#include "content/browser/message_port_service.h"
 #include "content/browser/plugin_content_origin_whitelist.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -3984,15 +3983,6 @@ void WebContentsImpl::RouteMessageEvent(
 
   ViewMsg_PostMessage_Params new_params(params);
 
-  if (!params.message_port_ids.empty()) {
-    MessagePortMessageFilter* message_port_message_filter =
-        static_cast<RenderProcessHostImpl*>(GetRenderProcessHost())
-            ->message_port_message_filter();
-    message_port_message_filter->UpdateMessagePortsWithNewRoutes(
-        params.message_port_ids,
-        &new_params.new_routing_ids);
-  }
-
   // If there is a source_routing_id, translate it to the routing ID for
   // the equivalent swapped out RVH in the target process.  If we need
   // to create a swapped out RVH for the source tab, we create its opener
@@ -4027,7 +4017,24 @@ void WebContentsImpl::RouteMessageEvent(
   // In most cases, we receive this from a swapped out RenderViewHost.
   // It is possible to receive it from one that has just been swapped in,
   // in which case we might as well deliver the message anyway.
-  Send(new ViewMsg_PostMessageEvent(GetRoutingID(), new_params));
+  if (!params.message_port_ids.empty()) {
+    // Updating the message port information has to be done in the IO thread;
+    // MessagePortMessageFilter::RouteMessageEventWithMessagePorts will send
+    // ViewMsg_PostMessageEvent after it's done. Note that a trivial solution
+    // would've been to post a task on the IO thread to do the IO-thread-bound
+    // work, and make that post a task back to WebContentsImpl in the UI
+    // thread. But we cannot do that, since there's nothing to guarantee that
+    // WebContentsImpl stays alive during the round trip.
+    scoped_refptr<MessagePortMessageFilter> message_port_message_filter(
+        static_cast<RenderProcessHostImpl*>(GetRenderProcessHost())
+        ->message_port_message_filter());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MessagePortMessageFilter::RouteMessageEventWithMessagePorts,
+                   message_port_message_filter, GetRoutingID(), new_params));
+  } else {
+    Send(new ViewMsg_PostMessageEvent(GetRoutingID(), new_params));
+  }
 }
 
 bool WebContentsImpl::AddMessageToConsole(int32 level,

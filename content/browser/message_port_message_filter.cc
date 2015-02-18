@@ -6,6 +6,7 @@
 
 #include "content/browser/message_port_service.h"
 #include "content/common/message_port_messages.h"
+#include "content/common/view_messages.h"
 
 namespace content {
 
@@ -91,6 +92,16 @@ void MessagePortMessageFilter::UpdateMessagePortsWithNewRoutes(
         (*new_routing_ids)[i]);
   }
 }
+
+void MessagePortMessageFilter::RouteMessageEventWithMessagePorts(
+    int routing_id,
+    const ViewMsg_PostMessage_Params& params) {
+  ViewMsg_PostMessage_Params new_params(params);
+  UpdateMessagePortsWithNewRoutes(params.message_port_ids,
+                                  &new_params.new_routing_ids);
+  Send(new ViewMsg_PostMessageEvent(routing_id, new_params));
+}
+
 
 void MessagePortMessageFilter::OnCreateMessagePort(int *route_id,
                                                    int* message_port_id) {
