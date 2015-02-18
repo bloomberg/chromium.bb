@@ -593,6 +593,8 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	struct gl_surface_state *gs = get_surface_state(ev->surface);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
+	/* opaque region in surface coordinates: */
+	pixman_region32_t surface_opaque;
 	/* non-opaque region in surface coordinates: */
 	pixman_region32_t surface_blend;
 	GLint filter;
@@ -638,10 +640,22 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	/* blended region is whole surface minus opaque region: */
 	pixman_region32_init_rect(&surface_blend, 0, 0,
 				  ev->surface->width, ev->surface->height);
-	pixman_region32_subtract(&surface_blend, &surface_blend, &ev->surface->opaque);
+	if (ev->geometry.scissor_enabled)
+		pixman_region32_intersect(&surface_blend, &surface_blend,
+					  &ev->geometry.scissor);
+	pixman_region32_subtract(&surface_blend, &surface_blend,
+				 &ev->surface->opaque);
 
 	/* XXX: Should we be using ev->transform.opaque here? */
-	if (pixman_region32_not_empty(&ev->surface->opaque)) {
+	pixman_region32_init(&surface_opaque);
+	if (ev->geometry.scissor_enabled)
+		pixman_region32_intersect(&surface_opaque,
+					  &ev->surface->opaque,
+					  &ev->geometry.scissor);
+	else
+		pixman_region32_copy(&surface_opaque, &ev->surface->opaque);
+
+	if (pixman_region32_not_empty(&surface_opaque)) {
 		if (gs->shader == &gr->texture_shader_rgba) {
 			/* Special case for RGBA textures with possibly
 			 * bad data in alpha channel: use the shader
@@ -657,7 +671,7 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 		else
 			glDisable(GL_BLEND);
 
-		repaint_region(ev, &repaint, &ev->surface->opaque);
+		repaint_region(ev, &repaint, &surface_opaque);
 	}
 
 	if (pixman_region32_not_empty(&surface_blend)) {
@@ -667,6 +681,7 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	}
 
 	pixman_region32_fini(&surface_blend);
+	pixman_region32_fini(&surface_opaque);
 
 out:
 	pixman_region32_fini(&repaint);
@@ -2161,6 +2176,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	ec->renderer = &gr->base;
 	ec->capabilities |= WESTON_CAP_ROTATION_ANY;
 	ec->capabilities |= WESTON_CAP_CAPTURE_YFLIP;
+	ec->capabilities |= WESTON_CAP_VIEW_CLIP_MASK;
 
 	if (gl_renderer_setup_egl_extensions(ec) < 0)
 		goto err_egl;
