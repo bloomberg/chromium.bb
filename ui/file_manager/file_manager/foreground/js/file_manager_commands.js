@@ -121,9 +121,13 @@ CommandUtil.canExecuteAlways = function(event) {
  * array to avoid confusing because pinning directory is not supported
  * currently.
  *
- * @return {Array.<Entry>} Target entries.
+ * @return {!Array<!Entry>} Target entries.
  */
 CommandUtil.getPinTargetEntries = function() {
+  // If current directory is not on drive, no entry can be pinned.
+  if (!fileManager.isOnDrive())
+    return [];
+
   var hasDirectory = false;
   var results = fileManager.getSelection().entries.filter(function(entry) {
     hasDirectory = hasDirectory || entry.isDirectory;
