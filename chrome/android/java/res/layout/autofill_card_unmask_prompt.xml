@@ -97,12 +97,10 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <!-- TODO(estade): should be material styled. -->
         <ProgressBar
-            style="@android:style/Widget.ProgressBar.Small"
             android:id="@+id/verification_progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="30dp"
             android:visibility="gone" />
@@ -119,6 +117,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?android:attr/colorAccent"
-            android:textStyle="bold" />
+            android:textSize="20dp" />
     </LinearLayout>
 </RelativeLayout>
