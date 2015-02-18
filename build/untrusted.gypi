@@ -14,9 +14,6 @@
       # This is designed to be set globally by GYP_DEFINES and currently
       # only affects x86-32 and x86-64 newlib builds.
       'use_nacl_clang%': 0,
-      # Set to 0 to avoid using thin archives (e.g., when library is
-      # to be shipped with the SDK).
-      'nacl_allow_thin_archives%': 1,
     },
     'common_args': [
       'python',
@@ -33,7 +30,6 @@
       '--product-dir', '<(PRODUCT_DIR)/xyz',
       '--config-name', '<(CONFIGURATION_NAME)',
       '-t', '<(DEPTH)/native_client/toolchain/',
-      '--allow-thin-archives', '<(nacl_allow_thin_archives)',
     ],
     'common_inputs': [
       '<(DEPTH)/native_client/build/build_nexe.py',
