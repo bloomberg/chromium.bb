@@ -44,7 +44,7 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
 
   def testFindSourceRootSpecifiedBogus(self):
     """Test FindSourceRoot with non-existent directory outside the repo."""
-    self.assertEqual(None, project_sdk.FindSourceRoot(self.bogus_dir))
+    self.assertIsNone(project_sdk.FindSourceRoot(self.bogus_dir))
 
   def testFindSourceRootSpecifiedRoot(self):
     """Test FindSourceRoot with top level of repo tree."""
@@ -61,7 +61,7 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
 
   def testFindVersionBogus(self):
     """Test FindVersion with non-existent directory outside the repo."""
-    self.assertEqual(None, project_sdk.FindVersion(self.bogus_dir))
+    self.assertIsNone(project_sdk.FindVersion(self.bogus_dir))
 
   def testFindVersionSpecifiedRoot(self):
     """Test FindVersion with top level of repo tree."""
