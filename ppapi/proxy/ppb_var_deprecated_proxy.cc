@@ -22,6 +22,7 @@
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/var.h"
@@ -379,7 +380,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64 object_id) {
   // spurious warning).
   // TODO(piman): See if we can fix the IPC code to enforce strict ordering, and
   // then remove this.
-  base::MessageLoop::current()->PostNonNestableTask(
+  PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostNonNestableTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(&PPB_Var_Deprecated_Proxy::DoReleaseObject,
                                 task_factory_.GetWeakPtr(),

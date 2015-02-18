@@ -90,7 +90,7 @@ void ResourceTracker::ReleaseResource(PP_Resource res) {
 }
 
 void ResourceTracker::ReleaseResourceSoon(PP_Resource res) {
-  base::MessageLoop::current()->PostNonNestableTask(
+  PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostNonNestableTask(
       FROM_HERE,
       RunWhileLocked(base::Bind(&ResourceTracker::ReleaseResource,
                                 weak_ptr_factory_.GetWeakPtr(),
