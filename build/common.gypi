@@ -2144,18 +2144,6 @@
         'clang_chrome_plugins_flags': [
           '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
         ],
-        'conditions': [
-          # TODO(dcheng): https://crbug.com/417463 -- work to enable this flag
-          # on all platforms is currently underway.
-          ['OS=="android" or OS=="linux" or OS=="mac" or OS=="ios"', {
-            'clang_chrome_plugins_flags': [
-              '-Xclang',
-              '-plugin-arg-find-bad-constructs',
-              '-Xclang',
-              'strict-virtual-specifiers',
-            ],
-          }],
-        ],
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
