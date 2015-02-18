@@ -444,7 +444,6 @@ weston_view_create(struct weston_surface *surface)
 
 	pixman_region32_init(&view->clip);
 	pixman_region32_init(&view->transform.masked_boundingbox);
-	pixman_region32_init(&view->transform.masked_opaque);
 
 	view->alpha = 1.0;
 	pixman_region32_init(&view->transform.opaque);
@@ -1237,8 +1236,8 @@ weston_view_update_transform(struct weston_view *view)
 		pixman_region32_init_with_extents(&mask, &layer->mask);
 		pixman_region32_intersect(&view->transform.masked_boundingbox,
 					&view->transform.boundingbox, &mask);
-		pixman_region32_intersect(&view->transform.masked_opaque,
-					&view->transform.opaque, &mask);
+		pixman_region32_intersect(&view->transform.opaque,
+					  &view->transform.opaque, &mask);
 		pixman_region32_fini(&mask);
 	}
 
@@ -1634,7 +1633,7 @@ weston_view_destroy(struct weston_view *view)
 	pixman_region32_fini(&view->clip);
 	pixman_region32_fini(&view->transform.boundingbox);
 	pixman_region32_fini(&view->transform.masked_boundingbox);
-	pixman_region32_fini(&view->transform.masked_opaque);
+	pixman_region32_fini(&view->transform.opaque);
 
 	weston_view_set_transform_parent(view, NULL);
 
@@ -1842,7 +1841,7 @@ view_accumulate_damage(struct weston_view *view,
 			      &view->plane->damage, &damage);
 	pixman_region32_fini(&damage);
 	pixman_region32_copy(&view->clip, opaque);
-	pixman_region32_union(opaque, opaque, &view->transform.masked_opaque);
+	pixman_region32_union(opaque, opaque, &view->transform.opaque);
 }
 
 static void

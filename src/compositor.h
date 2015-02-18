@@ -757,7 +757,7 @@ struct weston_view {
 	struct wl_signal destroy_signal;
 
 	struct wl_list link;
-	struct weston_layer_entry layer_link;
+	struct weston_layer_entry layer_link; /* part of geometry */
 	struct weston_plane *plane;
 
 	/* For weston_layer inheritance from another view */
@@ -794,7 +794,6 @@ struct weston_view {
 		pixman_region32_t boundingbox;
 		pixman_region32_t opaque;
 		pixman_region32_t masked_boundingbox;
-		pixman_region32_t masked_opaque;
 
 		/* matrix and inverse are used only if enabled = 1.
 		 * If enabled = 0, use x, y, width, height directly.
