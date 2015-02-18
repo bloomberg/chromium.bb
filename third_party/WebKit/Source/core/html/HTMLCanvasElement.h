@@ -108,8 +108,8 @@ public:
     bool isPaintable() const;
 
     static String toEncodingMimeType(const String& mimeType);
-    String toDataURL(const String& mimeType, const double* quality, ExceptionState&) const;
-    String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, 0, exceptionState); }
+    String toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
+    String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, ScriptValue(), exceptionState); }
 
     // Used for rendering
     void didDraw(const FloatRect&);

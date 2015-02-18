@@ -20,7 +20,6 @@
             'V8EventTargetCustom.cpp',
             'V8FileCustom.cpp',
             'V8HTMLAllCollectionCustom.cpp',
-            'V8HTMLCanvasElementCustom.cpp',
             'V8HTMLDocumentCustom.cpp',
             'V8HTMLOptionsCollectionCustom.cpp',
             'V8HTMLPlugInElementCustom.cpp',

@@ -31,7 +31,7 @@ interface HTMLCanvasElement : HTMLElement {
     attribute long width;
     attribute long height;
 
-    [Custom, RaisesException] DOMString toDataURL([TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? type);
+    [RaisesException] DOMString toDataURL(optional DOMString? type = null, optional any arguments);
 
     // Note: this differs deliberately from the specified Web IDL for this function:
     //     RenderingContext? getContext(DOMString contextId, any... arguments);

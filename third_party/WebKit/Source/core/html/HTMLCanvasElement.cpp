@@ -485,14 +485,22 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     return buffer()->toDataURL(encodingMimeType, quality);
 }
 
-String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& exceptionState) const
+String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState) const
 {
     if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return String();
     }
-
-    return toDataURLInternal(mimeType, quality, BackBuffer);
+    double quality;
+    double* qualityPtr = nullptr;
+    if (!qualityArgument.isEmpty()) {
+        v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
+        if (v8Value->IsNumber()) {
+            quality = v8Value->NumberValue();
+            qualityPtr = &quality;
+        }
+    }
+    return toDataURLInternal(mimeType, qualityPtr, BackBuffer);
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const
