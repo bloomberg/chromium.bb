@@ -11,30 +11,30 @@ JSFrame: 227.125(0.125) g
 JSFrame: 230(0.125) f
 JSFrame: 230(0.125) l
 JSFrame: 230(0.125) a
-Bottom-Up Chart: 30 @ 0.0001
-  Scripting: 30 @ 0.0001
-    FunctionCall: 22.5 @ 0.0001
-    b: 4.25 @ 22.5001
-      a: 4.25 @ 22.5001
-        FunctionCall: 4.25 @ 22.5001
-    e: 3 @ 26.7501
-      d: 3 @ 26.7501
-        b: 3 @ 26.7501
-          a: 3 @ 26.7501
-            FunctionCall: 3 @ 26.7501
-    g: 0.125 @ 29.7501
-      e: 0.125 @ 29.7501
-        b: 0.125 @ 29.7501
-          a: 0.125 @ 29.7501
-            FunctionCall: 0.125 @ 29.7501
-    a: 0.125 @ 29.8751
-      l: 0.125 @ 29.8751
-        f: 0.125 @ 29.8751
-          FunctionCall: 0.125 @ 29.8751
-  Loading: 0 @ 30.0001
-  Rendering: 0 @ 30.0001
-  Painting: 0 @ 30.0001
-  GPU: 0 @ 30.0001
-  Other: 0 @ 30.0001
-  Idle: 0 @ 30.0001
+Bottom-Up Chart: 30 @ 0
+  Scripting: 30 @ 0
+    FunctionCall: 22.5 @ 0
+    b: 4.25 @ 22.5
+      a: 4.25 @ 22.5
+        FunctionCall: 4.25 @ 22.5
+    e: 3 @ 26.75
+      d: 3 @ 26.75
+        b: 3 @ 26.75
+          a: 3 @ 26.75
+            FunctionCall: 3 @ 26.75
+    g: 0.125 @ 29.75
+      e: 0.125 @ 29.75
+        b: 0.125 @ 29.75
+          a: 0.125 @ 29.75
+            FunctionCall: 0.125 @ 29.75
+    a: 0.125 @ 29.875
+      l: 0.125 @ 29.875
+        f: 0.125 @ 29.875
+          FunctionCall: 0.125 @ 29.875
+  Loading: 0 @ 30
+  Rendering: 0 @ 30
+  Painting: 0 @ 30
+  GPU: 0 @ 30
+  Other: 0 @ 30
+  Idle: 0 @ 30
 
