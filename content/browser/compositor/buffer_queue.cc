@@ -173,6 +173,11 @@ BufferQueue::AllocatedSurface BufferQueue::GetNextSurface() {
           size_, gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(
                      internalformat_),
           surface_id_));
+  if (!buffer) {
+    gl->DeleteTextures(1, &texture);
+    DLOG(ERROR) << "Failed to allocate GPU memory buffer";
+    return AllocatedSurface();
+  }
 
   unsigned int id = gl->CreateImageCHROMIUM(
       buffer->AsClientBuffer(), size_.width(), size_.height(), internalformat_);
