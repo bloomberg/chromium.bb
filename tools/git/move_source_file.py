@@ -31,6 +31,7 @@ if __name__ == '__main__':
   # classpath.
   sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
 sort_headers = __import__('sort-headers')
+import sort_sources
 
 
 HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh', '.cpp']
@@ -142,11 +143,13 @@ def UpdatePostMove(from_path, to_path):
   from_rest = from_path
   to_rest = to_path
   while True:
-    mffr.MultiFileFindReplace(
+    files_with_changed_sources = mffr.MultiFileFindReplace(
         r'([\'"])%s([\'"])' % from_rest,
         r'\1%s\2' % to_rest,
         [os.path.join(visiting_directory, 'BUILD.gn'),
          os.path.join(visiting_directory, '*.gyp*')])
+    for changed_file in files_with_changed_sources:
+      sort_sources.ProcessFile(changed_file, should_confirm=False)
     from_first, from_rest = SplitByFirstComponent(from_rest)
     to_first, to_rest = SplitByFirstComponent(to_rest)
     visiting_directory = os.path.join(visiting_directory, from_first)
