@@ -55,7 +55,6 @@ class ClipboardAuraTest : public testing::Test {
   void StopAndResetClipboard();
 
   base::MessageLoopForUI message_loop_;
-  base::RunLoop run_loop_;
   ClientClipboard* client_clipboard_;
   scoped_ptr<ClipboardAura> clipboard_;
 };
@@ -71,12 +70,13 @@ void ClipboardAuraTest::SetUp() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       message_loop_.message_loop_proxy();
   client_clipboard_ = new ClientClipboard();
-  clipboard_.reset(new ClipboardAura(task_runner));
-  clipboard_->Start(make_scoped_ptr(client_clipboard_));
+  clipboard_.reset(new ClipboardAura());
 
   EXPECT_GT(TestTimeouts::tiny_timeout(), kTestOverridePollingInterval * 10)
       << "The test timeout should be greater than the polling interval";
   clipboard_->SetPollingIntervalForTesting(kTestOverridePollingInterval);
+
+  clipboard_->Start(make_scoped_ptr(client_clipboard_));
 }
 
 void ClipboardAuraTest::TearDown() {
@@ -95,7 +95,7 @@ TEST_F(ClipboardAuraTest, WriteToClipboard) {
 
   clipboard_->InjectClipboardEvent(event);
   StopAndResetClipboard();
-  run_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string clipboard_data;
   ui::Clipboard* aura_clipboard = ui::Clipboard::GetForCurrentThread();
@@ -106,6 +106,8 @@ TEST_F(ClipboardAuraTest, WriteToClipboard) {
 }
 
 TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
+  base::RunLoop().RunUntilIdle();
+
   {
     // |clipboard_writer| will write to the clipboard when it goes out of scope.
     ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
@@ -116,14 +118,15 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
               InjectClipboardEvent(Property(&protocol::ClipboardEvent::data,
                                             Eq("Test data.")))).Times(1);
 
+  base::RunLoop run_loop;
   message_loop_.PostDelayedTask(
       FROM_HERE, base::Bind(&ClipboardAuraTest_MonitorClipboardChanges_Test::
                                 StopAndResetClipboard,
                             base::Unretained(this)),
       TestTimeouts::tiny_timeout());
-  message_loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
+  message_loop_.PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
                                 TestTimeouts::tiny_timeout());
-  message_loop_.Run();
+  run_loop.Run();
 }
 
 }  // namespace remoting

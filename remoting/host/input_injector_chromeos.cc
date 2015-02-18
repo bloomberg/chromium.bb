@@ -78,12 +78,9 @@ InputInjectorChromeos::Core::Core(scoped_ptr<ui::SystemInputInjector> delegate,
                                   ui::InputController* input_controller)
     : delegate_(delegate.Pass()),
       input_controller_(input_controller),
-      // Implemented by remoting::ClipboardAura.
-      clipboard_(Clipboard::Create()),
       saved_auto_repeat_enabled_(false) {
   DCHECK(delegate_);
   DCHECK(input_controller_);
-  DCHECK(clipboard_);
 }
 
 void InputInjectorChromeos::Core::InjectClipboardEvent(
@@ -159,6 +156,7 @@ void InputInjectorChromeos::Core::InjectMouseEvent(const MouseEvent& event) {
 
 void InputInjectorChromeos::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  clipboard_ = Clipboard::Create();
   clipboard_->Start(client_clipboard.Pass());
   point_transformer_.reset(new PointTransformer());
 }
