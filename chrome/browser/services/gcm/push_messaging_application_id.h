@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_APPLICATION_ID_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "url/gurl.h"
@@ -44,6 +45,10 @@ class PushMessagingApplicationId {
                                         const GURL& origin,
                                         int64 service_worker_registration_id);
 
+  // Returns all the PushMessagingApplicationId currently registered for the
+  // given |profile|.
+  static std::vector<PushMessagingApplicationId> GetAll(Profile* profile);
+
   ~PushMessagingApplicationId();
 
   // Persist this application id to disk.
@@ -70,9 +75,9 @@ class PushMessagingApplicationId {
                              const GURL& origin,
                              int64 service_worker_registration_id);
 
-  const std::string app_id_guid_;
-  const GURL origin_;
-  const int64 service_worker_registration_id_;
+  std::string app_id_guid_;
+  GURL origin_;
+  int64 service_worker_registration_id_;
 };
 
 }  // namespace gcm

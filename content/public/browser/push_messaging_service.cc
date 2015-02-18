@@ -4,19 +4,20 @@
 
 #include "content/public/browser/push_messaging_service.h"
 
+#include "content/browser/push_messaging/push_messaging_message_filter.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
+
+namespace content {
 
 namespace {
 
 const char kNotificationsShownServiceWorkerKey[] =
     "notifications_shown_by_last_few_pushes";
 
-}  // namespace
-
-namespace content {
-
-static void CallGetNotificationsShownCallbackFromIO(
+void CallGetNotificationsShownCallbackFromIO(
     const PushMessagingService::GetNotificationsShownCallback& callback,
     const std::string& data,
     ServiceWorkerStatusCode service_worker_status) {
@@ -27,7 +28,7 @@ static void CallGetNotificationsShownCallbackFromIO(
                           base::Bind(callback, data, success, not_found));
 }
 
-static void CallResultCallbackFromIO(
+void CallResultCallbackFromIO(
     const ServiceWorkerContext::ResultCallback& callback,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -36,7 +37,7 @@ static void CallResultCallbackFromIO(
                           base::Bind(callback, success));
 }
 
-static void GetNotificationsShownOnIO(
+void GetNotificationsShownOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_wrapper,
     int64 service_worker_registration_id,
     const PushMessagingService::GetNotificationsShownCallback& callback) {
@@ -46,7 +47,7 @@ static void GetNotificationsShownOnIO(
       base::Bind(&CallGetNotificationsShownCallbackFromIO, callback));
 }
 
-static void SetNotificationsShownOnIO(
+void SetNotificationsShownOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_wrapper,
     int64 service_worker_registration_id, const GURL& origin,
     const std::string& data,
@@ -57,6 +58,22 @@ static void SetNotificationsShownOnIO(
       kNotificationsShownServiceWorkerKey, data,
       base::Bind(&CallResultCallbackFromIO, callback));
 }
+
+void OnClearPushRegistrationServiceWorkerKey(ServiceWorkerStatusCode status) {
+}
+
+void ClearPushRegistrationIDOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    int64 service_worker_registration_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  service_worker_context->context()->storage()->ClearUserData(
+      service_worker_registration_id,
+      kPushRegistrationIdServiceWorkerKey,
+      base::Bind(&OnClearPushRegistrationServiceWorkerKey));
+}
+
+}  // anonymous namespace
 
 // static
 void PushMessagingService::GetNotificationsShownByLastFewPushes(
@@ -90,6 +107,26 @@ void PushMessagingService::SetNotificationsShownByLastFewPushes(
                                      origin,
                                      notifications_shown,
                                      callback));
+}
+
+// static
+void PushMessagingService::ClearPushRegistrationID(
+    BrowserContext* browser_context,
+    const GURL& origin,
+    int64 service_worker_registration_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  StoragePartition* partition =
+      BrowserContext::GetStoragePartitionForSite(browser_context, origin);
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext());
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ClearPushRegistrationIDOnIO,
+                 service_worker_context,
+                 service_worker_registration_id));
 }
 
 }  // namespace content

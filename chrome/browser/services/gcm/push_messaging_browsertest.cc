@@ -22,6 +22,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -299,7 +300,7 @@ void PushMessagingBrowserTest::TryToRegisterSuccessfully(
 
 PushMessagingApplicationId PushMessagingBrowserTest::GetServiceWorkerAppId(
     int64 service_worker_registration_id) {
-  GURL origin = https_server()->GetURL("").GetOrigin();
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   PushMessagingApplicationId application_id = PushMessagingApplicationId::Get(
       browser()->profile(), origin, service_worker_registration_id);
   EXPECT_TRUE(application_id.IsValid());
@@ -799,5 +800,244 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushUnavailableOnAndroidICS) {
   EXPECT_EQ("undefined", script_result);
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       GlobalResetPushPermissionUnregisters) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  browser()->profile()->GetHostContentSettingsMap()->
+      ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - default", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       LocalResetPushPermissionUnregisters) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      std::string(),
+      CONTENT_SETTING_DEFAULT);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - default", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       DenyPushPermissionUnregisters) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - denied", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       GlobalResetNotificationsPermissionUnregisters) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  browser()->profile()->GetHostContentSettingsMap()->
+      ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - default", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       LocalResetNotificationsPermissionUnregisters) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_DEFAULT);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - default", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       DenyNotificationsPermissionUnregisters) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_BLOCK);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - denied", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("false - not registered", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       GrantAlreadyGrantedPermissionDoesNotUnregister) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+}
+
+// This test is testing some non-trivial content settings rules and make sure
+// that they are respected with regards to automatic unregistration. In other
+// words, it checks that the push service does not end up unregistering origins
+// that have push permission with some non-common rules.
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       AutomaticUnregistrationFollowsContentSettingRules) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  GURL origin = https_server()->GetURL(std::string()).GetOrigin();
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromString("https://*"),
+      ContentSettingsPattern::FromString("https://*"),
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string(),
+      CONTENT_SETTING_DEFAULT);
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      ContentSettingsPattern::FromURLNoWildcard(origin),
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+      std::string(),
+      CONTENT_SETTING_DEFAULT);
+
+  // The two first rules should give |origin| the permission to use Push even
+  // if the rules it used to have have been reset.
+  // The Push service should not unsubcribe |origin| because at no point it was
+  // left without permission to use Push.
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
+  EXPECT_EQ("true - registered", script_result);
+}
 
 }  // namespace gcm

@@ -91,6 +91,21 @@ PushMessagingApplicationId PushMessagingApplicationId::Get(
   return PushMessagingApplicationId();
 }
 
+// static
+std::vector<PushMessagingApplicationId> PushMessagingApplicationId::GetAll(
+    Profile* profile) {
+  std::vector<PushMessagingApplicationId> result;
+
+  const base::DictionaryValue* map =
+      profile->GetPrefs()->GetDictionary(prefs::kPushMessagingApplicationIdMap);
+  for (auto it = base::DictionaryValue::Iterator(*map); !it.IsAtEnd();
+       it.Advance()) {
+    result.push_back(Get(profile, it.key()));
+  }
+
+  return result;
+}
+
 void PushMessagingApplicationId::PersistToDisk(Profile* profile) const {
   DCHECK(IsValid());
 

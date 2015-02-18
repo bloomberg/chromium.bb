@@ -21,6 +21,8 @@ namespace content {
 class PushMessagingService;
 class ServiceWorkerContextWrapper;
 
+extern const char kPushRegistrationIdServiceWorkerKey[];
+
 class PushMessagingMessageFilter : public BrowserMessageFilter {
  public:
   PushMessagingMessageFilter(

@@ -27,10 +27,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -123,11 +125,17 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(
       push_registration_count_(0),
       pending_push_registration_count_(0),
       weak_factory_(this) {
+  // In some tests, we might end up with |profile_| being null at this point.
+  // When that is the case |profile_| will be set in SetProfileForTesting(), at
+  // which point the service will start to observe HostContentSettingsMap.
+  if (profile_)
+    profile_->GetHostContentSettingsMap()->AddObserver(this);
 }
 
 PushMessagingServiceImpl::~PushMessagingServiceImpl() {
   // TODO(johnme): If it's possible for this to be destroyed before GCMDriver,
   // then we should call RemoveAppHandler.
+  profile_->GetHostContentSettingsMap()->RemoveObserver(this);
 }
 
 void PushMessagingServiceImpl::IncreasePushRegistrationCount(int add,
@@ -227,8 +235,40 @@ void PushMessagingServiceImpl::OnMessage(
                  application_id.service_worker_registration_id(), message));
 }
 
+void PushMessagingServiceImpl::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  if (content_type != CONTENT_SETTINGS_TYPE_PUSH_MESSAGING &&
+      content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return;
+  }
+
+  for (const auto& id : PushMessagingApplicationId::GetAll(profile_)) {
+    // If |primary_pattern| is not valid, we should always check for a
+    // permission change because it can happen for example when the entire
+    // Push or Notifications permissions are cleared.
+    // Otherwise, the permission should be checked if the pattern matches the
+    // origin.
+    if (primary_pattern.IsValid() && !primary_pattern.Matches(id.origin()))
+      continue;
+
+    if (HasPermission(id.origin()))
+      continue;
+
+    // Unregister the PushMessagingApplicationId with the push service.
+    Unregister(id.app_id_guid(), true /* retry */, UnregisterCallback());
+
+    // Clear the associated service worker push registration id.
+    PushMessagingService::ClearPushRegistrationID(
+        profile_, id.origin(), id.service_worker_registration_id());
+  }
+}
+
 void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {
   profile_ = profile;
+  profile_->GetHostContentSettingsMap()->AddObserver(this);
 }
 
 void PushMessagingServiceImpl::DeliverMessageCallback(
@@ -617,8 +657,10 @@ void PushMessagingServiceImpl::Unregister(
   PushMessagingApplicationId application_id = PushMessagingApplicationId::Get(
       profile_, requesting_origin, service_worker_registration_id);
   if (!application_id.IsValid()) {
-    callback.Run(
-        content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
+    if (!callback.is_null()) {
+      callback.Run(
+          content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
+    }
     return;
   }
 
@@ -657,8 +699,15 @@ void PushMessagingServiceImpl::DidUnregister(
   if (result == GCMClient::SUCCESS) {
     PushMessagingApplicationId application_id =
         PushMessagingApplicationId::Get(profile_, app_id_guid);
-    if (application_id.IsValid())
-      application_id.DeleteFromDisk(profile_);
+    if (!application_id.IsValid()) {
+      if (!callback.is_null()) {
+        callback.Run(
+            content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
+      }
+      return;
+    }
+
+    application_id.DeleteFromDisk(profile_);
     DecreasePushRegistrationCount(1, false /* was_pending */);
   }
 

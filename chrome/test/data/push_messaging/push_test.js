@@ -137,6 +137,15 @@ function unregister() {
   });
 }
 
+function hasRegistration() {
+  navigator.serviceWorker.ready.then(function(swRegistration) {
+    return swRegistration.pushManager.getSubscription();
+  }).then(function(subscription) {
+    sendResultToTest(subscription ? 'true - registered'
+                                  : 'false - not registered');
+  }).catch(sendErrorToTest);
+}
+
 addEventListener('message', function(event) {
   var message = JSON.parse(event.data);
   if (message.type == 'push')

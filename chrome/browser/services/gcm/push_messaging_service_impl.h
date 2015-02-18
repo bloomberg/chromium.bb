@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/push_messaging_service.h"
@@ -25,7 +26,8 @@ class GCMProfileService;
 class PushMessagingApplicationId;
 
 class PushMessagingServiceImpl : public content::PushMessagingService,
-                                 public GCMAppHandler {
+                                 public GCMAppHandler,
+                                 public content_settings::Observer {
  public:
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -72,6 +74,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   blink::WebPushPermissionStatus GetPermissionStatus(
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
+
+  // content_settings::Observer implementation.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override;
 
   void SetProfileForTesting(Profile* profile);
 

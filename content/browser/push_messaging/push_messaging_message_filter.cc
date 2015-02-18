@@ -22,6 +22,9 @@
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 namespace content {
+
+const char kPushRegistrationIdServiceWorkerKey[] = "push_registration_id";
+
 namespace {
 
 void RecordRegistrationStatus(PushRegistrationStatus status) {
@@ -32,8 +35,6 @@ void RecordRegistrationStatus(PushRegistrationStatus status) {
                             PUSH_REGISTRATION_STATUS_LAST + 1);
 }
 
-const char kPushRegistrationIdServiceWorkerKey[] =
-    "push_registration_id";
 const char kSenderIdServiceWorkerKey[] =
     "push_sender_id";
 
