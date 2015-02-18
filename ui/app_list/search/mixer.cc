@@ -194,10 +194,8 @@ void Mixer::Publish(const SortedResults& new_results,
 
   // A map of the items in |ui_results| that takes ownership of the items.
   IdToResultMap ui_results_map;
-  for (size_t i = 0; i < ui_results->item_count(); ++i) {
-    SearchResult* ui_result = ui_results->GetItemAt(i);
+  for (SearchResult* ui_result : *ui_results)
     ui_results_map[ui_result->id()] = ui_result;
-  }
   // We have to erase all results at once so that observers are notified with
   // meaningful indexes.
   ui_results->RemoveAll();

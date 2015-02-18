@@ -122,6 +122,16 @@ class ListModel {
         const_cast<const ListModel<ItemType>*>(this)->GetItemAt(index));
   }
 
+  // Iteration interface.
+  typename ScopedVector<ItemType>::iterator begin() { return items_.begin(); }
+  typename ScopedVector<ItemType>::const_iterator begin() const {
+    return items_.begin();
+  }
+  typename ScopedVector<ItemType>::iterator end() { return items_.end(); }
+  typename ScopedVector<ItemType>::const_iterator end() const {
+    return items_.end();
+  }
+
  private:
   ScopedVector<ItemType> items_;
   ObserverList<ListModelObserver> observers_;
