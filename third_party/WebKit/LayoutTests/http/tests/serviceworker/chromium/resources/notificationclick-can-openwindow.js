@@ -1,5 +1,5 @@
 // This helper will setup a small test framework that will use TESTS and run
-// them iteratively and call self.postMessage('quit') when done.
+// them sequentially and call self.postMessage('quit') when done.
 // This helper also exposes |client|, |postMessage()|, |runNextTestOrQuit()|,
 // |synthesizeNotificationClick()| and |initialize()|.
 importScripts('sw-test-helpers.js');
@@ -80,7 +80,7 @@ var TESTS = [
 ];
 
 self.onmessage = function(e) {
-    if (e.data == "start") {
+    if (e.data == 'start') {
         initialize().then(runNextTestOrQuit);
     } else {
         initialize().then(function() {
@@ -88,4 +88,4 @@ self.onmessage = function(e) {
             self.postMessage('quit');
         });
     }
-}
+};

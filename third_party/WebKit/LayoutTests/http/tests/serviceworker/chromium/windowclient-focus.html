@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<title>Service Worker: WindowClient.focus() tests (using testRunner)</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<script>
+// This test is using testRunner to grant itself the notification permission and
+// to simulate a click on a notification. A couple of changes would allow it to
+// be run as a manual test by other browser vendors.
+if (window.testRunner)
+    testRunner.grantWebNotificationPermission(location.origin, true);
+
+var t = async_test('WindowClient.focus() behaved as expected');
+t.step(function() {
+    var scope = 'resources/windowclient-focus.html'
+    service_worker_unregister_and_register(
+        t, 'resources/windowclient-focus.js', scope)
+      .then(function(registration) {
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() { return with_iframe(scope); })
+      .then(function(frame) {
+          var w = frame.contentWindow;
+          w.onmessage = t.step_func(onMessage);
+          w.navigator.serviceWorker.controller.postMessage('start');
+        })
+      .catch(unreached_rejection(t));
+
+    var result = [];
+    var expected = [
+        'focus() can\'t focus a window without a user interaction',
+        'focus() error is InvalidAccessError',
+        'focus() succeeded',
+        'focus() result: [object WindowClient]',
+        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html',
+        ' visibilityState: visible',
+        ' focused: true',
+        ' frameType: nested',
+        'focused clients: 1',
+        'focus() succeeded',
+        'focus() result: [object WindowClient]',
+        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html?1',
+        ' visibilityState: visible',
+        ' focused: true',
+        ' frameType: nested',
+        'focused clients: 2',
+        'focus() succeeded',
+        'focus() result: [object WindowClient]',
+        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html?2',
+        ' visibilityState: visible',
+        ' focused: true',
+        ' frameType: nested',
+        'focused clients: 2',
+        'focus() succeeded',
+        'focus() result: [object WindowClient]',
+        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html?3',
+        ' visibilityState: visible',
+        ' focused: true',
+        ' frameType: top-level',
+        'focused clients: 1',
+    ];
+
+    // On Mac, focusing and LayoutTests are no friend. This is amending the
+    // above |expected| array to match Mac's expectations.
+    var isMac = navigator.platform.indexOf('Mac') == 0;
+    if (isMac) {
+        expected[27] = ' focused: false';
+        expected[29] = 'focused clients: 3';
+    }
+
+    function onMessage(e) {
+        var message = e.data;
+
+        if (typeof(message) === 'object') {
+            if (message.type !== 'click')
+                return;
+            if (window.testRunner)
+                testRunner.simulateWebNotificationClick(message.title);
+            return;
+        }
+
+        if (message === 'quit') {
+            assert_array_equals(result, expected,
+                                'Worker should post back expected messages.');
+            service_worker_unregister_and_done(t, scope);
+        } else {
+            result.push(message);
+        }
+    }
+  });
+</script>
