@@ -316,13 +316,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   // box" or similar (see http://crbug.com/386826).
   EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Edit text"));
 
-  // TODO(mgiuca): The next part of the test fails in the experimental app list,
-  // because there is no keyboard navigation (see http://crbug.com/438568). Only
-  // check this in the classic app launcher.
-  if (!app_list::switches::IsExperimentalAppListEnabled()) {
-    SendKeyPress(ui::VKEY_DOWN);
-    EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* Button"));
-  }
+  SendKeyPress(ui::VKEY_DOWN);
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* Button"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
