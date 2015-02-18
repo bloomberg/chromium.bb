@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_frontend_host_impl.h"
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -29,6 +31,11 @@ DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
 }
 
 DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {
+}
+
+void DevToolsFrontendHostImpl::RenderFrameCreated(RenderFrameHost* rfh) {
+  static_cast<RenderFrameHostImpl*>(rfh)->GetRenderWidgetHost()->
+      DisableElasticOverscroll();
 }
 
 bool DevToolsFrontendHostImpl::OnMessageReceived(
