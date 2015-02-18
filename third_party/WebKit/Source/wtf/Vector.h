@@ -1028,6 +1028,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         ASSERT(!m_size);
         ASSERT(capacity() == inlineCapacity);
         if (initialCapacity > inlineCapacity) {
+            ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
             Base::allocateBuffer(initialCapacity);
             ANNOTATE_NEW_BUFFER(begin(), capacity(), m_size);
         }
