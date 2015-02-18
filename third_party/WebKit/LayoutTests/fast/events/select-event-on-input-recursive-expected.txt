@@ -1,0 +1,14 @@
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS animationFrameCount == eventCalledCount is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

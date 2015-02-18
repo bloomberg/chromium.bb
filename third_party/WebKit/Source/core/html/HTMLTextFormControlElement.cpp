@@ -571,7 +571,7 @@ void HTMLTextFormControlElement::scheduleSelectEvent()
 {
     RefPtrWillBeRawPtr<Event> event = Event::createBubble(EventTypeNames::select);
     event->setTarget(this);
-    document().enqueueAnimationFrameEvent(event.release());
+    document().enqueueUniqueAnimationFrameEvent(event.release());
 }
 
 void HTMLTextFormControlElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
