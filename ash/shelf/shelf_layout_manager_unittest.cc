@@ -2189,4 +2189,29 @@ TEST_F(ShelfLayoutManagerTest,
   EXPECT_EQ(initial_bounds, reshow_target_bounds);
 }
 
+// Tests that during shutdown, that window activation changes are properly
+// handled, and do not crash (crbug.com/458768)
+TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
+  ShelfLayoutManager* shelf_manager = GetShelfLayoutManager();
+  ShelfWidget* shelf = GetShelfWidget();
+  shelf_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  aura::Window* window1 = CreateTestWindowInShellWithId(0);
+  window1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  window1->Show();
+  scoped_ptr<aura::Window> window2(CreateTestWindowInShellWithId(0));
+  window2->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window2->Show();
+  wm::ActivateWindow(window1);
+
+  shelf->ShutdownStatusAreaWidget();
+  shelf_manager->PrepareForShutdown();
+
+  // Deleting a focused maximized window will switch focus to |window2|. This
+  // would normally cause the ShelfLayoutManager to update its state. However
+  // during shutdown we want to handle this without crashing.
+  delete window1;
+}
+
 }  // namespace ash

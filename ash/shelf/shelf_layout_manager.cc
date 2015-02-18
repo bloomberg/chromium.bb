@@ -209,7 +209,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_, WillDeleteShelf());
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
-  aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
   Shell::GetInstance()->
       session_state_delegate()->RemoveSessionStateObserver(this);
 }
@@ -230,6 +229,9 @@ void ShelfLayoutManager::PrepareForShutdown() {
   set_workspace_controller(NULL);
   auto_hide_event_filter_.reset();
   bezel_event_filter_.reset();
+  // Stop observing window change, otherwise we can attempt to update a
+  // partially destructed shelf.
+  aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
