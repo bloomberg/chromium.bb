@@ -87,10 +87,21 @@ cr.define('hotword', function() {
       ];
       // TODO(amistry): Get this list from a file in the shared module instead.
       var tlds = [
+        'at',
+        'ca',
         'com',
+        'com.au',
+        'com.mx',
+        'co.br',
+        'co.jp',
+        'co.kr',
+        'co.nz',
         'co.uk',
+        'co.za',
         'de',
+        'es',
         'fr',
+        'it',
         'ru'
       ];
 
