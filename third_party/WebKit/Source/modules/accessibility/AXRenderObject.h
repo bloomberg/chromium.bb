@@ -136,7 +136,7 @@ protected:
     virtual bool liveRegionBusy() const override;
 
     // Accessibility Text.
-    virtual String textUnderElement() const override;
+    virtual String textUnderElement(TextUnderElementMode) const override;
 
     // Accessibility Text - (To be deprecated).
     virtual String helpText() const override;

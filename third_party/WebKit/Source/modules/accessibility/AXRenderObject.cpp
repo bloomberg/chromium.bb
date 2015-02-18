@@ -927,12 +927,12 @@ String AXRenderObject::stringValue() const
     if (ariaRoleAttribute() == StaticTextRole) {
         String staticText = text();
         if (!staticText.length())
-            staticText = textUnderElement();
+            staticText = textUnderElement(TextUnderElementAll);
         return staticText;
     }
 
     if (m_renderer->isText())
-        return textUnderElement();
+        return textUnderElement(TextUnderElementAll);
 
     if (cssBox && cssBox->isMenuList()) {
         // RenderMenuList will go straight to the text() of its selected item.
@@ -1194,7 +1194,7 @@ bool AXRenderObject::liveRegionBusy() const
 // Accessibility Text.
 //
 
-String AXRenderObject::textUnderElement() const
+String AXRenderObject::textUnderElement(TextUnderElementMode mode) const
 {
     if (!m_renderer)
         return String();
@@ -1205,7 +1205,7 @@ String AXRenderObject::textUnderElement() const
     if (m_renderer->isText())
         return toRenderText(m_renderer)->plainText();
 
-    return AXNodeObject::textUnderElement();
+    return AXNodeObject::textUnderElement(mode);
 }
 
 //

@@ -62,7 +62,7 @@ public:
     virtual KURL url() const override;
     virtual bool isLink() const override { return true; }
     virtual bool isLinked() const override { return true; }
-    virtual String title() const override;
+    virtual String title(TextUnderElementMode) const override;
     virtual String accessibilityDescription() const override;
     virtual AXObject* computeParent() const override;
 

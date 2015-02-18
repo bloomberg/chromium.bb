@@ -112,7 +112,7 @@ String AXImageMapLink::accessibilityDescription() const
     return String();
 }
 
-String AXImageMapLink::title() const
+String AXImageMapLink::title(TextUnderElementMode mode) const
 {
     const AtomicString& title = getAttribute(titleAttr);
     if (!title.isEmpty())

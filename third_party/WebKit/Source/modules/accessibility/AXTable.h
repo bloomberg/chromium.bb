@@ -66,7 +66,7 @@ public:
     unsigned columnCount();
     unsigned rowCount();
 
-    virtual String title() const override final;
+    virtual String title(TextUnderElementMode) const override final;
 
     // all the cells in the table
     void cells(AccessibilityChildrenVector&);

@@ -45,7 +45,7 @@ public:
 
     virtual AccessibilityRole roleValue() const override;
 
-    virtual String title() const override final;
+    virtual String title(TextUnderElementMode) const override final;
     virtual String accessibilityDescription() const override;
     virtual String helpText() const override;
 

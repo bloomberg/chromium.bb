@@ -54,7 +54,7 @@ public:
     virtual void setSelected(bool) override;
     virtual bool canSetSelectedAttribute() const override;
     virtual String stringValue() const override;
-    virtual String title() const override { return String(); }
+    virtual String title(TextUnderElementMode) const override { return String(); }
 
 private:
     virtual bool isListBoxOption() const override { return true; }

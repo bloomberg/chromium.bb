@@ -278,6 +278,11 @@ enum InvalidState {
     InvalidStateOther
 };
 
+enum TextUnderElementMode {
+    TextUnderElementAll,
+    TextUnderElementAny // If the text is unimportant, just whether or not it's present
+};
+
 class AXObject : public RefCounted<AXObject> {
 public:
     typedef Vector<RefPtr<AXObject>> AccessibilityChildrenVector;
@@ -508,9 +513,9 @@ public:
     bool containerLiveRegionBusy() const;
 
     // Accessibility Text.
-    virtual String textUnderElement() const { return String(); }
+    virtual String textUnderElement(TextUnderElementMode mode = TextUnderElementAll) const { return String(); }
     virtual String accessibilityDescription() const { return String(); }
-    virtual String title() const { return String(); }
+    virtual String title(TextUnderElementMode mode = TextUnderElementAll) const { return String(); }
     virtual String helpText() const { return String(); }
     // Returns result of Accessible Name Calculation algorithm
     // TODO(aboxhall): ensure above and replace title() with this logic

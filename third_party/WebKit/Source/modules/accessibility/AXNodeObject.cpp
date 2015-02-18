@@ -1165,12 +1165,12 @@ String AXNodeObject::stringValue() const
     if (ariaRoleAttribute() == StaticTextRole) {
         String staticText = text();
         if (!staticText.length())
-            staticText = textUnderElement();
+            staticText = textUnderElement(TextUnderElementAll);
         return staticText;
     }
 
     if (node->isTextNode())
-        return textUnderElement();
+        return textUnderElement(TextUnderElementAll);
 
     if (isHTMLSelectElement(*node)) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node);
@@ -1298,7 +1298,7 @@ static bool isSameRenderBox(LayoutObject* r1, LayoutObject* r2)
     return b1 && b2 && b1 == b2;
 }
 
-String AXNodeObject::textUnderElement() const
+String AXNodeObject::textUnderElement(TextUnderElementMode mode) const
 {
     Node* node = this->node();
     if (node && node->isTextNode())
@@ -1315,6 +1315,8 @@ String AXNodeObject::textUnderElement() const
             toAXNodeObject(child)->alternativeText(textOrder);
             if (textOrder.size() > 0) {
                 builder.append(textOrder[0].text);
+                if (mode == TextUnderElementAny)
+                    break;
                 continue;
             }
         }
@@ -1329,8 +1331,11 @@ String AXNodeObject::textUnderElement() const
                 builder.append(' ');
         }
 
-        builder.append(child->textUnderElement());
+        builder.append(child->textUnderElement(mode));
         previous = child;
+
+        if (mode == TextUnderElementAny && !builder.isEmpty())
+            break;
     }
 
     return builder.toString();
@@ -1368,7 +1373,7 @@ String AXNodeObject::accessibilityDescription() const
     // Both are used to generate what a screen reader speaks.
     // If this point is reached (i.e. there's no accessibilityDescription) and there's no title(), we should fallback to using the title attribute.
     // The title attribute is normally used as help text (because it is a tooltip), but if there is nothing else available, this should be used (according to ARIA).
-    if (title().isEmpty())
+    if (title(TextUnderElementAny).isEmpty())
         return getAttribute(titleAttr);
 
     if (roleValue() == FigureRole) {
@@ -1380,7 +1385,7 @@ String AXNodeObject::accessibilityDescription() const
     return String();
 }
 
-String AXNodeObject::title() const
+String AXNodeObject::title(TextUnderElementMode mode) const
 {
     Node* node = this->node();
     if (!node)
@@ -1419,7 +1424,7 @@ String AXNodeObject::title() const
     case MenuItemRadioRole:
     case RadioButtonRole:
     case TabRole:
-        return textUnderElement();
+        return textUnderElement(mode);
     // SVGRoots should not use the text under itself as a title. That could include the text of objects like <text>.
     case SVGRootRole:
         return String();
@@ -1433,12 +1438,12 @@ String AXNodeObject::title() const
     }
 
     if (isHeading() || isLink())
-        return textUnderElement();
+        return textUnderElement(mode);
 
     // If it's focusable but it's not content editable or a known control type, then it will appear to
     // the user as a single atomic object, so we should use its text as the default title.
     if (isGenericFocusableElement())
-        return textUnderElement();
+        return textUnderElement(mode);
 
     return String();
 }
@@ -1485,7 +1490,7 @@ String AXNodeObject::helpText() const
 
 String AXNodeObject::computedName() const
 {
-    String title = this->title();
+    String title = this->title(TextUnderElementAll);
 
     String titleUIText;
     if (title.isEmpty()) {

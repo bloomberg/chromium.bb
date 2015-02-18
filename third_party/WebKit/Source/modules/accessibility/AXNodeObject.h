@@ -156,9 +156,9 @@ protected:
     virtual AccessibilityOptionalBool isAriaGrabbed() const override final;
 
     // Accessibility Text.
-    virtual String textUnderElement() const override;
+    virtual String textUnderElement(TextUnderElementMode) const override;
     virtual String accessibilityDescription() const override;
-    virtual String title() const override;
+    virtual String title(TextUnderElementMode) const override;
     virtual String helpText() const override;
     virtual String computedName() const override;
 

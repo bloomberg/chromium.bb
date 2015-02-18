@@ -569,10 +569,10 @@ bool AXTable::computeAccessibilityIsIgnored() const
     return false;
 }
 
-String AXTable::title() const
+String AXTable::title(TextUnderElementMode mode) const
 {
     if (!isAXTable())
-        return AXRenderObject::title();
+        return AXRenderObject::title(mode);
 
     String title;
     if (!m_renderer)
@@ -588,7 +588,7 @@ String AXTable::title() const
 
     // try the standard
     if (title.isEmpty())
-        title = AXRenderObject::title();
+        title = AXRenderObject::title(mode);
 
     return title;
 }

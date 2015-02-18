@@ -76,14 +76,14 @@ MediaControlElementType AccessibilityMediaControl::controlType() const
     return mediaControlElementType(renderer()->node());
 }
 
-String AccessibilityMediaControl::title() const
+String AccessibilityMediaControl::title(TextUnderElementMode mode) const
 {
     // FIXME: the ControlsPanel container should never be visible in the
     // accessibility hierarchy.
     if (controlType() == MediaControlsPanel)
         return queryString(WebLocalizedString::AXMediaDefault);
 
-    return AXRenderObject::title();
+    return AXRenderObject::title(mode);
 }
 
 String AccessibilityMediaControl::accessibilityDescription() const
