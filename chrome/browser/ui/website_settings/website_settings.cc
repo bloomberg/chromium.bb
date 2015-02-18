@@ -264,6 +264,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
       // TODO(markusheintz): The rule we create here should also change the
       // location permission for iframed content.
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
@@ -277,7 +278,6 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
     case CONTENT_SETTINGS_TYPE_PLUGINS:
     case CONTENT_SETTINGS_TYPE_POPUPS:
-    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:

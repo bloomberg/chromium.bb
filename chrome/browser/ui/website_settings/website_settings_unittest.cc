@@ -226,6 +226,55 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
+TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
+  // Setup site permissions.
+  HostContentSettingsMap* content_settings =
+      profile()->GetHostContentSettingsMap();
+  ContentSetting setting = content_settings->GetContentSetting(
+      url(), url(), CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+  EXPECT_EQ(setting, CONTENT_SETTING_ASK);
+
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  EXPECT_CALL(*mock_ui(), SetFirstVisit(base::string16()));
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  // SetPermissionInfo() is called once initially, and then again every time
+  // OnSitePermissionChanged() is called.
+  // TODO(markusheintz): This is a temporary hack to fix issue:
+  // http://crbug.com/144203.
+#if defined(OS_MACOSX)
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(3);
+#else
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
+#endif
+
+  // Execute code under tests.
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                                              CONTENT_SETTING_ALLOW);
+
+  // Verify that the site permissions were changed correctly.
+  setting = content_settings->GetContentSetting(
+      url(), url(), CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  // ... and that the primary pattern must match the secondary one.
+  setting = content_settings->GetContentSetting(
+      url(), GURL("https://test.com"),
+      CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+  EXPECT_EQ(setting, CONTENT_SETTING_ASK);
+
+
+  // Resetting the setting should move the permission back to ASK.
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                                              CONTENT_SETTING_ASK);
+
+  setting = content_settings->GetContentSetting(
+      url(), url(), CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+  EXPECT_EQ(setting, CONTENT_SETTING_ASK);
+}
+
 TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));

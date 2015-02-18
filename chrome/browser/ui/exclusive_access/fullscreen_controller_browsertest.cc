@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 
@@ -90,4 +91,58 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
   RequestToLockMouse(true, false);
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
   ASSERT_TRUE(IsFullscreenBubbleDisplayingButtons());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, PermissionContentSettings) {
+  GURL url = test_server()->GetURL(kFullscreenMouseLockHTML);
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_FALSE(browser()->window()->IsFullscreen());
+
+  // The content's origin is not allowed to go fullscreen.
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
+          url.GetOrigin(),
+          url.GetOrigin(),
+          CONTENT_SETTINGS_TYPE_FULLSCREEN,
+          std::string()));
+
+  GetFullscreenController()->EnterFullscreenModeForTab(
+      browser()->tab_strip_model()->GetActiveWebContents(), url.GetOrigin());
+  EXPECT_TRUE(IsFullscreenBubbleDisplayed());
+
+  // The content's origin is still not allowed to go fullscreen.
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
+          url.GetOrigin(),
+          url.GetOrigin(),
+          CONTENT_SETTINGS_TYPE_FULLSCREEN,
+          std::string()));
+
+  AcceptCurrentFullscreenOrMouseLockRequest();
+
+  // The content's origin is allowed to go fullscreen.
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
+          url.GetOrigin(),
+          url.GetOrigin(),
+          CONTENT_SETTINGS_TYPE_FULLSCREEN,
+          std::string()));
+
+  // The primary and secondary patterns have been set when setting the
+  // permission, thus setting another secondary pattern shouldn't work.
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      browser()->profile()->GetHostContentSettingsMap()->GetContentSetting(
+          url.GetOrigin(),
+          GURL("https://test.com"),
+          CONTENT_SETTINGS_TYPE_FULLSCREEN,
+          std::string()));
+
+  browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_FULLSCREEN);
 }
