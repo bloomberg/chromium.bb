@@ -94,7 +94,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '6b9d8cf7adfa83b8bb6800313604b034551bd86e',
+  'nacl_revision': 'cc52724dde60334c60fed1e248f4ebf858db86a5',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -540,7 +540,7 @@ hooks = [
         'python',
         'src/build/download_nacl_toolchains.py',
         '--mode', 'nacl_core_sdk',
-        'sync',
+        'sync', '--extract',
     ],
   },
   {

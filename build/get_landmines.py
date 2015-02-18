@@ -62,6 +62,7 @@ def print_landmines():
   print 'Clobber to fix missing NaCl gyp dependencies (crbug.com/427427).'
   print 'Another clobber for missing NaCl gyp deps (crbug.com/427427).'
   print 'Clobber to fix GN not picking up increased ID range (crbug.com/444902)'
+  print 'Remove NaCl toolchains from the output dir (crbug.com/456902)'
 
 
 def main():

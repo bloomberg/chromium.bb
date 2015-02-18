@@ -170,7 +170,7 @@ def BuildStepDownloadToolchains(toolchains):
   if 'bionic' in toolchains:
     build_platform = '%s_x86' % getos.GetPlatform()
     args.extend(['--append', os.path.join(build_platform, 'nacl_arm_bionic')])
-  args.append('sync')
+  args.extend(['sync', '--extract'])
   buildbot_common.Run(args, cwd=NACL_DIR)
 
 
@@ -343,6 +343,8 @@ def MakeNinjaRelPath(path):
   return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), path)
 
 
+# TODO(ncbray): stop building and copying libraries into the SDK that are
+# already provided by the toolchain.
 TOOLCHAIN_LIBS = {
   'bionic' : [
     'libminidump_generator.a',
@@ -352,8 +354,6 @@ TOOLCHAIN_LIBS = {
     'libppapi.a',
   ],
   'newlib' : [
-    'crti.o',
-    'crtn.o',
     'libminidump_generator.a',
     'libnacl.a',
     'libnacl_dyncode.a',
@@ -463,10 +463,6 @@ def GypNinjaInstall(pepperdir, toolchains):
       if tc == 'newlib' and xarch == 'arm' and 'bionic' in toolchains:
         bionic_dir = GetOutputToolchainLib(pepperdir, 'bionic', xarch)
         InstallFiles(src_dir, bionic_dir, TOOLCHAIN_LIBS['bionic'])
-
-      if tc != 'pnacl':
-        src_dir = GetGypToolchainLib(tc, xarch)
-        InstallFiles(src_dir, dst_dir, ['crt1.o'])
 
 
 def GypNinjaBuild_NaCl(rel_out_dir):
