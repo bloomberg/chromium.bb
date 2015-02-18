@@ -210,7 +210,7 @@ class MediaResourceGetter {
             Log.d(TAG, "extracted valid metadata: " + result.toString());
             return result;
         } catch (RuntimeException e) {
-            Log.e(TAG, "Unable to extract medata", e);
+            Log.e(TAG, "Unable to extract metadata: " + e.getMessage());
             return EMPTY_METADATA;
         }
     }
@@ -221,7 +221,7 @@ class MediaResourceGetter {
         try {
             uri = URI.create(url);
         } catch (IllegalArgumentException  e) {
-            Log.e(TAG, "Cannot parse uri.", e);
+            Log.e(TAG, "Cannot parse uri: " + e.getMessage());
             return false;
         }
         String scheme = uri.getScheme();
@@ -239,7 +239,7 @@ class MediaResourceGetter {
                 configure(file.getAbsolutePath());
                 return true;
             } catch (RuntimeException e) {
-                Log.e(TAG, "Error configuring data source", e);
+                Log.e(TAG, "Error configuring data source: " + e.getMessage());
                 return false;
             }
         }
@@ -263,7 +263,7 @@ class MediaResourceGetter {
             configure(url, headersMap);
             return true;
         } catch (RuntimeException e) {
-            Log.e(TAG, "Error configuring data source", e);
+            Log.e(TAG, "Error configuring data source: " + e.getMessage());
             return false;
         }
     }
