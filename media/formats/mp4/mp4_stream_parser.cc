@@ -315,7 +315,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   }
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(true, params);
+    base::ResetAndReturn(&init_cb_).Run(params);
 
   if (!moov_->pssh.empty())
     OnEncryptedMediaInitData(moov_->pssh);

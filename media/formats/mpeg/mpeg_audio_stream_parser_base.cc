@@ -221,16 +221,14 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
     timestamp_helper_->SetBaseTimestamp(base_timestamp);
 
     VideoDecoderConfig video_config;
-    bool success = config_cb_.Run(config_, video_config, TextTrackConfigMap());
+    if (!config_cb_.Run(config_, video_config, TextTrackConfigMap()))
+      return -1;
 
     if (!init_cb_.is_null()) {
       InitParameters params(kInfiniteDuration());
       params.auto_update_timestamp_offset = true;
-      base::ResetAndReturn(&init_cb_).Run(success, params);
+      base::ResetAndReturn(&init_cb_).Run(params);
     }
-
-    if (!success)
-      return -1;
   }
 
   if (metadata_frame)

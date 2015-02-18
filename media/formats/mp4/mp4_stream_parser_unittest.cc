@@ -60,9 +60,8 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
-  void InitF(bool init_ok, const StreamParser::InitParameters& params) {
-    DVLOG(1) << "InitF: ok=" << init_ok
-             << ", dur=" << params.duration.InMilliseconds()
+  void InitF(const StreamParser::InitParameters& params) {
+    DVLOG(1) << "InitF: dur=" << params.duration.InMilliseconds()
              << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
   }
 

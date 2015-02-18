@@ -244,7 +244,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       log_cb_));
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(true, params);
+    base::ResetAndReturn(&init_cb_).Run(params);
 
   return bytes_parsed;
 }

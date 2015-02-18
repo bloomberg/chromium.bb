@@ -67,10 +67,8 @@ class MEDIA_EXPORT StreamParser {
   };
 
   // Indicates completion of parser initialization.
-  //   success - True if initialization was successful.
-  //   params - Stream parameters, in case of successful initialization.
-  typedef base::Callback<void(bool success,
-                              const InitParameters& params)> InitCB;
+  //   params - Stream parameters.
+  typedef base::Callback<void(const InitParameters& params)> InitCB;
 
   // Indicates when new stream configurations have been parsed.
   // First parameter - The new audio configuration. If the config is not valid

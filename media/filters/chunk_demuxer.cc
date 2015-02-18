@@ -195,8 +195,7 @@ class SourceState {
                     const StreamParser::BufferQueue& video_buffers,
                     const StreamParser::TextBufferQueueMap& text_map);
 
-  void OnSourceInitDone(bool success,
-                        const StreamParser::InitParameters& params);
+  void OnSourceInitDone(const StreamParser::InitParameters& params);
 
   CreateDemuxerStreamCB create_demuxer_stream_cb_;
   NewTextTrackCB new_text_track_cb_;
@@ -788,10 +787,9 @@ bool SourceState::OnNewBuffers(
   return true;
 }
 
-void SourceState::OnSourceInitDone(bool success,
-                                   const StreamParser::InitParameters& params) {
+void SourceState::OnSourceInitDone(const StreamParser::InitParameters& params) {
   auto_update_timestamp_offset_ = params.auto_update_timestamp_offset;
-  base::ResetAndReturn(&init_cb_).Run(success, params);
+  base::ResetAndReturn(&init_cb_).Run(params);
 }
 
 ChunkDemuxerStream::ChunkDemuxerStream(Type type,
@@ -1644,13 +1642,11 @@ bool ChunkDemuxer::IsSeekWaitingForData_Locked() const {
 }
 
 void ChunkDemuxer::OnSourceInitDone(
-    bool success,
     const StreamParser::InitParameters& params) {
-  DVLOG(1) << "OnSourceInitDone(" << success << ", "
-           << params.duration.InSecondsF() << ")";
+  DVLOG(1) << "OnSourceInitDone(" << params.duration.InSecondsF() << ")";
   lock_.AssertAcquired();
   DCHECK_EQ(state_, INITIALIZING);
-  if (!success || (!audio_ && !video_)) {
+  if (!audio_ && !video_) {
     ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
   }

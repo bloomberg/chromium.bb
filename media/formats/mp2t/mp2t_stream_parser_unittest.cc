@@ -101,10 +101,8 @@ class Mp2tStreamParserTest : public testing::Test {
     return true;
   }
 
-  void OnInit(bool init_ok,
-              const StreamParser::InitParameters& params) {
-    DVLOG(1) << "OnInit: ok=" << init_ok
-             << ", dur=" << params.duration.InMilliseconds()
+  void OnInit(const StreamParser::InitParameters& params) {
+    DVLOG(1) << "OnInit: dur=" << params.duration.InMilliseconds()
              << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
   }
 
