@@ -63,6 +63,7 @@ class AshKeyboardControllerProxy
 
   // content::WebContentsObserver overrides
   bool OnMessageReceived(const IPC::Message& message) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;

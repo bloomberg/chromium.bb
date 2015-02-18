@@ -8,6 +8,9 @@
 #include "ash/shell.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
@@ -132,6 +135,16 @@ bool AshKeyboardControllerProxy::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void AshKeyboardControllerProxy::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  content::HostZoomMap* zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(browser_context());
+  DCHECK(zoom_map);
+  int render_process_id = render_view_host->GetProcess()->GetID();
+  int render_view_id = render_view_host->GetRoutingID();
+  zoom_map->SetTemporaryZoomLevel(render_process_id, render_view_id, 0);
 }
 
 void AshKeyboardControllerProxy::ShowKeyboardContainer(
