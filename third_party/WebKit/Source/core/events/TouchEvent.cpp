@@ -42,13 +42,14 @@ TouchEvent::TouchEvent()
 TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
         PassRefPtrWillBeRawPtr<AbstractView> view,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable, bool causesScrollingIfUncanceled,
         double uiCreateTime)
     : UIEventWithKeyState(type, true, cancelable, view, 0,
                         ctrlKey, altKey, shiftKey, metaKey)
     , m_touches(touches)
     , m_targetTouches(targetTouches)
     , m_changedTouches(changedTouches)
+    , m_causesScrollingIfUncanceled(causesScrollingIfUncanceled)
 {
     setUICreateTime(uiCreateTime);
 }

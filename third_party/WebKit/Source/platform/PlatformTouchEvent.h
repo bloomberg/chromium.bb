@@ -37,10 +37,12 @@ public:
     const Vector<PlatformTouchPoint>& touchPoints() const { return m_touchPoints; }
 
     bool cancelable() const { return m_cancelable; }
+    bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
 
 protected:
     Vector<PlatformTouchPoint> m_touchPoints;
     bool m_cancelable;
+    bool m_causesScrollingIfUncanceled;
 };
 
 }
