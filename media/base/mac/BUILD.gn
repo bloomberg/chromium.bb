@@ -10,8 +10,8 @@ source_set("mac") {
     "coremedia_glue.h",
     "coremedia_glue.mm",
     "corevideo_glue.h",
-    "video_frame_mac.h",
     "video_frame_mac.cc",
+    "video_frame_mac.h",
     "videotoolbox_glue.h",
     "videotoolbox_glue.mm",
   ]
