@@ -59,6 +59,10 @@ int SearchResultTileItemListView::Update() {
         i < display_results.size() ? display_results[i] : nullptr;
     tile_views_[i]->SetSearchResult(item);
   }
+
+  set_container_score(
+      display_results.empty() ? 0 : display_results.front()->relevance());
+
   return display_results.size();
 }
 

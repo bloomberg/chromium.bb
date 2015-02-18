@@ -12,10 +12,6 @@ TestSearchResult::TestSearchResult() {
 TestSearchResult::~TestSearchResult() {
 }
 
-void TestSearchResult::SetDisplayType(SearchResult::DisplayType type) {
-  set_display_type(type);
-}
-
 scoped_ptr<SearchResult> TestSearchResult::Duplicate() const {
   NOTREACHED();
   return nullptr;

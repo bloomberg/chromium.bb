@@ -131,6 +131,21 @@ bool SearchResultPageView::IsValidSelectionIndex(int index) {
 
 void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
   DCHECK(!result_container_views_.empty());
+
+  if (switches::IsExperimentalAppListEnabled()) {
+    // Sort the result container views by their score.
+    std::sort(result_container_views_.begin(), result_container_views_.end(),
+              [](const SearchResultContainerView* a,
+                 const SearchResultContainerView* b) -> bool {
+                return a->container_score() > b->container_score();
+              });
+
+    for (size_t i = 0; i < result_container_views_.size(); ++i) {
+      result_container_views_[i]->ClearSelectedIndex();
+      ReorderChildView(result_container_views_[i]->parent(), i);
+    }
+  }
+
   Layout();
   SetSelectedIndex(0);
 }

@@ -40,6 +40,9 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   int num_results() const { return num_results_; }
 
+  void set_container_score(double score) { container_score_ = score; }
+  double container_score() const { return container_score_; }
+
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
   // pending call.
   void ScheduleUpdate();
@@ -67,6 +70,8 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   int selected_index_;
   int num_results_;
+
+  double container_score_;
 
   AppListModel::SearchResults* results_;  // Owned by AppListModel.
 

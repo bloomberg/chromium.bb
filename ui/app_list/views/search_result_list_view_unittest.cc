@@ -55,7 +55,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     AppListModel::SearchResults* results = GetResults();
     for (int i = 0; i < kDefaultSearchItems; ++i) {
       TestSearchResult* result = new TestSearchResult();
-      result->SetDisplayType(SearchResult::DISPLAY_LIST);
+      result->set_display_type(SearchResult::DISPLAY_LIST);
       results->Add(result);
     }
 

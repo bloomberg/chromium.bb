@@ -209,6 +209,7 @@ void Mixer::Publish(const SortedResults& new_results,
       // Update and use the old result if it exists.
       SearchResult* ui_result = ui_result_it->second;
       UpdateResult(new_result, ui_result);
+      ui_result->set_relevance(sort_data.score);
 
       // |ui_results| takes back ownership from |ui_results_map| here.
       ui_results->Add(ui_result);
@@ -217,8 +218,10 @@ void Mixer::Publish(const SortedResults& new_results,
       // results.
       ui_results_map.erase(ui_result->id());
     } else {
+      scoped_ptr<SearchResult> result_copy = new_result.Duplicate();
+      result_copy->set_relevance(sort_data.score);
       // Copy the result from |new_results| otherwise.
-      ui_results->Add(new_result.Duplicate().release());
+      ui_results->Add(result_copy.release());
     }
   }
 

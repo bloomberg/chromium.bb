@@ -31,6 +31,10 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
       AppListModel::SearchResults* result_model,
       SearchResultContainerView* result_container);
 
+  const std::vector<SearchResultContainerView*>& result_container_views() {
+    return result_container_views_;
+  }
+
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;

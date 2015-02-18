@@ -6,7 +6,9 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
 #include "ui/app_list/views/search_result_list_view.h"
@@ -22,7 +24,10 @@ namespace test {
 class SearchResultPageViewTest : public views::ViewsTestBase,
                                  public SearchResultListViewDelegate {
  public:
-  SearchResultPageViewTest() {}
+  SearchResultPageViewTest() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalAppList);
+  }
   ~SearchResultPageViewTest() override {}
 
   // Overridden from testing::Test:
@@ -52,7 +57,7 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
     for (const auto& data : result_types) {
       for (int i = 0; i < data.second; ++i) {
         TestSearchResult* result = new TestSearchResult();
-        result->SetDisplayType(data.first);
+        result->set_display_type(data.first);
         results->Add(result);
       }
     }
@@ -122,6 +127,45 @@ TEST_F(SearchResultPageViewTest, Basic) {
   EXPECT_FALSE(KeyPress(ui::VKEY_UP));
   EXPECT_EQ(0, list_view()->selected_index());
   EXPECT_EQ(0, GetSelectedIndex());
+}
+
+TEST_F(SearchResultPageViewTest, ResultsSorted) {
+  AppListModel::SearchResults* results = GetResults();
+
+  // Add 3 results and expect the tile list view to be the first result
+  // container view.
+  TestSearchResult* tile_result = new TestSearchResult();
+  tile_result->set_display_type(SearchResult::DISPLAY_TILE);
+  tile_result->set_relevance(1.0);
+  results->Add(tile_result);
+  {
+    TestSearchResult* list_result = new TestSearchResult();
+    list_result->set_display_type(SearchResult::DISPLAY_LIST);
+    list_result->set_relevance(0.5);
+    results->Add(list_result);
+  }
+  {
+    TestSearchResult* list_result = new TestSearchResult();
+    list_result->set_display_type(SearchResult::DISPLAY_LIST);
+    list_result->set_relevance(0.3);
+    results->Add(list_result);
+  }
+
+  // Adding results will schedule Update().
+  RunPendingMessages();
+
+  EXPECT_EQ(tile_list_view(), view()->result_container_views()[0]);
+  EXPECT_EQ(list_view(), view()->result_container_views()[1]);
+
+  // Change the relevance of the tile result and expect the list results to be
+  // displayed first.
+  tile_result->set_relevance(0.4);
+
+  results->NotifyItemsChanged(0, 1);
+  RunPendingMessages();
+
+  EXPECT_EQ(list_view(), view()->result_container_views()[0]);
+  EXPECT_EQ(tile_list_view(), view()->result_container_views()[1]);
 }
 
 }  // namespace test

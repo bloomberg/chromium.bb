@@ -164,6 +164,9 @@ int SearchResultListView::Update() {
   }
   UpdateAutoLaunchState();
 
+  set_container_score(
+      display_results.empty() ? 0 : display_results.front()->relevance());
+
   return display_results.size();
 }
 

@@ -18,8 +18,6 @@ class TestSearchResult : public SearchResult {
   // SearchResult:
   scoped_ptr<SearchResult> Duplicate() const override;
 
-  void SetDisplayType(SearchResult::DisplayType type);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSearchResult);
 };
