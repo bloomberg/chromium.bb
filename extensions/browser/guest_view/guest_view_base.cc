@@ -717,6 +717,32 @@ void GuestViewBase::CompleteInit(
   callback.Run(guest_web_contents);
 }
 
+double GuestViewBase::GetEmbedderZoomFactor() {
+  if (!embedder_web_contents())
+    return 1.0;
+
+  auto zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(embedder_web_contents());
+  if (!zoom_controller)
+    return 1.0;
+
+  double zoom_factor =
+      content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
+  return zoom_factor;
+}
+
+int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) {
+  DCHECK(logical_pixels >= 0);
+  double zoom_factor = GetEmbedderZoomFactor();
+  return static_cast<int>(logical_pixels * zoom_factor + 0.5);
+}
+
+double GuestViewBase::PhysicalPixelsToLogicalPixels(int physical_pixels) {
+  DCHECK(physical_pixels >= 0);
+  double zoom_factor = GetEmbedderZoomFactor();
+  return physical_pixels * zoom_factor;
+}
+
 void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   // Read the autosize parameters passed in from the embedder.
   bool auto_size_enabled = false;
@@ -734,10 +760,13 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
 
   // Set the normal size to the element size so that the guestview will fit the
   // element initially if autosize is disabled.
-  int normal_height = 0;
-  int normal_width = 0;
-  params.GetInteger(guestview::kElementHeight, &normal_height);
-  params.GetInteger(guestview::kElementWidth, &normal_width);
+  double element_height = 0.0;
+  double element_width = 0.0;
+  params.GetDouble(guestview::kElementHeight, &element_height);
+  params.GetDouble(guestview::kElementWidth, &element_width);
+  // Convert the element size from logical pixels to physical pixels.
+  int normal_height = LogicalPixelsToPhysicalPixels(element_height);
+  int normal_width = LogicalPixelsToPhysicalPixels(element_width);
 
   SetSizeParams set_size_params;
   set_size_params.enable_auto_size.reset(new bool(auto_size_enabled));

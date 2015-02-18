@@ -115,8 +115,9 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
 GuestViewContainer.prototype.buildParams = function() {
   var params = this.buildContainerParams();
   params['instanceId'] = this.viewInstanceId;
-  params['elementWidth'] = parseInt(this.element.offsetWidth);
-  params['elementHeight'] = parseInt(this.element.offsetHeight);
+  var elementRect = this.element.getBoundingClientRect();
+  params['elementWidth'] = parseInt(elementRect.width);
+  params['elementHeight'] = parseInt(elementRect.height);
   return params;
 };
 
