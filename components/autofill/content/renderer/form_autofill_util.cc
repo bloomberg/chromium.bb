@@ -567,15 +567,7 @@ base::string16 InferLabelForElement(const WebFormControlElement& element) {
     // If we didn't find a label from the table, check for div table case if we
     // haven't already.
     inferred_label = InferLabelFromDivTable(element);
-    if (!inferred_label.empty())
-      return inferred_label;
   }
-
-  // Not all web pages put useful info in the title attribute, thus use this as
-  // a last resort.
-  CR_DEFINE_STATIC_LOCAL(WebString, kTitle, ("title"));
-  if (element.hasAttribute(kTitle))
-    inferred_label = element.getAttribute(kTitle);
   return inferred_label;
 }
 
