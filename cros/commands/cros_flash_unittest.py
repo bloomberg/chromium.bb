@@ -132,6 +132,22 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
     with mock.patch('os.path.exists', return_value=False):
       self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
 
+  def testProjectSdk(self):
+    """Tests that Project SDK flashing invoked as expected."""
+    self.SetupCommandMock(['--project-sdk', self.DEVICE, self.IMAGE])
+    proj = ProjectMock()
+    with mock.patch('os.path.exists', return_value=True):
+      with mock.patch('chromite.lib.project.FindProjectByName',
+                      return_value=proj):
+        with mock.patch('chromite.lib.project_sdk.FindVersion',
+                        return_value='1.2.3'):
+          self.cmd_mock.inst.Run()
+          dev_server_wrapper.GetImagePathWithXbuddy.assert_called_with(
+              'project_sdk', mock.ANY, version='1.2.3', static_dir=mock.ANY,
+              device='ssh://%s' % self.DEVICE)
+          self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
+          self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
+
 
 class USBImagerMock(partial_mock.PartialCmdMock):
   """Mock out USBImager."""

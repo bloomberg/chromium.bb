@@ -20,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
 from chromite.lib import project
+from chromite.lib import project_sdk
 from chromite.lib import remote_access
 
 
@@ -30,12 +31,13 @@ DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, board, image, debug=False, install=False,
-               yes=False):
+  def __init__(self, device, board, image, sdk_version=None, debug=False,
+               install=False, yes=False):
     """Initalizes USBImager."""
     self.device = device
     self.board = board if board else cros_build_lib.GetDefaultBoard()
     self.image = image
+    self.sdk_version = sdk_version
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
     self.install = install
@@ -173,8 +175,8 @@ class USBImager(object):
     else:
       # Translate the xbuddy path to get the exact image to use.
       translated_path = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, static_dir=DEVSERVER_STATIC_DIR,
-          device='usb://%s' % self.device)
+          self.image, self.board, version=self.sdk_version,
+          static_dir=DEVSERVER_STATIC_DIR, device='usb://%s' % self.device)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
           translated_path, DEVSERVER_STATIC_DIR)
 
@@ -257,7 +259,7 @@ class RemoteDeviceUpdater(object):
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
                yes=False, ping=True, disable_verification=False,
-               ignore_device_board=False):
+               ignore_device_board=False, sdk_version=None):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -279,6 +281,7 @@ class RemoteDeviceUpdater(object):
     self.wipe = wipe and not debug
     self.yes = yes
     self.ignore_device_board = ignore_device_board
+    self.sdk_version = sdk_version
 
   # pylint: disable=unbalanced-tuple-unpacking
   @classmethod
@@ -521,9 +524,23 @@ class RemoteDeviceUpdater(object):
           base_dir=self.DEVICE_BASE_DIR, ping=self.ping) as device:
         device_connected = True
 
+        if self.sdk_version:
+          # We should ignore the given/inferred board value and stick to the
+          # device's basic designation. We do emit a warning for good measure.
+          # TODO(garnold) In fact we should find the board/overlay that the
+          # device inherits from and which defines the SDK "baseline" image
+          # (brillo:339).
+          if self.board:
+            logging.warning(
+                'Ignoring board value (%s) and deferring to device instead.',
+                self.board)
+          self.board = None
+
         self.board = cros_build_lib.GetBoard(device_board=device.board,
                                              override_board=self.board,
                                              force=self.yes)
+        if not self.board:
+          cros_build_lib.Die('No board identified')
         logging.info('Board is %s', self.board)
 
         # Make sure that a project is found and compatible with the device.
@@ -561,8 +578,8 @@ class RemoteDeviceUpdater(object):
               device_addr = '%s:%d' % (device_addr, self.ssh_port)
             # Translate the xbuddy path to get the exact image to use.
             translated_path = ds_wrapper.GetImagePathWithXbuddy(
-                self.image, self.board, static_dir=DEVSERVER_STATIC_DIR,
-                device=device_addr)
+                self.image, self.board, version=self.sdk_version,
+                static_dir=DEVSERVER_STATIC_DIR, device=device_addr)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
             image_path = ds_wrapper.ConvertTranslatedPath(self.image,
@@ -751,7 +768,12 @@ Examples:
     update.add_argument(
         '--disable-rootfs-verification', default=False, action='store_true',
         help='Disable rootfs verification after update is completed.')
-    parser.add_argument(
+    update.add_argument(
+        '--project-sdk', action='store_true',
+        help='Install a Project SDK image. This resets the device to a clean '
+        'state and ensures that it is compatible with the development '
+        'environment. The image argument is ignored.')
+    update.add_argument(
         '--ignore-device-board', action='store_true',
         help='Do not require that device be compatible with current '
         'project/board.')
@@ -817,6 +839,16 @@ Examples:
         logging.error('--install can only be used inside the chroot')
         return 1
 
+    image = self.options.image
+
+    # If installing an SDK image, find the version and override image path.
+    sdk_version = None
+    if self.options.project_sdk:
+      sdk_version = project_sdk.FindVersion()
+      if not sdk_version:
+        cros_build_lib.Die('Could not find SDK version')
+      image = 'project_sdk'
+
     try:
       board = self.options.board or self.curr_project_name
       if self.run_mode == self.SSH_MODE:
@@ -825,7 +857,7 @@ Examples:
         updater = RemoteDeviceUpdater(
             self.ssh_hostname,
             self.ssh_port,
-            self.options.image,
+            image,
             board=board,
             src_image_to_delta=self.options.src_image_to_delta,
             rootfs_update=self.options.rootfs_update,
@@ -837,7 +869,8 @@ Examples:
             yes=self.options.yes,
             ping=self.options.ping,
             disable_verification=self.options.disable_rootfs_verification,
-            ignore_device_board=self.options.ignore_device_board)
+            ignore_device_board=self.options.ignore_device_board,
+            sdk_version=sdk_version)
 
         # Perform device update.
         updater.Run()
@@ -846,7 +879,8 @@ Examples:
         logging.info('Preparing to image the removable device %s', path)
         imager = USBImager(path,
                            board,
-                           self.options.image,
+                           image,
+                           sdk_version=sdk_version,
                            debug=self.options.debug,
                            install=self.options.install,
                            yes=self.options.yes)
@@ -856,7 +890,8 @@ Examples:
         logging.info('Preparing to copy image to %s', path)
         imager = FileImager(path,
                             board,
-                            self.options.image,
+                            image,
+                            sdk_version=sdk_version,
                             debug=self.options.debug,
                             yes=self.options.yes)
         imager.Run()
