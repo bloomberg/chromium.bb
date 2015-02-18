@@ -50,13 +50,8 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   virtual void appendTransparencyItem(float opacity,
                                       blink::WebBlendMode blend_mode);
   virtual void appendEndTransparencyItem();
-#if FILTER_DISPLAY_ITEM_USES_FILTER_OPERATIONS
   virtual void appendFilterItem(const blink::WebFilterOperations& filters,
                                 const blink::WebFloatRect& bounds);
-#else
-  virtual void appendFilterItem(SkImageFilter* filter,
-                                const blink::WebFloatRect& bounds);
-#endif
   virtual void appendEndFilterItem();
 
  private:

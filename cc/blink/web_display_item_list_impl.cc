@@ -101,7 +101,6 @@ void WebDisplayItemListImpl::appendEndTransparencyItem() {
   display_item_list_->AppendItem(cc::EndTransparencyDisplayItem::Create());
 }
 
-#if FILTER_DISPLAY_ITEM_USES_FILTER_OPERATIONS
 void WebDisplayItemListImpl::appendFilterItem(
     const blink::WebFilterOperations& filters,
     const blink::WebFloatRect& bounds) {
@@ -110,17 +109,6 @@ void WebDisplayItemListImpl::appendFilterItem(
   display_item_list_->AppendItem(
       cc::FilterDisplayItem::Create(filters_impl.AsFilterOperations(), bounds));
 }
-#else
-void WebDisplayItemListImpl::appendFilterItem(
-    SkImageFilter* filter,
-    const blink::WebFloatRect& bounds) {
-  cc::FilterOperations filter_operations;
-  filter_operations.Append(
-      cc::FilterOperation::CreateReferenceFilter(skia::SharePtr(filter)));
-  display_item_list_->AppendItem(
-      cc::FilterDisplayItem::Create(filter_operations, bounds));
-}
-#endif
 
 void WebDisplayItemListImpl::appendEndFilterItem() {
   display_item_list_->AppendItem(cc::EndFilterDisplayItem::Create());
