@@ -118,6 +118,36 @@ function testGetMachineId(callback) {
   reportPromise(promise, callback);
 }
 
+function testPhotosApp_DefaultDisabled(callback) {
+  var storage = new MockChromeStorageAPI();
+
+  var promise = importer.isPhotosAppImportEnabled().then(assertFalse);
+
+  reportPromise(promise, callback);
+}
+
+function testPhotosApp_ImportEnabled(callback) {
+  var storage = new MockChromeStorageAPI();
+
+  var promise = importer.handlePhotosAppMessage(true).then(
+      function() {
+        return importer.isPhotosAppImportEnabled().then(assertTrue);
+      });
+
+  reportPromise(promise, callback);
+}
+
+function testPhotosApp_ImportDisabled(callback) {
+  var storage = new MockChromeStorageAPI();
+
+  var promise = importer.handlePhotosAppMessage(false).then(
+      function() {
+        return importer.isPhotosAppImportEnabled().then(assertFalse);
+      });
+
+  reportPromise(promise, callback);
+}
+
 function testHistoryFilename(callback) {
   var storage = new MockChromeStorageAPI();
 

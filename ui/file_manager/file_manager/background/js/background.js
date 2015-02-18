@@ -106,6 +106,8 @@ function FileBrowserBackground() {
   chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
   chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
   chrome.app.runtime.onRestarted.addListener(this.onRestarted_.bind(this));
+  chrome.runtime.onMessageExternal.addListener(
+      this.onExternalMessageReceived_.bind(this));
   chrome.contextMenus.onClicked.addListener(
       this.onContextMenuClicked_.bind(this));
 
@@ -484,6 +486,22 @@ FileBrowserBackground.prototype.onLaunched_ = function() {
     });
   }
   launchFileManager(null, undefined, LaunchType.FOCUS_ANY_OR_CREATE);
+};
+
+/** @const {string} */
+var GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
+
+/**
+ * Handles a message received via chrome.runtime.sendMessageExternal.
+ *
+ * @param {*} message
+ * @param {MessageSender} sender
+ */
+FileBrowserBackground.prototype.onExternalMessageReceived_ =
+    function(message, sender) {
+  if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
+    importer.handlePhotosAppMessage(message);
+  }
 };
 
 /**

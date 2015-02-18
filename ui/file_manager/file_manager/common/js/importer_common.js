@@ -135,6 +135,60 @@ importer.importEnabled = function() {
 };
 
 /**
+ * Local storage key for machine id.
+ * @const {string}
+ */
+importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_ = 'photo-auto-import-enabled';
+
+/**
+ * Handles a message from Pulsar...in which we presume we are being
+ * informed of its "Automatically import stuff." state.
+ *
+ * While the runtime message system is loosey goosey about types,
+ * we fully expect message to be a boolean value.
+ *
+ * @return {!Promise} Resolves once the message has been handled.
+ */
+importer.handlePhotosAppMessage = function(message) {
+  return new Promise(
+      function(resolve, reject) {
+        if (typeof message === 'boolean') {
+          var values = {};
+          values[importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_] = message;
+          chrome.storage.local.set(values, /** @type {function()} */ (resolve));
+        } else {
+          console.error(
+              'Unrecognized message type received from photos app: ' + message);
+          reject(undefined);
+        }
+      });
+};
+
+/**
+ * @return {!Promise.<boolean>} Resolves with true when Cloud Import feature
+ *     is enabled.
+ */
+importer.isPhotosAppImportEnabled = function() {
+  return new Promise(
+      function(resolve, reject) {
+        chrome.storage.local.get(
+            importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_,
+            /** @param {Object.<string, ?>} values */
+            function(values) {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                // If photos app has never told us what's up with their
+                // settings, we'll just assume they aren't disabled.
+                resolve(
+                    importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_ in values &&
+                    values[importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_]);
+              }
+            });
+      });
+};
+
+/**
  * @param {!Date} date
  * @return {string} The current date, in YYYY-MM-DD format.
  */

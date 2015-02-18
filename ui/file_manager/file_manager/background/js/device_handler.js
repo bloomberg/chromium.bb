@@ -407,7 +407,6 @@ DeviceHandler.prototype.onMount_ = function(event) {
   // If this is remounting, which happens when resuming Chrome OS, the device
   // has already inserted to the computer. So we suppress the notification.
   var metadata = event.volumeMetadata;
-
   VolumeManager.getInstance()
       .then(
           /**
@@ -461,20 +460,46 @@ DeviceHandler.prototype.onMount_ = function(event) {
           })
       .then(
           /**
-           * @param {!Array.<DirectoryEntry>} results, where index 0 is for
+           * @param {!Array.<DirectoryEntry>} results where index 0 is for
            *     'DCIM' and 1 is for 'dcim'.
+           * @this {DeviceHandler}
            */
           function(results) {
             if (!!results[0] && results[0].isDirectory) {
-              // It's a "DCIM"!
-              this.openMediaDirectory_(metadata.volumeId, results[0].fullPath);
-              return Promise.resolve();
-            } else if(!!results[1] && results[1].isDirectory) {
-              // It's a "dcim"!
-              this.openMediaDirectory_(metadata.volumeId, results[1].fullPath);
-              return Promise.resolve();
+              return results[0];  // It's a "DCIM"!
+            } else if (!!results[1] && results[1].isDirectory) {
+              return results[1];  // It's a "dcim"!
             }
             return Promise.reject('Unable to local DCIM or dcim directory.');
+          }.bind(this))
+      .then(
+          /**
+           * @param {!DirectoryEntry} directory
+           * @this {DeviceHandler}
+           */
+          function(directory) {
+            return importer.isPhotosAppImportEnabled()
+                .then(
+                    /**
+                     * @param {boolean} appEnabled
+                     * @this {DeviceHandler}
+                     */
+                    function(appEnabled) {
+                      // We don't want to auto-open two windows
+                      // when a user inserts a removable device.
+                      // If Photos App is enabled only show a notification.
+                      if (appEnabled) {
+                        if (metadata.deviceType && metadata.devicePath) {
+                          DeviceHandler.Notification.DEVICE_IMPORT.show(
+                              /** @type {string} */ (
+                                  metadata.devicePath));
+                        }
+                      } else {
+                        this.openMediaDirectory_(
+                            metadata.volumeId,
+                            directory.fullPath);
+                      }
+                    }.bind(this));
           }.bind(this))
       .catch(
         function(error) {

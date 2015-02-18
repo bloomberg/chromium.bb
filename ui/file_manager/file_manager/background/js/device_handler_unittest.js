@@ -27,10 +27,13 @@ loadTimeData.data = {
   REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL: '',
   REMOVABLE_DEVICE_IMPORT_MESSAGE: 'DEVICE_IMPORT',
   REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL: '',
+  DEVICE_UNKNOWN_BUTTON_LABEL: 'DEVICE_UNKNOWN_BUTTON_LABEL',
   DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
   DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
   DEVICE_HARD_UNPLUGGED_TITLE: 'DEVICE_HARD_UNPLUGGED_TITLE',
   DEVICE_HARD_UNPLUGGED_MESSAGE: 'DEVICE_HARD_UNPLUGGED_MESSAGE',
+  DOWNLOADS_DIRECTORY_LABEL: 'DOWNLOADS_DIRECTORY_LABEL',
+  DRIVE_DIRECTORY_LABEL: 'DRIVE_DIRECTORY_LABEL',
   MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',
   EXTERNAL_STORAGE_DISABLED_MESSAGE: 'EXTERNAL_STORAGE_DISABLED',
   FORMATTING_OF_DEVICE_PENDING_TITLE: 'FORMATTING_OF_DEVICE_PENDING_TITLE',
@@ -76,6 +79,8 @@ function testGoodDevice(callback) {
 }
 
 function testRemovableMediaDeviceWithImportEnabled(callback) {
+  var storage = new MockChromeStorageAPI();
+
   setupFileSystem(
       VolumeManagerCommon.VolumeType.REMOVABLE,
       'blabbity',
@@ -111,6 +116,8 @@ function testRemovableMediaDeviceWithImportEnabled(callback) {
 }
 
 function testMtpMediaDeviceWithImportEnabled(callback) {
+  var storage = new MockChromeStorageAPI();
+
   setupFileSystem(
       VolumeManagerCommon.VolumeType.MTP,
       'blabbity',
@@ -145,6 +152,49 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
   reportPromise(resolver.promise, callback);
 }
 
+function testMediaDeviceWithImportEnabledAndPhotosAppImportEnabled(callback) {
+  var storage = new MockChromeStorageAPI();
+  chrome.commandLinePrivate.cloudImportDisabled = false;
+
+  setupFileSystem(
+      VolumeManagerCommon.VolumeType.REMOVABLE,
+      'blabbity',
+      [
+        '/DCIM/',
+        '/DCIM/grandma.jpg'
+      ]);
+
+  var promise = importer.handlePhotosAppMessage(true)
+      .then(
+          function() {
+            chrome.fileManagerPrivate.onMountCompleted.dispatch({
+              eventType: 'mount',
+              status: 'success',
+              volumeMetadata: {
+                volumeId: 'blabbity',
+                isParentDevice: true,
+                deviceType: 'usb',
+                devicePath: '/device/path',
+                deviceLabel: 'label',
+                hasMedia: true
+              },
+              shouldNotify: true
+            });
+
+            return chrome.notifications.resolver.promise.then(
+                function(notifications) {
+                  assertEquals(1, Object.keys(notifications).length);
+                  assertEquals(
+                      'DEVICE_IMPORT',
+                      notifications[
+                          'deviceImport:/device/path'].message,
+                      'Device notification did not have the right message.');
+                });
+          });
+
+  reportPromise(promise, callback);
+}
+
 function testMediaDeviceWithImportDisabled(callback) {
   chrome.commandLinePrivate.cloudImportDisabled = true;
 
@@ -164,9 +214,6 @@ function testMediaDeviceWithImportDisabled(callback) {
   var promise = chrome.notifications.resolver.promise.then(
       function(notifications) {
         assertEquals(1, Object.keys(notifications).length);
-        assertFalse(
-            'deviceImport:/device/path' in notifications,
-            'Unexpected import notification found in notifications queue.');
         assertEquals(
             'DEVICE_NAVIGATION',
             notifications[
