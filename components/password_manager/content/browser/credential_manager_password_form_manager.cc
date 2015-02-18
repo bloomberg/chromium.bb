@@ -39,8 +39,7 @@ void CredentialManagerPasswordFormManager::OnGetPasswordStoreResults(
   PasswordForm provisionally_saved_form(observed_form());
   provisionally_saved_form.preferred = true;
   ProvisionallySave(provisionally_saved_form, IGNORE_OTHER_POSSIBLE_USERNAMES);
-  dispatcher_->OnProvisionalSaveComplete(
-      CredentialSourceType::CREDENTIAL_SOURCE_API);
+  dispatcher_->OnProvisionalSaveComplete();
 }
 
 }  // namespace password_manager

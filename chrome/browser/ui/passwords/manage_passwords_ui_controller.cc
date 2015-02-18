@@ -124,12 +124,8 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
-  form_manager_.reset();
+  SaveForms(local_credentials.Pass(), federated_credentials.Pass());
   origin_ = origin;
-  local_credentials_forms_.swap(local_credentials);
-  federated_credentials_forms_.swap(federated_credentials);
-  // The map is useless because usernames may overlap.
-  password_form_map_.clear();
   SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
@@ -138,6 +134,17 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     return true;
   }
   return false;
+}
+
+void ManagePasswordsUIController::OnAutoSignin(
+    ScopedVector<autofill::PasswordForm> local_forms) {
+  DCHECK(!local_forms.empty());
+  SaveForms(local_forms.Pass(), ScopedVector<autofill::PasswordForm>());
+  origin_ = local_credentials_forms_[0]->origin;
+  SetState(password_manager::ui::AUTO_SIGNIN_STATE);
+  timer_.reset(new base::ElapsedTimer);
+  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+  UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
@@ -318,6 +325,8 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
   // Otherwise, reset the password manager and the timer.
   SetState(password_manager::ui::INACTIVE_STATE);
   UpdateBubbleAndIconVisibility();
+  // This allows the bubble to survive several redirects in case the whole
+  // process of navigating to the landing page is longer than 1 second.
   timer_.reset(new base::ElapsedTimer());
 }
 
@@ -368,6 +377,8 @@ void ManagePasswordsUIController::OnBubbleHidden() {
     next_state = password_manager::ui::INACTIVE_STATE;
   else if (state_ == password_manager::ui::CONFIRMATION_STATE)
     next_state = password_manager::ui::MANAGE_STATE;
+  else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE)
+    next_state = password_manager::ui::INACTIVE_STATE;
 
   if (next_state != state_) {
     SetState(next_state);
@@ -395,4 +406,16 @@ void ManagePasswordsUIController::WebContentsDestroyed() {
       GetPasswordStore(web_contents());
   if (password_store)
     password_store->RemoveObserver(this);
+}
+
+void ManagePasswordsUIController::SaveForms(
+    ScopedVector<autofill::PasswordForm> local_forms,
+    ScopedVector<autofill::PasswordForm> federated_forms) {
+  form_manager_.reset();
+  origin_ = GURL();
+  local_credentials_forms_.swap(local_forms);
+  federated_credentials_forms_.swap(federated_forms);
+  // The map is useless because usernames may overlap.
+  password_form_map_.clear();
+  new_password_forms_.clear();
 }

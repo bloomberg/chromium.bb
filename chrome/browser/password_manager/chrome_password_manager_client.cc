@@ -185,7 +185,7 @@ void ChromePasswordManagerClient::AutofillResultsComputed() {
 
 bool ChromePasswordManagerClient::PromptUserToSavePassword(
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-    password_manager::CredentialSourceType) {
+    password_manager::CredentialSourceType type) {
   // Save password infobar and the password bubble prompts in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
   if (!BrowsingDataHelper::IsWebScheme(
@@ -215,10 +215,16 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     ScopedVector<autofill::PasswordForm> federated_forms,
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  return manage_passwords_ui_controller->OnChooseCredentials(
-      local_forms.Pass(), federated_forms.Pass(), origin, callback);
+  return ManagePasswordsUIController::FromWebContents(web_contents())->
+      OnChooseCredentials(local_forms.Pass(), federated_forms.Pass(), origin,
+                          callback);
+}
+
+void ChromePasswordManagerClient::NotifyUserAutoSignin(
+    ScopedVector<autofill::PasswordForm> local_forms) {
+  DCHECK(!local_forms.empty());
+  ManagePasswordsUIController::FromWebContents(web_contents())->
+      OnAutoSignin(local_forms.Pass());
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(

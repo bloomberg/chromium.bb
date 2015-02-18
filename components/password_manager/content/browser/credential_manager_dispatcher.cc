@@ -99,6 +99,11 @@ void CredentialManagerDispatcher::PendingRequestTask::OnGetPasswordStoreResults(
                         zero_click_form_to_return->federation_url.is_empty()
                             ? CredentialType::CREDENTIAL_TYPE_LOCAL
                             : CredentialType::CREDENTIAL_TYPE_FEDERATED);
+    auto it = std::find(local_results.begin(), local_results.end(),
+                        zero_click_form_to_return);
+    DCHECK(it != local_results.end());
+    std::swap(*it, local_results[0]);
+    dispatcher_->client()->NotifyUserAutoSignin(local_results.Pass());
     dispatcher_->SendCredential(id_, info);
     return;
   }
@@ -225,10 +230,10 @@ void CredentialManagerDispatcher::OnNotifySignedIn(
       client_, GetDriver(), *form, this));
 }
 
-void CredentialManagerDispatcher::OnProvisionalSaveComplete(
-    CredentialSourceType type) {
+void CredentialManagerDispatcher::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
-  client_->PromptUserToSavePassword(form_manager_.Pass(), type);
+  client_->PromptUserToSavePassword(
+      form_manager_.Pass(), CredentialSourceType::CREDENTIAL_SOURCE_API);
 }
 
 void CredentialManagerDispatcher::OnNotifySignedOut(int request_id) {

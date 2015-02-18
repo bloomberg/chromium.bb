@@ -44,6 +44,10 @@ bool StubPasswordManagerClient::PromptUserToChooseCredentials(
   return false;
 }
 
+void StubPasswordManagerClient::NotifyUserAutoSignin(
+    ScopedVector<autofill::PasswordForm> local_forms) {
+}
+
 void StubPasswordManagerClient::AutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> saved_manager) {
 }

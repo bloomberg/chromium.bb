@@ -451,6 +451,24 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
             credential_info()->type);
 }
 
+TEST_F(ManagePasswordsUIControllerTest, AutoSignin) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  controller()->OnAutoSignin(local_credentials.Pass());
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->state());
+  EXPECT_EQ(test_local_form().origin, controller()->origin());
+  ASSERT_FALSE(controller()->local_credentials_forms().empty());
+  EXPECT_EQ(test_local_form(), *controller()->local_credentials_forms()[0]);
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, mock.state());
+
+  controller()->OnBubbleHidden();
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, mock.state());
+}
+
 TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;

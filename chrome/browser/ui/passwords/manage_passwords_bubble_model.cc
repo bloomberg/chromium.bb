@@ -120,12 +120,15 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 
   origin_ = controller->origin();
   state_ = controller->state();
-  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE)
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     pending_password_ = controller->PendingPassword();
-  if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
+    best_matches_ = controller->best_matches();
+  } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     local_pending_credentials_.swap(controller->local_credentials_forms());
     federated_pending_credentials_.swap(
         controller->federated_credentials_forms());
+  } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
+    pending_password_ = *controller->local_credentials_forms()[0];
   } else {
     best_matches_ = controller->best_matches();
   }
@@ -139,6 +142,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
   } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
+  } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
+    // There is no title.
   } else if (password_manager::ui::IsAskSubmitURLState(state_)) {
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_ASK_TO_SUBMIT_URL_TITLE);

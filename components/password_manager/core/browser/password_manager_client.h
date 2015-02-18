@@ -98,6 +98,13 @@ class PasswordManagerClient {
       const GURL& origin,
       base::Callback<void(const CredentialInfo&)> callback) = 0;
 
+  // Informs the embedder that automatic signing in just happened. The form
+  // returned to the site is |local_forms[0]|. |local_forms| and
+  // |federated_forms| contain all the local and federated credentials for the
+  // site.
+  virtual void NotifyUserAutoSignin(
+      ScopedVector<autofill::PasswordForm> local_forms) = 0;
+
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.
   virtual void AutomaticPasswordSave(

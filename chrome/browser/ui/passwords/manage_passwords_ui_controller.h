@@ -54,6 +54,10 @@ class ManagePasswordsUIController
       const GURL& origin,
       base::Callback<void(const password_manager::CredentialInfo&)> callback);
 
+  // Called when user is auto signed in to the site. |local_forms[0]| contains
+  // the credential returned to the site.
+  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms);
+
   // Called when the password will be saved automatically, but we still wish to
   // visually inform the user that the save has occured.
   void OnAutomaticPasswordSave(
@@ -160,20 +164,6 @@ class ManagePasswordsUIController
   // Sets |state_|. Protected so we can manipulate the value in tests.
   void SetState(password_manager::ui::State state);
 
-  // We create copies of PasswordForm objects that come in with unclear lifetime
-  // and store them in this vector as well as in |password_form_map_| to ensure
-  // that we destroy them correctly. If |new_password_forms_| gets cleared then
-  // |password_form_map_| is to be cleared too.
-  ScopedVector<autofill::PasswordForm> new_password_forms_;
-
-  // Federated credentials. Stores federated credentials which will be shown
-  // when Credential Management API was used.
-  ScopedVector<autofill::PasswordForm> federated_credentials_forms_;
-
-  // Local credentials. Stores local credentials which will be shown
-  // when Credential Management API was used.
-  ScopedVector<autofill::PasswordForm> local_credentials_forms_;
-
   // All previously stored credentials for a specific site.
   // Protected, not private, so we can mess with the value in
   // ManagePasswordsUIControllerMock.
@@ -188,6 +178,10 @@ class ManagePasswordsUIController
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
+  // Saves the parameters and clean the previous forms.
+  void SaveForms(ScopedVector<autofill::PasswordForm> local_forms,
+                 ScopedVector<autofill::PasswordForm> federated_forms);
+
   // The current state of the password manager UI.
   password_manager::ui::State state_;
 
@@ -201,6 +195,20 @@ class ManagePasswordsUIController
   // this password?" prompt, we ask this object to save or blacklist the
   // associated login information in Chrome's password store.
   scoped_ptr<password_manager::PasswordFormManager> form_manager_;
+
+  // We create copies of PasswordForm objects that come in with unclear lifetime
+  // and store them in this vector as well as in |password_form_map_| to ensure
+  // that we destroy them correctly. If |new_password_forms_| gets cleared then
+  // |password_form_map_| is to be cleared too.
+  ScopedVector<autofill::PasswordForm> new_password_forms_;
+
+  // Federated credentials. Stores federated credentials which will be shown
+  // when Credential Management API was used.
+  ScopedVector<autofill::PasswordForm> federated_credentials_forms_;
+
+  // Local credentials. Stores local credentials which will be shown
+  // when Credential Management API was used.
+  ScopedVector<autofill::PasswordForm> local_credentials_forms_;
 
   // A callback to be invoked when user selects a credential.
   base::Callback<void(const password_manager::CredentialInfo&)>

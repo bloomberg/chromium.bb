@@ -34,6 +34,10 @@ enum State {
   // The site has asked user to choose a credential.
   CREDENTIAL_REQUEST_STATE,
 
+  // The user was auto signed in to the site. The icon and the auto-signin toast
+  // should be visible.
+  AUTO_SIGNIN_STATE,
+
   // Password manager failed to detect the form, bubble should outlive next
   // navigation.
   ASK_USER_REPORT_URL_BUBBLE_SHOWN_BEFORE_TRANSITION_STATE,

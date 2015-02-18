@@ -31,6 +31,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       const GURL& origin,
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override;
+  void NotifyUserAutoSignin(
+      ScopedVector<autofill::PasswordForm> local_forms) override;
   void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;
