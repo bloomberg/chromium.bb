@@ -5,7 +5,13 @@
 #ifndef UI_ACCESSIBILITY_AX_NODE_H_
 #define UI_ACCESSIBILITY_AX_NODE_H_
 
+#include <vector>
+
 #include "ui/accessibility/ax_node_data.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace ui {
 
@@ -61,7 +67,6 @@ class AX_EXPORT AXNode {
   std::vector<AXNode*> children_;
   AXNodeData data_;
 };
-
 
 }  // namespace ui
 

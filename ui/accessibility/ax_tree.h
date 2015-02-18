@@ -65,7 +65,7 @@ class AX_EXPORT AXTreeDelegate {
       this->node = node;
       this->type = type;
     }
-    AXNode *node;
+    AXNode* node;
     ChangeType type;
   };
 
@@ -104,7 +104,7 @@ class AX_EXPORT AXTree {
 
   // A string describing the error from an unsuccessful Unserialize,
   // for testing and debugging.
-  const std::string& error() { return error_; }
+  const std::string& error() const { return error_; }
 
  private:
   AXNode* CreateNode(AXNode* parent, int32 id, int32 index_in_parent);
@@ -126,7 +126,7 @@ class AX_EXPORT AXTree {
   // child and its subtree if its id is not in |new_child_ids|. Returns
   // true on success, false on fatal error.
   bool DeleteOldChildren(AXNode* node,
-                         const std::vector<int32> new_child_ids);
+                         const std::vector<int32>& new_child_ids);
 
   // Iterate over |new_child_ids| and populate |new_children| with
   // pointers to child nodes, reusing existing nodes already in the tree
@@ -134,7 +134,7 @@ class AX_EXPORT AXTree {
   // if the id already exists as the child of another node, that's an
   // error. Returns true on success, false on fatal error.
   bool CreateNewChildVector(AXNode* node,
-                            const std::vector<int32> new_child_ids,
+                            const std::vector<int32>& new_child_ids,
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
 

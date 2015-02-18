@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_TREE_UPDATE_H_
 #define UI_ACCESSIBILITY_AX_TREE_UPDATE_H_
 
+#include <string>
 #include <vector>
 
 #include "ui/accessibility/ax_node_data.h"

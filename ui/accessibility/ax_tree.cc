@@ -73,7 +73,7 @@ AXNode* AXTree::GetRoot() const {
 
 AXNode* AXTree::GetFromId(int32 id) const {
   base::hash_map<int32, AXNode*>::const_iterator iter = id_map_.find(id);
-  return iter != id_map_.end() ? (iter->second) : NULL;
+  return iter != id_map_.end() ? iter->second : NULL;
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
@@ -142,8 +142,7 @@ std::string AXTree::ToString() const {
   return TreeToStringHelper(root_, 0);
 }
 
-AXNode* AXTree::CreateNode(
-    AXNode* parent, int32 id, int32 index_in_parent) {
+AXNode* AXTree::CreateNode(AXNode* parent, int32 id, int32 index_in_parent) {
   AXNode* new_node = new AXNode(parent, id, index_in_parent);
   id_map_[new_node->id()] = new_node;
   if (delegate_)
@@ -151,8 +150,8 @@ AXNode* AXTree::CreateNode(
   return new_node;
 }
 
-bool AXTree::UpdateNode(
-    const AXNodeData& src, AXTreeUpdateState* update_state) {
+bool AXTree::UpdateNode(const AXNodeData& src,
+                        AXTreeUpdateState* update_state) {
   // This method updates one node in the tree based on serialized data
   // received in an AXTreeUpdate. See AXTreeUpdate for pre and post
   // conditions.
@@ -222,7 +221,7 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node) {
 }
 
 bool AXTree::DeleteOldChildren(AXNode* node,
-                               const std::vector<int32> new_child_ids) {
+                               const std::vector<int32>& new_child_ids) {
   // Create a set of child ids in |src| for fast lookup, and return false
   // if a duplicate is found;
   std::set<int32> new_child_id_set;
@@ -247,7 +246,7 @@ bool AXTree::DeleteOldChildren(AXNode* node,
 }
 
 bool AXTree::CreateNewChildVector(AXNode* node,
-                                  const std::vector<int32> new_child_ids,
+                                  const std::vector<int32>& new_child_ids,
                                   std::vector<AXNode*>* new_children,
                                   AXTreeUpdateState* update_state) {
   bool success = true;
