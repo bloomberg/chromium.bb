@@ -112,6 +112,7 @@ public:
     bool failed() const { return m_scriptLoader->failed(); }
     const KURL& url() const { return m_scriptLoader->responseURL(); }
     String script() const { return m_scriptLoader->script(); }
+    const Vector<char>* cachedMetadata() const { return m_scriptLoader->cachedMetadata(); }
     PassOwnPtr<Vector<char>> releaseCachedMetadata() const { return m_scriptLoader->releaseCachedMetadata(); }
     PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
@@ -381,6 +382,8 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
     }
 
     Platform::current()->histogramCustomCounts("ServiceWorker.ScriptSize", m_mainScriptLoader->script().length(), 1000, 5000000, 50);
+    if (m_mainScriptLoader->cachedMetadata())
+        Platform::current()->histogramCustomCounts("ServiceWorker.ScriptCachedMetadataSize", m_mainScriptLoader->cachedMetadata()->size(), 1000, 50000000, 50);
 
     if (m_pauseAfterDownloadState == DoPauseAfterDownload) {
         m_pauseAfterDownloadState = IsPausedAfterDownload;

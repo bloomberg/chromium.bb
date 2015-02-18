@@ -71,7 +71,7 @@ public:
     bool failed() const { return m_failed; }
     unsigned long identifier() const { return m_identifier; }
     PassOwnPtr<Vector<char>> releaseCachedMetadata() { return m_cachedMetadata.release(); }
-
+    const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
     virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void didReceiveData(const char* data, unsigned dataLength) override;
