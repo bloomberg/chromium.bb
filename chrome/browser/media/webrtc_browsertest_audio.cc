@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrtc_browsertest_audio.h"
+#include "chrome/browser/media/webrtc_browsertest_audio.h"
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
