@@ -11,8 +11,9 @@
 {
   'WATCHLIST_DEFINITIONS': {
     'accessibility': {
-      'filepath': 'Source/core/accessibility' \
-                  '|LayoutTests/accessibility',
+      'filepath': 'accessibility' \
+                  '|AXObjectCache' \
+                  '|WebAX'
     },
     'animations': {
       'filepath': '[Aa]nimat|[Tt]ransition',
@@ -308,7 +309,9 @@
 
   'WATCHLISTS': {
     'accessibility':['dmazzoni@chromium.org',
-                     'aboxhall@chromium.org'],
+                     'aboxhall@chromium.org',
+                     'nektar@chromium.org',
+                     'je_julie.kim@samsung.com'],
     'animations': ['alexis.menard@intel.com',
                    'dstockwell@chromium.org',
                    'ericwilligers@chromium.org',
