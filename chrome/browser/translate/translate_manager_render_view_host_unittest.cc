@@ -894,12 +894,12 @@ TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
 
   // Simulate a sub-frame auto-navigating.
   subframe_tester->SendNavigateWithTransition(
-      1, GURL("http://pub.com"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+      0, GURL("http://pub.com"), ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Simulate the user navigating in a sub-frame.
   subframe_tester->SendNavigateWithTransition(
-      2, GURL("http://pub.com"), ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+      1, GURL("http://pub.com"), ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Navigate out of page, a new infobar should show.

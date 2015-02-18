@@ -37,6 +37,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -1225,9 +1226,24 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderFrameHost* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  if (ui::PageTransitionCoreTypeIs(params.transition,
-                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME)) {
-    // This is not user-initiated. Ignore.
+  if (!ui::PageTransitionCoreTypeIs(params.transition,
+                                    ui::PAGE_TRANSITION_MANUAL_SUBFRAME)) {
+    // There was a comment here that said, "This is not user-initiated. Ignore."
+    // But this makes no sense; non-user-initiated navigations should be
+    // determined to be of type NAVIGATION_TYPE_AUTO_SUBFRAME and sent to
+    // RendererDidNavigateAutoSubframe below.
+    //
+    // This if clause dates back to https://codereview.chromium.org/115919 and
+    // the handling of immediate redirects. TODO(avi): Is this still valid? I'm
+    // pretty sure that's there's nothing left of that code and that we should
+    // take this out.
+    //
+    // Except for cross-process iframes; this doesn't work yet for them.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+      NOTREACHED();
+    }
+
     DiscardNonCommittedEntriesInternal();
     return;
   }
@@ -1247,6 +1263,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     RenderFrameHost* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
+                                      ui::PAGE_TRANSITION_AUTO_SUBFRAME));
+
   // We're guaranteed to have a previously committed entry, and we now need to
   // handle navigation inside of a subframe in it without creating a new entry.
   DCHECK(GetLastCommittedEntry());

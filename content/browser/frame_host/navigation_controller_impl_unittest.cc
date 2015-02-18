@@ -2058,6 +2058,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   const GURL url3("http://foo3");
   params.page_id = 2;
   params.url = url3;
+  params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
                                              &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2067,8 +2068,9 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Go back one.
   controller.GoBack();
-  params.url = url2;
   params.page_id = 1;
+  params.url = url2;
+  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
                                              &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -2080,8 +2082,9 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // Go back one more.
   controller.GoBack();
-  params.url = url1;
   params.page_id = 0;
+  params.url = url1;
+  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
                                              &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);

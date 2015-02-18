@@ -3808,11 +3808,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     // generated a new session history entry. When they do generate a session
     // history entry, it means the user initiated the navigation and we should
     // mark it as such.
-    bool is_history_navigation = commit_type == blink::WebBackForwardCommit;
-    if (is_history_navigation || ds->replacesCurrentHistoryItem())
-      params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-    else
+    if (commit_type == blink::WebStandardCommit)
       params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
+    else
+      params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
 
     DCHECK(!navigation_state->history_list_was_cleared());
     params.history_list_was_cleared = false;
