@@ -1103,13 +1103,6 @@ name=http://crbug.com/64887 (GMock printing uninit data)
 # at the peak set of tests we plan to run and remove the unused ones.
 
 UNINITIALIZED READ
-name=bug_99307
-*!modp_b64_encode
-*!base::Base64Encode*
-*!web_ui_util::GetImageDataUrl
-*!::NetworkInfoDictionary::set_icon
-
-UNINITIALIZED READ
 name=bug_101781
 *!encode_one_block
 *!encode_mcu_huff

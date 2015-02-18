@@ -1245,14 +1245,6 @@
    obj:*
 }
 {
-   bug_99307
-   Memcheck:Uninitialized
-   fun:modp_b64_encode
-   fun:_ZN4base12Base64Encode*
-   fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
-   fun:_ZN12_GLOBAL__N_121NetworkInfoDictionary8set_iconERK8SkBitmap
-}
-{
    bug_100982
    Memcheck:Leak
    fun:_Znw*
