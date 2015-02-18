@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using blink::WebURL;
@@ -21,40 +22,32 @@ using blink::WebURLRequest;
 namespace content {
 
 NotificationImageLoader::NotificationImageLoader(
-    const NotificationImageLoadedCallback& callback)
+    const ImageLoadCompletedCallback& callback,
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner)
     : callback_(callback),
+      worker_task_runner_(worker_task_runner),
+      notification_id_(0),
       completed_(false) {}
 
 NotificationImageLoader::~NotificationImageLoader() {
-  // The WebURLLoader instance must be destroyed on the same thread it was
-  // created on, being the main thread.
-  if (!main_thread_task_runner_->RunsTasksOnCurrentThread())
-    main_thread_task_runner_->DeleteSoon(FROM_HERE, url_loader_.release());
+  if (main_thread_task_runner_)
+    DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 }
 
-void NotificationImageLoader::StartOnMainThread(
-    const WebURL& image_url,
-    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner) {
+void NotificationImageLoader::StartOnMainThread(int notification_id,
+                                                const GURL& image_url) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!url_loader_);
-  DCHECK(worker_task_runner);
 
-  worker_task_runner_ = worker_task_runner;
   main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  notification_id_ = notification_id;
 
-  WebURLRequest request(image_url);
+  WebURL image_web_url(image_url);
+  WebURLRequest request(image_web_url);
   request.setRequestContext(WebURLRequest::RequestContextImage);
 
   url_loader_.reset(blink::Platform::current()->createURLLoader());
   url_loader_->loadAsynchronously(request, this);
-}
-
-SkBitmap NotificationImageLoader::GetDecodedImage() const {
-  if (buffer_.empty())
-    return SkBitmap();
-
-  ImageDecoder decoder;
-  return decoder.Decode(&buffer_[0], buffer_.size());
 }
 
 void NotificationImageLoader::didReceiveData(
@@ -86,11 +79,35 @@ void NotificationImageLoader::didFail(WebURLLoader* loader,
 }
 
 void NotificationImageLoader::RunCallbackOnWorkerThread() {
-  scoped_refptr<NotificationImageLoader> loader = make_scoped_refptr(this);
-  if (worker_task_runner_->BelongsToCurrentThread())
-    callback_.Run(loader);
-  else
-    worker_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, loader));
+  url_loader_.reset();
+
+  completed_ = true;
+  SkBitmap icon = GetDecodedImage();
+
+  if (worker_task_runner_->BelongsToCurrentThread()) {
+    callback_.Run(notification_id_, icon);
+  } else {
+    worker_task_runner_->PostTask(
+        FROM_HERE, base::Bind(callback_, notification_id_, icon));
+  }
+}
+
+SkBitmap NotificationImageLoader::GetDecodedImage() const {
+  DCHECK(completed_);
+  if (buffer_.empty())
+    return SkBitmap();
+
+  ImageDecoder decoder;
+  return decoder.Decode(&buffer_[0], buffer_.size());
+}
+
+void NotificationImageLoader::DeleteOnCorrectThread() const {
+  if (!ChildThreadImpl::current()) {
+    main_thread_task_runner_->DeleteSoon(FROM_HERE, this);
+    return;
+  }
+
+  delete this;
 }
 
 }  // namespace content

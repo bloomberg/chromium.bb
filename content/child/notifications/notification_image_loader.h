@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
+class GURL;
 class SkBitmap;
 
 namespace base {
@@ -26,33 +28,28 @@ class WebURLLoader;
 
 namespace content {
 
-class NotificationImageLoader;
-
-// Callback to be invoked when an image load has been completed.
-using NotificationImageLoadedCallback =
-    base::Callback<void(scoped_refptr<NotificationImageLoader>)>;
+struct NotificationImageLoaderDeleter;
 
 // Downloads the image associated with a notification and decodes the received
 // image. This must be completed before notifications are shown to the user.
-// Image downloaders must not be re-used for multiple notifications. The image
-// loader must be started from the main thread, but will invoke the callback on
-// the thread identified in the StartOnMainThread call.
+// Image downloaders must not be re-used for multiple notifications.
+//
+// All methods, except for the constructor, are expected to be used on the
+// renderer main thread.
 class NotificationImageLoader
     : public blink::WebURLLoaderClient,
-      public base::RefCountedThreadSafe<NotificationImageLoader> {
- public:
-  explicit NotificationImageLoader(
-      const NotificationImageLoadedCallback& callback);
+      public base::RefCountedThreadSafe<NotificationImageLoader,
+                                        NotificationImageLoaderDeleter> {
+  using ImageLoadCompletedCallback = base::Callback<void(int, const SkBitmap&)>;
 
-  // Asynchronously starts loading |image_url|.
-  // Must be called on the main thread. The callback should be executed by
-  // |worker_task_runner|.
-  void StartOnMainThread(
-      const blink::WebURL& image_url,
+ public:
+  NotificationImageLoader(
+      const ImageLoadCompletedCallback& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner);
 
-  // Returns the SkBitmap resulting from decoding the loaded buffer.
-  SkBitmap GetDecodedImage() const;
+  // Asynchronously starts loading |image_url| using a Blink WebURLLoader. Must
+  // only be called on the main thread.
+  void StartOnMainThread(int notification_id, const GURL& image_url);
 
   // blink::WebURLLoaderClient implementation.
   virtual void didReceiveData(blink::WebURLLoader* loader,
@@ -66,7 +63,11 @@ class NotificationImageLoader
                        const blink::WebURLError& error);
 
  private:
-  friend class base::RefCountedThreadSafe<NotificationImageLoader>;
+  friend class base::DeleteHelper<NotificationImageLoader>;
+  friend class base::RefCountedThreadSafe<NotificationImageLoader,
+                                          NotificationImageLoaderDeleter>;
+  friend struct NotificationImageLoaderDeleter;
+
   virtual ~NotificationImageLoader();
 
   // Invokes the callback on the thread this image loader was started for. When
@@ -74,16 +75,32 @@ class NotificationImageLoader
   // For all other threads a task will be posted to the appropriate task runner.
   void RunCallbackOnWorkerThread();
 
-  NotificationImageLoadedCallback callback_;
+  // Returns a Skia bitmap, empty if buffer_ was empty or could not be decoded
+  // as an image, or a valid bitmap otherwise.
+  SkBitmap GetDecodedImage() const;
 
-  scoped_ptr<blink::WebURLLoader> url_loader_;
+  // Ensures that we delete the image loader on the main thread.
+  void DeleteOnCorrectThread() const;
+
+  ImageLoadCompletedCallback callback_;
+
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  int notification_id_;
   bool completed_;
+
+  scoped_ptr<blink::WebURLLoader> url_loader_;
 
   std::vector<uint8_t> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationImageLoader);
+};
+
+struct NotificationImageLoaderDeleter {
+  static void Destruct(const NotificationImageLoader* context) {
+    context->DeleteOnCorrectThread();
+  }
 };
 
 }  // namespace content
