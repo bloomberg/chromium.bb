@@ -35,10 +35,10 @@
             'build_nonsfi_helper': 1,
           },
           'sources': [
-            'latency_info.cc',
-            'latency_info.h',
             'ipc/latency_info_param_traits.cc',
             'ipc/latency_info_param_traits.h',
+            'latency_info.cc',
+            'latency_info.h',
           ],
         },
       ],
@@ -64,10 +64,10 @@
             '../..',
           ],
           'sources': [
-            'latency_info.cc',
-            'latency_info.h',
             'ipc/latency_info_param_traits.cc',
             'ipc/latency_info_param_traits.h',
+            'latency_info.cc',
+            'latency_info.h',
           ],
           'configurations': {
             'Common_Base': {

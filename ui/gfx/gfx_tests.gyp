@@ -47,8 +47,8 @@
         'geometry/cubic_bezier_unittest.cc',
         'geometry/insets_unittest.cc',
         'geometry/matrix3_unittest.cc',
-        'geometry/point_unittest.cc',
         'geometry/point3_unittest.cc',
+        'geometry/point_unittest.cc',
         'geometry/quad_unittest.cc',
         'geometry/r_tree_unittest.cc',
         'geometry/rect_unittest.cc',
@@ -93,8 +93,8 @@
         }],
         ['OS != "mac" and OS != "ios"', {
           'sources': [
-            'transform_unittest.cc',
             'interpolated_transform_unittest.cc',
+            'transform_unittest.cc',
           ],
         }],
         ['OS == "android"', {

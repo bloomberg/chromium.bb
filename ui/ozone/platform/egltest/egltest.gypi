@@ -52,8 +52,8 @@
       'actions': [
         {
           'variables': {
-            'output_h': '<(SHARED_INTERMEDIATE_DIR)/library_loaders/libeglplatform_shim.h',
             'output_cc': '<(INTERMEDIATE_DIR)/libeglplatform_shim_loader.cc',
+            'output_h': '<(SHARED_INTERMEDIATE_DIR)/library_loaders/libeglplatform_shim.h',
             'generator': '../../tools/generate_library_loader/generate_library_loader.py',
           },
           'action_name': 'generate_libeglplatform_shim_loader',

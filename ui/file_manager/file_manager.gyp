@@ -41,11 +41,11 @@
         'FILE_MANAGER_IMPLEMENTATION',
       ],
       'sources': [
+        '<(grit_out_dir)/grit/file_manager_resources_map.cc',
+        '<(grit_out_dir)/grit/file_manager_resources_map.h',
         'file_manager_export.h',
         'file_manager_resource_util.cc',
         'file_manager_resource_util.h',
-        '<(grit_out_dir)/grit/file_manager_resources_map.cc',
-        '<(grit_out_dir)/grit/file_manager_resources_map.h',
       ]
     },
   ],

@@ -102,6 +102,8 @@
         'common/gpu/ozone_gpu_messages.h',
         'common/native_display_delegate_ozone.cc',
         'common/native_display_delegate_ozone.h',
+        'platform_selection.cc',
+        'platform_selection.h',
         'public/input_controller.cc',
         'public/input_controller.h',
         'public/ozone_platform.cc',
@@ -110,8 +112,6 @@
         'public/ozone_switches.h',
         'public/ui_thread_gpu.cc',
         'public/ui_thread_gpu.h',
-        'platform_selection.cc',
-        'platform_selection.h',
         '<@(external_ozone_platform_files)',
       ],
       'actions': [

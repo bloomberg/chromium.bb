@@ -84,6 +84,7 @@
         'KEYBOARD_IMPLEMENTATION',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.cc',
         'keyboard.cc',
         'keyboard.h',
         'keyboard_constants.cc',
@@ -93,9 +94,9 @@
         'keyboard_controller_observer.h',
         'keyboard_controller_proxy.cc',
         'keyboard_controller_proxy.h',
-        'keyboard_layout_manager.h',
-        'keyboard_layout_manager.cc',
         'keyboard_export.h',
+        'keyboard_layout_manager.cc',
+        'keyboard_layout_manager.h',
         'keyboard_switches.cc',
         'keyboard_switches.h',
         'keyboard_util.cc',
@@ -104,7 +105,6 @@
         'webui/vk_mojo_handler.h',
         'webui/vk_webui_controller.cc',
         'webui/vk_webui_controller.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.cc',
       ]
     },
     {
@@ -130,8 +130,8 @@
         'keyboard',
       ],
       'sources': [
-        'test/run_all_unittests.cc',
         'keyboard_controller_unittest.cc',
+        'test/run_all_unittests.cc',
       ],
       'conditions': [
         ['OS=="linux" and use_allocator!="none"', {
