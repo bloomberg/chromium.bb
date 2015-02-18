@@ -38,7 +38,9 @@ function NewMetadataProvider(cache, validPropertyNames) {
 /**
  * Obtains the metadata for the request.
  * @param {!Array<!MetadataRequest>} requests
- * @return {!Promise<!Array<!T>>}
+ * @return {!Promise<!Array<!T>>} Promise with obtained metadata. It should not
+ *     return rejected promise. Instead it should return undefined property for
+ *     property error, and should return empty object for entry error.
  * @protected
  */
 NewMetadataProvider.prototype.getImpl;
@@ -89,9 +91,7 @@ NewMetadataProvider.prototype.get = function(entries, names) {
       }
 
       // Store cache.
-      if (this.cache_.storeProperties(requestId, requestedEntries, list)) {
-        // TODO(hirono): Dispatch metadata change event here.
-      }
+      this.cache_.storeProperties(requestId, requestedEntries, list);
 
       // Invoke callbacks.
       var i = 0;
@@ -104,11 +104,7 @@ NewMetadataProvider.prototype.get = function(entries, names) {
           i++;
         }
       }
-    }.bind(this), function(error) {
-      // TODO(hirono): Handle rejection here and call rejection callback of
-      // MetadataProviderCallbackRequest.
-      console.error(error.stack);
-    });
+    }.bind(this));
   }
 
   return promise;

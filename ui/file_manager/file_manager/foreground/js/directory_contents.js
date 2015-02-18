@@ -731,11 +731,15 @@ DirectoryContents.prototype.replaceContextFileList = function() {
       for (var i = 0; i < entries.length; i++) {
         var url = entries[i].toURL();
         var newMetadata = newMetadatas[i];
-        if (this.metadataSnapshot_[url] &&
-            this.metadataSnapshot_[url].modificationTime &&
-            this.metadataSnapshot_[url].modificationTime.getTime() !==
-            newMetadata.modificationTime.getTime())
+        // If Files.app fails to obtain both old and new modificationTime,
+        // regard the entry as not updated.
+        if ((this.metadataSnapshot_[url] &&
+             this.metadataSnapshot_[url].modificationTime &&
+             this.metadataSnapshot_[url].modificationTime.getTime()) !==
+            (newMetadata.modificationTime &&
+             newMetadata.modificationTime.getTime())) {
           updatedIndexes.push(i);
+        }
       }
 
       if (updatedIndexes.length > 0)

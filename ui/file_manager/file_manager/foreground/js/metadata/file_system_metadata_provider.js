@@ -59,6 +59,8 @@ FileSystemMetadataProvider.prototype.getImpl = function(requests) {
         result['contentMimeType'] = results[1];
 
       return result;
+    }, function() {
+      return {};
     });
   }));
 };

@@ -62,7 +62,7 @@ ExternalMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
  * @override
  */
 ExternalMetadataProvider.prototype.getImpl = function(requests) {
-  return new Promise(function(fulfill, reject) {
+  return new Promise(function(fulfill) {
     var urls = [];
     for (var i = 0; i < requests.length; i++) {
       urls.push(requests[i].entry.toURL());
@@ -73,7 +73,7 @@ ExternalMetadataProvider.prototype.getImpl = function(requests) {
           if (!chrome.runtime.lastError)
             fulfill(this.convertResults_(requests, results));
           else
-            reject(chrome.runtime.lastError);
+            fulfill(requests.map(function() { return {}; }));
         }.bind(this));
   }.bind(this));
 };

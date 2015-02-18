@@ -100,13 +100,8 @@ ContentMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 ContentMetadataProvider.prototype.getImpl = function(requests) {
   var promises = [];
   for (var i = 0; i < requests.length; i++) {
-    promises.push(new Promise(function(request, fulfill, reject) {
-      this.fetch(request.entry, request.names, function(metadata) {
-        if (metadata)
-          fulfill(metadata);
-        else
-          reject();
-      });
+    promises.push(new Promise(function(request, fulfill) {
+      this.fetch(request.entry, request.names, fulfill);
     }.bind(this, requests[i])));
   }
   return Promise.all(promises);
@@ -193,7 +188,7 @@ ContentMetadataProvider.prototype.onResult_ = function(url, metadata) {
   for (var i = 0; i < callbacks.length; i++) {
     callbacks[i](
         metadata ?
-        ContentMetadataProvider.convertContentMetadata(metadata) : null);
+        ContentMetadataProvider.convertContentMetadata(metadata) : {});
   }
 };
 
@@ -209,7 +204,7 @@ ContentMetadataProvider.prototype.onError_ =
     function(url, step, error, metadata) {
   if (MetadataCache.log)  // Avoid log spam by default.
     console.warn('metadata: ' + url + ': ' + step + ': ' + error);
-  this.onResult_(url, null);
+  this.onResult_(url, {});
 };
 
 /**
