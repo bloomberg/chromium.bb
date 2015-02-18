@@ -17,7 +17,6 @@
           # GN version: //breakpad:stackwalk_common
           'target_name': 'stackwalk_common',
           'type': 'static_library',
-          'toolsets': ['host'],
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
           'sources': [
@@ -92,12 +91,16 @@
             'src/third_party/libdisasm/x86_operand_list.c',
             'src/third_party/libdisasm/x86_operand_list.h',
           ],
+          'conditions': [
+            ['OS=="ios"', {
+              'toolsets': ['host'],
+            }],
+          ],
         },
         {
           # GN version: //breakpad:microdump_stackwalk
           'target_name': 'microdump_stackwalk',
           'type': 'executable',
-          'toolsets': ['host'],
           'dependencies': ['stackwalk_common'],
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
@@ -106,12 +109,16 @@
             'src/processor/microdump_processor.cc',
             'src/processor/microdump_stackwalk.cc',
           ],
+          'conditions': [
+            ['OS=="ios"', {
+              'toolsets': ['host'],
+            }],
+          ],
         },
         {
           # GN version: //breakpad:minidump_stackwalk
           'target_name': 'minidump_stackwalk',
           'type': 'executable',
-          'toolsets': ['host'],
           'dependencies': ['stackwalk_common'],
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
@@ -125,12 +132,16 @@
             'src/processor/minidump_processor.cc',
             'src/processor/minidump_stackwalk.cc',
           ],
+          'conditions': [
+            ['OS=="ios"', {
+              'toolsets': ['host'],
+            }],
+          ],
         },
         {
           # GN version: //breakpad:minidump_dump
           'target_name': 'minidump_dump',
           'type': 'executable',
-          'toolsets': ['host'],
           'includes': ['breakpad_tools.gypi'],
           'sources': [
             'src/processor/basic_code_module.h',
@@ -144,6 +155,11 @@
             'src/processor/minidump_dump.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
+          ],
+          'conditions': [
+            ['OS=="ios"', {
+              'toolsets': ['host'],
+            }],
           ],
         },
       ],
