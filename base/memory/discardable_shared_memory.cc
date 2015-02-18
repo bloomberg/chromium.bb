@@ -162,19 +162,19 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   DCHECK_EQ(AlignToPageSize(offset), offset);
   DCHECK_EQ(AlignToPageSize(length), length);
 
-  // Calls to this function must synchronized properly.
+  // Calls to this function must be synchronized properly.
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
-
-  // Return false when instance has been purged or not initialized properly by
-  // checking if |last_known_usage_| is NULL.
-  if (last_known_usage_.is_null())
-    return FAILED;
 
   DCHECK(shared_memory_.memory());
 
   // We need to successfully acquire the platform independent lock before
   // individual pages can be locked.
   if (!locked_page_count_) {
+    // Return false when instance has been purged or not initialized properly
+    // by checking if |last_known_usage_| is NULL.
+    if (last_known_usage_.is_null())
+      return FAILED;
+
     SharedState old_state(SharedState::UNLOCKED, last_known_usage_);
     SharedState new_state(SharedState::LOCKED, Time());
     SharedState result(subtle::Acquire_CompareAndSwap(
@@ -226,7 +226,7 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
   DCHECK_EQ(AlignToPageSize(offset), offset);
   DCHECK_EQ(AlignToPageSize(length), length);
 
-  // Calls to this function must synchronized properly.
+  // Calls to this function must be synchronized properly.
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
 
   // Zero for length means "everything onward".
@@ -294,7 +294,7 @@ void* DiscardableSharedMemory::memory() const {
 }
 
 bool DiscardableSharedMemory::Purge(Time current_time) {
-  // Calls to this function must synchronized properly.
+  // Calls to this function must be synchronized properly.
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
 
   // Early out if not mapped. This can happen if the segment was previously

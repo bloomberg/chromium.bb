@@ -234,8 +234,6 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   // Lock should fail as memory has been purged.
   auto lock_rv = memory2.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
-  lock_rv = memory1.Lock(0, 0);
-  EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
 }
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
@@ -263,27 +261,39 @@ TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
   rv = memory1.Purge(Time::FromDoubleT(2));
   EXPECT_FALSE(rv);
 
-  // Unlock second page.
+  // Lock first page again.
   memory2.SetNow(Time::FromDoubleT(3));
+  auto lock_rv = memory2.Lock(0, base::GetPageSize());
+  EXPECT_NE(DiscardableSharedMemory::FAILED, lock_rv);
+
+  // Unlock first page.
+  memory2.SetNow(Time::FromDoubleT(4));
+  memory2.Unlock(0, base::GetPageSize());
+
+  rv = memory1.Purge(Time::FromDoubleT(5));
+  EXPECT_FALSE(rv);
+
+  // Unlock second page.
+  memory2.SetNow(Time::FromDoubleT(6));
   memory2.Unlock(base::GetPageSize(), base::GetPageSize());
 
-  rv = memory1.Purge(Time::FromDoubleT(4));
+  rv = memory1.Purge(Time::FromDoubleT(7));
   EXPECT_FALSE(rv);
 
   // Unlock anything onwards.
-  memory2.SetNow(Time::FromDoubleT(5));
+  memory2.SetNow(Time::FromDoubleT(8));
   memory2.Unlock(2 * base::GetPageSize(), 0);
 
   // Memory is unlocked, but our usage timestamp is incorrect.
-  rv = memory1.Purge(Time::FromDoubleT(6));
+  rv = memory1.Purge(Time::FromDoubleT(9));
   EXPECT_FALSE(rv);
 
   // The failed purge attempt should have updated usage time to the correct
   // value.
-  EXPECT_EQ(Time::FromDoubleT(5), memory1.last_known_usage());
+  EXPECT_EQ(Time::FromDoubleT(8), memory1.last_known_usage());
 
   // Purge should now succeed.
-  rv = memory1.Purge(Time::FromDoubleT(7));
+  rv = memory1.Purge(Time::FromDoubleT(10));
   EXPECT_TRUE(rv);
 }
 
