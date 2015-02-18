@@ -30,6 +30,7 @@
         '../linux/linux_futex.c',
         '../linux/linux_pthread_private.c',
         '../linux/linux_sys_private.c',
+        'irt_icache.c',
         'irt_interfaces.c',
         'irt_random.c',
       ],

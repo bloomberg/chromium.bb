@@ -694,6 +694,7 @@ nonsfi_test_whitelist = set([
     'run_fork_test',
     'run_getpid_test',
     'run_hello_world_test',
+    'run_icache_test',
     'run_irt_futex_test',
     'run_malloc_realloc_calloc_free_test',
     'run_mmap_test',

@@ -151,11 +151,16 @@ def RunSconsTests(status, context):
     # direct-to-native mode. This allows assembly to be used in tests.
     with Step('nonsfi_tests_nopnacl_generate_pexe ' + arch,
               status, halt_on_fail=False):
+      extra_args = ['nonsfi_nacl=1',
+                    'pnacl_generate_pexe=0',
+                    'nonsfi_tests',
+                    'nonsfi_tests_irt']
+      # nonsfi_tests_irt with pnacl_generate_pexe=0 does not pass on x86-32.
+      # https://code.google.com/p/nativeclient/issues/detail?id=4093
+      if arch == 'x86-32':
+        extra_args.remove('nonsfi_tests_irt')
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run +
-                ['nonsfi_nacl=1',
-                 'pnacl_generate_pexe=0',
-                 'nonsfi_tests'])
+            args=flags_run + extra_args)
 
     # Test nonsfi_loader linked against host's libc.
     with Step('nonsfi_tests_host_libc ' + arch, status, halt_on_fail=False):

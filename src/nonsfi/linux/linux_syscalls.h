@@ -121,6 +121,7 @@
 # define __NR_recvmsg            297
 # define __NR_openat             322
 # define __NR_fstatat64          327
+# define __NR_ARM_cacheflush     0xf0002
 # define __NR_ARM_set_tls        0xf0005
 
 #else

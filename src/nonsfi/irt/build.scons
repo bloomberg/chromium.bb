@@ -20,7 +20,8 @@ env.FilterOut(CFLAGS='-Wstrict-prototypes')
 
 irt_query_list_o = env.ComponentObject(
     'irt_query_list', ['$MAIN_DIR/src/untrusted/irt/irt_query_list.c'])
-env.ComponentLibrary('irt_nonsfi', ['irt_interfaces.c', irt_query_list_o])
+env.ComponentLibrary('irt_nonsfi', ['irt_interfaces.c', 'irt_icache.c',
+                                    irt_query_list_o])
 
 # For testing purposes, we split irt_random from libirt_nonsfi.a,
 # which will be linked into the random_test.

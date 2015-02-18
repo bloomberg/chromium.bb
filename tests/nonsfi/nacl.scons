@@ -5,9 +5,23 @@
 
 Import('env')
 
-# Tests in this directory are for syscall wrappers required by newlib
+if not env.Bit('nonsfi_nacl'):
+  Return()
+
+nexe = env.ComponentProgram('icache_test',
+                            'icache_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('icache_test.out', nexe)
+
+is_broken = (not env.Bit('build_arm') or env.Bit('pnacl_generate_pexe') or
+             not env.Bit('tests_use_irt'))
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_icache_test',
+                       is_broken=is_broken)
+
+# The subsequent tests are for syscall wrappers required by newlib
 # based non-SFI nacl_helper. The rest of NaCl does not need them.
-if not env.Bit('nonsfi_nacl') or env.Bit('tests_use_irt'):
+if env.Bit('tests_use_irt'):
   Return()
 
 nexe = env.ComponentProgram('fcntl_test',

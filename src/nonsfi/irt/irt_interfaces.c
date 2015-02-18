@@ -39,6 +39,10 @@
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_random.h"
 
+#if defined(__native_client__) && defined(__arm__)
+#include "native_client/src/nonsfi/irt/irt_icache.h"
+#endif
+
 /*
  * This is an implementation of NaCl's IRT interfaces that runs
  * outside of the NaCl sandbox.
@@ -648,6 +652,12 @@ const struct nacl_irt_exception_handling nacl_irt_exception_handling = {
 };
 #endif
 
+#if defined(__native_client__) && defined(__arm__)
+const struct nacl_irt_icache nacl_irt_icache = {
+  irt_clear_cache,
+};
+#endif
+
 static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
@@ -665,7 +675,10 @@ static const struct nacl_irt_interface irt_interfaces[] = {
     sizeof(nacl_irt_dev_getpid), NULL },
 #if defined(__native_client__)
   { NACL_IRT_EXCEPTION_HANDLING_v0_1, &nacl_irt_exception_handling,
-    sizeof(nacl_irt_exception_handling), NULL},
+    sizeof(nacl_irt_exception_handling), NULL },
+#endif
+#if defined(__native_client__) && defined(__arm__)
+  { NACL_IRT_ICACHE_v0_1, &nacl_irt_icache, sizeof(nacl_irt_icache), NULL },
 #endif
 };
 
