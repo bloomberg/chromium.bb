@@ -128,6 +128,9 @@ int main(int argc, char *argv[]) {
     int port;
     if (base::StringToInt(line->GetSwitchValueASCII("port"), &port)) {
       FLAGS_port = port;
+    } else {
+      std::cerr << "--port must be an integer\n";
+      return 1;
     }
   }
   if (line->HasSwitch("body")) {
@@ -170,8 +173,14 @@ int main(int argc, char *argv[]) {
   GURL url(urls[0]);
   string host = FLAGS_host;
   // TODO(rtenneti): get ip_addr from hostname by doing host resolution.
-  CHECK(!host.empty());
-  net::ParseIPLiteralToNumber(host, &ip_addr);
+  if (host.empty()) {
+    LOG(ERROR) << "--host must be specified\n";
+    return 1;
+  }
+  if (!net::ParseIPLiteralToNumber(host, &ip_addr)) {
+    LOG(ERROR) << "--host could not be parsed as an IP address\n";
+    return 1;
+  }
 
   string host_port = net::IPAddressToStringWithPort(ip_addr, FLAGS_port);
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
