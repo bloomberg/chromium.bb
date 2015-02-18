@@ -1,0 +1,201 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+import time
+
+from telemetry.core import browser_finder
+from telemetry.core import browser_finder_exceptions
+from telemetry.core import exceptions
+from telemetry.core import util
+
+
+class FastNavigationProfileExtender(object):
+  """Extends a Chrome profile.
+
+  This class creates or extends an existing profile by performing a set of tab
+  navigations in large batches. This is accomplished by opening a large number
+  of tabs, simultaneously navigating all the tabs, and then waiting for all the
+  tabs to load. This provides two benefits:
+    - Takes advantage of the high number of logical cores on modern CPUs.
+    - The total time spent waiting for navigations to time out scales linearly
+      with the number of batches, but does not scale with the size of the
+      batch.
+  """
+  def __init__(self):
+    super(FastNavigationProfileExtender, self).__init__()
+
+    # A reference to the browser that will be performing all of the tab
+    # navigations.
+    self._browser = None
+
+    # A static copy of the urls that this class is going to navigate to.
+    self._navigation_urls = None
+
+    # The number of tabs to use.
+    self._NUM_TABS = 15
+
+    # The number of pages to load in parallel.
+    self._NUM_PARALLEL_PAGES = 15
+
+    assert self._NUM_PARALLEL_PAGES <= self._NUM_TABS, (' the batch size can\'t'
+        ' be larger than the number of available tabs')
+
+    # The amount of time to wait for a batch of pages to finish loading.
+    self._BATCH_PAGE_LOAD_TIMEOUT_IN_SECONDS = 10
+
+    # The default amount of time to wait for the retrieval of the URL of a tab.
+    self._TAB_URL_RETRIEVAL_TIMEOUT_IN_SECONDS = 1
+
+  def Run(self, finder_options):
+    """Extends the profile.
+
+    Args:
+      finder_options: An instance of BrowserFinderOptions that contains the
+      directory of the input profile, the directory to place the output
+      profile, and sufficient information to choose a specific browser binary.
+    """
+    try:
+      self._navigation_urls = self.GetUrlsToNavigate()
+      self._SetUpBrowser(finder_options)
+      self._PerformNavigations()
+    finally:
+      self._TearDownBrowser()
+
+  def GetUrlsToNavigate(self):
+    """Returns a list of urls to be navigated to.
+
+    Intended for subclass override.
+    """
+    raise NotImplementedError()
+
+
+  def _GetPossibleBrowser(self, finder_options):
+    """Return a possible_browser with the given options."""
+    possible_browser = browser_finder.FindBrowser(finder_options)
+    if not possible_browser:
+      raise browser_finder_exceptions.BrowserFinderException(
+          'No browser found.\n\nAvailable browsers:\n%s\n' %
+          '\n'.join(browser_finder.GetAllAvailableBrowserTypes(finder_options)))
+    finder_options.browser_options.browser_type = (
+        possible_browser.browser_type)
+
+    return possible_browser
+
+  def _RetrieveTabUrl(self, tab, timeout):
+    """Retrives the URL of the tab."""
+    try:
+      return tab.EvaluateJavaScript('document.URL', timeout)
+    except exceptions.DevtoolsTargetCrashException:
+      return None
+
+  def _WaitForUrlToChange(self, tab, initial_url, timeout):
+    """Waits for the tab to navigate away from its initial url."""
+    end_time = time.time() + timeout
+    while True:
+      seconds_to_wait = end_time - time.time()
+      seconds_to_wait = max(0, seconds_to_wait)
+
+      if seconds_to_wait == 0:
+        break
+
+      current_url = self._RetrieveTabUrl(tab, seconds_to_wait)
+      if current_url != initial_url:
+        break
+
+      # Retrieving the current url is a non-trivial operation. Add a small
+      # sleep here to prevent this method from contending with the actual
+      # navigation.
+      time.sleep(0.01)
+
+  def _BatchNavigateTabs(self, batch):
+    """Performs a batch of tab navigations with minimal delay.
+
+    Args:
+      batch: A list of tuples (tab, url).
+
+    Returns:
+      A list of tuples (tab, initial_url). |initial_url| is the url of the
+      |tab| prior to a navigation command being sent to it.
+    """
+    timeout_in_seconds = 0
+
+    queued_tabs = []
+    for tab, url in batch:
+      initial_url = self._RetrieveTabUrl(tab,
+          self._TAB_URL_RETRIEVAL_TIMEOUT_IN_SECONDS)
+
+      try:
+        tab.Navigate(url, None, timeout_in_seconds)
+      except exceptions.DevtoolsTargetCrashException:
+        # We expect a time out, and don't mind if the webpage crashes. Ignore
+        # both exceptions.
+        pass
+
+      queued_tabs.append((tab, initial_url))
+    return queued_tabs
+
+  def _WaitForQueuedTabsToLoad(self, queued_tabs):
+    """Waits for all the batch navigated tabs to finish loading.
+
+    Args:
+      queued_tabs: A list of tuples (tab, initial_url). Each tab is guaranteed
+      to have already been sent a navigation command.
+    """
+    end_time = time.time() + self._BATCH_PAGE_LOAD_TIMEOUT_IN_SECONDS
+    for tab, initial_url in queued_tabs:
+      seconds_to_wait = end_time - time.time()
+      seconds_to_wait = max(0, seconds_to_wait)
+
+      if seconds_to_wait == 0:
+        break
+
+      # Since we don't wait any time for the tab url navigation to commit, it's
+      # possible that the tab hasn't started navigating yet.
+      self._WaitForUrlToChange(tab, initial_url, seconds_to_wait)
+
+      seconds_to_wait = end_time - time.time()
+      seconds_to_wait = max(0, seconds_to_wait)
+
+      try:
+        tab.WaitForDocumentReadyStateToBeComplete(seconds_to_wait)
+      except (util.TimeoutException, exceptions.DevtoolsTargetCrashException):
+        # Ignore time outs and web page crashes.
+        pass
+
+  def _SetUpBrowser(self, finder_options):
+    """Finds the browser, starts the browser, and opens the requisite number of
+    tabs."""
+    possible_browser = self._GetPossibleBrowser(finder_options)
+    self._browser = possible_browser.Create(finder_options)
+
+    for _ in range(self._NUM_TABS):
+      self._browser.tabs.New()
+
+  def _PerformNavigations(self):
+    """Performs the navigations specified by |_navigation_urls| in large
+    batches."""
+    # The index of the first url that has not yet been navigated to.
+    navigation_url_index = 0
+    while True:
+      # Generate the next batch of navigations.
+      batch = []
+      max_index = min(navigation_url_index + self._NUM_PARALLEL_PAGES,
+          len(self._navigation_urls))
+      for i in range(navigation_url_index, max_index):
+        url = self._navigation_urls[i]
+        tab = self._browser.tabs[i % self._NUM_TABS]
+        batch.append((tab, url))
+      navigation_url_index = max_index
+
+      queued_tabs = self._BatchNavigateTabs(batch)
+      self._WaitForQueuedTabsToLoad(queued_tabs)
+
+      if navigation_url_index == len(self._navigation_urls):
+        break
+
+  def _TearDownBrowser(self):
+    """Teardown that is guaranteed to be executed before the instance is
+    destroyed."""
+    if self._browser:
+      self._browser.Close()
+      self._browser = None
