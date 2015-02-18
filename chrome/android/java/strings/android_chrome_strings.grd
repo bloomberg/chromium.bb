@@ -142,6 +142,17 @@
         Managed by your parent
       </message>
 
+      <!-- Sign-in preference -->
+      <message name="IDS_SIGN_IN_TO_CHROME" desc="Title for the button to sign in to Chrome using one's Google account. [CHAR-LIMIT=27]">
+        Sign in to Chrome
+      </message>
+      <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY" desc="Summary for the button to sign in to Chrome, explaining benefits of signing in.">
+        Sign in to get your tabs, bookmarks, history, and other settings on all your devices
+      </message>
+      <message name="IDS_NUMBER_OF_SIGNED_IN_ACCOUNTS" desc="Summary indicating the number of accounts (always greater than 1) the user is signed in to the content area.">
+        <ph name="NUMBER_OF_ACCOUNTS">%1$d<ex>3</ex></ph> accounts
+      </message>
+
       <!-- Search engine preferences -->
       <message name="IDS_PREFS_SEARCH_ENGINE" desc="Title for Search Engine preferences. [CHAR-LIMIT=32]">
         Search engine
