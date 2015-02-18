@@ -38,14 +38,13 @@ class SVGAnimationElement;
 // The size of SVGElementInstances is 1 unless there is a <use> instance of the element.
 using SVGElementInstances = WillBeHeapVector<RawPtrWillBeMember<SVGElement>, 1u>;
 
-class SVGAnimatedTypeAnimator final : public NoBaseWillBeGarbageCollectedFinalized<SVGAnimatedTypeAnimator> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+class SVGAnimatedTypeAnimator final {
+    DISALLOW_ALLOCATION();
 public:
-    static PassOwnPtrWillBeRawPtr<SVGAnimatedTypeAnimator> create(SVGAnimationElement* animationElement, SVGElement* targetElement)
-    {
-        return adoptPtrWillBeNoop(new SVGAnimatedTypeAnimator(animationElement, targetElement));
-    }
-    ~SVGAnimatedTypeAnimator();
+    SVGAnimatedTypeAnimator(SVGAnimationElement*);
+
+    void clear();
+    void reset(SVGElement* contextElement);
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> constructFromString(const String&);
 
@@ -68,16 +67,14 @@ public:
     DECLARE_TRACE();
 
 private:
-    SVGAnimatedTypeAnimator(SVGAnimationElement*, SVGElement*);
-
     friend class ParsePropertyFromString;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
     PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimation(const SVGElementInstances&);
 
-    AnimatedPropertyType m_type;
     RawPtrWillBeMember<SVGAnimationElement> m_animationElement;
     RawPtrWillBeMember<SVGElement> m_contextElement;
     RefPtrWillBeMember<SVGAnimatedPropertyBase> m_animatedProperty;
+    AnimatedPropertyType m_type;
 };
 
 } // namespace blink

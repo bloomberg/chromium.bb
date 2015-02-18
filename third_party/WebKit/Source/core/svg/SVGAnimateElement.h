@@ -63,7 +63,6 @@ protected:
 
 private:
     void resetAnimatedPropertyType();
-    SVGAnimatedTypeAnimator* ensureAnimator();
 
     virtual bool hasValidAttributeType() override;
 
@@ -72,7 +71,7 @@ private:
     RefPtrWillBeMember<SVGPropertyBase> m_toAtEndOfDurationProperty;
     RefPtrWillBeMember<SVGPropertyBase> m_animatedProperty;
 
-    OwnPtrWillBeMember<SVGAnimatedTypeAnimator> m_animator;
+    SVGAnimatedTypeAnimator m_animator;
 };
 
 inline bool isSVGAnimateElement(const SVGElement& element)

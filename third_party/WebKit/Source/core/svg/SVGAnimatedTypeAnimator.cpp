@@ -34,12 +34,25 @@
 
 namespace blink {
 
-SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(SVGAnimationElement* animationElement, SVGElement* contextElement)
+SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(SVGAnimationElement* animationElement)
     : m_animationElement(animationElement)
-    , m_contextElement(contextElement)
+    , m_contextElement(nullptr)
+    , m_type(AnimatedUnknown)
 {
     ASSERT(m_animationElement);
-    ASSERT(m_contextElement);
+}
+
+void SVGAnimatedTypeAnimator::clear()
+{
+    m_contextElement = nullptr;
+    m_animatedProperty = nullptr;
+    m_type = AnimatedUnknown;
+}
+
+void SVGAnimatedTypeAnimator::reset(SVGElement* contextElement)
+{
+    ASSERT(contextElement);
+    m_contextElement = contextElement;
 
     const QualifiedName& attributeName = m_animationElement->attributeName();
     m_animatedProperty = m_contextElement->propertyFromAttribute(attributeName);
@@ -48,7 +61,7 @@ SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(SVGAnimationElement* animationE
 
     // Only <animateTransform> is allowed to animate AnimatedTransformList.
     // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
-    if (m_type == AnimatedTransformList && !isSVGAnimateTransformElement(*animationElement))
+    if (m_type == AnimatedTransformList && !isSVGAnimateTransformElement(*m_animationElement))
         m_type = AnimatedUnknown;
 
     ASSERT(m_type != AnimatedPoint
@@ -56,12 +69,10 @@ SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(SVGAnimationElement* animationE
         && m_type != AnimatedTransform);
 }
 
-SVGAnimatedTypeAnimator::~SVGAnimatedTypeAnimator()
-{
-}
-
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value)
 {
+    ASSERT(m_contextElement);
+
     if (isAnimatingSVGDom()) {
         // SVG DOM animVal animation code-path.
 
@@ -191,6 +202,7 @@ void SVGAnimatedTypeAnimator::stopAnimValAnimation(const SVGElementInstances& li
     if (!isAnimatingSVGDom())
         return;
 
+    ASSERT(m_contextElement);
     SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
 
     for (SVGElement* elementInstance : list) {
@@ -244,7 +256,6 @@ void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned 
 
 float SVGAnimatedTypeAnimator::calculateDistance(const String& fromString, const String& toString)
 {
-    ASSERT(m_animationElement);
     ASSERT(m_contextElement);
     RefPtrWillBeRawPtr<SVGPropertyBase> fromValue = createPropertyForAnimation(fromString);
     RefPtrWillBeRawPtr<SVGPropertyBase> toValue = createPropertyForAnimation(toString);
