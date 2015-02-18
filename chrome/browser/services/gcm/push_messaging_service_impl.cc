@@ -41,7 +41,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/common/push_messaging_status.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -350,17 +349,7 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
     // Use the visible URL since that's the one the user is aware of (and it
     // doesn't matter whether the page loaded successfully).
     const GURL& active_url = active_web_contents->GetVisibleURL();
-
-    // Allow https://foo.example.com Service Worker to not show notification
-    // if an https://bar.example.com tab is visible (and hence might
-    // conceivably be showing UI in response to the push message); but http://
-    // doesn't count as the Service Worker can't talk to it, even with
-    // navigator.connect.
-    if (requesting_origin.scheme() != active_url.scheme())
-      continue;
-    if (net::registry_controlled_domains::SameDomainOrHost(
-        requesting_origin, active_url,
-        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    if (requesting_origin == active_url.GetOrigin()) {
       notification_needed = false;
       break;
     }
