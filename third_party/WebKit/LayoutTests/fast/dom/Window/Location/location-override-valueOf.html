@@ -10,6 +10,12 @@
     var result = normalizeURL(String(window.location));
     var correctValue = normalizeURL(document.URL);
     shouldBe("result", "correctValue");
+    result = normalizeURL(String(window.location.valueOf()));
+    shouldBe("result", "correctValue");
+    shouldThrow("(function() { 'use strict'; location.valueOf = 'haxored'; return location.valueOf(); }())");
+    shouldNotThrow("(function() { location.valueOf = 'haxored'; return location.valueOf(); }())");
+    shouldThrow("(function() { 'use strict'; delete location.valueOf; }())");
+    shouldBe("(function() { delete location.valueOf; return !!location.valueOf}())", "true");
 </script>
 </body>
 </html>
