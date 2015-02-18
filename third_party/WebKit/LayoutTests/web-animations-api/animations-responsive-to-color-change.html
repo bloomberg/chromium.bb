@@ -9,6 +9,9 @@ a { visibility: hidden; }
     <div id='child'></div>
 </div>
 <div id='element'></div>
+<svg>
+    <rect id='svgElement'></rect>
+</svg>
 
 <a href='example.com/unvisited' id='unvisited'><div id='unvisitedchild'>Unvisited</div></a>
 <a href='' id='visited'><div id='visitedchild'>Visited</div></a>
@@ -36,6 +39,20 @@ test(function() {
     element.style.color = 'rgb(0, 0, 204)';
     assert_equals(getComputedStyle(element).backgroundColor, 'rgb(0, 34, 102)');
 }, 'Background color responsive to currentColor changes');
+
+test(function() {
+    var keyframes = [
+        {fill: 'currentColor'},
+        {fill: 'rgb(0, 68, 0)'}
+    ];
+
+    svgElement.style.color = 'rgb(204, 0, 0)';
+    var player = svgElement.animate(keyframes, 10);
+    player.pause();
+    player.currentTime = 5;
+    svgElement.style.color = 'rgb(0, 0, 204)';
+    assert_equals(getComputedStyle(svgElement).fill, 'rgb(0, 34, 102)');
+}, 'Fill color responsive to currentColor changes');
 
 test(function() {
     var keyframes = [
@@ -122,6 +139,20 @@ test(function() {
     element.style.color = 'rgb(0, 0, 204)';
     assert_equals(getComputedStyle(element).outlineColor, 'rgb(0, 34, 102)');
 }, 'Outline color responsive to currentColor changes');
+
+test(function() {
+    var keyframes = [
+        {stroke: 'rgb(0, 68, 0)'},
+        {stroke: 'currentColor'}
+    ];
+
+    svgElement.style.color = 'rgb(204, 0, 0)';
+    var player = svgElement.animate(keyframes, 10);
+    player.pause();
+    player.currentTime = 5;
+    svgElement.style.color = 'rgb(0, 0, 204)';
+    assert_equals(getComputedStyle(svgElement).stroke, 'rgb(0, 34, 102)');
+}, 'Stroke color responsive to currentColor changes');
 
 test(function() {
     var keyframes = [

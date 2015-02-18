@@ -228,10 +228,12 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyBorderRightColor:
     case CSSPropertyBorderTopColor:
     case CSSPropertyColor:
+    case CSSPropertyFill:
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
     case CSSPropertyOutlineColor:
     case CSSPropertyStopColor:
+    case CSSPropertyStroke:
     case CSSPropertyTextDecorationColor:
     case CSSPropertyWebkitColumnRuleColor:
     case CSSPropertyWebkitTextStrokeColor:
