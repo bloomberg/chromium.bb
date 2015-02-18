@@ -18,6 +18,8 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebThread.h"
+#include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -122,10 +124,15 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
   return blink::WebPluginContainer::TouchEventRequestTypeNone;
 }
 
-void DeferredDelete(void* context) {
-  TestPlugin* plugin = static_cast<TestPlugin*>(context);
-  delete plugin;
-}
+class DeferredDeleteTask : public blink::WebThread::Task {
+ public:
+  DeferredDeleteTask(scoped_ptr<TestPlugin> plugin) : plugin_(plugin.Pass()) {}
+
+  void run() override {}
+
+ private:
+  scoped_ptr<TestPlugin> plugin_;
+};
 
 }  // namespace
 
@@ -239,7 +246,9 @@ void TestPlugin::destroy() {
   container_ = 0;
   frame_ = 0;
 
-  blink::Platform::current()->callOnMainThread(DeferredDelete, this);
+  blink::Platform::current()->mainThread()->postTask(
+      blink::WebTraceLocation(__FUNCTION__, __FILE__),
+      new DeferredDeleteTask(make_scoped_ptr(this)));
 }
 
 NPObject* TestPlugin::scriptableObject() {
