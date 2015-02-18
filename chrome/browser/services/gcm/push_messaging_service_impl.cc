@@ -291,7 +291,7 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
     content::WebContents* active_web_contents =
         it->tab_strip_model()->GetActiveWebContents();
 #endif
-    if (!active_web_contents)
+    if (!active_web_contents || !active_web_contents->GetMainFrame())
       continue;
 
     // Don't leak information from other profiles.
