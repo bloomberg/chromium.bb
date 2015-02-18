@@ -299,6 +299,9 @@ void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
     host_->SetNeedsAnimate();
 }
 
+void Compositor::BeginMainFrameNotExpectedSoon() {
+}
+
 void Compositor::Layout() {
   // We're sending damage that will be addressed during this composite
   // cycle, so we don't need to schedule another composite to address it.

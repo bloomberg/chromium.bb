@@ -36,6 +36,10 @@ class CONTENT_EXPORT RendererScheduler {
   // to resource dispatch, foreground HTML parsing, etc...
   virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
 
+  // Called to notify about the start of an extended period where no frames
+  // need to be drawn. Must be called from the main thread.
+  virtual void BeginFrameNotExpectedSoon() = 0;
+
   // Called to notify about the start of a new frame.  Must be called from the
   // main thread.
   virtual void WillBeginFrame(const cc::BeginFrameArgs& args) = 0;

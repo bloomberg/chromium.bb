@@ -26,6 +26,7 @@ class LayerTreeHostClient {
   // Marks finishing compositing-related tasks on the main thread. In threaded
   // mode, this corresponds to DidCommit().
   virtual void BeginMainFrame(const BeginFrameArgs& args) = 0;
+  virtual void BeginMainFrameNotExpectedSoon() = 0;
   virtual void DidBeginMainFrame() = 0;
   virtual void Layout() = 0;
   virtual void ApplyViewportDeltas(

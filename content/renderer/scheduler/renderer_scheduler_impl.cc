@@ -121,6 +121,13 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
   }
 }
 
+void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::BeginFrameNotExpectedSoon");
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  // TODO(rmcilroy): Implement long idle times.
+}
+
 void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
     const blink::WebInputEvent& web_input_event) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),

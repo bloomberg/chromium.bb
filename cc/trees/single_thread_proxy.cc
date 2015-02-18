@@ -685,6 +685,10 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
+  layer_tree_host_->BeginMainFrameNotExpectedSoon();
+}
+
 void SingleThreadProxy::BeginMainFrame() {
   if (defer_commits_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",

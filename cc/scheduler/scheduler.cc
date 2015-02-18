@@ -335,6 +335,9 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   if (state_machine_.ShouldSetNeedsBeginFrames(
           frame_source_->NeedsBeginFrames())) {
     frame_source_->SetNeedsBeginFrames(state_machine_.BeginFrameNeeded());
+    if (!frame_source_->NeedsBeginFrames()) {
+      client_->SendBeginMainFrameNotExpectedSoon();
+    }
   }
 
   if (state_machine_.begin_impl_frame_state() ==

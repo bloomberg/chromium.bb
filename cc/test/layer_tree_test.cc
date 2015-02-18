@@ -441,6 +441,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void DidAbortSwapBuffers() override {}
   void ScheduleComposite() override { test_hooks_->ScheduleComposite(); }
   void DidCompletePageScaleAnimation() override {}
+  void BeginMainFrameNotExpectedSoon() override {}
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)

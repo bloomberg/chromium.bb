@@ -65,6 +65,9 @@ void WebLayerTreeViewImpl::WillBeginMainFrame() {
 void WebLayerTreeViewImpl::DidBeginMainFrame() {
 }
 
+void WebLayerTreeViewImpl::BeginMainFrameNotExpectedSoon() {
+}
+
 void WebLayerTreeViewImpl::BeginMainFrame(const cc::BeginFrameArgs& args) {
   VLOG(2) << "WebLayerTreeViewImpl::BeginMainFrame";
   double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();

@@ -36,6 +36,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
+  void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;

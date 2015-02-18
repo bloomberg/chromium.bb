@@ -68,6 +68,9 @@ NullRendererScheduler::IdleTaskRunner() {
 void NullRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
+void NullRendererScheduler::BeginFrameNotExpectedSoon() {
+}
+
 void NullRendererScheduler::DidCommitFrameToCompositor() {
 }
 

@@ -701,6 +701,12 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
   impl().timing_history.DidBeginMainFrame();
 }
 
+void ThreadProxy::SendBeginMainFrameNotExpectedSoon() {
+  Proxy::MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ThreadProxy::BeginMainFrameNotExpectedSoon,
+                            main_thread_weak_ptr_));
+}
+
 void ThreadProxy::BeginMainFrame(
     scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
@@ -859,6 +865,12 @@ void ThreadProxy::BeginMainFrame(
 
   layer_tree_host()->CommitComplete();
   layer_tree_host()->DidBeginMainFrame();
+}
+
+void ThreadProxy::BeginMainFrameNotExpectedSoon() {
+  TRACE_EVENT0("cc", "ThreadProxy::BeginMainFrameNotExpectedSoon");
+  DCHECK(IsMainThread());
+  layer_tree_host()->BeginMainFrameNotExpectedSoon();
 }
 
 void ThreadProxy::StartCommitOnImplThread(CompletionEvent* completion,

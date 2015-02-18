@@ -783,6 +783,10 @@ void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   widget_->webwidget()->beginFrame(web_begin_frame_args);
 }
 
+void RenderWidgetCompositor::BeginMainFrameNotExpectedSoon() {
+  compositor_deps_->GetRendererScheduler()->BeginFrameNotExpectedSoon();
+}
+
 void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
 

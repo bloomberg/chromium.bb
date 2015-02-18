@@ -233,6 +233,10 @@ void LayerTreeHost::DidBeginMainFrame() {
   client_->DidBeginMainFrame();
 }
 
+void LayerTreeHost::BeginMainFrameNotExpectedSoon() {
+  client_->BeginMainFrameNotExpectedSoon();
+}
+
 void LayerTreeHost::BeginMainFrame(const BeginFrameArgs& args) {
   inside_begin_main_frame_ = true;
   client_->BeginMainFrame(args);

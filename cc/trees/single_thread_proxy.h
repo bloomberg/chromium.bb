@@ -79,6 +79,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   base::TimeDelta CommitToActivateDurationEstimate() override;
   void DidBeginImplFrameDeadline() override;
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
+  void SendBeginMainFrameNotExpectedSoon() override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;

@@ -227,6 +227,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   base::TimeDelta CommitToActivateDurationEstimate() override;
   void DidBeginImplFrameDeadline() override;
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
+  void SendBeginMainFrameNotExpectedSoon() override;
 
   // ResourceUpdateControllerClient implementation
   void ReadyToFinalizeTextureUpdates() override;
@@ -244,6 +245,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
       const RendererCapabilities& capabilities);
   void BeginMainFrame(
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
+  void BeginMainFrameNotExpectedSoon();
   void DidCommitAndDrawFrame();
   void DidCompleteSwapBuffers();
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue);

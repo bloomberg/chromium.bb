@@ -35,6 +35,9 @@ FakeRendererScheduler::IdleTaskRunner() {
 void FakeRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
+void FakeRendererScheduler::BeginFrameNotExpectedSoon() {
+}
+
 void FakeRendererScheduler::DidCommitFrameToCompositor() {
 }
 

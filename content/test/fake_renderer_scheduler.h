@@ -20,6 +20,7 @@ class FakeRendererScheduler : public RendererScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
+  void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;
