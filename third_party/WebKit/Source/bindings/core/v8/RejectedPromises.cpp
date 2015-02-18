@@ -93,7 +93,9 @@ void RejectedPromises::processQueue()
 
         ASSERT(!message->m_promise.isEmpty());
         v8::Handle<v8::Value> value = message->m_promise.v8Value();
-        ASSERT(!value.IsEmpty() && value->IsPromise());
+        // https://crbug.com/450330
+        if (value.IsEmpty() || !value->IsPromise())
+            continue;
         if (v8::Handle<v8::Promise>::Cast(value)->HasHandler())
             continue;
 
