@@ -241,7 +241,7 @@ FileBrowserBackground.prototype.handleViewEvent_ =
                 console.error('Got view event with invalid volume id.');
               }
             } else if (event.volumeId) {
-              this.navigateToVolumeWhenReady_(event.volumeId);
+              this.navigateToVolumeWhenReady_(event.volumeId, event.filePath);
             } else {
               console.error('Got view event with no actionable destination.');
             }
