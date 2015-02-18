@@ -96,18 +96,15 @@ float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::S
     return x.valueAsPercentage();
 }
 
-float SVGLengthContext::valueForLength(const Length& length, SVGLengthMode mode)
+float SVGLengthContext::valueForLength(const Length& length, SVGLengthMode mode) const
 {
-    if (length.isAuto())
-        return 0;
-
-    FloatSize viewportSize;
-    determineViewport(viewportSize);
-
-    if (length.isPercent())
-        return length.value() * dimensionForLengthMode(mode, viewportSize) / 100;
-
-    return floatValueForLength(length, dimensionForLengthMode(mode, viewportSize));
+    float dimension = 0;
+    if (length.isPercent()) {
+        FloatSize viewportSize;
+        determineViewport(viewportSize);
+        dimension = dimensionForLengthMode(mode, viewportSize);
+    }
+    return floatValueForLength(length, dimension);
 }
 
 float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit) const

@@ -67,7 +67,7 @@ public:
     float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit) const;
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit) const;
 
-    float valueForLength(const Length&, SVGLengthMode = LengthModeOther);
+    float valueForLength(const Length&, SVGLengthMode = LengthModeOther) const;
 
     bool determineViewport(FloatSize&) const;
 
