@@ -6,6 +6,10 @@ sdefresne@chromium.org
 
 per-file app_modal*=avi@chromium.org
 
+per-file audio_modem.gypi=ckehoe@chromium.org
+per-file audio_modem.gypi=rkc@chromium.org
+per-file audio_modem.gypi=xiyuan@chromium.org
+
 # Can not match autofill* due to crbug.com/397984
 per-file autofill.gypi=estade@chromium.org
 per-file autofill.gypi=isherman@chromium.org
