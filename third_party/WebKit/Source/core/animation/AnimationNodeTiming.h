@@ -23,7 +23,7 @@ public:
     String fill();
     double iterationStart();
     double iterations();
-    void getDuration(String propertyName, DoubleOrString&);
+    void duration(DoubleOrString&);
     double playbackRate();
     String direction();
     String easing();
@@ -33,7 +33,7 @@ public:
     void setFill(String);
     void setIterationStart(double);
     void setIterations(double);
-    bool setDuration(String name, double duration);
+    void setDuration(const DoubleOrString&);
     void setPlaybackRate(double);
     void setDirection(String);
     void setEasing(String);

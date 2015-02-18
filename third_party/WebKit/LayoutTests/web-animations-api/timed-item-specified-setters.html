@@ -32,7 +32,7 @@ test(function() {
     specifiedTiming.duration = 5;
     assert_equals(specifiedTiming.duration, 5);
     specifiedTiming.duration = '6';
-    assert_equals(specifiedTiming.duration, 6);
+    assert_equals(specifiedTiming.duration, 'auto');
     specifiedTiming.duration = 'auto';
     assert_equals(specifiedTiming.duration, 'auto');
     specifiedTiming.duration = 'a';

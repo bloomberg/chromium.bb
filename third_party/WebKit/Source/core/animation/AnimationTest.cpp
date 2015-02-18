@@ -255,7 +255,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedWithDuration = animationWithDuration->timing();
     DoubleOrString duration;
-    specifiedWithDuration->getDuration("duration", duration);
+    specifiedWithDuration->duration(duration);
     EXPECT_TRUE(duration.isDouble());
     EXPECT_EQ(2.5, duration.getAsDouble());
     EXPECT_FALSE(duration.isString());
@@ -268,7 +268,7 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedNoDuration = animationNoDuration->timing();
     DoubleOrString duration2;
-    specifiedNoDuration->getDuration("duration", duration2);
+    specifiedNoDuration->duration(duration2);
     EXPECT_FALSE(duration2.isDouble());
     EXPECT_TRUE(duration2.isString());
     EXPECT_EQ("auto", duration2.getAsString());
@@ -326,14 +326,16 @@ TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
     RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
 
     DoubleOrString duration;
-    specified->getDuration("duration", duration);
+    specified->duration(duration);
     EXPECT_FALSE(duration.isDouble());
     EXPECT_TRUE(duration.isString());
     EXPECT_EQ("auto", duration.getAsString());
 
-    specified->setDuration("duration", 2.5);
+    DoubleOrString inDuration;
+    inDuration.setDouble(2.5);
+    specified->setDuration(inDuration);
     DoubleOrString duration2;
-    specified->getDuration("duration", duration2);
+    specified->duration(duration2);
     EXPECT_TRUE(duration2.isDouble());
     EXPECT_EQ(2.5, duration2.getAsDouble());
     EXPECT_FALSE(duration2.isString());

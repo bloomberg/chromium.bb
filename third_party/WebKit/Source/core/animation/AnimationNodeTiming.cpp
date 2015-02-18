@@ -47,22 +47,12 @@ double AnimationNodeTiming::iterations()
     return m_parent->specifiedTiming().iterationCount;
 }
 
-// This logic was copied from the example in bindings/tests/idls/TestInterface.idl
-// and bindings/tests/results/V8TestInterface.cpp.
-// FIXME: It might be possible to have 'duration' defined as an attribute in the idl.
-// If possible, fix will be in a follow-up patch.
-// http://crbug.com/240176
-void AnimationNodeTiming::getDuration(String propertyName, DoubleOrString& returnValue)
+void AnimationNodeTiming::duration(DoubleOrString& returnValue)
 {
-    if (propertyName != "duration")
-        return;
-
-    if (std::isnan(m_parent->specifiedTiming().iterationDuration)) {
+    if (std::isnan(m_parent->specifiedTiming().iterationDuration))
         returnValue.setString("auto");
-        return;
-    }
-    returnValue.setDouble(m_parent->specifiedTiming().iterationDuration * 1000);
-    return;
+    else
+        returnValue.setDouble(m_parent->specifiedTiming().iterationDuration * 1000);
 }
 
 double AnimationNodeTiming::playbackRate()
@@ -115,14 +105,13 @@ void AnimationNodeTiming::setIterations(double iterations)
     m_parent->updateSpecifiedTiming(timing);
 }
 
-bool AnimationNodeTiming::setDuration(String name, double duration)
+void AnimationNodeTiming::setDuration(const DoubleOrString& durationOrAuto)
 {
-    if (name != "duration")
-        return false;
+    // Any strings other than "auto" are coerced to "auto".
+    double duration = durationOrAuto.isString() ? std::numeric_limits<double>::quiet_NaN() : durationOrAuto.getAsDouble();
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setIterationDuration(timing, duration);
     m_parent->updateSpecifiedTiming(timing);
-    return true;
 }
 
 void AnimationNodeTiming::setPlaybackRate(double playbackRate)
