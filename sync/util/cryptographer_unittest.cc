@@ -138,13 +138,7 @@ TEST_F(CryptographerTest, AddKeySetsDefault) {
   EXPECT_EQ(encrypted3.key_name(), encrypted4.key_name());
 }
 
-// Crashes, Bug 55178.
-#if defined(OS_WIN)
-#define MAYBE_EncryptExportDecrypt DISABLED_EncryptExportDecrypt
-#else
-#define MAYBE_EncryptExportDecrypt EncryptExportDecrypt
-#endif
-TEST_F(CryptographerTest, MAYBE_EncryptExportDecrypt) {
+TEST_F(CryptographerTest, EncryptExportDecrypt) {
   sync_pb::EncryptedData nigori;
   sync_pb::EncryptedData encrypted;
 

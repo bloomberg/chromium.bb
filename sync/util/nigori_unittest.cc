@@ -130,13 +130,7 @@ TEST(SyncNigoriTest, CorruptedCiphertext) {
   EXPECT_NE(plaintext, decrypted);
 }
 
-// Crashes, Bug 55180.
-#if defined(OS_WIN)
-#define MAYBE_ExportImport DISABLED_ExportImport
-#else
-#define MAYBE_ExportImport ExportImport
-#endif
-TEST(SyncNigoriTest, MAYBE_ExportImport) {
+TEST(SyncNigoriTest, ExportImport) {
   Nigori nigori1;
   EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
 
