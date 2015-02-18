@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_targeter.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/events/test/test_event_processor.h"
@@ -52,7 +53,7 @@ TEST_F(EventProcessorTest, Basic) {
   root()->AddChild(child.Pass());
 
   MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                   EF_NONE, EF_NONE);
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -140,8 +141,8 @@ TEST_F(EventProcessorTest, Bounds) {
   // Dispatch a mouse event that falls on the parent, but not on the child. When
   // the default event-targeter used, the event will still reach |grandchild|,
   // because the default targeter does not look at the bounds.
-  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1), EF_NONE,
-                   EF_NONE);
+  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1),
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -152,8 +153,8 @@ TEST_F(EventProcessorTest, Bounds) {
   // Now install a targeter on the parent that looks at the bounds and makes
   // sure the event reaches the target only if the location of the event within
   // the bounds of the target.
-  MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1), EF_NONE,
-                    EF_NONE);
+  MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(1, 1),
+                    EventTimeForNow(), EF_NONE, EF_NONE);
   parent_r->SetEventTargeter(scoped_ptr<EventTargeter>(
       new BoundsEventTargeter<BoundsTestTarget>()));
   DispatchEvent(&mouse2);
@@ -164,7 +165,7 @@ TEST_F(EventProcessorTest, Bounds) {
   parent_r->ResetReceivedEvents();
 
   MouseEvent second(ET_MOUSE_MOVED, gfx::Point(12, 12), gfx::Point(12, 12),
-                    EF_NONE, EF_NONE);
+                    EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&second);
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(parent_r->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -238,8 +239,8 @@ TEST_F(EventProcessorTest, NestedEventProcessing) {
   // Dispatch a mouse event to the tree of event targets owned by the first
   // event processor, checking in ReDispatchEventHandler that the phase and
   // target information of the event is correct.
-  MouseEvent mouse(
-      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
 
   // Verify also that |mouse| was seen by the child nodes contained in both
@@ -253,8 +254,8 @@ TEST_F(EventProcessorTest, NestedEventProcessing) {
   // Indicate that the child of the second root should handle events, and
   // dispatch another mouse event to verify that it is marked as handled.
   second_root->child_at(0)->set_mark_events_as_handled(true);
-  MouseEvent mouse2(
-      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
+                    EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse2);
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_TRUE(second_root->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -271,7 +272,7 @@ TEST_F(EventProcessorTest, OnEventProcessingFinished) {
   // Dispatch a mouse event. We expect the event to be seen by the target,
   // handled, and we expect OnEventProcessingFinished() to be invoked once.
   MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                   EF_NONE, EF_NONE);
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -291,8 +292,8 @@ TEST_F(EventProcessorTest, OnEventProcessingStarted) {
   // OnEventProcessingStarted() should be called once, and
   // OnEventProcessingFinished() should be called once. The event should
   // remain unhandled.
-  MouseEvent mouse(
-      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -308,8 +309,8 @@ TEST_F(EventProcessorTest, OnEventProcessingStarted) {
   // seen by the target this time, but OnEventProcessingStarted() and
   // OnEventProcessingFinished() should both still be called once.
   processor()->set_should_processing_occur(false);
-  MouseEvent mouse2(
-      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
+                    EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse2);
   EXPECT_FALSE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -338,7 +339,7 @@ TEST_F(EventProcessorTest, TargeterChecksOwningEventTarget) {
   root()->AddChild(child.Pass());
 
   MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                   EF_NONE, EF_NONE);
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
   EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_FALSE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -349,7 +350,7 @@ TEST_F(EventProcessorTest, TargeterChecksOwningEventTarget) {
   root()->child_at(0)->SetEventTargeter(
       scoped_ptr<EventTargeter>(new IgnoreEventTargeter()));
   MouseEvent mouse2(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                    EF_NONE, EF_NONE);
+                    EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse2);
   EXPECT_FALSE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
   EXPECT_TRUE(root()->DidReceiveEvent(ET_MOUSE_MOVED));
@@ -510,7 +511,7 @@ TEST_F(EventProcessorTest, HandlerSequence) {
   grandchild_r->AddPostTargetHandler(&post_grandchild);
 
   MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
-                   EF_NONE, EF_NONE);
+                   EventTimeForNow(), EF_NONE, EF_NONE);
   DispatchEvent(&mouse);
 
   std::string expected[] = { "PreR", "PreC", "PreG", "G", "PostG", "PostC",

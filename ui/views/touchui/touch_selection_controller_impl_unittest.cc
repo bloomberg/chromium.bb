@@ -10,6 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -736,7 +737,7 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
   StartTouchEditing();
   gfx::Point test_point = GetCursorHandleDragPoint();
   ui::MouseEvent test_event1(ui::ET_MOUSE_MOVED, test_point, test_point,
-                             ui::EF_NONE, ui::EF_NONE);
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(GetCursorHandleNativeView(),
             targeter->FindTargetForEvent(root, &test_event1));
   EndTouchEditing();
@@ -749,14 +750,14 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
   // above the second window.
   StartTouchEditing();
   ui::MouseEvent test_event2(ui::ET_MOUSE_MOVED, test_point, test_point,
-                             ui::EF_NONE, ui::EF_NONE);
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(window2, targeter->FindTargetForEvent(root, &test_event2));
 
   // Move the first window to top and check that the handle is kept above the
   // first window.
   window1->GetRootWindow()->StackChildAtTop(window1);
   ui::MouseEvent test_event3(ui::ET_MOUSE_MOVED, test_point, test_point,
-                             ui::EF_NONE, ui::EF_NONE);
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(GetCursorHandleNativeView(),
             targeter->FindTargetForEvent(root, &test_event3));
 }

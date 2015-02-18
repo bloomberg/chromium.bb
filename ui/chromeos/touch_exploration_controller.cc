@@ -986,8 +986,8 @@ scoped_ptr<ui::Event> TouchExplorationController::CreateMouseMoveEvent(
   // event to the new ChromeVox background page via the automation api.
   flags |= ui::EF_COMMAND_DOWN;
 
-  return scoped_ptr<ui::Event>(
-      new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location, flags, 0));
+  return scoped_ptr<ui::Event>(new ui::MouseEvent(
+      ui::ET_MOUSE_MOVED, location, location, ui::EventTimeForNow(), flags, 0));
 }
 
 void TouchExplorationController::EnterTouchToMouseMode() {

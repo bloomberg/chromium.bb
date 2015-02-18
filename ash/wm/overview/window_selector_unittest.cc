@@ -45,6 +45,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -434,7 +435,7 @@ TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
   gfx::Point point1(window_bounds.x() + 10, window_bounds.y() + 10);
 
   ui::MouseEvent event1(ui::ET_MOUSE_PRESSED, point1, point1,
-                        ui::EF_NONE, ui::EF_NONE);
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
 
   ui::EventTarget* root_target = root_window;
   ui::EventTargeter* targeter = root_target->GetEventTargeter();
@@ -450,7 +451,7 @@ TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
   gfx::RectF bounds = GetTransformedBoundsInRootWindow(window.get());
   gfx::Point point2(bounds.x() + 10, bounds.y() + 10);
   ui::MouseEvent event2(ui::ET_MOUSE_PRESSED, point2, point2,
-                        ui::EF_NONE, ui::EF_NONE);
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
 
   // Now the transparent window should be intercepting this event.
   EXPECT_NE(window, static_cast<aura::Window*>(

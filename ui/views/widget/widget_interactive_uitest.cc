@@ -13,6 +13,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -334,7 +335,8 @@ TEST_F(WidgetTestInteractive, CaptureAutoReset) {
   // By default, mouse release removes capture.
   gfx::Point click_location(45, 15);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
-                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&release);
   EXPECT_FALSE(toplevel->HasCapture());
 
@@ -385,9 +387,11 @@ TEST_F(WidgetTestInteractive, ResetCaptureOnGestureEnd) {
   gfx::Point click_location(45, 15);
 
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, click_location, click_location,
-                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON);
 
   EXPECT_TRUE(toplevel->HasCapture());
 
@@ -432,16 +436,15 @@ TEST_F(WidgetTestInteractive, DisableCaptureWidgetFromMousePress) {
   first->Show();
 
   gfx::Point location(20, 20);
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&Widget::OnMouseEvent,
-                 base::Unretained(second),
-                 base::Owned(new ui::MouseEvent(ui::ET_MOUSE_RELEASED,
-                                                location,
-                                                location,
-                                                ui::EF_LEFT_MOUSE_BUTTON,
-                                                ui::EF_LEFT_MOUSE_BUTTON))));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&Widget::OnMouseEvent, base::Unretained(second),
+                            base::Owned(new ui::MouseEvent(
+                                ui::ET_MOUSE_RELEASED, location, location,
+                                ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                                ui::EF_LEFT_MOUSE_BUTTON))));
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
-                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
   first->OnMouseEvent(&press);
   EXPECT_FALSE(first->HasCapture());
   first->Close();
@@ -472,7 +475,7 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
 
   // Click on child1
   gfx::Point p1(45, 45);
-  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1, ui::EventTimeForNow(),
                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&pressed);
 
@@ -480,7 +483,7 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
   EXPECT_TRUE(child1->HasCapture());
   EXPECT_FALSE(child2->HasCapture());
 
-  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1,
+  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1, ui::EventTimeForNow(),
                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&released);
 
@@ -492,7 +495,7 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
 
   // Click on child2
   gfx::Point p2(315, 45);
-  ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2,
+  ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2, ui::EventTimeForNow(),
                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&pressed2);
   EXPECT_TRUE(pressed2.handled());
@@ -500,7 +503,7 @@ TEST_F(WidgetTestInteractive, DISABLED_GrabUngrab) {
   EXPECT_TRUE(child2->HasCapture());
   EXPECT_FALSE(child1->HasCapture());
 
-  ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2,
+  ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2, ui::EventTimeForNow(),
                            ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(&released2);
   EXPECT_FALSE(toplevel->HasCapture());
@@ -526,24 +529,24 @@ TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
 
   // Move to an outside position.
   gfx::Point p1(200, 200);
-  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EF_NONE,
-                           ui::EF_NONE);
+  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EventTimeForNow(),
+                           ui::EF_NONE, ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_out);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the active view.
   gfx::Point p2(95, 95);
-  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EF_NONE,
-                            ui::EF_NONE);
+  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_over);
   EXPECT_EQ(1, view->EnteredCalls());
   EXPECT_EQ(0, view->ExitedCalls());
 
   // Move onto the outer resizing border.
   gfx::Point p3(102, 95);
-  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3, ui::EF_NONE,
-                               ui::EF_NONE);
+  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3,
+                               ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   toplevel->OnMouseEvent(&moved_resizer);
   EXPECT_EQ(0, view->EnteredCalls());
   EXPECT_EQ(1, view->ExitedCalls());
@@ -1375,7 +1378,7 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
   // Send a mouse event to the RootWindow associated with |widget1|. Even though
   // |widget2| has capture, |widget1| should still get the event.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
-                             ui::EF_NONE, ui::EF_NONE);
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details = widget1.GetNativeWindow()->
       GetHost()->event_processor()->OnEventFromSource(&mouse_event);
   ASSERT_FALSE(details.dispatcher_destroyed);

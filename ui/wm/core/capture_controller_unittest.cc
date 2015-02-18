@@ -99,7 +99,8 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
   // Make a synthesized mouse down event. Ensure that the WindowEventDispatcher
   // will dispatch further mouse events to |w1|.
   ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5),
-                                     gfx::Point(5, 5), 0, 0);
+                                     gfx::Point(5, 5), ui::EventTimeForNow(), 0,
+                                     0);
   DispatchEventUsingWindowDispatcher(&mouse_pressed_event);
   EXPECT_EQ(w1.get(), host()->dispatcher()->mouse_pressed_handler());
 

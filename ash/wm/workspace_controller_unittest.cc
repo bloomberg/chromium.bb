@@ -1478,8 +1478,8 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
     for (int i = 0; i < kNumPoints; ++i) {
       SCOPED_TRACE(points[i].direction);
       const gfx::Point& location = points[i].location;
-      ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
-                           ui::EF_NONE);
+      ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
+                           ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
       ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
       EXPECT_EQ(expected_target, target);
 
@@ -1519,8 +1519,8 @@ TEST_F(WorkspaceControllerTest, WindowEdgeMouseHitTestPanel) {
   for (int i = 0; i < kNumPoints; ++i) {
     SCOPED_TRACE(points[i].direction);
     const gfx::Point& location = points[i].location;
-    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
-                         ui::EF_NONE);
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
     if (points[i].is_target_hit)
       EXPECT_EQ(window.get(), target);
@@ -1596,8 +1596,8 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
   for (int i = 0; i < kNumPoints; ++i) {
     SCOPED_TRACE(points[i].direction);
     const gfx::Point& location = points[i].location;
-    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
-                         ui::EF_NONE);
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
     if (points[i].is_target_hit)
       EXPECT_EQ(window.get(), target);

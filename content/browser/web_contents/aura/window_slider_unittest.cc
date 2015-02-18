@@ -290,12 +290,10 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
   WindowSliderDelegateTest slider_delegate;
 
   ui::Event* events[] = {
-    new ui::MouseEvent(ui::ET_MOUSE_MOVED,
-                       gfx::Point(55, 10),
-                       gfx::Point(55, 10),
-                       0, 0),
-    new ui::KeyEvent('a', ui::VKEY_A, ui::EF_NONE),
-    NULL
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(55, 10),
+                         gfx::Point(55, 10), ui::EventTimeForNow(), 0, 0),
+      new ui::KeyEvent('a', ui::VKEY_A, ui::EF_NONE),
+      nullptr
   };
 
   new WindowSlider(&slider_delegate, root_window(), window.get());
@@ -338,10 +336,9 @@ TEST_F(WindowSliderTest, WindowSlideInterruptedThenContinues) {
   WindowSlider* slider =
       new WindowSlider(&slider_delegate, root_window(), window.get());
 
-  ui::MouseEvent interrupt_event(ui::ET_MOUSE_MOVED,
-                                 gfx::Point(55, 10),
-                                 gfx::Point(55, 10),
-                                 0, 0);
+  ui::MouseEvent interrupt_event(ui::ET_MOUSE_MOVED, gfx::Point(55, 10),
+                                 gfx::Point(55, 10), ui::EventTimeForNow(), 0,
+                                 0);
 
   ui::test::EventGenerator generator(root_window());
 

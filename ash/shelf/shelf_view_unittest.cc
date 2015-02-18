@@ -40,6 +40,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
@@ -422,9 +423,9 @@ class ShelfViewTest : public AshTestBase {
                                      int button_index) {
     ShelfButtonHost* button_host = shelf_view_;
     ShelfButton* button = test_api_->GetButton(button_index);
-    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
-                               gfx::Point(),
-                               button->GetBoundsInScreen().origin(), 0, 0);
+    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
+                               button->GetBoundsInScreen().origin(),
+                               ui::EventTimeForNow(), 0, 0);
     button_host->PointerPressedOnButton(button, pointer, click_event);
     return button;
   }
@@ -434,11 +435,9 @@ class ShelfViewTest : public AshTestBase {
     ShelfButtonHost* button_host = shelf_view_;
     ShelfButton* button =
         SimulateButtonPressed(ShelfButtonHost::MOUSE, button_index);
-    ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
-                                 gfx::Point(),
+    ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
-                                 0,
-                                 0);
+                                 ui::EventTimeForNow(), 0, 0);
     test_api_->ButtonPressed(button, release_event);
     button_host->PointerReleasedOnButton(button, ShelfButtonHost::MOUSE, false);
   }
@@ -448,10 +447,9 @@ class ShelfViewTest : public AshTestBase {
     ShelfButtonHost* button_host = shelf_view_;
     ShelfButton* button =
         SimulateButtonPressed(ShelfButtonHost::MOUSE, button_index);
-    ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
-                                 gfx::Point(),
+    ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
-                                 ui::EF_IS_DOUBLE_CLICK,
+                                 ui::EventTimeForNow(), ui::EF_IS_DOUBLE_CLICK,
                                  0);
     test_api_->ButtonPressed(button, release_event);
     button_host->PointerReleasedOnButton(button, ShelfButtonHost::MOUSE, false);
@@ -465,10 +463,10 @@ class ShelfViewTest : public AshTestBase {
 
     // Drag.
     views::View* destination = test_api_->GetButton(destination_index);
-    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                              gfx::Point(destination->x() - button->x(),
+    ui::MouseEvent drag_event(
+        ui::ET_MOUSE_DRAGGED, gfx::Point(destination->x() - button->x(),
                                          destination->y() - button->y()),
-                              destination->GetBoundsInScreen().origin(), 0, 0);
+        destination->GetBoundsInScreen().origin(), ui::EventTimeForNow(), 0, 0);
     button_host->PointerDraggedOnButton(button, pointer, drag_event);
     return button;
   }
@@ -1111,28 +1109,27 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
   gfx::Point press_location_in_screen =
       button->GetBoundsInScreen().origin() + press_offset;
 
-  ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
-                             press_location,
-                             press_location_in_screen,
+  ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, press_location,
+                             press_location_in_screen, ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(click_event);
 
-  ui::MouseEvent drag_event1(ui::ET_MOUSE_DRAGGED,
-                             press_location + gfx::Vector2d(0, 1),
-                             press_location_in_screen + gfx::Vector2d(0, 1),
-                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  ui::MouseEvent drag_event1(
+      ui::ET_MOUSE_DRAGGED, press_location + gfx::Vector2d(0, 1),
+      press_location_in_screen + gfx::Vector2d(0, 1), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event1);
 
-  ui::MouseEvent drag_event2(ui::ET_MOUSE_DRAGGED,
-                             press_location + gfx::Vector2d(-1, 0),
-                             press_location_in_screen + gfx::Vector2d(-1, 0),
-                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  ui::MouseEvent drag_event2(
+      ui::ET_MOUSE_DRAGGED, press_location + gfx::Vector2d(-1, 0),
+      press_location_in_screen + gfx::Vector2d(-1, 0), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event2);
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
-                               press_location + gfx::Vector2d(-1, 0),
-                               press_location_in_screen + gfx::Vector2d(-1, 0),
-                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  ui::MouseEvent release_event(
+      ui::ET_MOUSE_RELEASED, press_location + gfx::Vector2d(-1, 0),
+      press_location_in_screen + gfx::Vector2d(-1, 0), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
 
   EXPECT_TRUE(selection_tracker->WasSelected());

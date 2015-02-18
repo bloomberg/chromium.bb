@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_delegate.h"
@@ -91,12 +92,10 @@ ui::LocatedEvent* DragDropTracker::ConvertEvent(
       capture_window_->GetRootWindow(),
       ash::wm::GetRootWindowAt(location_in_screen),
       &target_root_location);
-  return new ui::MouseEvent(event.type(),
-                            target_location,
-                            target_root_location,
-                            event.flags(),
-                            static_cast<const ui::MouseEvent&>(event).
-                                changed_button_flags());
+  return new ui::MouseEvent(
+      event.type(), target_location, target_root_location,
+      ui::EventTimeForNow(), event.flags(),
+      static_cast<const ui::MouseEvent&>(event).changed_button_flags());
 }
 
 }  // namespace ash

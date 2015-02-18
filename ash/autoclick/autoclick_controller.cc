@@ -13,6 +13,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -190,14 +191,12 @@ void AutoclickControllerImpl::DoAutoclick() {
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertPointToHost(&click_location);
 
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED,
-                             click_location,
-                             click_location,
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, click_location,
+                             click_location, ui::EventTimeForNow(),
                              mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON,
                              ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
-                               click_location,
-                               click_location,
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, click_location,
+                               click_location, ui::EventTimeForNow(),
                                mouse_event_flags_ | ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
 

@@ -93,7 +93,8 @@ void LinkDisambiguationPopup::ZoomBubbleView::OnMouseEvent(
       (event->location().x() / scale_) + target_rect_.x(),
       (event->location().y() / scale_) + target_rect_.y());
   ui::MouseEvent xform_event(event->type(), xform_location, xform_location,
-      event->flags(), event->changed_button_flags());
+                             ui::EventTimeForNow(), event->flags(),
+                             event->changed_button_flags());
   mouse_cb_.Run(&xform_event);
   event->SetHandled();
 

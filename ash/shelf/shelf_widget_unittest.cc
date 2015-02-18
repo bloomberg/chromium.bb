@@ -209,7 +209,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
     // shelf).
     gfx::Point event_location(20, shelf_bounds.y() + 1);
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
     EXPECT_EQ(widget->GetNativeWindow(), target);
   }
@@ -232,7 +232,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
     // window-target should find the shelf as the target.
     gfx::Point event_location(20, shelf_bounds.y() + 1);
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
     EXPECT_EQ(shelf_widget->GetNativeWindow(), target);
   }

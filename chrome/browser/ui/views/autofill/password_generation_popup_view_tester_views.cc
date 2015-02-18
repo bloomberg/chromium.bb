@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/password_generation_popup_view_tester_views.h"
 
 #include "chrome/browser/ui/views/autofill/password_generation_popup_view_views.h"
+#include "ui/events/event_utils.h"
 
 namespace autofill {
 
@@ -24,10 +25,8 @@ PasswordGenerationPopupViewTesterViews::
 
 void PasswordGenerationPopupViewTesterViews::SimulateMouseMovementAt(
     const gfx::Point& point) {
-  ui::MouseEvent mouse_down(ui::ET_MOUSE_MOVED,
-                            point,
-                            gfx::Point(0, 0),
-                            0, 0);
+  ui::MouseEvent mouse_down(ui::ET_MOUSE_MOVED, point, gfx::Point(0, 0),
+                            ui::EventTimeForNow(), 0, 0);
   static_cast<views::View*>(view_)->OnMouseMoved(mouse_down);
 }
 

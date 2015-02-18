@@ -27,6 +27,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "ui/events/event_utils.h"
 
 // ChromeOS and mobile platforms don't have a ProfileChooserView.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -97,7 +98,8 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
 
     ProfileChooserView::close_on_deactivate_for_testing_ = false;
 
-    ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0, 0);
+    ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), 0, 0);
     button->NotifyClick(e);
     base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(ProfileChooserView::IsShowing());
@@ -113,7 +115,8 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
   }
 
   void ClickProfileChooserViewLockButton() {
-    ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0, 0);
+    ui::MouseEvent e(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow(), 0, 0);
     ProfileChooserView::profile_bubble_->ButtonPressed(
         ProfileChooserView::profile_bubble_->lock_button_, e);
   }

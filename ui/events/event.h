@@ -351,10 +351,11 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
     set_flags(flags);
   }
 
-  // Used for synthetic events in testing and by the gesture recognizer.
+  // Used for synthetic events in testing, gesture recognizer and Ozone
   MouseEvent(EventType type,
              const gfx::PointF& location,
              const gfx::PointF& root_location,
+             base::TimeDelta time_stamp,
              int flags,
              int changed_button_flags);
 

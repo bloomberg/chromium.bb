@@ -30,6 +30,7 @@
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
@@ -60,16 +61,12 @@ size_t GetVisibleViews(const std::vector<T*>& tiles) {
 
 void SimulateClick(views::View* view) {
   gfx::Point center = view->GetLocalBounds().CenterPoint();
-  view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
-                                      center,
-                                      center,
-                                      ui::EF_LEFT_MOUSE_BUTTON,
-                                      ui::EF_LEFT_MOUSE_BUTTON));
-  view->OnMouseReleased(ui::MouseEvent(ui::ET_MOUSE_RELEASED,
-                                       center,
-                                       center,
-                                       ui::EF_LEFT_MOUSE_BUTTON,
-                                       ui::EF_LEFT_MOUSE_BUTTON));
+  view->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  view->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
 }
 
 // Choose a set that is 3 regular app list pages and 2 landscape app list pages.

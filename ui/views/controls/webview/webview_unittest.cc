@@ -13,6 +13,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/widget_test.h"
@@ -402,11 +403,10 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
 
   // Send mouse press event to WebView outside the bounds of the holder, and
   // confirm WebView took focus.
-  const ui::MouseEvent click_outside_holder(ui::ET_MOUSE_PRESSED,
-                                            gfx::Point(1, 1),
-                                            gfx::Point(),  // Immaterial.
-                                            ui::EF_LEFT_MOUSE_BUTTON,
-                                            0);
+  const ui::MouseEvent click_outside_holder(
+      ui::ET_MOUSE_PRESSED, gfx::Point(1, 1),
+      gfx::Point(),  // Immaterial.
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   EXPECT_TRUE(static_cast<views::View*>(web_view())->
                   OnMousePressed(click_outside_holder));
   EXPECT_TRUE(web_view()->HasFocus());
@@ -425,11 +425,10 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   // WebContents native view to grab the focus instead.  In this test
   // environment, the WebContents native view doesn't include the implementation
   // needed to grab focus, so no focus change will occur.
-  const ui::MouseEvent click_inside_holder(ui::ET_MOUSE_PRESSED,
-                                           web_view()->bounds().CenterPoint(),
-                                           gfx::Point(),  // Immaterial.
-                                           ui::EF_LEFT_MOUSE_BUTTON,
-                                           0);
+  const ui::MouseEvent click_inside_holder(
+      ui::ET_MOUSE_PRESSED, web_view()->bounds().CenterPoint(),
+      gfx::Point(),  // Immaterial.
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   EXPECT_FALSE(static_cast<views::View*>(web_view())->
                   OnMousePressed(click_inside_holder));
   EXPECT_FALSE(web_view()->HasFocus());

@@ -16,6 +16,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -991,9 +992,8 @@ gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
 
 void Widget::SynthesizeMouseMoveEvent() {
   last_mouse_event_was_move_ = false;
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED,
-                             last_mouse_event_position_,
-                             last_mouse_event_position_,
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, last_mouse_event_position_,
+                             last_mouse_event_position_, ui::EventTimeForNow(),
                              ui::EF_IS_SYNTHESIZED, 0);
   root_view_->OnMouseMoved(mouse_event);
 }

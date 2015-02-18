@@ -18,6 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/views/widget/widget.h"
@@ -231,8 +232,8 @@ TEST_F(ShelfTooltipManagerTest, HideForMouseMoveEvent) {
 
   // Shouldn't hide if the mouse is in the tooltip.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, tooltip_rect.CenterPoint(),
-                             tooltip_rect.CenterPoint(), ui::EF_NONE,
-                             ui::EF_NONE);
+                             tooltip_rect.CenterPoint(), ui::EventTimeForNow(),
+                             ui::EF_NONE, ui::EF_NONE);
   ui::LocatedEventTestApi test_api(&mouse_event);
 
   SetEventTarget(root_window, &mouse_event);
@@ -261,8 +262,8 @@ TEST_F(ShelfTooltipManagerTest, HideForMouseClickEvent) {
 
   // Should hide if the mouse is pressed in the tooltip.
   ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, tooltip_rect.CenterPoint(),
-                             tooltip_rect.CenterPoint(), ui::EF_NONE,
-                             ui::EF_NONE);
+                             tooltip_rect.CenterPoint(), ui::EventTimeForNow(),
+                             ui::EF_NONE, ui::EF_NONE);
 
   SetEventTarget(root_window, &mouse_event);
   event_handler->OnMouseEvent(&mouse_event);

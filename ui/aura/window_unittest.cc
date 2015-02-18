@@ -1255,8 +1255,8 @@ TEST_F(WindowTest, WindowTreeHostExit) {
   EXPECT_FALSE(d1.exited());
   d1.ResetExpectations();
 
-  ui::MouseEvent exit_event(
-      ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(), 0, 0);
+  ui::MouseEvent exit_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
+                            ui::EventTimeForNow(), 0, 0);
   DispatchEventUsingWindowDispatcher(&exit_event);
   EXPECT_FALSE(d1.entered());
   EXPECT_TRUE(d1.exited());

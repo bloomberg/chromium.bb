@@ -59,7 +59,7 @@ TEST(EventTest, GetCharacter) {
 
 TEST(EventTest, ClickCount) {
   const gfx::Point origin(0, 0);
-  MouseEvent mouseev(ET_MOUSE_PRESSED, origin, origin, 0, 0);
+  MouseEvent mouseev(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0, 0);
   for (int i = 1; i <=3 ; ++i) {
     mouseev.SetClickCount(i);
     EXPECT_EQ(i, mouseev.GetClickCount());
@@ -68,8 +68,10 @@ TEST(EventTest, ClickCount) {
 
 TEST(EventTest, RepeatedClick) {
   const gfx::Point origin(0, 0);
-  MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, 0, 0);
-  MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, 0, 0);
+  MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0,
+                       0);
+  MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0,
+                       0);
   LocatedEventTestApi test_ev1(&mouse_ev1);
   LocatedEventTestApi test_ev2(&mouse_ev2);
 
@@ -109,23 +111,29 @@ TEST(EventTest, DoubleClickRequiresRelease) {
   scoped_ptr<MouseEvent> ev;
   base::TimeDelta start = base::TimeDelta::FromMilliseconds(0);
 
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, 0, 0));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, EventTimeForNow(),
+                          0, 0));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, 0, 0));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, EventTimeForNow(),
+                          0, 0));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
 
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, 0, 0));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, EventTimeForNow(),
+                          0, 0));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2, 0, 0));
+  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2,
+                          EventTimeForNow(), 0, 0));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, 0, 0));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, EventTimeForNow(),
+                          0, 0));
   ev->set_time_stamp(start);
   EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2, 0, 0));
+  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2,
+                          EventTimeForNow(), 0, 0));
   ev->set_time_stamp(start);
   EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
   MouseEvent::ResetLastClickForTest();
@@ -138,24 +146,21 @@ TEST(EventTest, SingleClickRightLeft) {
   scoped_ptr<MouseEvent> ev;
   base::TimeDelta start = base::TimeDelta::FromMilliseconds(0);
 
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin,
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(),
                           ui::EF_RIGHT_MOUSE_BUTTON,
                           ui::EF_RIGHT_MOUSE_BUTTON));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin,
-                          ui::EF_LEFT_MOUSE_BUTTON,
-                          ui::EF_LEFT_MOUSE_BUTTON));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(),
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin, origin,
-                          ui::EF_LEFT_MOUSE_BUTTON,
-                          ui::EF_LEFT_MOUSE_BUTTON));
+  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin, origin, EventTimeForNow(),
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   ev->set_time_stamp(start);
   EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin,
-                          ui::EF_LEFT_MOUSE_BUTTON,
-                          ui::EF_LEFT_MOUSE_BUTTON));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(),
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   ev->set_time_stamp(start);
   EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
   MouseEvent::ResetLastClickForTest();

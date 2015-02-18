@@ -330,9 +330,10 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
 MouseEvent::MouseEvent(EventType type,
                        const gfx::PointF& location,
                        const gfx::PointF& root_location,
+                       base::TimeDelta time_stamp,
                        int flags,
                        int changed_button_flags)
-    : LocatedEvent(type, location, root_location, EventTimeForNow(), flags),
+    : LocatedEvent(type, location, root_location, time_stamp, flags),
       changed_button_flags_(changed_button_flags) {
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
@@ -485,7 +486,11 @@ MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
                                  const gfx::PointF& root_location,
                                  int flags,
                                  int changed_button_flags)
-    : MouseEvent(ui::ET_MOUSEWHEEL, location, root_location, flags,
+    : MouseEvent(ui::ET_MOUSEWHEEL,
+                 location,
+                 root_location,
+                 EventTimeForNow(),
+                 flags,
                  changed_button_flags),
       offset_(offset) {
 }
@@ -946,13 +951,12 @@ ScrollEvent::ScrollEvent(EventType type,
                          float x_offset_ordinal,
                          float y_offset_ordinal,
                          int finger_count)
-    : MouseEvent(type, location, location, flags, 0),
+    : MouseEvent(type, location, location, time_stamp, flags, 0),
       x_offset_(x_offset),
       y_offset_(y_offset),
       x_offset_ordinal_(x_offset_ordinal),
       y_offset_ordinal_(y_offset_ordinal),
       finger_count_(finger_count) {
-  set_time_stamp(time_stamp);
   CHECK(IsScrollEvent());
 }
 

@@ -43,6 +43,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -621,7 +622,8 @@ bool ShelfView::StartDrag(const std::string& app_id,
   gfx::Point point_in_root = location_in_screen_coordinates;
   ::wm::ConvertPointFromScreen(
       ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root, 0, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
+                       ui::EventTimeForNow(), 0, 0);
   PointerPressedOnButton(drag_and_drop_view,
                          ShelfButtonHost::DRAG_AND_DROP,
                          event);
@@ -643,7 +645,8 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   gfx::Point point_in_root = location_in_screen_coordinates;
   ::wm::ConvertPointFromScreen(
       ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
-  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root, 0, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
+                       ui::EventTimeForNow(), 0, 0);
   PointerDraggedOnButton(drag_and_drop_view,
                          ShelfButtonHost::DRAG_AND_DROP,
                          event);

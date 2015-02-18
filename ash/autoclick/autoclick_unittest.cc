@@ -11,6 +11,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
 
@@ -33,12 +34,10 @@ class MouseEventCapturer : public ui::EventHandler {
     ui::EventType type = event->type();
     if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_PRESSED ||
         type == ui::ET_MOUSE_RELEASED) {
-      events_.push_back(ui::MouseEvent(
-          event->type(),
-          event->location(),
-          event->root_location(),
-          event->flags(),
-          event->changed_button_flags()));
+      events_.push_back(ui::MouseEvent(event->type(), event->location(),
+                                       event->root_location(),
+                                       ui::EventTimeForNow(), event->flags(),
+                                       event->changed_button_flags()));
       // Stop event propagation so we don't click on random stuff that
       // might break test assumptions.
       event->StopPropagation();

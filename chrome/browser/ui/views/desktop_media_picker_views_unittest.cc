@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/test/views_test_helper.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -108,9 +109,8 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
 
   media_list_->AddSource(kFakeId);
 
-  ui::MouseEvent double_click(ui::ET_MOUSE_PRESSED,
-                              gfx::Point(),
-                              gfx::Point(),
+  ui::MouseEvent double_click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                              ui::EventTimeForNow(),
                               ui::EF_LEFT_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
                               ui::EF_LEFT_MOUSE_BUTTON);
 

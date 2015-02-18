@@ -24,6 +24,7 @@
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {
@@ -154,12 +155,12 @@ class AppsGridViewTest : public views::ViewsTestBase {
     gfx::Point translated_to = gfx::PointAtOffsetFromOrigin(
         to - view->bounds().origin());
 
-    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
-                                 translated_from, from, 0, 0);
+    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated_from, from,
+                                 ui::EventTimeForNow(), 0, 0);
     apps_grid_view_->InitiateDrag(view, pointer, pressed_event);
 
-    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                              translated_to, to, 0, 0);
+    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to,
+                              ui::EventTimeForNow(), 0, 0);
     apps_grid_view_->UpdateDragFromItem(pointer, drag_event);
     return view;
   }
@@ -305,8 +306,8 @@ TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
   EXPECT_FALSE(apps_grid_view_->has_dragged_view());
   // Even though cancelled, mouse move events can still arrive via the item
   // view. Ensure that behaves sanely, and doesn't start a new drag.
-  ui::MouseEvent drag_event(
-      ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1), gfx::Point(2, 2), 0, 0);
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
+                            gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
   apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event);
   EXPECT_FALSE(apps_grid_view_->has_dragged_view());
 
@@ -450,7 +451,8 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   to = GetItemTileRectAt(0, 1).CenterPoint();
   gfx::Point translated_to =
       gfx::PointAtOffsetFromOrigin(to - dragged_view->bounds().origin());
-  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to, 0, 0);
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to,
+                            ui::EventTimeForNow(), 0, 0);
   apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event);
   apps_grid_view_->EndDrag(false);
 

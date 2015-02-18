@@ -6,6 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/test/views_test_base.h"
@@ -93,13 +94,15 @@ TEST_F(BubbleWindowTargeterTest, HitTest) {
   {
     bubble_delegate()->set_margins(gfx::Insets());
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, bubble_bounds.origin(),
-                         bubble_bounds.origin(), ui::EF_NONE, ui::EF_NONE);
+                         bubble_bounds.origin(), ui::EventTimeForNow(),
+                         ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(bubble_window, targeter->FindTargetForEvent(root, &move1));
   }
   {
     bubble_delegate()->set_margins(gfx::Insets(20, 20, 20, 20));
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, bubble_bounds.origin(),
-                         bubble_bounds.origin(), ui::EF_NONE, ui::EF_NONE);
+                         bubble_bounds.origin(), ui::EventTimeForNow(),
+                         ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(bubble_window, targeter->FindTargetForEvent(root, &move1));
   }
 
@@ -108,7 +111,8 @@ TEST_F(BubbleWindowTargeterTest, HitTest) {
   {
     bubble_delegate()->set_margins(gfx::Insets(20, 20, 20, 20));
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, bubble_bounds.origin(),
-                         bubble_bounds.origin(), ui::EF_NONE, ui::EF_NONE);
+                         bubble_bounds.origin(), ui::EventTimeForNow(),
+                         ui::EF_NONE, ui::EF_NONE);
     EXPECT_NE(bubble_window, targeter->FindTargetForEvent(root, &move1));
   }
 }

@@ -10,6 +10,7 @@
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls_aura.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
 
 namespace aura {
@@ -217,7 +218,8 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                           const gfx::PointF& host_location,
                           int flags,
                           int changed_button_flags) {
-    ui::MouseEvent mouse_event(type, host_location, host_location, flags,
+    ui::MouseEvent mouse_event(type, host_location, host_location,
+                               ui::EventTimeForNow(), flags,
                                changed_button_flags);
 
     // This hack is necessary to set the repeat count for clicks.

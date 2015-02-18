@@ -11,6 +11,7 @@
 #include "ash/display/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -39,16 +40,16 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
       aura::Window* target_root,
       gfx::Point point_in_screen) {
     gfx::Point location = drag_source_root->bounds().CenterPoint();
-    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, location,
-                           location, 0, 0);
+    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, location, location,
+                           ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&pressed).set_target(drag_source_root);
     event_filter()->OnMouseEvent(&pressed);
     bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
         target_root, point_in_screen);
     event_filter()->reset_was_mouse_warped_for_test();
 
-    ui::MouseEvent released(ui::ET_MOUSE_RELEASED, location,
-                            location, 0, 0);
+    ui::MouseEvent released(ui::ET_MOUSE_RELEASED, location, location,
+                            ui::EventTimeForNow(), 0, 0);
     ui::Event::DispatcherApi(&released).set_target(drag_source_root);
     event_filter()->OnMouseEvent(&released);
     return is_warped;

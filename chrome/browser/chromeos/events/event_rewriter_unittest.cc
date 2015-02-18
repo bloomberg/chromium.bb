@@ -29,6 +29,7 @@
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_processor.h"
 
@@ -1984,10 +1985,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
 
   // Test Alt + Left click.
   {
-    ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
-                         gfx::Point(),
-                         gfx::Point(),
-                         kLeftAndAltFlag,
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), kLeftAndAltFlag,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(10);
@@ -2002,10 +2001,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
-    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
-                           gfx::Point(),
-                           gfx::Point(),
-                           kLeftAndAltFlag,
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
@@ -2049,10 +2046,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
 
   // No ALT in frst click.
   {
-    ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
-                         gfx::Point(),
-                         gfx::Point(),
-                         ui::EF_LEFT_MOUSE_BUTTON,
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(10);
@@ -2063,10 +2058,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
-    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
-                           gfx::Point(),
-                           gfx::Point(),
-                           kLeftAndAltFlag,
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
@@ -2104,10 +2097,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
 
   // ALT on different device.
   {
-    ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
-                         gfx::Point(),
-                         gfx::Point(),
-                         kLeftAndAltFlag,
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), kLeftAndAltFlag,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(11);
@@ -2119,10 +2110,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
-    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
-                           gfx::Point(),
-                           gfx::Point(),
-                           kLeftAndAltFlag,
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
@@ -2133,10 +2122,8 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
-    ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
-                           gfx::Point(),
-                           gfx::Point(),
-                           kLeftAndAltFlag,
+    ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(11);
@@ -2230,10 +2217,8 @@ TEST_F(EventRewriterAshTest, MouseEventDispatchImpl) {
 
   // Test mouse press event is correctly modified.
   gfx::Point location(0, 0);
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
-                       location,
-                       location,
-                       ui::EF_LEFT_MOUSE_BUTTON,
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_LEFT_MOUSE_BUTTON);
   ui::EventDispatchDetails details = Send(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
@@ -2244,10 +2229,8 @@ TEST_F(EventRewriterAshTest, MouseEventDispatchImpl) {
 
   // Test mouse release event is correctly modified and modifier release
   // event is sent. The mouse event should have the correct DIP location.
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
-                         location,
-                         location,
-                         ui::EF_LEFT_MOUSE_BUTTON,
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, location, location,
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
   details = Send(&release);
   ASSERT_FALSE(details.dispatcher_destroyed);
@@ -2268,10 +2251,8 @@ TEST_F(EventRewriterAshTest, MouseWheelEventDispatchImpl) {
   SendActivateStickyKeyPattern(ui::VKEY_CONTROL);
   PopEvents(&events);
   gfx::Point location(0, 0);
-  ui::MouseEvent mev(ui::ET_MOUSEWHEEL,
-                     location,
-                     location,
-                     ui::EF_LEFT_MOUSE_BUTTON,
+  ui::MouseEvent mev(ui::ET_MOUSEWHEEL, location, location,
+                     ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                      ui::EF_LEFT_MOUSE_BUTTON);
   ui::MouseWheelEvent positive(mev, 0, ui::MouseWheelEvent::kWheelDelta);
   ui::EventDispatchDetails details = Send(&positive);

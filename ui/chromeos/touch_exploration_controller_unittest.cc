@@ -542,10 +542,8 @@ TEST_F(TouchExplorationTest, ActualMouseMovesUnaffected) {
   generator_->MoveTouch(location_end);
 
   gfx::Point location_real_mouse_move(15, 16);
-  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED,
-                            location_real_mouse_move,
-                            location_real_mouse_move,
-                            0,
+  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, location_real_mouse_move,
+                            location_real_mouse_move, ui::EventTimeForNow(), 0,
                             0);
   generator_->Dispatch(&mouse_move);
   generator_->ReleaseTouch();

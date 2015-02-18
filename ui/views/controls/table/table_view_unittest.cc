@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -190,7 +191,7 @@ class TableViewTest : public testing::Test {
   void ClickOnRow(int row, int flags) {
     const int y = row * table_->row_height();
     const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(0, y),
-                                 gfx::Point(0, y),
+                                 gfx::Point(0, y), ui::EventTimeForNow(),
                                  ui::EF_LEFT_MOUSE_BUTTON | flags,
                                  ui::EF_LEFT_MOUSE_BUTTON);
     table_->OnMousePressed(pressed);
@@ -288,12 +289,13 @@ TEST_F(TableViewTest, Resize) {
   EXPECT_NE(0, x);
   // Drag the mouse 1 pixel to the left.
   const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(x, 0),
-                               gfx::Point(x, 0), ui::EF_LEFT_MOUSE_BUTTON,
+                               gfx::Point(x, 0), ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
   helper_->header()->OnMousePressed(pressed);
   const ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, gfx::Point(x - 1, 0),
-                               gfx::Point(x - 1, 0), ui::EF_LEFT_MOUSE_BUTTON,
-                               0);
+                               gfx::Point(x - 1, 0), ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
   helper_->header()->OnMouseDragged(dragged);
 
   // This should shrink the first column and pull the second column in.
@@ -385,12 +387,14 @@ TEST_F(TableViewTest, SortOnMouse) {
   EXPECT_NE(0, x);
   // Press and release the mouse.
   const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(x, 0),
-                               gfx::Point(x, 0), ui::EF_LEFT_MOUSE_BUTTON,
+                               gfx::Point(x, 0), ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
   // The header must return true, else it won't normally get the release.
   EXPECT_TRUE(helper_->header()->OnMousePressed(pressed));
   const ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(x, 0),
-                               gfx::Point(x, 0), ui::EF_LEFT_MOUSE_BUTTON,
+                               gfx::Point(x, 0), ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON,
                                ui::EF_LEFT_MOUSE_BUTTON);
   helper_->header()->OnMouseReleased(release);
 

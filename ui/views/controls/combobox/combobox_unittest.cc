@@ -12,6 +12,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -248,15 +249,13 @@ class ComboboxTest : public ViewsTestBase {
   }
 
   void PerformClick(const gfx::Point& point) {
-    ui::MouseEvent pressed_event = ui::MouseEvent(ui::ET_MOUSE_PRESSED, point,
-                                                  point,
-                                                  ui::EF_LEFT_MOUSE_BUTTON,
-                                                  ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent pressed_event = ui::MouseEvent(
+        ui::ET_MOUSE_PRESSED, point, point, ui::EventTimeForNow(),
+        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     widget_->OnMouseEvent(&pressed_event);
-    ui::MouseEvent released_event = ui::MouseEvent(ui::ET_MOUSE_RELEASED, point,
-                                                   point,
-                                                   ui::EF_LEFT_MOUSE_BUTTON,
-                                                   ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent released_event = ui::MouseEvent(
+        ui::ET_MOUSE_RELEASED, point, point, ui::EventTimeForNow(),
+        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     widget_->OnMouseEvent(&released_event);
   }
 

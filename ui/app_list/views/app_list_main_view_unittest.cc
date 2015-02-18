@@ -19,6 +19,7 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
@@ -127,16 +128,12 @@ class AppListMainViewTest : public views::ViewsTestBase {
 
   void SimulateClick(views::View* view) {
     gfx::Point center = view->GetLocalBounds().CenterPoint();
-    view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
-                                        center,
-                                        center,
-                                        ui::EF_LEFT_MOUSE_BUTTON,
-                                        ui::EF_LEFT_MOUSE_BUTTON));
-    view->OnMouseReleased(ui::MouseEvent(ui::ET_MOUSE_RELEASED,
-                                         center,
-                                         center,
-                                         ui::EF_LEFT_MOUSE_BUTTON,
-                                         ui::EF_LEFT_MOUSE_BUTTON));
+    view->OnMousePressed(ui::MouseEvent(
+        ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+    view->OnMouseReleased(ui::MouseEvent(
+        ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   }
 
   // |point| is in |grid_view|'s coordinates.
@@ -148,7 +145,8 @@ class AppListMainViewTest : public views::ViewsTestBase {
 
     gfx::Point translated =
         gfx::PointAtOffsetFromOrigin(point - view->bounds().origin());
-    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated, point, 0, 0);
+    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated, point,
+                                 ui::EventTimeForNow(), 0, 0);
     grid_view->InitiateDrag(view, pointer, pressed_event);
     return view;
   }
@@ -161,7 +159,8 @@ class AppListMainViewTest : public views::ViewsTestBase {
     DCHECK(drag_view);
     gfx::Point translated =
         gfx::PointAtOffsetFromOrigin(point - drag_view->bounds().origin());
-    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated, point, 0, 0);
+    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated, point,
+                              ui::EventTimeForNow(), 0, 0);
     grid_view->UpdateDragFromItem(pointer, drag_event);
   }
 

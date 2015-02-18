@@ -5,6 +5,7 @@
 #include "ui/app_list/views/speech_view.h"
 
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/widget_test.h"
 
@@ -56,16 +57,12 @@ TEST_F(SpeechViewTest, ClickMicButton) {
   gfx::Rect screen_bounds(view()->mic_button()->GetBoundsInScreen());
 
   // Simulate a mouse click in the center of the MicButton.
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
-                       screen_bounds.CenterPoint(),
-                       screen_bounds.CenterPoint(),
-                       ui::EF_LEFT_MOUSE_BUTTON,
-                       0);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED,
-                         screen_bounds.CenterPoint(),
-                         screen_bounds.CenterPoint(),
-                         ui::EF_LEFT_MOUSE_BUTTON,
-                         0);
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, screen_bounds.CenterPoint(),
+                       screen_bounds.CenterPoint(), ui::EventTimeForNow(),
+                       ui::EF_LEFT_MOUSE_BUTTON, 0);
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, screen_bounds.CenterPoint(),
+                         screen_bounds.CenterPoint(), ui::EventTimeForNow(),
+                         ui::EF_LEFT_MOUSE_BUTTON, 0);
   widget()->OnMouseEvent(&press);
   widget()->OnMouseEvent(&release);
   EXPECT_EQ(1, GetToggleSpeechRecognitionCountAndReset());
@@ -75,16 +72,10 @@ TEST_F(SpeechViewTest, ClickMicButton) {
   // circular hit-test mask).
   gfx::Point bottom_right(screen_bounds.right() - 1,
                           screen_bounds.bottom() - 2);
-  press = ui::MouseEvent(ui::ET_MOUSE_PRESSED,
-                         bottom_right,
-                         bottom_right,
-                         ui::EF_LEFT_MOUSE_BUTTON,
-                         0);
-  release = ui::MouseEvent(ui::ET_MOUSE_RELEASED,
-                           bottom_right,
-                           bottom_right,
-                           ui::EF_LEFT_MOUSE_BUTTON,
-                           0);
+  press = ui::MouseEvent(ui::ET_MOUSE_PRESSED, bottom_right, bottom_right,
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+  release = ui::MouseEvent(ui::ET_MOUSE_RELEASED, bottom_right, bottom_right,
+                           ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   widget()->OnMouseEvent(&press);
   widget()->OnMouseEvent(&release);
   EXPECT_EQ(0, GetToggleSpeechRecognitionCountAndReset());

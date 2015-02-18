@@ -18,6 +18,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
@@ -37,10 +38,10 @@ void ClickButtonWithFlags(ui::test::EventGenerator* generator,
                           int flags) {
   gfx::Point location = generator->current_location();
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
-                       button | flags, button);
+                       ui::EventTimeForNow(), button | flags, button);
   generator->Dispatch(&press);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, location, location,
-                         button | flags, button);
+                         ui::EventTimeForNow(), button | flags, button);
   generator->Dispatch(&release);
 }
 

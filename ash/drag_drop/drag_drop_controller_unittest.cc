@@ -722,7 +722,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     // The DragDropController should simply ignore these events.
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
-                              mouse_move_location, 0, 0);
+                              mouse_move_location, ui::EventTimeForNow(), 0, 0);
     ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
         GetHost()->event_processor()->OnEventFromSource(&mouse_move);
     ASSERT_FALSE(details.dispatcher_destroyed);
@@ -1006,18 +1006,14 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     GetDragImageWindow()->AddObserver(&observer);
 
     {
-      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
-                       gfx::Point(200, 0),
-                       gfx::Point(200, 0),
-                       ui::EF_NONE,
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED, gfx::Point(200, 0),
+                       gfx::Point(200, 0), ui::EventTimeForNow(), ui::EF_NONE,
                        ui::EF_NONE);
       drag_drop_controller_->DragUpdate(window, e);
     }
     {
-      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
-                       gfx::Point(600, 0),
-                       gfx::Point(600, 0),
-                       ui::EF_NONE,
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED, gfx::Point(600, 0),
+                       gfx::Point(600, 0), ui::EventTimeForNow(), ui::EF_NONE,
                        ui::EF_NONE);
       drag_drop_controller_->DragUpdate(window, e);
     }
@@ -1043,18 +1039,14 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     GetDragImageWindow()->AddObserver(&observer);
 
     {
-      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
-                       gfx::Point(600, 0),
-                       gfx::Point(600, 0),
-                       ui::EF_NONE,
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED, gfx::Point(600, 0),
+                       gfx::Point(600, 0), ui::EventTimeForNow(), ui::EF_NONE,
                        ui::EF_NONE);
       drag_drop_controller_->DragUpdate(window, e);
     }
     {
-      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
-                       gfx::Point(200, 0),
-                       gfx::Point(200, 0),
-                       ui::EF_NONE,
+      ui::MouseEvent e(ui::ET_MOUSE_DRAGGED, gfx::Point(200, 0),
+                       gfx::Point(200, 0), ui::EventTimeForNow(), ui::EF_NONE,
                        ui::EF_NONE);
       drag_drop_controller_->DragUpdate(window, e);
     }

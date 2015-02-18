@@ -15,6 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/test/result_catcher.h"
+#include "ui/events/event_utils.h"
 
 typedef ExtensionApiTest BookmarkOverrideTest;
 
@@ -49,12 +50,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, DISABLED_NonOverrideStarClick) {
   views::View* star_view =
       browser_view->GetToolbarView()->location_bar()->star_view();
 
-  ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                               ui::EF_LEFT_MOUSE_BUTTON,
-                               ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
-                                gfx::Point(), ui::EF_LEFT_MOUSE_BUTTON,
-                                ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent pressed_event(
+      ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent released_event(
+      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 
   // Verify that clicking once shows the bookmark bubble.
   EXPECT_FALSE(BookmarkBubbleView::IsShowing());

@@ -311,16 +311,17 @@ void RemoteWindowTreeHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
     return;
 
   gfx::Point location = PointFromNativeEvent(x, y);
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+                       ui::EventTimeForNow(), flags, 0);
   SendEventToProcessor(&event);
 }
 
 void RemoteWindowTreeHostWin::OnMouseButton(
     const MetroViewerHostMsg_MouseButtonParams& params) {
   gfx::Point location = PointFromNativeEvent(params.x, params.y);
-  ui::MouseEvent mouse_event(params.event_type, location, location,
-                             static_cast<int>(params.flags),
-                             static_cast<int>(params.changed_button));
+  ui::MouseEvent mouse_event(
+      params.event_type, location, location, ui::EventTimeForNow(),
+      static_cast<int>(params.flags), static_cast<int>(params.changed_button));
 
   SetEventFlags(params.flags | key_event_flags());
   if (params.event_type == ui::ET_MOUSEWHEEL) {

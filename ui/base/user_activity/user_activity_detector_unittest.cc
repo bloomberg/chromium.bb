@@ -11,6 +11,7 @@
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -79,8 +80,8 @@ TEST_F(UserActivityDetectorTest, Basic) {
   base::TimeDelta advance_delta = base::TimeDelta::FromMilliseconds(
       UserActivityDetector::kNotifyIntervalMs);
   AdvanceTime(advance_delta);
-  ui::MouseEvent mouse_event(
-      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
@@ -181,9 +182,9 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
 
 // Checks that the detector ignores synthetic mouse events.
 TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
-  ui::MouseEvent mouse_event(
-      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_IS_SYNTHESIZED,
-      ui::EF_NONE);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_IS_SYNTHESIZED,
+                             ui::EF_NONE);
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(base::TimeTicks().ToInternalValue(),

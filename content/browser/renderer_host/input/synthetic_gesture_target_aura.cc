@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 using blink::WebTouchEvent;
@@ -47,8 +48,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
   gfx::Point location(web_wheel.x, web_wheel.y);
-  ui::MouseEvent mouse_event(
-      ui::ET_MOUSEWHEEL, location, location, ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent mouse_event(ui::ET_MOUSEWHEEL, location, location,
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   ui::MouseWheelEvent wheel_event(
       mouse_event, web_wheel.deltaX, web_wheel.deltaY);
 
@@ -117,7 +118,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   gfx::Point location(web_mouse.x, web_mouse.y);
   ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
-  ui::MouseEvent mouse_event(event_type, location, location, flags, flags);
+  ui::MouseEvent mouse_event(event_type, location, location,
+                             ui::EventTimeForNow(), flags, flags);
 
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());

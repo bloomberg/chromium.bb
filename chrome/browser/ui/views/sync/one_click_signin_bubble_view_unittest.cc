@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
 #include "content/public/test/test_utils.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -146,9 +147,8 @@ TEST_F(OneClickSigninBubbleViewTest, BubbleOkButton) {
   // Simulate pressing the OK button.  Set the message loop in the bubble
   // view so that it can be quit once the bubble is hidden.
   views::ButtonListener* listener = view;
-  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
-                             gfx::Point(), gfx::Point(),
-                             0, 0);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
   listener->ButtonPressed(view->ok_button_, event);
 
   // View should no longer be showing.  The message loop will exit once the
@@ -164,9 +164,8 @@ TEST_F(OneClickSigninBubbleViewTest, DialogOkButton) {
   // Simulate pressing the OK button.  Set the message loop in the bubble
   // view so that it can be quit once the bubble is hidden.
   views::ButtonListener* listener = view;
-  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
-                             gfx::Point(), gfx::Point(),
-                             0, 0);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
   listener->ButtonPressed(view->ok_button_, event);
 
   // View should no longer be showing and sync should start
@@ -184,9 +183,8 @@ TEST_F(OneClickSigninBubbleViewTest, DialogUndoButton) {
   // Simulate pressing the undo button.  Set the message loop in the bubble
   // view so that it can be quit once the bubble is hidden.
   views::ButtonListener* listener = view;
-  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
-                             gfx::Point(), gfx::Point(),
-                             0, 0);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
   listener->ButtonPressed(view->undo_button_, event);
 
   // View should no longer be showing.  The message loop will exit once the

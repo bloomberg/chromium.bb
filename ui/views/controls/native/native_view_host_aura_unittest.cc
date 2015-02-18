@@ -9,6 +9,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/native/native_view_host_test_base.h"
 #include "ui/views/view.h"
@@ -147,7 +148,7 @@ TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
   toplevel()->SetCursor(ui::kCursorHand);
   child()->SetCursor(ui::kCursorWait);
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
-                            gfx::Point(0, 0), 0, 0);
+                            gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
 
   EXPECT_EQ(ui::kCursorWait, host()->GetCursor(move_event).native_type());
 

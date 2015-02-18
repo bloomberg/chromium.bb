@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/event_utils.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
 
@@ -123,7 +124,8 @@ bool RadioButton::IsGroupFocusTraversable() const {
 void RadioButton::OnFocus() {
   Checkbox::OnFocus();
   SetChecked(true);
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), 0, 0);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), 0, 0);
   LabelButton::NotifyClick(event);
 }
 

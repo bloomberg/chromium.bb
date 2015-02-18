@@ -971,9 +971,9 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   sink_->ClearMessages();
 
   // Simulates the mouse press.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED,
-                             gfx::Point(), gfx::Point(),
-                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             0);
   view_->OnMouseEvent(&mouse_event);
 
   EXPECT_FALSE(view_->has_composition_text_);

@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 
 namespace ash {
@@ -126,11 +127,9 @@ class StickyKeysTest : public test::AshTestBase {
   // Creates a synthesized MouseEvent that is not backed by a native event.
   ui::MouseEvent* GenerateSynthesizedMouseEventAt(ui::EventType event_type,
                                                   const gfx::Point& location) {
-    ui::MouseEvent* event = new ui::MouseEvent(event_type,
-                                               location,
-                                               location,
-                                               ui::EF_LEFT_MOUSE_BUTTON,
-                                               ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent* event = new ui::MouseEvent(
+        event_type, location, location, ui::EventTimeForNow(),
+        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;

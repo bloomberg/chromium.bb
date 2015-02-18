@@ -11,6 +11,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/event_utils.h"
 
 namespace ash {
 namespace test {
@@ -30,11 +31,8 @@ class DragDropTrackerTest : public test::AshTestBase {
   static aura::Window* GetTarget(const gfx::Point& location) {
     scoped_ptr<DragDropTracker> tracker(
         new DragDropTracker(Shell::GetPrimaryRootWindow(), NULL));
-    ui::MouseEvent e(ui::ET_MOUSE_DRAGGED,
-                     location,
-                     location,
-                     ui::EF_NONE,
-                     ui::EF_NONE);
+    ui::MouseEvent e(ui::ET_MOUSE_DRAGGED, location, location,
+                     ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     aura::Window* target = tracker->GetTarget(e);
     return target;
   }
@@ -132,11 +130,9 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
 
   // Start tracking from the RootWindow0 and converts the mouse event into
   // |window0|'s coodinates.
-  ui::MouseEvent original00(ui::ET_MOUSE_DRAGGED,
-                            gfx::Point(50, 50),
-                            gfx::Point(50, 50),
-                            ui::EF_NONE,
-                            ui::EF_NONE);
+  ui::MouseEvent original00(ui::ET_MOUSE_DRAGGED, gfx::Point(50, 50),
+                            gfx::Point(50, 50), ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted00(ConvertEvent(window0.get(),
                                                         original00));
   EXPECT_EQ(original00.type(), converted00->type());
@@ -146,11 +142,9 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
 
   // Start tracking from the RootWindow0 and converts the mouse event into
   // |window1|'s coodinates.
-  ui::MouseEvent original01(ui::ET_MOUSE_DRAGGED,
-                            gfx::Point(350, 150),
-                            gfx::Point(350, 150),
-                            ui::EF_NONE,
-                            ui::EF_NONE);
+  ui::MouseEvent original01(ui::ET_MOUSE_DRAGGED, gfx::Point(350, 150),
+                            gfx::Point(350, 150), ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted01(ConvertEvent(window1.get(),
                                                         original01));
   EXPECT_EQ(original01.type(), converted01->type());
@@ -163,11 +157,9 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
 
   // Start tracking from the RootWindow1 and converts the mouse event into
   // |window0|'s coodinates.
-  ui::MouseEvent original10(ui::ET_MOUSE_DRAGGED,
-                            gfx::Point(-150, 50),
-                            gfx::Point(-150, 50),
-                            ui::EF_NONE,
-                            ui::EF_NONE);
+  ui::MouseEvent original10(ui::ET_MOUSE_DRAGGED, gfx::Point(-150, 50),
+                            gfx::Point(-150, 50), ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted10(ConvertEvent(window0.get(),
                                                         original10));
   EXPECT_EQ(original10.type(), converted10->type());
@@ -177,11 +169,9 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
 
   // Start tracking from the RootWindow1 and converts the mouse event into
   // |window1|'s coodinates.
-  ui::MouseEvent original11(ui::ET_MOUSE_DRAGGED,
-                            gfx::Point(150, 150),
-                            gfx::Point(150, 150),
-                            ui::EF_NONE,
-                            ui::EF_NONE);
+  ui::MouseEvent original11(ui::ET_MOUSE_DRAGGED, gfx::Point(150, 150),
+                            gfx::Point(150, 150), ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
   scoped_ptr<ui::LocatedEvent> converted11(ConvertEvent(window1.get(),
                                                            original11));
   EXPECT_EQ(original11.type(), converted11->type());

@@ -8,6 +8,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/test_event_handler.h"
 
 namespace aura {
@@ -66,10 +67,8 @@ TEST_F(WindowTargeterTest, Basic) {
   ui::test::TestEventHandler handler;
   one->AddPreTargetHandler(&handler);
 
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED,
-                       gfx::Point(20, 20),
-                       gfx::Point(20, 20),
-                       ui::EF_NONE,
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(20, 20),
+                       gfx::Point(20, 20), ui::EventTimeForNow(), ui::EF_NONE,
                        ui::EF_NONE);
   DispatchEventUsingWindowDispatcher(&press);
   EXPECT_EQ(1, handler.num_mouse_events());
@@ -96,7 +95,7 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
   gfx::Point event_location(60, 60);
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(child, targeter->FindTargetForEvent(root, &mouse));
   }
 
@@ -106,13 +105,13 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
           new StaticWindowTargeter(window.get()))));
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse));
   }
   scoped_targeter.reset();
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(child, targeter->FindTargetForEvent(root, &mouse));
   }
 }
@@ -146,7 +145,7 @@ TEST_F(WindowTargeterTest, TargetTransformedWindow) {
   gfx::Point event_location(490, 50);
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root_target, &mouse));
   }
 
@@ -159,7 +158,7 @@ TEST_F(WindowTargeterTest, TargetTransformedWindow) {
             GetEffectiveVisibleBoundsInRootWindow(window.get()).ToString());
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(root_window(), targeter->FindTargetForEvent(root_target, &mouse));
   }
 
@@ -171,7 +170,7 @@ TEST_F(WindowTargeterTest, TargetTransformedWindow) {
             GetEffectiveVisibleBoundsInRootWindow(window.get()).ToString());
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
-                         ui::EF_NONE, ui::EF_NONE);
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root_target, &mouse));
   }
 }

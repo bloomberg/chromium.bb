@@ -26,6 +26,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -337,13 +338,13 @@ TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
   ui::EventTarget* root = root_window();
   ui::EventTargeter* targeter = root->GetEventTargeter();
   gfx::Point location = keyboard_window->bounds().CenterPoint();
-  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
-                        ui::EF_NONE);
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, location, location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(keyboard_window, targeter->FindTargetForEvent(root, &mouse1));
 
   location.set_y(keyboard_window->bounds().y() - 5);
-  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
-                        ui::EF_NONE);
+  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, location, location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse2));
 }
 
@@ -369,8 +370,8 @@ TEST_F(KeyboardControllerTest, KeyboardWindowCreation) {
   ui::EventTargeter* targeter = root->GetEventTargeter();
   gfx::Point location(root_window()->bounds().width() / 2,
                       root_window()->bounds().height() - 10);
-  ui::MouseEvent mouse(
-      ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
+                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse));
   EXPECT_FALSE(proxy()->HasKeyboardWindow());
 

@@ -356,8 +356,8 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
                           top_container_bounds_in_screen.y());
 
   // Mouse wheel event does nothing.
-  ui::MouseEvent wheel(
-      ui::ET_MOUSEWHEEL, top_edge_pos, top_edge_pos, ui::EF_NONE, ui::EF_NONE);
+  ui::MouseEvent wheel(ui::ET_MOUSEWHEEL, top_edge_pos, top_edge_pos,
+                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   event_generator.Dispatch(&wheel);
   EXPECT_FALSE(top_edge_hover_timer_running());
 

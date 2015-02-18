@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
@@ -237,11 +238,8 @@ TEST_F(NotificationViewTest, UpdateButtonsStateTest) {
   gfx::Point cursor_location(1, 1);
   views::View::ConvertPointToWidget(notification_view()->action_buttons_[0],
                                     &cursor_location);
-  ui::MouseEvent move(ui::ET_MOUSE_MOVED,
-                      cursor_location,
-                      cursor_location,
-                      ui::EF_NONE,
-                      ui::EF_NONE);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
   EXPECT_EQ(views::CustomButton::STATE_HOVERED,
@@ -255,11 +253,8 @@ TEST_F(NotificationViewTest, UpdateButtonsStateTest) {
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
   cursor_location = gfx::Point(-1, -1);
-  move = ui::MouseEvent(ui::ET_MOUSE_MOVED,
-                        cursor_location,
-                        cursor_location,
-                        ui::EF_NONE,
-                        ui::EF_NONE);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
   EXPECT_EQ(views::CustomButton::STATE_NORMAL,
@@ -281,11 +276,8 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   gfx::Point cursor_location(1, 1);
   views::View::ConvertPointToWidget(notification_view()->action_buttons_[0],
                                     &cursor_location);
-  ui::MouseEvent move(ui::ET_MOUSE_MOVED,
-                      cursor_location,
-                      cursor_location,
-                      ui::EF_NONE,
-                      ui::EF_NONE);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
   EXPECT_EQ(views::CustomButton::STATE_HOVERED,
@@ -303,11 +295,8 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
   cursor_location = gfx::Point(-1, -1);
-  move = ui::MouseEvent(ui::ET_MOUSE_MOVED,
-                        cursor_location,
-                        cursor_location,
-                        ui::EF_NONE,
-                        ui::EF_NONE);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget()->OnMouseEvent(&move);
 
   EXPECT_EQ(views::CustomButton::STATE_NORMAL,

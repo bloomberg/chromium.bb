@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
@@ -35,11 +36,9 @@ SystemTrayNotifier* GetSystemTrayNotifier() {
 void ClickViewCenter(views::View* view) {
   gfx::Point click_location_in_local =
       gfx::Point(view->width() / 2, view->height() / 2);
-  view->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED,
-                                      click_location_in_local,
-                                      click_location_in_local,
-                                      ui::EF_NONE,
-                                      ui::EF_NONE));
+  view->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, click_location_in_local, click_location_in_local,
+      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
 }
 
 class ScreenTrayItemTest : public ash::test::AshTestBase {

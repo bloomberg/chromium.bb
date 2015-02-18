@@ -18,6 +18,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_targeter.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
@@ -549,7 +550,8 @@ bool MultiWindowResizeController::IsOverWindows(
   aura::Window* root = windows_.window1->GetRootWindow();
   ::wm::ConvertPointFromScreen(root, &location_in_root);
   ui::MouseEvent test_event(ui::ET_MOUSE_MOVED, location_in_root,
-                            location_in_root, ui::EF_NONE, ui::EF_NONE);
+                            location_in_root, ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
   ui::EventTarget* event_handler = static_cast<ui::EventTarget*>(root)
                                        ->GetEventTargeter()
                                        ->FindTargetForEvent(root, &test_event);

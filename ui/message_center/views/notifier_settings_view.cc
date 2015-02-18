@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
@@ -371,9 +372,9 @@ void NotifierSettingsView::NotifierButton::SendLearnMorePressedForTest() {
   if (learn_more_ == NULL)
     return;
   gfx::Point point(110, 120);
-  ui::MouseEvent pressed(
-      ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON,
-      ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON);
   ButtonPressed(learn_more_, pressed);
 }
 

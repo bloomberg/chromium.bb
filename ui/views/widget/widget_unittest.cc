@@ -1423,7 +1423,8 @@ TEST_F(WidgetTest, TestWindowVisibilityAfterHide) {
 void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   const gfx::Rect screen_bounds(widget->GetWindowBoundsInScreen());
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
-                            screen_bounds.CenterPoint(), 0, 0);
+                            screen_bounds.CenterPoint(), ui::EventTimeForNow(),
+                            0, 0);
   ui::EventProcessor* dispatcher = WidgetTest::GetEventProcessor(widget);
   ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move_event);
   if (last_event_type == ui::ET_MOUSE_ENTERED || details.dispatcher_destroyed)
@@ -1433,20 +1434,22 @@ void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
     return;
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, screen_bounds.CenterPoint(),
-                             screen_bounds.CenterPoint(), 0, 0);
+                             screen_bounds.CenterPoint(), ui::EventTimeForNow(),
+                             0, 0);
   details = dispatcher->OnEventFromSource(&press_event);
   if (last_event_type == ui::ET_MOUSE_PRESSED || details.dispatcher_destroyed)
     return;
 
   gfx::Point end_point(screen_bounds.CenterPoint());
   end_point.Offset(1, 1);
-  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point, 0, 0);
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point,
+                            ui::EventTimeForNow(), 0, 0);
   details = dispatcher->OnEventFromSource(&drag_event);
   if (last_event_type == ui::ET_MOUSE_DRAGGED || details.dispatcher_destroyed)
     return;
 
-  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point, 0,
-                               0);
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point,
+                               ui::EventTimeForNow(), 0, 0);
   details = dispatcher->OnEventFromSource(&release_event);
   if (details.dispatcher_destroyed)
     return;
@@ -1722,7 +1725,7 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   gfx::Point cursor_location(5, 5);
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
-                      ui::EF_NONE, ui::EF_NONE);
+                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   widget->OnMouseEvent(&move);
 
   EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
@@ -2142,7 +2145,8 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   EXPECT_EQ(NULL, GetMousePressedHandler(root_view));
   gfx::Point click_location(45, 15);
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
   widget->OnMouseEvent(&press);
   EXPECT_EQ(view, GetMousePressedHandler(root_view));
   widget->Hide();
@@ -2152,7 +2156,8 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   widget->Show();
   EXPECT_EQ(NULL, GetMouseMoveHandler(root_view));
   gfx::Point move_location(45, 15);
-  ui::MouseEvent move(ui::ET_MOUSE_MOVED, move_location, move_location, 0, 0);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, move_location, move_location,
+                      ui::EventTimeForNow(), 0, 0);
   widget->OnMouseEvent(&move);
   EXPECT_EQ(view, GetMouseMoveHandler(root_view));
   widget->Hide();
@@ -3013,11 +3018,9 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   top_level_widget.GetRootView()->AddChildView(widget_view);
 
   gfx::Point cursor_location_main(5, 5);
-  ui::MouseEvent move_main(ui::ET_MOUSE_MOVED,
-                           cursor_location_main,
-                           cursor_location_main,
-                           ui::EF_NONE,
-                           ui::EF_NONE);
+  ui::MouseEvent move_main(ui::ET_MOUSE_MOVED, cursor_location_main,
+                           cursor_location_main, ui::EventTimeForNow(),
+                           ui::EF_NONE, ui::EF_NONE);
   ui::EventDispatchDetails details =
       GetEventProcessor(&top_level_widget)->OnEventFromSource(&move_main);
   ASSERT_FALSE(details.dispatcher_destroyed);
@@ -3041,11 +3044,9 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   EXPECT_TRUE(modal_dialog_widget->IsVisible());
 
   gfx::Point cursor_location_dialog(100, 100);
-  ui::MouseEvent mouse_down_dialog(ui::ET_MOUSE_PRESSED,
-                                   cursor_location_dialog,
-                                   cursor_location_dialog,
-                                   ui::EF_NONE,
-                                   ui::EF_NONE);
+  ui::MouseEvent mouse_down_dialog(
+      ui::ET_MOUSE_PRESSED, cursor_location_dialog, cursor_location_dialog,
+      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   details = GetEventProcessor(&top_level_widget)->OnEventFromSource(
       &mouse_down_dialog);
   ASSERT_FALSE(details.dispatcher_destroyed);
@@ -3054,11 +3055,9 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   // Send a mouse move message to the main window. It should not be received by
   // the main window as the modal dialog is still active.
   gfx::Point cursor_location_main2(6, 6);
-  ui::MouseEvent mouse_down_main(ui::ET_MOUSE_MOVED,
-                                 cursor_location_main2,
-                                 cursor_location_main2,
-                                 ui::EF_NONE,
-                                 ui::EF_NONE);
+  ui::MouseEvent mouse_down_main(ui::ET_MOUSE_MOVED, cursor_location_main2,
+                                 cursor_location_main2, ui::EventTimeForNow(),
+                                 ui::EF_NONE, ui::EF_NONE);
   details = GetEventProcessor(&top_level_widget)->OnEventFromSource(
       &mouse_down_main);
   ASSERT_FALSE(details.dispatcher_destroyed);

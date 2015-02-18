@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
@@ -153,7 +154,7 @@ void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
 void EventFactoryEvdev::DispatchMouseMoveEvent(
     const MouseMoveEventParams& params) {
   MouseEvent event(ui::ET_MOUSE_MOVED, params.location, params.location,
-                   modifiers_.GetModifierFlags(),
+                   EventTimeForNow(), modifiers_.GetModifierFlags(),
                    /* changed_button_flags */ 0);
   event.set_source_device_id(params.device_id);
   DispatchUiEvent(&event);
@@ -185,7 +186,7 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   modifiers_.UpdateModifier(modifier, params.down);
 
   MouseEvent event(params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
-                   params.location, params.location,
+                   params.location, params.location, EventTimeForNow(),
                    modifiers_.GetModifierFlags() | flag,
                    /* changed_button_flags */ flag);
   event.set_source_device_id(params.device_id);

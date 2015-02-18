@@ -22,6 +22,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
 
@@ -152,8 +153,8 @@ void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
 DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
     Window* window,
     const gfx::Point& point) {
-  ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EF_NONE,
-                       ui::EF_NONE);
+  ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EventTimeForNow(),
+                       ui::EF_NONE, ui::EF_NONE);
   return DispatchMouseEnterOrExit(window, event, ui::ET_MOUSE_EXITED);
 }
 
@@ -370,7 +371,7 @@ void WindowEventDispatcher::UpdateCapture(Window* old_capture,
       old_capture->delegate()) {
     // Send a capture changed event with bogus location data.
     ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
-                         gfx::Point(), 0, 0);
+                         gfx::Point(), ui::EventTimeForNow(), 0, 0);
 
     DispatchDetails details = DispatchEvent(old_capture, &event);
     if (details.dispatcher_destroyed)
@@ -726,11 +727,9 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
     return details;
   gfx::Point host_mouse_location = root_mouse_location;
   host_->ConvertPointToHost(&host_mouse_location);
-  ui::MouseEvent event(ui::ET_MOUSE_MOVED,
-                       host_mouse_location,
-                       host_mouse_location,
-                       ui::EF_IS_SYNTHESIZED,
-                       0);
+  ui::MouseEvent event(ui::ET_MOUSE_MOVED, host_mouse_location,
+                       host_mouse_location, ui::EventTimeForNow(),
+                       ui::EF_IS_SYNTHESIZED, 0);
   return OnEventFromSource(&event);
 }
 

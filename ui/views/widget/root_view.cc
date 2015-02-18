@@ -14,6 +14,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/drag_controller.h"
@@ -454,10 +455,9 @@ void RootView::OnMouseCaptureLost() {
     // Synthesize a release event for UpdateCursor.
     if (mouse_pressed_handler_) {
       gfx::Point last_point(last_mouse_event_x_, last_mouse_event_y_);
-      ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
-                                   last_point, last_point,
-                                   last_mouse_event_flags_,
-                                   0);
+      ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, last_point,
+                                   last_point, ui::EventTimeForNow(),
+                                   last_mouse_event_flags_, 0);
       UpdateCursor(release_event);
     }
     // We allow the view to delete us from OnMouseCaptureLost. As such,

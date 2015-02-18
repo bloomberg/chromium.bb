@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/layout.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -71,14 +72,14 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   widget->SetContentsView(button);
 
   gfx::Point center(10, 10);
-  button->OnMousePressed(ui::MouseEvent(ui::ET_MOUSE_PRESSED, center, center,
-                                        ui::EF_LEFT_MOUSE_BUTTON,
-                                        ui::EF_LEFT_MOUSE_BUTTON));
+  button->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
 
-  button->OnMouseReleased(ui::MouseEvent(ui::ET_MOUSE_RELEASED, center, center,
-                                         ui::EF_LEFT_MOUSE_BUTTON,
-                                         ui::EF_LEFT_MOUSE_BUTTON));
+  button->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_EQ(CustomButton::STATE_HOVERED, button->state());
 
   button->SetEnabled(false);
