@@ -331,13 +331,15 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 
   content::ContextMenuParams params;
 
-  content::MenuItem name_item;
-  name_item.label = title_;
-  params.custom_items.push_back(name_item);
+  if (!title_.empty()) {
+    content::MenuItem name_item;
+    name_item.label = title_;
+    params.custom_items.push_back(name_item);
 
-  content::MenuItem separator_item;
-  separator_item.type = content::MenuItem::SEPARATOR;
-  params.custom_items.push_back(separator_item);
+    content::MenuItem separator_item;
+    separator_item.type = content::MenuItem::SEPARATOR;
+    params.custom_items.push_back(separator_item);
+  }
 
   if (!GetPluginInfo().path.value().empty()) {
     content::MenuItem run_item;
