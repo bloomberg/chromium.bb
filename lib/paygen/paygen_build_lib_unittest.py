@@ -1295,7 +1295,8 @@ DOC = "Faux doc"
         '--pool', 'bvt',
         '--retry', 'True',
         '--timeout_mins', str(timeout_mins),
-        '--no_wait', 'False']
+        '--no_wait', 'False',
+        '--suite_min_duts', '2']
 
     utils.RunCommand(expected_command, error_ok=True, redirect_stdout=True,
                      redirect_stderr=True, return_result=True).AndReturn(
@@ -1325,7 +1326,8 @@ DOC = "Faux doc"
         '--pool', 'bvt',
         '--retry', 'True',
         '--timeout_mins', str(timeout_mins),
-        '--no_wait', 'False']
+        '--no_wait', 'False',
+        '--suite_min_duts', '2']
     utils.RunCommand(expected_command, error_ok=True, redirect_stdout=True,
                      redirect_stderr=True, return_result=True).AndReturn(
                          utils.CommandResult(returncode=0))
@@ -1353,7 +1355,7 @@ DOC = "Faux doc"
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
-        retry=True, wait_for_results=True, debug=False)
+        retry=True, wait_for_results=True, suite_min_duts=2, debug=False)
 
     self.mox.ReplayAll()
 
@@ -1378,7 +1380,8 @@ DOC = "Faux doc"
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
-        retry=True, wait_for_results=True, debug=False).AndRaise(
+        retry=True, wait_for_results=True, suite_min_duts=2,
+        debug=False).AndRaise(
             failures_lib.TestWarning('** Suite passed with a warning code **'))
 
     self.mox.ReplayAll()

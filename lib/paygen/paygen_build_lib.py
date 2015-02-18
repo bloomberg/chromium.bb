@@ -1014,6 +1014,7 @@ class _PaygenBuild(object):
                                 retry=True,
                                 wait_for_results=True,
                                 timeout_mins=timeout_mins,
+                                suite_min_duts=2,
                                 debug=bool(self._drm))
       except failures_lib.TestWarning as e:
         logging.warning('Warning running test suite; error output:\n%s', e)
@@ -1028,6 +1029,7 @@ class _PaygenBuild(object):
           '--retry', 'True',
           '--timeout_mins', str(timeout_mins),
           '--no_wait', 'False',
+          '--suite_min_duts', '2',
       ]
       logging.info('Running autotest suite: %s', ' '.join(cmd))
       cmd_result = utils.RunCommand(cmd, error_ok=True, redirect_stdout=True,
