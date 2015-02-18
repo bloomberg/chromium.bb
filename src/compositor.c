@@ -1543,18 +1543,27 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 			    wl_fixed_t *vx, wl_fixed_t *vy)
 {
 	struct weston_view *view;
-        int ix = wl_fixed_to_int(x);
-        int iy = wl_fixed_to_int(y);
+	wl_fixed_t view_x, view_y;
+	int view_ix, view_iy;
+	int ix = wl_fixed_to_int(x);
+	int iy = wl_fixed_to_int(y);
 
 	wl_list_for_each(view, &compositor->view_list, link) {
-		weston_view_from_global_fixed(view, x, y, vx, vy);
-		if (pixman_region32_contains_point(
-			&view->transform.boundingbox, ix, iy, NULL) &&
-		    pixman_region32_contains_point(&view->surface->input,
-						   wl_fixed_to_int(*vx),
-						   wl_fixed_to_int(*vy),
-						   NULL))
-			return view;
+		if (!pixman_region32_contains_point(
+				&view->transform.boundingbox, ix, iy, NULL))
+			continue;
+
+		weston_view_from_global_fixed(view, x, y, &view_x, &view_y);
+		view_ix = wl_fixed_to_int(view_x);
+		view_iy = wl_fixed_to_int(view_y);
+
+		if (!pixman_region32_contains_point(&view->surface->input,
+						    view_ix, view_iy, NULL))
+			continue;
+
+		*vx = view_x;
+		*vy = view_y;
+		return view;
 	}
 
 	return NULL;
