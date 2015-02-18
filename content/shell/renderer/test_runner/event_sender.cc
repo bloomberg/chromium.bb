@@ -1661,16 +1661,9 @@ void EventSender::GestureFlingStart(float x,
   WebGestureEvent event;
   event.type = WebInputEvent::GestureFlingStart;
 
-  // TODO(tdresser): Once we've migrated all calls to GestureFlingStart
-  // to pass the device string, throw an error if args is empty. See
-  // crbug.com/456136 for details.
-  std::string device_string = kSourceDeviceStringTouchpad;
-  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
-    if (!args->GetNext(&device_string)) {
-      args->ThrowError();
-      return;
-    }
-  }
+  std::string device_string;
+  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString())
+    args->GetNext(&device_string);
 
   if (device_string == kSourceDeviceStringTouchpad) {
     event.sourceDevice = blink::WebGestureDeviceTouchpad;
