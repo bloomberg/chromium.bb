@@ -35,8 +35,11 @@ enum LatencyComponentType {
   // Timestamp when the UI event is created.
   INPUT_EVENT_LATENCY_UI_COMPONENT,
   // This is special component indicating there is rendering scheduled for
-  // the event associated with this LatencyInfo.
-  INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT,
+  // the event associated with this LatencyInfo on main thread.
+  INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
+  // This is special component indicating there is rendering scheduled for
+  // the event associated with this LatencyInfo on impl thread.
+  INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
   // Timestamp when a scroll update is forwarded to the main thread.
   INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
   // Timestamp when the event's ack is received by the RWH.
@@ -50,6 +53,8 @@ enum LatencyComponentType {
   WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
   // Timestamp when a tab is requested to be shown.
   TAB_SHOW_COMPONENT,
+  // Timestamp when the frame is swapped in renderer.
+  INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
   // Timestamp of when the browser process receives a buffer swap notification
   // from the renderer.
   INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT,
@@ -106,7 +111,7 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   };
 
   // Empirically determined constant based on a typical scroll sequence.
-  enum { kTypicalMaxComponentsPerLatencyInfo = 9 };
+  enum { kTypicalMaxComponentsPerLatencyInfo = 10 };
 
   enum { kMaxInputCoordinates = 2 };
 

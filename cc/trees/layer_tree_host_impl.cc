@@ -1619,12 +1619,19 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   }
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   active_tree()->FinishSwapPromises(&metadata);
-  for (size_t i = 0; i < metadata.latency_info.size(); i++) {
+  for (auto& latency : metadata.latency_info) {
     TRACE_EVENT_FLOW_STEP0(
         "input,benchmark",
         "LatencyInfo.Flow",
-        TRACE_ID_DONT_MANGLE(metadata.latency_info[i].trace_id),
+        TRACE_ID_DONT_MANGLE(latency.trace_id),
         "SwapBuffers");
+    // Only add the latency component once for renderer swap, not the browser
+    // swap.
+    if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
+                             0, nullptr)) {
+      latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
+                               0, 0);
+    }
   }
   renderer_->SwapBuffers(metadata);
   return true;

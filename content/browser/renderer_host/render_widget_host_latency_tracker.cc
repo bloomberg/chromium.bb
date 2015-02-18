@@ -135,6 +135,20 @@ void ComputeInputLatencyHistograms(WebInputEvent::Type type,
   }
 }
 
+// Long scroll latency component that is mostly under 200ms.
+#define UMA_HISTOGRAM_SCROLL_LATENCY_LONG(name, start, end)        \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                                     \
+    name,                                                          \
+    (end.event_time - start.event_time).InMicroseconds(),          \
+    1000, 200000, 50)
+
+// Short scroll latency component that is mostly under 50ms.
+#define UMA_HISTOGRAM_SCROLL_LATENCY_SHORT(name, start, end)       \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                                     \
+    name,                                                          \
+    (end.event_time - start.event_time).InMicroseconds(),          \
+    1, 50000, 50)
+
 void ComputeScrollLatencyHistograms(
     const LatencyInfo::LatencyComponent& swap_component,
     int64 latency_component_id,
@@ -171,6 +185,67 @@ void ComputeScrollLatencyHistograms(
             .InMicroseconds(),
         1, 1000000, 100);
   }
+
+  // TODO(miletus): Add validation for making sure the following components
+  // are present and their event times are legit.
+  LatencyInfo::LatencyComponent rendering_scheduled_component;
+  bool rendering_scheduled_on_main = latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
+      0, &rendering_scheduled_component);
+
+  if (!rendering_scheduled_on_main) {
+    if (!latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
+            0, &rendering_scheduled_component))
+      return;
+  }
+
+  if (rendering_scheduled_on_main) {
+    UMA_HISTOGRAM_SCROLL_LATENCY_LONG(
+        "Event.Latency.ScrollUpdate.TouchToHandled_Main",
+        original_component, rendering_scheduled_component);
+  } else {
+    UMA_HISTOGRAM_SCROLL_LATENCY_LONG(
+        "Event.Latency.ScrollUpdate.TouchToHandled_Impl",
+        original_component, rendering_scheduled_component);
+  }
+
+  LatencyInfo::LatencyComponent renderer_swap_component;
+  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
+                           0, &renderer_swap_component))
+    return;
+
+  if (rendering_scheduled_on_main) {
+    UMA_HISTOGRAM_SCROLL_LATENCY_LONG(
+        "Event.Latency.ScrollUpdate.HandledToRendererSwap_Main",
+        rendering_scheduled_component, renderer_swap_component);
+  } else {
+    UMA_HISTOGRAM_SCROLL_LATENCY_LONG(
+        "Event.Latency.ScrollUpdate.HandledToRendererSwap_Impl",
+        rendering_scheduled_component, renderer_swap_component);
+  }
+
+  LatencyInfo::LatencyComponent browser_received_swap_component;
+  if (!latency.FindLatency(
+          ui::INPUT_EVENT_BROWSER_RECEIVED_RENDERER_SWAP_COMPONENT,
+          0, &browser_received_swap_component))
+    return;
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_SHORT(
+      "Event.Latency.ScrollUpdate.RendererSwapToBrowserNotified",
+      renderer_swap_component, browser_received_swap_component);
+
+  LatencyInfo::LatencyComponent gpu_swap_component;
+  if (!latency.FindLatency(ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
+                           0, &gpu_swap_component))
+    return;
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_LONG(
+      "Event.Latency.ScrollUpdate.BrowserNotifiedToBeforeGpuSwap",
+      browser_received_swap_component, gpu_swap_component);
+
+  UMA_HISTOGRAM_SCROLL_LATENCY_SHORT("Event.Latency.ScrollUpdate.GpuSwap",
+                                     gpu_swap_component, swap_component);
 }
 
 // LatencyComponents generated in the renderer must have component IDs
@@ -264,7 +339,9 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 
   // Latency ends when it is acked but does not cause render scheduling.
   bool rendering_scheduled = latency->FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL);
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0, nullptr);
+  rendering_scheduled |= latency->FindLatency(
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0, nullptr);
 
   if (WebInputEvent::isGestureEventType(event.type)) {
     if (!rendering_scheduled) {

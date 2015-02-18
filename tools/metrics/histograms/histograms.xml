@@ -7415,6 +7415,52 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.ScrollUpdate.BrowserNotifiedToBeforeGpuSwap"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between the browser receives the notification of a ScrollUpdate gesture
+    event induced renderer swap and GPU starts to swap.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.GpuSwap" units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between gpu starts to swap a ScrollUpdate gesture event induced frame
+    and the swap finishes.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.HandledToRendererSwap"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between the ScrollUpdate gesture event is handled on main/impl thread
+    (specified by suffix) and before renderer starts to swap.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.RendererSwapToBrowserNotified"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between the renderer starts to swap a frame induced by ScrollUpdate
+    gesture event and browser receives the swap notification.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.TouchToHandled"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between initial creation of a touch event and the generated
+    ScrollUpdate gesture event is handled on main/impl thread (specified by
+    suffix). If no swap was induced by the ScrollUpdate gesture event, no
+    recording is made.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.TouchToFirstScrollUpdateSwap"
     units="microseconds">
   <owner>rbyers@chromium.org</owner>
@@ -63890,6 +63936,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ScrollUpdateHandledThread">
+  <affected-histogram name="Event.Latency.ScrollUpdate.HandledToRendererSwap"/>
+  <suffix name="Main" label="ScrollUpdate handled on main thread"/>
+  <suffix name="Impl" label="ScrollUpdate handled on impl thread"/>
+  <affected-histogram name="Event.Latency.ScrollUpdate.TouchToHandled"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SecurityInterstitialType" separator="."

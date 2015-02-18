@@ -12,12 +12,14 @@
 
 namespace {
 
-bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info) {
-  if (latency_info->FindLatency(
-          ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, nullptr))
+bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info,
+                                    bool on_main) {
+  ui::LatencyComponentType type = on_main ?
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT :
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
+  if (latency_info->FindLatency(type, 0, nullptr))
     return false;
-  latency_info->AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, 0);
+  latency_info->AddLatencyNumber(type, 0, 0);
   return true;
 }
 
@@ -48,14 +50,14 @@ LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
 LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {}
 
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
-  if (AddRenderingScheduledComponent(latency_)) {
+  if (AddRenderingScheduledComponent(latency_, true /* on_main */)) {
     scoped_ptr<SwapPromise> swap_promise(new LatencyInfoSwapPromise(*latency_));
     layer_tree_host_->QueueSwapPromise(swap_promise.Pass());
   }
 }
 
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl() {
-  if (AddRenderingScheduledComponent(latency_)) {
+  if (AddRenderingScheduledComponent(latency_, false /* on_main */)) {
     scoped_ptr<SwapPromise> swap_promise(new LatencyInfoSwapPromise(*latency_));
     layer_tree_host_impl_->active_tree()->QueueSwapPromise(swap_promise.Pass());
   }
