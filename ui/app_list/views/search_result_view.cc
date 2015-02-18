@@ -25,16 +25,19 @@ namespace app_list {
 namespace {
 
 const int kPreferredWidth = 300;
-const int kPreferredHeight = 52;
-const int kIconPadding = 14;
-const int kTextTrailPadding = kIconPadding;
+const int kPreferredHeight = 56;
+const int kIconLeftPadding = 16;
+const int kIconRightPadding = 24;
+const int kTextTrailPadding = 16;
+const int kSeparatorPadding = 62;
 const int kBorderSize = 1;
+const SkColor kSeparatorColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
 
 // Extra margin at the right of the rightmost action icon.
 const int kActionButtonRightMargin = 8;
 
 int GetIconViewWidth() {
-  return kListIconSize + 2 * kIconPadding;
+  return kListIconSize + kIconLeftPadding + kIconRightPadding;
 }
 
 // Creates a RenderText of given |text| and |styles|. Caller takes ownership
@@ -71,6 +74,7 @@ const char SearchResultView::kViewClassName[] = "ui/app_list/SearchResultView";
 SearchResultView::SearchResultView(SearchResultListView* list_view)
     : views::CustomButton(this),
       result_(NULL),
+      is_last_result_(false),
       list_view_(list_view),
       icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
@@ -148,7 +152,9 @@ void SearchResultView::Layout() {
 
   gfx::Rect icon_bounds(rect);
   icon_bounds.set_width(GetIconViewWidth());
-  icon_bounds.Inset(kIconPadding, (rect.height() - kListIconSize) / 2);
+  const int top_bottom_padding = (rect.height() - kListIconSize) / 2;
+  icon_bounds.Inset(kIconLeftPadding, top_bottom_padding, kIconRightPadding,
+                    top_bottom_padding);
   icon_bounds.Intersect(rect);
   icon_->SetBoundsRect(icon_bounds);
 
@@ -215,12 +221,25 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
 
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
+
+  canvas->FillRect(content_rect, switches::IsExperimentalAppListEnabled()
+                                     ? kCardBackgroundColor
+                                     : kContentsBackgroundColor);
+
+  // Possibly call FillRect a second time (these colours are partially
+  // transparent, so the previous FillRect is not redundant).
   if (selected)
     canvas->FillRect(content_rect, kSelectedColor);
   else if (hover)
     canvas->FillRect(content_rect, kHighlightedColor);
-  else if (!switches::IsExperimentalAppListEnabled())
-    canvas->FillRect(content_rect, kContentsBackgroundColor);
+
+  if (switches::IsExperimentalAppListEnabled() && !is_last_result_) {
+    gfx::Rect line_rect = content_rect;
+    line_rect.set_height(kBorderSize);
+    line_rect.set_y(content_rect.bottom() - kBorderSize);
+    line_rect.set_x(kSeparatorPadding);
+    canvas->FillRect(line_rect, kSeparatorColor);
+  }
 
   gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);
   canvas->FillRect(border_bottom, kResultBorderColor);
