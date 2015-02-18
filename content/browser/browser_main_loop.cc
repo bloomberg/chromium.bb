@@ -487,13 +487,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   InitializeMainThread();
 
-#if defined(OS_CHROMEOS)
-  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
-    memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS(
-        chromeos::switches::GetMemoryPressureThresholds()));
-  }
-#endif
-
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
     system_monitor_.reset(new base::SystemMonitor);
@@ -598,6 +591,13 @@ int BrowserMainLoop::PreCreateThreads() {
         "BrowserMainLoop::CreateThreads:PreCreateThreads");
     result_code_ = parts_->PreCreateThreads();
   }
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
+    memory_pressure_observer_.reset(new base::MemoryPressureObserverChromeOS(
+        chromeos::switches::GetMemoryPressureThresholds()));
+  }
+#endif
 
 #if defined(ENABLE_PLUGINS)
   // Prior to any processing happening on the io thread, we create the
