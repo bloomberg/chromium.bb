@@ -14,6 +14,10 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+namespace {
+const CGFloat kAnimationDuration = 0.2;
+}
+
 @implementation AutocompleteTextField
 
 @synthesize observer = observer_;
@@ -32,6 +36,9 @@
   [[self cell] setTruncatesLastVisibleLine:YES];
   [[self cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   currentToolTips_.reset([[NSMutableArray alloc] init]);
+  resizeAnimation_.reset([[NSViewAnimation alloc] init]);
+  [resizeAnimation_ setDuration:kAnimationDuration];
+  [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
@@ -219,6 +226,28 @@
   if (!undoManager_.get())
     undoManager_.reset([[NSUndoManager alloc] init]);
   return undoManager_.get();
+}
+
+- (void)animateToFrame:(NSRect)frame {
+  [self stopAnimation];
+  NSDictionary* animationDictionary = @{
+    NSViewAnimationTargetKey : self,
+    NSViewAnimationStartFrameKey : [NSValue valueWithRect:[self frame]],
+    NSViewAnimationEndFrameKey : [NSValue valueWithRect:frame]
+  };
+  [resizeAnimation_ setViewAnimations:@[ animationDictionary ]];
+  [resizeAnimation_ startAnimation];
+}
+
+- (void)stopAnimation {
+  if ([resizeAnimation_ isAnimating]) {
+    // [NSViewAnimation stopAnimation] results in advancing the animation to
+    // the end. Since this is almost certainly not the behavior we want, reset
+    // the frame to the current frame.
+    NSRect frame = [self frame];
+    [resizeAnimation_ stopAnimation];
+    [self setFrame:frame];
+  }
 }
 
 - (void)clearUndoChain {

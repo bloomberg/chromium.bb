@@ -73,9 +73,6 @@ const CGFloat kBaseToolbarHeightNormal = 35.0;
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
-// The duration of any animation that occurs within the toolbar in seconds.
-const CGFloat kAnimationDuration = 0.2;
-
 // The amount of left padding that the wrench menu should have.
 const CGFloat kWrenchMenuLeftPadding = 3.0;
 
@@ -662,7 +659,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 }
 
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
-  CGFloat locationBarXPos = NSMaxX([[locationBar_ animator] frame]);
+  CGFloat locationBarXPos = NSMaxX([locationBar_ frame]);
   CGFloat leftDistance;
 
   if ([browserActionsContainerView_ isHidden]) {
@@ -674,6 +671,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   }
   if (leftDistance != 0.0)
     [self adjustLocationSizeBy:leftDistance animate:animate];
+  else
+    [locationBar_ stopAnimation];
 }
 
 - (void)maintainMinimumLocationBarWidth {
@@ -742,18 +741,15 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
   // Ensure that the location bar is in its proper place.
-  NSRect locationFrame = [[locationBar_ animator] frame];
+  NSRect locationFrame = [locationBar_ frame];
   locationFrame.size.width += dX;
 
-  if (!animate) {
-    [locationBar_ setFrame:locationFrame];
-    return;
-  }
+  [locationBar_ stopAnimation];
 
-  [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
-  [[locationBar_ animator] setFrame:locationFrame];
-  [NSAnimationContext endGrouping];
+  if (animate)
+    [locationBar_ animateToFrame:locationFrame];
+  else
+    [locationBar_ setFrame:locationFrame];
 }
 
 - (NSPoint)bookmarkBubblePoint {

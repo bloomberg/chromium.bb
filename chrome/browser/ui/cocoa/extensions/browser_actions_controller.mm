@@ -223,10 +223,16 @@ int ToolbarActionsBarBridge::GetWidth() const {
 }
 
 bool ToolbarActionsBarBridge::IsAnimating() const {
-  return false;
+  return [[controller_ containerView] isAnimating];
 }
 
 void ToolbarActionsBarBridge::StopAnimating() {
+  // Unfortunately, animating the browser actions container affects neighboring
+  // views (like the omnibox), which could also be animating. Because of this,
+  // instead of just ending the animation, the cleanest way to terminate is to
+  // "animate" to the current frame.
+  [controller_ resizeContainerToWidth:
+      NSWidth([[controller_ containerView] frame])];
 }
 
 int ToolbarActionsBarBridge::GetChevronWidth() const {
