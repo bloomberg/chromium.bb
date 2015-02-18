@@ -22,8 +22,9 @@
 //
 // metrics_base.js and metrics.js initiates load performance tracking
 // so we want to parse it as early as possible.
-//<include src="metrics_base.js">
-//<include src="metrics.js">
+//<include src="../../common/js/metrics_base.js">
+//<include src="../../common/js/metrics.js">
+//<include src="metrics_start.js">
 //
 //<include src="../../common/js/lru_cache.js">
 //<include src="../../../image_loader/image_loader_client.js">

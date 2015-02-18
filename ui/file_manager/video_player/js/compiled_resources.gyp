@@ -45,7 +45,7 @@
         'depends': [
           '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
           'error_util.js',
-          '../../file_manager/foreground/js/metrics_base.js',
+          '../../file_manager/common/js/metrics_base.js',
           'video_player_metrics.js',
           '../../../webui/resources/js/cr.js',
           '../../../webui/resources/js/load_time_data.js',

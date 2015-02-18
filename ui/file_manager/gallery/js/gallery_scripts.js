@@ -8,8 +8,9 @@
 // included file but that's all right since any javascript file should start
 // with a copyright comment anyway.
 
-//<include src="../../file_manager/foreground/js/metrics_base.js">
-//<include src="../../file_manager/foreground/js/metrics.js">
+//<include src="../../file_manager/common/js/metrics_base.js">
+//<include src="../../file_manager/common/js/metrics.js">
+//<include src="../../file_manager/foreground/js/metrics_start.js">
 
 //<include src="../../file_manager/common/js/lru_cache.js">
 //<include src="../../image_loader/image_loader_client.js">

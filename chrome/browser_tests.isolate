@@ -224,6 +224,7 @@
           '../ui/file_manager/image_loader/',
           '../ui/file_manager/integration_tests/',
           '../ui/webui/resources/js/',
+          '../third_party/analytics/',
           '../chrome/browser/resources/chromeos/wallpaper_manager/',
           '<(PRODUCT_DIR)/chromevox_test_data/',
           '<(PRODUCT_DIR)/content_shell.pak',

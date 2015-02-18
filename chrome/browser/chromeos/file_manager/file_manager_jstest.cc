@@ -95,6 +95,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtilTest) {
       FILE_PATH_LITERAL("common/js/async_util_unittest.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetricsTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL("common/js/metrics_unittest.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("foreground/js/task_controller_unittest.html")));
