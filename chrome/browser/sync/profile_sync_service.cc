@@ -242,6 +242,7 @@ ProfileSyncService::ProfileSyncService(
       browsing_data_remover_observer_(NULL),
       weak_factory_(this),
       startup_controller_weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
   startup_controller_.reset(new browser_sync::StartupController(
       start_behavior,

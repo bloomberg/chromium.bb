@@ -5,10 +5,12 @@
 #include "chrome/browser/sync/backend_migrator.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "components/sync_driver/data_type_manager_mock.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_transaction.h"
@@ -84,7 +86,8 @@ class SyncBackendMigratorTest : public testing::Test {
           requested_types);
       migrator_->OnConfigureDone(result);
     }
-    message_loop_.RunUntilIdle();
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
 
   ProfileSyncService* service() { return &service_; }
@@ -99,8 +102,7 @@ class SyncBackendMigratorTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<SyncSessionSnapshot> snap_;
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   syncer::ModelTypeSet preferred_types_;
   TestingProfile profile_;
   NiceMock<ProfileSyncServiceMock> service_;
