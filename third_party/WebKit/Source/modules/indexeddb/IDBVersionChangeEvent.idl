@@ -29,6 +29,7 @@
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
 enum IDBDataLossAmount { "none", "total" };
 [
+    Exposed=(Window,Worker),
     Constructor(DOMString type, optional IDBVersionChangeEventInit eventInitDict)
 ] interface IDBVersionChangeEvent : Event {
     readonly attribute unsigned long long oldVersion;

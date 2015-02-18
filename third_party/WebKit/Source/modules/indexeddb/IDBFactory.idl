@@ -23,7 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBFactory
+
 [
+    Exposed=(Window,Worker),
     GarbageCollected
 ] interface IDBFactory {
     [CallWith=ScriptState, ImplementedAs=getDatabaseNames, RaisesException] IDBRequest webkitGetDatabaseNames();

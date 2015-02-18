@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBVersionChangeEventInit
+
 dictionary IDBVersionChangeEventInit : EventInit {
     unsigned long long  oldVersion = 0;
     unsigned long long? newVersion = null;

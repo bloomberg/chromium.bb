@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursor
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursorDirection
 
 enum IDBCursorDirection {
     "next",
@@ -32,7 +32,10 @@ enum IDBCursorDirection {
     "prevunique"
 };
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursor
+
 [
+    Exposed=(Window,Worker),
     GarbageCollected
 ] interface IDBCursor {
 

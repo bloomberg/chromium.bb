@@ -26,6 +26,7 @@
 // http://www.w3.org/TR/IndexedDB/#idl-def-IDBIndex
 
 [
+    Exposed=(Window,Worker),
     GarbageCollected
 ] interface IDBIndex {
     readonly attribute DOMString name;

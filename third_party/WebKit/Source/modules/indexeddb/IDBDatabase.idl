@@ -24,9 +24,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dvcs.w3.org/hg/IndexedDB/raw-file/default/Overview.html#idl-def-IDBDatabase
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBDatabase
 
 [
+    Exposed=(Window,Worker),
     ActiveDOMObject,
     GarbageCollected,
 ] interface IDBDatabase : EventTarget {

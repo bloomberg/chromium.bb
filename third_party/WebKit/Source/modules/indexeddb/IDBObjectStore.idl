@@ -23,9 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dvcs.w3.org/hg/IndexedDB/raw-file/default/Overview.html#idl-def-IDBObjectStore
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBObjectStore
 
 [
+    Exposed=(Window,Worker),
     GarbageCollected,
 ] interface IDBObjectStore {
     readonly attribute DOMString? name;

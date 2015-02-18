@@ -37,16 +37,4 @@ partial interface WorkerGlobalScope {
     [DeprecateAs=PrefixedIDBTransactionConstructor] attribute IDBTransactionConstructor webkitIDBTransaction;
 
     readonly attribute IDBFactory indexedDB;
-
-    attribute IDBCursorConstructor IDBCursor;
-    attribute IDBCursorWithValueConstructor IDBCursorWithValue;
-    attribute IDBDatabaseConstructor IDBDatabase;
-    attribute IDBFactoryConstructor IDBFactory;
-    attribute IDBIndexConstructor IDBIndex;
-    attribute IDBKeyRangeConstructor IDBKeyRange;
-    attribute IDBObjectStoreConstructor IDBObjectStore;
-    attribute IDBOpenDBRequestConstructor IDBOpenDBRequest;
-    attribute IDBRequestConstructor IDBRequest;
-    attribute IDBTransactionConstructor IDBTransaction;
-    attribute IDBVersionChangeEventConstructor IDBVersionChangeEvent;
 };

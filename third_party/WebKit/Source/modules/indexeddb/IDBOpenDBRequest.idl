@@ -23,7 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface IDBOpenDBRequest : IDBRequest {
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBOpenDBRequest
+
+[
+    Exposed=(Window,Worker)
+] interface IDBOpenDBRequest : IDBRequest {
     attribute EventHandler onblocked;
     attribute EventHandler onupgradeneeded;
 };

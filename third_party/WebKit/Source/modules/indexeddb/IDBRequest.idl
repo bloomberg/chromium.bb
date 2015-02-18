@@ -27,12 +27,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBRequestReadyState
+
 enum IDBRequestReadyState {
     "pending",
     "done"
 };
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBRequest
+
 [
+    Exposed=(Window,Worker),
     ActiveDOMObject,
     GarbageCollected,
 ] interface IDBRequest : EventTarget {

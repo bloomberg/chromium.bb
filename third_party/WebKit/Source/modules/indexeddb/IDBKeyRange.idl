@@ -23,7 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBKeyRange
+
 [
+    Exposed=(Window,Worker),
     GarbageCollected
 ] interface IDBKeyRange {
     [ImplementedAs=lowerValue, CallWith=ScriptState] readonly attribute any lower;

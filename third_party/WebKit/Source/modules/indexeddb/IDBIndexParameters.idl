@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Overview.html#options-object-concept
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBIndexParameters
 
 dictionary IDBIndexParameters {
     boolean unique = false;
