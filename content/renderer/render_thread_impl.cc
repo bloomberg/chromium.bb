@@ -1169,7 +1169,7 @@ void RenderThreadImpl::IdleHandler() {
   }
 
   base::allocator::ReleaseFreeMemory();
-  base::DiscardableMemory::ReleaseFreeMemory();
+  discardable_shared_memory_manager()->ReleaseFreeMemory();
 
   // Continue the idle timer if the webkit shared timer is not suspended or
   // something is left to do.

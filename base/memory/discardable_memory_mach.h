@@ -20,8 +20,6 @@ class DiscardableMemoryMach
   explicit DiscardableMemoryMach(size_t bytes);
   ~DiscardableMemoryMach() override;
 
-  static void PurgeForTesting();
-
   bool Initialize();
 
   // Overridden from DiscardableMemory:
@@ -33,7 +31,6 @@ class DiscardableMemoryMach
   bool AllocateAndAcquireLock() override;
   void ReleaseLock() override;
   void Purge() override;
-  bool IsMemoryResident() const override;
 
  private:
   mac::ScopedMachVM memory_;

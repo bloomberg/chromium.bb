@@ -89,10 +89,6 @@ class BASE_EXPORT DiscardableMemory {
   // Create a DiscardableMemory instance with preferred type and |size|.
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
 
-  // Discardable memory implementations might use this to release memory
-  // or resources assigned to instances that have been purged.
-  static void ReleaseFreeMemory();
-
   // Discardable memory implementations might allow an elevated usage level
   // while in frequent use. Call this to have the usage reduced to the base
   // level. Returns true if there's no need to call this again until
@@ -118,12 +114,6 @@ class BASE_EXPORT DiscardableMemory {
   // Returns the memory address held by this object. The object must be locked
   // before calling this. Otherwise, this will cause a DCHECK error.
   virtual void* Memory() const = 0;
-
-  // Testing utility calls.
-
-  // Purge all discardable memory in the system. This call has global effects
-  // across all running processes, so it should only be used for testing!
-  static void PurgeForTesting();
 };
 
 }  // namespace base

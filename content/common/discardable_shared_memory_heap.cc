@@ -20,7 +20,7 @@ bool IsInFreeList(DiscardableSharedMemoryHeap::Span* span) {
 }  // namespace
 
 DiscardableSharedMemoryHeap::Span::Span(
-    linked_ptr<base::DiscardableSharedMemory> shared_memory,
+    base::DiscardableSharedMemory* shared_memory,
     size_t start,
     size_t length)
     : shared_memory_(shared_memory), start_(start), length_(length) {
@@ -36,15 +36,15 @@ DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap(size_t block_size)
 }
 
 DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {
-  while (!free_spans_.empty())
-    RemoveFromFreeList(free_spans_.tail()->value());
+  for (auto shared_memory : shared_memory_segments_)
+    ReleaseMemory(shared_memory);
+
+  DCHECK(free_spans_.empty());
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
-    scoped_ptr<base::DiscardableSharedMemory> memory,
+    scoped_ptr<base::DiscardableSharedMemory> shared_memory,
     size_t size) {
-  linked_ptr<base::DiscardableSharedMemory> shared_memory(memory.release());
-
   // Memory must be aligned to block size.
   DCHECK_EQ(
       reinterpret_cast<size_t>(shared_memory->memory()) & (block_size_ - 1),
@@ -52,25 +52,32 @@ scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
   DCHECK_EQ(size & (block_size_ - 1), 0u);
 
   scoped_ptr<Span> span(
-      new Span(shared_memory,
+      new Span(shared_memory.get(),
                reinterpret_cast<size_t>(shared_memory->memory()) / block_size_,
                size / block_size_));
   DCHECK(spans_.find(span->start_) == spans_.end());
   DCHECK(spans_.find(span->start_ + span->length_ - 1) == spans_.end());
   RegisterSpan(span.get());
+
+  // Start tracking if segment is resident by adding it to
+  // |shared_memory_segments_|.
+  shared_memory_segments_.push_back(shared_memory.release());
+
   return span.Pass();
 }
 
 void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
+  DCHECK(span->shared_memory_);
+
   // Merge with previous span if possible.
   SpanMap::iterator prev_it = spans_.find(span->start_ - 1);
   if (prev_it != spans_.end() && IsInFreeList(prev_it->second)) {
     scoped_ptr<Span> prev = RemoveFromFreeList(prev_it->second);
     DCHECK_EQ(prev->start_ + prev->length_, span->start_);
+    UnregisterSpan(prev.get());
     spans_.erase(span->start_);
     span->start_ -= prev->length_;
     span->length_ += prev->length_;
-    DeleteSpan(prev.Pass());
     spans_[span->start_] = span.get();
   }
 
@@ -79,10 +86,10 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
   if (next_it != spans_.end() && IsInFreeList(next_it->second)) {
     scoped_ptr<Span> next = RemoveFromFreeList(next_it->second);
     DCHECK_EQ(next->start_, span->start_ + span->length_);
+    UnregisterSpan(next.get());
     if (span->length_ > 1)
       spans_.erase(span->start_ + span->length_ - 1);
     span->length_ += next->length_;
-    DeleteSpan(next.Pass());
     spans_[span->start_ + span->length_ - 1] = span.get();
   }
 
@@ -134,11 +141,25 @@ DiscardableSharedMemoryHeap::SearchFreeList(size_t blocks) {
   return best ? Carve(best, blocks) : nullptr;
 }
 
-void DiscardableSharedMemoryHeap::DeleteSpan(scoped_ptr<Span> span) {
-  DCHECK(!IsInFreeList(span.get()));
-  spans_.erase(span->start_);
-  if (span->length_ > 1)
-    spans_.erase(span->start_ + span->length_ - 1);
+void DiscardableSharedMemoryHeap::ReleaseFreeMemory() {
+  size_t i = 0;
+
+  // Release memory for all non-resident segments.
+  while (i < shared_memory_segments_.size()) {
+    base::DiscardableSharedMemory* shared_memory = shared_memory_segments_[i];
+
+    // Skip segment if still resident.
+    if (shared_memory->IsMemoryResident()) {
+      ++i;
+      continue;
+    }
+
+    // Release the memory and unregistering all associated spans.
+    ReleaseMemory(shared_memory);
+
+    std::swap(shared_memory_segments_[i], shared_memory_segments_.back());
+    shared_memory_segments_.pop_back();
+  }
 }
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span>
@@ -174,6 +195,37 @@ void DiscardableSharedMemoryHeap::RegisterSpan(Span* span) {
   spans_[span->start_] = span;
   if (span->length_ > 1)
     spans_[span->start_ + span->length_ - 1] = span;
+}
+
+void DiscardableSharedMemoryHeap::UnregisterSpan(Span* span) {
+  DCHECK(spans_.find(span->start_) != spans_.end());
+  DCHECK_EQ(spans_[span->start_], span);
+  spans_.erase(span->start_);
+  if (span->length_ > 1) {
+    DCHECK(spans_.find(span->start_ + span->length_ - 1) != spans_.end());
+    DCHECK_EQ(spans_[span->start_ + span->length_ - 1], span);
+    spans_.erase(span->start_ + span->length_ - 1);
+  }
+}
+
+void DiscardableSharedMemoryHeap::ReleaseMemory(
+    base::DiscardableSharedMemory* shared_memory) {
+  size_t offset =
+      reinterpret_cast<size_t>(shared_memory->memory()) / block_size_;
+  size_t end = offset + shared_memory->mapped_size() / block_size_;
+  while (offset < end) {
+    DCHECK(spans_.find(offset) != spans_.end());
+    Span* span = spans_[offset];
+    DCHECK_EQ(span->shared_memory_, shared_memory);
+    span->shared_memory_ = nullptr;
+    UnregisterSpan(span);
+
+    offset += span->length_;
+
+    // If |span| is in the free list, remove it.
+    if (IsInFreeList(span))
+      RemoveFromFreeList(span);
+  }
 }
 
 }  // namespace content

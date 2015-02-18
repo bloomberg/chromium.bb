@@ -68,11 +68,6 @@ void DiscardableMemoryEmulated::ReduceMemoryUsageUntilWithinLimit(
   g_manager.Pointer()->ReduceMemoryUsageUntilWithinLimit(bytes);
 }
 
-// static
-void DiscardableMemoryEmulated::PurgeForTesting() {
-  g_manager.Pointer()->PurgeAll();
-}
-
 bool DiscardableMemoryEmulated::Initialize() {
   return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 }
@@ -111,10 +106,6 @@ bool DiscardableMemoryEmulated::AllocateAndAcquireLock() {
 
 void DiscardableMemoryEmulated::Purge() {
   memory_.reset();
-}
-
-bool DiscardableMemoryEmulated::IsMemoryResident() const {
-  return true;
 }
 
 }  // namespace internal

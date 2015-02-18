@@ -82,16 +82,6 @@ TEST_P(DiscardableMemoryTest, DeleteWhileLocked) {
   ASSERT_TRUE(memory);
 }
 
-// Test forced purging.
-TEST_P(DiscardableMemoryTest, Purge) {
-  const scoped_ptr<DiscardableMemory> memory(CreateLockedMemory(kSize));
-  ASSERT_TRUE(memory);
-  memory->Unlock();
-
-  DiscardableMemory::PurgeForTesting();
-  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_PURGED, memory->Lock());
-}
-
 #if !defined(NDEBUG) && !defined(OS_ANDROID)
 // Death tests are not supported with Android APKs.
 TEST_P(DiscardableMemoryTest, UnlockedMemoryAccessCrashesInDebugMode) {

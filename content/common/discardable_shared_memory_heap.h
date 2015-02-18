@@ -28,20 +28,18 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
    public:
     ~Span();
 
-    base::DiscardableSharedMemory* shared_memory() {
-      return shared_memory_.get();
-    }
+    base::DiscardableSharedMemory* shared_memory() { return shared_memory_; }
     size_t start() const { return start_; }
     size_t length() const { return length_; }
 
    private:
     friend class DiscardableSharedMemoryHeap;
 
-    Span(linked_ptr<base::DiscardableSharedMemory> shared_memory,
+    Span(base::DiscardableSharedMemory* shared_memory,
          size_t start,
          size_t length);
 
-    linked_ptr<base::DiscardableSharedMemory> shared_memory_;
+    base::DiscardableSharedMemory* shared_memory_;
     size_t start_;
     size_t length_;
 
@@ -51,10 +49,10 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   explicit DiscardableSharedMemoryHeap(size_t block_size);
   ~DiscardableSharedMemoryHeap();
 
-  // Grow heap using |memory| and return a span for this new memory.
-  // |memory| must be aligned to the block size and |size| must be a
+  // Grow heap using |shared_memory| and return a span for this new memory.
+  // |shared_memory| must be aligned to the block size and |size| must be a
   // multiple of the block size.
-  scoped_ptr<Span> Grow(scoped_ptr<base::DiscardableSharedMemory> memory,
+  scoped_ptr<Span> Grow(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
                         size_t size);
 
   // Merge |span| into the free list. This will coalesce |span| with
@@ -70,15 +68,20 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // memory. If found, the span is removed from the free list and returned.
   scoped_ptr<Span> SearchFreeList(size_t blocks);
 
-  // Delete span and release memory if possible.
-  void DeleteSpan(scoped_ptr<Span> span);
+  // Release shared memory segments that have been purged.
+  void ReleaseFreeMemory();
 
  private:
   scoped_ptr<Span> RemoveFromFreeList(Span* span);
   scoped_ptr<Span> Carve(Span* span, size_t blocks);
   void RegisterSpan(Span* span);
+  void UnregisterSpan(Span* span);
+  void ReleaseMemory(base::DiscardableSharedMemory* shared_memory);
 
   size_t block_size_;
+
+  // Discardable shared memory instances.
+  ScopedVector<base::DiscardableSharedMemory> shared_memory_segments_;
 
   // Mapping from first/last block of span to Span instance.
   typedef base::hash_map<size_t, Span*> SpanMap;

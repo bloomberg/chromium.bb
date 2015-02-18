@@ -245,6 +245,7 @@
       'browser/webkit_browsertest.cc',
       'browser/webui/web_ui_mojo_browsertest.cc',
       'child/site_isolation_policy_browsertest.cc',
+      'child/child_discardable_shared_memory_manager_browsertest.cc',
       'renderer/accessibility/renderer_accessibility_browsertest.cc',
       'renderer/devtools/v8_sampling_profiler_browsertest.cc',
       'renderer/gin_browsertest.cc',

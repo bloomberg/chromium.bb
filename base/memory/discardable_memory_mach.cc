@@ -63,12 +63,6 @@ DiscardableMemoryMach::~DiscardableMemoryMach() {
   g_manager.Pointer()->Unregister(this);
 }
 
-// static
-void DiscardableMemoryMach::PurgeForTesting() {
-  int state = 0;
-  vm_purgable_control(mach_task_self(), 0, VM_PURGABLE_PURGE_ALL, &state);
-}
-
 bool DiscardableMemoryMach::Initialize() {
   return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 }
@@ -152,10 +146,6 @@ void DiscardableMemoryMach::ReleaseLock() {
 
 void DiscardableMemoryMach::Purge() {
   memory_.reset();
-}
-
-bool DiscardableMemoryMach::IsMemoryResident() const {
-  return true;
 }
 
 }  // namespace internal

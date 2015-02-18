@@ -26,8 +26,6 @@ class DiscardableMemoryEmulated
   // unavailable in kernel space. crbug.com/400423
   BASE_EXPORT static void ReduceMemoryUsageUntilWithinLimit(size_t bytes);
 
-  static void PurgeForTesting();
-
   bool Initialize();
 
   // Overridden from DiscardableMemory:
@@ -39,7 +37,6 @@ class DiscardableMemoryEmulated
   bool AllocateAndAcquireLock() override;
   void ReleaseLock() override {}
   void Purge() override;
-  bool IsMemoryResident() const override;
 
  private:
   const size_t bytes_;

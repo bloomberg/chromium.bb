@@ -7,23 +7,15 @@
 
 #include "base/memory/discardable_memory.h"
 
-#include "base/memory/discardable_memory_manager.h"
-
 namespace base {
 class DiscardableMemoryShmemChunk;
 
 namespace internal {
 
-class DiscardableMemoryShmem
-    : public DiscardableMemory,
-      public internal::DiscardableMemoryManagerAllocation {
+class DiscardableMemoryShmem : public DiscardableMemory {
  public:
   explicit DiscardableMemoryShmem(size_t bytes);
   ~DiscardableMemoryShmem() override;
-
-  static void ReleaseFreeMemory();
-
-  static void PurgeForTesting();
 
   bool Initialize();
 
@@ -31,12 +23,6 @@ class DiscardableMemoryShmem
   DiscardableMemoryLockStatus Lock() override;
   void Unlock() override;
   void* Memory() const override;
-
-  // Overridden from internal::DiscardableMemoryManagerAllocation:
-  bool AllocateAndAcquireLock() override;
-  void ReleaseLock() override;
-  void Purge() override;
-  bool IsMemoryResident() const override;
 
  private:
   const size_t bytes_;

@@ -31,9 +31,6 @@ class DiscardableMemoryShmemChunkImpl
   void* Memory() const override {
     return reinterpret_cast<void*>(span_->start() * base::GetPageSize());
   }
-  bool IsMemoryResident() const override {
-    return manager_->IsSpanResident(span_.get());
-  }
 
  private:
   ChildDiscardableSharedMemoryManager* manager_;
@@ -74,15 +71,22 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     if (free_span->shared_memory()->Lock(
             free_span->start() * base::GetPageSize() -
                 reinterpret_cast<size_t>(free_span->shared_memory()->memory()),
-            free_span->length() * base::GetPageSize()) !=
-        base::DiscardableSharedMemory::SUCCESS) {
-      heap_.DeleteSpan(free_span.Pass());
+            free_span->length() * base::GetPageSize()) ==
+        base::DiscardableSharedMemory::FAILED) {
+      DCHECK(!free_span->shared_memory()->IsMemoryResident());
+      // We have to release free memory before |free_span| can be destroyed.
+      heap_.ReleaseFreeMemory();
+      DCHECK(!free_span->shared_memory());
       continue;
     }
 
     return make_scoped_ptr(
         new DiscardableMemoryShmemChunkImpl(this, free_span.Pass()));
   }
+
+  // Release free memory and free up the address space. Failing to do this
+  // can result in the child process running out of address space.
+  heap_.ReleaseFreeMemory();
 
   size_t pages_to_allocate =
       std::max(kAllocationSize / base::GetPageSize(), pages);
@@ -111,9 +115,18 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
       new DiscardableMemoryShmemChunkImpl(this, new_span.Pass()));
 }
 
+void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {
+  base::AutoLock lock(lock_);
+
+  heap_.ReleaseFreeMemory();
+}
+
 bool ChildDiscardableSharedMemoryManager::LockSpan(
     DiscardableSharedMemoryHeap::Span* span) {
   base::AutoLock lock(lock_);
+
+  if (!span->shared_memory())
+    return false;
 
   size_t offset = span->start() * base::GetPageSize() -
       reinterpret_cast<size_t>(span->shared_memory()->memory());
@@ -137,6 +150,7 @@ void ChildDiscardableSharedMemoryManager::UnlockSpan(
     DiscardableSharedMemoryHeap::Span* span) {
   base::AutoLock lock(lock_);
 
+  DCHECK(span->shared_memory());
   size_t offset = span->start() * base::GetPageSize() -
       reinterpret_cast<size_t>(span->shared_memory()->memory());
   size_t length = span->length() * base::GetPageSize();
@@ -144,21 +158,18 @@ void ChildDiscardableSharedMemoryManager::UnlockSpan(
   return span->shared_memory()->Unlock(offset, length);
 }
 
-bool ChildDiscardableSharedMemoryManager::IsSpanResident(
-    DiscardableSharedMemoryHeap::Span* span) const {
-  base::AutoLock lock(lock_);
-  return span->shared_memory()->IsMemoryResident();
-}
-
 void ChildDiscardableSharedMemoryManager::ReleaseSpan(
     scoped_ptr<DiscardableSharedMemoryHeap::Span> span) {
   base::AutoLock lock(lock_);
 
-  // Limit free list to spans less or equal to kAllocationSize.
-  if (span->length() * base::GetPageSize() > kAllocationSize) {
-    heap_.DeleteSpan(span.Pass());
+  // Delete span instead of merging it into free list if memory is gone.
+  if (!span->shared_memory())
     return;
-  }
+
+  // Purge backing memory if span is greater than kAllocationSize. This will
+  // prevent it from being reused and associated resources will be released.
+  if (span->length() * base::GetPageSize() > kAllocationSize)
+    span->shared_memory()->Purge(base::Time::Now());
 
   heap_.MergeIntoFreeList(span.Pass());
 }

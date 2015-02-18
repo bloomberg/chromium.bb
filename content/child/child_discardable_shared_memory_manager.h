@@ -9,13 +9,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/content_export.h"
 #include "content/common/discardable_shared_memory_heap.h"
 
 namespace content {
 
 // Implementation of DiscardableMemoryShmemAllocator that allocates
 // discardable memory segments through the browser process.
-class ChildDiscardableSharedMemoryManager
+class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
     : public base::DiscardableMemoryShmemAllocator {
  public:
   explicit ChildDiscardableSharedMemoryManager(ThreadSafeSender* sender);
@@ -25,9 +26,11 @@ class ChildDiscardableSharedMemoryManager
   scoped_ptr<base::DiscardableMemoryShmemChunk> AllocateLockedDiscardableMemory(
       size_t size) override;
 
+  // Release memory and associated resources that have been purged.
+  void ReleaseFreeMemory();
+
   bool LockSpan(DiscardableSharedMemoryHeap::Span* span);
   void UnlockSpan(DiscardableSharedMemoryHeap::Span* span);
-  bool IsSpanResident(DiscardableSharedMemoryHeap::Span* span) const;
   void ReleaseSpan(scoped_ptr<DiscardableSharedMemoryHeap::Span> span);
 
  private:

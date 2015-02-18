@@ -44,11 +44,6 @@ LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 // static
-void DiscardableMemory::ReleaseFreeMemory() {
-  internal::DiscardableMemoryShmem::ReleaseFreeMemory();
-}
-
-// static
 bool DiscardableMemory::ReduceMemoryUsage() {
   return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
 }
@@ -102,13 +97,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 
   NOTREACHED();
   return nullptr;
-}
-
-// static
-void DiscardableMemory::PurgeForTesting() {
-  g_shared_state.Pointer()->manager.PurgeAll();
-  internal::DiscardableMemoryEmulated::PurgeForTesting();
-  internal::DiscardableMemoryShmem::PurgeForTesting();
 }
 
 }  // namespace base

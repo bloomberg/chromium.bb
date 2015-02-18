@@ -14,11 +14,6 @@
 namespace base {
 
 // static
-void DiscardableMemory::ReleaseFreeMemory() {
-  internal::DiscardableMemoryShmem::ReleaseFreeMemory();
-}
-
-// static
 bool DiscardableMemory::ReduceMemoryUsage() {
   return internal::DiscardableMemoryEmulated::ReduceMemoryUsage();
 }
@@ -70,13 +65,6 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 
   NOTREACHED();
   return nullptr;
-}
-
-// static
-void DiscardableMemory::PurgeForTesting() {
-  internal::DiscardableMemoryMach::PurgeForTesting();
-  internal::DiscardableMemoryEmulated::PurgeForTesting();
-  internal::DiscardableMemoryShmem::PurgeForTesting();
 }
 
 }  // namespace base

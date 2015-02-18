@@ -19,7 +19,6 @@ class BASE_EXPORT DiscardableMemoryShmemChunk {
   virtual bool Lock() = 0;
   virtual void Unlock() = 0;
   virtual void* Memory() const = 0;
-  virtual bool IsMemoryResident() const = 0;
 };
 
 class BASE_EXPORT DiscardableMemoryShmemAllocator {
