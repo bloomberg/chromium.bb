@@ -14,8 +14,6 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
  * @param {FileFilter} fileFilter Instance of FileFilter.
- * @param {FileWatcher} fileWatcher Instance of FileWatcher.
- * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {!MetadataProviderCache} metadataProviderCache Metadata cache.
  * @param {!FileSystemMetadata} fileSystemMetadata Metadata model.
  *     service.
@@ -24,7 +22,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @constructor
  * @extends {cr.EventTarget}
  */
-function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
+function DirectoryModel(singleSelection, fileFilter,
                         metadataProviderCache, fileSystemMetadata,
                         volumeManager, fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
@@ -44,12 +42,11 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
   this.fileFilter_.addEventListener('changed',
                                     this.onFilterChanged_.bind(this));
 
-  this.currentFileListContext_ = new FileListContext(
-      fileFilter, metadataCache, fileSystemMetadata);
+  this.currentFileListContext_ =
+      new FileListContext(fileFilter,  fileSystemMetadata);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
-  this.metadataCache_ = metadataCache;
   this.metadataProviderCache_ = metadataProviderCache;
   this.fileSystemMetadata_ = fileSystemMetadata;
 
@@ -57,7 +54,12 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher, metadataCache,
   this.volumeManager_.volumeInfoList.addEventListener(
       'splice', this.onVolumeInfoListUpdated_.bind(this));
 
-  this.fileWatcher_ = fileWatcher;
+  /**
+   * File watcher.
+   * @private {!FileWatcher}
+   * @const
+   */
+  this.fileWatcher_ = new FileWatcher();
   this.fileWatcher_.addEventListener(
       'watcher-directory-changed',
       this.onWatcherDirectoryChanged_.bind(this));
@@ -439,7 +441,6 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
                                                   callback) {
   if (this.currentDirContents_.isScanning())
     this.currentDirContents_.cancelScan();
-  this.currentDirContents_.dispose();
   this.currentDirContents_ = newDirContents;
   this.clearRescanTimeout_();
 
@@ -671,7 +672,6 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
     var previousDirContents = this.currentDirContents_;
     this.currentDirContents_ = dirContents;
     this.currentDirContents_.replaceContextFileList();
-    previousDirContents.dispose();
 
     this.setSelectedEntries_(selectedEntries);
     this.fileListSelection_.leadIndex = leadIndex;
@@ -846,7 +846,6 @@ DirectoryModel.prototype.createDirectory = function(name,
 
       then(function(newEntry) {
         // Refresh the cache.
-        this.metadataCache_.clear([newEntry], '*');
         this.fileSystemMetadata_.notifyEntriesCreated([newEntry]);
         return new Promise(function(onFulfilled, onRejected) {
           dirContents.prefetchMetadata(

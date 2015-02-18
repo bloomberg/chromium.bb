@@ -54,13 +54,6 @@ function FileManager() {
   this.mediaImportHandler_ = null;
 
   /**
-   * Metadata cache.
-   * @type {MetadataCache}
-   * @private
-   */
-  this.metadataCache_ = null;
-
-  /**
    * @private {!MetadataProviderCache}
    * @const
    */
@@ -85,17 +78,11 @@ function FileManager() {
 
   /**
    * File filter.
-   * @type {FileFilter}
-   * @private
+   * @private {!FileFilter}
+   * @const
    */
-  this.fileFilter_ = null;
-
-  /**
-   * File watcher.
-   * @type {FileWatcher}
-   * @private
-   */
-  this.fileWatcher_ = null;
+  this.fileFilter_ = new FileFilter(
+      false  /* Don't show dot files and *.crdownload by default. */);
 
   /**
    * Model of current directory.
@@ -356,12 +343,6 @@ FileManager.prototype = /** @struct */ {
     return this.mediaImportHandler_;
   },
   /**
-   * @return {MetadataCache}
-   */
-  get metadataCache() {
-    return this.metadataCache_;
-  },
-  /**
    * @return {FileManagerUI}
    */
   get ui() {
@@ -397,11 +378,6 @@ FileManager.prototype = /** @struct */ {
 
     this.initFileList_();
     this.setupCurrentDirectory_();
-
-    // PyAuto tests monitor this state by polling this variable
-    this.__defineGetter__('workerInitialized_', function() {
-      return this.metadataCache_.isInitialized();
-    }.bind(this));
 
     var self = this;
 
@@ -712,7 +688,6 @@ FileManager.prototype = /** @struct */ {
 
     // Create the metadata cache.
     assert(this.volumeManager_);
-    this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
     this.fileSystemMetadata_ = new FileSystemMetadata(
         this.metadataProviderCache_,
         new FileSystemMetadataProvider(this.metadataProviderCache_),
@@ -858,19 +833,12 @@ FileManager.prototype = /** @struct */ {
         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
-    assert(this.metadataCache_);
-    this.fileFilter_ = new FileFilter(
-        false  /* Don't show dot files and *.crdownload by default. */);
-    this.fileWatcher_ = new FileWatcher(this.metadataCache_);
-
     assert(this.volumeManager_);
     assert(this.fileOperationManager_);
     assert(this.fileSystemMetadata_);
     this.directoryModel_ = new DirectoryModel(
         singleSelection,
         this.fileFilter_,
-        this.fileWatcher_,
-        this.metadataCache_,
         this.metadataProviderCache_,
         this.fileSystemMetadata_,
         this.volumeManager_,

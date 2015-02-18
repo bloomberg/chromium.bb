@@ -3,25 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * Watches for changes in the tracked directory, including local metadata
- * changes.
+ * Watches for changes in the tracked directory.
  *
- * @param {MetadataCache} metadataCache Instance of MetadataCache.
  * @extends {cr.EventTarget}
  * @constructor
  */
-function FileWatcher(metadataCache) {
+function FileWatcher() {
   this.queue_ = new AsyncUtil.Queue();
-  this.metadataCache_ = metadataCache;
   this.watchedDirectoryEntry_ = null;
 
   this.onDirectoryChangedBound_ = this.onDirectoryChanged_.bind(this);
   chrome.fileManagerPrivate.onDirectoryChanged.addListener(
       this.onDirectoryChangedBound_);
-
-  this.filesystemMetadataObserverId_ = null;
-  this.thumbnailMetadataObserverId_ = null;
-  this.externalMetadataObserverId_ = null;
 }
 
 /**
@@ -70,64 +63,6 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
           function() { fireWatcherDirectoryChanged(null); });
     }
   }
-};
-
-/**
- * Called when general metadata in the watched directory has been changed.
- *
- * @param {Array.<Entry>} entries Array of entries.
- * @param {Object.<string, Object>} properties Map from entry URLs to metadata
- *     properties.
- * @private
- */
-FileWatcher.prototype.onFilesystemMetadataChanged_ = function(
-    entries, properties) {
-  this.dispatchMetadataEvent_('filesystem', entries, properties);
-};
-
-/**
- * Called when thumbnail metadata in the watched directory has been changed.
- *
- * @param {Array.<Entry>} entries Array of entries.
- * @param {Object.<string, Object>} properties Map from entry URLs to metadata
- *     properties.
- * @private
- */
-FileWatcher.prototype.onThumbnailMetadataChanged_ = function(
-    entries, properties) {
-  this.dispatchMetadataEvent_('thumbnail', entries, properties);
-};
-
-/**
- * Called when external metadata in the watched directory has been changed.
- *
- * @param {Array.<Entry>} entries Array of entries.
- * @param {Object.<string, Object>} properties Map from entry URLs to metadata
- *     properties.
- * @private
- */
-FileWatcher.prototype.onExternalMetadataChanged_ = function(
-    entries, properties) {
-  this.dispatchMetadataEvent_('external', entries, properties);
-};
-
-/**
- * Dispatches an event about detected change in metadata within the tracked
- * directory.
- *
- * @param {string} type Type of the metadata change.
- * @param {Array.<Entry>} entries Array of entries.
- * @param {Object.<string, Object>} properties Map from entry URLs to metadata
- *     properties.
- * @private
- */
-FileWatcher.prototype.dispatchMetadataEvent_ = function(
-    type, entries, properties) {
-  var e = new Event('watcher-metadata-changed');
-  e.metadataType = type;
-  e.entries = entries;
-  e.properties = properties;
-  this.dispatchEvent(e);
 };
 
 /**
@@ -180,9 +115,6 @@ FileWatcher.prototype.resetWatchedEntry_ = function(onSuccess, onError) {
               onError();
             callback();
           }.bind(this));
-      this.metadataCache_.removeObserver(this.filesystemMetadataObserverId_);
-      this.metadataCache_.removeObserver(this.thumbnailMetadataObserverId_);
-      this.metadataCache_.removeObserver(this.externalMetadataObserverId_);
     } else {
       onSuccess();
       callback();
@@ -215,21 +147,6 @@ FileWatcher.prototype.changeWatchedEntry_ = function(
             }
             callback();
           }.bind(this));
-      this.filesystemMetadataObserverId_ = this.metadataCache_.addObserver(
-          entry,
-          MetadataCache.CHILDREN,
-          'filesystem',
-          this.onFilesystemMetadataChanged_.bind(this));
-      this.thumbnailMetadataObserverId_ = this.metadataCache_.addObserver(
-          entry,
-          MetadataCache.CHILDREN,
-          'thumbnail',
-          this.onThumbnailMetadataChanged_.bind(this));
-      this.externalMetadataObserverId_ = this.metadataCache_.addObserver(
-          entry,
-          MetadataCache.CHILDREN,
-          'external',
-          this.onExternalMetadataChanged_.bind(this));
     }.bind(this));
   }.bind(this);
 

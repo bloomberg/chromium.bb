@@ -72,7 +72,6 @@ function testCreateDirectoryTree(callback) {
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
   var volumeManager = new MockVolumeManagerWrapper();
-  var metadataCache = new MockMetadataCache();
 
   // Set entry which is returned by
   // window.webkitResolveLocalFileSystemURLResults.
@@ -81,7 +80,7 @@ function testCreateDirectoryTree(callback) {
       new MockDirectoryEntry(driveFileSystem, '/root');
 
   DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
-      metadataCache, true);
+      null, true);
   directoryTree.dataModel = new MockNavigationListModel(volumeManager);
   directoryTree.redraw(true);
 
@@ -122,7 +121,6 @@ function testUpdateSubElementsFromList() {
   // Creates mocks.
   var directoryModel = new MockDirectoryModel();
   var volumeManager = new MockVolumeManagerWrapper();
-  var metadataCache = new MockMetadataCache();
 
   // Sets entry which is returned by
   // window.webkitResolveLocalFileSystemURLResults.
@@ -131,7 +129,7 @@ function testUpdateSubElementsFromList() {
       new MockDirectoryEntry(driveFileSystem, '/root');
 
   DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
-      metadataCache, true);
+      null, true);
   directoryTree.dataModel = new MockNavigationListModel(volumeManager);
   directoryTree.updateSubElementsFromList(true);
 

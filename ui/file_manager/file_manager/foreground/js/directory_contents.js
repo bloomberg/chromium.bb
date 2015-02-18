@@ -539,21 +539,14 @@ FileListModel.prototype.compareType_ = function(a, b) {
  * TODO(yoshiki): remove this. crbug.com/224869.
  *
  * @param {FileFilter} fileFilter The file-filter context.
- * @param {MetadataCache} metadataCache Metadata cache service.
  * @param {!FileSystemMetadata} fileSystemMetadata
  * @constructor
  */
-function FileListContext(
-    fileFilter, metadataCache, fileSystemMetadata) {
+function FileListContext(fileFilter, fileSystemMetadata) {
   /**
    * @type {FileListModel}
    */
   this.fileList = new FileListModel(fileSystemMetadata);
-
-  /**
-   * @type {MetadataCache}
-   */
-  this.metadataCache = metadataCache;
 
   /**
    * @public {!FileSystemMetadata}
@@ -621,8 +614,6 @@ function DirectoryContents(context,
   this.processNewEntriesQueue_ = new AsyncUtil.Queue();
   this.scanCancelled_ = false;
 
-  this.lastSpaceInMetadataCache_ = 0;
-
   /**
    * Metadata snapshot which is used to know which file is actually changed.
    * @type {Object}
@@ -648,27 +639,6 @@ DirectoryContents.prototype.clone = function() {
 };
 
 /**
- * Disposes the reserved metadata cache.
- */
-DirectoryContents.prototype.dispose = function() {
-  this.context_.metadataCache.resizeBy(-this.lastSpaceInMetadataCache_);
-  // Though the lastSpaceInMetadataCache_ is not supposed to be referred after
-  // dispose(), keep it synced with requested cache size just in case.
-  this.lastSpaceInMetadataCache_ = 0;
-};
-
-/**
- * Make a space for current directory size in the metadata cache.
- *
- * @param {number} size The cache size to be set.
- * @private
- */
-DirectoryContents.prototype.makeSpaceInMetadataCache_ = function(size) {
-  this.context_.metadataCache.resizeBy(size - this.lastSpaceInMetadataCache_);
-  this.lastSpaceInMetadataCache_ = size;
-};
-
-/**
  * Use a given fileList instead of the fileList from the context.
  * @param {(!Array|!cr.ui.ArrayDataModel)} fileList The new file list.
  */
@@ -677,7 +647,6 @@ DirectoryContents.prototype.setFileList = function(fileList) {
     this.fileList_ = fileList;
   else
     this.fileList_ = new cr.ui.ArrayDataModel(fileList);
-  this.makeSpaceInMetadataCache_(this.fileList_.length);
 };
 
 /**
@@ -719,7 +688,6 @@ DirectoryContents.prototype.replaceContextFileList = function() {
     spliceArgs.unshift(0, fileList.length);
     fileList.splice.apply(fileList, spliceArgs);
     this.fileList_ = fileList;
-    this.makeSpaceInMetadataCache_(this.fileList_.length);
 
     // Check updated files and dispatch change events.
     if (this.metadataSnapshot_) {
@@ -841,10 +809,8 @@ DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
     addedList.push(updatedMap[url]);
   }
 
-  if (removedUrls.length > 0) {
-    this.context_.metadataCache.clearByUrl(removedUrls, '*');
+  if (removedUrls.length > 0)
     this.context_.fileSystemMetadata.notifyEntriesRemoved(removedUrls);
-  }
 
   this.prefetchMetadata(updatedList, true, function() {
     this.onNewEntries_(true, addedList);
@@ -950,7 +916,6 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
 
   // Enlarge the cache size into the new filelist size.
   var newListSize = this.fileList_.length + entriesFiltered.length;
-  this.makeSpaceInMetadataCache_(newListSize);
 
   this.processNewEntriesQueue_.run(function(callbackOuter) {
     var finish = function() {
@@ -1009,25 +974,10 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
  */
 DirectoryContents.prototype.prefetchMetadata =
     function(entries, refresh, callback) {
-  var TYPES = 'filesystem|external';
-  if (refresh) {
+  if (refresh)
     this.context_.fileSystemMetadata.notifyEntriesChanged(entries);
-    Promise.all([
-        new Promise(function(resolve) {
-          this.context_.metadataCache.getLatest(entries, TYPES, resolve);
-        }.bind(this)),
-        this.context_.fileSystemMetadata.get(
-            entries, this.context_.prefetchPropertyNames)
-    ]).then(function(results) { callback(results[0]); });
-  } else {
-    Promise.all([
-        new Promise(function(resolve) {
-          this.context_.metadataCache.get(entries, TYPES, callback);
-        }.bind(this)),
-        this.context_.fileSystemMetadata.get(
-            entries, this.context_.prefetchPropertyNames)
-    ]).then(function(results) { callback(results[0]); });
-  }
+  this.context_.fileSystemMetadata.get(
+      entries, this.context_.prefetchPropertyNames).then(callback);
 };
 
 /**
