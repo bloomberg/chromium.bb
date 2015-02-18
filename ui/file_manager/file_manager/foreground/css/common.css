@@ -163,13 +163,13 @@ span.disclosureindicator {
    menus in FileBrowser look like native ChromeOS menus. */
 
 cr-menu.chrome-menu {
-  background-color: rgb(250, 250, 250);
-  border-radius: 3px;
+  background-color: white;
+  border-radius: 2px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
-  color: rgb(34, 34, 34);
+  color: rgb(51, 51, 51);
   outline: none;
   overflow: hidden;
-  padding: 5px 0;
+  padding: 4px 0;
   transition: opacity 200ms ease-in;
   z-index: 600;  /* Must be below the overlay pane (1000). */
 }
@@ -189,9 +189,8 @@ cr-menu.chrome-menu.hide-delayed[hidden] {
 cr-menu.chrome-menu > :not(hr) {
   background-position: right 10px center;
   background-repeat: no-repeat;
-  line-height: 30px;
-  padding-left: 20px;
-  padding-right: 20px;
+  line-height: 32px;
+  padding: 0 12px;
 }
 
 html[dir='rtl'] cr-menu.chrome-menu > :not(hr) {
@@ -233,19 +232,19 @@ html[dir='rtl'] cr-menu.chrome-menu > .menuitem-button.right {
 }
 
 cr-menu.chrome-menu > cr-menu-item[disabled] {
-  color: rgb(153, 153, 153);
+  color: rgb(219, 219, 219);
 }
 
 cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
 cr-menu.chrome-menu > cr-menu-item:not([disabled]):active {
-  background-color: rgb(66, 129, 244);
+  background-color: rgb(27, 168, 243);
   color: white;
 }
 
 cr-menu.chrome-menu > hr {
-  background: rgb(235, 235, 235);
+  background: rgb(219, 219, 219);
   height: 1px;
-  margin: 5px 0;
+  margin: 4px 0;
 }
 
 cr-menu.chrome-menu > cr-menu-item[checked] {

@@ -1379,8 +1379,14 @@ body[drive] .dialog-container[connection='offline'] .dim-offline {
   white-space: nowrap;
 }
 
-cr-menu.file-context-menu {
+/* TODO(fukino): Gather menu-related definitions into one place. */
+cr-menu#file-context-menu {
+  min-width: 208px;
   z-index: 600;  /* Must be below the overlay pane (1000). */
+}
+
+cr-menu#file-context-menu > :not(hr) {
+  -webkit-padding-end: 8px;
 }
 
 cr-menu.chrome-menu hr {
