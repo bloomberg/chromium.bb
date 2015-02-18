@@ -38,20 +38,9 @@
 
 namespace blink {
 
-static bool isValidAudioParamValue(float value, ExceptionState& exceptionState)
-{
-    if (std::isfinite(value))
-        return true;
-
-    exceptionState.throwDOMException(
-        InvalidAccessError,
-        "Target value must be a finite number: " + String::number(value));
-    return false;
-}
-
 static bool isPositiveAudioParamValue(float value, ExceptionState& exceptionState)
 {
-    if (std::isfinite(value) && (value > 0))
+    if (value > 0)
         return true;
 
     exceptionState.throwDOMException(
@@ -60,9 +49,9 @@ static bool isPositiveAudioParamValue(float value, ExceptionState& exceptionStat
     return false;
 }
 
-static bool isValidAudioParamTime(double time, ExceptionState& exceptionState, String message)
+static bool isNonNegativeAudioParamTime(double time, ExceptionState& exceptionState, String message = "Time")
 {
-    if (std::isfinite(time) && (time >= 0))
+    if (time >= 0)
         return true;
 
     exceptionState.throwDOMException(
@@ -73,7 +62,7 @@ static bool isValidAudioParamTime(double time, ExceptionState& exceptionState, S
 
 static bool isPositiveAudioParamTime(double time, ExceptionState& exceptionState, String message)
 {
-    if (std::isfinite(time) && (time > 0))
+    if (time > 0)
         return true;
 
     exceptionState.throwDOMException(
@@ -82,17 +71,11 @@ static bool isPositiveAudioParamTime(double time, ExceptionState& exceptionState
     return false;
 }
 
-static bool isValidAudioParamTime(double time, ExceptionState& exceptionState)
-{
-    return isValidAudioParamTime(time, exceptionState, "Time");
-}
-
 void AudioParamTimeline::setValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
-    if (!isValidAudioParamValue(value, exceptionState)
-        || !isValidAudioParamTime(time, exceptionState))
+    if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
     insertEvent(ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr));
@@ -102,8 +85,7 @@ void AudioParamTimeline::linearRampToValueAtTime(float value, double time, Excep
 {
     ASSERT(isMainThread());
 
-    if (!isValidAudioParamValue(value, exceptionState)
-        || !isValidAudioParamTime(time, exceptionState))
+    if (!isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
     insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr));
@@ -114,7 +96,7 @@ void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, 
     ASSERT(isMainThread());
 
     if (!isPositiveAudioParamValue(value, exceptionState)
-        || !isValidAudioParamTime(time, exceptionState))
+        || !isNonNegativeAudioParamTime(time, exceptionState))
         return;
 
     insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr));
@@ -124,9 +106,8 @@ void AudioParamTimeline::setTargetAtTime(float target, double time, double timeC
 {
     ASSERT(isMainThread());
 
-    if (!isValidAudioParamValue(target, exceptionState)
-        || !isValidAudioParamTime(time, exceptionState)
-        || !isValidAudioParamTime(timeConstant, exceptionState, "Time constant"))
+    if (!isNonNegativeAudioParamTime(time, exceptionState)
+        || !isNonNegativeAudioParamTime(timeConstant, exceptionState, "Time constant"))
         return;
 
     insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, nullptr));
@@ -136,7 +117,7 @@ void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time
 {
     ASSERT(isMainThread());
 
-    if (!isValidAudioParamTime(time, exceptionState)
+    if (!isNonNegativeAudioParamTime(time, exceptionState)
         || !isPositiveAudioParamTime(duration, exceptionState, "Duration"))
         return;
 
@@ -179,12 +160,6 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event)
 void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-
-    if (!std::isfinite(startTime)) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "Time must be a finite number: " + String::number(startTime));
-    }
 
     MutexLocker locker(m_eventsLock);
 

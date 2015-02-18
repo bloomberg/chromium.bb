@@ -444,24 +444,24 @@ void AudioBufferSourceNode::start(double when, double grainOffset, double grainD
         return;
     }
 
-    if (!std::isfinite(when) || (when < 0)) {
+    if (when < 0) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "Start time must be a finite non-negative number: " + String::number(when));
+            "Start time must be a non-negative number: " + String::number(when));
         return;
     }
 
-    if (!std::isfinite(grainOffset) || (grainOffset < 0)) {
+    if (grainOffset < 0) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "Offset must be a finite non-negative number: " + String::number(grainOffset));
+            "Offset must be a non-negative number: " + String::number(grainOffset));
         return;
     }
 
-    if (!std::isfinite(grainDuration) || (grainDuration < 0)) {
+    if (grainDuration < 0) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "Duration must be a finite non-negative number: " + String::number(grainDuration));
+            "Duration must be a non-negative number: " + String::number(grainDuration));
         return;
     }
 

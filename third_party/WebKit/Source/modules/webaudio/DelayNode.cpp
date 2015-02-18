@@ -40,7 +40,7 @@ const double maximumAllowedDelayTime = 180;
 DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
     : AudioBasicProcessorNode(NodeTypeDelay, context, sampleRate)
 {
-    if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime || std::isnan(maxDelayTime)) {
+    if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
         exceptionState.throwDOMException(
             NotSupportedError,
             "max delay time (" + String::number(maxDelayTime)
