@@ -20,7 +20,8 @@ AppListModel::AppListModel()
       status_(STATUS_NORMAL),
       state_(INVALID_STATE),
       folders_enabled_(false),
-      custom_launcher_page_enabled_(true) {
+      custom_launcher_page_enabled_(true),
+      search_engine_is_google_(false) {
   top_level_item_list_->AddObserver(this);
 }
 
@@ -345,6 +346,12 @@ bool AppListModel::PopCustomLauncherPageSubpage() {
 
 void AppListModel::ClearCustomLauncherPageSubpages() {
   custom_launcher_page_subpage_depth_ = 0;
+}
+
+void AppListModel::SetSearchEngineIsGoogle(bool is_google) {
+  search_engine_is_google_ = is_google;
+  FOR_EACH_OBSERVER(AppListModelObserver, observers_,
+                    OnSearchEngineIsGoogleChanged(is_google));
 }
 
 // Private methods

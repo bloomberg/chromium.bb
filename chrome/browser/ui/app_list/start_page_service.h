@@ -77,6 +77,9 @@ class StartPageService : public KeyedService,
   content::WebContents* GetStartPageContents();
   content::WebContents* GetSpeechRecognitionContents();
 
+  void set_search_engine_is_google(bool search_engine_is_google) {
+    search_engine_is_google_ = search_engine_is_google;
+  }
   Profile* profile() { return profile_; }
   SpeechRecognitionState state() { return state_; }
 
@@ -167,6 +170,7 @@ class StartPageService : public KeyedService,
 #endif
   scoped_ptr<NetworkChangeObserver> network_change_observer_;
 
+  bool search_engine_is_google_;
   scoped_ptr<net::URLFetcher> doodle_fetcher_;
 
   base::WeakPtrFactory<StartPageService> weak_factory_;

@@ -19,6 +19,8 @@
 #include "chrome/browser/search/hotword_client.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_observer.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -60,7 +62,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public ProfileInfoCacheObserver,
                             public SigninManagerBase::Observer,
                             public SigninManagerFactory::Observer,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public TemplateURLServiceObserver {
  public:
   // Constructs Chrome's AppListViewDelegate with a NULL Profile.
   // Does not take ownership of |controller|. TODO(tapted): It should.
@@ -115,6 +118,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   bool ShouldCenterWindow() const override;
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override;
   void RemoveObserver(app_list::AppListViewDelegateObserver* observer) override;
+
+  // Overridden from TemplateURLServiceObserver:
+  void OnTemplateURLServiceChanged() override;
 
  private:
   // Updates the speech webview and start page for the current |profile_|.
@@ -191,6 +197,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 #endif
 
   ObserverList<app_list::AppListViewDelegateObserver> observers_;
+
+  ScopedObserver<TemplateURLService, AppListViewDelegate>
+      template_url_service_observer_;
 
   // Used to track the SigninManagers that this instance is observing so that
   // this instance can be removed as an observer on its destruction.

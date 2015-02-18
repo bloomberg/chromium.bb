@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -37,6 +38,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -158,6 +160,7 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
       profile_(NULL),
       model_(NULL),
       is_voice_query_(false),
+      template_url_service_observer_(this),
       scoped_observer_(this) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -286,6 +289,9 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "431326 AppListViewDelegate::SetProfile3"));
+  template_url_service_observer_.RemoveAll();
+  template_url_service_observer_.Add(
+      TemplateURLServiceFactory::GetForProfile(profile_));
 
   model_ =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->model();
@@ -297,6 +303,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   SetUpSearchUI();
   SetUpProfileSwitcher();
   SetUpCustomLauncherPages();
+  OnTemplateURLServiceChanged();
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
   tracked_objects::ScopedTracker tracking_profile4(
@@ -771,6 +778,24 @@ void AppListViewDelegate::AddObserver(
 void AppListViewDelegate::RemoveObserver(
     app_list::AppListViewDelegateObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AppListViewDelegate::OnTemplateURLServiceChanged() {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  bool is_google =
+      TemplateURLPrepopulateData::GetEngineType(
+          *default_provider, template_url_service->search_terms_data()) ==
+      SEARCH_ENGINE_GOOGLE;
+
+  model_->SetSearchEngineIsGoogle(is_google);
+
+  app_list::StartPageService* start_page_service =
+      app_list::StartPageService::Get(profile_);
+  if (start_page_service)
+    start_page_service->set_search_engine_is_google(is_google);
 }
 
 void AppListViewDelegate::Observe(int type,

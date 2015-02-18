@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/app_list/speech_auth_helper.h"
 #include "chrome/browser/ui/app_list/speech_recognizer.h"
@@ -30,6 +31,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -270,6 +273,7 @@ StartPageService::StartPageService(Profile* profile)
       speech_auth_helper_(new SpeechAuthHelper(profile, &clock_)),
       network_available_(true),
       microphone_available_(true),
+      search_engine_is_google_(false),
       weak_factory_(this) {
   // If experimental hotwording is enabled, then we're always "ready".
   // Transitioning into the "hotword recognizing" state is handled by the
@@ -281,10 +285,20 @@ StartPageService::StartPageService(Profile* profile)
   if (app_list::switches::IsExperimentalAppListEnabled())
     LoadContents();
 
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  search_engine_is_google_ =
+      TemplateURLPrepopulateData::GetEngineType(
+          *default_provider, template_url_service->search_terms_data()) ==
+      SEARCH_ENGINE_GOOGLE;
+
   network_change_observer_.reset(new NetworkChangeObserver(this));
 }
 
-StartPageService::~StartPageService() {}
+StartPageService::~StartPageService() {
+}
 
 void StartPageService::AddObserver(StartPageObserver* observer) {
   observers_.AddObserver(observer);
@@ -576,6 +590,9 @@ void StartPageService::LoadStartPageURL() {
 }
 
 void StartPageService::FetchDoodleJson() {
+  if (!search_engine_is_google_)
+    return;
+
   GURL::Replacements replacements;
   replacements.SetPathStr(kDoodleJsonPath);
 

@@ -73,8 +73,12 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Called when the search box's visibility is changed.
   void NotifySearchBoxVisibilityChanged();
 
+  bool ShouldShowCustomLauncherPage() const;
+  void UpdateCustomLauncherPageVisibility();
+
   // Overridden from AppListModelObserver:
   void OnCustomLauncherPageEnabledStateChanged(bool enabled) override;
+  void OnSearchEngineIsGoogleChanged(bool is_google) override;
 
  private:
   class IconLoader;

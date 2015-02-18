@@ -183,6 +183,9 @@ int ContentsView::NumLauncherPages() const {
 void ContentsView::SetActivePageInternal(int page_index,
                                          bool show_search_results,
                                          bool animate) {
+  if (!GetPageView(page_index)->visible())
+    return;
+
   if (!show_search_results)
     page_before_search_ = page_index;
   // Start animating to the new page.
@@ -414,11 +417,6 @@ gfx::Rect ContentsView::GetCustomPageCollapsedBounds() const {
   return bounds;
 }
 
-bool ContentsView::ShouldShowCustomPageClickzone() const {
-  return custom_page_view_ && IsStateActive(AppListModel::STATE_START) &&
-         app_list_main_view_->model()->custom_launcher_page_enabled();
-}
-
 bool ContentsView::Back() {
   AppListModel::State state = view_to_state_[GetActivePageIndex()];
   switch (state) {
@@ -528,7 +526,7 @@ void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
     // Show or hide the custom page view, based on whether it is enabled.
     if (custom_page_view_) {
       custom_page_view_->SetVisible(
-          app_list_main_view_->model()->custom_launcher_page_enabled());
+          app_list_main_view_->ShouldShowCustomLauncherPage());
     }
   }
 }

@@ -106,6 +106,8 @@ void AppListMainView::Init(gfx::NativeView parent,
 
   // Starts icon loading early.
   PreloadIcons(parent);
+
+  OnSearchEngineIsGoogleChanged(model_->search_engine_is_google());
 }
 
 void AppListMainView::AddContentsViews() {
@@ -241,6 +243,28 @@ void AppListMainView::NotifySearchBoxVisibilityChanged() {
     parent()->SchedulePaint();
 }
 
+bool AppListMainView::ShouldShowCustomLauncherPage() const {
+  return contents_view_->custom_page_view() &&
+         model_->custom_launcher_page_enabled() &&
+         model_->search_engine_is_google();
+}
+
+void AppListMainView::UpdateCustomLauncherPageVisibility() {
+  if (ShouldShowCustomLauncherPage()) {
+    // Make the custom page view visible again.
+    contents_view_->custom_page_view()->SetVisible(true);
+  } else if (contents_view_->IsStateActive(
+                 AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
+    // Animate to the start page if currently on the custom page view. The view
+    // will hide on animation completion.
+    contents_view_->SetActivePage(
+        contents_view_->GetPageIndexForState(AppListModel::STATE_START));
+  } else {
+    // Hide the view immediately otherwise.
+    contents_view_->custom_page_view()->SetVisible(false);
+  }
+}
+
 void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {
   if (enabled) {
     // Make the custom page view visible again.
@@ -254,6 +278,16 @@ void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {
   } else {
     // Hide the view immediately otherwise.
     contents_view_->custom_page_view()->SetVisible(false);
+  }
+}
+
+void AppListMainView::OnSearchEngineIsGoogleChanged(bool is_google) {
+  if (contents_view_->custom_page_view())
+    OnCustomLauncherPageEnabledStateChanged(is_google);
+
+  if (contents_view_->start_page_view()) {
+    contents_view_->start_page_view()->instant_container()->SetVisible(
+        is_google);
   }
 }
 

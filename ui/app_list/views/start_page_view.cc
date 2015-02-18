@@ -227,7 +227,7 @@ void StartPageView::InitInstantContainer() {
 void StartPageView::MaybeOpenCustomLauncherPage() {
   // Switch to the custom page.
   ContentsView* contents_view = app_list_main_view_->contents_view();
-  if (!contents_view->ShouldShowCustomPageClickzone())
+  if (!app_list_main_view_->ShouldShowCustomLauncherPage())
     return;
 
   int custom_page_index = contents_view->GetPageIndexForState(

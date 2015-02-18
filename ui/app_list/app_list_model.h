@@ -131,7 +131,9 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   // Sets whether or not the custom launcher page should be enabled.
   void SetCustomLauncherPageEnabled(bool enabled);
-  bool custom_launcher_page_enabled() { return custom_launcher_page_enabled_; }
+  bool custom_launcher_page_enabled() const {
+    return custom_launcher_page_enabled_;
+  }
 
   // Pushes a custom launcher page's subpage into the state stack in the model.
   void PushCustomLauncherPageSubpage();
@@ -146,6 +148,9 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   int custom_launcher_page_subpage_depth() {
     return custom_launcher_page_subpage_depth_;
   }
+
+  void SetSearchEngineIsGoogle(bool is_google);
+  bool search_engine_is_google() const { return search_engine_is_google_; }
 
   // Filters the given |results| by |display_type|. The returned list is
   // truncated to |max_results|.
@@ -203,6 +208,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
   bool custom_launcher_page_enabled_;
+  bool search_engine_is_google_;
 
   // The current number of subpages the custom launcher page has pushed.
   int custom_launcher_page_subpage_depth_;
