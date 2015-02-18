@@ -114,11 +114,11 @@ class IMEDetailedView : public TrayDetailsView, public ViewClickListener {
 
     if (list.size() > 1)
       AppendIMEList(list);
-    if (property_list.size() > 1)
+    if (!property_list.empty())
       AppendIMEProperties(property_list);
 
     if (show_keyboard_toggle) {
-      if (list.size() > 1 || property_list.size() > 1)
+      if (list.size() > 1 || !property_list.empty())
         AddScrollSeparator();
       AppendKeyboardStatus();
     }
