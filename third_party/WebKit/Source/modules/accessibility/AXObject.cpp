@@ -168,6 +168,8 @@ AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     , m_parent(0)
     , m_lastModificationCount(-1)
     , m_cachedIsIgnored(false)
+    , m_cachedIsInertOrAriaHidden(false)
+    , m_cachedIsDescendantOfBarrenParent(false)
     , m_cachedLiveRegionRoot(0)
     , m_axObjectCache(axObjectCache)
 {
@@ -300,6 +302,8 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
         return;
 
     m_lastModificationCount = cache->modificationCount();
+    m_cachedIsInertOrAriaHidden = computeIsInertOrAriaHidden();
+    m_cachedIsDescendantOfBarrenParent = computeIsDescendantOfBarrenParent();
     m_cachedIsIgnored = computeAccessibilityIsIgnored();
     m_cachedLiveRegionRoot = isLiveRegion() ?
         this :
@@ -332,15 +336,35 @@ AXObjectInclusion AXObject::defaultObjectInclusion() const
 
 bool AXObject::isInertOrAriaHidden() const
 {
-    bool mightBeInInertSubtree = true;
-    for (const AXObject* object = this; object; object = object->parentObject()) {
-        if (equalIgnoringCase(object->getAttribute(aria_hiddenAttr), "true"))
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedIsInertOrAriaHidden;
+}
+
+bool AXObject::computeIsInertOrAriaHidden() const
+{
+    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "true"))
+        return true;
+    if (node() && node()->isInert())
+        return true;
+
+    AXObject* parent = parentObject();
+    if (parent)
+        return parent->isInertOrAriaHidden();
+
+    return false;
+}
+
+bool AXObject::isDescendantOfBarrenParent() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedIsDescendantOfBarrenParent;
+}
+
+bool AXObject::computeIsDescendantOfBarrenParent() const
+{
+    for (AXObject* object = parentObject(); object; object = object->parentObject()) {
+        if (!object->canHaveChildren())
             return true;
-        if (mightBeInInertSubtree && object->node()) {
-            if (object->node()->isInert())
-                return true;
-            mightBeInInertSubtree = false;
-        }
     }
 
     return false;

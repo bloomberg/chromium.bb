@@ -418,6 +418,9 @@ public:
     AXObjectInclusion accessibilityPlatformIncludesObject() const;
     virtual AXObjectInclusion defaultObjectInclusion() const;
     bool isInertOrAriaHidden() const;
+    bool computeIsInertOrAriaHidden() const;
+    bool isDescendantOfBarrenParent() const;
+    bool computeIsDescendantOfBarrenParent() const;
     bool lastKnownIsIgnoredValue();
     void setLastKnownIsIgnoredValue(bool);
 
@@ -538,7 +541,6 @@ public:
     virtual AXObject* firstChild() const { return 0; }
     virtual AXObject* nextSibling() const { return 0; }
     AXObject* firstAccessibleObjectFromNode(const Node*);
-    virtual bool isDescendantOfBarrenParent() const { return false; }
     virtual void addChildren() { }
     virtual bool canHaveChildren() const { return true; }
     bool hasChildren() const { return m_haveChildren; }
@@ -635,7 +637,9 @@ protected:
     // The following cached attribute values (the ones starting with m_cached*)
     // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().
     mutable int m_lastModificationCount;
-    mutable bool m_cachedIsIgnored;
+    mutable bool m_cachedIsIgnored : 1;
+    mutable bool m_cachedIsInertOrAriaHidden : 1;
+    mutable bool m_cachedIsDescendantOfBarrenParent : 1;
     mutable const AXObject* m_cachedLiveRegionRoot;
 
     AXObjectCacheImpl* m_axObjectCache;

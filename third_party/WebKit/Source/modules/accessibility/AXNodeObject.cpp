@@ -359,16 +359,6 @@ bool AXNodeObject::hasContentEditableAttributeSet() const
     return contentEditableValue.isEmpty() || equalIgnoringCase(contentEditableValue, "true");
 }
 
-bool AXNodeObject::isDescendantOfBarrenParent() const
-{
-    for (AXObject* object = parentObject(); object; object = object->parentObject()) {
-        if (!object->canHaveChildren())
-            return true;
-    }
-
-    return false;
-}
-
 bool AXNodeObject::isGenericFocusableElement() const
 {
     if (!canSetFocusAttribute())
