@@ -39,19 +39,14 @@ const int kPaddingBetweenAccounts = 20;
 }  // namespace
 
 AccountsDetailedView::AccountsDetailedView(TrayUser* owner,
-                                           user::LoginStatus login_status)
+                                           user::LoginStatus login_status,
+                                           UserAccountsDelegate* delegate)
     : TrayDetailsView(owner),
-      delegate_(NULL),
-      account_list_(NULL),
-      add_account_button_(NULL),
-      add_user_button_(NULL) {
-  std::string user_id = Shell::GetInstance()
-                            ->session_state_delegate()
-                            ->GetUserInfo(0)
-                            ->GetUserID();
-  delegate_ =
-      Shell::GetInstance()->system_tray_delegate()->GetUserAccountsDelegate(
-          user_id);
+      delegate_(delegate),
+      account_list_(nullptr),
+      add_account_button_(nullptr),
+      add_user_button_(nullptr) {
+  DCHECK(delegate_);
   delegate_->AddObserver(this);
   AddHeader(login_status);
   CreateScrollableList();

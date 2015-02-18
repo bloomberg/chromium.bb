@@ -42,10 +42,10 @@ namespace ash {
 TrayUser::TrayUser(SystemTray* system_tray, MultiProfileIndex index)
     : SystemTrayItem(system_tray),
       multiprofile_index_(index),
-      user_(NULL),
-      layout_view_(NULL),
-      avatar_(NULL),
-      label_(NULL) {
+      user_(nullptr),
+      layout_view_(nullptr),
+      avatar_(nullptr),
+      label_(nullptr) {
   Shell::GetInstance()->system_tray_notifier()->AddUserObserver(this);
 }
 
@@ -77,7 +77,7 @@ void TrayUser::UpdateAfterLoginStatusChangeForTest(user::LoginStatus status) {
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
-  CHECK(layout_view_ == NULL);
+  CHECK(layout_view_ == nullptr);
 
   layout_view_ = new views::View;
   layout_view_->SetLayoutManager(
@@ -89,7 +89,7 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
-    return NULL;
+    return nullptr;
   const SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
 
@@ -98,32 +98,41 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   if (multiprofile_index_ &&
       (session_state_delegate->IsUserSessionBlocked() ||
        Shell::GetInstance()->IsSystemModalWindowOpen()))
-    return NULL;
+    return nullptr;
 
-  CHECK(user_ == NULL);
+  CHECK(user_ == nullptr);
 
   int logged_in_users = session_state_delegate->NumberOfLoggedInUsers();
 
   // Do not show more UserView's then there are logged in users.
   if (multiprofile_index_ >= logged_in_users)
-    return NULL;
+    return nullptr;
 
   user_ = new tray::UserView(this, status, multiprofile_index_, false);
   return user_;
 }
 
 views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
-  return new tray::AccountsDetailedView(this, status);
+  std::string user_id = Shell::GetInstance()
+                            ->session_state_delegate()
+                            ->GetUserInfo(0)
+                            ->GetUserID();
+  tray::UserAccountsDelegate* delegate =
+      Shell::GetInstance()->system_tray_delegate()->GetUserAccountsDelegate(
+          user_id);
+  if (!delegate)
+    return nullptr;
+  return new tray::AccountsDetailedView(this, status, delegate);
 }
 
 void TrayUser::DestroyTrayView() {
-  layout_view_ = NULL;
-  avatar_ = NULL;
-  label_ = NULL;
+  layout_view_ = nullptr;
+  avatar_ = nullptr;
+  label_ = nullptr;
 }
 
 void TrayUser::DestroyDefaultView() {
-  user_ = NULL;
+  user_ = nullptr;
 }
 
 void TrayUser::DestroyDetailedView() {
@@ -159,21 +168,21 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
       break;
   }
 
-  if ((need_avatar != (avatar_ != NULL)) ||
-      (need_label != (label_ != NULL))) {
+  if ((need_avatar != (avatar_ != nullptr)) ||
+      (need_label != (label_ != nullptr))) {
     layout_view_->RemoveAllChildViews(true);
     if (need_label) {
       label_ = new views::Label;
       SetupLabelForTray(label_);
       layout_view_->AddChildView(label_);
     } else {
-      label_ = NULL;
+      label_ = nullptr;
     }
     if (need_avatar) {
       avatar_ = new tray::RoundedImageView(kTrayAvatarCornerRadius, true);
       layout_view_->AddChildView(avatar_);
     } else {
-      avatar_ = NULL;
+      avatar_ = nullptr;
     }
   }
 

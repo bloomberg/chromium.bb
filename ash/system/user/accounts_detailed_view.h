@@ -30,7 +30,9 @@ class AccountsDetailedView : public TrayDetailsView,
                              public views::ButtonListener,
                              public ash::tray::UserAccountsDelegate::Observer {
  public:
-  AccountsDetailedView(TrayUser* owner, user::LoginStatus login_status);
+  AccountsDetailedView(TrayUser* owner,
+                       user::LoginStatus login_status,
+                       UserAccountsDelegate* delegate);
   ~AccountsDetailedView() override;
 
  private:
@@ -52,7 +54,7 @@ class AccountsDetailedView : public TrayDetailsView,
 
   views::View* CreateDeleteButton();
 
-  ash::tray::UserAccountsDelegate* delegate_;
+  UserAccountsDelegate* delegate_;
   views::View* account_list_;
   views::View* add_account_button_;
   views::View* add_user_button_;
