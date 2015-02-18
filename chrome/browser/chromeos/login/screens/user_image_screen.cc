@@ -243,8 +243,8 @@ void UserImageScreen::Show() {
   DCHECK(!policy_registrar_);
   if (Profile* profile = ProfileHelper::Get()->GetProfileByUser(GetUser())) {
     policy::PolicyService* policy_service =
-        policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
-            policy_service();
+        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+            ->policy_service();
     if (policy_service->GetPolicies(
             policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                     std::string()))

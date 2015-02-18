@@ -15,8 +15,6 @@
 template <typename T>
 struct DefaultSingletonTraits;
 
-class Profile;
-
 namespace base {
 class SequencedTaskRunner;
 }
@@ -32,33 +30,34 @@ class ProfilePolicyConnector;
 
 // Creates ProfilePolicyConnectors for Profiles, which manage the common
 // policy providers and other policy components.
-// TODO(joaodasilva): convert this class to a proper PKS once the PrefService,
-// which depends on this class, becomes a PKS too.
+// TODO(joaodasilva): convert this class to a proper BCKS once the PrefService,
+// which depends on this class, becomes a BCKS too.
 class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
  public:
   // Returns the ProfilePolicyConnectorFactory singleton.
   static ProfilePolicyConnectorFactory* GetInstance();
 
-  // Returns the ProfilePolicyConnector associated with |profile|. This is only
-  // valid before |profile| is shut down.
-  static ProfilePolicyConnector* GetForProfile(Profile* profile);
+  // Returns the ProfilePolicyConnector associated with |context|. This is only
+  // valid before |context| is shut down.
+  static ProfilePolicyConnector* GetForBrowserContext(
+      content::BrowserContext* context);
 
-  // Creates a new ProfilePolicyConnector for |profile|, which must be managed
-  // by the caller. Subsequent calls to GetForProfile() will return the instance
-  // created, as long as it lives.
+  // Creates a new ProfilePolicyConnector for |context|, which must be managed
+  // by the caller. Subsequent calls to GetForBrowserContext() will return the
+  // instance created, as long as it lives.
   // If |force_immediate_load| is true then policy is loaded synchronously on
   // startup.
-  static scoped_ptr<ProfilePolicyConnector> CreateForProfile(
-      Profile* profile,
+  static scoped_ptr<ProfilePolicyConnector> CreateForBrowserContext(
+      content::BrowserContext* context,
       bool force_immediate_load);
 
-  // Overrides the |connector| for the given |profile|; use only in tests.
-  // Once this class becomes a proper PKS then it can reuse the testing
+  // Overrides the |connector| for the given |context|; use only in tests.
+  // Once this class becomes a proper BCKS then it can reuse the testing
   // methods of BrowserContextKeyedServiceFactory.
-  void SetServiceForTesting(Profile* profile,
+  void SetServiceForTesting(content::BrowserContext* context,
                             ProfilePolicyConnector* connector);
 
-  // The next Profile to call CreateForProfile() will get a PolicyService
+  // The next Profile to call CreateForBrowserContext() will get a PolicyService
   // with |provider| as its sole policy provider. This can be called multiple
   // times to override the policy providers for more than 1 Profile.
   void PushProviderForTesting(ConfigurationPolicyProvider* provider);
@@ -69,10 +68,11 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   ProfilePolicyConnectorFactory();
   ~ProfilePolicyConnectorFactory() override;
 
-  ProfilePolicyConnector* GetForProfileInternal(Profile* profile);
+  ProfilePolicyConnector* GetForBrowserContextInternal(
+      content::BrowserContext* context);
 
-  scoped_ptr<ProfilePolicyConnector> CreateForProfileInternal(
-      Profile* profile,
+  scoped_ptr<ProfilePolicyConnector> CreateForBrowserContextInternal(
+      content::BrowserContext* context,
       bool force_immediate_load);
 
   // BrowserContextKeyedBaseFactory:
@@ -82,7 +82,8 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   bool HasTestingFactory(content::BrowserContext* context) override;
   void CreateServiceNow(content::BrowserContext* context) override;
 
-  typedef std::map<Profile*, ProfilePolicyConnector*> ConnectorMap;
+  typedef std::map<content::BrowserContext*, ProfilePolicyConnector*>
+      ConnectorMap;
   ConnectorMap connectors_;
   std::list<ConfigurationPolicyProvider*> test_providers_;
 

@@ -220,7 +220,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
 
   void RefreshPolicies() {
     ProfilePolicyConnector* profile_connector =
-        ProfilePolicyConnectorFactory::GetForProfile(browser()->profile());
+        ProfilePolicyConnectorFactory::GetForBrowserContext(
+            browser()->profile());
     PolicyService* policy_service = profile_connector->policy_service();
     base::RunLoop run_loop;
     policy_service->RefreshPolicies(run_loop.QuitClosure());

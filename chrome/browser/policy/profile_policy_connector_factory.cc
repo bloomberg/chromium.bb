@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/policy_service.h"
@@ -34,22 +35,24 @@ ProfilePolicyConnectorFactory* ProfilePolicyConnectorFactory::GetInstance() {
 }
 
 // static
-ProfilePolicyConnector* ProfilePolicyConnectorFactory::GetForProfile(
-    Profile* profile) {
-  return GetInstance()->GetForProfileInternal(profile);
+ProfilePolicyConnector* ProfilePolicyConnectorFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return GetInstance()->GetForBrowserContextInternal(context);
 }
 
 // static
 scoped_ptr<ProfilePolicyConnector>
-ProfilePolicyConnectorFactory::CreateForProfile(Profile* profile,
-                                                bool force_immediate_load) {
-  return GetInstance()->CreateForProfileInternal(profile, force_immediate_load);
+ProfilePolicyConnectorFactory::CreateForBrowserContext(
+    content::BrowserContext* context,
+    bool force_immediate_load) {
+  return GetInstance()->CreateForBrowserContextInternal(context,
+                                                        force_immediate_load);
 }
 
 void ProfilePolicyConnectorFactory::SetServiceForTesting(
-    Profile* profile,
+    content::BrowserContext* context,
     ProfilePolicyConnector* connector) {
-  ProfilePolicyConnector*& map_entry = connectors_[profile];
+  ProfilePolicyConnector*& map_entry = connectors_[context];
   CHECK(!map_entry);
   map_entry = connector;
 }
@@ -80,29 +83,32 @@ ProfilePolicyConnectorFactory::~ProfilePolicyConnectorFactory() {
 }
 
 ProfilePolicyConnector*
-    ProfilePolicyConnectorFactory::GetForProfileInternal(Profile* profile) {
+ProfilePolicyConnectorFactory::GetForBrowserContextInternal(
+    content::BrowserContext* context) {
   // Get the connector for the original Profile, so that the incognito Profile
   // gets managed settings from the same PolicyService.
-  ConnectorMap::const_iterator it =
-      connectors_.find(profile->GetOriginalProfile());
+  content::BrowserContext* const original_context =
+      chrome::GetBrowserContextRedirectedInIncognito(context);
+  const ConnectorMap::const_iterator it = connectors_.find(original_context);
   CHECK(it != connectors_.end());
   return it->second;
 }
 
 scoped_ptr<ProfilePolicyConnector>
-ProfilePolicyConnectorFactory::CreateForProfileInternal(
-    Profile* profile,
+ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
+    content::BrowserContext* context,
     bool force_immediate_load) {
-  DCHECK(connectors_.find(profile) == connectors_.end());
+  DCHECK(connectors_.find(context) == connectors_.end());
 
   SchemaRegistry* schema_registry = NULL;
   CloudPolicyManager* user_cloud_policy_manager = NULL;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   schema_registry =
-      SchemaRegistryServiceFactory::GetForContext(profile)->registry();
+      SchemaRegistryServiceFactory::GetForContext(context)->registry();
 
 #if defined(OS_CHROMEOS)
+  Profile* const profile = Profile::FromBrowserContext(context);
   user_manager::User* user = NULL;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -112,11 +118,11 @@ ProfilePolicyConnectorFactory::CreateForProfileInternal(
       UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
 #else
   user_cloud_policy_manager =
-      UserCloudPolicyManagerFactory::GetForBrowserContext(profile);
+      UserCloudPolicyManagerFactory::GetForBrowserContext(context);
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
-  ProfilePolicyConnector* connector = new ProfilePolicyConnector();
+  scoped_ptr<ProfilePolicyConnector> connector(new ProfilePolicyConnector());
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (test_providers_.empty()) {
@@ -137,23 +143,22 @@ ProfilePolicyConnectorFactory::CreateForProfileInternal(
   connector->Init(false, NULL, NULL);
 #endif
 
-  connectors_[profile] = connector;
-  return make_scoped_ptr(connector);
+  connectors_[context] = connector.get();
+  return connector.Pass();
 }
 
 void ProfilePolicyConnectorFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  if (profile->IsOffTheRecord())
+  if (Profile::FromBrowserContext(context)->IsOffTheRecord())
     return;
-  ConnectorMap::iterator it = connectors_.find(profile);
+  const ConnectorMap::const_iterator it = connectors_.find(context);
   if (it != connectors_.end())
     it->second->Shutdown();
 }
 
 void ProfilePolicyConnectorFactory::BrowserContextDestroyed(
     content::BrowserContext* context) {
-  ConnectorMap::iterator it = connectors_.find(static_cast<Profile*>(context));
+  const ConnectorMap::iterator it = connectors_.find(context);
   if (it != connectors_.end())
     connectors_.erase(it);
   BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);

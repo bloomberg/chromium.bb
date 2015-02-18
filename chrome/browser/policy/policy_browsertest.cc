@@ -1059,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PolicyPreprocessing) {
           ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(expected.Equals(actual_from_browser));
   const PolicyMap& actual_from_profile =
-      ProfilePolicyConnectorFactory::GetForProfile(browser()->profile())
+      ProfilePolicyConnectorFactory::GetForBrowserContext(browser()->profile())
           ->policy_service()
           ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(expected.Equals(actual_from_profile));

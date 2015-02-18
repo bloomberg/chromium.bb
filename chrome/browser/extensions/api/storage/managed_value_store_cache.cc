@@ -236,8 +236,9 @@ ManagedValueStoreCache::ManagedValueStoreCache(
     const scoped_refptr<SettingsStorageFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers)
     : profile_(Profile::FromBrowserContext(context)),
-      policy_service_(policy::ProfilePolicyConnectorFactory::GetForProfile(
-                          profile_)->policy_service()),
+      policy_service_(
+          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(context)
+              ->policy_service()),
       storage_factory_(factory),
       observers_(observers),
       base_path_(profile_->GetPath().AppendASCII(

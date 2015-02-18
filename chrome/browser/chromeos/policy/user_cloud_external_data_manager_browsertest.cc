@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
   content::RunAllPendingInMessageLoop();
 
   ProfilePolicyConnector* policy_connector =
-      ProfilePolicyConnectorFactory::GetForProfile(browser()->profile());
+      ProfilePolicyConnectorFactory::GetForBrowserContext(browser()->profile());
   ASSERT_TRUE(policy_connector);
   const PolicyMap& policies = policy_connector->policy_service()->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));

@@ -1357,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExternalData) {
   // Verify that the external data reference has propagated to the device-local
   // account's ProfilePolicyConnector.
   ProfilePolicyConnector* policy_connector =
-      ProfilePolicyConnectorFactory::GetForProfile(GetProfileForTest());
+      ProfilePolicyConnectorFactory::GetForBrowserContext(GetProfileForTest());
   ASSERT_TRUE(policy_connector);
   const PolicyMap& policies = policy_connector->policy_service()->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
@@ -2214,7 +2214,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_PolicyForExtensions) {
 
   // Wait for the app policy if it hasn't been fetched yet.
   ProfilePolicyConnector* connector =
-      ProfilePolicyConnectorFactory::GetForProfile(profile);
+      ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
   ASSERT_TRUE(connector);
   PolicyService* policy_service = connector->policy_service();
   ASSERT_TRUE(policy_service);

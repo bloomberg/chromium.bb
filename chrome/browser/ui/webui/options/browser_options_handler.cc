@@ -951,8 +951,8 @@ void BrowserOptionsHandler::InitializeHandler() {
 #if defined(OS_CHROMEOS)
   if (!policy_registrar_) {
     policy_registrar_.reset(new policy::PolicyChangeRegistrar(
-        policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
-            policy_service(),
+        policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+            ->policy_service(),
         policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())));
     policy_registrar_->Observe(
         policy::key::kUserAvatarImage,
@@ -1009,11 +1009,11 @@ void BrowserOptionsHandler::InitializePage() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
   OnAccountPictureManagedChanged(
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
-          policy_service()->GetPolicies(
-              policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                      std::string()))
-             .Get(policy::key::kUserAvatarImage));
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+          ->policy_service()
+          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                std::string()))
+          .Get(policy::key::kUserAvatarImage));
 
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(

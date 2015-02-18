@@ -60,7 +60,7 @@ bool UserNetworkConfigurationUpdaterFactory::ServiceIsNULLWhileTesting() const {
 
 KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return NULL;  // On the login screen only device network policies apply.
 
@@ -75,7 +75,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   const bool allow_trusted_certs_from_policy = user->HasGaiaAccount();
 
   ProfilePolicyConnector* profile_connector =
-      ProfilePolicyConnectorFactory::GetForProfile(profile);
+      ProfilePolicyConnectorFactory::GetForBrowserContext(context);
 
   return UserNetworkConfigurationUpdater::CreateForUserPolicy(
       profile,

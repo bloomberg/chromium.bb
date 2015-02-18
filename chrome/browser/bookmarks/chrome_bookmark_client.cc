@@ -276,7 +276,7 @@ bookmarks::BookmarkPermanentNodeList ChromeBookmarkClient::LoadExtraNodes(
 
 std::string ChromeBookmarkClient::GetManagedBookmarksDomain() {
   policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile_);
   if (connector->IsPolicyFromCloudPolicy(policy::key::kManagedBookmarks))
     return connector->GetManagementDomain();
   return std::string();

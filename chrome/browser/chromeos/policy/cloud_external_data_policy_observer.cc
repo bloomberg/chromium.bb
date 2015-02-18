@@ -182,7 +182,7 @@ void CloudExternalDataPolicyObserver::Observe(
   }
 
   ProfilePolicyConnector* policy_connector =
-      ProfilePolicyConnectorFactory::GetForProfile(profile);
+      ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
   logged_in_user_observers_[user_id] = make_linked_ptr(
       new PolicyServiceObserver(this,
                                 user_id,

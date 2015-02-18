@@ -258,7 +258,8 @@ void PowerPolicyBrowserTestBase::RunClosureAndWaitForUserPolicyUpdate(
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   EXPECT_CALL(observer, OnPolicyServiceInitialized(_)).Times(AnyNumber());
   PolicyService* policy_service =
-      ProfilePolicyConnectorFactory::GetForProfile(profile)->policy_service();
+      ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+          ->policy_service();
   ASSERT_TRUE(policy_service);
   policy_service->AddObserver(POLICY_DOMAIN_CHROME, &observer);
   closure.Run();

@@ -43,6 +43,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -64,7 +65,6 @@
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "content/public/browser/web_contents.h"
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -780,8 +780,8 @@ void PolicyUIHandler::OnRefreshPoliciesDone() const {
 }
 
 policy::PolicyService* PolicyUIHandler::GetPolicyService() const {
-  return policy::ProfilePolicyConnectorFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()))->policy_service();
+  return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+             web_ui()->GetWebContents()->GetBrowserContext())->policy_service();
 }
 
 PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {

@@ -457,7 +457,7 @@ ProfileImpl::ProfileImpl(
 #endif
 #endif
   profile_policy_connector_ =
-      policy::ProfilePolicyConnectorFactory::CreateForProfile(
+      policy::ProfilePolicyConnectorFactory::CreateForBrowserContext(
           this, force_immediate_policy_load);
 
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||

@@ -288,7 +288,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
   PolicyService* GetPolicyService() {
     ProfilePolicyConnector* profile_connector =
-        ProfilePolicyConnectorFactory::GetForProfile(browser()->profile());
+        ProfilePolicyConnectorFactory::GetForBrowserContext(
+            browser()->profile());
     return profile_connector->policy_service();
   }
 

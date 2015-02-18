@@ -816,7 +816,7 @@ if (!policy_service_) {
   policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
       this, profile_policy_connector_.get());
   CHECK_EQ(profile_policy_connector_.get(),
-           policy::ProfilePolicyConnectorFactory::GetForProfile(this));
+           policy::ProfilePolicyConnectorFactory::GetForBrowserContext(this));
 }
 
 PrefService* TestingProfile::GetPrefs() {
