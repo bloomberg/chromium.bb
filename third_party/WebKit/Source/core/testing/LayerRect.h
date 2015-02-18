@@ -57,7 +57,7 @@ public:
     int associatedNodeOffsetY() const { return m_associatedNodeOffsetY; }
     ClientRect* layerRelativeRect() const { return m_rect.get(); }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_layerAssociatedNode);
         visitor->trace(m_rect);

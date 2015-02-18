@@ -125,7 +125,7 @@ public:
     void setScrollTopLeftInteropEnabled(bool);
     void setLinkHeaderEnabled(bool);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void setAvailablePointerTypes(const String&, ExceptionState&);
     void setPrimaryPointerType(const String&, ExceptionState&);

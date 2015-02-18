@@ -67,7 +67,7 @@ public:
     const String& testUSVString() const { return m_usvString; }
     void setTestUSVString(const String& value) { m_usvString = value; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     TypeConversions()

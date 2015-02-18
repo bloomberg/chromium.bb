@@ -2177,7 +2177,7 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState, Location
     return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), "done"));
 }
 
-void Internals::trace(Visitor* visitor)
+DEFINE_TRACE(Internals)
 {
     visitor->trace(m_runtimeFlags);
     ContextLifecycleObserver::trace(visitor);

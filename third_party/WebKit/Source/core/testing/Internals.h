@@ -310,7 +310,7 @@ public:
     ScriptPromise promiseCheckOverload(ScriptState*, Document*);
     ScriptPromise promiseCheckOverload(ScriptState*, Location*, long, long);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void setValueForUser(Element*, const String&);
 

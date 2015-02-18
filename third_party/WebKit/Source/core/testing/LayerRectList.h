@@ -55,7 +55,7 @@ public:
     LayerRect* item(unsigned index);
     void append(PassRefPtrWillBeRawPtr<Node> layerAssociatedNode, const String& layerName, int layerOffsetX, int layerOffsetY, PassRefPtrWillBeRawPtr<ClientRect> layerRelativeRect);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     LayerRectList();

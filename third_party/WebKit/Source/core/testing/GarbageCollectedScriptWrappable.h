@@ -19,7 +19,7 @@ public:
     virtual ~GarbageCollectedScriptWrappable();
 
     const String& toString() const { return m_string; }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 private:
     String m_string;

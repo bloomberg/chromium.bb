@@ -42,7 +42,7 @@ public:
     virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_queue);
         ExecutionContext::trace(visitor);

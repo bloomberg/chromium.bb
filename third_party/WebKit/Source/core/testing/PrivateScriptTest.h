@@ -26,7 +26,7 @@ public:
     String stringAttributeImplementedInCPPForPrivateScriptOnly();
     void setStringAttributeImplementedInCPPForPrivateScriptOnly(String);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit PrivateScriptTest(Document*);

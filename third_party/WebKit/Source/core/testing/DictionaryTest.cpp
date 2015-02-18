@@ -141,7 +141,7 @@ void DictionaryTest::reset()
     m_derivedStringMemberWithDefault = String();
 }
 
-void DictionaryTest::trace(Visitor* visitor)
+DEFINE_TRACE(DictionaryTest)
 {
     visitor->trace(m_elementMember);
     visitor->trace(m_elementOrNullMember);

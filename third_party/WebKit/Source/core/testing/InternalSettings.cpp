@@ -339,7 +339,7 @@ void InternalSettings::setDefaultVideoPosterURL(const String& url, ExceptionStat
     settings()->setDefaultVideoPosterURL(url);
 }
 
-void InternalSettings::trace(Visitor* visitor)
+DEFINE_TRACE(InternalSettings)
 {
     visitor->trace(m_page);
     InternalSettingsGenerated::trace(visitor);

@@ -55,7 +55,7 @@ public:
     bool wasCollected() const { return m_collected; }
     void setWasCollected();
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     explicit GCObservation(v8::Handle<v8::Value>);

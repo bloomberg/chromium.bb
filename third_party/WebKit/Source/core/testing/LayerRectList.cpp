@@ -59,7 +59,7 @@ void LayerRectList::append(PassRefPtrWillBeRawPtr<Node> layerRootNode, const Str
     m_list.append(LayerRect::create(layerRootNode, layerType, layerOffsetX, layerOffsetY, layerRelativeRect));
 }
 
-void LayerRectList::trace(Visitor* visitor)
+DEFINE_TRACE(LayerRectList)
 {
     visitor->trace(m_list);
 }

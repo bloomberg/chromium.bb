@@ -35,7 +35,7 @@ public:
     void setDerived(const InternalDictionaryDerived&);
     void getDerived(InternalDictionaryDerived&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DictionaryTest();
