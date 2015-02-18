@@ -369,6 +369,8 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_blocked_frames_received_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.BlockedFrames.Sent",
                        num_blocked_frames_sent_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.HeadersStream.EarlyFramesReceived",
+                       session_->headers_stream()->num_early_frames_received());
 
   if (num_frames_received_ > 0) {
     int duplicate_stream_frame_per_thousand =

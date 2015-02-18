@@ -97,7 +97,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 
   int num_frames_received() const;
-
+  int num_early_frames_received() const;
   int num_duplicate_frames_received() const;
 
   QuicFlowController* flow_controller() { return &flow_controller_; }

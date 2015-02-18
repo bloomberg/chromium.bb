@@ -181,6 +181,10 @@ int ReliableQuicStream::num_frames_received() const {
   return sequencer_.num_frames_received();
 }
 
+int ReliableQuicStream::num_early_frames_received() const {
+  return sequencer_.num_early_frames_received();
+}
+
 int ReliableQuicStream::num_duplicate_frames_received() const {
   return sequencer_.num_duplicate_frames_received();
 }

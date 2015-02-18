@@ -5,6 +5,7 @@
 #include "net/quic/quic_connection_logger.h"
 
 #include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -19,9 +20,11 @@ class QuicConnectionLoggerPeer {
 
 class QuicConnectionLoggerTest : public ::testing::Test {
  protected:
-  QuicConnectionLoggerTest() : logger_(nullptr, net_log_) {}
+  QuicConnectionLoggerTest()
+      : session_(new MockConnection(false)), logger_(&session_, net_log_) {}
 
   BoundNetLog net_log_;
+  MockSession session_;
   QuicConnectionLogger logger_;
 };
 

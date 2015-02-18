@@ -18821,6 +18821,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.HeadersStream.EarlyFramesReceived">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The frames received on the headers stream which arrived early.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.HostResolutionTime" units="milliseconds">
   <owner>rch@chromium.org</owner>
   <summary>
