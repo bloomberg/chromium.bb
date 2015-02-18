@@ -146,10 +146,10 @@ public class AppBannerManager extends EmptyTabObserver {
         nativeSetTimeDeltaForTesting(days);
     }
 
-    /** Records how many native BitmapFetchers are actively retrieving app icons. */
+    /** Returns whether a BitmapFetcher is actively retrieving an app icon. */
     @VisibleForTesting
-    public int getNumActiveFetchersForTesting() {
-        return nativeGetNumActiveFetchers(mNativePointer);
+    public boolean isFetcherActiveForTesting() {
+        return nativeIsFetcherActive(mNativePointer);
     }
 
     private static native boolean nativeIsEnabled();
@@ -162,7 +162,7 @@ public class AppBannerManager extends EmptyTabObserver {
 
     // Testing methods.
     private static native void nativeSetTimeDeltaForTesting(int days);
-    private native int nativeGetNumActiveFetchers(long nativeAppBannerManager);
+    private native boolean nativeIsFetcherActive(long nativeAppBannerManager);
 
     // UMA tracking.
     private static native void nativeRecordDismissEvent(int metric);

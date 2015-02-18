@@ -109,7 +109,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
             @Override
             public boolean isSatisfied() {
                 return mDetailsDelegate.mNumRetrieved == numExpected
-                        && mAppBannerManager.getNumActiveFetchersForTesting() == 0;
+                        && !mAppBannerManager.isFetcherActiveForTesting();
             }
         });
     }
@@ -252,5 +252,23 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
                 new TabLoadObserver(getActivity().getActiveTab(), NATIVE_APP_URL)));
         assertTrue(waitUntilAppDetailsRetrieved(6));
         assertTrue(waitUntilAppBannerInfoBarAppears());
+    }
+
+    @MediumTest
+    @Feature({"AppBanners"})
+    public void testBitmapFetchersCanOverlapWithoutCrashing() throws Exception {
+        // Visit a site that requests a banner rapidly and repeatedly.
+        for (int i = 1; i <= 10; i++) {
+            assertTrue(CriteriaHelper.pollForUIThreadCriteria(
+                    new TabLoadObserver(getActivity().getActiveTab(), NATIVE_APP_URL)));
+
+            final Integer iteration = Integer.valueOf(i);
+            assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return mDetailsDelegate.mNumRetrieved == iteration;
+                }
+            }));
+        }
     }
 }

@@ -67,9 +67,10 @@ class InfoBar;
 
 namespace banners {
 
-class AppBannerManager : public chrome::BitmapFetcherDelegate,
-                         public content::WebContentsObserver {
+class AppBannerManager : public content::WebContentsObserver {
  public:
+  class BannerBitmapFetcher;
+
   AppBannerManager(JNIEnv* env, jobject obj);
   ~AppBannerManager() override;
 
@@ -94,8 +95,13 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Returns |false| if this couldn't be kicked off.
   bool FetchIcon(const GURL& image_url);
 
-  // Return how many fetchers are active.
-  int GetNumActiveFetchers(JNIEnv* env, jobject jobj);
+  // Called when everything required to show a banner is ready.
+  void OnFetchComplete(BannerBitmapFetcher* fetcher,
+                       const GURL url,
+                       const SkBitmap* icon);
+
+  // Return whether a BitmapFetcher is active.
+  bool IsFetcherActive(JNIEnv* env, jobject jobj);
 
   // Returns the current time.
   static base::Time GetCurrentTime();
@@ -107,9 +113,6 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  // BitmapFetcherDelegate overrides.
-  void OnFetchComplete(const GURL url, const SkBitmap* bitmap) override;
 
  private:
   // Gets the preferred icon size for the banner icons.
@@ -138,8 +141,12 @@ class AppBannerManager : public chrome::BitmapFetcherDelegate,
   // Check if the banner should be shown.
   bool CheckIfShouldShow(const std::string& package_or_start_url);
 
-  // Fetches the icon for an app.
-  scoped_ptr<chrome::BitmapFetcher> fetcher_;
+  // Cancels an active BitmapFetcher, stopping its banner from appearing.
+  void CancelActiveFetcher();
+
+  // Fetches the icon for an app.  Weakly held because they delete themselves.
+  BannerBitmapFetcher* fetcher_;
+
   GURL validated_url_;
   GURL app_icon_url_;
 

@@ -45,15 +45,61 @@ using base::android::ConvertUTF16ToJavaString;
 namespace {
 const char kBannerTag[] = "google-play-id";
 base::TimeDelta gTimeDeltaForTesting;
-}
+}  // namespace
 
 namespace banners {
 
+// Fetches a bitmap and deletes itself when completed.
+class AppBannerManager::BannerBitmapFetcher
+    : public chrome::BitmapFetcher,
+      public chrome::BitmapFetcherDelegate {
+ public:
+  BannerBitmapFetcher(const GURL& image_url,
+                      banners::AppBannerManager* manager);
+
+  // Prevents informing the AppBannerManager that the fetch has completed.
+  void Cancel();
+
+  // chrome::BitmapFetcherDelegate overrides
+  void OnFetchComplete(const GURL url, const SkBitmap* icon) override;
+
+ private:
+  banners::AppBannerManager* manager_;
+  bool is_cancelled_;
+};
+
+AppBannerManager::BannerBitmapFetcher::BannerBitmapFetcher(
+    const GURL& image_url,
+    banners::AppBannerManager* manager)
+    : chrome::BitmapFetcher(image_url, this),
+      manager_(manager),
+      is_cancelled_(false) {
+}
+
+void AppBannerManager::BannerBitmapFetcher::Cancel() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  is_cancelled_ = true;
+}
+
+void AppBannerManager::BannerBitmapFetcher::OnFetchComplete(
+    const GURL url,
+    const SkBitmap* icon) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!is_cancelled_)
+    manager_->OnFetchComplete(this, url, icon);
+
+  delete this;
+}
+
 AppBannerManager::AppBannerManager(JNIEnv* env, jobject obj)
-    : weak_java_banner_view_manager_(env, obj), weak_factory_(this) {
+    : fetcher_(nullptr),
+      weak_java_banner_view_manager_(env, obj),
+      weak_factory_(this) {
 }
 
 AppBannerManager::~AppBannerManager() {
+  CancelActiveFetcher();
 }
 
 void AppBannerManager::Destroy(JNIEnv* env, jobject obj) {
@@ -72,7 +118,7 @@ void AppBannerManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Clear current state.
-  fetcher_.reset();
+  CancelActiveFetcher();
   app_title_ = base::string16();
   web_app_data_ = content::Manifest();
   native_app_data_.Reset();
@@ -162,6 +208,14 @@ bool AppBannerManager::CheckIfShouldShow(
   return true;
 }
 
+void AppBannerManager::CancelActiveFetcher() {
+  // Fetchers delete themselves.
+  if (fetcher_ != nullptr) {
+    fetcher_->Cancel();
+    fetcher_ = nullptr;
+  }
+}
+
 bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AppBannerManager, message)
@@ -172,12 +226,15 @@ bool AppBannerManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AppBannerManager::OnFetchComplete(const GURL url, const SkBitmap* bitmap) {
-  fetcher_.reset();
-  if (!bitmap || url != app_icon_url_) {
-    DVLOG(1) << "Failed to retrieve image: " << url;
+void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
+                                       const GURL url,
+                                       const SkBitmap* bitmap) {
+  if (fetcher_ != fetcher)
     return;
-  }
+  fetcher_ = nullptr;
+
+  if (!bitmap || url != app_icon_url_)
+    return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
@@ -259,8 +316,8 @@ bool AppBannerManager::OnAppDetailsRetrieved(JNIEnv* env,
   return FetchIcon(GURL(image_url));
 }
 
-int AppBannerManager::GetNumActiveFetchers(JNIEnv* env, jobject obj) {
-  return fetcher_.get() ? 1 : 0;
+bool AppBannerManager::IsFetcherActive(JNIEnv* env, jobject obj) {
+  return fetcher_ != nullptr;
 }
 
 bool AppBannerManager::FetchIcon(const GURL& image_url) {
@@ -270,8 +327,10 @@ bool AppBannerManager::FetchIcon(const GURL& image_url) {
   // Begin asynchronously fetching the app icon.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  fetcher_.reset(new chrome::BitmapFetcher(image_url, this));
-  fetcher_.get()->Start(
+
+  CancelActiveFetcher();
+  fetcher_ = new BannerBitmapFetcher(image_url, this);
+  fetcher_->Start(
       profile->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
