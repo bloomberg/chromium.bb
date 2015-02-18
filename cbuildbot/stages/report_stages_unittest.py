@@ -109,7 +109,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
         timeout_seconds=mock.ANY)
     self.assertEqual(self._run.attrs.metadata.GetValue('build_id'), 31337)
     self.assertEqual(self._run.attrs.metadata.GetValue('db_type'),
-                     cidb.CIDBConnectionFactory._CONNECTION_TYPE_MOCK)
+                     cidb.CONNECTION_TYPE_MOCK)
 
   def testHandleSkipWithInstanceChange(self):
     """Test that HandleSkip disables cidb and dies when necessary."""
@@ -120,10 +120,9 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
     stage = self.ConstructStage()
     self.assertRaises(AssertionError, stage.HandleSkip)
     self.assertEqual(cidb.CIDBConnectionFactory.GetCIDBConnectionType(),
-                     cidb.CIDBConnectionFactory._CONNECTION_TYPE_INV)
+                     cidb.CONNECTION_TYPE_INV)
     # The above test has the side effect of invalidating CIDBConnectionFactory.
     # Undo that side effect so other unit tests can run.
-    cidb.CIDBConnectionFactory._ClearCIDBSetup()
     cidb.CIDBConnectionFactory.SetupMockCidb()
 
   def testHandleSkipWithNoDbType(self):
@@ -136,7 +135,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
     """Test that HandleSkip passes when db_type is specified."""
     self._run.attrs.metadata.UpdateWithDict(
         {'build_id': 31337,
-         'db_type': cidb.CIDBConnectionFactory._CONNECTION_TYPE_MOCK})
+         'db_type': cidb.CONNECTION_TYPE_MOCK})
     stage = self.ConstructStage()
     stage.HandleSkip()
 

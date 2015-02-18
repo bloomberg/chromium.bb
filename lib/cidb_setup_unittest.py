@@ -9,6 +9,7 @@ from __future__ import print_function
 from chromite.cbuildbot import constants
 from chromite.lib import cidb
 from chromite.lib import cros_test_lib
+from chromite.lib import factory
 
 
 class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
@@ -20,9 +21,13 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
     # pylint: disable=W0212
     cidb.CIDBConnectionFactory._ClearCIDBSetup()
 
+  def tearDown(self):
+    # pylint: disable=protected-access
+    cidb.CIDBConnectionFactory._ClearCIDBSetup()
+
   def testGetConnectionBeforeSetup(self):
     """Calling GetConnection before Setup should raise exception."""
-    self.assertRaises(AssertionError,
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
                       cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder)
 
   def testSetupProd(self):
@@ -33,10 +38,14 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
     # Expected constructor call
     self.connection_mock.assert_called_once_with(constants.CIDB_PROD_BOT_CREDS)
     self.assertTrue(cidb.CIDBConnectionFactory.IsCIDBSetup())
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupMockCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupNoCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupProdCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupDebugCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupMockCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupNoCidb)
 
   def testSetupDebug(self):
     """Test that SetupDebug behaves as expected."""
@@ -46,10 +55,14 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
     # Expected constructor call
     self.connection_mock.assert_called_once_with(constants.CIDB_DEBUG_BOT_CREDS)
     self.assertTrue(cidb.CIDBConnectionFactory.IsCIDBSetup())
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupMockCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupNoCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupProdCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupDebugCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupMockCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupNoCidb)
 
   def testInvalidateSetup(self):
     """Test that cidb connection can be invalidated."""
@@ -62,13 +75,12 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
     """Test that SetupMock behaves as expected."""
     # Set the CIDB to mock mode, but without supplying a mock
     cidb.CIDBConnectionFactory.SetupMockCidb()
-    self.assertFalse(cidb.CIDBConnectionFactory.IsCIDBSetup())
-    self.assertRaises(AssertionError,
-                      cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder)
 
     # Calls to non-mock Setup methods should fail.
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupProdCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupDebugCidb)
 
     # Now supply a mock.
     a = object()
@@ -85,12 +97,12 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
 
     # Mock object can be cleared by future ClearMock call.
     cidb.CIDBConnectionFactory.ClearMock()
-    self.assertRaises(AssertionError,
-                      cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder)
 
     # Calls to non-mock Setup methods should still fail.
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupProdCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupDebugCidb)
 
   def testSetupNo(self):
     """Test that SetupNoCidb behaves as expected."""
@@ -100,6 +112,9 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
     self.assertTrue(cidb.CIDBConnectionFactory.IsCIDBSetup())
     self.assertEqual(cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder(),
                      None)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)
-    self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupMockCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupProdCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupDebugCidb)
+    self.assertRaises(factory.ObjectFactoryIllegalOperation,
+                      cidb.CIDBConnectionFactory.SetupMockCidb)

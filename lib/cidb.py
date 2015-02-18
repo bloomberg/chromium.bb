@@ -24,6 +24,7 @@ except ImportError:
 from chromite.cbuildbot import constants
 from chromite.lib import retry_stats
 from chromite.lib import clactions
+from chromite.lib import factory
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
@@ -1034,83 +1035,90 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return bool(failures)
 
 
-class CIDBConnectionFactory(object):
+def _INV():
+  raise AssertionError('CIDB connection factory has been invalidated.')
+
+CONNECTION_TYPE_PROD = 'prod'   # production database
+CONNECTION_TYPE_DEBUG = 'debug' # debug database, used by --debug builds
+CONNECTION_TYPE_MOCK = 'mock'   # mock connection, not backed by database
+CONNECTION_TYPE_NONE = 'none'   # explicitly no connection
+CONNECTION_TYPE_INV = 'invalid' # invalidated connection
+
+class CIDBConnectionFactoryClass(factory.ObjectFactory):
   """Factory class used by builders to fetch the appropriate cidb connection"""
 
-  # A call to one of the Setup methods below is necessary before using the
-  # GetCIDBConnectionForBuilder Factory. This ensures that unit tests do not
-  # accidentally use one of the live database instances.
+  _CIDB_CONNECTION_TYPES = {
+      CONNECTION_TYPE_PROD: factory.CachedFunctionCall(
+          lambda: CIDBConnection(constants.CIDB_PROD_BOT_CREDS)),
+      CONNECTION_TYPE_DEBUG: factory.CachedFunctionCall(
+          lambda: CIDBConnection(constants.CIDB_DEBUG_BOT_CREDS)),
+      CONNECTION_TYPE_MOCK: None,
+      CONNECTION_TYPE_NONE: lambda: None,
+      CONNECTION_TYPE_INV: _INV,
+      }
 
-  _ConnectionIsSetup = False
-  _ConnectionType = None
-  _ConnectionCredsPath = None
-  _MockCIDB = None
-  _CachedCIDB = None
+  def _allowed_cidb_transition(self, from_setup, to_setup):
+    # Always allow factory to be invalidated.
+    if to_setup == CONNECTION_TYPE_INV:
+      return True
 
-  _CONNECTION_TYPE_PROD = 'prod'   # production database
-  _CONNECTION_TYPE_DEBUG = 'debug' # debug database, used by --debug builds
-  _CONNECTION_TYPE_MOCK = 'mock'   # mock connection, not backed by database
-  _CONNECTION_TYPE_NONE = 'none'   # explicitly no connection
-  _CONNECTION_TYPE_INV = 'invalid' # invalidated connection
+    # Allow transition invalid - > mock
+    if from_setup == CONNECTION_TYPE_INV and to_setup == CONNECTION_TYPE_MOCK:
+      return True
 
+    # Otherwise, only allow transitions between none -> none, mock -> mock, and
+    # mock -> none.
+    if from_setup == CONNECTION_TYPE_MOCK:
+      if to_setup in (CONNECTION_TYPE_NONE, CONNECTION_TYPE_MOCK):
+        return True
+    if from_setup == CONNECTION_TYPE_NONE and to_setup == from_setup:
+      return True
+    return False
 
-  @classmethod
-  def IsCIDBSetup(cls):
+  def __init__(self):
+    super(CIDBConnectionFactoryClass, self).__init__(
+        'cidb connection', self._CIDB_CONNECTION_TYPES,
+        self._allowed_cidb_transition)
+
+  def IsCIDBSetup(self):
     """Returns True iff GetCIDBConnectionForBuilder is ready to be called."""
-    return cls._ConnectionIsSetup
+    return self.is_setup
 
-  @classmethod
-  def GetCIDBConnectionType(cls):
+  def GetCIDBConnectionType(self):
     """Returns the type of db connection that is set up.
 
     Returns:
       One of ('prod', 'debug', 'mock', 'none', 'invalid', None)
     """
-    return cls._ConnectionType
+    return self.setup_type
 
-  @classmethod
-  def InvalidateCIDBSetup(cls):
+  def InvalidateCIDBSetup(self):
     """Invalidate the CIDB connection factory.
 
     This method may be called at any time, even after a setup method. Once
     this is called, future calls to GetCIDBConnectionForBuilder will raise
     an assertion error.
     """
-    cls._ConnectionType = cls._CONNECTION_TYPE_INV
-    cls._CachedCIDB = None
+    self.Setup(CONNECTION_TYPE_INV)
 
-  @classmethod
-  def SetupProdCidb(cls):
+  def SetupProdCidb(self):
     """Sets up CIDB to use the prod instance of the database.
 
     May be called only once, and may not be called after any other CIDB Setup
     method, otherwise it will raise an AssertionError.
     """
-    assert not cls._ConnectionIsSetup, 'CIDB is already set up.'
-    assert not cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
-        'CIDB set for mock use.')
-    cls._ConnectionType = cls._CONNECTION_TYPE_PROD
-    cls._ConnectionCredsPath = constants.CIDB_PROD_BOT_CREDS
-    cls._ConnectionIsSetup = True
+    self.Setup(CONNECTION_TYPE_PROD)
 
 
-  @classmethod
-  def SetupDebugCidb(cls):
+  def SetupDebugCidb(self):
     """Sets up CIDB to use the debug instance of the database.
 
     May be called only once, and may not be called after any other CIDB Setup
     method, otherwise it will raise an AssertionError.
     """
-    assert not cls._ConnectionIsSetup, 'CIDB is already set up.'
-    assert not cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
-        'CIDB set for mock use.')
-    cls._ConnectionType = cls._CONNECTION_TYPE_DEBUG
-    cls._ConnectionCredsPath = constants.CIDB_DEBUG_BOT_CREDS
-    cls._ConnectionIsSetup = True
+    self.Setup(CONNECTION_TYPE_DEBUG)
 
-
-  @classmethod
-  def SetupMockCidb(cls, mock_cidb=None):
+  def SetupMockCidb(self, mock_cidb=None):
     """Sets up CIDB to use a mock object. May be called more than once.
 
     Args:
@@ -1119,45 +1127,25 @@ class CIDBConnectionFactory(object):
                  considered not set up, but future calls to set up a
                  non-(mock or None) connection will fail.
     """
-    if cls._ConnectionIsSetup:
-      assert cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
-          'A non-mock CIDB is already set up.')
-    cls._ConnectionType = cls._CONNECTION_TYPE_MOCK
-    if mock_cidb:
-      cls._ConnectionIsSetup = True
-      cls._MockCIDB = mock_cidb
+    self.Setup(CONNECTION_TYPE_MOCK, mock_cidb)
 
-
-  @classmethod
-  def SetupNoCidb(cls):
+  def SetupNoCidb(self):
     """Sets up CIDB to use an explicit None connection.
 
     May be called more than once, or after SetupMockCidb.
     """
-    if cls._ConnectionIsSetup:
-      assert (cls._ConnectionType == cls._CONNECTION_TYPE_MOCK or
-              cls._ConnectionType == cls._CONNECTION_TYPE_NONE), (
-                  'A non-mock CIDB is already set up.')
-    cls._ConnectionType = cls._CONNECTION_TYPE_NONE
-    cls._ConnectionIsSetup = True
+    self.Setup(CONNECTION_TYPE_NONE)
 
-
-  @classmethod
-  def ClearMock(cls):
+  def ClearMock(self):
     """Clear a mock CIDB object.
 
     This method clears a cidb mock object, but leaves the connection factory
     in _CONNECTION_TYPE_MOCK, so that future calls to set up a non-mock
     cidb will fail.
     """
-    assert cls._ConnectionType == cls._CONNECTION_TYPE_MOCK, (
-        'CIDB is not set for mock use.')
-    cls._ConnectionIsSetup = False
-    cls._MockCIDB = None
+    self.SetupMockCidb()
 
-
-  @classmethod
-  def GetCIDBConnectionForBuilder(cls):
+  def GetCIDBConnectionForBuilder(self):
     """Get a CIDBConnection.
 
     A call to one of the CIDB Setup methods must have been made before calling
@@ -1169,25 +1157,10 @@ class CIDBConnectionFactory(object):
       Setup method was called. Returns None if CIDB has been explicitly
       set up for that using SetupNoCidb.
     """
-    assert cls._ConnectionIsSetup, 'CIDB has not be set up with a Setup call.'
-    assert cls._ConnectionType != cls._CONNECTION_TYPE_INV, (
-        'CIDB Connection factory has been invalidated.')
-    if cls._ConnectionType == cls._CONNECTION_TYPE_MOCK:
-      return cls._MockCIDB
-    elif cls._ConnectionType == cls._CONNECTION_TYPE_NONE:
-      return None
-    else:
-      if not cls._CachedCIDB:
-        cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
-      return cls._CachedCIDB
+    return self.GetInstance()
 
-  @classmethod
-  def _ClearCIDBSetup(cls):
+  def _ClearCIDBSetup(self):
     """Clears the CIDB Setup state. For testing purposes only."""
-    cls._ConnectionIsSetup = False
-    cls._ConnectionType = None
-    cls._ConnectionCredsPath = None
-    cls._MockCIDB = None
-    cls._CachedCIDB = None
+    self._clear_setup()
 
-
+CIDBConnectionFactory = CIDBConnectionFactoryClass()

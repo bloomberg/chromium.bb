@@ -99,6 +99,12 @@ class ObjectFactory(object):
       return self._setup_instance
     return self._types[self.setup_type]()
 
+  def _clear_setup(self):
+    """Clear setup, for testing purposes only."""
+    self._setup_type = None
+    self._is_setup = False
+    self._setup_instance = _NO_SINGLETON_INSTANCE
+
 
 def CachedFunctionCall(function):
   """Wraps a parameterless |function| in a cache."""
