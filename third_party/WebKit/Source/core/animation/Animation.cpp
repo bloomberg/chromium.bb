@@ -173,7 +173,7 @@ void Animation::clearEffects()
 
     m_sampledEffect->clear();
     m_sampledEffect = nullptr;
-    cancelAnimationOnCompositor();
+    restartAnimationOnCompositor();
     m_target->setNeedsAnimationStyleRecalc();
     invalidate();
 }
@@ -284,20 +284,26 @@ bool Animation::affects(CSSPropertyID property) const
     return m_effect && m_effect->affects(property);
 }
 
-void Animation::cancelAnimationOnCompositor()
+bool Animation::cancelAnimationOnCompositor()
 {
     // FIXME: cancelAnimationOnCompositor is called from withins style recalc.
     // This queries compositingState, which is not necessarily up to date.
     // https://code.google.com/p/chromium/issues/detail?id=339847
     DisableCompositingQueryAsserts disabler;
     if (!hasActiveAnimationsOnCompositor())
-        return;
+        return false;
     if (!m_target || !m_target->renderer())
-        return;
+        return false;
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
         CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, compositorAnimationId);
     m_compositorAnimationIds.clear();
-    player()->setCompositorPending(true);
+    return true;
+}
+
+void Animation::restartAnimationOnCompositor()
+{
+    if (cancelAnimationOnCompositor())
+        player()->setCompositorPending(true);
 }
 
 void Animation::cancelIncompatibleAnimationsOnCompositor()

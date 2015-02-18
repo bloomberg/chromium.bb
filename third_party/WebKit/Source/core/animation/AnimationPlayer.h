@@ -142,6 +142,7 @@ public:
     bool canStartAnimationOnCompositor();
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
+    void restartAnimationOnCompositor();
     void cancelIncompatibleAnimationsOnCompositor();
     bool hasActiveAnimationsOnCompositor();
     void setCompositorPending(bool sourceChanged = false);

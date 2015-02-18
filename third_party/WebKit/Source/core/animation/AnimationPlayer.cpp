@@ -717,6 +717,12 @@ void AnimationPlayer::cancelAnimationOnCompositor()
         toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
+void AnimationPlayer::restartAnimationOnCompositor()
+{
+    if (hasActiveAnimationsOnCompositor())
+        toAnimation(m_content.get())->restartAnimationOnCompositor();
+}
+
 void AnimationPlayer::cancelIncompatibleAnimationsOnCompositor()
 {
     if (m_content && m_content->isAnimation())

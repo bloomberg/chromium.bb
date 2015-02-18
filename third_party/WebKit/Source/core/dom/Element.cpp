@@ -1475,7 +1475,7 @@ void Element::detach(const AttachContext& context)
                 DisableCompositingQueryAsserts disabler;
 
                 // FIXME: restart compositor animations rather than pull back to the main thread
-                activeAnimations->cancelAnimationOnCompositor();
+                activeAnimations->restartAnimationOnCompositor();
             } else {
                 activeAnimations->cssAnimations().cancel();
                 activeAnimations->setAnimationStyleChange(false);

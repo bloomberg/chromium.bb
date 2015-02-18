@@ -75,10 +75,10 @@ void ActiveAnimations::updateAnimationFlags(LayoutStyle& style)
         style.setIsRunningFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
 }
 
-void ActiveAnimations::cancelAnimationOnCompositor()
+void ActiveAnimations::restartAnimationOnCompositor()
 {
     for (const auto& entry : m_players)
-        entry.key->cancelAnimationOnCompositor();
+        entry.key->restartAnimationOnCompositor();
 }
 
 void ActiveAnimations::trace(Visitor* visitor)
