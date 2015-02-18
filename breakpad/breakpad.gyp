@@ -17,6 +17,7 @@
           # GN version: //breakpad:stackwalk_common
           'target_name': 'stackwalk_common',
           'type': 'static_library',
+          'toolsets': ['host'],
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
           'sources': [
@@ -96,6 +97,7 @@
           # GN version: //breakpad:microdump_stackwalk
           'target_name': 'microdump_stackwalk',
           'type': 'executable',
+          'toolsets': ['host'],
           'dependencies': ['stackwalk_common'],
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
@@ -109,6 +111,7 @@
           # GN version: //breakpad:minidump_stackwalk
           'target_name': 'minidump_stackwalk',
           'type': 'executable',
+          'toolsets': ['host'],
           'dependencies': ['stackwalk_common'],
           'includes': ['breakpad_tools.gypi'],
           'defines': ['BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR'],
@@ -127,6 +130,7 @@
           # GN version: //breakpad:minidump_dump
           'target_name': 'minidump_dump',
           'type': 'executable',
+          'toolsets': ['host'],
           'includes': ['breakpad_tools.gypi'],
           'sources': [
             'src/processor/basic_code_module.h',
