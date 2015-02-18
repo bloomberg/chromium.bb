@@ -1611,10 +1611,6 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html
 crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
 
-crbug.com/442000 fast/text/emoticons.html [ NeedsRebaseline ]
-crbug.com/442000 virtual/slimmingpaint/fast/text/emoticons.html [ NeedsRebaseline ]
-crbug.com/442000 virtual/antialiasedtext/fast/text/emoticons.html [ NeedsRebaseline ]
-
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
