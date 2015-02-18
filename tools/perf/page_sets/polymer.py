@@ -23,9 +23,9 @@ class PolymerPage(page_module.Page):
     '''
     self._run_no_page_interactions = run_no_page_interactions
 
-  def RunPageInteraction(self, action_runner):
-    # If a polymer page wants to customize it actions, it should
-    # overrides the PerformPageInteractions method instead of this method.
+  def RunPageInteractions(self, action_runner):
+    # If a polymer page wants to customize its actions, it should
+    # override the PerformPageInteractions method instead of this method.
     if self._run_no_page_interactions:
       return
     self.PerformPageInteractions(action_runner)
