@@ -28,6 +28,11 @@
     {
       'target_name': 'libmemconsumer',
       'type': 'shared_library',
+      'variables': {
+        # This library uses native JNI exports; tell gyp so that the required
+        # symbols will be kept.
+        'use_native_jni_exports': 1,
+      },
       'sources': [
         'memconsumer_hook.cc',
       ],

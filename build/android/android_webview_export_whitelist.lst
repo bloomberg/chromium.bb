@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Default exports specification for chromium shared libraries on android.
+# Exports specification for android_webview_build==1, which uses a whitelist to
+# enforce only specific symbols being exported.
 # Check ld version script manual:
 # https://sourceware.org/binutils/docs-2.24/ld/VERSION.html#VERSION
 

@@ -194,6 +194,11 @@
       'include_dirs': [
         '..',
       ],
+      'variables': {
+        # This library uses native JNI exports; tell gyp so that the required
+        # symbols will be kept.
+        'use_native_jni_exports': 1,
+      },
       'sources': [
           '../android_webview/test/shell/src/draw_gl/draw_gl.cc',
       ],

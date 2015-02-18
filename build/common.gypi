@@ -1802,9 +1802,6 @@
 
         # Copy it out one scope.
         'android_webview_build%': '<(android_webview_build)',
-
-        # Default android linker script for shared library exports.
-        'android_linker_script%': '<(SHARED_INTERMEDIATE_DIR)/android_exports.lst',
       }],  # OS=="android"
       ['embedded==1', {
         'use_system_fontconfig%': 0,
@@ -2462,6 +2459,14 @@
         '-Wno-c++11-extensions',
         '-Wno-unnamed-type-template-args',
       ],
+
+      # By default, Android targets have their exported JNI symbols stripped,
+      # so we test the manual JNI registration code paths that are required
+      # when using the crazy linker. To allow use of native JNI exports (lazily
+      # resolved by the JVM), targets can enable this variable, which will stop
+      # the stripping from happening. Only targets which do not need to be
+      # compatible with the crazy linker are permitted to set this.
+      'use_native_jni_exports%': 0,
 
       'conditions': [
         ['OS=="win" and component=="shared_library"', {
@@ -4582,9 +4587,18 @@
               '-Wl,--no-undefined',
             ],
             'conditions': [
-              ['component=="static_library"', {
+              ['component=="static_library" and android_webview_build==0', {
                 'ldflags': [
                   '-Wl,--exclude-libs=ALL',
+                ],
+                'target_conditions': [
+                  ['use_native_jni_exports==0', {
+                    # Use a linker version script to strip JNI exports from
+                    # binaries which have not specifically asked to use them.
+                    'ldflags': [
+                      '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/build/android/android_no_jni_exports.lst',
+                    ],
+                  }],
                 ],
               }],
               ['clang==1', {
