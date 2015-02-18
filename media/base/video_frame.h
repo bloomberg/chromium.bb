@@ -129,6 +129,23 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       base::TimeDelta timestamp,
       const base::Closure& no_longer_needed_cb);
 
+  // Wraps external YUV data of the given parameters with a VideoFrame.
+  // The returned VideoFrame does not own the data passed in. When the frame
+  // is destroyed |no_longer_needed_cb.Run()| will be called.
+  static scoped_refptr<VideoFrame> WrapExternalYuvData(
+      Format format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      int32 y_stride,
+      int32 u_stride,
+      int32 v_stride,
+      uint8* y_data,
+      uint8* u_data,
+      uint8* v_data,
+      base::TimeDelta timestamp,
+      const base::Closure& no_longer_needed_cb);
+
 #if defined(OS_POSIX)
   // Wraps provided dmabufs
   // (https://www.kernel.org/doc/Documentation/dma-buf-sharing.txt) with a
@@ -164,25 +181,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       CVPixelBufferRef cv_pixel_buffer,
       base::TimeDelta timestamp);
 #endif
-
-  // Wraps external YUV data of the given parameters with a VideoFrame.
-  // The returned VideoFrame does not own the data passed in. When the frame
-  // is destroyed |no_longer_needed_cb.Run()| will be called.
-  // TODO(sheu): merge this into WrapExternalSharedMemory().
-  // http://crbug.com/270217
-  static scoped_refptr<VideoFrame> WrapExternalYuvData(
-      Format format,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      int32 y_stride,
-      int32 u_stride,
-      int32 v_stride,
-      uint8* y_data,
-      uint8* u_data,
-      uint8* v_data,
-      base::TimeDelta timestamp,
-      const base::Closure& no_longer_needed_cb);
 
   // Wraps |frame| and calls |no_longer_needed_cb| when the wrapper VideoFrame
   // gets destroyed. |visible_rect| must be a sub rect within

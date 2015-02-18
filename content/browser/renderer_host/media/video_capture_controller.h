@@ -135,21 +135,19 @@ class CONTENT_EXPORT VideoCaptureController {
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
       const media::VideoCaptureFormat& format,
       const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks timestamp);
+      const base::TimeTicks& timestamp);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
   void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);
 
   // Find a client of |id| and |handler| in |clients|.
-  ControllerClient* FindClient(
-      const VideoCaptureControllerID& id,
-      VideoCaptureControllerEventHandler* handler,
-      const ControllerClients& clients);
+  ControllerClient* FindClient(const VideoCaptureControllerID& id,
+                               VideoCaptureControllerEventHandler* handler,
+                               const ControllerClients& clients);
 
   // Find a client of |session_id| in |clients|.
-  ControllerClient* FindClient(
-      int session_id,
-      const ControllerClients& clients);
+  ControllerClient* FindClient(int session_id,
+                               const ControllerClients& clients);
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

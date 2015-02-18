@@ -309,6 +309,41 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
   }
 }
 
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
+    Format format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    int32 y_stride,
+    int32 u_stride,
+    int32 v_stride,
+    uint8* y_data,
+    uint8* u_data,
+    uint8* v_data,
+    base::TimeDelta timestamp,
+    const base::Closure& no_longer_needed_cb) {
+  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
+  CHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
+
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(format,
+                     new_coded_size,
+                     visible_rect,
+                     natural_size,
+                     scoped_ptr<gpu::MailboxHolder>(),
+                     timestamp,
+                     false));
+  frame->strides_[kYPlane] = y_stride;
+  frame->strides_[kUPlane] = u_stride;
+  frame->strides_[kVPlane] = v_stride;
+  frame->data_[kYPlane] = y_data;
+  frame->data_[kUPlane] = u_data;
+  frame->data_[kVPlane] = v_data;
+  frame->no_longer_needed_cb_ = no_longer_needed_cb;
+  return frame;
+}
+
 #if defined(OS_POSIX)
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
@@ -402,41 +437,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   return frame;
 }
 #endif
-
-// static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
-    Format format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    int32 y_stride,
-    int32 u_stride,
-    int32 v_stride,
-    uint8* y_data,
-    uint8* u_data,
-    uint8* v_data,
-    base::TimeDelta timestamp,
-    const base::Closure& no_longer_needed_cb) {
-  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
-  CHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
-
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format,
-                     new_coded_size,
-                     visible_rect,
-                     natural_size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     timestamp,
-                     false));
-  frame->strides_[kYPlane] = y_stride;
-  frame->strides_[kUPlane] = u_stride;
-  frame->strides_[kVPlane] = v_stride;
-  frame->data_[kYPlane] = y_data;
-  frame->data_[kUPlane] = u_data;
-  frame->data_[kVPlane] = v_data;
-  frame->no_longer_needed_cb_ = no_longer_needed_cb;
-  return frame;
-}
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(

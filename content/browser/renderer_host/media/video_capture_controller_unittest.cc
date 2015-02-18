@@ -141,7 +141,6 @@ class VideoCaptureControllerTest : public testing::Test {
   }
 
   scoped_refptr<media::VideoFrame> WrapMailboxBuffer(
-      const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
       scoped_ptr<gpu::MailboxHolder> holder,
       const media::VideoFrame::ReleaseMailboxCB& release_cb,
       gfx::Size dimensions) {
@@ -285,7 +284,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   media::VideoCaptureParams session_1 = session_100;
 
-  gfx::Size capture_resolution(444, 200);
+  const gfx::Size capture_resolution(444, 200);
 
   // The device format needn't match the VideoCaptureParams (the camera can do
   // what it wants). Pick something random.
@@ -503,8 +502,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
         media::VideoCaptureFormat(capture_resolution,
                                   device_format.frame_rate,
                                   media::PIXEL_FORMAT_TEXTURE),
-        WrapMailboxBuffer(buffer,
-                          make_scoped_ptr(new gpu::MailboxHolder(
+        WrapMailboxBuffer(make_scoped_ptr(new gpu::MailboxHolder(
                               gpu::Mailbox(), 0, mailbox_syncpoints[i])),
                           base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
                           capture_resolution),
@@ -628,12 +626,22 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
+// Tests that buffer-based capture API accepts all memory-backed pixel formats.
 TEST_F(VideoCaptureControllerTest, DataCaptureInEachVideoFormatInSequence) {
-  // This Test will skip PIXEL_FORMAT_TEXTURE and PIXEL_FORMAT_UNKNOWN
+  // The usual ReserveOutputBuffer() -> OnIncomingCapturedVideoFrame() cannot
+  // be used since it does not accept all pixel formats. The memory backed
+  // buffer OnIncomingCapturedData() is used instead, with a dummy scratchpad
+  // buffer.
+  const size_t kScratchpadSizeInBytes = 400;
+  unsigned char data[kScratchpadSizeInBytes];
+  const gfx::Size capture_resolution(10, 10);
+  ASSERT_GE(kScratchpadSizeInBytes, capture_resolution.GetArea() * 4u)
+      << "Scratchpad is too small to hold the largest pixel format (ARGB).";
+  // This Test skips PIXEL_FORMAT_TEXTURE and PIXEL_FORMAT_UNKNOWN.
   for (int format = 0; format < media::PIXEL_FORMAT_TEXTURE; ++format) {
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
-        gfx::Size(320, 240), 30, media::VideoPixelFormat(format));
+        capture_resolution, 30, media::VideoPixelFormat(format));
 
     const gfx::Size capture_resolution(320, 240);
 
@@ -646,21 +654,13 @@ TEST_F(VideoCaptureControllerTest, DataCaptureInEachVideoFormatInSequence) {
                            100,
                            params);
     ASSERT_EQ(1, controller_->GetClientCount());
-
-    // Now, simulate an incoming captured buffer from the capture device.
-    scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer;
-    buffer =
-        device_->ReserveOutputBuffer(media::VideoFrame::I420,
-                                     capture_resolution);
-    ASSERT_TRUE(buffer.get());
-
-    // Captured a new video frame.
-    device_->OnIncomingCapturedData(
-              static_cast<unsigned char*>(buffer.get()->data()),
-              buffer.get()->size(),
-              params.requested_format,
-              0,
-              base::TimeTicks());
+    device_->OnIncomingCapturedData(data,
+                                    0  /* length */,
+                                    params.requested_format,
+                                    0 /* rotation */,
+                                    base::TimeTicks());
+    EXPECT_EQ(100, controller_->RemoveClient(route, client_a_.get()));
+    Mock::VerifyAndClearExpectations(client_a_.get());
   }
 }
 

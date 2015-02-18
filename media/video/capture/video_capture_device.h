@@ -166,7 +166,11 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // Manages a list of Name entries.
   typedef std::list<Name> Names;
 
-  class MEDIA_EXPORT Client {
+   // Interface defining the methods that clients of VideoCapture must have. It
+   // is actually two-in-one: clients may implement OnIncomingCapturedData() or
+   // ReserveOutputBuffer() + OnIncomingCapturedVideoFrame(), or all of them.
+   // All clients must implement OnError().
+   class MEDIA_EXPORT Client {
    public:
     // Memory buffer returned by Client::ReserveOutputBuffer().
     class Buffer : public base::RefCountedThreadSafe<Buffer> {
@@ -189,6 +193,18 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
     virtual ~Client() {}
 
+    // Captured a new video frame, data for which is pointed to by |data|.
+    //
+    // The format of the frame is described by |frame_format|, and is assumed to
+    // be tightly packed. This method will try to reserve an output buffer and
+    // copy from |data| into the output buffer. If no output buffer is
+    // available, the frame will be silently dropped.
+    virtual void OnIncomingCapturedData(const uint8* data,
+                                        int length,
+                                        const VideoCaptureFormat& frame_format,
+                                        int rotation,  // Clockwise.
+                                        const base::TimeTicks& timestamp) = 0;
+
     // Reserve an output buffer into which contents can be captured directly.
     // The returned Buffer will always be allocated with a memory size suitable
     // for holding a packed video frame with pixels of |format| format, of
@@ -203,18 +219,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
         media::VideoFrame::Format format,
         const gfx::Size& dimensions) = 0;
 
-    // Captured a new video frame, data for which is pointed to by |data|.
-    //
-    // The format of the frame is described by |frame_format|, and is assumed to
-    // be tightly packed. This method will try to reserve an output buffer and
-    // copy from |data| into the output buffer. If no output buffer is
-    // available, the frame will be silently dropped.
-    virtual void OnIncomingCapturedData(const uint8* data,
-                                        int length,
-                                        const VideoCaptureFormat& frame_format,
-                                        int rotation,  // Clockwise.
-                                        base::TimeTicks timestamp) = 0;
-
     // Captured a new video frame, held in |frame|.
     //
     // As the frame is backed by a reservation returned by
@@ -224,7 +228,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
         const scoped_refptr<Buffer>& buffer,
         const VideoCaptureFormat& buffer_format,
         const scoped_refptr<media::VideoFrame>& frame,
-        base::TimeTicks timestamp) = 0;
+        const base::TimeTicks& timestamp) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.

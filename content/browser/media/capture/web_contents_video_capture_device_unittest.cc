@@ -315,6 +315,14 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
   ~StubClient() override {}
 
+  void OnIncomingCapturedData(const uint8* data,
+                              int length,
+                              const media::VideoCaptureFormat& frame_format,
+                              int rotation,
+                              const base::TimeTicks& timestamp) override {
+    FAIL();
+  }
+
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
       media::VideoFrame::Format format,
       const gfx::Size& dimensions) override {
@@ -333,19 +341,11 @@ class StubClient : public media::VideoCaptureDevice::Client {
         new PoolBuffer(buffer_pool_, buffer_id, data, size));
   }
 
-  void OnIncomingCapturedData(const uint8* data,
-                              int length,
-                              const media::VideoCaptureFormat& frame_format,
-                              int rotation,
-                              base::TimeTicks timestamp) override {
-    FAIL();
-  }
-
   void OnIncomingCapturedVideoFrame(
       const scoped_refptr<Buffer>& buffer,
       const media::VideoCaptureFormat& buffer_format,
       const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks timestamp) override {
+      const base::TimeTicks& timestamp) override {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), buffer_format.frame_size);
     EXPECT_EQ(media::PIXEL_FORMAT_I420, buffer_format.pixel_format);
     EXPECT_EQ(media::VideoFrame::I420, frame->format());

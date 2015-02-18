@@ -67,31 +67,24 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD2(ReserveOutputBuffer,
                scoped_refptr<Buffer>(VideoFrame::Format format,
                                      const gfx::Size& dimensions));
-  MOCK_METHOD0(OnErr, void());
+  MOCK_METHOD4(OnIncomingCapturedVideoFrame,
+               void(const scoped_refptr<Buffer>& buffer,
+                    const VideoCaptureFormat& buffer_format,
+                    const scoped_refptr<VideoFrame>& frame,
+                    const base::TimeTicks& timestamp));
+  MOCK_METHOD1(OnError, void(const std::string& reason));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
       : main_thread_(base::MessageLoopProxy::current()), frame_cb_(frame_cb) {}
-
-  void OnError(const std::string& error_message) override {
-    OnErr();
-  }
 
   void OnIncomingCapturedData(const uint8* data,
                               int length,
                               const VideoCaptureFormat& format,
                               int rotation,
-                              base::TimeTicks timestamp) override {
+                              const base::TimeTicks& timestamp) override {
     ASSERT_GT(length, 0);
     ASSERT_TRUE(data != NULL);
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
-  }
-
-  void OnIncomingCapturedVideoFrame(
-      const scoped_refptr<Buffer>& buffer,
-      const VideoCaptureFormat& buffer_format,
-      const scoped_refptr<VideoFrame>& frame,
-      base::TimeTicks timestamp) override {
-    NOTREACHED();
   }
 
  private:
@@ -130,12 +123,14 @@ class VideoCaptureDeviceTest : public testing::Test {
     device_enumeration_listener_ = new DeviceEnumerationListener();
   }
 
-#if defined(OS_ANDROID)
   void SetUp() override {
+#if defined(OS_ANDROID)
     VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(
         base::android::AttachCurrentThread());
-  }
 #endif
+    EXPECT_CALL(*client_, ReserveOutputBuffer(_,_)).Times(0);
+    EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_,_)).Times(0);
+  }
 
   void ResetWithNewClient() {
     client_.reset(new MockClient(base::Bind(
@@ -233,7 +228,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
   } else {
     // The presence of the actual device is only checked on AllocateAndStart()
     // and not on creation for QTKit API in Mac OS X platform.
-    EXPECT_CALL(*client_, OnErr()).Times(1);
+    EXPECT_CALL(*client_, OnError(_)).Times(1);
 
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -257,7 +252,7 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   ASSERT_TRUE(device);
   DVLOG(1) << names_->front().id();
 
-  EXPECT_CALL(*client_, OnErr()).Times(0);
+  EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -282,7 +277,7 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
       video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnErr()).Times(0);
+  EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(1280, 720);
@@ -304,7 +299,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
       video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnErr()).Times(0);
+  EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(637, 472);
@@ -378,7 +373,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
       video_capture_device_factory_->Create(names_->front()));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnErr()).Times(0);
+  EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -405,7 +400,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
       video_capture_device_factory_->Create(*name));
   ASSERT_TRUE(device);
 
-  EXPECT_CALL(*client_, OnErr()).Times(0);
+  EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(1280, 720);
