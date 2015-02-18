@@ -22830,6 +22830,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Notifications.DifferentRequestingEmbeddingOrigins"
+    enum="Boolean">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records if the requesting and embedding origins are different when
+    requesting permission to display Web Notifications.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.PerNotificationActions"
     enum="NotificationActionType">
   <owner>dewittj@chromium.org</owner>
