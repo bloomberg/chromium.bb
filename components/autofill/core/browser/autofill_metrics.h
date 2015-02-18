@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace base {
@@ -249,10 +251,37 @@ class AutofillMetrics {
     // User interacted with a field of this kind of form. Logged only once per
     // page load.
     FORM_EVENT_INTERACTED_ONCE = 0,
-    // TODO(waltercacau): Remove the 2 here once we add more events.
-    //   This circumvents an assertion that gets triggered when you have
-    //   only one bucket.
-    NUM_FORM_EVENTS = 2,
+    // A dropdown with suggestions was shown.
+    FORM_EVENT_SUGGESTIONS_SHOWN,
+    // Same as above, but recoreded only once per page load.
+    FORM_EVENT_SUGGESTIONS_SHOWN_ONCE,
+    // A local suggestion was used to fill the form.
+    FORM_EVENT_LOCAL_SUGGESTION_FILLED,
+    // A server suggestion was used to fill the form.
+    // When dealing with credit cards, this means a full server card was used
+    // to fill.
+    FORM_EVENT_SERVER_SUGGESTION_FILLED,
+    // A masked server card suggestion was used to fill the form.
+    FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED,
+    // A suggestion was used to fill the form. The origin type (local or server
+    // or masked server card) of the first selected within a page load will
+    // determine which of the following two will be fired.
+    FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE,
+    FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE,
+    FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE,
+    // A form was submitted. Depending on the user filling a local, server,
+    // masked server card or no suggestion one of the following will be
+    // triggered. Only one of the following four will be triggered per page
+    // load.
+    FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE,
+    FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE,
+    FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE,
+    FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE,
+    // A masked server card suggestion was selected to fill the form.
+    FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED,
+    // Same as above but only triggered once per page load.
+    FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE,
+    NUM_FORM_EVENTS,
   };
 
   // For measuring the network request time of various Wallet API calls. See
@@ -438,27 +467,41 @@ class AutofillMetrics {
    public:
     FormEventLogger(bool is_for_credit_card);
 
-    // Should be called when the user interacted with an autofillable form.
-    void OnDidInteractWithAutofillableForm();
-
-    // Sets if server data is available or not. If not called assumed false.
     inline void set_is_server_data_available(bool is_server_data_available) {
       is_server_data_available_ = is_server_data_available;
     }
 
-    // Sets if server data is available or not. If not called assumed false.
     inline void set_is_local_data_available(bool is_local_data_available) {
       is_local_data_available_ = is_local_data_available;
     }
 
+    void OnDidInteractWithAutofillableForm();
+
+    void OnDidShowSuggestions();
+
+    void OnDidSelectMaskedServerCardSuggestion();
+
+    // In case of masked cards, caller must make sure this gets called before
+    // the card is upgraded to a full card.
+    void OnDidFillSuggestion(const CreditCard& credit_card);
+
+    void OnDidFillSuggestion(const AutofillProfile& profile);
+
+    void OnDidSubmitForm();
+
    private:
-    // Logs a form event.
     void Log(FormEvent event) const;
 
     bool is_for_credit_card_;
     bool is_server_data_available_;
     bool is_local_data_available_;
     bool has_logged_interacted_;
+    bool has_logged_suggestions_shown_;
+    bool has_logged_masked_server_card_suggestion_selected_;
+    bool has_logged_suggestion_filled_;
+    bool has_logged_submitted_;
+    bool logged_suggestion_filled_was_server_data_;
+    bool logged_suggestion_filled_was_masked_server_card_;
   };
 
  private:

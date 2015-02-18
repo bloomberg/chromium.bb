@@ -117,7 +117,9 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                                   const FormData& form,
                                   const FormFieldData& field,
                                   const CreditCard& credit_card);
-  void DidShowSuggestions(bool is_new_popup);
+  void DidShowSuggestions(bool is_new_popup,
+                          const FormData& form,
+                          const FormFieldData& field);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnDidPreviewAutofillFormData();
 
@@ -240,15 +242,39 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels();
 
-  // Unpacks |unique_id| and fills |form_group| and |variant| with the
-  // appropriate data source and variant index. Sets |is_credit_card| to true
-  // if |data_model| points to a CreditCard data model, false if it's a
-  // profile data model.
-  // Returns false if the unpacked id cannot be found.
-  bool GetProfileOrCreditCard(int unique_id,
-                              const AutofillDataModel** data_model,
-                              size_t* variant,
-                              bool* is_credit_card) const WARN_UNUSED_RESULT;
+  // Returns true if the unique_id refers to a credit card and false if
+  // it refers to a profile.
+  bool IsCreditCard(int unique_id);
+
+  // Gets the profile referred by |unique_id| and populates |variant|
+  // based on it. Returns true if the profile exists.
+  bool GetProfile(int unique_id,
+                  const AutofillProfile** profile,
+                  size_t* variant);
+
+  // Gets the credit card referred by |unique_id| and populates |variant|
+  // based on it. Returns true if the credit card exists.
+  bool GetCreditCard(int unique_id, const CreditCard** credit_card);
+
+  // Fills or previews the credit card form.
+  // Assumes the form and field are valid.
+  void FillOrPreviewCreditCardForm(
+      AutofillDriver::RendererFormDataAction action,
+      int query_id,
+      const FormData& form,
+      const FormFieldData& field,
+      const CreditCard& credit_card,
+      size_t variant);
+
+  // Fills or previews the profile form.
+  // Assumes the form and field are valid.
+  void FillOrPreviewProfileForm(
+      AutofillDriver::RendererFormDataAction action,
+      int query_id,
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillProfile& profile,
+      size_t variant);
 
   // Fills or previews |data_model| in the |form|.
   void FillOrPreviewDataModelForm(AutofillDriver::RendererFormDataAction action,
@@ -400,8 +426,13 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                            DeterminePossibleFieldTypesForUploadStressTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DisabledAutofillDispatchesError);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressFilledFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSelectedFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardFilledFormEvents);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, DeveloperEngagement);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FormFillDuration);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,

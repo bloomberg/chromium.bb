@@ -1809,6 +1809,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Autofill form events for address forms. These are recorded when the user
     interacts with a form requesting an address.
   </summary>
+  <details>
+    Important caveat about submission metrics: - Submission using autofill data
+    is determined by simply evaluating if there was a fill operation in this
+    page. So, if the user filled with local data, completed erased or modified
+    the data after and then submitted, we would only emit one &quot;Submitted
+    with server suggestion filled (once)&quot;; - The submission segmentation
+    works by checking what kind of data was last filled for this type of form in
+    the page load. So, if I user initially filled with local data and after that
+    filled with server, we will only emit &quot;Submitted with server suggestion
+    filled (once)&quot;.
+  </details>
 </histogram>
 
 <histogram name="Autofill.FormEvents.CreditCard" enum="AutofillFormEvent">
@@ -1817,6 +1828,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Autofill form events for credit card forms. These are recorded when the user
     interacts with a form requesting a credit card.
   </summary>
+  <details>
+    Important caveat about submission metrics: - Submission using autofill data
+    is determined by simply evaluating if there was a fill operation in this
+    page. So, if the user filled with local data, completed erased or modified
+    the data after and then submitted, we would only emit one &quot;Submitted
+    with server suggestion filled (once)&quot;; - The submission segmentation
+    works by checking what kind of data was last filled for this type of form in
+    the page load. So, if I user initially filled with local data and after that
+    filled with server, we will only emit &quot;Submitted with server suggestion
+    filled (once)&quot;.
+  </details>
 </histogram>
 
 <histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled">
@@ -43786,7 +43808,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="AutofillFormEvent" type="int">
-  <int value="1" label="Interacted once"/>
+  <int value="0" label="Interacted (once)"/>
+  <int value="1" label="Suggestions shown"/>
+  <int value="2" label="Suggestions shown (once)"/>
+  <int value="3" label="Local suggestion filled"/>
+  <int value="4" label="Server suggestion filled"/>
+  <int value="5" label="Masked server card suggestion filled"/>
+  <int value="6" label="Local suggestion filled (once)"/>
+  <int value="7" label="Server suggestion filled (once)"/>
+  <int value="8" label="Masked server card suggestion filled (once)"/>
+  <int value="9" label="Submitted with no suggestion filled (once)"/>
+  <int value="10" label="Submitted with local suggestion filled (once)"/>
+  <int value="11" label="Submitted with server suggestion filled (once)"/>
+  <int value="12"
+      label="Submitted with masked server card suggestion filled (once)"/>
+  <int value="13" label="Masked server card suggestion selected"/>
+  <int value="14" label="Masked server card suggestion selected (once)"/>
 </enum>
 
 <enum name="AutofillMacAddressBook" type="int">

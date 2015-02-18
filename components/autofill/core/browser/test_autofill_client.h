@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "google_apis/gaia/fake_identity_provider.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
 
 namespace autofill {
 
@@ -58,6 +60,8 @@ class TestAutofillClient : public AutofillClient {
  private:
   // NULL by default.
   scoped_ptr<PrefService> prefs_;
+  scoped_ptr<FakeOAuth2TokenService> token_service_;
+  scoped_ptr<FakeIdentityProvider> identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

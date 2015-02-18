@@ -357,6 +357,9 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   if (submitted_form->IsAutofillable())
     ImportFormData(*submitted_form);
 
+  address_form_event_logger_->OnDidSubmitForm();
+  credit_card_form_event_logger_->OnDidSubmitForm();
+
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
@@ -566,6 +569,46 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   }
 }
 
+void AutofillManager::FillOrPreviewCreditCardForm(
+    AutofillDriver::RendererFormDataAction action,
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const CreditCard& credit_card,
+    size_t variant) {
+  if (action == AutofillDriver::FORM_DATA_ACTION_FILL) {
+    if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
+      unmasking_card_ = credit_card;
+      unmasking_query_id_ = query_id;
+      unmasking_form_ = form;
+      unmasking_field_ = field;
+      real_pan_client_.Prepare();
+      client()->ShowUnmaskPrompt(unmasking_card_,
+                                 weak_ptr_factory_.GetWeakPtr());
+      credit_card_form_event_logger_->OnDidSelectMaskedServerCardSuggestion();
+      return;
+    }
+    credit_card_form_event_logger_->OnDidFillSuggestion(credit_card);
+  }
+
+  FillOrPreviewDataModelForm(action, query_id, form, field, &credit_card,
+                             variant, true /* is_credit_card */);
+}
+
+void AutofillManager::FillOrPreviewProfileForm(
+    AutofillDriver::RendererFormDataAction action,
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    const AutofillProfile& profile,
+    size_t variant) {
+  if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
+    address_form_event_logger_->OnDidFillSuggestion(profile);
+
+  FillOrPreviewDataModelForm(action, query_id, form, field, &profile, variant,
+                             false /* is_credit_card */);
+}
+
 void AutofillManager::FillOrPreviewForm(
     AutofillDriver::RendererFormDataAction action,
     int query_id,
@@ -575,35 +618,19 @@ void AutofillManager::FillOrPreviewForm(
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  const AutofillDataModel* data_model = NULL;
-  size_t variant = 0;
-  bool is_credit_card = false;
   // NOTE: RefreshDataModels may invalidate |data_model| because it causes the
   // PersonalDataManager to reload Mac address book entries. Thus it must come
-  // before GetProfileOrCreditCard.
-  if (!RefreshDataModels() ||
-      !driver_->RendererIsAvailable() ||
-      !GetProfileOrCreditCard(
-          unique_id, &data_model, &variant, &is_credit_card)) {
+  // before GetProfile or GetCreditCard.
+  if (!RefreshDataModels() || !driver_->RendererIsAvailable())
     return;
-  }
 
-  if (is_credit_card && action == AutofillDriver::FORM_DATA_ACTION_FILL) {
-    const CreditCard* card = static_cast<const CreditCard*>(data_model);
-    if (card->record_type() == CreditCard::MASKED_SERVER_CARD) {
-      unmasking_card_ = *card;
-      unmasking_query_id_ = query_id;
-      unmasking_form_ = form;
-      unmasking_field_ = field;
-      real_pan_client_.Prepare();
-      client()->ShowUnmaskPrompt(unmasking_card_,
-                                 weak_ptr_factory_.GetWeakPtr());
-      return;
-    }
-  }
-
-  FillOrPreviewDataModelForm(action, query_id, form, field, data_model, variant,
-                             is_credit_card);
+  size_t variant = 0;
+  const CreditCard* credit_card = nullptr;
+  const AutofillProfile* profile = nullptr;
+  if (GetCreditCard(unique_id, &credit_card))
+    FillOrPreviewCreditCardForm(action, query_id, form, field, *credit_card, 0);
+  else if (GetProfile(unique_id, &profile, &variant))
+    FillOrPreviewProfileForm(action, query_id, form, field, *profile, variant);
 }
 
 void AutofillManager::FillCreditCardForm(int query_id,
@@ -638,9 +665,15 @@ void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   UpdateInitialInteractionTimestamp(timestamp);
 }
 
-void AutofillManager::DidShowSuggestions(bool is_new_popup) {
+void AutofillManager::DidShowSuggestions(bool is_new_popup,
+                                         const FormData& form,
+                                         const FormFieldData& field) {
   if (test_delegate_)
     test_delegate_->DidShowSuggestions();
+  FormStructure* form_structure = NULL;
+  AutofillField* autofill_field = NULL;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return;
 
   if (is_new_popup) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
@@ -650,6 +683,11 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup) {
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::SUGGESTIONS_SHOWN_ONCE);
     }
+
+    if (autofill_field->Type().group() == CREDIT_CARD)
+      credit_card_form_event_logger_->OnDidShowSuggestions();
+    else
+      address_form_event_logger_->OnDidShowSuggestions();
   }
 }
 
@@ -662,11 +700,15 @@ void AutofillManager::OnHidePopup() {
 }
 
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
-  const AutofillDataModel* data_model = NULL;
+  std::string guid;
   size_t variant = 0;
-  bool unused_is_credit_card = false;
-  if (!GetProfileOrCreditCard(
-          unique_id, &data_model, &variant, &unused_is_credit_card)) {
+  const CreditCard* credit_card = nullptr;
+  const AutofillProfile* profile = nullptr;
+  if (GetCreditCard(unique_id, &credit_card)) {
+    guid = credit_card->guid();
+  } else if (GetProfile(unique_id, &profile, &variant)) {
+    guid = profile->guid();
+  } else {
     NOTREACHED();
     return;
   }
@@ -677,7 +719,7 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   if (variant != 0)
     return;
 
-  personal_data_->RemoveByGUID(data_model->guid());
+  personal_data_->RemoveByGUID(guid);
 }
 
 void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
@@ -740,6 +782,7 @@ IdentityProvider* AutofillManager::GetIdentityProvider() {
 
 void AutofillManager::OnDidGetRealPan(const std::string& real_pan) {
   if (!real_pan.empty()) {
+    credit_card_form_event_logger_->OnDidFillSuggestion(unmasking_card_);
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     unmasking_card_.SetNumber(base::UTF8ToUTF16(real_pan));
     if (unmask_response_.should_store_pan)
@@ -954,32 +997,41 @@ bool AutofillManager::RefreshDataModels() {
   return true;
 }
 
-bool AutofillManager::GetProfileOrCreditCard(
-    int unique_id,
-    const AutofillDataModel** data_model,
-    size_t* variant,
-    bool* is_credit_card) const {
+bool AutofillManager::IsCreditCard(int unique_id) {
   // Unpack the |unique_id| into component parts.
   SuggestionBackendID credit_card_id;
   SuggestionBackendID profile_id;
   SplitFrontendID(unique_id, &credit_card_id, &profile_id);
   DCHECK(!base::IsValidGUID(credit_card_id.guid) ||
          !base::IsValidGUID(profile_id.guid));
-  *is_credit_card = false;
+  return base::IsValidGUID(credit_card_id.guid);
+}
 
-  // Find the profile that matches the |profile_guid|, if one is specified.
-  // Otherwise find the credit card that matches the |credit_card_guid|,
-  // if specified.
+bool AutofillManager::GetProfile(int unique_id,
+                                 const AutofillProfile** profile,
+                                 size_t* variant) {
+  // Unpack the |unique_id| into component parts.
+  SuggestionBackendID credit_card_id;
+  SuggestionBackendID profile_id;
+  SplitFrontendID(unique_id, &credit_card_id, &profile_id);
+  *profile = NULL;
   if (base::IsValidGUID(profile_id.guid)) {
-    *data_model = personal_data_->GetProfileByGUID(profile_id.guid);
+    *profile = personal_data_->GetProfileByGUID(profile_id.guid);
     *variant = profile_id.variant;
-  } else if (base::IsValidGUID(credit_card_id.guid)) {
-    *data_model = personal_data_->GetCreditCardByGUID(credit_card_id.guid);
-    *variant = credit_card_id.variant;
-    *is_credit_card = true;
   }
+  return !!*profile;
+}
 
-  return !!*data_model;
+bool AutofillManager::GetCreditCard(int unique_id,
+                                    const CreditCard** credit_card) {
+  // Unpack the |unique_id| into component parts.
+  SuggestionBackendID credit_card_id;
+  SuggestionBackendID profile_id;
+  SplitFrontendID(unique_id, &credit_card_id, &profile_id);
+  *credit_card = NULL;
+  if (base::IsValidGUID(credit_card_id.guid))
+    *credit_card = personal_data_->GetCreditCardByGUID(credit_card_id.guid);
+  return !!*credit_card;
 }
 
 void AutofillManager::FillOrPreviewDataModelForm(
