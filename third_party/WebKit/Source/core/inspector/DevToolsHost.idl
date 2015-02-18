@@ -32,7 +32,8 @@
 
 [
     WillBeGarbageCollected,
-    NoInterfaceObject
+    NoInterfaceObject,
+    TypeChecking=Unrestricted,
 ] interface DevToolsHost {
     float zoomFactor();
 

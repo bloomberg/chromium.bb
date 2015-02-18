@@ -130,13 +130,10 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
     if (info.Length() < 3)
         return;
 
-    v8::Local<v8::Value> x = v8::Local<v8::Value>::Cast(info[0]);
-    if (!x->IsNumber())
-        return;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "showContextMenuAtPoint", "DevToolsHost", info.Holder(), info.GetIsolate());
 
-    v8::Local<v8::Value> y = v8::Local<v8::Value>::Cast(info[1]);
-    if (!y->IsNumber())
-        return;
+    TONATIVE_VOID_EXCEPTIONSTATE(float, x, toRestrictedFloat(info[0], exceptionState), exceptionState);
+    TONATIVE_VOID_EXCEPTIONSTATE(float, y, toRestrictedFloat(info[1], exceptionState), exceptionState);
 
     v8::Local<v8::Value> array = v8::Local<v8::Value>::Cast(info[2]);
     if (!array->IsArray())
@@ -164,7 +161,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
 
     DevToolsHost* devtoolsHost = V8DevToolsHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
-    devtoolsHost->showContextMenu(document->frame(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
+    devtoolsHost->showContextMenu(document->frame(), x, y, items);
 }
 
 } // namespace blink
