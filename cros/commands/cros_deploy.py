@@ -16,6 +16,7 @@ from chromite import cros
 from chromite.lib import cros_build_lib
 from chromite.lib import portage_util
 from chromite.lib import project
+from chromite.lib import project_sdk
 from chromite.lib import remote_access
 try:
   import portage
@@ -785,6 +786,10 @@ For more information of cros build usage:
         '--ignore-device-board', action='store_true',
         help='Do not require that device be compatible with current '
         'project/board.')
+    advanced.add_argument(
+        '--ignore-sdk-version', action='store_true',
+        help='Do not require that device SDK version be compatible with '
+        'the environment.')
 
   def _GetPackageByCPV(self, cpv):
     """Returns the path to a binary package corresponding to |cpv|."""
@@ -956,6 +961,14 @@ For more information of cros build usage:
                 proj.Inherits(device.board)):
           cros_build_lib.Die('Device (%s) is incompatible with board',
                              device.board)
+
+        # If this is an official SDK, check that the target is compatible.
+        if not self.options.ignore_sdk_version:
+          sdk_version = project_sdk.FindVersion()
+          if sdk_version and device.sdk_version != sdk_version:
+            cros_build_lib.Die('Device SDK version (%s) is incompatible with '
+                               'your environment (%s)',
+                               device.sdk_version or 'unknown', sdk_version)
 
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
