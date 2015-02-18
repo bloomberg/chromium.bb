@@ -10,7 +10,10 @@
 namespace chromecast {
 namespace shell {
 
-CastRenderProcessObserver::CastRenderProcessObserver() {
+CastRenderProcessObserver::CastRenderProcessObserver(
+    const std::vector<scoped_refptr<IPC::MessageFilter>>&
+        platform_message_filters)
+    : platform_message_filters_(platform_message_filters) {
   content::RenderThread* thread = content::RenderThread::Get();
   thread->AddObserver(this);
   CreateCustomFilters();
@@ -22,22 +25,32 @@ CastRenderProcessObserver::~CastRenderProcessObserver() {
 }
 
 void CastRenderProcessObserver::CreateCustomFilters() {
-#if !defined(OS_ANDROID)
   content::RenderThread* thread = content::RenderThread::Get();
+#if !defined(OS_ANDROID)
   cma_message_filter_proxy_ =
       new media::CmaMessageFilterProxy(thread->GetIOMessageLoopProxy());
   thread->AddFilter(cma_message_filter_proxy_.get());
 #endif  // !defined(OS_ANDROID)
+  for (const auto& filter : platform_message_filters_) {
+    thread->AddFilter(filter.get());
+  }
 }
 
 void CastRenderProcessObserver::OnRenderProcessShutdown() {
-#if !defined(OS_ANDROID)
   content::RenderThread* thread = content::RenderThread::Get();
+#if !defined(OS_ANDROID)
   if (cma_message_filter_proxy_.get()) {
     thread->RemoveFilter(cma_message_filter_proxy_.get());
     cma_message_filter_proxy_ = NULL;
   }
 #endif  // !defined(OS_ANDROID)
+  for (auto& filter : platform_message_filters_) {
+    if (filter.get()) {
+      thread->RemoveFilter(filter.get());
+      filter = nullptr;
+    }
+  }
+  platform_message_filters_.clear();
 }
 
 }  // namespace shell

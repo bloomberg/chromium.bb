@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
 
+namespace IPC {
+class MessageFilter;
+}
+
 namespace network_hints {
 class PrescientNetworkingDispatcher;
 }  // namespace network_hints
@@ -18,12 +22,18 @@ namespace chromecast {
 namespace shell {
 class CastRenderProcessObserver;
 
+// Adds any platform-specific bindings to the current frame.
 void PlatformAddRendererNativeBindings(blink::WebLocalFrame* frame);
 
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
   CastContentRendererClient();
   ~CastContentRendererClient() override;
+
+  // Returns any MessageFilters from the platform implementation that should
+  // be added to the render process.
+  std::vector<scoped_refptr<IPC::MessageFilter>>
+  PlatformGetRendererMessageFilters();
 
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;

@@ -73,6 +73,11 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       new media::CmaMessageFilterHost(host->GetID()));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
+
+  auto extra_filters = PlatformGetBrowserMessageFilters();
+  for (auto const& filter : extra_filters) {
+    host->AddFilter(filter.get());
+  }
 }
 
 net::URLRequestContextGetter* CastContentBrowserClient::CreateRequestContext(

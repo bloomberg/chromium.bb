@@ -4,10 +4,18 @@
 
 #include "chromecast/browser/cast_content_browser_client.h"
 
+#include "content/public/browser/browser_message_filter.h"
+
 namespace chromecast {
 namespace shell {
 
-void PlatformAppendExtraCommandLineSwitches(base::CommandLine* command_line) {
+void CastContentBrowserClient::PlatformAppendExtraCommandLineSwitches(
+    base::CommandLine* command_line) {
+}
+
+std::vector<scoped_refptr<content::BrowserMessageFilter>>
+CastContentBrowserClient::PlatformGetBrowserMessageFilters() {
+  return std::vector<scoped_refptr<content::BrowserMessageFilter>>();
 }
 
 }  // namespace shell

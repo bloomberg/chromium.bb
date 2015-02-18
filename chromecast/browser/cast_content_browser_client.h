@@ -15,18 +15,28 @@ namespace breakpad {
 class CrashHandlerHostLinux;
 }
 
+namespace content {
+class BrowserMessageFilter;
+}
+
 namespace chromecast {
 namespace shell {
 
 class CastBrowserMainParts;
 class URLRequestContextFactory;
 
-void PlatformAppendExtraCommandLineSwitches(base::CommandLine* command_line);
-
 class CastContentBrowserClient: public content::ContentBrowserClient {
  public:
   CastContentBrowserClient();
   ~CastContentBrowserClient() override;
+
+  // Appends extra command line arguments before launching a new process.
+  void PlatformAppendExtraCommandLineSwitches(base::CommandLine* command_line);
+
+  // Returns any BrowserMessageFilters from the platform implementation that
+  // should be added when launching a new render process.
+  std::vector<scoped_refptr<content::BrowserMessageFilter>>
+  PlatformGetBrowserMessageFilters();
 
   // content::ContentBrowserClient implementation:
   content::BrowserMainParts* CreateBrowserMainParts(

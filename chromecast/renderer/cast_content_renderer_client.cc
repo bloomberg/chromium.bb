@@ -19,6 +19,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "crypto/nss_util.h"
+#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -105,7 +106,8 @@ void CastContentRendererClient::RenderThreadStarted() {
   PlatformPollFreemem();
 #endif
 
-  cast_observer_.reset(new CastRenderProcessObserver());
+  cast_observer_.reset(
+      new CastRenderProcessObserver(PlatformGetRendererMessageFilters()));
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
