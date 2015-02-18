@@ -1093,10 +1093,6 @@
           ],
         },
         {
-          'target_name': 'chromium_builder_win_cf',
-          'type': 'none',
-        },
-        {
           'target_name': 'chromium_builder_dbg_tsan_win',
           'type': 'none',
           'dependencies': [
