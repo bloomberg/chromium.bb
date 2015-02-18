@@ -20,3 +20,27 @@ importer.TestDuplicateFinder = function() {
 importer.TestDuplicateFinder.prototype.checkDuplicate = function(entry) {
   return Promise.resolve(this.returnValue);
 };
+
+/** @override */
+importer.TestDuplicateFinder.prototype.getStatistics = function() {
+  return {
+    computeHashTime: 0,
+    searchHashTime: 0
+  };
+};
+
+/**
+ * @constructor
+ * @implements {importer.DuplicateFinder.Factory}
+ */
+importer.TestDuplicateFinder.Factory = function() {
+  /** @private {!Array<!importer.DuplicateFinder>} */
+  this.instances = [];
+};
+
+/** @override */
+importer.TestDuplicateFinder.Factory.prototype.create = function() {
+  var newInstance = new importer.TestDuplicateFinder();
+  this.instances.push(newInstance);
+  return newInstance;
+};

@@ -21,6 +21,9 @@ var LaunchType = {
 function FileBrowserBackground() {
   BackgroundBase.call(this);
 
+  /** @type {!analytics.Tracker} */
+  this.tracker = metrics.getTracker();
+
   /**
    * Synchronous queue for asynchronous calls.
    * @type {!AsyncUtil.Queue}
@@ -88,7 +91,8 @@ function FileBrowserBackground() {
       new importer.MediaImportHandler(
           this.progressCenter,
           this.historyLoader,
-          new importer.DriveDuplicateFinder());
+          new importer.DriveDuplicateFinder.Factory(),
+          this.tracker);
 
   /**
    * Promise of string data.

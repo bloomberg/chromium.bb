@@ -59,26 +59,26 @@ importer.ScanResult.prototype.isInvalidated;
 importer.ScanResult.prototype.getFileEntries;
 
 /**
- * Returns the aggregate size, in bytes, of all FileEntries discovered
- * during scanning.
- *
- * @return {number}
- */
-importer.ScanResult.prototype.getTotalBytes;
-
-/**
- * Returns the scan duration in milliseconds.
- *
- * @return {number}
- */
-importer.ScanResult.prototype.getScanDurationMs;
-
-/**
  * Returns a promise that fires when scanning is complete.
  *
  * @return {!Promise.<!importer.ScanResult>}
  */
 importer.ScanResult.prototype.whenFinal;
+
+/**
+ * @return {!importer.ScanResult.Statistics}
+ */
+importer.ScanResult.prototype.getStatistics;
+
+/**
+ * @typedef {{
+ *   scanDuration: number,
+ *   newFileCount: number,
+ *   duplicateFileCount: number,
+ *   sizeBytes: number
+ * }}
+ */
+importer.ScanResult.Statistics;
 
 /**
  * Recursively scans through a list of given files and directories, and creates
@@ -266,14 +266,14 @@ importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
            * @this {importer.DefaultMediaScanner}
            */
           function(duplicate) {
-            if (!duplicate) {
-              return this.onUniqueFileFound_(scan, entry);
-            }
+            return duplicate ?
+                this.onDuplicateFileFound_(scan, entry) :
+                this.onUniqueFileFound_(scan, entry);
           }.bind(this));
 };
 
 /**
- * Finds all files beneath directory.
+ * Adds a newly discovered file to the given scan result.
  *
  * @param {!importer.DefaultScanResult} scan
  * @param {!FileEntry} entry
@@ -298,6 +298,21 @@ importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
               this.notify_(importer.ScanEvent.UPDATED, scan);
             }
           }.bind(this));
+};
+
+/**
+ * Adds a duplicate file to the given scan result.  This is to track the number
+ * of duplicates that are being encountered.
+ *
+ * @param {!importer.DefaultScanResult} scan
+ * @param {!FileEntry} entry
+ * @return {!Promise}
+ * @private
+ */
+importer.DefaultMediaScanner.prototype.onDuplicateFileFound_ =
+    function(scan, entry) {
+  scan.addDuplicateEntry(entry);
+  return Promise.resolve();
 };
 
 /**
@@ -366,6 +381,9 @@ importer.DefaultScanResult = function(hashGenerator) {
   /** @private {number} */
   this.totalBytes_ = 0;
 
+  /** @private {number} */
+  this.duplicateFileCount_ = 0;
+
   /**
    * The point in time when the scan was started.
    * @type {Date}
@@ -412,16 +430,6 @@ importer.DefaultScanResult.prototype.getFileEntries = function() {
 };
 
 /** @override */
-importer.DefaultScanResult.prototype.getTotalBytes = function() {
-  return this.totalBytes_;
-};
-
-/** @override */
-importer.DefaultScanResult.prototype.getScanDurationMs = function() {
-  return this.lastScanActivity_.getTime() - this.scanStarted_.getTime();
-};
-
-/** @override */
 importer.DefaultScanResult.prototype.whenFinal = function() {
   return this.resolver_.promise;
 };
@@ -461,17 +469,37 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
                   this.lastScanActivity_ = new Date();
 
                   if (hashcode in this.fileHashcodes_) {
+                    this.addDuplicateEntry(entry);
                     return false;
                   }
 
                   entry.size = metadata.size;
-                  this.totalBytes_ += metadata['size'];
+                  this.totalBytes_ += metadata.size;
                   this.fileHashcodes_[hashcode] = entry;
                   this.fileEntries_.push(entry);
                   return true;
                 }.bind(this));
 
     }.bind(this));
+};
+
+/**
+ * Logs the fact that a duplicate file entry was discovered during the scan.
+ * @param {!FileEntry} entry
+ */
+importer.DefaultScanResult.prototype.addDuplicateEntry = function(entry) {
+  this.duplicateFileCount_++;
+};
+
+/** @override */
+importer.DefaultScanResult.prototype.getStatistics = function() {
+  return {
+    scanDuration:
+        this.lastScanActivity_.getTime() - this.scanStarted_.getTime(),
+    newFileCount: this.fileEntries_.length,
+    duplicateFileCount: this.duplicateFileCount_,
+    sizeBytes: this.totalBytes_
+  };
 };
 
 /**

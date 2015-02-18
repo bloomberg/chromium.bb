@@ -310,7 +310,7 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
                 reader.readEntries(processSubEntries, maybeSettlePromise);
               },
               maybeSettlePromise);
-        }
+        };
 
         processEntry(entry);
       });

@@ -32,10 +32,11 @@ importer.ImportRunner.prototype.importFromScanResult;
  *
  * @param {!ProgressCenter} progressCenter
  * @param {!importer.HistoryLoader} historyLoader
- * @param {!importer.DuplicateFinder} duplicateFinder
+ * @param {!importer.DuplicateFinder.Factory} duplicateFinderFactory
+ * @param {!analytics.Tracker} tracker
  */
 importer.MediaImportHandler =
-    function(progressCenter, historyLoader, duplicateFinder) {
+    function(progressCenter, historyLoader, duplicateFinderFactory, tracker) {
   /** @private {!ProgressCenter} */
   this.progressCenter_ = progressCenter;
 
@@ -45,8 +46,11 @@ importer.MediaImportHandler =
   /** @private {!importer.TaskQueue} */
   this.queue_ = new importer.TaskQueue();
 
-  /** @private {!importer.DuplicateFinder} */
-  this.duplicateFinder_ = duplicateFinder;
+  /** @private {!importer.DuplicateFinder.Factory} */
+  this.duplicateFinderFactory_ = duplicateFinderFactory;
+
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
 
   /** @private {number} */
   this.nextTaskId_ = 0;
@@ -61,8 +65,9 @@ importer.MediaImportHandler.prototype.importFromScanResult =
       this.historyLoader_,
       scanResult,
       directoryPromise,
-      this.duplicateFinder_,
-      destination);
+      this.duplicateFinderFactory_.create(),
+      destination,
+      this.tracker_);
 
   task.addObserver(this.onTaskProgress_.bind(this, task));
 
@@ -145,6 +150,7 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
  * @param {!importer.DuplicateFinder} duplicateFinder A duplicate-finder linked
  *     to the import destination, that will be used to deduplicate imports.
  * @param {!importer.Destination} destination The logical destination.
+ * @param {!analytics.Tracker} tracker
  */
 importer.MediaImportHandler.ImportTask = function(
     taskId,
@@ -152,7 +158,8 @@ importer.MediaImportHandler.ImportTask = function(
     scanResult,
     directoryPromise,
     duplicateFinder,
-    destination) {
+    destination,
+    tracker) {
 
   importer.TaskQueue.BaseTask.call(this, taskId);
   /** @private {string} */
@@ -173,6 +180,9 @@ importer.MediaImportHandler.ImportTask = function(
   /** @private {!importer.HistoryLoader} */
   this.historyLoader_ = historyLoader;
 
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
+
   /** @private {number} */
   this.totalBytes_ = 0;
 
@@ -187,6 +197,9 @@ importer.MediaImportHandler.ImportTask = function(
 
   /** @private {boolean} Indicates whether this task was canceled. */
   this.canceled_ = false;
+
+  /** @private {number} Number of files deduped by content dedupe. */
+  this.dedupeCount_ = 0;
 };
 
 /** @struct */
@@ -252,9 +265,15 @@ importer.MediaImportHandler.ImportTask.prototype.requestCancel = function() {
 
 /** @private */
 importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
-  this.remainingFilesCount_ = this.scanResult_.getFileEntries().length;
-  this.totalBytes_ = this.scanResult_.getTotalBytes();
+  var stats = this.scanResult_.getStatistics();
+
+  this.remainingFilesCount_ = stats.newFileCount;
+  this.totalBytes_ = stats.sizeBytes;
   this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+
+  this.tracker_.send(metrics.ImportEvents.STARTED);
+  this.tracker_.send(metrics.ImportEvents.HISTORY_DEDUPE_COUNT
+                     .value(stats.duplicateFileCount));
 };
 
 /**
@@ -286,6 +305,8 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
     function(destinationDirectory, completionCallback, entry) {
   if (this.canceled_) {
     this.notify(importer.TaskQueue.UpdateType.CANCELED);
+    this.tracker_.send(metrics.ImportEvents.CANCELLED);
+    this.sendImportStats_();
     return;
   }
 
@@ -296,6 +317,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
             if (isDuplicate) {
               // If the given file is a duplicate, don't import it again.  Just
               // update the progress indicator.
+              this.dedupeCount_++;
               this.markAsImported_(entry);
               this.processedBytes_ += entry.size;
               this.notify(importer.TaskQueue.UpdateType.PROGRESS);
@@ -432,6 +454,8 @@ importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
 /** @private */
 importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
   this.notify(importer.TaskQueue.UpdateType.SUCCESS);
+  this.tracker_.send(metrics.ImportEvents.ENDED);
+  this.sendImportStats_();
 };
 
 /**
@@ -440,4 +464,36 @@ importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.onError_ = function(error) {
   this.notify(importer.TaskQueue.UpdateType.ERROR);
+  // TODO(kenobi): Impedence mismatch: this gets called per-file, which is
+  // different from onSuccess, which reports overall import success.
+  this.tracker_.send(metrics.ImportEvents.ERROR);
+};
+
+/**
+ * Sends import statistics to analytics.
+ */
+importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ = function() {
+  this.tracker_.send(
+      metrics.ImportEvents.CONTENT_DEDUPE_COUNT
+          .value(this.dedupeCount_));
+  // TODO(kenobi): Send correct import byte counts.
+  var importFileCount = this.scanResult_.getStatistics().newFileCount -
+      (this.dedupeCount_ + this.remainingFilesCount_);
+  this.tracker_.send(
+      metrics.ImportEvents.FILE_COUNT
+          .value(importFileCount));
+
+  // Send aggregate deduplication timings, to avoid flooding analytics with one
+  // timing per file.
+  var deduplicatorStats = this.deduplicator_.getStatistics();
+  this.tracker_.sendTiming(
+      metrics.Categories.ACQUISITION,
+      metrics.timing.Variables.COMPUTE_HASH,
+      deduplicatorStats.computeHashTime,
+      'In Place');
+  this.tracker_.sendTiming(
+      metrics.Categories.ACQUISITION,
+      metrics.timing.Variables.SEARCH_BY_HASH,
+      deduplicatorStats.searchHashTime);
+
 };

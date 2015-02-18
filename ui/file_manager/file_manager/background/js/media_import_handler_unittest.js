@@ -23,8 +23,8 @@ var mockCopier;
 /** @type {!MockFileSystem} */
 var destinationFileSystem;
 
-/** @type {!importer.DuplicateFinder} */
-var duplicateFinder;
+/** @type {!importer.TestDuplicateFinder.Factory} */
+var duplicateFinderFactory;
 
 /** @type {!Promise<!DirectoryEntry>} */
 var destinationFactory;
@@ -65,10 +65,13 @@ function setUp() {
           function(directory) {
             return directory;
           });
-  duplicateFinder = new importer.TestDuplicateFinder();
+  duplicateFinderFactory = new importer.TestDuplicateFinder.Factory();
 
   mediaImporter = new importer.MediaImportHandler(
-      progressCenter, importHistory, duplicateFinder);
+      progressCenter,
+      importHistory,
+      duplicateFinderFactory,
+      new TestTracker());
 }
 
 function testImportMedia(callback) {
@@ -262,7 +265,7 @@ function testImportWithDuplicates(callback) {
         importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
       copyCount++;
       if (copyCount === EXPECTED_COPY_COUNT) {
-        duplicateFinder.returnValue = true;
+        duplicateFinderFactory.instances[0].returnValue = true;
       }
     }
   });

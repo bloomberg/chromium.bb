@@ -21,7 +21,17 @@ importer.DuplicateFinder = function() {};
 importer.DuplicateFinder.prototype.checkDuplicate;
 
 /**
+ * A factory for producing duplicate finders.
+ * @interface
+ */
+importer.DuplicateFinder.Factory = function() {};
+
+/** @return {!importer.DuplicateFinder} */
+importer.DuplicateFinder.Factory.prototype.create;
+
+/**
  * A duplicate finder for Google Drive.
+ *
  * @constructor
  * @implements {importer.DuplicateFinder}
  * @struct
@@ -29,11 +39,31 @@ importer.DuplicateFinder.prototype.checkDuplicate;
 importer.DriveDuplicateFinder = function() {
   /** @private {Promise<string>} */
   this.driveIdPromise_ = null;
+
+  /**
+   * Aggregate time spent computing content hashes (in ms).
+   * @private {number}
+   */
+  this.computeHashTime_ = 0;
+
+  /**
+   * Aggregate time spent performing content hash searches (in ms).
+   * @private {number}
+   */
+  this.searchHashTime_ = 0;
 };
+
+/**
+ * @typedef {{
+ *   computeHashTime: number,
+ *   searchHashTime: number
+ * }}
+ */
+importer.DriveDuplicateFinder.Statistics;
 
 /** @override */
 importer.DriveDuplicateFinder.prototype.checkDuplicate = function(entry) {
-  return importer.DriveDuplicateFinder.computeHash_(entry)
+  return this.computeHash_(entry)
       .then(this.findByHash_.bind(this))
       .then(
           /**
@@ -50,20 +80,24 @@ importer.DriveDuplicateFinder.prototype.checkDuplicate = function(entry) {
  * @param {!FileEntry} entry
  * @private
  */
-importer.DriveDuplicateFinder.computeHash_ = function(entry) {
+importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
   return new Promise(
+      /** @this {importer.DriveDuplicateFinder} */
       function(resolve, reject) {
+        var startTime = new Date().getTime();
         chrome.fileManagerPrivate.computeChecksum(
             entry.toURL(),
             /** @param {string} result The content hash. */
             function(result) {
+              var endTime = new Date().getTime();
+              this.searchHashTime_ += endTime - startTime;
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
               } else {
                 resolve(result);
               }
             });
-      });
+      }.bind(this));
 };
 
 /**
@@ -75,7 +109,7 @@ importer.DriveDuplicateFinder.computeHash_ = function(entry) {
  */
 importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
   return this.getDriveId_()
-      .then(importer.DriveDuplicateFinder.searchFilesByHash_.bind(null, hash));
+      .then(this.searchFilesByHash_.bind(this, hash));
 };
 
 /**
@@ -104,19 +138,46 @@ importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
  * @param {string} volumeId The volume to search.
  * @return <!Promise<Array<string>>> A list of file URLs.
  */
-importer.DriveDuplicateFinder.searchFilesByHash_ = function(hash, volumeId) {
+importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
+    function(hash, volumeId) {
   return new Promise(
+      /** @this {importer.DriveDuplicateFinder} */
       function(resolve, reject) {
+        var startTime = new Date().getTime();
         chrome.fileManagerPrivate.searchFilesByHashes(
             volumeId,
             [hash],
-            /** @param {!Object<string, Array<string>>} urls */
+            /**
+             * @param {!Object<string, Array<string>>} urls
+             * @this {importer.DriveDuplicateFinder}
+             */
             function(urls) {
+              var endTime = new Date().getTime();
+              this.searchHashTime_ += endTime - startTime;
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
               } else {
                 resolve(urls[hash]);
               }
-            });
-      });
+            }.bind(this));
+      }.bind(this));
+};
+
+/** @return {!importer.DriveDuplicateFinder.Statistics} */
+importer.DriveDuplicateFinder.prototype.getStatistics = function() {
+  return {
+    computeHashTime: this.computeHashTime_,
+    searchHashTime: this.searchHashTime_
+  };
+};
+
+/**
+ * @constructor
+ * @implements {importer.DuplicateFinder.Factory}
+ */
+importer.DriveDuplicateFinder.Factory = function() {};
+
+/** @override */
+importer.DriveDuplicateFinder.Factory.prototype.create = function() {
+  return new importer.DriveDuplicateFinder();
 };

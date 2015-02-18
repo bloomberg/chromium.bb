@@ -118,6 +118,11 @@ function FileManager() {
    */
   this.ui_ = null;
 
+  /**
+   * @private {analytics.Tracker}
+   */
+  this.tracker_ = null;
+
   // --------------------------------------------------------------------------
   // Parameters determining the type of file manager.
 
@@ -433,7 +438,8 @@ FileManager.prototype = /** @struct */ {
                     this.mediaScanner_),
                 /** @type {!importer.ImportRunner} */ (
                     this.mediaImportHandler_),
-                new importer.RuntimeCommandWidget());
+                new importer.RuntimeCommandWidget(),
+                this.tracker_);
           }
         }.bind(this));
 
@@ -634,6 +640,7 @@ FileManager.prototype = /** @struct */ {
             this.mediaScanner_ =
                 this.backgroundPage_.background.mediaScanner;
             this.historyLoader_ = this.backgroundPage_.background.historyLoader;
+            this.tracker_ = this.backgroundPage_.background.tracker;
             callback();
           }.bind(this));
         }.bind(this)));

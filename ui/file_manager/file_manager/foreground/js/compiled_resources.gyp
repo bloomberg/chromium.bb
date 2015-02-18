@@ -48,6 +48,7 @@
           '../../common/js/progress_center_common.js',
           '../../common/js/lru_cache.js',
           '../../common/js/metrics_base.js',
+          '../../common/js/metrics_events.js',
           '../../common/js/metrics.js',
           '../../background/js/file_operation_manager.js',
           '../../background/js/file_operation_util.js',

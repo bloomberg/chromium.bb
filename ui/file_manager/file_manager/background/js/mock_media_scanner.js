@@ -115,6 +115,9 @@ function TestScanResult(fileEntries) {
   /** @type {number} */
   this.scanDuration = 100;
 
+  /** @type {number} */
+  this.duplicateFileCount = 0;
+
   /** @type {function} */
   this.resolveResult_;
 
@@ -144,16 +147,6 @@ TestScanResult.prototype.getFileEntries = function() {
 };
 
 /** @override */
-TestScanResult.prototype.getTotalBytes = function() {
-  return this.totalBytes;
-};
-
-/** @override */
-TestScanResult.prototype.getScanDurationMs = function() {
-  return this.scanDuration;
-};
-
-/** @override */
 TestScanResult.prototype.finalize = function() {
   return this.resolveResult_(this);
 };
@@ -171,6 +164,16 @@ TestScanResult.prototype.isFinal = function() {
 /** @override */
 TestScanResult.prototype.isInvalidated = function() {
   return false;
+};
+
+/** @override */
+TestScanResult.prototype.getStatistics = function() {
+  return {
+    scanDuration: this.scanDuration,
+    newFileCount: this.fileEntries.length,
+    duplicateFileCount: this.duplicateFileCount,
+    sizeBytes: this.totalBytes
+  };
 };
 
 /**

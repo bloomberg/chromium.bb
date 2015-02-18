@@ -341,7 +341,7 @@ function testInvalidation(callback) {
 /**
  * Verifies the results of the media scan are as expected.
  * @param {!Array.<string>} expected
- * @param {!impoter.ScanResults} results
+ * @param {!importer.ScanResults} results
  */
 function assertResults(expected, results) {
   assertFileEntryPathsEqual(expected, results.getFileEntries());

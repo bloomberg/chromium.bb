@@ -25,6 +25,9 @@
       <include name="IDR_FILE_MANAGER_UTIL_JS" file="file_manager/common/js/util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_COMMON_JS" file="file_manager/common/js/volume_manager_common.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMPORTER_COMMON_JS" file="file_manager/common/js/importer_common.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_METRICS_BASE_JS" file="file_manager/common/js/metrics_base.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_METRICS_JS" file="file_manager/common/js/metrics.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_METRICS_EVENTS_JS" file="file_manager/common/js/metrics_events.js" flattenhtml="false" type="BINDATA" />
 
       <!-- Scripts working in background page. -->
       <include name="IDR_FILE_MANAGER_DEVICE_APP_WINDOW_WRAPPER_JS" file="file_manager/background/js/app_window_wrapper.js" flattenhtml="false" type="BINDATA" />

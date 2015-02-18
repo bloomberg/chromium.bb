@@ -67,6 +67,8 @@
 //<include src="../../../../webui/resources/js/cr/ui/context_menu_handler.js">
 //
 //<include src="../../../../webui/resources/js/analytics.js">
+// metrics_events.js must be loaded after the analytics package.
+//<include src="../../common/js/metrics_events.js">
 
 (function() {
 // 'strict mode' is invoked for this scope.

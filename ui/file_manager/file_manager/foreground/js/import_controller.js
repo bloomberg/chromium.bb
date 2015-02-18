@@ -28,9 +28,10 @@ importer.ActivityState = {
  * @param {!importer.MediaScanner} scanner
  * @param {!importer.ImportRunner} importRunner
  * @param {!importer.CommandWidget} commandWidget
+ * @param {!analytics.Tracker} tracker
  */
 importer.ImportController =
-    function(environment, scanner, importRunner, commandWidget) {
+    function(environment, scanner, importRunner, commandWidget, tracker) {
 
   /** @private {!importer.ControllerEnvironment} */
   this.environment_ = environment;
@@ -46,6 +47,9 @@ importer.ImportController =
 
   /** @type {!importer.ScanManager} */
   this.scanManager_ = new importer.ScanManager(environment, scanner);
+
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
 
   /**
    * The active import task, if any.
@@ -124,6 +128,10 @@ importer.ImportController.prototype.onScanEvent_ = function(event, scan) {
  * @private
  */
 importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
+  if (this.activeImport_) {
+    this.activeImport_.task.requestCancel();
+    this.tracker_.send(metrics.ImportEvents.DEVICE_YANKED);
+  }
   this.scanManager_.reset();
   this.checkState_();
 };
@@ -212,6 +220,7 @@ importer.ImportController.prototype.onClick_ =
 importer.ImportController.prototype.execute = function() {
   console.assert(!this.activeImport_,
       'Cannot execute while an import task is already active.');
+  // TODO(kenobi): Record import button clicked.
 
   var scan = this.scanManager_.getActiveScan();
   assert(scan != null);
@@ -339,7 +348,7 @@ importer.ImportController.prototype.fitsInAvailableSpace_ =
         // storage in this calculation on the assumption that we
         // don't want to completely max out storage...even though
         // synced files will eventually be evicted from the cache.
-        return availableSpace > scanResult.getTotalBytes();
+        return availableSpace > scanResult.getStatistics().sizeBytes;
       });
 };
 
