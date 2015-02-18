@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 import re
 
+from chromite.cbuildbot import constants
 from chromite.lib import osutils
 
 
@@ -18,21 +19,24 @@ def FindSourceRoot(sdk_dir=None):
   This is very similar to constants.SOURCE_ROOT, except that it can operate
   against repo checkouts outside our current code base.
 
+  CAUTION! Using SDKs from directories other than the default is likely to
+  break assumptions that our tools are built upon.  As a rule of thumb, do not
+  expose this argument externally unless you know what you're doing.
+
   Args:
-    sdk_dir: Path of the SDK, or any dir inside it. None means CWD.
+    sdk_dir: Path of the SDK, or any dir inside it. None defaults to
+      constants.SOURCE_ROOT.
 
   Returns:
     Root dir of SDK, or None.
   """
   if sdk_dir is None:
-    sdk_dir = '.'
+    return constants.SOURCE_ROOT
 
-  repo_dir = osutils.FindInPathParents('.repo', os.path.abspath(sdk_dir))
-  if not repo_dir:
-    return None
-
-  # Remove .repo from end of repo_dir.
-  return os.path.dirname(repo_dir)
+  # Find the .repo directory and return the path leading up to it, if found.
+  repo_dir = osutils.FindInPathParents('.repo', os.path.abspath(sdk_dir),
+                                       test_func=os.path.isdir)
+  return os.path.dirname(repo_dir) if repo_dir else None
 
 
 def FindVersion(sdk_dir=None):
