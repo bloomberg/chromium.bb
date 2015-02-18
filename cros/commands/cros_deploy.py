@@ -777,12 +777,14 @@ For more information of cros build usage:
         '--deep-rev', action='store_true',
         help='Install reverse dependencies. Implies --deep.')
     parser.add_argument(
+        '--dry-run', '-n', action='store_true',
+        help='Output deployment plan but do not deploy anything.')
+
+    advanced = parser.add_option_group('Advanced options')
+    advanced.add_argument(
         '--ignore-device-board', action='store_true',
         help='Do not require that device be compatible with current '
         'project/board.')
-    parser.add_argument(
-        '--dry-run', '-n', action='store_true',
-        help='Output deployment plan but do not deploy anything.')
 
   def _GetPackageByCPV(self, cpv):
     """Returns the path to a binary package corresponding to |cpv|."""
