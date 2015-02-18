@@ -32,8 +32,7 @@ namespace app_list {
 
 namespace {
 
-const int kPadding = 16;
-const int kInnerPadding = 24;
+const int kPadding = 14;
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
 
@@ -83,7 +82,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(content_container_);
 
   if (switches::IsExperimentalAppListEnabled()) {
-    SetShadow(GetShadowForZHeight(2));
+    SetShadow(GetShadowForZHeight(1));
     back_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     back_button_->SetImage(
@@ -104,21 +103,25 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   }
 
   views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, kPadding, 0,
-                           kInnerPadding - views::Textfield::kTextPadding);
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           kPadding,
+                           0,
+                           kPadding - views::Textfield::kTextPadding);
   content_container_->SetLayoutManager(layout);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   layout->set_minimum_cross_axis_size(kPreferredHeight);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
   search_box_->SetBorder(views::Border::NullBorder());
+  search_box_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->set_controller(this);
   content_container_->AddChildView(search_box_);
   layout->SetFlexForView(search_box_, 1);
 
 #if !defined(OS_CHROMEOS)
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button_ = new views::MenuButton(NULL, base::string16(), this, false);
   menu_button_->SetBorder(views::Border::NullBorder());
   menu_button_->SetImage(views::Button::STATE_NORMAL,

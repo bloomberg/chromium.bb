@@ -10,7 +10,6 @@
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/views/background.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -18,8 +17,7 @@ namespace {
 
 // Layout constants.
 const size_t kNumSearchResultTiles = 5;
-const int kTileSpacing = 7;
-const int kTopBottomPadding = 8;
+const int kTileSpacing = 10;
 
 }  // namespace
 
@@ -33,8 +31,6 @@ SearchResultTileItemListView::SearchResultTileItemListView(
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(this);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
-    tile_item->SetBorder(views::Border::CreateEmptyBorder(
-        kTopBottomPadding, 0, kTopBottomPadding, 0));
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
   }

@@ -153,7 +153,6 @@ int SearchResultListView::Update() {
   for (size_t i = 0; i < static_cast<size_t>(results_container_->child_count());
        ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
-    result_view->set_is_last_result(i == display_results.size() - 1);
     if (i < display_results.size()) {
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);

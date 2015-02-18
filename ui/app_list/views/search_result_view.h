@@ -59,8 +59,6 @@ class SearchResultView : public views::CustomButton,
   // Clears the selected action.
   void ClearSelectedAction();
 
-  void set_is_last_result(bool is_last) { is_last_result_ = is_last; }
-
  private:
   friend class app_list::test::SearchResultListViewTest;
 
@@ -94,8 +92,6 @@ class SearchResultView : public views::CustomButton,
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
 
   SearchResult* result_;  // Owned by AppListModel::SearchResults.
-
-  bool is_last_result_;
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;

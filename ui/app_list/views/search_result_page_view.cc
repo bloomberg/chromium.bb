@@ -21,8 +21,8 @@ namespace app_list {
 
 namespace {
 
-const int kGroupSpacing = 6;
-const int kTopPadding = 8;
+const int kGroupSpacing = 20;
+const int kTopPadding = 5;
 
 // A container view that ensures the card background and the shadow are painted
 // in the correct order.
