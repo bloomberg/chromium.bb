@@ -768,6 +768,7 @@ class HWTestConfig(object):
     async_kwargs['retry'] = False
     async_kwargs['max_retries'] = None
     async_kwargs['async'] = True
+    async_kwargs['suite_min_duts'] = 1
 
     # BVT + AU suite.
     return [cls(constants.HWTEST_BVT_SUITE, blocking=True, **kwargs),
@@ -848,14 +849,14 @@ class HWTestConfig(object):
     shared with other types of builders (canaries, cq). The first suite in the
     list is a blocking sanity suite that verifies the build will not break dut.
     """
-    sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
                        file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY,
                        retry=False, max_retries=None)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
-    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
-                        suite_min_duts=6)
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
+                        suite_min_duts=3)
     default_dict.update(kwargs)
     suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
     suite_list.extend(cls.DefaultListPFQ(**default_dict))
@@ -869,12 +870,12 @@ class HWTestConfig(object):
     shared with other types of builder (canaries, pfq). The first suite in the
     list is a blocking sanity suite that verifies the build will not break dut.
     """
-    sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL, timeout=120 * 60,
+    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
-    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=10)
     default_dict.update(kwargs)
     suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]
@@ -889,11 +890,11 @@ class HWTestConfig(object):
     shared with CQs. The first suite in the list is a blocking sanity suite
     that verifies the build will not break dut.
     """
-    sanity_dict = dict(pool=constants.HWTEST_CRITICAL_POOL, file_bugs=True)
+    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=True)
     sanity_dict.update(kwargs)
     sanity_dict.update(dict(num=1, minimum_duts=1, suite_min_duts=1,
                             blocking=True))
-    default_dict = dict(pool=constants.HWTEST_CRITICAL_POOL,
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=6)
     default_dict.update(kwargs)
     suite_list = [cls(constants.HWTEST_SANITY_SUITE, **sanity_dict)]

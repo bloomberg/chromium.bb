@@ -456,7 +456,6 @@ HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
-HWTEST_CRITICAL_POOL = 'critical'
 
 
 # Master build timeouts in seconds. This is the overall timeout set by the
