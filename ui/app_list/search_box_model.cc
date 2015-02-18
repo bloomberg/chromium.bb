@@ -50,6 +50,14 @@ void SearchBoxModel::SetHintText(const base::string16& hint_text) {
   FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, HintTextChanged());
 }
 
+void SearchBoxModel::SetAccessibleName(const base::string16& accessible_name) {
+  if (accessible_name_ == accessible_name)
+    return;
+
+  accessible_name_ = accessible_name;
+  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, HintTextChanged());
+}
+
 void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
   if (selection_model_ == sel)
     return;

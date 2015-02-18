@@ -312,9 +312,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
 
   SendKeyPress(ui::VKEY_RETURN);
 
-  // TODO(mgiuca): This is incorrect behaviour; it should read out "Search, text
-  // box" or similar (see http://crbug.com/386826).
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Edit text"));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
+                           "Search or type U R L Edit text"));
 
   SendKeyPress(ui::VKEY_DOWN);
   EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* Button"));

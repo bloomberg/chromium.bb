@@ -283,7 +283,9 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
 }
 
 void SearchBoxView::HintTextChanged() {
-  search_box_->set_placeholder_text(model_->search_box()->hint_text());
+  const app_list::SearchBoxModel* search_box = model_->search_box();
+  search_box_->set_placeholder_text(search_box->hint_text());
+  search_box_->SetAccessibleName(search_box->accessible_name());
 }
 
 void SearchBoxView::SelectionModelChanged() {

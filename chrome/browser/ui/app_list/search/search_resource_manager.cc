@@ -41,6 +41,8 @@ SearchResourceManager::SearchResourceManager(Profile* profile,
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   search_box_->SetIcon(*bundle.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
+  search_box_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   OnSpeechRecognitionStateChanged(speech_ui_->state());
 }
 
