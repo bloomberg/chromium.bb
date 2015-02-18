@@ -70,6 +70,11 @@ namespace {
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeightNormal = 35.0;
 
+// The padding above the toolbar elements. This is calculated from the values
+// in Toolbar.xib: the height of the toolbar (35) minus the height of the child
+// elements (29) minus the y-origin of the elements (4).
+const CGFloat kToolbarElementTopPadding = 2.0;
+
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
 
@@ -699,7 +704,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     [browserActionsContainerView_ stopAnimation];
     NSRect containerFrame = [browserActionsContainerView_ frame];
     containerFrame.origin.y =
-        NSHeight([[self view] frame]) - NSHeight(containerFrame) - 1;
+        NSHeight([[self view] frame]) - NSHeight(containerFrame) -
+        kToolbarElementTopPadding;
     [browserActionsContainerView_ setFrame:containerFrame];
     [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
   }
