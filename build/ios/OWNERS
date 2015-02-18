@@ -1,3 +1,4 @@
 rohitrao@chromium.org
 stuartmorgan@chromium.org
 
+per-file grit_whitelist.txt=*
