@@ -1034,6 +1034,7 @@ importer.DriveSyncWatcher.prototype.getSyncStatus_ =
         // in the background.
         chrome.fileManagerPrivate.getEntryProperties(
             [url],
+            ['dirty'],
             /**
              * @param {!Array.<Object>} propertiesList
              * @this {importer.DriveSyncWatcher}
@@ -1046,7 +1047,7 @@ importer.DriveSyncWatcher.prototype.getSyncStatus_ =
                 reject(chrome.runtime.lastError);
               } else {
                 var data = propertiesList[0];
-                resolve(!data['isDirty']);
+                resolve(!data['dirty']);
               }
             }.bind(this));
       }.bind(this));

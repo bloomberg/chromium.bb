@@ -146,6 +146,27 @@ enum DriveShareType {
   can_view
 };
 
+// Names of properies for getEntryProperties().
+enum EntryPropertyName {
+  size,
+  modificationTime,
+  thumbnailUrl,
+  imageWidth,
+  imageHeight,
+  imageRotation,
+  pinned,
+  present,
+  hosted,
+  availableOffline,
+  availableWhenMetered,
+  dirty,
+  customIconUrl,
+  contentMimeType,
+  sharedWithMe,
+  shared,
+  externalFileUrl
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -173,10 +194,10 @@ dictionary FileTask {
 // Additional entry properties.
 dictionary EntryProperties {
   // Size of this file.
-  double? fileSize;
+  double? size;
 
   // Timestamp of entry update time, in milliseconds past the epoch.
-  double? lastModifiedTime;
+  double? modificationTime;
 
   // URL to the Drive thumbnail image for this file.
   DOMString? thumbnailUrl;
@@ -191,22 +212,22 @@ dictionary EntryProperties {
   long? imageRotation;
 
   // True if the file is pinned in cache.
-  boolean? isPinned;
+  boolean? pinned;
 
   // True if the file is present in cache.
-  boolean? isPresent;
+  boolean? present;
 
   // True if the file is hosted on a server instead of local.
-  boolean? isHosted;
+  boolean? hosted;
 
   // True if the file is available offline.
-  boolean? isAvailableOffline;
+  boolean? availableOffline;
 
   // True if the file is available on metered connection.
-  boolean? isAvailableWhenMetered;
+  boolean? availableWhenMetered;
 
   // True if the file has local change (has not been fully synced to the cloud).
-  boolean? isDirty;
+  boolean? dirty;
 
   // URL to the custom icon for this file.
   DOMString? customIconUrl;
@@ -662,9 +683,13 @@ interface Functions {
 
   // Requests additional properties for files.
   // |fileUrls| list of URLs of files
-  // |callback|
+  // |names| list of requested properties by their names.
+  // |callback| Completion callback. May return less than requested properties
+  //     if some are not available. In the same time, it can return properties
+  //     which were not requested (if it's cheap to compute them).
   static void getEntryProperties(
       DOMString[] fileUrls,
+      EntryPropertyName[] names,
       GetEntryPropertiesCallback callback);
 
   // Pins/unpins a Drive file in the cache.

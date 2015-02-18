@@ -7,6 +7,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"

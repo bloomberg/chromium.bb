@@ -859,6 +859,10 @@ ExternalProvider.prototype.callApi_ = function() {
   var entryURLs = util.entriesToURLs(entries);
   chrome.fileManagerPrivate.getEntryProperties(
       entryURLs,
+      ['size', 'modificationTime', 'thumbnailUrl', 'imageWidth', 'imageHeight',
+       'imageRotation', 'pinned', 'present', 'hosted', 'availableOffline',
+       'availableWhenMetered', 'dirty', 'customIconUrl', 'contentMimeType',
+       'sharedWithMe', 'shared', 'externalFileUrl'],
       function(propertiesList) {
         console.assert(propertiesList.length === callbacks.length);
         for (var i = 0; i < callbacks.length; i++) {
@@ -877,15 +881,15 @@ ExternalProvider.prototype.callApi_ = function() {
 ExternalProvider.prototype.convert_ = function(data, entry) {
   var result = {};
   result.external = {
-    present: data.isPresent,
-    pinned: data.isPinned,
-    hosted: data.isHosted,
-    dirty: data.isDirty,
+    present: data.present,
+    pinned: data.pinned,
+    hosted: data.hosted,
+    dirty: data.dirty,
     imageWidth: data.imageWidth,
     imageHeight: data.imageHeight,
     imageRotation: data.imageRotation,
-    availableOffline: data.isAvailableOffline,
-    availableWhenMetered: data.isAvailableWhenMetered,
+    availableOffline: data.availableOffline,
+    availableWhenMetered: data.availableWhenMetered,
     customIconUrl: data.customIconUrl || '',
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe,
@@ -895,14 +899,14 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
   };
 
   result.filesystem = {
-    size: (entry.isFile ? (data.fileSize || 0) : -1),
-    modificationTime: new Date(data.lastModifiedTime)
+    size: (entry.isFile ? (data.size || 0) : -1),
+    modificationTime: new Date(data.modificationTime)
   };
 
   // TODO(mtomasz): Remove all of the if logic in the new metadata cache.
   // If the file is not present, then use the thumbnail url instead of
   // extracting the thumbnail from contents.
-  if (data.isPresent === false) {
+  if (data.present === false) {
     if ('thumbnailUrl' in data) {
       result.thumbnail = {
         url: data.thumbnailUrl,
@@ -916,7 +920,7 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
 
   // If not present in cache, then do not allow to fetch media by next
   // providers.
-  if (data.isPresent === false)
+  if (data.present === false)
     result.media = {};
 
   return result;

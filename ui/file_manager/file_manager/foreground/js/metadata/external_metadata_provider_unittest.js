@@ -16,15 +16,19 @@ function testExternalMetadataProviderBasic(callback) {
   // Mocking chrome API.
   window.chrome = {
     fileManagerPrivate: {
-      getEntryProperties: function(urls, callback) {
+      getEntryProperties: function(urls, names, callback) {
+        assertEquals(2, urls.length);
         assertEquals('filesystem://A', urls[0]);
         assertEquals('filesystem://B', urls[1]);
+        assertEquals(2, names.length);
+        assertEquals('modificationTime', names[0]);
+        assertEquals('size', names[1]);
         callback([{
-          lastModifiedTime: new Date(2015, 0, 1).getTime(),
-          fileSize: 1024
+          modificationTime: new Date(2015, 0, 1).getTime(),
+          size: 1024
         }, {
-          lastModifiedTime: new Date(2015, 1, 2).getTime(),
-          fileSize: 2048
+          modificationTime: new Date(2015, 1, 2).getTime(),
+          size: 2048
         }]);
       }
     },

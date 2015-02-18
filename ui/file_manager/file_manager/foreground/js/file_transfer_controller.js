@@ -399,11 +399,12 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
       var urls = util.entriesToURLs(entries);
       // Do not use metadata cache here because the urls come from the different
       // profile.
-      chrome.fileManagerPrivate.getEntryProperties(urls, callback);
+      chrome.fileManagerPrivate.getEntryProperties(
+          urls, ['hosted', 'sharedWithMe'], callback);
     }).then(function(metadatas) {
       return entries.filter(function(entry, i) {
         var metadata = metadatas[i];
-        return metadata && metadata.isHosted && !metadata.sharedWithMe;
+        return metadata && metadata.hosted && !metadata.sharedWithMe;
       });
     });
   };

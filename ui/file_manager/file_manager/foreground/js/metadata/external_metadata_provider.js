@@ -67,8 +67,15 @@ ExternalMetadataProvider.prototype.getImpl = function(requests) {
     for (var i = 0; i < requests.length; i++) {
       urls.push(requests[i].entry.toURL());
     }
+    var nameMap = [];
+    for (var i = 0; i < requests.length; i++) {
+      for (var j = 0; j < requests[i].names.length; j++) {
+        nameMap[requests[i].names[j]] = true;
+      }
+    }
     chrome.fileManagerPrivate.getEntryProperties(
         urls,
+        Object.keys(nameMap),
         function(results) {
           if (!chrome.runtime.lastError)
             fulfill(this.convertResults_(requests, results));
@@ -89,22 +96,22 @@ ExternalMetadataProvider.prototype.convertResults_ =
   for (var i = 0; i < propertiesList.length; i++) {
     var properties = propertiesList[i];
     results.push({
-      availableOffline: properties.isAvailableOffline,
-      availableWhenMetered: properties.isAvailableWhenMetered,
+      availableOffline: properties.availableOffline,
+      availableWhenMetered: properties.availableWhenMetered,
       contentMimeType: properties.contentMimeType || '',
       customIconUrl: properties.customIconUrl || '',
-      dirty: properties.isDirty,
+      dirty: properties.dirty,
       externalFileUrl: properties.externalFileUrl,
-      hosted: properties.isHosted,
+      hosted: properties.hosted,
       imageHeight: properties.imageHeight,
       imageRotation: properties.imageRotation,
       imageWidth: properties.imageWidth,
-      modificationTime: new Date(properties.lastModifiedTime),
-      pinned: properties.isPinned,
-      present: properties.isPresent,
+      modificationTime: new Date(properties.modificationTime),
+      pinned: properties.pinned,
+      present: properties.present,
       shared: properties.shared,
       sharedWithMe: properties.sharedWithMe,
-      size: requests[i].entry.isFile ? (properties.fileSize || 0) : -1,
+      size: requests[i].entry.isFile ? (properties.size || 0) : -1,
       thumbnailUrl: properties.thumbnailUrl
     });
   }

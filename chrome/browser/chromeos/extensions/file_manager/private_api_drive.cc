@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
 
+#include <map>
+#include <set>
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -38,6 +41,7 @@ using chromeos::file_system_provider::EntryMetadata;
 using chromeos::file_system_provider::ProvidedFileSystemInterface;
 using chromeos::file_system_provider::util::FileSystemURLParser;
 using extensions::api::file_manager_private::EntryProperties;
+using extensions::api::file_manager_private::EntryPropertyName;
 using file_manager::util::EntryDefinition;
 using file_manager::util::EntryDefinitionCallback;
 using file_manager::util::EntryDefinitionList;
@@ -69,8 +73,8 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
   properties->shared.reset(new bool(entry_proto.shared()));
 
   const drive::PlatformFileInfoProto& file_info = entry_proto.file_info();
-  properties->file_size.reset(new double(file_info.size()));
-  properties->last_modified_time.reset(new double(
+  properties->size.reset(new double(file_info.size()));
+  properties->modification_time.reset(new double(
       base::Time::FromInternalValue(file_info.last_modified()).ToJsTime()));
 
   if (!entry_proto.has_file_specific_info())
@@ -96,32 +100,31 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
     properties->image_rotation.reset(
         new int(file_specific_info.image_rotation()));
   }
-  properties->is_hosted.reset(
-      new bool(file_specific_info.is_hosted_document()));
+  properties->hosted.reset(new bool(file_specific_info.is_hosted_document()));
   properties->content_mime_type.reset(
       new std::string(file_specific_info.content_mime_type()));
-  properties->is_pinned.reset(
+  properties->pinned.reset(
       new bool(file_specific_info.cache_state().is_pinned()));
-  properties->is_dirty.reset(
+  properties->dirty.reset(
       new bool(file_specific_info.cache_state().is_dirty()));
-  properties->is_present.reset(
+  properties->present.reset(
       new bool(file_specific_info.cache_state().is_present()));
 
   if (file_specific_info.cache_state().is_present()) {
-    properties->is_available_offline.reset(new bool(true));
+    properties->available_offline.reset(new bool(true));
   } else if (file_specific_info.is_hosted_document() &&
              file_specific_info.has_document_extension()) {
     const std::string file_extension = file_specific_info.document_extension();
     // What's available offline? See the 'Web' column at:
     // http://support.google.com/drive/answer/1628467
-    properties->is_available_offline.reset(
+    properties->available_offline.reset(
         new bool(file_extension == ".gdoc" || file_extension == ".gdraw" ||
                  file_extension == ".gsheet" || file_extension == ".gslides"));
   } else {
-    properties->is_available_offline.reset(new bool(false));
+    properties->available_offline.reset(new bool(false));
   }
 
-  properties->is_available_when_metered.reset(
+  properties->available_when_metered.reset(
       new bool(file_specific_info.cache_state().is_present() ||
                file_specific_info.is_hosted_document()));
 }
@@ -158,12 +161,14 @@ class SingleEntryPropertiesGetterForDrive {
 
   // Creates an instance and starts the process.
   static void Start(const base::FilePath local_path,
+                    const std::set<EntryPropertyName>& names,
                     Profile* const profile,
                     const ResultCallback& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     SingleEntryPropertiesGetterForDrive* instance =
-        new SingleEntryPropertiesGetterForDrive(local_path, profile, callback);
+        new SingleEntryPropertiesGetterForDrive(local_path, names, profile,
+                                                callback);
     instance->StartProcess();
 
     // The instance will be destroyed by itself.
@@ -172,9 +177,11 @@ class SingleEntryPropertiesGetterForDrive {
   virtual ~SingleEntryPropertiesGetterForDrive() {}
 
  private:
-  SingleEntryPropertiesGetterForDrive(const base::FilePath local_path,
-                                      Profile* const profile,
-                                      const ResultCallback& callback)
+  SingleEntryPropertiesGetterForDrive(
+      const base::FilePath local_path,
+      const std::set<EntryPropertyName>& /* names */,
+      Profile* const profile,
+      const ResultCallback& callback)
       : callback_(callback),
         local_path_(local_path),
         running_profile_(profile),
@@ -365,12 +372,13 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
   // Creates an instance and starts the process.
   static void Start(const storage::FileSystemURL file_system_url,
+                    const std::set<EntryPropertyName>& names,
                     const ResultCallback& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     SingleEntryPropertiesGetterForFileSystemProvider* instance =
         new SingleEntryPropertiesGetterForFileSystemProvider(file_system_url,
-                                                             callback);
+                                                             names, callback);
     instance->StartProcess();
 
     // The instance will be destroyed by itself.
@@ -381,9 +389,11 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
  private:
   SingleEntryPropertiesGetterForFileSystemProvider(
       const storage::FileSystemURL& file_system_url,
+      const std::set<EntryPropertyName>& names,
       const ResultCallback& callback)
       : callback_(callback),
         file_system_url_(file_system_url),
+        names_(names),
         properties_(new EntryProperties),
         weak_ptr_factory_(this) {
     DCHECK(!callback_.is_null());
@@ -398,9 +408,17 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
       return;
     }
 
+    ProvidedFileSystemInterface::MetadataFieldMask field_mask =
+        ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT;
+    // TODO(mtomasz): Add other fields. All of them should be requested on
+    // demand. crbug.com/413161.
+    if (names_.find(
+            api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL) !=
+        names_.end())
+      field_mask |= ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL;
+
     parser.file_system()->GetMetadata(
-        parser.file_path(),
-        ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL,
+        parser.file_path(), field_mask,
         base::Bind(&SingleEntryPropertiesGetterForFileSystemProvider::
                        OnGetMetadataCompleted,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -415,8 +433,8 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
       return;
     }
 
-    properties_->file_size.reset(new double(metadata->size));
-    properties_->last_modified_time.reset(
+    properties_->size.reset(new double(metadata->size));
+    properties_->modification_time.reset(
         new double(metadata->modification_time.ToJsTime()));
 
     if (!metadata->thumbnail.empty())
@@ -436,6 +454,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
   // Given parameters.
   const ResultCallback callback_;
   const storage::FileSystemURL file_system_url_;
+  const std::set<EntryPropertyName> names_;
 
   // Values used in the process.
   scoped_ptr<EntryProperties> properties_;
@@ -467,6 +486,8 @@ bool FileManagerPrivateGetEntryPropertiesFunction::RunAsync() {
           GetProfile(), render_view_host());
 
   properties_list_.resize(params->file_urls.size());
+  const std::set<EntryPropertyName> names_as_set(params->names.begin(),
+                                                 params->names.end());
   for (size_t i = 0; i < params->file_urls.size(); i++) {
     const GURL url = GURL(params->file_urls[i]);
     const storage::FileSystemURL file_system_url =
@@ -474,14 +495,14 @@ bool FileManagerPrivateGetEntryPropertiesFunction::RunAsync() {
     switch (file_system_url.type()) {
       case storage::kFileSystemTypeDrive:
         SingleEntryPropertiesGetterForDrive::Start(
-            file_system_url.path(), GetProfile(),
+            file_system_url.path(), names_as_set, GetProfile(),
             base::Bind(&FileManagerPrivateGetEntryPropertiesFunction::
                            CompleteGetEntryProperties,
                        this, i, file_system_url));
         break;
       case storage::kFileSystemTypeProvided:
         SingleEntryPropertiesGetterForFileSystemProvider::Start(
-            file_system_url,
+            file_system_url, names_as_set,
             base::Bind(&FileManagerPrivateGetEntryPropertiesFunction::
                            CompleteGetEntryProperties,
                        this, i, file_system_url));

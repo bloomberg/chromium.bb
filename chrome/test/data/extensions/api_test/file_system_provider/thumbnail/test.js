@@ -163,17 +163,18 @@ function runTests() {
           chrome.test.callbackPass(function(fileEntry) {
             chrome.fileManagerPrivate.getEntryProperties(
                 [fileEntry.toURL()],
+                ['thumbnailUrl', 'size', 'modificationTime'],
                 chrome.test.callbackPass(function(fileProperties) {
                   chrome.test.assertEq(1, fileProperties.length);
                   chrome.test.assertEq(
                       TESTING_WITH_VALID_THUMBNAIL_FILE.thumbnail,
                       fileProperties[0].thumbnailUrl);
                   chrome.test.assertEq(
-                      TESTING_WITH_VALID_THUMBNAIL_FILE.fileSize,
+                      TESTING_WITH_VALID_THUMBNAIL_FILE.size,
                       fileProperties[0].size);
                   chrome.test.assertEq(
                       TESTING_WITH_VALID_THUMBNAIL_FILE.modificationTime,
-                      new Date(fileProperties[0].lastModifiedTime));
+                      new Date(fileProperties[0].modificationTime));
                 }));
             }),
             function(error) {
@@ -190,12 +191,36 @@ function runTests() {
           chrome.test.callbackPass(function(fileEntry) {
             chrome.fileManagerPrivate.getEntryProperties(
                 [fileEntry.toURL()],
+                ['thumbnailUrl'],
                 chrome.test.callbackPass(function(fileProperties) {
                   chrome.test.assertEq(1, fileProperties.length);
                   // The results for an entry is an empty dictionary in case of
                   // an error.
                   chrome.test.assertEq(
                       0, Object.keys(fileProperties[0]).length);
+                }));
+            }),
+            function(error) {
+              chrome.test.fail(error.name);
+            });
+    },
+
+    // Confirm that the thumbnail is not requested when not needed.
+    function getEntryPropertiesWithoutThumbnail() {
+      test_util.fileSystem.root.getFile(
+          TESTING_WITH_VALID_THUMBNAIL_FILE.name,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.fileManagerPrivate.getEntryProperties(
+                [fileEntry.toURL()],
+                ['size'],
+                chrome.test.callbackPass(function(fileProperties) {
+                  chrome.test.assertEq(1, fileProperties.length);
+                  chrome.test.assertFalse(
+                      'thumbnailUrl' in fileProperties[0]);
+                  chrome.test.assertEq(
+                      TESTING_WITH_VALID_THUMBNAIL_FILE.size,
+                      fileProperties[0].size);
                 }));
             }),
             function(error) {

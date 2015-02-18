@@ -16,19 +16,19 @@ var FileTask;
 
 /**
  * @typedef {{
- *   fileSize: (number|undefined),
- *   lastModifiedTime: (number|undefined),
+ *   size: (number|undefined),
+ *   modificationTime: (number|undefined),
  *   thumbnailUrl: (string|undefined),
  *   externalFileUrl: (string|undefined),
  *   imageWidth: (number|undefined),
  *   imageHeight: (number|undefined),
  *   imageRotation: (number|undefined),
- *   isPinned: (boolean|undefined),
- *   isPresent: (boolean|undefined),
- *   isHosted: (boolean|undefined),
- *   isDirty: (boolean|undefined),
- *   isAvailableOffline: (boolean|undefined),
- *   isAvailableWhenMetered: (boolean|undefined),
+ *   pinned: (boolean|undefined),
+ *   present: (boolean|undefined),
+ *   hosted: (boolean|undefined),
+ *   dirty: (boolean|undefined),
+ *   availableOffline: (boolean|undefined),
+ *   availableWhenMetered: (boolean|undefined),
  *   customIconUrl: (string|undefined),
  *   contentMimeType: (string|undefined),
  *   sharedWithMe: (boolean|undefined),
@@ -312,11 +312,12 @@ chrome.fileManagerPrivate.selectFile = function(selectedPath, index, forOpening,
 /**
  * Requests additional properties for files. |fileUrls| list of URLs of files
  * |callback|
- * @param {Array} fileUrls
- * @param {Function} callback |entryProperties| A dictionary containing
+ * @param {!Array<string>} fileUrls
+ * @param {!Array<string>} names
+ * @param {!Function} callback |entryProperties| A dictionary containing
  * properties of the requested entries.
  */
-chrome.fileManagerPrivate.getEntryProperties = function(fileUrls, callback) {};
+chrome.fileManagerPrivate.getEntryProperties = function(fileUrls, names, callback) {};
 
 /**
  * Pins/unpins a Drive file in the cache. |fileUrl| URL of a file to pin/unpin.
