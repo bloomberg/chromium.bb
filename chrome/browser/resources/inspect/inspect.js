@@ -264,11 +264,7 @@ function populateRemoteTargets(devices) {
 
     for (var b = 0; b < device.browsers.length; b++) {
       var browser = device.browsers[b];
-
       var majorChromeVersion = browser.adbBrowserChromeVersion;
-
-      var incompatibleVersion = browser.hasOwnProperty('compatibleVersion') &&
-                                !browser.compatibleVersion;
       var pageList;
       var browserSection = $(browser.id);
       if (browserSection) {
@@ -296,7 +292,7 @@ function populateRemoteTargets(devices) {
         }
         browserSection.appendChild(browserHeader);
 
-        if (!incompatibleVersion && majorChromeVersion >= MIN_VERSION_NEW_TAB) {
+        if (majorChromeVersion >= MIN_VERSION_NEW_TAB) {
           var newPage = document.createElement('div');
           newPage.className = 'open';
 
@@ -330,15 +326,6 @@ function populateRemoteTargets(devices) {
             'forwarding. Closing it will drop current connections.';
         browserHeader.appendChild(portForwardingInfo);
 
-        if (incompatibleVersion) {
-          var warningSection = document.createElement('div');
-          warningSection.className = 'warning';
-          warningSection.textContent =
-            'You may need a newer version of desktop Chrome. ' +
-            'Please try Chrome ' + browser.adbBrowserVersion + ' or later.';
-          browserSection.appendChild(warningSection);
-        }
-
         if (browserInspector) {
           var link = document.createElement('span');
           link.classList.add('action');
@@ -356,7 +343,7 @@ function populateRemoteTargets(devices) {
         browserSection.appendChild(pageList);
       }
 
-      if (!incompatibleVersion && !alreadyDisplayed(browserSection, browser)) {
+      if (!alreadyDisplayed(browserSection, browser)) {
         pageList.textContent = '';
         for (var p = 0; p < browser.pages.length; p++) {
           var page = browser.pages[p];
