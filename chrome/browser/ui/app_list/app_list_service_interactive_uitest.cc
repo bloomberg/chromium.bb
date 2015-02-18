@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, MAYBE_ShowAndDismiss) {
 
 // Switch profiles on the app list while it is showing.
 IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
-                       MAYBE_SwitchAppListProfiles) {
+                       DISABLED_SwitchAppListProfiles) {
   InitSecondProfile();
 
   AppListService* service = test::GetAppListService();
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
 
 // Test switching app list profiles while search results are visibile.
 IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
-                       MAYBE_SwitchAppListProfilesDuringSearch) {
+                       DISABLED_SwitchAppListProfilesDuringSearch) {
   InitSecondProfile();
 
   AppListService* service = test::GetAppListService();
