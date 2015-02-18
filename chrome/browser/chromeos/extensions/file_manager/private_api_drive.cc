@@ -487,6 +487,8 @@ bool FileManagerPrivateGetEntryPropertiesFunction::RunAsync() {
                        this, i, file_system_url));
         break;
       default:
+        // TODO(yawano) Change this to support other voluems (e.g. local) ,and
+        // integrate fileManagerPrivate.getMimeType to this method.
         LOG(ERROR) << "Not supported file system type.";
         CompleteGetEntryProperties(i, file_system_url,
                                    make_scoped_ptr(new EntryProperties),

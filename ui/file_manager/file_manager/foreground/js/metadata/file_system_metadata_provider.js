@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{modificationTime:Date, size:number}}
+ * @typedef {{modificationTime:Date, size:number, contentMimeType:string,
+ *     present:boolean, availableOffline: boolean}}
  */
 var FileSystemMetadataProperties;
 
@@ -23,8 +24,9 @@ function FileSystemMetadataProvider(cache) {
 /**
  * @const {!Array<string>}
  */
-FileSystemMetadataProvider.PROPERTY_NAMES =
-    ['modificationTime', 'size', 'present'];
+FileSystemMetadataProvider.PROPERTY_NAMES = [
+    'modificationTime', 'size', 'present', 'availableOffline', 'contentMimeType'
+];
 
 FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 
@@ -33,14 +35,30 @@ FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
  */
 FileSystemMetadataProvider.prototype.getImpl = function(requests) {
   return Promise.all(requests.map(function(request) {
-    return new Promise(function(fulfill, reject) {
-      request.entry.getMetadata(fulfill, reject);
-    }).then(function(properties) {
-      return {
-        modificationTime: properties.modificationTime,
-        size: request.entry.isDirectory ? -1 : properties.size,
-        present: true
+    return Promise.all([
+        new Promise(function(fulfill, reject) {
+          request.entry.getMetadata(fulfill, reject);
+        }),
+        new Promise(function(fulfill) {
+          if (request.names.indexOf('contentMimeType') > -1) {
+            chrome.fileManagerPrivate.getMimeType(
+                request.entry.toURL(), fulfill);
+          } else {
+            fulfill(null);
+          }
+        })
+    ]).then(function(results) {
+      var result = {
+        modificationTime: results[0].modificationTime,
+        size: request.entry.isDirectory ? -1 : results[0].size,
+        present: true,
+        availableOffline: true,
       };
+
+      if (results[1] !== null)
+        result['contentMimeType'] = results[1];
+
+      return result;
     });
   }));
 };

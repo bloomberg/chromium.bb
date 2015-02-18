@@ -109,24 +109,18 @@ function FileSelection(fileManager, indexes) {
  */
 FileSelection.prototype.completeInit = function() {
   if (!this.asyncInitPromise_) {
-    if (!this.fileManager_.isOnDrive()) {
-      this.asyncInitPromise_ = Promise.resolve();
-      this.allDriveFilesPresent = true;
-      return this.tasks.init(this.entries);
-    } else {
-      this.asyncInitPromise_ = this.fileManager_.getFileSystemMetadata().get(
-          this.entries,
-          ['availableOffline', 'contentMimeType']).then(function(props) {
-        var present = props.filter(function(p) { return p.availableOffline; });
-        this.allDriveFilesPresent = present.length == props.length;
-        // Collect all of the mime types and push that info into the
-        // selection.
-        this.mimeTypes = props.map(function(value) {
-          return value.contentMimeType || '';
-        });
-        return this.tasks.init(this.entries, this.mimeTypes);
-      }.bind(this));
-    }
+    this.asyncInitPromise_ = this.fileManager_.getFileSystemMetadata().get(
+        this.entries, ['availableOffline', 'contentMimeType']
+    ).then(function(props) {
+      var present = props.filter(function(p) { return p.availableOffline; });
+      this.allDriveFilesPresent = present.length == props.length;
+      // Collect all of the mime types and push that info into the
+      // selection.
+      this.mimeTypes = props.map(function(value) {
+        return value.contentMimeType || '';
+      });
+      return this.tasks.init(this.entries, this.mimeTypes);
+    }.bind(this));
   }
   return this.asyncInitPromise_;
 };
