@@ -81,11 +81,11 @@ component("gl") {
     "gl_surface.h",
     "gl_surface_android.cc",
     "gl_surface_mac.cc",
+    "gl_surface_osmesa.cc",
+    "gl_surface_osmesa.h",
     "gl_surface_stub.cc",
     "gl_surface_stub.h",
     "gl_surface_win.cc",
-    "gl_surface_osmesa.cc",
-    "gl_surface_osmesa.h",
     "gl_switches.cc",
     "gl_switches.h",
     "gl_version_info.cc",
@@ -159,6 +159,8 @@ component("gl") {
       "gl_context_glx.cc",
       "gl_context_glx.h",
       "gl_context_x11.cc",
+      "gl_egl_api_implementation.cc",
+      "gl_egl_api_implementation.h",
       "gl_glx_api_implementation.cc",
       "gl_glx_api_implementation.h",
       "gl_image_glx.cc",
@@ -167,8 +169,6 @@ component("gl") {
       "gl_surface_glx.cc",
       "gl_surface_glx.h",
       "gl_surface_x11.cc",
-      "gl_egl_api_implementation.cc",
-      "gl_egl_api_implementation.h",
     ]
 
     configs += [
@@ -254,9 +254,9 @@ source_set("gl_unittest_utils") {
   sources = [
     "gl_bindings_autogen_mock.cc",
     "gl_bindings_autogen_mock.h",
-    "gl_mock_autogen_gl.h",
-    "gl_mock.h",
     "gl_mock.cc",
+    "gl_mock.h",
+    "gl_mock_autogen_gl.h",
   ]
 
   configs += [ "//third_party/khronos:khronos_headers" ]

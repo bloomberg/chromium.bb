@@ -51,8 +51,8 @@ component("views") {
     deps += [ "//ui/shell_dialogs" ]
   } else {
     sources -= [
-      "linux_ui/linux_ui.h",
       "linux_ui/linux_ui.cc",
+      "linux_ui/linux_ui.h",
       "linux_ui/window_button_order_observer.h",
       "linux_ui/window_button_order_provider.cc",
     ]
@@ -60,8 +60,8 @@ component("views") {
 
   if (is_chromeos) {
     sources -= [
-      "linux_ui/status_icon_linux.h",
       "linux_ui/status_icon_linux.cc",
+      "linux_ui/status_icon_linux.h",
     ]
   }
 
@@ -251,12 +251,12 @@ if (!is_win || link_chrome_on_windows) {
         "bubble/bubble_window_targeter_unittest.cc",
         "controls/button/custom_button_unittest.cc",
         "controls/button/menu_button_unittest.cc",
-        "controls/native/native_view_host_unittest.cc",
         "controls/menu/menu_controller_unittest.cc",
-        "ime/input_method_bridge_unittest.cc",
+        "controls/native/native_view_host_unittest.cc",
         "focus/focus_manager_unittest.cc",
-        "widget/window_reorderer_unittest.cc",
+        "ime/input_method_bridge_unittest.cc",
         "widget/widget_unittest.cc",
+        "widget/window_reorderer_unittest.cc",
       ]
     }
   }

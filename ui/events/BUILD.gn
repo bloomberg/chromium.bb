@@ -151,11 +151,11 @@ component("events") {
     sources += [
       "gestures/gesture_provider_aura.cc",
       "gestures/gesture_provider_aura.h",
-      "gestures/motion_event_aura.cc",
-      "gestures/motion_event_aura.h",
       "gestures/gesture_recognizer.h",
       "gestures/gesture_recognizer_impl.cc",
       "gestures/gesture_recognizer_impl.h",
+      "gestures/motion_event_aura.cc",
+      "gestures/motion_event_aura.h",
     ]
   }
 
@@ -200,10 +200,10 @@ component("gesture_detection") {
     "gesture_detection/snap_scroll_controller.h",
     "gesture_detection/touch_disposition_gesture_filter.cc",
     "gesture_detection/touch_disposition_gesture_filter.h",
-    "gesture_detection/velocity_tracker_state.cc",
-    "gesture_detection/velocity_tracker_state.h",
     "gesture_detection/velocity_tracker.cc",
     "gesture_detection/velocity_tracker.h",
+    "gesture_detection/velocity_tracker_state.cc",
+    "gesture_detection/velocity_tracker_state.h",
   ]
 
   deps = [

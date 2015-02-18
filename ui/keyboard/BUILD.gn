@@ -19,9 +19,9 @@ component("keyboard") {
     "keyboard_controller_observer.h",
     "keyboard_controller_proxy.cc",
     "keyboard_controller_proxy.h",
-    "keyboard_layout_manager.h",
-    "keyboard_layout_manager.cc",
     "keyboard_export.h",
+    "keyboard_layout_manager.cc",
+    "keyboard_layout_manager.h",
     "keyboard_switches.cc",
     "keyboard_switches.h",
     "keyboard_util.cc",
@@ -119,8 +119,8 @@ build_closure("inputview") {
 if (!is_win || link_chrome_on_windows) {
   test("keyboard_unittests") {
     sources = [
-      "test/run_all_unittests.cc",
       "keyboard_controller_unittest.cc",
+      "test/run_all_unittests.cc",
     ]
 
     deps = [

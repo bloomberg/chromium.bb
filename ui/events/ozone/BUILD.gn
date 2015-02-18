@@ -172,6 +172,7 @@ component("events_ozone_layout") {
     configs += [ ":xkbcommon" ]
 
     sources += [
+      "layout/xkb/scoped_xkb.h",
       "layout/xkb/xkb.h",
       "layout/xkb/xkb_evdev_codes.cc",
       "layout/xkb/xkb_evdev_codes.h",
@@ -181,7 +182,6 @@ component("events_ozone_layout") {
       "layout/xkb/xkb_keyboard_layout_engine.cc",
       "layout/xkb/xkb_keyboard_layout_engine.h",
       "layout/xkb/xkb_keysym.h",
-      "layout/xkb/scoped_xkb.h",
     ]
   }
 }

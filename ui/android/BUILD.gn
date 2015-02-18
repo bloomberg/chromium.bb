@@ -45,10 +45,10 @@ generate_jni("ui_android_jni_headers") {
 
 java_cpp_enum("java_enums_srcjar") {
   sources = [
+    "../base/ime/text_input_type.h",
     "../base/page_transition_types.h",
     "../base/touch/touch_device.h",
     "../base/window_open_disposition.h",
-    "../base/ime/text_input_type.h",
     "../gfx/android/java_bitmap.h",
     "resources/resource_manager.h",
     "resources/system_ui_resource_type.h",
