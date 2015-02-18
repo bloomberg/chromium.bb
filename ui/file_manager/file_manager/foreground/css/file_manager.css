@@ -964,6 +964,7 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
 }
 
 .thumbnail-grid .img-container {
+  background-color: rgb(230, 230, 230);
   height: 100%;
   width: 100%;
 }

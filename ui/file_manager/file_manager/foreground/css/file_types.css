@@ -279,40 +279,40 @@ list.autocomplete-suggestions [selected] [file-type-icon='word'] {
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
 [generic-thumbnail] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_LARGE_GENERIC) 1x,
-      url(chrome://theme/IDR_FILETYPE_LARGE_GENERIC@2x) 2x);
-  background-position: center center;
+      url(../images/files/ui/filetype_placeholder_generic.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_generic.png) 2x);
+  background-position: center 50px;
   background-repeat: no-repeat;
 }
 
 [generic-thumbnail='audio'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_LARGE_AUDIO) 1x,
-      url(chrome://theme/IDR_FILETYPE_LARGE_AUDIO@2x) 2x);
+      url(../images/files/ui/filetype_placeholder_audio.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_audio.png) 2x);
 }
 
 [generic-thumbnail='folder'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_LARGE_FOLDER) 1x,
-      url(chrome://theme/IDR_FILETYPE_LARGE_FOLDER@2x) 2x);
+      url(../images/files/ui/filetype_placeholder_folder.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_folder.png) 2x);
 }
 
 .shared[generic-thumbnail='folder'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_LARGE_FOLDER_SHARED) 1x,
-      url(chrome://theme/IDR_FILETYPE_LARGE_FOLDER_SHARED@2x) 2x);
+      url(../images/files/ui/filetype_placeholder_folder_shared.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_folder_shared.png) 2x);
 }
 
 [generic-thumbnail='image'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_LARGE_IMAGE) 1x,
-      url(chrome://theme/IDR_FILETYPE_LARGE_IMAGE@2x) 2x);
+      url(../images/files/ui/filetype_placeholder_image.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_image.png) 2x);
 }
 
 [generic-thumbnail='video'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_LARGE_VIDEO) 1x,
-      url(chrome://theme/IDR_FILETYPE_LARGE_VIDEO@2x) 2x);
+      url(../images/files/ui/filetype_placeholder_video.png) 1x,
+      url(../images/files/ui/2x/filetype_placeholder_video.png) 2x);
 }
 
 /* Icons for volume types. */
