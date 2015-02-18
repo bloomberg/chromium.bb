@@ -311,6 +311,8 @@ void WorkerThread::initialize()
     KURL scriptURL = m_startupData->m_scriptURL;
     String sourceCode = m_startupData->m_sourceCode;
     WorkerThreadStartMode startMode = m_startupData->m_startMode;
+    OwnPtr<Vector<char>> cachedMetaData = m_startupData->m_cachedMetaData.release();
+    V8CacheOptions v8CacheOptions = m_startupData->m_v8CacheOptions;
 
     {
         MutexLocker lock(m_threadCreationMutex);
@@ -342,7 +344,9 @@ void WorkerThread::initialize()
     if (!script->isExecutionForbidden())
         script->initializeContextIfNeeded();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);
-    bool success = script->evaluate(ScriptSourceCode(sourceCode, scriptURL));
+
+    OwnPtr<CachedMetadataHandler> handler(workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get()));
+    bool success = script->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);
     m_workerGlobalScope->didEvaluateWorkerScript();
     m_workerReportingProxy.didEvaluateWorkerScript(success);
 

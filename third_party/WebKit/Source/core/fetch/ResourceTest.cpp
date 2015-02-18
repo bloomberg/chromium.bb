@@ -74,7 +74,7 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse* response)
     const char testData[] = "test data";
     ResourcePtr<Resource> resource = new Resource(ResourceRequest(response->url()), Resource::Raw);
     resource->setResponse(*response);
-    resource->setCachedMetadata(100, testData, sizeof(testData), Resource::SendToPlatform);
+    resource->cacheHandler()->setCachedMetadata(100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
     return;
 }
 

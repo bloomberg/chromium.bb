@@ -49,6 +49,7 @@
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "modules/serviceworkers/ServiceWorkerScriptCachedMetadataHandler.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/network/ResourceRequest.h"
@@ -209,6 +210,11 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
     for (Vector<String>::const_iterator it = urls.begin(); it != urls.end(); ++it)
         MemoryCache::removeURLFromCache(this->executionContext(), completeURL(*it));
     WorkerGlobalScope::importScripts(urls, exceptionState);
+}
+
+PassOwnPtr<CachedMetadataHandler> ServiceWorkerGlobalScope::createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData)
+{
+    return ServiceWorkerScriptCachedMetadataHandler::create(this, scriptURL, metaData);
 }
 
 void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)

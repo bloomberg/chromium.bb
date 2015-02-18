@@ -1394,6 +1394,7 @@
             'fetch/CSSStyleSheetResource.cpp',
             'fetch/CSSStyleSheetResource.h',
             'fetch/CachedMetadata.h',
+            'fetch/CachedMetadataHandler.h',
             'fetch/CrossOriginAccessControl.cpp',
             'fetch/CrossOriginAccessControl.h',
             'fetch/DocumentResource.cpp',

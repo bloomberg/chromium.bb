@@ -160,7 +160,8 @@ private:
         // BOM can only occur at the beginning of the data.
         ASSERT(lengthOfBOM == 0 || m_dataPosition == 0);
 
-        if (streamer->resource()->cachedMetadata(V8ScriptRunner::tagForCodeCache(streamer->resource()))) {
+        CachedMetadataHandler* cacheHandler = streamer->resource()->cacheHandler();
+        if (cacheHandler && cacheHandler->cachedMetadata(V8ScriptRunner::tagForCodeCache(cacheHandler))) {
             // The resource has a code cache, so it's unnecessary to stream and
             // parse the code. Cancel the streaming and resume the non-streaming
             // code path.

@@ -59,6 +59,8 @@ public:
     // Called from ServiceWorkerClients.
     virtual void getClients(WebServiceWorkerClientsCallbacks*) = 0;
     virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
+    virtual void setCachedMetadata(const WebURL&, const char*, size_t) = 0;
+    virtual void clearCachedMetadata(const WebURL&) = 0;
 
     virtual WebURL scope() const = 0;
     virtual WebServiceWorkerCacheStorage* cacheStorage() const = 0;

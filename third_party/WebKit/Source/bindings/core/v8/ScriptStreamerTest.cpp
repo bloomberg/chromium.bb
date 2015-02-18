@@ -241,7 +241,9 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming)
     appendData("function foo() {");
     appendPadding();
 
-    m_resource->setCachedMetadata(V8ScriptRunner::tagForCodeCache(m_resource), "X", 1, Resource::CacheLocally);
+    CachedMetadataHandler* cacheHandler = m_resource->cacheHandler();
+    EXPECT_TRUE(cacheHandler);
+    cacheHandler->setCachedMetadata(V8ScriptRunner::tagForCodeCache(cacheHandler), "X", 1, CachedMetadataHandler::CacheLocally);
 
     appendPadding();
     finish();

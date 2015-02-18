@@ -165,6 +165,12 @@ public:
     // passed to the WebServiceWorkerClientsCallbacks implementation.
     virtual void openWindow(const WebURL& url, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
+    // A suggestion to cache this metadata in association with this URL.
+    virtual void setCachedMetadata(const WebURL& url, const char* data, size_t size) { }
+
+    // A suggestion to clear the cached metadata in association with this URL.
+    virtual void clearCachedMetadata(const WebURL& url) { }
+
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
     virtual void postMessageToClient(int clientID, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }

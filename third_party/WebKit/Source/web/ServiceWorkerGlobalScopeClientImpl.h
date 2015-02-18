@@ -50,6 +50,8 @@ public:
 
     virtual void getClients(WebServiceWorkerClientsCallbacks*) override;
     virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) override;
+    virtual void setCachedMetadata(const WebURL&, const char*, size_t) override;
+    virtual void clearCachedMetadata(const WebURL&) override;
 
     virtual WebURL scope() const override;
     virtual WebServiceWorkerCacheStorage* cacheStorage() const override;

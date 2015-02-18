@@ -196,7 +196,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     return true;
 }
 
-ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition)
+ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (!initializeContextIfNeeded())
         return ScriptValue();
@@ -212,7 +212,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     v8::TryCatch block;
 
     v8::Handle<v8::String> scriptString = v8String(m_isolate, script);
-    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, 0, 0, m_isolate);
+    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, scriptStartPosition, m_isolate, nullptr, nullptr, cacheHandler, SharableCrossOrigin, v8CacheOptions);
     v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(m_isolate, compiledScript, &m_workerGlobalScope);
 
     if (!block.CanContinue()) {
@@ -240,13 +240,13 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     return ScriptValue(m_scriptState.get(), result);
 }
 
-bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent)
+bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (isExecutionForbidden())
         return false;
 
     WorkerGlobalScopeExecutionState state(this);
-    evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition());
+    evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), cacheHandler, v8CacheOptions);
     if (state.hadException) {
         if (errorEvent) {
             if (state.m_errorEventFromImportedScript) {

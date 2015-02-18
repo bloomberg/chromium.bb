@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
+#include "core/fetch/CachedMetadataHandler.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/UseCounter.h"
@@ -99,6 +100,9 @@ public:
 
     // WorkerUtils
     virtual void importScripts(const Vector<String>& urls, ExceptionState&);
+    // Returns null if caching is not supported.
+    virtual PassOwnPtr<CachedMetadataHandler> createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
+
     WorkerNavigator* navigator() const;
 
     // ExecutionContextClient

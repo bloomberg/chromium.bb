@@ -58,6 +58,16 @@ void ServiceWorkerGlobalScopeClientImpl::openWindow(const WebURL& url, WebServic
     m_client.openWindow(url, callbacks);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::setCachedMetadata(const WebURL& url, const char* data, size_t size)
+{
+    m_client.setCachedMetadata(url, data, size);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::clearCachedMetadata(const WebURL& url)
+{
+    m_client.clearCachedMetadata(url);
+}
+
 WebURL ServiceWorkerGlobalScopeClientImpl::scope() const
 {
     return m_client.scope();

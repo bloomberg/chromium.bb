@@ -969,6 +969,8 @@
       'serviceworkers/ServiceWorkerGlobalScopeClient.h',
       'serviceworkers/ServiceWorkerRegistration.cpp',
       'serviceworkers/ServiceWorkerRegistration.h',
+      'serviceworkers/ServiceWorkerScriptCachedMetadataHandler.cpp',
+      'serviceworkers/ServiceWorkerScriptCachedMetadataHandler.h',
       'serviceworkers/ServiceWorkerThread.cpp',
       'serviceworkers/ServiceWorkerThread.h',
       'serviceworkers/WaitUntilObserver.cpp',
