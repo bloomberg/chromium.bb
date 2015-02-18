@@ -8,7 +8,10 @@
 
 @implementation ManagePasswordsBubbleContentViewController
 
-- (NSButton*)addButton:(NSString*)title target:(id)target action:(SEL)action {
+- (NSButton*)addButton:(NSString*)title
+                toView:(NSView*)view
+                target:(id)target
+                action:(SEL)action {
   base::scoped_nsobject<NSButton> button(
       [[NSButton alloc] initWithFrame:NSZeroRect]);
   [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -18,11 +21,11 @@
   [button setTarget:target];
   [button setAction:action];
   [button sizeToFit];
-  [self.view addSubview:button.get()];
+  [view addSubview:button.get()];
   return button.autorelease();
 }
 
-- (NSTextField*)addTitleLabel:(NSString*)title {
+- (NSTextField*)addTitleLabel:(NSString*)title toView:(NSView*)view {
   base::scoped_nsobject<NSTextField> label(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [label setEditable:NO];
@@ -31,12 +34,12 @@
   [label setBezeled:NO];
   [label setStringValue:title];
   [label sizeToFit];
-  [self.view addSubview:label.get()];
+  [view addSubview:label.get()];
   return label.autorelease();
 }
 
-- (NSTextField*)addLabel:(NSString*)title {
-  NSTextField* label = [self addTitleLabel:title];
+- (NSTextField*)addLabel:(NSString*)title toView:(NSView*)view {
+  NSTextField* label = [self addTitleLabel:title toView:view];
   NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
   [label setFont:font];
   [[label cell] setWraps:YES];

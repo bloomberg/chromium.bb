@@ -29,9 +29,12 @@ const CGFloat kUnrelatedControlVerticalPadding = 20;
 
 // Base class for a state of the password management bubble.
 @interface ManagePasswordsBubbleContentViewController : NSViewController
-- (NSButton*)addButton:(NSString*)title target:(id)target action:(SEL)action;
-- (NSTextField*)addTitleLabel:(NSString*)title;
-- (NSTextField*)addLabel:(NSString*)title;
+- (NSButton*)addButton:(NSString*)title
+                toView:(NSView*)view
+                target:(id)target
+                action:(SEL)action;
+- (NSTextField*)addTitleLabel:(NSString*)title toView:(NSView*)view;
+- (NSTextField*)addLabel:(NSString*)title toView:(NSView*)view;
 - (void)bubbleWillDisappear;
 @end
 

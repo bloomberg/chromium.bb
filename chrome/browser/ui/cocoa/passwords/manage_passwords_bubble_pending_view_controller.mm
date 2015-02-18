@@ -63,7 +63,7 @@ using namespace password_manager::mac::ui;
 }
 
 - (void)loadView {
-  self.view = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
 
   // -----------------------------------
   // |  Title                          |
@@ -81,7 +81,8 @@ using namespace password_manager::mac::ui;
 
   // Title.
   NSTextField* titleLabel =
-      [self addTitleLabel:base::SysUTF16ToNSString(model_->title())];
+      [self addTitleLabel:base::SysUTF16ToNSString(model_->title())
+                   toView:view];
 
   // Password item.
   // It should be at least as wide as the box without the padding.
@@ -90,11 +91,12 @@ using namespace password_manager::mac::ui;
        passwordForm:model_->pending_password()
            position:password_manager::ui::FIRST_ITEM]);
   NSView* password = [passwordItem_ view];
-  [self.view addSubview:password];
+  [view addSubview:password];
 
   // Save button.
   saveButton_.reset(
       [[self addButton:l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SAVE_BUTTON)
+                toView:view
                 target:self
                 action:@selector(onSaveClicked:)] retain]);
 
@@ -120,7 +122,7 @@ using namespace password_manager::mac::ui;
       setTitle:l10n_util::GetNSString(IDS_PASSWORD_MANAGER_CANCEL_BUTTON)];
 
   [nopeButton_ sizeToFit];
-  [self.view addSubview:nopeButton_.get()];
+  [view addSubview:nopeButton_.get()];
 
   // Compute the bubble width using the password item.
   const CGFloat contentWidth =
@@ -152,7 +154,9 @@ using namespace password_manager::mac::ui;
 
   // Update the bubble size.
   const CGFloat height = NSMaxY([titleLabel frame]) + kFramePadding;
-  [self.view setFrame:NSMakeRect(0, 0, width, height)];
+  [view setFrame:NSMakeRect(0, 0, width, height)];
+
+  [self setView:view];
 }
 
 @end

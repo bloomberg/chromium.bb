@@ -97,7 +97,7 @@ using namespace password_manager::mac::ui;
 }
 
 - (void)loadView {
-  self.view = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
 
   // -----------------------------------
   // |  Title                          |
@@ -117,7 +117,8 @@ using namespace password_manager::mac::ui;
 
   // Create the elements and add them to the view.
   NSTextField* titleLabel =
-      [self addTitleLabel:base::SysUTF16ToNSString(model_->title())];
+      [self addTitleLabel:base::SysUTF16ToNSString(model_->title())
+                   toView:view];
 
   // Content. If we have a list of passwords to store for the current site, we
   // display them to the user for management. Otherwise, we show a "No passwords
@@ -131,11 +132,12 @@ using namespace password_manager::mac::ui;
     contentView_.reset(
         [[PasswordItemListView alloc] initWithModel:model_]);
   }
-  [self.view addSubview:contentView_];
+  [view addSubview:contentView_];
   DCHECK_GE(NSWidth([contentView_ frame]), NSWidth([titleLabel frame]));
 
   // Done button.
   doneButton_.reset([[self addButton:l10n_util::GetNSString(IDS_DONE)
+                              toView:view
                               target:self
                               action:@selector(onDoneClicked:)] retain]);
 
@@ -152,7 +154,7 @@ using namespace password_manager::mac::ui;
   [manageButton_ sizeToFit];
   [manageButton_ setTarget:self];
   [manageButton_ setAction:@selector(onManageClicked:)];
-  [self.view addSubview:manageButton_];
+  [view addSubview:manageButton_];
 
   // Layout the elements, starting at the bottom and moving up.
 
@@ -181,7 +183,9 @@ using namespace password_manager::mac::ui;
   curX = NSMaxX([contentView_ frame]) + kFramePadding;
   curY = NSMaxY([titleLabel frame]) + kFramePadding;
   DCHECK_EQ(width, curX);
-  [self.view setFrameSize:NSMakeSize(curX, curY)];
+  [view setFrameSize:NSMakeSize(curX, curY)];
+
+  [self setView:view];
 }
 
 - (void)onDoneClicked:(id)sender {
