@@ -3099,11 +3099,16 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
         GetFramebuffer(client_ids[ii]);
     if (framebuffer && !framebuffer->IsDeleted()) {
       if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
-        framebuffer_state_.bound_draw_framebuffer = NULL;
-        framebuffer_state_.clear_state_dirty = true;
         GLenum target = supports_separate_framebuffer_binds ?
             GL_DRAW_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
+
+        // Unbind attachments on FBO before deletion.
+        if (workarounds().unbind_attachments_on_bound_render_fbo_delete)
+          framebuffer->DoUnbindGLAttachmentsForWorkaround(target);
+
         glBindFramebufferEXT(target, GetBackbufferServiceId());
+        framebuffer_state_.bound_draw_framebuffer = NULL;
+        framebuffer_state_.clear_state_dirty = true;
       }
       if (framebuffer == framebuffer_state_.bound_read_framebuffer.get()) {
         framebuffer_state_.bound_read_framebuffer = NULL;

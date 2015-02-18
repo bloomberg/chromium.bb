@@ -631,6 +631,14 @@ void FramebufferManager::RemoveFramebuffer(GLuint client_id) {
   }
 }
 
+void Framebuffer::DoUnbindGLAttachmentsForWorkaround(GLenum target) {
+  // Replace all attachments with the default Renderbuffer.
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    glFramebufferRenderbufferEXT(target, it->first, GL_RENDERBUFFER, 0);
+  }
+}
+
 void Framebuffer::AttachRenderbuffer(
     GLenum attachment, Renderbuffer* renderbuffer) {
   const Attachment* a = GetAttachment(attachment);

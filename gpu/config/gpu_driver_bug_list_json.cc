@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.16",
+  "version": "7.17",
   "entries": [
     {
       "id": 1,
@@ -1158,6 +1158,23 @@ LONG_STRING_CONST(
       "gl_renderer": "Mali-T.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
+      ]
+    },
+    {
+      "id": 102,
+      "description": "Adreno 420 driver loses FBO attachment contents on bound FBO deletion",
+      "cr_bugs": [457027],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": ">",
+          "value": "5.0.2"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*420",
+      "features": [
+        "unbind_attachments_on_bound_render_fbo_delete"
       ]
     }
   ]
