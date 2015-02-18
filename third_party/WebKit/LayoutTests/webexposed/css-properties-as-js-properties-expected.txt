@@ -110,6 +110,8 @@ fontStyle
 fontVariant
 fontVariantLigatures
 fontWeight
+getPropertyPriority
+getPropertyValue
 glyphOrientationHorizontal
 glyphOrientationVertical
 grid
@@ -130,6 +132,7 @@ gridTemplateRows
 height
 imageRendering
 isolation
+item
 justifyContent
 justifyItems
 justifySelf
@@ -196,10 +199,12 @@ perspectiveOrigin
 pointerEvents
 position
 quotes
+removeProperty
 resize
 right
 scrollBehavior
 scrollBlocksOn
+setProperty
 shapeImageThreshold
 shapeMargin
 shapeOutside

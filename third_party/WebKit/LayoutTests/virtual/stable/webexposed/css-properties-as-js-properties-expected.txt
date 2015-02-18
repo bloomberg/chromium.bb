@@ -100,11 +100,14 @@ fontStyle
 fontVariant
 fontVariantLigatures
 fontWeight
+getPropertyPriority
+getPropertyValue
 glyphOrientationHorizontal
 glyphOrientationVertical
 height
 imageRendering
 isolation
+item
 justifyContent
 left
 length
@@ -164,8 +167,10 @@ perspectiveOrigin
 pointerEvents
 position
 quotes
+removeProperty
 resize
 right
+setProperty
 shapeImageThreshold
 shapeMargin
 shapeOutside
