@@ -11,6 +11,7 @@
 #include "chromecast/android/chromecast_config_android.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/common/version.h"
+#include "chromecast/crash/cast_crash_keys.h"
 #include "content/public/common/content_switches.h"
 
 namespace chromecast {
@@ -53,6 +54,10 @@ bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
   // Provide value to crash_dir once directory is known to be a valid path.
   *crash_dir = crash_dir_local;
   return true;
+}
+
+size_t CastCrashReporterClientAndroid::RegisterCrashKeys() {
+  return crash_keys::RegisterCastCrashKeys();
 }
 
 bool CastCrashReporterClientAndroid::GetCollectStatsConsent() {

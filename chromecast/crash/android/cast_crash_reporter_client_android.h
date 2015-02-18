@@ -25,6 +25,7 @@ class CastCrashReporterClientAndroid
   bool GetCollectStatsConsent() override;
   bool EnableBreakpadForProcess(
       const std::string& process_type) override;
+  size_t RegisterCrashKeys() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastCrashReporterClientAndroid);

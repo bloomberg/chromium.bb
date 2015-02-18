@@ -52,6 +52,8 @@
         '../components/components.gyp:crash_component',
       ],
       'sources': [
+        'crash/cast_crash_keys.cc',
+        'crash/cast_crash_keys.h',
         'crash/cast_crash_reporter_client.cc',
         'crash/cast_crash_reporter_client.h',
       ],
