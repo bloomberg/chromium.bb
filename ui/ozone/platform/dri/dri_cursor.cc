@@ -166,6 +166,8 @@ void DriCursor::MoveCursorTo(const gfx::PointF& screen_location) {
 
   SetCursorLocationLocked(screen_location -
                           state_.display_bounds_in_screen.OffsetFromOrigin());
+
+  SendCursorMoveLocked();
 }
 
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
