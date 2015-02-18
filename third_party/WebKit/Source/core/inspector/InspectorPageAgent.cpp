@@ -1475,7 +1475,7 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
     m_overlay->setPausedInDebuggerMessage(message);
 }
 
-void InspectorPageAgent::animationsPlaybackRate(ErrorString*, double* playbackRate)
+void InspectorPageAgent::getAnimationsPlaybackRate(ErrorString*, double* playbackRate)
 {
     *playbackRate = inspectedFrame()->document()->timeline().playbackRate();
 }
