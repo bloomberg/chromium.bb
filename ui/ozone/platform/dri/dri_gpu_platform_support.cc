@@ -229,8 +229,8 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
 
 void DriGpuPlatformSupport::OnCreateWindowDelegate(
     gfx::AcceleratedWidget widget) {
-  scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
-      widget, drm_device_manager_, window_manager_, screen_manager_));
+  scoped_ptr<DriWindowDelegate> delegate(
+      new DriWindowDelegateImpl(widget, drm_device_manager_, screen_manager_));
   delegate->Initialize();
   window_manager_->AddWindowDelegate(widget, delegate.Pass());
 }

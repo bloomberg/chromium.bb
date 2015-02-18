@@ -16,7 +16,6 @@
 namespace ui {
 
 class DriBuffer;
-class DriWindowDelegateManager;
 class DrmDeviceManager;
 class HardwareDisplayController;
 class ScreenManager;
@@ -26,7 +25,6 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
                         DrmDeviceManager* device_manager,
-                        DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager);
   ~DriWindowDelegateImpl() override;
 
@@ -59,7 +57,6 @@ class OZONE_EXPORT DriWindowDelegateImpl : public DriWindowDelegate,
   gfx::AcceleratedWidget widget_;
 
   DrmDeviceManager* device_manager_;          // Not owned.
-  DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 
   // The current bounds of the window.

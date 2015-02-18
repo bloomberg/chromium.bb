@@ -9,7 +9,6 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
-#include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -46,11 +45,9 @@ void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
 DriWindowDelegateImpl::DriWindowDelegateImpl(
     gfx::AcceleratedWidget widget,
     DrmDeviceManager* device_manager,
-    DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager)
     : widget_(widget),
       device_manager_(device_manager),
-      window_manager_(window_manager),
       screen_manager_(screen_manager),
       controller_(NULL),
       cursor_frontbuffer_(0),
