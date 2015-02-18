@@ -12,8 +12,11 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
+import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.CountDownLatch;
@@ -24,6 +27,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * Visual state related tests.
  */
 public class VisualStateTest extends AwTestBase {
+
+    private static final String WAIT_FOR_JS_TEST_URL =
+            "file:///android_asset/visual_state_waits_for_js_test.html";
+    private static final String UPDATE_COLOR_CONTROL_ID = "updateColorControl";
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
@@ -111,6 +118,87 @@ public class VisualStateTest extends AwTestBase {
                 Bitmap redScreenshot = GraphicsTestUtils.drawAwContents(
                         awContentsRef.get(), 1, 1);
                 assertEquals(Color.RED, redScreenshot.getPixel(0, 0));
+            }
+        });
+
+        assertTrue(testFinishedSignal.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testVisualStateCallbackWaitsForJs() throws Throwable {
+        // This test checks that when a VisualStateCallback completes the results of executing
+        // any block of JS prior to the time at which the callback was inserted will be visible
+        // in the next draw. For that it loads a page that changes the background color of
+        // the page from JS when a button is clicked.
+        final CountDownLatch readyToUpdateColor = new CountDownLatch(1);
+        final CountDownLatch testFinishedSignal = new CountDownLatch(1);
+
+        final AtomicReference<AwContents> awContentsRef = new AtomicReference<>();
+        TestAwContentsClient awContentsClient = new TestAwContentsClient() {
+            @Override
+            public void onPageFinished(String url) {
+                super.onPageFinished(url);
+                awContentsRef.get().insertVisualStateCallback(10,
+                        new VisualStateCallback() {
+                            @Override
+                            public void onFailure(long id) {
+                                fail("onFailure received");
+                            }
+
+                            @Override
+                            public void onComplete(long id) {
+                                Bitmap blueScreenshot = GraphicsTestUtils.drawAwContents(
+                                        awContentsRef.get(), 100, 100);
+                                assertEquals(Color.BLUE, blueScreenshot.getPixel(50, 50));
+                                readyToUpdateColor.countDown();
+                            }
+                        });
+            }
+        };
+        final AwTestContainerView testView =
+                createAwTestContainerViewOnMainSync(awContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        awContentsRef.set(awContents);
+        final ContentViewCore contentViewCore = testView.getContentViewCore();
+        enableJavaScriptOnUiThread(awContents);
+
+        // JS will notify this observer once it has changed the background color of the page.
+        final JavascriptEventObserver jsObserver = new JavascriptEventObserver();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                jsObserver.register(contentViewCore, "jsObserver");
+            }
+        });
+
+        loadUrlSync(awContents,
+                awContentsClient.getOnPageFinishedHelper(), WAIT_FOR_JS_TEST_URL);
+
+        assertTrue(readyToUpdateColor.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        DOMUtils.clickNode(
+                VisualStateTest.this, contentViewCore, UPDATE_COLOR_CONTROL_ID);
+        assertTrue(jsObserver.waitForEvent(WAIT_TIMEOUT_MS));
+
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                awContents.insertVisualStateCallback(20,
+                        new VisualStateCallback() {
+                            @Override
+                            public void onFailure(long id) {
+                                fail("onFailure received");
+                            }
+
+                            @Override
+                            public void onComplete(long id) {
+                                Bitmap redScreenshot = GraphicsTestUtils.drawAwContents(
+                                        awContents, 100, 100);
+                                assertEquals(Color.RED, redScreenshot.getPixel(50, 50));
+                                testFinishedSignal.countDown();
+                            }
+                        });
+
             }
         });
 

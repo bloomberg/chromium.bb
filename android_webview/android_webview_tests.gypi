@@ -32,6 +32,7 @@
           '<(asset_location)/full_screen_video_inside_div_test.html',
           '<(asset_location)/multiple_videos_test.html',
           '<(asset_location)/video.mp4',
+          '<(asset_location)/visual_state_waits_for_js_test.html',
           '<@(snapshot_additional_input_paths)',
         ],
         'conditions': [
@@ -57,6 +58,7 @@
             '<(java_in_dir)/assets/full_screen_video_inside_div_test.html',
             '<(java_in_dir)/assets/multiple_videos_test.html',
             '<(java_in_dir)/assets/video.mp4',
+            '<(java_in_dir)/assets/visual_state_waits_for_js_test.html',
             '<@(snapshot_copy_files)',
           ],
           'conditions': [
