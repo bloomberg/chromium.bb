@@ -402,9 +402,9 @@
     ]
   },
 
-  "EnableWebBasedSignin": {
+  "EnableDeprecatedWebBasedSignin": {
     "os": ["win", "linux", "mac"],
-    "test_policy": { "EnableWebBasedSignin": false }
+    "test_policy": { "EnableDeprecatedWebBasedSignin": false }
   },
 
   "UserDataDir": {

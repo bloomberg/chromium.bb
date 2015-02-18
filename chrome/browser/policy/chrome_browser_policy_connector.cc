@@ -128,7 +128,7 @@ void ChromeBrowserPolicyConnector::AppendExtraFlagPerPolicy() {
   PolicyNamespace chrome_ns = PolicyNamespace(POLICY_DOMAIN_CHROME, "");
   const PolicyMap& chrome_policy = policy_service->GetPolicies(chrome_ns);
   const base::Value* policy_value =
-      chrome_policy.GetValue(key::kEnableWebBasedSignin);
+      chrome_policy.GetValue(key::kEnableDeprecatedWebBasedSignin);
   bool enabled = false;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (policy_value && policy_value->GetAsBoolean(&enabled) && enabled) {
