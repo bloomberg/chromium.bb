@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Mag-access ng mga USB device mula sa <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Makipagpalitan ng data sa mga computer na may pangalang: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">I-access ang mga scanner ng dokumento na naka-attach sa pamamagitan ng USB o sa lokal na network</translation>
 <translation id="6408118934673775994">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> at <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Makipagpalitan ng data sa anumang computer sa domain na <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Gamitin ang iyong mikropono</translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME"/>. Hindi ito maaaring alisin o baguhin.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> mula sa <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">I-configure ang mga koneksyon sa network</translation>
 <translation id="7154130902455071009">Gawing ito ang iyong panimulang pahina: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">I-access ang anuman sa mga USB device na ito</translation>
 <translation id="2677911863018634147">Humihiling ang application na &quot;<ph name="APP_NAME"/>&quot; ng access sa isa o higit pa sa iyong mga device.</translation>

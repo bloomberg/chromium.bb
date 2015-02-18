@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">A instalação falhou devido a um erro não especificado. Se o Chromium estiver em execução, feche-o e tente de novo.</translation>
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
 <translation id="8987477933582888019">Navegador de Internet</translation>
-<translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="2886012850691518054">Opcional: ajude a melhorar o Chromium enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="580822234363523061">Aceda ao
           menu Chromium &gt;
@@ -179,10 +178,6 @@ invulgares e incorretas. É possível que um utilizador mal intencionado esteja 
 
 Algumas funcionalidades podem não estar disponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Chromium.</translation>
 <translation id="8907580949721785412">O Chromium está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
-<translation id="4404275227760602850">Aceda ao menu do Chromium &gt; Definições &gt; Privacidade (avançada)
-          e desative &quot;Registar previamente os recursos da página&quot;.
-                    Se esta ação não resolver o problema, recomendamos que reative esta opção
-          novamente para melhorar o desempenho.</translation>
 <translation id="1174473354587728743">Partilha um computador? Agora pode configurar o Chromium exatamente como pretende.</translation>
 <translation id="9013087743919948559">Adicionar ao Chromium</translation>
 <translation id="2525993619214772747">O Chromium está a comportar-se de forma estranha?</translation>

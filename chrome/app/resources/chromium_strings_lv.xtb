@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="1396446129537741364">Chromium mēģina rādīt paroles.</translation>
 <translation id="8987477933582888019">Tīmekļa pārlūks</translation>
-<translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
 <translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
 <translation id="580822234363523061">Atveriet
           Chromium izvēlni &gt;
@@ -178,10 +177,6 @@
 
 Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai izmantojiet jaunāku Chromium versiju.</translation>
 <translation id="8907580949721785412">Chromium mēģina rādīt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
-<translation id="4404275227760602850">Atveriet Chromium izvēlni &gt; Iestatījumi &gt; (Papildu) Konfidencialitāte
-          un atspējojiet opciju “Sākotnēji iegūt lapu resursus”.
-          Ja problēma netiek novērsta, ieteicams atkārtoti iespējot šo opciju,
-          lai uzlabotu veiktspēju.</translation>
 <translation id="1174473354587728743">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chromium atbilstoši savām vajadzībām.</translation>
 <translation id="9013087743919948559">Pievienot pārlūkam Chromium</translation>
 <translation id="2525993619214772747">Vai Chromium darbība ir neparasta?</translation>

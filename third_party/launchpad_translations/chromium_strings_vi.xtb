@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="1396446129537741364">Chromium đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="8987477933582888019">Trình duyệt web</translation>
-<translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="580822234363523061">Đi tới
           menu Chromium &gt;
@@ -178,10 +177,6 @@
 
 Một số tính năng có thể không khả dụng. Hãy chỉ định thư mục cấu hình khác hoặc sử dụng phiên bản Chromium mới hơn.</translation>
 <translation id="8907580949721785412">Chromium đang cố gắng hiển thị mật khẩu. Nhập mật khẩu Windows của bạn để cho phép thực hiện việc này.</translation>
-<translation id="4404275227760602850">Chuyển đến menu Chromium &gt; Cài đặt &gt; Bảo mật (Nâng cao)
-          và tắt &quot;Tìm nạp trước tài nguyên trang&quot;.
-          Nếu cách này không giải quyết được sự cố thì chúng tôi khuyên bạn nên bật lại tùy chọn này
-          để cải thiện hiệu suất.</translation>
 <translation id="1174473354587728743">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chromium theo cách mình muốn.</translation>
 <translation id="9013087743919948559">Thêm vào Chromium</translation>
 <translation id="2525993619214772747">Chromium hoạt động không bình thường?</translation>

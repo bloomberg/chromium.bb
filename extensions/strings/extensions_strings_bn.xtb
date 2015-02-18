@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">USB ডিভাইসগুলি <ph name="VENDOR_NAME"/> থেকে অ্যাক্সেস করুন</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="2518849872271000461">এই নামের যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB বা স্থানীয় নেটওয়ার্কের মাধ্যমে সংযুক্ত দস্তাবেজ স্ক্যানার অ্যাক্সেস করে</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, ও <ph name="WEBSITE_3"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> ডোমেনে যেকোনো কম্পিউটারের সাথে ডেটা বিনিময় করুন</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">আপনার মাইক্রোফোন ব্যবহার করুন</translation>
 <translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME"/> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> এর পক্ষ থেকে <ph name="PRODUCT_NAME"/> (ক্রমিক সংখ্যা <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>
 <translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">এই USB ডিভাইসগুলির মধ্যে যে কোনোটি অ্যাক্সেস করুন</translation>
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; অ্যাপ্লিকেশানটি আপনার ডিভাইস ছাড়াও অরেকটি ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে৷</translation>

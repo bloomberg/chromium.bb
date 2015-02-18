@@ -281,7 +281,6 @@
 <translation id="2757031529886297178">‏מונה FPS</translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="5414566801737831689">קריאה של סמלי האתרים שבהם אתה מבקר</translation>
-<translation id="5758389120290973856">השבת ייבוא מהענן.</translation>
 <translation id="1776883657531386793"><ph name="OID"/>: <ph name="INFO"/></translation>
 <translation id="9134524245363717059">‏קובץ זה מיועד למחשב המשתמש בתוכנה של Macintosh. הוא אינו מתאים למכשירך שעובד עם מערכת הפעלה של Chrome. חפש יישום חלופי בחנות האינטרנט של Chrome.</translation>
 <translation id="1510030919967934016">דף זה נחסם ממעקב אחר מיקומך.</translation>
@@ -530,11 +529,9 @@
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME"/> (כבר במכשיר הזה)</translation>
 <translation id="734651947642430719">‏ שיטת קלט טמילית (InScript)</translation>
 <translation id="4633259109628217358">‏הפעלה חד-פעמית: הקלד את הסיסמה שלך כדי להפעיל את מערכת Smart Lock. עם Smart Lock, הטלפון שלך יבטל את נעילת <ph name="DEVICE_TYPE"/>—ללא סיסמה. כדי לשנות או להשבית תכונה זו, עבור אל הגדרות <ph name="DEVICE_TYPE"/>.</translation>
-<translation id="3146771304026816668">‏היכנס כדי לקבל גישה אל הכרטיסיות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שברשותך. בנוסף, תחובר אוטומטית אל שירותי Google.</translation>
 <translation id="5618972959246891967">תאריך מערכת</translation>
 <translation id="3809280248639369696">מר ירח</translation>
 <translation id="1985136186573666099">‏<ph name="PRODUCT_NAME"/> משתמש בהגדרות שרת proxy של מערכת המחשב שלך כדי להתחבר לרשת.</translation>
-<translation id="7963675372086154214">‏הפעל HarfBuzz בשביל טקסט בממשק המשתמש.</translation>
 <translation id="8206859287963243715">סלולארי</translation>
 <translation id="5610637197759059204">השבת טעינות חוזרות של דפים כתוצאה מגלילה אנכית רבה מדי של תוכן.</translation>
 <translation id="6435285122322546452">נהל יישומי קיוסק...</translation>
@@ -678,7 +675,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">מנהל מערכת ביטל הרשאה של כניסה עם מספר חשבונות עבור <ph name="USER_EMAIL"/>.
 כדי להמשיך, כל המשתמשים חייבים לבצע יציאה.</translation>
-<translation id="9071381700299689466">הוסף אל שורת המשימות...</translation>
 <translation id="946914425737677270">‏ייעשה שימוש בסיסמאות שנשמרות ב-Mac OS X Keychain כדי לסייע לך להיכנס ללא הקלדה.</translation>
 <translation id="8584280235376696778">פתח וידאו בכרטיסייה חדשה</translation>
 <translation id="2845382757467349449">הצג תמיד את סרגל הסימניות</translation>
@@ -735,7 +731,6 @@
 <translation id="5379140238605961210">המשך לחסום גישה למיקרופון</translation>
 <translation id="488785315393301722">הצג פרטים</translation>
 <translation id="820854170120587500">‏'גלישה בטוחה של Google' זיהתה לאחרונה דיוג באתר <ph name="SITE"/>‏. <ph name="BEGIN_LINK"/>אתרי דיוג<ph name="END_LINK"/> מתחזים לאתרים אחרים כדי להטעות אותך.</translation>
-<translation id="4377039040362059580">עיצובים וטפטים</translation>
 <translation id="5794414402486823030">פתח תמיד באמצעות מציג המערכת</translation>
 <translation id="711902386174337313">קריאה של רשימת ההתקנים המחוברים שלך</translation>
 <translation id="4381849418013903196">נקודותיים</translation>
@@ -861,7 +856,6 @@
 <translation id="8257950718085972371">המשך לחסום גישה למצלמה</translation>
 <translation id="5390284375844109566">מסד נתונים שנוסף לאינדקס</translation>
 <translation id="411666854932687641">זיכרון פרטי</translation>
-<translation id="2415294094132942411">הוסף לשולחן העבודה...</translation>
 <translation id="119944043368869598">נקה הכל</translation>
 <translation id="3467848195100883852">הפוך תיקון אוטומטי של שגיאות איות לפעיל</translation>
 <translation id="1336254985736398701">צפה בדף &amp;ובפרטים</translation>
@@ -1061,7 +1055,6 @@
 <translation id="1093457606523402488">רשתות גלויות:</translation>
 <translation id="9156814239012955406">MD5</translation>
 <translation id="2397374778584840405">אירועים שבהם מערכת ההפעלה משביתה תהליך של כרטיסייה (&quot;<ph name="IDS_KILLED_TAB_TITLE"/>&quot;)</translation>
-<translation id="836961001039546082">‏הפעל ממשק משתמש בעיצוב חדשני תלת-ממדי בשביל PDF.</translation>
 <translation id="2396635603035772766">הפעל ממשק משתמש ניסיוני המבוסס על בועות לשמירת סיסמאות. מחליף את סרגל המידע הקיים.</translation>
 <translation id="2676946222714718093">מופעל ב-</translation>
 <translation id="8972727166872864532">אופס! עליך לשאול את ההורים אם זה בסדר לבקר בדף הזה.</translation>
@@ -1202,7 +1195,6 @@
 <translation id="5554720593229208774">רשות אישורי אימייל</translation>
 <translation id="862750493060684461">‏קובץ שמור של CSS</translation>
 <translation id="6980604578217046176">‏הפעלת גרסת הניסיון של שרת Proxy של הפחתת נתונים</translation>
-<translation id="1828149253358786390"><ph name="SITE"/> רוצה לשלוח לך הודעות.</translation>
 <translation id="8169977663846153645">מחשב את הזמן הנותר לסוללה</translation>
 <translation id="7690853182226561458">הוסף &amp;תיקיה...</translation>
 <translation id="7968982339740310781">הצג פרטים</translation>
@@ -1412,7 +1404,6 @@
 <translation id="7852934890287130200">צור, שנה או מחק פרופילים.</translation>
 <translation id="3511307672085573050">העתק כתוב&amp;ת קישור</translation>
 <translation id="3996164291808155361">השבת יישומי כונן במפעיל היישומים.</translation>
-<translation id="4317408933658370267">הפעל התאמה המבוססת על שיוך במנהל הסיסמאות.</translation>
 <translation id="751507702149411736">ביילורוסית</translation>
 <translation id="3128230619496333808">כרטיסייה 6</translation>
 <translation id="6655190889273724601">מצב מפתח</translation>
@@ -1496,7 +1487,6 @@
 <translation id="3331799185273394951">הפעל את מצב המסך המשוקף. מצב זה הופך את תמונת המסך בצורה אופקית.</translation>
 <translation id="3350315265529339476">‏ניתן לשנות זאת בכל עת ב<ph name="BEGIN_LINK"/>הגדרות Chrome<ph name="END_LINK"/></translation>
 <translation id="2280486287150724112">שוליים ימניים</translation>
-<translation id="53900621878184615">מזהה של תוכן מוגן.</translation>
 <translation id="3494768541638400973">‏קלט יפני של Google (למקלדת יפנית)</translation>
 <translation id="5631017369956619646">שימוש במעבד</translation>
 <translation id="7223775956298141902">אוי... אין לך תוספים :-(</translation>
@@ -1746,7 +1736,6 @@
 <translation id="7460898608667578234">אוקראינית</translation>
 <translation id="614161640521680948">שפה:</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
-<translation id="2640473432997815684">הפעל מקלדות של תצוגת קלט בעיצוב חדשני תלת-ממדי.</translation>
 <translation id="6718273304615422081">דוחס...</translation>
 <translation id="4109135793348361820">העבר חלון אל <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>)</translation>
 <translation id="8104727996780335409">אנונימי</translation>
@@ -2194,7 +2183,6 @@
 <translation id="5129503757780297110">אין מדיה חדשה</translation>
 <translation id="8495193314787127784">‏הפעל את &quot;Ok Google&quot;</translation>
 <translation id="6466988389784393586">&amp;פתח את כל הסימניות</translation>
-<translation id="4507140630447955344">‏הפעל את ממשק המשתמש החדש בעיצוב חדשני תלת-ממדי במציג ה-PDF.</translation>
 <translation id="9193357432624119544">קוד שגיאה: <ph name="ERROR_NAME"/></translation>
 <translation id="5288678174502918605">פתח &amp;מחדש את הכרטיסייה שנסגרה</translation>
 <translation id="7238461040709361198">‏הסיסמה שלך בחשבון Google השתנתה מאז הפעם האחרונה שהתחברת במחשב זה.</translation>
@@ -2217,7 +2205,6 @@
 <translation id="615216289547575801">‏מאפשר הפעלה של אפליקציות זמניות, אשר מופעלות ללא התקנה ב-Chrome, מחנות האינטרנט של Chrome. מפעיל היישומים הנסיוני חייב להיות מופעל.</translation>
 <translation id="5185386675596372454">הגרסה החדשה ביותר של &quot;<ph name="EXTENSION_NAME"/>&quot; הושבתה מכיוון שהיא דורשת הרשאות נרחבות יותר.</translation>
 <translation id="4147376274874979956">לא ניתן לגשת לקובץ.</translation>
-<translation id="7511149348717996334">הפעל הגדרות של עיצוב חדשני תלת-ממדי</translation>
 <translation id="5849162989368494245">‏גרסת SSL/TLS מינימלית נתמכת.</translation>
 <translation id="1507246803636407672">&amp;התעלם</translation>
 <translation id="2320435940785160168">שרת זה דורש אישור לאימות ולא קיבל את האישור שנשלח על ידי          הדפדפן. ייתכן שפג תוקפו של האישור, או שהשרת לא בוטח במנפיק שלו.
@@ -2293,7 +2280,6 @@
 <translation id="2672142220933875349">‏קובץ crx פגום, פירוק האריזה נכשל.</translation>
 <translation id="707392107419594760">בחר מקלדת:</translation>
 <translation id="8605503133013456784">נכשל הניסיון להתנתק או לבטל את ההתאמה של &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
-<translation id="5586680270786734851">הפעל מקלדת של תצוגת קלט בעיצוב חדשני תלת-ממדי.</translation>
 <translation id="2007404777272201486">דווח על בעיה...</translation>
 <translation id="4366509400410520531">מופעל על ידך</translation>
 <translation id="2218947405056773815">אוף! <ph name="API_NAME"/> נתקל בבעיה לא צפויה.</translation>
@@ -2724,7 +2710,6 @@
 <translation id="3122496702278727796">יצירת ספריית נתונים נכשלה</translation>
 <translation id="6690751852586194791">בחר משתמש בפיקוח להוספה למכשיר זה.</translation>
 <translation id="8572981282494768930">אל תאפשר לאתרים לגשת למצלמה ולמיקרופון</translation>
-<translation id="7846076177841592234">בטל את הבחירה</translation>
 <translation id="6990081529015358884">לא נשאר לך מקום פנוי</translation>
 <translation id="5273628206174272911">תכונה ניסיונית לניווט בהיסטוריה בתגובה לגלילת יתר אופקית.</translation>
 <translation id="4360991150548211679">מתבצעות הורדות</translation>
@@ -3126,7 +3111,6 @@
 <translation id="254087552098767269">ביטול ההרשמה לניהול מרוחק נכשל.</translation>
 <translation id="4220128509585149162">קריסה</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
-<translation id="4448186133363537200">‏משבית את היכולת של JavaScript לנעול את כיוון המסך.</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 עם הצפנת RSA</translation>
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="872451400847464257">ערוך מנוע חיפוש</translation>
@@ -3319,7 +3303,6 @@
 <translation id="2017334798163366053">השבת איסוף של נתוני ביצועים</translation>
 <translation id="3833761542219863804">‏תעתוק (mausam → ਮੌਸਮ)</translation>
 <translation id="7004499039102548441">כרטיסיות אחרונות</translation>
-<translation id="7644029910725868934">הפעל את תיקיית הסימניות המנוהלות בשביל משתמשים בפיקוח.</translation>
 <translation id="2386171414103162062">אירועים של קריסת כרטיסייה (&quot;<ph name="IDS_SAD_TAB_TITLE"/>&quot;)</translation>
 <translation id="761779991806306006">לא נשמרו סיסמאות.</translation>
 <translation id="1692602667007917253">אופס, משהו השתבש</translation>
@@ -3412,7 +3395,6 @@
         <ph name="LINE_BREAK"/>
         אם אתה סבור שאופן פעולה זה אינו רצוי, לדוגמה, אם אתה מנקה באגים באתר שלך, בקר ב-<ph name="URL_FOR_MORE_INFO"/>,
         שם תוכל למצוא מידע נוסף, כולל האופן שבו ניתן להשבית את התכונה.</translation>
-<translation id="7572787314531933228">הפעל סימניות מנוהלות בשביל משתמשים בפיקוח.</translation>
 <translation id="5411769601840150972">תאריך ושעה מוגדרים אוטומטית.</translation>
 <translation id="1747687775439512873">‏השבת את WiMAX</translation>
 <translation id="6691936601825168937">&amp;קדימה</translation>
@@ -3461,7 +3443,6 @@
 <translation id="5266113311903163739">שגיאת ייבוא של רשות אישורים</translation>
 <translation id="4240511609794012987">זיכרון משותף</translation>
 <translation id="4756388243121344051">&amp;היסטוריה</translation>
-<translation id="7614030880636783720">‏Wi-Fi ונתונים לנייד אינם זמינים. ניתן יהיה לטעון את הדף לאחר שהמכשיר יתחבר לרשת.</translation>
 <translation id="1146673768181266552">מזהה קריסה <ph name="CRASH_ID"/> ‏(<ph name="CRASH_LOCAL_ID"/>)</translation>
 <translation id="3544347428588533940">‏ה-Smart Lock כמעט מוכן</translation>
 <translation id="8044899503464538266">אטי</translation>
@@ -3531,7 +3512,6 @@
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="1185924365081634987">כדאי גם לנסות <ph name="GUEST_SIGNIN_LINK_START"/>לגלוש כאורח<ph name="GUEST_SIGNIN_LINK_END"/> כדי לתקן את שגיאת הרשת הזו.</translation>
 <translation id="3960121209995357026">הפעל תיקון אוטומטי של שגיאות איות</translation>
-<translation id="6533965071487181681">‏אם התכונה תופעל, כתובת האתר chrome://md-settings/‎ תטען את דף ההגדרות של עיצוב חדשני תלת ממדי.</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> אינו זמין</translation>
 <translation id="4633945134722448536">אם מופעל, מבצע אחזור מראש של תוצאות חיפוש עבור השאילתה שהוקלדה בסרגל הכתובות ומשתמש שוב בדף בסיס החיפוש שעובד מראש לביצוע כל שאילתת חיפוש (לא רק שאילתה באחזור מראש).</translation>
 <translation id="8755376271068075440">&amp;גדול יותר</translation>
@@ -3558,7 +3538,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="1545786162090505744">‏כתובת אתר עם %s במקום שאילתה</translation>
 <translation id="7219179957768738017">החיבור משתמש ב-<ph name="SSL_VERSION"/>.</translation>
-<translation id="4436456292809448986">הוסף לשולחן העבודה...</translation>
 <translation id="7006634003215061422">שוליים תחתונים</translation>
 <translation id="7014174261166285193">ההתקנה נכשלה.</translation>
 <translation id="1970746430676306437">צפה בפרטי הדף</translation>
@@ -4097,7 +4076,6 @@
 <translation id="2359808026110333948">המשך</translation>
 <translation id="4235200303672858594">כל המסך</translation>
 <translation id="5951823343679007761">אין סוללה</translation>
-<translation id="2518024842978892609">שימוש באישורי הלקוח</translation>
 <translation id="479555359673800162">השבת אימות חוזר של מנהל הסיסמאות</translation>
 <translation id="8569682776816196752">לא נמצאו יעדים</translation>
 <translation id="5396704340251753095">‏הפעל תמיכת MTP במנהל הקבצים.</translation>
@@ -4182,7 +4160,6 @@
 <translation id="8463215747450521436">ייתכן שמשתמש בפיקוח זה נמחק או הושבת על ידי המנהל. פנה למנהל אם ברצונך להמשיך להיכנס בתור משתמש זה.</translation>
 <translation id="91568222606626347">צור מקש קיצור...</translation>
 <translation id="3454157711543303649">ההפעלה הושלמה</translation>
-<translation id="6498855056513831869">השבת עדכון אוטומטי של אזור הזמן לפי מיקום גיאוגרפי</translation>
 <translation id="2131077480075264">לא ניתן להתקין את '<ph name="APP_NAME"/>' מכיוון שהוא לא מאושר על ידי '<ph name="IMPORT_NAME"/>'</translation>
 <translation id="3895034729709274924">הפעל ניקוי באגים שקט.</translation>
 <translation id="884923133447025588">לא נמצא מנגנון ביטול</translation>
@@ -4320,7 +4297,6 @@
 <translation id="7253521419891527137">&amp;למידע נוסף</translation>
 <translation id="496226124210045887">התיקיה שבחרת מכילה קבצים רגישים. האם אתה בטוח שברצונך להעניק ל-&quot;$1&quot; גישה קבועה לקריאה בתיקיה זו?</translation>
 <translation id="6463607988716135494">היישום &quot;<ph name="EXTENSION_NAME"/>&quot; הותקן מרחוק.</translation>
-<translation id="7629536005696009600">‏התר שימוש בפרטי כניסה המאוחסנים בשביל אפליקציות Android למילוי באתרים תואמים.</translation>
 <translation id="4166210099837486476">‏מעקב אחר נקיטת הפעולות שלך ב-Chrome</translation>
 <translation id="8698464937041809063">‏איור של Google</translation>
 <translation id="1539714775460645859">הפעל את מפעיל היישומים הניסיוני.</translation>
@@ -4495,7 +4471,6 @@
 <translation id="1588870296199743671">פתח קישור באמצעות...</translation>
 <translation id="4287167099933143704">‏הזן מפתח ביטול נעילה של PIN</translation>
 <translation id="3936418843437416078">התקנות</translation>
-<translation id="1558988940633416251">‏הפעל מנוע פריסת HarfBuzz המתאים לכל הפלטפורמות בשביל טקסט בממשק משתמש. לא משפיע על תוכן אינטרנט.</translation>
 <translation id="8941173171815156065">בטל את ההרשאה '<ph name="PERMISSION"/>'</translation>
 <translation id="3129140854689651517">חפש טקסט</translation>
 <translation id="2473195200299095979">תרגם את הדף הזה</translation>
@@ -4610,7 +4585,6 @@
 <translation id="1371806038977523515">ההגדרות האלה נשלטות על ידי:</translation>
 <translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">האם אתה עדיין שם?</translation>
-<translation id="7971550670320370753">מתיר למשתמש להשבית בקלות את תכונת הייבוא מהענן.</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
 <translation id="6020431688553761150">השרת לא אישר עבורך גישה אל המשאב הזה.</translation>
 <translation id="2587203970400270934">קוד מפעיל:</translation>
@@ -4650,7 +4624,6 @@
 <translation id="3082520371031013475">הגדרות לוח מגע ועכבר</translation>
 <translation id="4927301649992043040">ארוז תוסף</translation>
 <translation id="5939518447894949180">אפס</translation>
-<translation id="2326606747676847821">עבור למצב גלישה בסתר</translation>
 <translation id="9049835026521739061">‏מצב Hangul</translation>
 <translation id="6458308652667395253">‏ניהול חסימת JavaScript...</translation>
 <translation id="8435334418765210033">רשתות השמורות בזיכרון</translation>
@@ -4957,7 +4930,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7029415434450801489">ממקם לחצן חיפוש בסרגל החיפוש.</translation>
 <translation id="7664620655576155379">‏מכשיר Bluetooth שאינו נתמך: &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="8859174528519900719">תת-מסגרת: <ph name="SUBFRAME_SITE"/></translation>
-<translation id="6771713287216370711">השבת נעילה של כיוון המסך.</translation>
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN"/>.</translation>
 <translation id="1932098463447129402">לא לפני</translation>
 <translation id="5409029099497331039">הפתיעו אותי</translation>
@@ -5322,7 +5294,6 @@ Del</translation>
 <translation id="4959447747655704388">אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK"/>לבקר באתר נגוע זה<ph name="END_LINK"/>.</translation>
 <translation id="3448964021054693031">השבת מקלדת וירטואלית חכמה</translation>
 <translation id="5941153596444580863">הוסף משתמש...</translation>
-<translation id="3679708738332210156">הוסף לעגינה...</translation>
 <translation id="4503387275462811823">תיאור של תוסף</translation>
 <translation id="2157875535253991059">דף זה הוא במסך מלא כעת.</translation>
 <translation id="4434147949468540706">אפקט סוף גלילה</translation>
@@ -5342,7 +5313,6 @@ Del</translation>
 <translation id="4746971725921104503">נראה שאתה כבר מנהל משתמש בשם הזה. האם רצית <ph name="LINK_START"/>לייבא את <ph name="USER_DISPLAY_NAME"/> אל המכשיר הזה<ph name="LINK_END"/>?</translation>
 <translation id="8142699993796781067">רשת פרטית</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME"/> רוצה לשתף את תוכן המסך שלך. בחר את התוכן שברצונך לשתף.</translation>
-<translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1374468813861204354">הצעות</translation>
 <translation id="5906065664303289925">כתובת חומרה:</translation>
 <translation id="2498436043474441766">הוסף מדפסות</translation>
@@ -5354,12 +5324,10 @@ Del</translation>
 <translation id="2187895286714876935">שגיאת ייבוא של אישור שרת</translation>
 <translation id="4882473678324857464">התמקד בסימניות</translation>
 <translation id="4258348331913189841">מערכות קבצים</translation>
-<translation id="5327436699888037476">הגדרת התכונה מכבה את העדכון האוטומטי של אזור הזמן לפי מיקום גיאוגרפי.</translation>
 <translation id="3930521966936686665">הפעל באמצעות</translation>
 <translation id="4618990963915449444">כל הקבצים ב-<ph name="DEVICE_NAME"/> יימחקו.</translation>
 <translation id="5011739343823725107">הפעלת הקצה העורפי של הסנכרון נכשלה</translation>
 <translation id="8726206820263995930">אירעה שגיאה בעת הבאת הגדרות מדיניות מהשרת: <ph name="CLIENT_ERROR"/>.</translation>
-<translation id="5965403572731919803">הוסף למדף...</translation>
 <translation id="614998064310228828">דגם ההתקן:</translation>
 <translation id="8708671767545720562">&amp;מידע נוסף</translation>
 <translation id="2101797668776986011">Pepper 3D</translation>

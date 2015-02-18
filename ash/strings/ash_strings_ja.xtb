@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="5238774010593222950">別のアカウントにログインできません。</translation>
 <translation id="1723752762323179280">セッションを終了</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/>（HDMI / DP）</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">ログアウト</translation>
@@ -199,11 +198,9 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="4918086044614829423">承諾</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">出力</translation>
-<translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">フル充電まで <ph name="HOUR"/> 時間 <ph name="MINUTE"/> 分</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> の SMS</translation>
-<translation id="4053612967614057854">画面キーボードを無効にする</translation>
 </translationbundle>

@@ -1,20 +1,14 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
-<translation id="337167041784729019">显示统计信息</translation>
 <translation id="3233367171080043075">您可以随时终止。</translation>
 <translation id="7606912958770842224">启用远程连接</translation>
 <translation id="3785447812627779171">Chrome 远程
 访问主机</translation>
 <translation id="1841799852846221389">正在对此计算机停用远程连接…</translation>
 <translation id="2676780859508944670">运行中…</translation>
-<translation id="6062854958530969723">主机初始化失败。</translation>
 <translation id="5843054235973879827">此操作为什么是安全的？</translation>
 <translation id="5619148062500147964">指向此计算机</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="2208514473086078157">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
-<translation id="6541219117979389420">应用日志可能包含私人信息，其中包括您的身份信息（电子邮件地址）以及 Google 云端硬盘中的文件和文件夹的名称及属性。</translation>
-<translation id="3931191050278863510">主机已停止运行。</translation>
-<translation id="3905196214175737742">主机所有者所在网域无效。</translation>
-<translation id="9213184081240281106">主机配置无效。</translation>
 <translation id="6998989275928107238">指向</translation>
 <translation id="406849768426631008">想要通过视频聊天的方式为其他用户提供帮助吗？请尝试使用 <ph name="LINK_BEGIN"/>Google 环聊的远程桌面功能<ph name="LINK_END"/>。</translation>
 <translation id="906458777597946297">最大化窗口</translation>
@@ -34,10 +28,6 @@
 <translation id="222632161986885959">本次环聊的某位参与者已主动提出为您提供帮助，但需要获得您计算机的控制权。如果您接受，那么：</translation>
 <translation id="2046651113449445291">下列客户端已与此计算机配对，无需提供 PIN 即可连接。您随时可以撤消个别或所有客户端的这项权限。</translation>
 <translation id="7658239707568436148">取消</translation>
-<translation id="7836926030608666805">缺少某些必需的组件。请确保您运行的是最新版本的 Chrome，然后重试。</translation>
-<translation id="8355485110405946777">包含应用日志，以便我们解决您的问题（日志中可能包含私人信息）。</translation>
-<translation id="7869445566579231750">您无权运行该应用。</translation>
-<translation id="8548209692293300397">您之前曾使用 <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN"/>登录 Google Chrome<ph name="LINK_END"/>，然后重新安装 Chrome 远程桌面。</translation>
 <translation id="7782471917492991422">请检查您的计算机电源管理设置，确保未将该设置配置为无操作时进入休眠模式。</translation>
 <translation id="7665369617277396874">添加帐户</translation>
 <translation id="3027681561976217984">触摸模式</translation>
@@ -45,18 +35,14 @@
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="677755392401385740">已为用户<ph name="HOST_USERNAME"/>启动主机。</translation>
-<translation id="6441316101718669559">该平台不支持桌面集成。您仍可以使用该应用，但用户体验将会受到影响。</translation>
 <translation id="3197730452537982411">远程桌面</translation>
-<translation id="195619862187186579">键盘布局</translation>
 <translation id="8355326866731426344">此访问代码将在 <ph name="TIMEOUT"/> 后失效。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
-<translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="2540992418118313681">您要与其他用户共享此计算机的查看和控制权限吗？</translation>
-<translation id="894763922177556086">良好</translation>
 <translation id="5708869785009007625">您目前正与 <ph name="USER"/> 共享您的桌面。</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5222676887888702881">退出</translation>
@@ -66,7 +52,6 @@
 <translation id="2813770873348017932">与远程计算机的连接已被暂时阻止，因为有人试图使用无效 PIN 连接到该计算机。请稍后重试。</translation>
 <translation id="6746493157771801606">清除历史记录</translation>
 <translation id="4430435636878359009">停用与此计算机的远程连接</translation>
-<translation id="2314101195544969792">您的<ph name="APPLICATION_NAME"/>会话已经有一段时间没有活动了，连接即将断开。</translation>
 <translation id="6001953797859482435">Chrome 远程桌面主机偏好设置</translation>
 <translation id="225614027745146050">欢迎</translation>
 <translation id="9188433529406846933">授权</translation>
@@ -92,14 +77,12 @@
 <translation id="629730747756840877">帐户</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>（已过期）</translation>
-<translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="3884839335308961732">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
 <translation id="327263477022142889">愿意帮忙改进 Chrome 远程桌面吗？<ph name="LINK_BEGIN"/>请参与调查<ph name="LINK_END"/>。</translation>
 <translation id="6612717000975622067">发送Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">已连接：</translation>
 <translation id="8509907436388546015">桌面集成进程</translation>
 <translation id="4736223761657662401">连接历史记录</translation>
-<translation id="2009755455353575666">连接失败</translation>
 <translation id="5285241842433869526">了解如何为计算机设置远程访问。</translation>
 <translation id="8759753423332885148">了解详情。</translation>
 <translation id="4430915108080446161">正在生成访问代码…</translation>
@@ -112,7 +95,6 @@
 <translation id="2353140552984634198">您可使用 Chrome 远程访问安全地访问此计算机。</translation>
 <translation id="4481276415609939789">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="2013884659108657024">Chrome 正在下载 Chrome 远程桌面主机安装程序。下载完成后，请先运行该安装程序，再继续操作。</translation>
-<translation id="7149517134817561223">向 Chrome 远程桌面主机发出命令的应用。</translation>
 <translation id="1742469581923031760">正在连接…</translation>
 <translation id="2855866366045322178">离线</translation>
 <translation id="8998327464021325874">Chrome 远程桌面主机控制器</translation>
@@ -126,38 +108,28 @@
 <translation id="4572065712096155137">访问</translation>
 <translation id="5908809458024685848">您目前并未登录到 Chrome 远程访问。请登录，然后重试。</translation>
 <translation id="7401733114166276557">Chrome 远程桌面</translation>
-<translation id="5510035215749041527">立即断开</translation>
 <translation id="3362124771485993931">重新输入 PIN</translation>
 <translation id="1760808606374294203">• 针对 Android Lollipop 更正了一些错误。</translation>
-<translation id="8196755618196986400">为了便于我们与您联系（以便了解更多信息），您的电子邮件地址将包含在您提交的所有反馈中。</translation>
 <translation id="5231421057630485350">提供帮助者将能够控制您的鼠标和键盘。</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="8172070902751707422">身份验证失败。请重新登录 Chrome 远程桌面。</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
-<translation id="7019153418965365059">无法识别的主机错误：<ph name="HOST_OFFLINE_REASON"/>。</translation>
 <translation id="712467900648340229">无法连接到投射设备。</translation>
 <translation id="1342297293546459414">查看和控制共享的计算机。</translation>
 <translation id="1520828917794284345">将桌面调整为合适大小</translation>
 <translation id="701976023053394610">远程协助</translation>
 <translation id="6099500228377758828">Chrome 远程桌面服务</translation>
 <translation id="2747641796667576127">系统通常会自动执行软件更新，但在极少数情况下，更新可能会失败。更新软件应该只需要几分钟，而且可在远程连接到计算机时执行。</translation>
-<translation id="5170982930780719864">主机 ID 无效。</translation>
 <translation id="3933246213702324812"><ph name="HOSTNAME"/>上的 Chrome 远程访问软件已过期，需要更新。</translation>
 <translation id="6193698048504518729">连接到“<ph name="HOSTNAME"/>”</translation>
-<translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
 <translation id="8116630183974937060">发生网络错误。请确保您的设备已连接到网络，然后重试。</translation>
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
 <translation id="2647232381348739934">Chrome 远程访问服务</translation>
 <translation id="579702532610384533">重新连接</translation>
 <translation id="4867841927763172006">发送PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/>（上次联网时间：<ph name="DATE_OR_TIME"/>）</translation>
-<translation id="2246783206985865117">此设置受您的网域政策管理。</translation>
-<translation id="7810127880729796595">显示统计信息（连接：<ph name="QUALITY"/>）</translation>
 <translation id="5773590752998175013">配对日期</translation>
-<translation id="3989511127559254552">要继续，您必须先为该应用授予对您的计算机的扩展访问权限（该操作只需执行一次）。</translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
-<translation id="1050693411695664090">较差</translation>
 <translation id="2118549242412205620">通过您的Android设备安全地访问自己的计算机。
 
 • 在您的每台计算机上，使用Chrome网上应用店中的Chrome远程桌面应用（下载地址：https://chrome.google.com/remotedesktop）设置远程访问
@@ -174,16 +146,13 @@
 <translation id="5625493749705183369">通过互联网安全访问其他计算机，或允许其他用户通过互联网安全访问您的计算机。</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2699970397166997657">Chrome 远程访问</translation>
-<translation id="5419185025274123272">无法重置该应用。您仍可以发送错误报告。</translation>
 <translation id="4812684235631257312">主机</translation>
 <translation id="6178645564515549384">用于远程协助的本地消息传递主机</translation>
 <translation id="1738759452976856405">停止录制</translation>
-<translation id="3360306038446926262">窗口</translation>
 <translation id="897805526397249209">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="1704090719919187045">Chrome 远程访问主机偏好设置</translation>
 <translation id="809687642899217504">我的计算机</translation>
 <translation id="3106379468611574572">远程计算机没有对连接请求做出响应。请确保其在线，然后重试。</translation>
-<translation id="8386846956409881180">为主机指定的 OAuth 凭据无效。</translation>
 <translation id="20876857123010370">触控板模式</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2078880767960296260">主机进程</translation>
@@ -210,9 +179,7 @@
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="4405930547258349619">核心数据库</translation>
-<translation id="3385242214819933234">主机所有者无效。</translation>
 <translation id="310979712355504754">全部删除</translation>
-<translation id="6542902059648396432">报告问题…</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="3581045510967524389">无法连接到网络。请检查您的设备是否已连接到网络。</translation>
 <translation id="4517233780764084060">注意：为确保所有键盘快捷键都可使用，您可以将 Chrome 远程访问配置为“在窗口中打开”。</translation>
@@ -226,8 +193,6 @@
 <translation id="951991426597076286">拒绝</translation>
 <translation id="4563926062592110512">与下列客户端的连接已中断：<ph name="CLIENT_USERNAME"/>。</translation>
 <translation id="5308380583665731573">连接</translation>
-<translation id="8642984861538780905">一般</translation>
-<translation id="2921543551052660690">您之前曾使用 <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN"/>登录 Chromium<ph name="LINK_END"/>，然后重新安装 Chrome 远程访问。</translation>
 <translation id="7319983568955948908">停止共享</translation>
 <translation id="6681800064886881394">版权所有2013 Google Inc。保留所有权利。</translation>
 <translation id="6640610550128933069">上次联网日期：<ph name="DATE"/></translation>
@@ -242,24 +207,18 @@
 <translation id="6011539954251327702">Chrome 远程访问可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程访问应用（下载地址为 <ph name="URL"/>）。</translation>
 <translation id="2919669478609886916">您目前正在与其他用户共享此计算机。您希望继续共享吗？</translation>
 <translation id="4207623512727273241">请先运行该安装程序，再继续操作。</translation>
-<translation id="1324095856329524885">（您的计算机尚不支持该功能）</translation>
-<translation id="6570205395680337606">重置该应用。所有未保存的工作都将会丢失。</translation>
-<translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
 <translation id="3596628256176442606">此服务允许来自 Chrome 远程访问客户端的连接。</translation>
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="837021510621780684">来自此计算机</translation>
-<translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>
 <translation id="8383794970363966105">要使用Chrome远程访问，您需要先为自己的设备添加一个Google帐户。</translation>
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
-<translation id="4795786176190567663">您无权执行该操作。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME"/> 访问客户端的请求遭拒。</translation>
 <translation id="3403830762023901068">策略设置不允许以 Chrome 远程访问主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="7312846573060934304">主机未连接到网络。</translation>
-<translation id="1002108253973310084">检测到不兼容的协议版本。请确保两台计算机上都已安装该软件的最新版本，然后重试。</translation>
 <translation id="9016232822027372900">仍然连接</translation>
 <translation id="1818475040640568770">您未注册任何计算机。</translation>
 <translation id="4394049700291259645">停用</translation>

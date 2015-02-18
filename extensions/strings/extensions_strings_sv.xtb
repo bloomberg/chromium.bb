@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Komma åt USB-enheter från <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Läs och ändra dina uppgifter på <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Utväxla data med datorerna: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">Tilläggsvy: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Åtkomst till dokumentskannrar som är anslutna via USB eller i det lokala nätverket</translation>
 <translation id="6408118934673775994">Läs och ändra dina uppgifter på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> och <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Utväxla data med datorer i domänen <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Använd mikrofonen</translation>
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME"/> ska installeras. Det kan inte tas bort eller ändras.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> från <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Konfigurera nätverksanslutningar</translation>
 <translation id="7154130902455071009">Ändra startsida till: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Komma åt någon av dessa USB-enheter</translation>
 <translation id="2677911863018634147">Appen <ph name="APP_NAME"/> begär åtkomst till en eller flera av dina enheter.</translation>

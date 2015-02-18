@@ -60,7 +60,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="5238774010593222950">Du kan ikke logge på flere kontoer.</translation>
 <translation id="1723752762323179280">Avslutter økten</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Logg av</translation>
@@ -199,11 +198,9 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>.<ph name="MINUTE"/> gjenstår</translation>
 <translation id="3009178788565917040">Utdata</translation>
-<translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="6911468394164995108">Koble til annet</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t og <ph name="MINUTE"/> m til batteriet er ferdigladet</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">Tekstmelding fra <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Slå av skjermtastaturet</translation>
 </translationbundle>

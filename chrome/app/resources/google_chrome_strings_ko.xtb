@@ -47,7 +47,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="568643307450491754">Chrome 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="8556340503434111824">이전보다 더 빨라진 Chrome 새 버전을 사용할 수 있습니다.</translation>
 <translation id="8987477933582888019">웹브라우저</translation>
-<translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
@@ -142,10 +141,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
         성능을 개선해 보시기 바랍니다.</translation>
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="2397416548179033562">Chrome 메뉴 표시</translation>
-<translation id="5423788048750135178">Chrome 메뉴 &gt; 설정 &gt; (고급)개인정보로
-          이동하여 '페이지 리소스 프리패치'를 사용 중지합니다.
-          그래도 문제가 해결되지 않으면 이 옵션을 다시 사용 설정하여
-          성능을 개선해 보시기 바랍니다.</translation>
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
 <translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>

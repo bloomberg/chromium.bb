@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Falls Chromium derzeit ausgeführt wird, schließen Sie es bitte und versuchen Sie es erneut.</translation>
 <translation id="1396446129537741364">Chromium versucht, Passwörter anzuzeigen.</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
-<translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="2886012850691518054">Optional: Unterstützen Sie Google bei der Verbesserung von Chromium durch automatisches Senden von Nutzungsstatistiken und Absturzberichten.</translation>
 <translation id="580822234363523061">Gehen Sie zum Chromium-Menü &gt; &quot;<ph name="SETTINGS_TITLE"/>&quot; &gt; &quot;<ph name="ADVANCED_TITLE"/>&quot; &gt; &quot;<ph name="PROXIES_TITLE"/>&quot; und vergewissern Sie sich, dass in Ihrer Konfiguration die Einstellung &quot;Kein Proxy&quot; oder &quot;Direkt&quot; verwendet wird.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
@@ -162,10 +161,6 @@
 
 Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Chromium.</translation>
 <translation id="8907580949721785412">Chromium möchte Passwörter anzeigen. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
-<translation id="4404275227760602850">Öffnen Sie das Chromium-Menü &gt; Einstellungen &gt; (Erweitert) Datenschutz
-          und deaktivieren Sie die Option &quot;Vorabruf von Seitenressourcen&quot;.
-          Falls das Problem hierdurch nicht behoben wird, empfehlen wir,
-          diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
 <translation id="1174473354587728743">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chromium nach Ihren Wünschen einrichten.</translation>
 <translation id="9013087743919948559">Zu Chromium hinzufügen</translation>
 <translation id="2525993619214772747">Verhält Chromium sich ungewöhnlich?</translation>

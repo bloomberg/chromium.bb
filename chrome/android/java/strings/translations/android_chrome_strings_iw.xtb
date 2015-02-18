@@ -126,7 +126,6 @@
 <translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
 <translation id="5668404140385795438">עקוף בקשה של אתר שנועדה למנוע שינוי של מרחק התצוגה</translation>
 <translation id="8428213095426709021">הגדרות</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (עודכן <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="1987317783729300807">חשבונות</translation>
 <translation id="6064211167623632605">נתיב הפעלה</translation>
@@ -183,7 +182,6 @@
 <translation id="2699916814609764774">נתיב פרופיל</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
-<translation id="6717254161209606306">בקשה להוספת דף אל מסך דף הבית. שם האפליקציה: <ph name="APP_NAME"/>. כתובת האתר של האפליקציה: <ph name="APP_URL"/>.</translation>
 <translation id="7977858705483383621">חיפוש בטוח</translation>
 <translation id="8909135823018751308">שתף…</translation>
 <translation id="3338301885994755905">חסום (מומלץ)</translation>

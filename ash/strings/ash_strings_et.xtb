@@ -59,7 +59,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>
 <translation id="5238774010593222950">Teisele kontole ei saa sisse logida.</translation>
 <translation id="1723752762323179280">Seansist väljumine</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Logi välja</translation>
@@ -199,11 +198,9 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> alles</translation>
 <translation id="3009178788565917040">Väljund</translation>
-<translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min aku täitumiseni</translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
 <translation id="6359806961507272919">SMS numbrilt <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Keela ekraanil kuvatav klaviatuur</translation>
 </translationbundle>

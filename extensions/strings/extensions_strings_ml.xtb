@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്നും USB ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> എന്നതിലെ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, മാറ്റുക</translation>
 <translation id="2518849872271000461">ഇനിപ്പറയുന്ന പേരിലുള്ള കമ്പ്യൂട്ടറുകൾ ഉപയോഗിച്ച് ഡാറ്റ എക്‌സ്‌ചേഞ്ചുചെയ്യുക: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB വഴിയോ പ്രാദേശിക നെറ്റ്‌വർക്കിലോ അറ്റാച്ചുചെയ്‌ത പ്രമാണ സ്‌കാനറുകൾ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/> എന്നിവയിലെ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, മാറ്റുക</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> എന്ന ഡൊമെയ്‌നിലുള്ള ഏത് കമ്പ്യൂട്ടർ ഉപയോഗിച്ചും ഡാറ്റ എക്‌സ്‌ചേഞ്ച് ചെയ്യുക</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കുക</translation>
 <translation id="7217838517480956708">ഈ മെഷീനിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഇൻസ്റ്റാളുചെയ്യുന്നതിനായി <ph name="EXTENSION_NAME"/> ആവശ്യപ്പെടുന്നു. ഇത് നീക്കംചെയ്യാനോ പരിഷ്‌ക്കരിക്കാനോ കഴിയില്ല.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME"/> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">നെറ്റ്‌വർക്ക് കണക്ഷനുകൾ കോൺഫിഗർ ചെയ്യുക</translation>
 <translation id="7154130902455071009">നിങ്ങളുടെ ആരംഭ പേജ് ഇതായി മാറ്റുക: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">ഈ USB ഉപകരണങ്ങളിലേതിലേക്കെങ്കിലും ആക്സസ്സുചെയ്യുക</translation>
 <translation id="2677911863018634147">നിങ്ങളുടെ ഒന്നോ അതിലധികമോ ഉപകരണങ്ങളിലേക്കുള്ള ആക്‌സസ്സിന് &quot;<ph name="APP_NAME"/>&quot; അപ്ലിക്കേഷൻ അഭ്യർത്ഥിക്കുന്നു.</translation>

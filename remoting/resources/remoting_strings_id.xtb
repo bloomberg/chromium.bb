@@ -6,15 +6,12 @@
 Chromoting</translation>
 <translation id="1841799852846221389">Menonaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="2676780859508944670">Sedang bekerja…</translation>
-<translation id="6062854958530969723">Inisialisasi host gagal.</translation>
 <translation id="5843054235973879827">Mengapa ini aman?</translation>
 <translation id="5619148062500147964">Ke komputer ini</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="2208514473086078157">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="6541219117979389420">Log aplikasi dapat mencakup informasi pribadi, termasuk identitas Anda (alamat email) serta nama dan properti file dan folder di Google Drive.</translation>
 <translation id="3931191050278863510">Host berhenti.</translation>
-<translation id="3905196214175737742">Domain pemilik host tidak valid.</translation>
-<translation id="9213184081240281106">Konfigurasi host tidak valid.</translation>
 <translation id="6998989275928107238">Ke</translation>
 <translation id="406849768426631008">Ingin membantu seseorang sambil video chat dengannya? Coba <ph name="LINK_BEGIN"/> Desktop Jarak Jauh di Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Memaksimalkan jendela</translation>
@@ -135,14 +132,12 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="7948001860594368197">Opsi layar</translation>
 <translation id="8172070902751707422">Autentikasi gagal. Masuk ke Chrome Desktop Jarak Jauh lagi.</translation>
 <translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
-<translation id="7019153418965365059">Kesalahan host tidak dikenal: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Gagal tersambung ke perangkat Cast.</translation>
 <translation id="1342297293546459414">Melihat dan mengontrol komputer bersama.</translation>
 <translation id="1520828917794284345">Ubah ukuran desktop agar sesuai</translation>
 <translation id="701976023053394610">Bantuan Jarak Jauh</translation>
 <translation id="6099500228377758828">Layanan Chrome Desktop Jarak Jauh</translation>
 <translation id="2747641796667576127">Pembaruan perangkat lunak biasanya otomatis terjadi, namun dalam kasus yang sangat jarang, pembaruan dapat gagal. Memperbarui perangkat lunak seharusnya tidak memakan waktu lebih dari beberapa menit dan dapat dilakukan saat tersambung ke komputer Anda dari jarak jauh.</translation>
-<translation id="5170982930780719864">ID host tidak valid.</translation>
 <translation id="3933246213702324812">Chromoting di <ph name="HOSTNAME"/> telah kedaluwarsa dan perlu diperbarui.</translation>
 <translation id="6193698048504518729">Sambungkan ke <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang perangkat lunak versi terbaru dan coba lagi.</translation>
@@ -151,8 +146,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2647232381348739934">Layanan Chromoting</translation>
 <translation id="579702532610384533">Sambungkan ulang</translation>
 <translation id="4867841927763172006">Kirim PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (terakhir kali online <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">Setelan ini dikelola menurut kebijakan domain.</translation>
 <translation id="7810127880729796595">Tampilkan statistik (sambungan: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Tanggal penyandingan</translation>
 <translation id="3989511127559254552">Untuk melanjutkan, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
@@ -183,7 +176,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1704090719919187045">Preferensi Host Chromoting</translation>
 <translation id="809687642899217504">Komputer Saya</translation>
 <translation id="3106379468611574572">Komputer jarak jauh tidak menanggapi permintaan sambungan. Verifikasikan bahwa komputer jarak jauh sedang online dan coba lagi.</translation>
-<translation id="8386846956409881180">Host dikonfigurasi dengan kredensial OAuth yang tidak valid.</translation>
 <translation id="20876857123010370">Mode trackpad</translation>
 <translation id="2359808026110333948">Lanjut</translation>
 <translation id="2078880767960296260">Proses Host</translation>
@@ -210,7 +202,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="7038683108611689168">Bantu kami meningkatkan Chromoting dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="4405930547258349619">Pustaka Inti</translation>
-<translation id="3385242214819933234">Pemilik host tidak valid.</translation>
 <translation id="310979712355504754">Hapus semua</translation>
 <translation id="6542902059648396432">Melaporkan masalah...</translation>
 <translation id="7649070708921625228">Bantuan</translation>
@@ -244,7 +235,6 @@ Desktop Jarak Jauh</translation>
 <translation id="4207623512727273241">Jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="1324095856329524885">(Fitur ini belum tersedia untuk komputer Anda)</translation>
 <translation id="6570205395680337606">Setel ulang aplikasi. Anda akan kehilangan pekerjaan yang belum disimpan.</translation>
-<translation id="6284412385303060032">Host yang berjalan di layar logika konsol telah dinonaktifkan untuk mendukung mode tirai dengan beralih ke host yang berjalan di sesi khusus pengguna.</translation>
 <translation id="3596628256176442606">Layanan ini mengaktifkan sambungan masuk dari klien Chromoting.</translation>
 <translation id="4277463233460010382">Komputer ini dikonfigurasi untuk mengizinkan satu atau beberapa klien terhubung tanpa memasukkan PIN</translation>
 <translation id="837021510621780684">Dari komputer ini</translation>

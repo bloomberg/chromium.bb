@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Find dine bogmærker i Chrome-menuen eller på bogmærkelinjen.</translation>
 <translation id="8556340503434111824">Der findes en ny version af Google Chrome, som er hurtigere end nogensinde før.</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
-<translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="4728575227883772061">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Google Chrome kører, bedes du lukke programmet og prøve igen.</translation>
 <translation id="3080151273017101988">Fortsæt med at køre baggrundsapps, når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installationsprogrammet kunne ikke pakke arkivet ud. Download Google Chrome igen.</translation>
@@ -135,10 +134,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
         igen for at forbedre effektiviteten.</translation>
 <translation id="2290014774651636340">Google API-nøgler mangler. Nogle funktioner i Google Chrome deaktiveres.</translation>
 <translation id="2397416548179033562">Vis Chrome-menuen</translation>
-<translation id="5423788048750135178">Gå til Chrome-menuen &gt; Indstillinger &gt; (Avanceret) Privatliv,
-          og fjern markeringen af &quot;Hent sideressourcer på forhånd&quot;.
-          Hvis det ikke løser problemet, bør du markere dette afkrydsningsfelt
-          igen for at forbedre effektiviteten.</translation>
 <translation id="4794050651896644714">Gem oplysninger i Chrome</translation>
 <translation id="911206726377975832">Slet også dine browserdata?</translation>
 <translation id="5855036575689098185">Du har software på din computer, som ikke er kompatibel med Google Chrome.</translation>

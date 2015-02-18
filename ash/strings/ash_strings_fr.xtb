@@ -59,7 +59,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
 <translation id="5238774010593222950">Impossible de se connecter à un autre compte.</translation>
 <translation id="1723752762323179280">Fermeture de la session</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
@@ -199,11 +198,9 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> d'autonomie</translation>
 <translation id="3009178788565917040">Sortie</translation>
-<translation id="3147142846278915599">Lanceur d'applications (synchronisation des applications en cours…)</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/> : <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Encore <ph name="HOUR"/> h <ph name="MINUTE"/> min de chargement</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Désactiver le clavier à l'écran</translation>
 </translationbundle>

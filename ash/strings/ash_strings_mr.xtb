@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>
 <translation id="5238774010593222950">दुसर्‍या खात्यावर साइन इन करू शकत नाही.</translation>
 <translation id="1723752762323179280">सत्रातून निर्गमन करत आहे</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">होय</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
@@ -198,11 +197,9 @@
 <translation id="4918086044614829423">स्वीकारा</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> शिल्‍लक</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
-<translation id="3147142846278915599">लाँचर (संकालन अॅप्स...)</translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">पूर्ण होईपर्यंत  <ph name="HOUR"/>ता <ph name="MINUTE"/>मि</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> कडून SMS</translation>
-<translation id="4053612967614057854">ऑन-स्क्रीन कीबोर्ड अक्षम करा</translation>
 </translationbundle>

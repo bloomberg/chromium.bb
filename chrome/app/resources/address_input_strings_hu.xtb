@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="hu">
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="3713769522066937702">Ezt az irányítószámot (ZIP-kódot) nem lehet felismerni. Példa egy érvényes irányítószámra (ZIP-kódra): <ph name="EXAMPLE"/>. Nem tudja irányítószámát (ZIP-kódját)? Keresse meg <ph name="BEGIN_LINK"/>itt<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Cím</translation>
@@ -6,21 +8,16 @@
 <translation id="1340068511406764697">Meg kell adnia egy irányítószámot, például: <ph name="EXAMPLE"/>. Nem tudja irányítószámát? Keresse meg <ph name="BEGIN_LINK"/>itt<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Ezt az irányítószámot nem lehet felismerni. Példa egy érvényes irányítószámra: <ph name="EXAMPLE"/>. Nem tudja irányítószámát? Keresse meg <ph name="BEGIN_LINK"/>itt<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Település</translation>
-<translation id="6271429879296260742">PIN kód</translation>
 <translation id="6839929833149231406">Körzet</translation>
 <translation id="3885155851504623709">Körzet</translation>
 <translation id="8184169487503545976">Ez az irányítószám-formátum nem ismert.</translation>
-<translation id="7805765407568469194">Falu/község</translation>
 <translation id="7602447984296396718">Ez az irányítószám nem felel meg a cím többi részének.</translation>
-<translation id="8449204988444194299">Város</translation>
 <translation id="6247152910634872706">Szervezet</translation>
 <translation id="2053553514270667976">Irányítószám</translation>
-<translation id="2577522251608256362">Környék</translation>
 <translation id="7087282848513945231">Megye</translation>
 <translation id="2096368010154057602">Megye</translation>
 <translation id="7738983109397305830">Ez az irányítószám (ZIP-kód) nem felel meg a cím többi részének. Nem tudja irányítószámát (ZIP-kódját)? Keresse meg <ph name="BEGIN_LINK"/>itt<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Sziget</translation>
-<translation id="6132429659673988671">Külváros</translation>
 <translation id="7139724024395191329">Emírség</translation>
 <translation id="6970216967273061347">Kerület</translation>
 <translation id="6207937957461833379">Ország/Régió</translation>

@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Accedi a dispositivi USB di <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Scambio di dati con i computer denominati: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Accesso a scanner di documenti aggiunti tramite USB o sulla rete locale</translation>
 <translation id="6408118934673775994">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Scambio di dati con qualsiasi computer nel dominio <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Utilizzo del microfono</translation>
 <translation id="7217838517480956708">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME"/> sia installata. Non è possibile rimuovere o modificare l'estensione.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> di <ph name="VENDOR_NAME"/> (numero di serie: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configura connessioni di rete</translation>
 <translation id="7154130902455071009">Cambio della pagina iniziale con: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Accedi a tutti questi dispositivi USB</translation>
 <translation id="2677911863018634147">L'applicazione &quot;<ph name="APP_NAME"/>&quot; richiede accesso a uno o più dispositivi.</translation>

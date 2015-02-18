@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
 <translation id="1396446129537741364">Chromium yrittää näyttää salasanat.</translation>
 <translation id="8987477933582888019">Selain</translation>
-<translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
 <translation id="2886012850691518054">Valinnainen: Lähetä Googlelle automaattisesti käyttötilastoja ja virheraportteja Chromiumin kehittämiseksi.</translation>
 <translation id="580822234363523061">Avaa
           Chromium-valikko &gt;
@@ -178,10 +177,6 @@
 
 Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu profiilihakemisto tai käytä Chromiumin uudempaa versiota.</translation>
 <translation id="8907580949721785412">Chromium yrittää näyttää salasanat. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
-<translation id="4404275227760602850">Avaa Chromium-valikko &gt; Asetukset &gt; Tietosuoja (Lisäasetukset)
-          ja poista valinta kohdasta Hae valmiiksi sivun resurssit.
-          Jos ongelma ei ratkea, valitse tämä vaihtoehto uudelleen suorituskyvyn 
-          parantamiseksi.</translation>
 <translation id="1174473354587728743">Jaatko tietokoneen jonkun kanssa? Nyt voit määrittää Chromiumin juuri sellaiseksi kuin haluat.</translation>
 <translation id="9013087743919948559">Lisää Chromiumiin</translation>
 <translation id="2525993619214772747">Käyttäytyykö Chromium omituisesti?</translation>

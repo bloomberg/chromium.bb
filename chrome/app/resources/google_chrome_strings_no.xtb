@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Finn bokmerkene dine i Chrome-menyen eller på bokmerkeraden.</translation>
 <translation id="8556340503434111824">En ny versjon av Google Chrome er tilgjengelig, og den er nå raskere en noen sinne.</translation>
 <translation id="8987477933582888019">Nettleser</translation>
-<translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
 <translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
@@ -135,10 +134,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
         på nytt for bedre ytelse.</translation>
 <translation id="2290014774651636340">API-nøkler for Google mangler. Noe funksjonalitet i Google Chrome blir deaktivert.</translation>
 <translation id="2397416548179033562">Vis Chrome-menyen</translation>
-<translation id="5423788048750135178">Gå til Chrome-menyen &gt; Innstillinger &gt; (Avansert) Personvern,
-          og slå av alternativet for henting av sideressurser på forhånd.
-          Hvis ikke dette løser problemet, bør du slå på dette alternativet
-          igjen for å bedre ytelsen.</translation>
 <translation id="4794050651896644714">Lagre detaljer i Chrome</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="5855036575689098185">Programvaren som kjører på datamaskinen din er ikke kompatibel med Google Chrome.</translation>

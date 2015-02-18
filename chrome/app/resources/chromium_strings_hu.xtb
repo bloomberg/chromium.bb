@@ -38,7 +38,6 @@
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="1396446129537741364">A Chromium megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="8987477933582888019">Webböngésző</translation>
-<translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="2886012850691518054">Opcionális: Segítsen a Chromium fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak.</translation>
 <translation id="580822234363523061">Lépjen ide:
           Chromium menü &gt;
@@ -175,10 +174,6 @@
 <translation id="8621669128220841554">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="6717134281241384636">A profilja nem használható, mert az a Chromium egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Chromium újabb verzióját.</translation>
 <translation id="8907580949721785412">A Chromium megkísérli megjeleníteni a jelszavakat. Ennek engedélyezéséhez írja be Windows-jelszavát.</translation>
-<translation id="4404275227760602850">Nyissa meg a Chromium-menü &gt; Beállítások &gt; (Speciális) Adatvédelem menüelemet,
-          és tiltsa le az „Oldalforrások előzetes lehívása” beállítást.
-          Ha ettől nem szűnik meg a probléma, javasoljuk, hogy engedélyezze újra ezt a lehetőséget
-          a jobb teljesítmény érdekében.</translation>
 <translation id="1174473354587728743">Közösen használ valakivel egy számítógépet? Mostantól úgy állíthatja be a Chromiumot, ahogy Ön szeretné.</translation>
 <translation id="9013087743919948559">Hozzáadás a Chromiumhoz</translation>
 <translation id="2525993619214772747">Furcsán viselkedik a Chromium?</translation>

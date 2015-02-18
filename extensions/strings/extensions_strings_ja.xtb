@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> の USB デバイスへのアクセス</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="2518849872271000461">次のパソコンとのデータ交換: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB 接続またはローカル ネットワーク上のドキュメント スキャナーへのアクセス</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>、<ph name="WEBSITE_3"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="961805664415579088">ドメイン <ph name="DOMAIN"/> 内のパソコンとのデータ交換</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">マイクを使用する</translation>
 <translation id="7217838517480956708">このパソコンの管理者にとって <ph name="EXTENSION_NAME"/> がインストールされている必要があります。削除や修正はできません。</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>、提供元 <ph name="VENDOR_NAME"/>（シリアル番号 <ph name="SERIAL_NUMBER"/>）</translation>
-<translation id="8620765578342452535">ネットワーク接続の設定</translation>
 <translation id="7154130902455071009">スタート ページを次に変更します: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">これらの USB デバイスへのアクセス</translation>
 <translation id="2677911863018634147">アプリケーション「<ph name="APP_NAME"/>」がデバイスへのアクセスをリクエストしています。</translation>

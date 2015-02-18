@@ -69,7 +69,6 @@
 <translation id="6458467102616083041">Ignored because default search is disabled by policy.</translation>
 <translation id="1227224963052638717">Unknown policy.</translation>
 <translation id="9207861905230894330">Failed to add article.</translation>
-<translation id="5872918882028971132">Parent Suggestions</translation>
 <translation id="337363190475750230">Deprovisioned</translation>
 <translation id="2367567093518048410">Level</translation>
 <translation id="7977590112176369853">&lt;enter query&gt;</translation>
@@ -110,7 +109,6 @@
 <translation id="5455374756549232013">Bad policy timestamp</translation>
 <translation id="2025623846716345241">Confirm Reload</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> Bookmarks</translation>
-<translation id="4300246636397505754">Parent suggestions</translation>
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
 <translation id="1973335181906896915">Serialisation error</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>

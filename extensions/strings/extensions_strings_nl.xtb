@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Toegang verkrijgen tot USB-apparaten van <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Gegevens uitwisselen met de computers met de volgende namen: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Toegang tot documentscanners die zijn aangesloten via USB of die zich op het lokale netwerk bevinden</translation>
 <translation id="6408118934673775994">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> en <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Gegevens uitwisselen met elke computer in het domein <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Je microfoon gebruiken</translation>
 <translation id="7217838517480956708">De beheerder van dit apparaat vereist dat <ph name="EXTENSION_NAME"/> is geïnstalleerd. Het kan niet worden verwijderd of gewijzigd.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> van <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Netwerkverbindingen configureren</translation>
 <translation id="7154130902455071009">Je startpagina wijzigen in: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Toegang verkrijgen tot een van deze USB-apparaten</translation>
 <translation id="2677911863018634147">De app '<ph name="APP_NAME"/>' vereist toegang tot een of meer van je apparaten.</translation>

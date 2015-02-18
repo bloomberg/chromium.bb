@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Ihre Lesezeichen finden Sie im Chrome-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="8556340503434111824">Es gibt eine neue Version von Google Chrome, die schneller ist, als anderen zuvor.</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
-<translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
 <translation id="3080151273017101988">Apps im Hintergrund ausführen, wenn Google Chrome geschlossen ist</translation>
 <translation id="4149882025268051530">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Laden Sie Google Chrome erneut herunter.</translation>
@@ -128,10 +127,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
           diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
 <translation id="2290014774651636340">Google API-Schlüssel fehlen. Einige Funktionen von Google Chrome sind deaktiviert.</translation>
 <translation id="2397416548179033562">Chrome-Menü anzeigen</translation>
-<translation id="5423788048750135178">Öffnen Sie das Chrome-Menü &gt; Einstellungen &gt; (Erweitert) Datenschutz
-          und deaktivieren Sie die Option &quot;Vorabruf von Seitenressourcen&quot;.
-          Falls das Problem hierdurch nicht behoben wird, empfehlen wir,
-          diese Option für eine verbesserte Leistung wieder zu aktivieren.</translation>
 <translation id="4794050651896644714">Details in Chrome speichern</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="5855036575689098185">Auf Ihrem Computer befindet sich Software, die nicht mit Google Chrome kompatibel ist.</translation>

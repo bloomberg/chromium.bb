@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
 <translation id="8588878054171169263">Guardar imagem</translation>
-<translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
@@ -11,95 +10,67 @@
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
-<translation id="6085885345161726829">Após autenticar um cartão, o Chrome coloca-o na cache local.</translation>
 <translation id="8237438615979997762">Os dados armazenados neste dispositivo, bem como os dados armazenados na sua Conta Google, permanecem em ambos os locais. No entanto, os novos dados ou as alterações efetuadas aos dados não são sincronizados entre si.</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6504836143156866575">Versão de JavaScript</translation>
 <translation id="869891660844655955">Data de expiração</translation>
 <translation id="7644305409888602715">A traduzir a página para <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="326254929494722411">Ainda não configurou uma Conta Google neste dispositivo</translation>
-<translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
-<translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL"/></translation>
 <translation id="3895926599014793903">Forçar ativação do zoom</translation>
-<translation id="2440823041667407902">Acesso à localização</translation>
-<translation id="6600253697437303777">Perguntar antes de aceder à câmara e ao microfone (recomendado)</translation>
 <translation id="7015922086425404465">Obter aplicação da Google Play Store: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Atualizar esta Página</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6317634962183824346">Sincronização do sistema Android desativada. Reative e tente novamente.</translation>
 <translation id="5763382633136178763">Separadores de navegação anónima</translation>
-<translation id="1647391597548383849">Aceder à câmara</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
-<translation id="5902828464777634901">Todos os dados armazenados por este Website, incluindo cookies, são eliminados.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="9189669987942139609">TB</translation>
-<translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="6458785801851713928">A sincronização não está disponível para o seu domínio.</translation>
 <translation id="2731700343119398978">Aguarde...</translation>
 <translation id="6846298663435243399">A carregar…</translation>
 <translation id="7378627244592794276">Não</translation>
-<translation id="7999064672810608036">Tem a certeza de que pretende limpar todos os dados locais, incluindo cookies, e repor todas as autorizações para este Website?</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9133515669113036225">Repor as credenciais do dispositivo</translation>
-<translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="9019902583201351841">Gerido pelos teus pais</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="3358663646935160692">Esta conta é gerida por <ph name="DOMAIN_NAME"/>.
 
 Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administrador controlo sobre o seu perfil do Chrome. Os seus dados do Chrome ficarão associados permanentemente a esta conta. Desassociar esta conta irá eliminar os dados locais do Chrome.</translation>
-<translation id="563535393368633106">Perguntar antes de aceder (recomendado)</translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="3410346880900521918">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK"/>sugestões<ph name="END_LINK"/>.</translation>
-<translation id="5618939757577581490">Importar dados do Wallet</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
 <translation id="7375125077091615385">Tipo:</translation>
-<translation id="1086169178231554178">Cartão SD indisponível</translation>
 <translation id="2498359688066513246">Ajuda e comentários</translation>
-<translation id="1091134514807961917">Tem sessão iniciada na seguinte Conta Google.</translation>
-<translation id="7019652137705190998">Aceda ao modo de navegação anónima para navegar em privado ou iniciar sessão temporariamente</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="8218346974737627104">Confirmar início de sessão</translation>
-<translation id="3350687908700087792">Fechar todos os separadores de navegação anónima</translation>
-<translation id="5017989644593831205">Não é <ph name="NOT_YOU_USER_NAME"/>?</translation>
-<translation id="8997842057643556822">Não é possível criar o diretório de transferência na memória USB.</translation>
-<translation id="6948694623901096205">Câmara ou microfone</translation>
 <translation id="8853345339104747198">Separador <ph name="TAB_TITLE"/></translation>
 <translation id="624558823898732418">Idioma de tradução: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Escolher o certificado para autenticação</translation>
-<translation id="6140912465461743537">País/região</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="4378154925671717803">Telefone</translation>
-<translation id="988938288723502454">Não é possível criar o diretório de transferência no cartão SD.</translation>
 <translation id="3896036286668839683">Visualizador de certificados</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="8583805026567836021">A limpar os dados da conta</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR"/> Google Inc. Todos os direitos reservados.</translation>
 <translation id="4250680216510889253">Não</translation>
-<translation id="6388207532828177975">Limpar e repor</translation>
-<translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de dados armazenados</translation>
-<translation id="3656115297268584622">Ative a localização nas <ph name="BEGIN_LINK"/>Definições do Android<ph name="END_LINK"/>.</translation>
-<translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="552553974213252141">O texto foi extraído corretamente?</translation>
 <translation id="1151972924205500581">É necessária a palavra-passe</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2718352093833049315">Apenas em Wi-Fi</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
-<translation id="5487729733663684359">As atualizações do Chrome já não são suportadas para esta versão do Android.</translation>
 <translation id="2414886740292270097">Escuro</translation>
-<translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
-<translation id="238909021488141516">Ocorreu um erro ao transferir o conteúdo.</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="473775607612524610">Actualizar</translation>
@@ -108,7 +79,6 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
 <translation id="6406506848690869874">Sincronização</translation>
-<translation id="6026160407467558998">Permitir que os sites executem JavaScript</translation>
 <translation id="8481940801237642152">A sua ligação a este site é privada, mas alguém na rede pode estar a tentar alterar o aspeto da página.</translation>
 <translation id="2593272815202181319">Monoespaço</translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
@@ -126,14 +96,11 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
 <translation id="8428213095426709021">Definições</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (atualizado há <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Ups! Não foi possível traduzir esta página.</translation>
 <translation id="1987317783729300807">Contas</translation>
 <translation id="6064211167623632605">Caminho do executável</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="2903493209154104877">Endereços</translation>
-<translation id="3661699943263275414">Os Websites de terceiros podem guardar e ler dados de cookies</translation>
-<translation id="1173289567081511873">Tem sessão iniciada nas seguintes Contas Google. Adicione ou remova contas nas definições do Android.</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
@@ -142,68 +109,51 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
 <translation id="7080851568148064063">Adicionar ao ecrã principal</translation>
 <translation id="6192792657125177640">Excepções</translation>
-<translation id="1984937141057606926">Permitidos, exceto de terceiros</translation>
 <translation id="4619298195800598081">Abrir imagem orig. novo sep.</translation>
 <translation id="8798099450830957504">Predefinição</translation>
-<translation id="5308603654685598744">Quando esta funcionalidade está ativada, o Chrome oferece a possibilidade de traduzir páginas escritas noutros idiomas com o Google Tradutor.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="3254409185687681395">Marcar esta página</translation>
 <translation id="907015151729920253">Smart card</translation>
 <translation id="2482878487686419369">Notificações</translation>
-<translation id="4412992751769744546">Permitir cookies de terceiros</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
 <translation id="8106211421800660735">Número de cartão de crédito</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="7267430310003164111">Solicitação para obter aplicação da Google Play Store. Nome da aplicação: <ph name="APP_NAME"/>. Classificação média da aplicação: <ph name="APP_RATING"/>.</translation>
-<translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="7358682983403815415">Os seus separadores abertos, marcadores, histórico e muito mais estão a ser sincronizados com a sua Conta Google.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="4113030288477039509">Gerido pelo administrador</translation>
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="4148957013307229264">A instalar...</translation>
-<translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
 <translation id="3992315671621218278">Guardar link</translation>
-<translation id="5324858694974489420">Definições parentais</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Bloquear todos os sites</translation>
-<translation id="8168435359814927499">Conteúdo</translation>
 <translation id="5424715742813396254">Editar nome/palavra-passe guardada ou exceção</translation>
-<translation id="6978479750597523876">Repor definições de tradução</translation>
 <translation id="2476578072172137802">Definições do site</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="651048280540227067">Ignorar o menu</translation>
 <translation id="748127970106343339">Confirmar a eliminação das credenciais do dispositivo</translation>
 <translation id="3089395242580810162">Abrir no separador de navegação anónima</translation>
 <translation id="1082482054625560856">Gerir palavras-passe guardadas na sua <ph name="BEGIN_LINK"/>Conta Google<ph name="END_LINK"/></translation>
-<translation id="2360035970720276770">Só é possível transferir URLs com http ou https</translation>
-<translation id="4376501731284077108">Não controlado</translation>
 <translation id="2699916814609764774">Caminho do perfil</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
-<translation id="6717254161209606306">Pedido para adicionar a página ao ecrã principal. Nome da aplicação: <ph name="APP_NAME"/>. URL da aplicação: <ph name="APP_URL"/>.</translation>
-<translation id="7977858705483383621">Pesquisa segura</translation>
 <translation id="8909135823018751308">Partilhar…</translation>
-<translation id="3338301885994755905">Bloquear (recomendado)</translation>
 <translation id="6575643671698722332">Falha ao repor. Verifique se o dispositivo está online e tente novamente.</translation>
 <translation id="654446541061731451">Selecione um separador a transmitir</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Preenchimento autom. formulários</translation>
-<translation id="8515416241041728525">Adicionar conta a <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME"/>. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
 <translation id="4510973599275542560">Não atualizar</translation>
 <translation id="1206892813135768548">Copiar texto do link</translation>
 <translation id="9154176715500758432">Permanecer nesta página</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
-<translation id="5420752959853967987">bytes</translation>
 <translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
 <translation id="4271185234001491831">Nunca traduzir de <ph name="LANGUAGE"/></translation>
-<translation id="7981795308302452224">Falha ao iniciar a transferência</translation>
 <translation id="6671495933530132209">Copiar imagem</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
@@ -211,53 +161,36 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="8941248009481596111">A sua ligação a este site é privada.</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
-<translation id="2956410042958133412">Esta conta é gerida por <ph name="PARENT_NAME_1"/> e por <ph name="PARENT_NAME_2"/>.</translation>
-<translation id="7048229856657573547">Gerir dados do Wallet</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE"/> deste site da próxima vez?</translation>
 <translation id="4062305924942672200">Informações legais</translation>
-<translation id="515227803646670480">Limpar dados armazenados</translation>
 <translation id="8528538445849828817">Idioma da página: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="6512448926095770873">Sair desta página</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
-<translation id="945632385593298557">Aceder ao microfone</translation>
 <translation id="5626134646977739690">Nome:</translation>
-<translation id="8617240290563765734">Pretende abrir o URL sugerido que é especificado no conteúdo transferido?</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="6333140779060797560">Partilhar através de <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="2888126860611144412">Acerca do Chrome</translation>
 <translation id="5138299137310274655">Esta página está em <ph name="SOURCE_LANGUAGE"/>. Pretende traduzi-la para <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
-<translation id="5512137114520586844">Esta conta é gerida por <ph name="PARENT_NAME"/>.</translation>
 <translation id="7649070708921625228">Ajuda</translation>
-<translation id="1373696734384179344">Memória insuficiente para transferir o conteúdo selecionado.</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>
-<translation id="5085880389019676122">Memória USB indisponível</translation>
 <translation id="1614564776292091138">Quando o conteúdo protegido está ATIVADO, os Websites podem autenticar o seu dispositivo para assegurar que este está autorizado a reproduzir vídeos premium protegidos.
 
 Se estiver DESATIVADO, não pode reproduzir vídeos premium neste dispositivo.</translation>
 <translation id="8928220460877261598">Tem agora sessão iniciada no Chrome.</translation>
 <translation id="5032574515228824816">Mensagem</translation>
-<translation id="8920114477895755567">A aguardar os detalhes dos pais.</translation>
-<translation id="3003595280608617736">Nenhum cartão SD</translation>
 <translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
 
 Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>
 <translation id="2913733558842973836">Este site entrou em modo de ecrã inteiro.
 Arraste a partir da parte superior para sair.</translation>
-<translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="7961015016161918242">Nunca</translation>
-<translation id="6820607729870073286">Não tem definições de Websites guardadas.</translation>
-<translation id="1159783623621444829">Esta conta pertence a uma criança</translation>
 <translation id="8109148095642131923">Falha ao adicionar o item transferido ao gestor de transferências.</translation>
-<translation id="6295158916970320988">Todos os sites</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="8310344678080805313">Separadores padrão</translation>
-<translation id="8396312449826231789">Apenas sites aprovados</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="7634554953375732414">A sua ligação a este site não é privada.</translation>
@@ -265,13 +198,8 @@ Arraste a partir da parte superior para sair.</translation>
 <translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="6738867403308150051">A transferir...</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6375900123462779979">Aceder ao microfone e à câmara</translation>
 <translation id="7437998757836447326">Terminar sessão no Chrome</translation>
-<translation id="8773248244177230992">Limpar a cache</translation>
-<translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
-<translation id="5645050752379834274">Com esta funcionalidade ativada, o Chrome disponibiliza o preenchimento de formulários através de endereços e de cartões de crédito do Wallet.</translation>
 <translation id="7561196759112975576">Sempre</translation>
 </translationbundle>

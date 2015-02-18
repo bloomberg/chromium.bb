@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="5238774010593222950">다른 계정에 로그인할 수 없습니다.</translation>
 <translation id="1723752762323179280">세션 종료</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/>(HDMI/DP)</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">로그아웃</translation>
@@ -199,11 +198,9 @@
 <translation id="4918086044614829423">수락</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
 <translation id="3009178788565917040">출력</translation>
-<translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">충전 완료까지 <ph name="HOUR"/>시간 <ph name="MINUTE"/>분 남음</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>에서 전송된 SMS</translation>
-<translation id="4053612967614057854">터치 키보드 사용 중지</translation>
 </translationbundle>

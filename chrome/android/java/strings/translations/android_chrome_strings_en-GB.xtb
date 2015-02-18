@@ -126,7 +126,6 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="5668404140385795438">Override a website’s request to prevent zooming in</translation>
 <translation id="8428213095426709021">Settings</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (Updated <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Oops. This page could not be translated.</translation>
 <translation id="1987317783729300807">Accounts</translation>
 <translation id="6064211167623632605">Executable path</translation>
@@ -183,7 +182,6 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="2699916814609764774">Profile path</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="8725066075913043281">Try again</translation>
-<translation id="6717254161209606306">Prompt to add page to the homescreen.  App name: <ph name="APP_NAME"/>.  App URL: <ph name="APP_URL"/>.</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="3338301885994755905">Block (recommended)</translation>

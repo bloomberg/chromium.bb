@@ -6,15 +6,12 @@
 التوافق مع نظام التشغيل</translation>
 <translation id="1841799852846221389">جارٍ تعطيل الاتصالات عن بُعد لهذا الكمبيوتر...</translation>
 <translation id="2676780859508944670">جارٍ العمل…</translation>
-<translation id="6062854958530969723">فشلت تهيئة المضيف.</translation>
 <translation id="5843054235973879827">ما سبب تمتع هذه العملية بالأمان؟</translation>
 <translation id="5619148062500147964">بهذا الكمبيوتر</translation>
 <translation id="4068946408131579958">جميع الاتصالات</translation>
 <translation id="2208514473086078157">‏لا تسمح إعدادات السياسة بمشاركة هذا الكمبيوتر كمضيف لسطح المكتب البعيد من Chrome. اتصل بمشرف النظام لتلقي المساعدة.</translation>
 <translation id="6541219117979389420">‏ربما تتضمن سجلات التطبيق معلومات خاصة، بما في ذلك هويتك (عنوان البريد الإلكتروني) وأسماء وخصائص الملفات والمجلدات في Google Drive.</translation>
 <translation id="3931191050278863510">المضيف توقف.</translation>
-<translation id="3905196214175737742">نطاق مالك المضيف غير صالح.</translation>
-<translation id="9213184081240281106">تهيئة المضيف غير صالحة.</translation>
 <translation id="6998989275928107238">إلى</translation>
 <translation id="406849768426631008">‏إذا كنت ترغب في تقديم المساعدة إلى شخص ما أثناء إجراء دردشة فيديو معه، فيُمكنك تجربة ميزة <ph name="LINK_BEGIN"/> سطح المكتب البعيد في Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">تكبير النافذة</translation>
@@ -135,14 +132,12 @@
 <translation id="7948001860594368197">خيارات الشاشة</translation>
 <translation id="8172070902751707422">‏أخفقت المصادقة. الرجاء تسجيل الدخول إلى سطح المكتب البعيد من Chrome مرة أخرى.</translation>
 <translation id="5254120496627797685">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة سطح المكتب البعيد من Chrome.</translation>
-<translation id="7019153418965365059">خطأ بالمضيف غير معروف: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">فشل الاتصال بجهاز البث.</translation>
 <translation id="1342297293546459414">الاطلاع على جهاز كمبيوتر تمت مشاركته والتحكم فيه.</translation>
 <translation id="1520828917794284345">تغيير حجم سطح المكتب للملاءمة</translation>
 <translation id="701976023053394610">المساعدة عن بُعد</translation>
 <translation id="6099500228377758828">‏خدمة سطح المكتب البعيد من Chrome</translation>
 <translation id="2747641796667576127">يتم عادةً إجراء تحديثات البرامج تلقائيًا، لكنها قد تخفق في بعض الحالات النادرة. من المفترض ألا يستغرق تحديث البرامج أكثر من بضع دقائق، كما يمكن إجراؤه أثناء الاتصال بالكمبيوتر عن بُعد.</translation>
-<translation id="5170982930780719864">رقم تعريف المضيف غير صالح.</translation>
 <translation id="3933246213702324812">‏ميزة التوافق مع نظام التشغيل Chrome على <ph name="HOSTNAME"/> قديمة ويلزم تحديثها.</translation>
 <translation id="6193698048504518729">الاتصال بـ <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">بعض المكونات المطلوبة مفقودة. الرجاء التأكد من تثبيت أحدث إصدار من البرنامج وإعادة المحاولة.</translation>
@@ -151,8 +146,6 @@
 <translation id="2647232381348739934">‏خدمة التوافق مع نظام التشغيل Chrome</translation>
 <translation id="579702532610384533">إعادة الاتصال</translation>
 <translation id="4867841927763172006">‏إرسال PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (آخر دخول على الإنترنت في تمام <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">تتم إدارة هذا الإعداد بواسطة سياسات النطاق لديك.</translation>
 <translation id="7810127880729796595">عرض الإحصاءات (جودة الاتصال: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">تاريخ الإقران</translation>
 <translation id="3989511127559254552">للاستمرار، يجب أولاً منح أذونات موسّعة بالدخول إلى جهاز الكمبيوتر. لن يُطلب منك إجراء ذلك سوى مرة واحدة.</translation>
@@ -185,7 +178,6 @@
 <translation id="1704090719919187045">‏تفضيلات مضيف التوافق مع نظام التشغيل Chrome</translation>
 <translation id="809687642899217504">أجهزة الكمبيوتر الخاصة بي</translation>
 <translation id="3106379468611574572">الكمبيوتر البعيد لا يستجيب لطلبات الاتصال. الرجاء التحقق من اتصاله بالإنترنت وإعادة المحاولة.</translation>
-<translation id="8386846956409881180">‏تمت تهيئة المضيف بواسطة بيانات اعتماد OAuth غير صالحة.</translation>
 <translation id="20876857123010370">وضع لوحة التتبع</translation>
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2078880767960296260">عملية المضيف</translation>
@@ -212,7 +204,6 @@
 <translation id="7038683108611689168">‏ساعدنا في تحسين تطبيق التوافق مع نظام التشغيل Chrome من خلال السماح لنا بتجميع إحصاءات الاستخدام وتقارير الأعطال.</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="4405930547258349619">المكتبة الأساسية</translation>
-<translation id="3385242214819933234">مالك المضيف غير صالح.</translation>
 <translation id="310979712355504754">حذف الكل</translation>
 <translation id="6542902059648396432">الإبلاغ عن مشكلة...</translation>
 <translation id="7649070708921625228">مساعدة</translation>
@@ -246,7 +237,6 @@
 <translation id="4207623512727273241">الرجاء تشغيل أداة التثبيت قبل المتابعة.</translation>
 <translation id="1324095856329524885">(هذه الميزة غير متاحة بعد لجهاز الكمبيوتر)</translation>
 <translation id="6570205395680337606">إعادة ضبط التطبيق. ستفقد أيّ عمل لم يتم حفظه.</translation>
-<translation id="6284412385303060032">‏تم إيقاف المضيف الذي يعمل على شاشة تسجيل لوحة التحكم لدعم الوضع Curtain من خلال التبديل إلى مضيف يعمل في جلسة خاصة بالمستخدم.</translation>
 <translation id="3596628256176442606">‏تمكن هذه الخدمة الاتصالات الواردة من عملاء التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="4277463233460010382">تمت تهيئة هذا الكمبيوتر بحيث يسمح لعميل واحد أو أكثر بالاتصال بدون إدخال رقم تعريف شخصي.</translation>
 <translation id="837021510621780684">من هذا الكمبيوتر</translation>

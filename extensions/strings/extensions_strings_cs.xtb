@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Přistupovat k zařízením USB od dodavatele <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Čtení a úprava dat na webu <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Výměna dat s následujícími počítači: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Přístup ke skenerům dokumentů připojeným přes USB nebo v místní síti</translation>
 <translation id="6408118934673775994">Čtení a úprava dat na webu <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> a <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Výměna dat s libovolným počítačem v doméně <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Používat mikrofon</translation>
 <translation id="7217838517480956708">Správce tohoto počítače vyžaduje instalaci rozšíření <ph name="EXTENSION_NAME"/>. Nelze je odebrat ani upravit.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Konfigurovat síťová připojení</translation>
 <translation id="7154130902455071009">Změnit úvodní stránku na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Přístup ke kterýmkoliv z těchto zařízení USB</translation>
 <translation id="2677911863018634147">Aplikace <ph name="APP_NAME"/> žádá o přístup k jednomu nebo více z vašich zařízení.</translation>

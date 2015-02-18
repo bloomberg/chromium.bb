@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Отримувати доступ до пристроїв USB від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Читати та змінювати свої дані на веб-сайті <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Обмінюватися даними з комп’ютерами <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Отримувати доступ до сканерів документів, під’єднаних через USB або локальну мережу</translation>
 <translation id="6408118934673775994">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Обмінюватися даними з будь-яким комп’ютером у домені <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Використовувати ваш мікрофон</translation>
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME"/>. Його не можна видаляти чи змінювати.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Налаштувати з’єднання з мережею</translation>
 <translation id="7154130902455071009">Зробити <ph name="START_PAGE"/> домашньою сторінкою</translation>
 <translation id="1036511912703768636">Отримувтаи доступ до цих пристроїв USB</translation>
 <translation id="2677911863018634147">Додаток <ph name="APP_NAME"/> запитує доступ до одного або кількох ваших пристроїв.</translation>

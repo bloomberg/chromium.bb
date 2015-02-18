@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="8588878054171169263">Spara bild</translation>
-<translation id="3303414029551471755">Vill du hämta innehållet?</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="8425213833346101688">Ändra</translation>
 <translation id="4996978546172906250">Dela via</translation>
@@ -11,95 +10,67 @@
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
-<translation id="6085885345161726829">När du har autentiserat ett kort cachelagras det lokalt i Chrome.</translation>
 <translation id="8237438615979997762">Data som sparats på enheten och data som sparats i Google-kontot finns kvar på båda ställena. Ny data och ändringar som du gör kommer dock inte att synkroniseras dem emellan.</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6504836143156866575">JavaScript-version</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
 <translation id="7644305409888602715">Översätter sidan till <ph name="SOURCE_LANGUAGE"/> ...</translation>
 <translation id="326254929494722411">Inget Google-konto har konfigurerats på den här enheten ännu</translation>
-<translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
-<translation id="1404122904123200417">Inbäddad i <ph name="WEBSITE_URL"/></translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
-<translation id="2440823041667407902">Platsåtkomst</translation>
-<translation id="6600253697437303777">Fråga innan kamera och mikrofon används (rekommenderas)</translation>
 <translation id="7015922086425404465">Hämta appen från Google Play Butik: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Hämta sidan igen</translation>
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
 <translation id="6317634962183824346">Synkronisering av Android-systemet har inaktiverats. Aktivera och försök igen.</translation>
 <translation id="5763382633136178763">Inkognitoflikar</translation>
-<translation id="1647391597548383849">Tillgång till din kamera</translation>
 <translation id="5210365745912300556">Stäng flik</translation>
-<translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="9189669987942139609">TB</translation>
-<translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="6458785801851713928">Synkronisering är inte tillgängligt för din domän.</translation>
 <translation id="2731700343119398978">Vänta ...</translation>
 <translation id="6846298663435243399">Läser in…</translation>
 <translation id="7378627244592794276">Nej</translation>
-<translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9133515669113036225">Återställ användaruppgifter för enheten</translation>
-<translation id="2381756643783702095">Fråga innan något skickas (rekommenderas)</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="3358663646935160692">Kontot hanteras av <ph name="DOMAIN_NAME"/>.
 
 Du loggar in med ett hanterat konto, vilket innebär att administratören kontrollerar din Chrome-profil. Din Chrome-data kommer att knytas permanent till det här kontot. Om du kopplar ifrån det här kontot raderas din lokala Chrome-data.</translation>
-<translation id="563535393368633106">Fråga innan informationen används (rekommenderas)</translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="3410346880900521918">Om du ser detta ofta provar du <ph name="BEGIN_LINK"/>de här förslagen<ph name="END_LINK"/>.</translation>
-<translation id="5618939757577581490">Importera Wallet-data</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="7375125077091615385">Typ:</translation>
-<translation id="1086169178231554178">SD-kort ej tillgängligt</translation>
 <translation id="2498359688066513246">Hjälp och feedback</translation>
-<translation id="1091134514807961917">Du är inloggad på följande Google-konto.</translation>
-<translation id="7019652137705190998">Använd inkognitoläget om du vill söka privat eller om du vill logga in tillfälligt</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="8218346974737627104">Bekräfta inloggning</translation>
-<translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
-<translation id="5017989644593831205">Inte <ph name="NOT_YOU_USER_NAME"/>?</translation>
-<translation id="8997842057643556822">Det går inte att skapa en katalog för hämtade filer på USB-lagringsenheten.</translation>
-<translation id="6948694623901096205">Kamera eller mikrofon</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, flik</translation>
 <translation id="624558823898732418">Översättningsspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Välj certifikat för autentisering</translation>
-<translation id="6140912465461743537">Land/region</translation>
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="988938288723502454">Det går inte att skapa en katalog för hämtade filer på SD-kortet.</translation>
 <translation id="3896036286668839683">Certifikatvisare</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR"/> Google Inc. Med ensamrätt.</translation>
 <translation id="4250680216510889253">Nej</translation>
-<translation id="6388207532828177975">Ta bort och återställ</translation>
-<translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> sparad data</translation>
-<translation id="3656115297268584622">Aktivera plats i <ph name="BEGIN_LINK"/>Android-inställningarna<ph name="END_LINK"/>.</translation>
-<translation id="7423098979219808738">Fråga först</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="552553974213252141">Extraherades texten korrekt?</translation>
 <translation id="1151972924205500581">Lösenord krävs</translation>
 <translation id="2870560284913253234">Webbplats</translation>
 <translation id="2718352093833049315">Endast på Wi-Fi</translation>
 <translation id="7029809446516969842">Lösenord</translation>
-<translation id="5487729733663684359">Uppdateringar av Chrome stöds inte längre för den här versionen av Android.</translation>
 <translation id="2414886740292270097">Mörk</translation>
-<translation id="5911030830365207728">Google Översätt</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
-<translation id="238909021488141516">Ett fel uppstod när innehållet skulle hämtas.</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="473775607612524610">Uppdatera</translation>
@@ -108,7 +79,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="6406506848690869874">Synkronisera</translation>
-<translation id="6026160407467558998">Tillåt webbplatser att köra JavaScript</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Namn på kort</translation>
@@ -126,14 +96,11 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
 <translation id="8428213095426709021">Inställningar</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (uppdaterades <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="1987317783729300807">Konton</translation>
 <translation id="6064211167623632605">Sökväg till körbar fil</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="2903493209154104877">Adresser</translation>
-<translation id="3661699943263275414">Webbplatser från tredje part kan spara och läsa cookiedata</translation>
-<translation id="1173289567081511873">Du är inloggad på följande Google-konton. Lägg till eller ta bort konton i Android-inställningarna.</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="4827948050554950725">Lägg till ett kreditkort</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
@@ -142,68 +109,51 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="6571070086367343653">Redigera kreditkort</translation>
 <translation id="7080851568148064063">Lägg till på startskärmen</translation>
 <translation id="6192792657125177640">Undantag</translation>
-<translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
 <translation id="4619298195800598081">Öppna original i ny flik</translation>
 <translation id="8798099450830957504">Standard</translation>
-<translation id="5308603654685598744">När den här funktionen är aktiverad blir du tillfrågad om Chrome ska översätta sidor på andra språk med hjälp av Google Översätt.</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="3254409185687681395">Lägg till bokmärke för den här sidan</translation>
 <translation id="907015151729920253">Smartkort</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
-<translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Spara video</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="7267430310003164111">Uppmaning att hämta appen från Google Play Butik.  Appens namn: <ph name="APP_NAME"/>.  Appens medelbetyg: <ph name="APP_RATING"/>.</translation>
-<translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="7358682983403815415">Bland annat öppna flikar, bokmärken och historik synkroniseras med ditt Google-konto.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="4113030288477039509">Hanteras av administratören</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="4148957013307229264">Installerar...</translation>
-<translation id="5271967389191913893">Innehållet som skulle hämtas gick inte att öppna på enheten.</translation>
 <translation id="3992315671621218278">Spara länk</translation>
-<translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Blockera alla webbplatser</translation>
-<translation id="8168435359814927499">Innehåll</translation>
 <translation id="5424715742813396254">Redigera sparat namn/lösenord eller undantag</translation>
-<translation id="6978479750597523876">Återställ översättningsinställningar</translation>
 <translation id="2476578072172137802">Inställningar för webbplatsen</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="651048280540227067">Stäng menyn</translation>
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="1082482054625560856">Hantera sparade lösenord i ditt <ph name="BEGIN_LINK"/>Google-konto<ph name="END_LINK"/></translation>
-<translation id="2360035970720276770">Bara adresser med http eller https kan hämtas</translation>
-<translation id="4376501731284077108">Inte styrda</translation>
 <translation id="2699916814609764774">Profilsökväg</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="8725066075913043281">Försök igen</translation>
-<translation id="6717254161209606306">Uppmaning att lägga till sidan på startskärmen. Appens namn: <ph name="APP_NAME"/>. Appens webbadress: <ph name="APP_URL"/>.</translation>
-<translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Dela …</translation>
-<translation id="3338301885994755905">Blockera (rekommenderas)</translation>
 <translation id="6575643671698722332">Fel vid återställning. Kolla att enheten är online. Försök igen.</translation>
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Fyll i formulär automatiskt</translation>
-<translation id="8515416241041728525">Lägg till konto för <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME"/>. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
 <translation id="4510973599275542560">Hämta ej sidan igen</translation>
 <translation id="1206892813135768548">Kopiera länktext</translation>
 <translation id="9154176715500758432">Stanna på den här sidan</translation>
 <translation id="1416550906796893042">Appversion</translation>
-<translation id="5420752959853967987">byte</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE"/></translation>
-<translation id="7981795308302452224">Det gick inte att starta hämtningen</translation>
 <translation id="6671495933530132209">Kopiera bild</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
@@ -211,53 +161,36 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="8941248009481596111">Din anslutning till webbplatsen är privat.</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
-<translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1"/> och <ph name="PARENT_NAME_2"/>.</translation>
-<translation id="7048229856657573547">Hantera Wallet-data</translation>
 <translation id="5164482624172255778">Vill du att alternativet att översätta sidor i Google Chrome på <ph name="LANGUAGE"/> från den här webbplatsen ska visas nästa gång?</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
-<translation id="515227803646670480">Ta bort sparad data</translation>
 <translation id="8528538445849828817">Sidans språk: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="7963646190083259054">Leverantör:</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="6512448926095770873">Lämna denna sida</translation>
 <translation id="3414952576877147120">Storlek:</translation>
-<translation id="945632385593298557">Tillgång till din mikrofon</translation>
 <translation id="5626134646977739690">Namn:</translation>
-<translation id="8617240290563765734">Vill du öppna den föreslagna webbadressen i det hämtade innehållet?</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="5138299137310274655">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE"/>. Vill du översätta den till <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
-<translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME"/>.</translation>
 <translation id="7649070708921625228">Hjälp</translation>
-<translation id="1373696734384179344">Det finns inte tillräckligt med minne för att hämta det valda innehållet.</translation>
 <translation id="969096075394517431">Ändra språk</translation>
-<translation id="5085880389019676122">USB-enhet ej tillgänglig</translation>
 <translation id="1614564776292091138">När skyddat innehåll är PÅ kan enheten autentiseras på webbplatser för att kontrollera att den har behörighet att spela upp högkvalitativa skyddade videor.
 
 Om skyddat innehåll däremot är AV kan det hända att du inte kan spela upp högkvalitativa videor på enheten.</translation>
 <translation id="8928220460877261598">Du är nu inloggad i Chrome.</translation>
 <translation id="5032574515228824816">Fråga</translation>
-<translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
-<translation id="3003595280608617736">Inget SD-kort</translation>
 <translation id="862875433388403934">Det kan hända att det inte går att spela upp innehåll (t.ex. filmer och musik) som har hämtats i andra appar förrän dessa appar får nya licenser som baseras på nya användaruppgifter för enheten.
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det hämtade innehållet.</translation>
 <translation id="2913733558842973836">Webbplatsen har öppnats i helskärmsläge.
 Tryck och dra uppifrån och ned om du vill lämna det.</translation>
-<translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="7961015016161918242">Aldrig</translation>
-<translation id="6820607729870073286">Du har inga sparade webbplatsinställningar.</translation>
-<translation id="1159783623621444829">Det här är ett barnkonto</translation>
 <translation id="8109148095642131923">Det gick inte att lägga till det hämtade objektet i hämtningshanteraren.</translation>
-<translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="8310344678080805313">Standardflikar</translation>
-<translation id="8396312449826231789">Endast godkända webbplatser</translation>
 <translation id="411254640334432676">Hämtningen misslyckades.</translation>
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="7634554953375732414">Din anslutning till webbplatsen är inte privat.</translation>
@@ -265,13 +198,8 @@ Tryck och dra uppifrån och ned om du vill lämna det.</translation>
 <translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="1742134235943978220">Översatt till <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="6738867403308150051">Hämtar …</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6375900123462779979">Tillgång till mikrofon o. kamera</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
-<translation id="8773248244177230992">Rensa cacheminnet</translation>
-<translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5677928146339483299">Blockerad</translation>
-<translation id="5645050752379834274">När den här funktionen är aktiverad kan Chrome fylla i formulär med adresser och kreditkortsuppgifter från Wallet.</translation>
 <translation id="7561196759112975576">Alltid</translation>
 </translationbundle>

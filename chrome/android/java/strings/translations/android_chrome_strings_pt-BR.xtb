@@ -126,7 +126,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="5668404140385795438">Substituir a solicitação de um site para evitar a aplicação de zoom</translation>
 <translation id="8428213095426709021">Configurações</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (atualizada <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
 <translation id="1987317783729300807">Contas</translation>
 <translation id="6064211167623632605">Caminho do arquivo executável</translation>
@@ -183,7 +182,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="2699916814609764774">Caminho do perfil</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
-<translation id="6717254161209606306">Prompt para adicionar página à tela inicial. Nome do app: <ph name="APP_NAME"/>. URL do app: <ph name="APP_URL"/>.</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
 <translation id="3338301885994755905">Bloquear (recomendado)</translation>

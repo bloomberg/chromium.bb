@@ -43,7 +43,6 @@
 <translation id="568643307450491754">在 Chrome 菜单或书签栏中查找您的书签。</translation>
 <translation id="8556340503434111824">Google Chrome 浏览器现已推出速度更快的新版本。</translation>
 <translation id="8987477933582888019">网络浏览器</translation>
-<translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
 <translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载 Google Chrome。</translation>
@@ -122,8 +121,6 @@
 <translation id="6341737370356890233">前往 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”部分，然后取消选中“<ph name="NO_PREFETCH_DESCRIPTION"/>”。如果这无法解决该问题，我们建议您重新选中此选项，以便改善性能。</translation>
 <translation id="2290014774651636340">缺少 Google API 密钥，因此 Google Chrome 的部分功能将无法使用。</translation>
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
-<translation id="5423788048750135178">前往 Chrome 菜单 &gt;“设置”&gt;“隐私设置”（高级设置）部分，然后停用“预提取网页资源”。
-          如果这无法解决该问题，我们建议您重新启用此选项，以便改善性能。</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>

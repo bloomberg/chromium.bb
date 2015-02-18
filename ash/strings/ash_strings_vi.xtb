@@ -59,7 +59,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
 <translation id="5238774010593222950">Không thể đăng nhập vào tài khoản khác.</translation>
 <translation id="1723752762323179280">Thoát phiên</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
@@ -199,11 +198,9 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
 <translation id="5102001756192215136">Còn lại <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Thiết bị ra</translation>
-<translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>g <ph name="MINUTE"/>p cho đến khi đầy</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS từ <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Tắt bàn phím ảo</translation>
 </translationbundle>

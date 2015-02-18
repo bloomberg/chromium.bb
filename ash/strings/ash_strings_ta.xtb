@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">குறைந்த சக்தியிலான சார்ஜர் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="5238774010593222950">மற்றொரு கணக்கில் உள்நுழைய முடியாது.</translation>
 <translation id="1723752762323179280">அமர்விலிருந்து வெளியேறுகிறது</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">ஆம்</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
@@ -199,11 +198,9 @@
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> உள்ளது</translation>
 <translation id="3009178788565917040">வெளியீடு</translation>
-<translation id="3147142846278915599">துவக்கி (பயன்பாடுகளை ஒத்திசைக்கிறது...)</translation>
 <translation id="6911468394164995108">மற்றொன்றில் சேர்...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR"/>ம <ph name="MINUTE"/>நி</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> என்ற எண்ணிலிருந்து வந்த SMS</translation>
-<translation id="4053612967614057854">ஆன்ஸ்க்ரீன் விசைப்பலகையை முடக்கு</translation>
 </translationbundle>

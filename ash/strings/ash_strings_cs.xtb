@@ -58,7 +58,6 @@
 <translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
 <translation id="5238774010593222950">K dalšímu účtu se nelze přihlásit.</translation>
 <translation id="1723752762323179280">Ukončení relace</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
@@ -196,11 +195,9 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="5102001756192215136">Zbývá: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Výstup</translation>
-<translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do nabití</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS z čísla <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Zakázat softwarovou klávesnici</translation>
 </translationbundle>

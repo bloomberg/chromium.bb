@@ -59,7 +59,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="8676770494376880701">Priključen je nizkoenergijski polnilnik</translation>
 <translation id="5238774010593222950">Prijava v drug račun ni mogoča.</translation>
 <translation id="1723752762323179280">Odjava iz seje</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Odjava</translation>
@@ -199,11 +198,9 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="5102001756192215136">Še <ph name="HOUR"/>.<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Izhod</translation>
-<translation id="3147142846278915599">Zaganjalnik (sinhronizacija aplikacij ...)</translation>
 <translation id="6911468394164995108">Pridružite se drugemu ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do napolnjenosti</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS od <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Onemogoči zaslonsko tipkovnico</translation>
 </translationbundle>

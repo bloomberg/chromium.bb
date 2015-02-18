@@ -126,7 +126,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="7987073022710626672">„Chrome“ paslaugų teikimo sąlygos</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (atnaujinta <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
 <translation id="1987317783729300807">Paskyros</translation>
 <translation id="6064211167623632605">Vykdomasis kelias</translation>
@@ -183,7 +182,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="2699916814609764774">Profilio kelias</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
-<translation id="6717254161209606306">Raginama pridėti puslapį pagrindiniame ekrane. Programos pavadinimas: „<ph name="APP_NAME"/>“. Programos URL: <ph name="APP_URL"/>.</translation>
 <translation id="7977858705483383621">Saugi paieška</translation>
 <translation id="8909135823018751308">Bendrinti…</translation>
 <translation id="3338301885994755905">Blokuoti (rekomenduojama)</translation>

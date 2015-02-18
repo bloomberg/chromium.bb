@@ -47,7 +47,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="568643307450491754">Hitta dina bokmärken på Chrome-menyn eller i bokmärkesfältet.</translation>
 <translation id="8556340503434111824">Det finns en ny version av Google Chrome och den är snabbare än någonsin.</translation>
 <translation id="8987477933582888019">Webbläsare</translation>
-<translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
@@ -144,10 +143,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
         här alternativet igen så att funktionaliteten förbättras.</translation>
 <translation id="2290014774651636340">Googles API-nycklar saknas. Vissa funktioner i Google Chrome kommer att vara inaktiverade.</translation>
 <translation id="2397416548179033562">Visa Chrome-menyn</translation>
-<translation id="5423788048750135178">Öppna Chrome-menyn &gt; Inställningar &gt; (Avancerat) Sekretess
-          och inaktivera Förhandshämta sidresurser.
-          Om det inte hjälper rekommenderar vi att du aktiverar alternativet
-          igen vilket ger bättre prestanda.</translation>
 <translation id="4794050651896644714">Spara information i Chrome</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="5855036575689098185">Programmet som körs på datorn är inte kompatibelt med Google Chrome.</translation>

@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Доступ к USB-устройствам от <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Просмотр и изменение данных на сайте <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Обмен данными с компьютерами <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Доступ к сканерам, подключенным через USB-порт или локальную сеть</translation>
 <translation id="6408118934673775994">Просмотр и изменение данных на сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Обмен данными с любыми компьютерами в домене <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Использование микрофона</translation>
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME"/> на этом компьютере запрещено администратором.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>, поставщик: <ph name="VENDOR_NAME"/> (серийный номер: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Настройка сетевых подключений</translation>
 <translation id="7154130902455071009">Смена стартовой страницы на <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Доступ к этим USB-устройствам</translation>
 <translation id="2677911863018634147">Приложение &quot;<ph name="APP_NAME"/>&quot; запрашивает доступ к нескольким устройствам.</translation>

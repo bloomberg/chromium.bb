@@ -32,7 +32,6 @@
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
 <translation id="8987477933582888019">网络浏览器</translation>
-<translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="580822234363523061">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”，并确保您已将配置设为“无代理”或“直接连接”。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
@@ -155,8 +154,6 @@
 
 某些功能可能会无法使用。请指定其他个人资料目录或使用更高版本的 Chromium。</translation>
 <translation id="8907580949721785412">Chromium正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
-<translation id="4404275227760602850">前往 Chromium 菜单 &gt;“设置”&gt;“隐私设置”（高级设置）部分，然后停用“预提取网页资源”。
-          如果这无法解决该问题，我们建议您重新启用此选项，以便改善性能。</translation>
 <translation id="1174473354587728743">与其他人共用计算机？现在，您可以随心所欲地设置Chromium。</translation>
 <translation id="9013087743919948559">添加到 Chromium</translation>
 <translation id="2525993619214772747">Chromium 存在异常？</translation>

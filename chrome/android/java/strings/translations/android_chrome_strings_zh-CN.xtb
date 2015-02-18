@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="8588878054171169263">保存图片</translation>
-<translation id="3303414029551471755">要开始下载该内容吗？</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="8425213833346101688">更改</translation>
 <translation id="4996978546172906250">分享方式</translation>
@@ -11,95 +10,67 @@
 <translation id="6657585470893396449">密码</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE"/>中搜索此图片</translation>
 <translation id="7764225426217299476">添加地址</translation>
-<translation id="6085885345161726829">您对电子钱包卡进行验证后，Chrome 会将其缓存在本地。</translation>
 <translation id="8237438615979997762">此设备中以及您的 Google 帐户中存储的数据都会保留在原位置。但是，新的数据或您对数据进行的更改将不会在此设备和您的 Google 帐户之间同步。</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6504836143156866575">JavaScript 版本</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="7644305409888602715">正在将网页内容翻译成<ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="326254929494722411">您尚未在此设备上设置 Google 帐户</translation>
-<translation id="1446450296470737166">允许全面控制 MIDI 设备</translation>
-<translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL"/></translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
-<translation id="2440823041667407902">位置信息访问权限</translation>
-<translation id="6600253697437303777">要使用摄像头和麦克风时先发出请求（推荐）</translation>
 <translation id="7015922086425404465">从Google Play商店下载应用：<ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6317634962183824346">Android 系统同步功能已停用。请重新启用该功能，然后重试。</translation>
 <translation id="5763382633136178763">隐身标签页</translation>
-<translation id="1647391597548383849">使用您的摄像头</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
-<translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="9189669987942139609">TB</translation>
-<translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="6458785801851713928">您的网域不支持同步。</translation>
 <translation id="2731700343119398978">请稍候...</translation>
 <translation id="6846298663435243399">正在加载...</translation>
 <translation id="7378627244592794276">否</translation>
-<translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9133515669113036225">重置设备凭据</translation>
-<translation id="2381756643783702095">发送前先询问（推荐）</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="3358663646935160692">此帐户由 <ph name="DOMAIN_NAME"/> 管理。
 
 您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chrome 个人资料。您的 Chrome 数据将永远与此帐户相关联。断开与此帐户的关联将删除本地 Chrome 数据。</translation>
-<translation id="563535393368633106">访问前先询问（推荐）</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="3410346880900521918">如果您频繁遇到此问题，请尝试按这些<ph name="BEGIN_LINK"/>建议<ph name="END_LINK"/>操作。</translation>
-<translation id="5618939757577581490">导入电子钱包数据</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="7375125077091615385">类型：</translation>
-<translation id="1086169178231554178">SD 卡不可用</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
-<translation id="1091134514807961917">您已登录以下 Google 帐户。</translation>
-<translation id="7019652137705190998">进入隐身模式可进行私密浏览或临时登录</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="8218346974737627104">确认登录</translation>
-<translation id="3350687908700087792">关闭所有隐身标签页</translation>
-<translation id="5017989644593831205">不是<ph name="NOT_YOU_USER_NAME"/>？</translation>
-<translation id="8997842057643556822">无法在 USB 存储设备中创建下载目录。</translation>
-<translation id="6948694623901096205">摄像头或麦克风</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>，标签页</translation>
 <translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">选择用于验证身份的证书</translation>
-<translation id="6140912465461743537">国家/地区</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="4378154925671717803">电话</translation>
-<translation id="988938288723502454">无法在 SD 卡中创建下载目录。</translation>
 <translation id="3896036286668839683">证书查看器</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR"/> Google Inc. 保留所有权利。</translation>
 <translation id="4250680216510889253">否</translation>
-<translation id="6388207532828177975">清除并重置</translation>
-<translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT"/> 数据</translation>
-<translation id="3656115297268584622">在 <ph name="BEGIN_LINK"/>Android 设置<ph name="END_LINK"/>部分开启位置信息服务。</translation>
-<translation id="7423098979219808738">先询问</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="552553974213252141">提取的内容是否正确？</translation>
 <translation id="1151972924205500581">需要密码</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2718352093833049315">仅限 Wi-Fi</translation>
 <translation id="7029809446516969842">密码</translation>
-<translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
 <translation id="2414886740292270097">深色调</translation>
-<translation id="5911030830365207728">Google 翻译</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
-<translation id="238909021488141516">下载该内容时出现错误。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="473775607612524610">更新</translation>
@@ -108,7 +79,6 @@
 <translation id="7053983685419859001">禁止</translation>
 <translation id="8374821112118309944">您需要将“话语提示”更新到更高版本。</translation>
 <translation id="6406506848690869874">同步</translation>
-<translation id="6026160407467558998">允许网站运行 JavaScript</translation>
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="2593272815202181319">等宽</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
@@ -126,14 +96,11 @@
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
 <translation id="8428213095426709021">设置</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/>（上次更新时间：<ph name="TIME_SINCE_UPDATE"/>）</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="1987317783729300807">帐户</translation>
 <translation id="6064211167623632605">可执行文件路径</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="2903493209154104877">地址</translation>
-<translation id="3661699943263275414">第三方网站可以保存和读取 Cookie 数据</translation>
-<translation id="1173289567081511873">您已登录以下 Google 帐户。您可以在 Android 设置部分添加或移除帐户。</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
@@ -142,68 +109,51 @@
 <translation id="6571070086367343653">修改信用卡</translation>
 <translation id="7080851568148064063">添加到主屏幕</translation>
 <translation id="6192792657125177640">例外</translation>
-<translation id="1984937141057606926">允许（第三方除外）</translation>
 <translation id="4619298195800598081">在新标签页中打开原始图片</translation>
 <translation id="8798099450830957504">默认</translation>
-<translation id="5308603654685598744">该功能处于开启状态时，Chrome 将使用 Google 翻译对其他语言的网页进行翻译。</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="885701979325669005">存储</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
 <translation id="907015151729920253">智能卡</translation>
 <translation id="2482878487686419369">通知</translation>
-<translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">保存视频</translation>
 <translation id="8106211421800660735">信用卡号</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="7267430310003164111">提示您从Google Play商店下载应用。应用名称：<ph name="APP_NAME"/>。应用的平均评分：<ph name="APP_RATING"/>。</translation>
-<translation id="6108923351542677676">正在设置…</translation>
 <translation id="7358682983403815415">系统正在将您打开的标签页、保存的书签、历史记录等信息同步到您的 Google 帐户。</translation>
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="4148957013307229264">正在安装...</translation>
-<translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="3992315671621218278">保存链接</translation>
-<translation id="5324858694974489420">家长设置</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">屏蔽所有网站</translation>
-<translation id="8168435359814927499">内容</translation>
 <translation id="5424715742813396254">修改已保存的名称/密码或例外情况</translation>
-<translation id="6978479750597523876">重置翻译设置</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="651048280540227067">关闭此菜单</translation>
 <translation id="748127970106343339">确认删除设备凭据</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="1082482054625560856">管理您的 <ph name="BEGIN_LINK"/>Google 帐户<ph name="END_LINK"/>中保存的密码</translation>
-<translation id="2360035970720276770">只能从 http 或 https 网址下载</translation>
-<translation id="4376501731284077108">不限</translation>
 <translation id="2699916814609764774">个人资料路径</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="8725066075913043281">重试</translation>
-<translation id="6717254161209606306">提示用户将页面添加到主屏幕。应用名称：<ph name="APP_NAME"/>。应用网址：<ph name="APP_URL"/>。</translation>
-<translation id="7977858705483383621">安全搜索</translation>
 <translation id="8909135823018751308">分享…</translation>
-<translation id="3338301885994755905">屏蔽（推荐）</translation>
 <translation id="6575643671698722332">重置失败。请确保您的设备已联网，然后重试。</translation>
 <translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">自动填充表单</translation>
-<translation id="8515416241041728525">为<ph name="ADD_ACCOUNT_USER_NAME"/>添加帐户</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME"/> 管理的帐户。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐户中。</translation>
 <translation id="4510973599275542560">不重新加载</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
 <translation id="9154176715500758432">留在此页</translation>
 <translation id="1416550906796893042">应用版本</translation>
-<translation id="5420752959853967987">B</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE"/></translation>
-<translation id="7981795308302452224">未能开始下载</translation>
 <translation id="6671495933530132209">复制图片</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="8209050860603202033">打开图片</translation>
@@ -211,53 +161,36 @@
 <translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="4165986682804962316">网站设置</translation>
-<translation id="2956410042958133412">该帐户由 <ph name="PARENT_NAME_1"/> 和 <ph name="PARENT_NAME_2"/> 管理。</translation>
-<translation id="7048229856657573547">管理电子钱包数据</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE"/>网页吗？</translation>
 <translation id="4062305924942672200">法律信息</translation>
-<translation id="515227803646670480">清除存储的数据</translation>
 <translation id="8528538445849828817">网页语言：<ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="7963646190083259054">供应商：</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="6512448926095770873">离开此页</translation>
 <translation id="3414952576877147120">大小：</translation>
-<translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="5626134646977739690">名字：</translation>
-<translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
 <translation id="5565871407246142825">信用卡</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="6333140779060797560">通过<ph name="APPLICATION"/>分享</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE"/>网页，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>
-<translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
-<translation id="5512137114520586844">该帐户由 <ph name="PARENT_NAME"/> 管理。</translation>
 <translation id="7649070708921625228">帮助</translation>
-<translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="969096075394517431">更改语言</translation>
-<translation id="5085880389019676122">USB 存储设备不可用</translation>
 <translation id="1614564776292091138">当“受保护的内容”处于“开启”状态时，网站将能够对您的设备进行验证，以确保它有权播放受保护的付费视频。
 
 当“受保护的内容”处于“关闭”状态时，您将无法在此设备上播放付费视频。</translation>
 <translation id="8928220460877261598">现在，您已登录 Chrome。</translation>
 <translation id="5032574515228824816">提示</translation>
-<translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
-<translation id="3003595280608617736">无 SD 卡</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
 <translation id="2913733558842973836">此网站已进入全屏模式。
 从顶部向下拖动可退出全屏模式。</translation>
-<translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="7961015016161918242">永不保存</translation>
-<translation id="6820607729870073286">您没有已保存的网站设置。</translation>
-<translation id="1159783623621444829">这是未成年人帐户</translation>
 <translation id="8109148095642131923">无法将下载的内容添加到下载管理器中。</translation>
-<translation id="6295158916970320988">所有网站</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="8310344678080805313">标准标签页</translation>
-<translation id="8396312449826231789">仅限获批的网站</translation>
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
@@ -265,13 +198,8 @@
 <translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE"/>。</translation>
-<translation id="6738867403308150051">即将开始下载…</translation>
 <translation id="6965382102122355670">确定</translation>
-<translation id="6375900123462779979">使用您的麦克风和摄像头</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
-<translation id="8773248244177230992">清空缓存</translation>
-<translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
-<translation id="5645050752379834274">该功能处于开启状态时，Chrome 将使用您电子钱包中的地址和信用卡信息来填写表单。</translation>
 <translation id="7561196759112975576">永远</translation>
 </translationbundle>

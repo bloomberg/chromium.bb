@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Zakładki są dostępne w menu Chrome i na pasku zakładek.</translation>
 <translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
 <translation id="8987477933582888019">Przeglądarka</translation>
-<translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
@@ -137,10 +136,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
         by poprawić wydajność.</translation>
 <translation id="2290014774651636340">Brakuje kluczy interfejsu Google API. Niektóre funkcje Google Chrome będą wyłączone.</translation>
 <translation id="2397416548179033562">Pokaż menu Chrome</translation>
-<translation id="5423788048750135178">Wybierz kolejno menu Chrome &gt; Ustawienia &gt; (Zaawansowane) Prywatność
-          i wyłącz „Wstępnie pobieraj zasoby strony”.
-          Jeśli to nie rozwiąże problemu, zalecamy ponowne włączenie tej opcji,
-          by poprawić wydajność.</translation>
 <translation id="4794050651896644714">Zapisz szczegóły w Chrome</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>

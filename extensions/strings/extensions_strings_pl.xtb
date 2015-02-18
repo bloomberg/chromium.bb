@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Uzyskaj dostęp do urządzeń USB od <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Wymiana danych z komputerami o nazwach: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">Tag ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Dostęp do skanerów podłączonych przez USB lub do sieci lokalnej</translation>
 <translation id="6408118934673775994">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Wymiana danych z dowolnym komputerem w domenie <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Korzystać z Twojego mikrofonu</translation>
 <translation id="7217838517480956708">Administrator tego komputera wymaga zainstalowanego rozszerzenia <ph name="EXTENSION_NAME"/>. Nie można go usunąć ani modyfikować.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> firmy <ph name="VENDOR_NAME"/> (numer seryjny <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Skonfiguruj połączenia sieciowe</translation>
 <translation id="7154130902455071009">Zmień stronę startową na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Uzyskaj dostęp do dowolnego z tych urządzeń USB</translation>
 <translation id="2677911863018634147">Aplikacja „<ph name="APP_NAME"/>” żąda dostępu do co najmniej jednego Twojego urządzenia.</translation>

@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
 <translation id="8987477933582888019">Nettleser</translation>
-<translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
 <translation id="580822234363523061">Gå til
           Chromium-menyen &gt;
@@ -179,10 +178,6 @@ og feil legitimasjon. Enten utgir en hacker seg for å være <ph name="SITE"/>, 
 
 Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chromium.</translation>
 <translation id="8907580949721785412">Chromium forsøker å vise passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
-<translation id="4404275227760602850">Gå til Chromium-menyen &gt; Innstillinger &gt; (Avansert) Personvern,
-          og slå av alternativet for henting av sideressurser på forhånd.
-          Hvis ikke dette løser problemet, bør du slå på dette alternativet
-          igjen for å bedre ytelsen.</translation>
 <translation id="1174473354587728743">Deler du datamaskinen din med andre? Nå kan du konfigurere Chromium akkurat slik du vil.</translation>
 <translation id="9013087743919948559">Legg til i Chromium</translation>
 <translation id="2525993619214772747">Oppfører Chromium seg merkelig?</translation>

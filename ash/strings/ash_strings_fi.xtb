@@ -59,7 +59,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8676770494376880701">Pienitehoinen laturi kytketty</translation>
 <translation id="5238774010593222950">Kirjautuminen toiseen tiliin ei onnistu.</translation>
 <translation id="1723752762323179280">Käyttökerran lopettaminen</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
@@ -196,11 +195,9 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>.<ph name="MINUTE"/> jäljellä</translation>
 <translation id="3009178788565917040">Äänentoisto</translation>
-<translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Akku täynnä <ph name="HOUR"/> t <ph name="MINUTE"/> min kuluttua</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">Tekstiviesti lähettäjältä <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Poista ruutunäppäimistö käytöstä</translation>
 </translationbundle>

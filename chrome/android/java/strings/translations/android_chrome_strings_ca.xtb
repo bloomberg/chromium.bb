@@ -126,7 +126,6 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
 <translation id="5668404140385795438">Substitueix la sol·licitud d'un lloc web per evitar que s'apropi</translation>
 <translation id="8428213095426709021">Configuració</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (última actualització: <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="6064211167623632605">Camí executable</translation>
@@ -183,7 +182,6 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="2699916814609764774">Camí del perfil</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
-<translation id="6717254161209606306">Sol·licitud per afegir la pàgina a la pantalla d'inici. Nom de l'aplicació: <ph name="APP_NAME"/>. URL de l'aplicació: <ph name="APP_URL"/>.</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Comparteix...</translation>
 <translation id="3338301885994755905">Bloqueja (recomanat)</translation>

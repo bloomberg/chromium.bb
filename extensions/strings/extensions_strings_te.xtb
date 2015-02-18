@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> అందించిన USB పరికరాలకు ప్రాప్యత</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
 <translation id="2518849872271000461">ఈ పేరు గల కంప్యూటర్‌లతో డేటాను పరస్పరం మార్చుకోండి: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">పొడిగింపు వీక్షణ: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB ద్వారా లేదా స్థానిక నెట్‌వర్క్‌లో జోడించిన పత్రం స్కానర్‌లను ప్రాప్యత చేయండి</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> మరియు <ph name="WEBSITE_3"/>లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
 <translation id="961805664415579088">డొమైన్ <ph name="DOMAIN"/>లో ఏదైనా కంప్యూటర్‌తో డేటాను పరస్పరం మార్చుకోండి</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">మీ మైక్రోఫోన్‌ను ఉపయోగించండి</translation>
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME"/> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> నుండి <ph name="PRODUCT_NAME"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">నెట్‌వర్క్ కనెక్షన్‌లను కాన్ఫిగర్ చేయడానికి అనుమతి</translation>
 <translation id="7154130902455071009">మీ ప్రారంభ పేజీని దీనికి మార్చండి: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">ఈ USB పరికరాల్లో వేటికైనా ప్రాప్యత</translation>
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు ప్రాప్యతను అభ్యర్థిస్తోంది.</translation>

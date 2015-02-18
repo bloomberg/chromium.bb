@@ -69,7 +69,6 @@
 <translation id="4761104368405085019">Use your microphone</translation>
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME"/> to be installed. It cannot be removed or modified.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> from <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configure network connections</translation>
 <translation id="7154130902455071009">Change your start page to: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Access any of these USB devices</translation>
 <translation id="2677911863018634147">The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one or more of your devices.</translation>

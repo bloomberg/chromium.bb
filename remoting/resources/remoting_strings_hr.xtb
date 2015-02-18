@@ -1,20 +1,14 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hr">
-<translation id="337167041784729019">Prikaži statistiku</translation>
 <translation id="3233367171080043075">Možete prekinuti u bilo kojem trenutku.</translation>
 <translation id="7606912958770842224">Omogući daljinske veze</translation>
 <translation id="3785447812627779171">Host usluge
 Chromoting</translation>
 <translation id="1841799852846221389">Onemogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="2676780859508944670">Obrada…</translation>
-<translation id="6062854958530969723">Inicijalizacija hosta nije uspjela.</translation>
 <translation id="5843054235973879827">Zašto je ovo sigurno?</translation>
 <translation id="5619148062500147964">Na ovo računalo</translation>
 <translation id="4068946408131579958">Sve veze</translation>
 <translation id="2208514473086078157">Postavke pravila ne dopuštaju dijeljenje ovog računala kao hosta za Udaljenu radnu površinu Chrome. Obratite se administratoru sustava za pomoć.</translation>
-<translation id="6541219117979389420">Zapisnici aplikacija mogu uključivati osobne podatke, uključujući vaš identitet (e-adresu) te nazive i svojstva datoteka i mapa na Google disku.</translation>
-<translation id="3931191050278863510">Host je zaustavljen.</translation>
-<translation id="3905196214175737742">Nevažeća domena vlasnika hosta.</translation>
-<translation id="9213184081240281106">Nevažeća konfiguracija hosta.</translation>
 <translation id="6998989275928107238">Prima</translation>
 <translation id="406849768426631008">Želite li pomoći nekome tijekom videochata? Isprobajte <ph name="LINK_BEGIN"/> Udaljenu radnu površinu na usluzi Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maksimiziranje prozora</translation>
@@ -34,10 +28,6 @@ Chromoting</translation>
 <translation id="222632161986885959">Sudionik ovog Hangouta ponudio vam je pomoć tako da upravlja vašim računalom. Ako prihvatite:</translation>
 <translation id="2046651113449445291">Sljedeći klijenti upareni su s ovim računalom i mogu se povezati bez unosa PIN-a. Možete opozvati tu dozvolu u bilo kojem trenutku za pojedinačne ili sve klijente.</translation>
 <translation id="7658239707568436148">Odustani</translation>
-<translation id="7836926030608666805">Nedostaju neke obavezne komponente. Provjerite jeste li pokrenuli najnoviju verziju Chromea i pokušajte ponovo.</translation>
-<translation id="8355485110405946777">Uključite zapisnike aplikacije da bismo lakše riješili vaš problem (zapisnici mogu uključivati osobne podatke).</translation>
-<translation id="7869445566579231750">Nemate dopuštenje za pokretanje te aplikacije.</translation>
-<translation id="8548209692293300397">Prethodno ste se prijavili kao <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Da biste pristupali svojim računalima putem tog računa, <ph name="LINK_BEGIN"/>prijavite se na Google Chrome<ph name="LINK_END"/> tim računom i ponovo instalirajte Udaljenu radnu površinu Chrome.</translation>
 <translation id="7782471917492991422">Provjerite postavke upravljanja potrošnjom energije svojeg računala i provjerite da nije konfigurirano tako da prelazi u stanje mirovanja kad je neaktivno.</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="3027681561976217984">Način dodira</translation>
@@ -45,18 +35,14 @@ Chromoting</translation>
 <translation id="2499160551253595098">Pomognite nam poboljšati Udaljenu radnu površinu Chrome, dopustite nam prikupljanje statistike upotrebe i izvješća o padu programa.</translation>
 <translation id="7868137160098754906">Unesite PIN za udaljeno računalo.</translation>
 <translation id="677755392401385740">Host je pokrenut za korisnika: <ph name="HOST_USERNAME"/>.</translation>
-<translation id="6441316101718669559">Ova platforma ne podržava integraciju radne površine. Aplikacija se može upotrebljavati, ali uz lošiji korisnički doživljaj.</translation>
 <translation id="3197730452537982411">Udaljena radna površina</translation>
-<translation id="195619862187186579">Rasporedi tipkovnice</translation>
 <translation id="8355326866731426344">Ovaj pristupni kôd isteći će za <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">Autori Chromiuma</translation>
 <translation id="2498359688066513246">Pomoć i povratne informacije</translation>
 <translation id="6198252989419008588">Promijeni PIN</translation>
-<translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
 <translation id="2540992418118313681">Želite li dijeliti ovo računalo tako da ga neki drugi korisnik može vidjeti i upravljati njime?</translation>
-<translation id="894763922177556086">Dobra</translation>
 <translation id="5708869785009007625">Vaša se radna površina trenutačno dijeli s korisnikom <ph name="USER"/>.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5222676887888702881">Odjava</translation>
@@ -66,7 +52,6 @@ Chromoting</translation>
 <translation id="2813770873348017932">Veze s udaljenim računalom privremeno su blokirane jer se na njih pokušava spojiti korisnik s PIN-om koji nije važeći. Pokušajte ponovo kasnije.</translation>
 <translation id="6746493157771801606">Izbriši povijest</translation>
 <translation id="4430435636878359009">Onemogući daljinske veze na ovom računalu</translation>
-<translation id="2314101195544969792">Vaša sesija u aplikaciji <ph name="APPLICATION_NAME"/> nije aktivna već neko vrijeme, pa će se uskoro prekinuti veza.</translation>
 <translation id="6001953797859482435">Postavke hosta Udaljene radne površine Chrome</translation>
 <translation id="225614027745146050">Dobro došli</translation>
 <translation id="9188433529406846933">Autoriziraj</translation>
@@ -92,14 +77,12 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="629730747756840877">Račun</translation>
 <translation id="8525306231823319788">Cijeli zaslon</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastarjelo)</translation>
-<translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="3884839335308961732">Potvrdite svoj račun i PIN u nastavku da biste usluzi Udaljena radna površina Chrome dozvolili pristup.</translation>
 <translation id="327263477022142889">Želite li pomoći poboljšati Udaljenu radnu površinu Chrome? <ph name="LINK_BEGIN"/>Ispunite upitnik.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Pošalji Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">Povezan:</translation>
 <translation id="8509907436388546015">Postupak integracije radne površine</translation>
 <translation id="4736223761657662401">Povijest veza</translation>
-<translation id="2009755455353575666">Povezivanje nije uspjelo</translation>
 <translation id="5285241842433869526">Saznajte kako postaviti računalo za udaljeni pristup.</translation>
 <translation id="8759753423332885148">Saznajte više.</translation>
 <translation id="4430915108080446161">Generiranje pristupnog koda...</translation>
@@ -112,7 +95,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2353140552984634198">Ovom računalu možete sigurno pristupiti pomoću aplikacije Chromoting.</translation>
 <translation id="4481276415609939789">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte na njega Chromoting pa kliknite &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="2013884659108657024">Chrome preuzima instalacijski program Udaljene radne površine Chrome. Nakon završetka preuzimanja pokrenite alat za instalaciju prije nego što nastavite.</translation>
-<translation id="7149517134817561223">Aplikacija za izdavanje naredbi hostu Udaljene radne površine Chrome.</translation>
 <translation id="1742469581923031760">Povezivanje…</translation>
 <translation id="2855866366045322178">izvanmrežna upotreba</translation>
 <translation id="8998327464021325874">Kontroler Udaljene radne površine Chrome</translation>
@@ -126,38 +108,28 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="4572065712096155137">Pristup</translation>
 <translation id="5908809458024685848">Niste prijavljeni na aplikaciju Chromoting. Prijavite se i pokušajte ponovo.</translation>
 <translation id="7401733114166276557">Udaljena radna površine Chrome</translation>
-<translation id="5510035215749041527">Prekini vezu odmah</translation>
 <translation id="3362124771485993931">Ponovo upišite PIN</translation>
 <translation id="1760808606374294203">• Popravci za Android Lollipop.</translation>
-<translation id="8196755618196986400">Da bi smo vam mogli poslati daljnje informacije, u povratnim informacijama koje pošaljete bit će vaša e-adresa.</translation>
 <translation id="5231421057630485350">Osoba koja vam pomaže moći će upravljati vašim mišem i tipkovnicom.</translation>
 <translation id="154040539590487450">Nisam uspio pokrenuti uslugu daljinskog pristupa.</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="8172070902751707422">Autentifikacija nije uspjela. Ponovo se prijavite na Udaljenu radnu površinu Chrome.</translation>
 <translation id="5254120496627797685">Ako napustite ovu stranicu, završit će vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
-<translation id="7019153418965365059">Nepoznata pogreška hosta: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nije uspjelo povezivanje s uređajem za emitiranje.</translation>
 <translation id="1342297293546459414">Gledajte dijeljeno računalo i upravljajte njime.</translation>
 <translation id="1520828917794284345">Prilagodi veličinu radne površine</translation>
 <translation id="701976023053394610">Daljinska pomoć</translation>
 <translation id="6099500228377758828">Usluga Udaljena radna površina Chrome</translation>
 <translation id="2747641796667576127">Softver se obično ažurira automatski, ali u nekim rijetkim slučajevima ažuriranja možda neće uspjeti. Ažuriranje softvera ne bi smjelo trajati dulje od nekoliko minuta te se može izvršiti dok ste daljinski povezani s računalom.</translation>
-<translation id="5170982930780719864">Nevažeći ID hosta.</translation>
 <translation id="3933246213702324812">Chromoting na hostu <ph name="HOSTNAME"/> zastario je i mora se ažurirati.</translation>
 <translation id="6193698048504518729">Povezivanje s hostom <ph name="HOSTNAME"/></translation>
-<translation id="4155497795971509630">Nedostaju neke obavezne komponente. Provjerite jeste li instalirali najnoviju verziju softvera i pokušajte ponovo.</translation>
 <translation id="8116630183974937060">Došlo je pogreške mreže. Provjerite je li uređaj povezan s mrežom i pokušajte ponovo.</translation>
 <translation id="3020807351229499221">PIN nije uspješno ažuriran. Pokušajte ponovo kasnije.</translation>
 <translation id="2647232381348739934">Usluga Chromoting</translation>
 <translation id="579702532610384533">Ponovno povezivanje</translation>
 <translation id="4867841927763172006">Pošalji PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (posljednji put na mreži <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">Tom postavkom upravljaju pravila vaše domene.</translation>
-<translation id="7810127880729796595">Prikaži statistiku (veza: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Datum uparivanja</translation>
-<translation id="3989511127559254552">Da biste nastavili, morate odobriti dopuštenja za prošireni pristup svojem računalu. To morate učiniti samo jednom.</translation>
 <translation id="5156271271724754543">Unesite isti PIN u oba polja.</translation>
-<translation id="1050693411695664090">Slaba</translation>
 <translation id="2118549242412205620">Sigurno pristupajte svojim računalima s uređaja sa sustavom Android.
 
 • Na svim svojim računalima postavite daljinski pristup pomoću aplikacije Udaljena radna površina Chrome iz Chrome web-trgovine: https://chrome.google.com/remotedesktop.
@@ -174,16 +146,13 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="5625493749705183369">Putem interneta pristupajte drugim računalima ili drugim korisnicima omogućite siguran pristup svojem računalu.</translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
-<translation id="5419185025274123272">Vraćanje aplikacije na zadano nije uspjelo. I dalje možete poslati izvješće o programskim pogreškama.</translation>
 <translation id="4812684235631257312">Host:</translation>
 <translation id="6178645564515549384">Lokalni host za slanje poruka za udaljenu pomoć</translation>
 <translation id="1738759452976856405">Zaustavi snimanje</translation>
-<translation id="3360306038446926262">Windows</translation>
 <translation id="897805526397249209">Da biste omogućili daljinsko povezivanje s drugim računalom, instalirajte na njega Chromoting i kliknite &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="1704090719919187045">Postavke hosta usluge Chromoting</translation>
 <translation id="809687642899217504">Moja računala</translation>
 <translation id="3106379468611574572">Udaljeno računalo ne odgovara na zahtjev za povezivanje. Provjerite je li na mreži i pokušajte ponovo.</translation>
-<translation id="8386846956409881180">Host je konfiguriran s nevažećim vjerodajnicama za OAuth.</translation>
 <translation id="20876857123010370">Način dodirne podloge</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2078880767960296260">Postupak hosta</translation>
@@ -210,9 +179,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="7038683108611689168">Pomognite nam da poboljšamo Chromoting tako da nam dopustite prikupljanje statistika o upotrebi i izvješća o padovima.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="4405930547258349619">Središnja biblioteka</translation>
-<translation id="3385242214819933234">Nevažeći vlasnik hosta.</translation>
 <translation id="310979712355504754">Izbriši sve</translation>
-<translation id="6542902059648396432">Prijavi problem…</translation>
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="3581045510967524389">Nije bilo moguće povezati se s mrežom. Provjerite je li uređaj na mreži.</translation>
 <translation id="4517233780764084060">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati Chromoting da se otvara kao prozor.</translation>
@@ -226,8 +193,6 @@ površine Chrome</translation>
 <translation id="951991426597076286">Odbijam</translation>
 <translation id="4563926062592110512">Prekinuta veza s klijentom: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Povežite se</translation>
-<translation id="8642984861538780905">Solidna</translation>
-<translation id="2921543551052660690">Prethodno ste se prijavili kao <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Da biste pristupali svojim računalima putem tog računa, <ph name="LINK_BEGIN"/>prijavite se na Chromium<ph name="LINK_END"/> tim računom i ponovo instalirajte Chromoting.</translation>
 <translation id="7319983568955948908">Zaustavi dijeljenje</translation>
 <translation id="6681800064886881394">Autorska prava 2013. Google Inc. Sva prava pridržana.</translation>
 <translation id="6640610550128933069">posljednji put na mreži <ph name="DATE"/></translation>
@@ -242,24 +207,18 @@ površine Chrome</translation>
 <translation id="6011539954251327702">Chromoting omogućuje sigurno dijeljenje računala putem weba. Aplikacija Chromoting, koja se nalazi na web-lokaciji <ph name="URL"/>, mora biti pokrenuta na oba računala.</translation>
 <translation id="2919669478609886916">Ovaj uređaj trenutačno dijelite s drugim korisnikom. Želite li nastaviti dijeljenje?</translation>
 <translation id="4207623512727273241">Ponovo pokrenite instalacijski program prije nastavka.</translation>
-<translation id="1324095856329524885">(ta značajka još nije dostupna za vaše računalo)</translation>
-<translation id="6570205395680337606">Vratite aplikaciju na zadano. Izgubit ćete sav rad koji niste spremili.</translation>
-<translation id="6284412385303060032">Host koji je pokrenut na zaslonu za prijavu na konzolu isključio se radi podrške za način zavjese prelaskom na host koji je pokrenut u sesiji korisnika.</translation>
 <translation id="3596628256176442606">Ta usluga omogućuje dolazne veze s klijenata usluge Chromoting.</translation>
 <translation id="4277463233460010382">To je računalo konfigurirano tako da dozvoljava povezivanje jednog ili više klijenata bez unosa PIN-a.</translation>
 <translation id="837021510621780684">S ovog računala</translation>
-<translation id="518094545883702183">Informacije se upotrebljavaju samo za dijagnosticiranje problema koji prijavljujete, dostupne su samo osobi koja istražuje vaše izvješće i ne zadržavaju se dulje od 30 dana.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="7215059001581613786">Unesite PIN koji se sastoji od šest ili više znamenki.</translation>
 <translation id="8383794970363966105">Da biste upotrebljavali Chromoting, uređaju morate dodati Google račun.</translation>
 <translation id="1546934824884762070">Pojavila se neočekivana pogreška. Prijavite taj problem razvojnim programerima.</translation>
-<translation id="4795786176190567663">Nemate dopuštenje za izvršavanje te radnje.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="7434397035092923453">Pristup je odbijen za klijenta: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Postavke pravila ne dopuštaju dijeljenje ovog računala kao hosta za Chromoting. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="7312846573060934304">Host je izvan mreže.</translation>
-<translation id="1002108253973310084">Otkrivena je nekompatibilna verzija protokola. Provjerite je li na oba računala instalirana najnovija verzija softvera pa pokušajte ponovo.</translation>
 <translation id="9016232822027372900">Svejedno poveži</translation>
 <translation id="1818475040640568770">Nemate registriranih računala.</translation>
 <translation id="4394049700291259645">Onemogući</translation>

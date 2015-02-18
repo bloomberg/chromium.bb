@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
 <translation id="8987477933582888019">Browser web</translation>
-<translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
 <translation id="580822234363523061">Accesați
           meniul Chromium &gt;
@@ -178,10 +177,6 @@
 
 Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune mai nouă de Chromium.</translation>
 <translation id="8907580949721785412">Chromium încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
-<translation id="4404275227760602850">Accesează meniul Chromium &gt; Setări &gt; (Avansate) Confidențialitate
-          și dezactivează „Preia în avans resursele paginii.”
-          Dacă această acțiune nu rezolvă problema, îți recomandăm să reactivezi
-          această opțiune pentru îmbunătățirea performanței.</translation>
 <translation id="1174473354587728743">Folosești un computer în comun? Acum poți să configurezi Chromium exact cum îți place.</translation>
 <translation id="9013087743919948559">Adăugați la Chromium</translation>
 <translation id="2525993619214772747">Chromium se comportă ciudat?</translation>

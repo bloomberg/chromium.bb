@@ -69,7 +69,6 @@
 <translation id="6458467102616083041">Ignoré parce que la recherche par défaut est désactivée par une règle.</translation>
 <translation id="1227224963052638717">Règle inconnue</translation>
 <translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
-<translation id="5872918882028971132">Suggestions des parents</translation>
 <translation id="337363190475750230">Révoqué</translation>
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
@@ -110,7 +109,6 @@
 <translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
 <translation id="2025623846716345241">Confirmer l'actualisation</translation>
 <translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN"/></translation>
-<translation id="4300246636397505754">Suggestions des parents</translation>
 <translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>

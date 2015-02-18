@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
 <translation id="1723752762323179280">Завершення сеансу</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">так</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Вийти</translation>
@@ -199,11 +198,9 @@
 <translation id="4918086044614829423">Прийняти</translation>
 <translation id="5102001756192215136">Залишилося <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Вихід</translation>
-<translation id="3147142846278915599">Панель запуску (синхронізація додатків…)</translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> год. <ph name="MINUTE"/> хв. до повного зарядження</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS-повідомлення від <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Вимкнути екранну клавіатуру</translation>
 </translationbundle>

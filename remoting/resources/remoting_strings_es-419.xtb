@@ -6,15 +6,12 @@
 Chromoting</translation>
 <translation id="1841799852846221389">Inhabilitando conexiones remotas con esta computadora…</translation>
 <translation id="2676780859508944670">Operación en curso…</translation>
-<translation id="6062854958530969723">Error al iniciar el host</translation>
 <translation id="5843054235973879827">¿Por qué esta operación es segura?</translation>
 <translation id="5619148062500147964">Hacia esta computadora</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="6541219117979389420">Los registros de la aplicación pueden incluir información privada, como tu identidad (dirección de correo electrónico), y los nombres y las propiedades de los archivos y las carpetas en Google Drive.</translation>
 <translation id="3931191050278863510">Se detuvo el host.</translation>
-<translation id="3905196214175737742">Dominio del propietario del host no válido</translation>
-<translation id="9213184081240281106">Configuración del host no válida</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="406849768426631008">¿Quieres ayudar a otra persona al mismo tiempo que mantienes con ella un videochat? Prueba el <ph name="LINK_BEGIN"/>Escritorio remoto en Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximizar ventana</translation>
@@ -135,14 +132,12 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="8172070902751707422">Se produjo un error al realizar la autenticación. Vuelve a acceder al Escritorio remoto de Chrome.</translation>
 <translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión en el Escritorio remoto de Chrome.</translation>
-<translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON"/></translation>
 <translation id="712467900648340229">No se pudo establecer conexión con el dispositivo de transmisión.</translation>
 <translation id="1342297293546459414">Permite ver y controlar una computadora compartida.</translation>
 <translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
 <translation id="701976023053394610">Asistencia remota</translation>
 <translation id="6099500228377758828">Servicio del Escritorio remoto de Chrome</translation>
 <translation id="2747641796667576127">Las actualizaciones de software, por lo general, se realizan de forma automática, pero puede haber errores en casos excepcionales. La actualización del software no debe tardar más de unos minutos y se puede hacer mientras estás conectado a tu computadora de forma remota.</translation>
-<translation id="5170982930780719864">ID de host no válido</translation>
 <translation id="3933246213702324812">Chromoting en <ph name="HOSTNAME"/> está desactualizado y debe actualizarse.</translation>
 <translation id="6193698048504518729">Establecer conexión con <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">Faltan algunos de los componentes necesarios. Asegúrate de tener instalada la última versión del software y vuelve a intentarlo.</translation>
@@ -151,8 +146,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2647232381348739934">Servicio de Chromoting</translation>
 <translation id="579702532610384533">Volver a conectar</translation>
 <translation id="4867841927763172006">Enviar Impr Pant</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (en línea por última vez: <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">Esta cuenta está administrada por la política de tu dominio.</translation>
 <translation id="7810127880729796595">Mostrar estadísticas (conexión: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Fecha de sincronización</translation>
 <translation id="3989511127559254552">Para continuar, primero debes extender los permisos de acceso a tu computadora. Solo tienes que hacerlo una vez.</translation>
@@ -183,7 +176,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1704090719919187045">Preferencias del host de Chromoting</translation>
 <translation id="809687642899217504">Mis computadoras</translation>
 <translation id="3106379468611574572">La computadora remota no responde a las solicitudes de conexión. Verifica que esté conectada a Internet y vuelve a intentarlo.</translation>
-<translation id="8386846956409881180">El host está configurado con credenciales OAuth que no son válidas.</translation>
 <translation id="20876857123010370">Modo de panel táctil</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2078880767960296260">Proceso de host</translation>
@@ -210,7 +202,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="4405930547258349619">Biblioteca principal</translation>
-<translation id="3385242214819933234">Propietario del host no válido</translation>
 <translation id="310979712355504754">Eliminar todos</translation>
 <translation id="6542902059648396432">Informar un problema</translation>
 <translation id="7649070708921625228">Ayuda</translation>
@@ -244,7 +235,6 @@ remoto de Chrome</translation>
 <translation id="4207623512727273241">Ejecuta el instalador antes de continuar.</translation>
 <translation id="1324095856329524885">(Esta función aún no está disponible para tu computadora).</translation>
 <translation id="6570205395680337606">Restablece la aplicación. Perderás todo el progreso sin guardar.</translation>
-<translation id="6284412385303060032">Se cerró el host que se ejecuta en la pantalla de acceso de la consola para poder admitir el modo de cortina. Por lo tanto, se cambió a un host que se ejecuta en una sesión específica de usuario.</translation>
 <translation id="3596628256176442606">Este servicio permite conexiones entrantes de los clientes de Chromoting.</translation>
 <translation id="4277463233460010382">Esta computadora está configurada para permitir que uno o más clientes se conecten sin ingresar un PIN.</translation>
 <translation id="837021510621780684">Desde esta computadora</translation>

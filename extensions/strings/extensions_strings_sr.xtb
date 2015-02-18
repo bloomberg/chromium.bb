@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Приступ USB уређајима продавца <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Читање и мењање података на <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Размена података са рачунарима са називима: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Приступ скенерима за документе прикљученим преко USB-а или на локалној мрежи</translation>
 <translation id="6408118934673775994">Читање и мењање података на <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> и <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Размена података са било којим рачунаром на домену <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Коришћење микрофона</translation>
 <translation id="7217838517480956708">Администратор овог уређаја захтева да додатак <ph name="EXTENSION_NAME"/> буде инсталиран. Не можете да га уклоните или измените.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> продавца <ph name="VENDOR_NAME"/> (серијски број <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Конфигуриши мрежне везе</translation>
 <translation id="7154130902455071009">Промените почетну страницу у: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Приступ било ком од ових USB уређаја</translation>
 <translation id="2677911863018634147">Апликација „<ph name="APP_NAME"/>“ захтева приступ за један уређај или више њих.</translation>

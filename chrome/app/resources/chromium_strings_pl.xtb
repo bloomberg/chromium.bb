@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
 <translation id="1396446129537741364">Chromium próbuje pokazać hasła.</translation>
 <translation id="8987477933582888019">Przeglądarka</translation>
-<translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="580822234363523061">Wybierz
           menu Chromium &gt;
@@ -176,10 +175,6 @@
 
 Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chromium.</translation>
 <translation id="8907580949721785412">Chromium próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
-<translation id="4404275227760602850">Wybierz kolejno menu Chromium &gt; Ustawienia &gt; (Zaawansowane) Prywatność
-          i wyłącz „Wstępnie pobieraj zasoby strony”.
-          Jeśli to nie rozwiąże problemu, zalecamy ponowne włączenie tej opcji,
-          by poprawić wydajność.</translation>
 <translation id="1174473354587728743">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chromium tak, jak chcesz.</translation>
 <translation id="9013087743919948559">Dodaj do Chromium</translation>
 <translation id="2525993619214772747">Chromium zachowuje się dziwnie?</translation>

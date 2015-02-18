@@ -41,7 +41,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
 <translation id="8987477933582888019">Webbläsare</translation>
-<translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="580822234363523061">Öppna
           Chromium-menyn &gt;
@@ -180,10 +179,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
 <translation id="8907580949721785412">Skriv ditt lösenord i Windows om du vill tillåta att lösenord visas i Chromium.</translation>
-<translation id="4404275227760602850">Öppna Chromium-menyn &gt; Inställningar &gt; (Avancerat) Sekretess
-          och inaktivera Förhandshämta sidresurser.
-          Om det inte hjälper rekommenderar vi att du aktiverar alternativet
-          igen vilket ger bättre prestanda.</translation>
 <translation id="1174473354587728743">Delar du dator? Nu kan du konfigurera Chromium precis som du vill.</translation>
 <translation id="9013087743919948559">Lägg till i Chromium</translation>
 <translation id="2525993619214772747">Fungerar Chromium konstigt?</translation>

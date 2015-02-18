@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Könyvjelzőit megtalálhatja a Chrome menüben vagy a könyvjelzősávon.</translation>
 <translation id="8556340503434111824">Elérhető a Google Chrome új verziója, amely gyorsabb, mint ezelőtt bármikor.</translation>
 <translation id="8987477933582888019">Webböngésző</translation>
-<translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="3080151273017101988">A háttéralkalmazások továbbfuttatása, ha a Google Chrome-ot bezárják</translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
@@ -135,10 +134,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
         ezt a lehetőséget a jobb teljesítmény érdekében.</translation>
 <translation id="2290014774651636340">Hiányoznak Google API-kulcsok. A Google Chrome egyes funkciói kikapcsolnak.</translation>
 <translation id="2397416548179033562">A Chrome-menü megjelenítése</translation>
-<translation id="5423788048750135178">Nyissa meg a Chrome-menü &gt; Beállítások &gt; (Speciális) Adatvédelem menüelemet,
-          és tiltsa le az „Oldalforrások előzetes lehívása” beállítást.
-          Ha ettől nem szűnik meg a probléma, javasoljuk, hogy engedélyezze újra ezt a lehetőséget
-          a jobb teljesítmény érdekében.</translation>
 <translation id="4794050651896644714">Részletek mentése a Chrome-ban</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="5855036575689098185">A számítógépén futó szoftver nem kompatibilis a Google Chrome-mal.</translation>

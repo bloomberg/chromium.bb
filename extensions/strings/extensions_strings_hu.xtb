@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> szolgáltatótól származó USB-eszközök elérése</translation>
 <translation id="2616366145935564096">Adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Adatok cseréje a következő nevű számítógépekkel: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB-kapcsolaton vagy a helyi hálózaton keresztül csatlakoztatott szkennerek elérése</translation>
 <translation id="6408118934673775994">Adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> és <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Adatok cseréje bármilyen számítógéppel a következő domainben: <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Mikrofon használata</translation>
 <translation id="7217838517480956708">Az eszköz rendszergazdája megköveteli, hogy a(z) <ph name="EXTENSION_NAME"/> telepítve legyen. A bővítményt nem lehet eltávolítani vagy módosítani.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> a következőtől: <ph name="VENDOR_NAME"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Hálózati kapcsolatok beállítása</translation>
 <translation id="7154130902455071009">Kezdőoldal módosítása a következőre: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Az alábbi USB-eszközök bármelyikének elérése</translation>
 <translation id="2677911863018634147">A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egy vagy több eszközéhez.</translation>

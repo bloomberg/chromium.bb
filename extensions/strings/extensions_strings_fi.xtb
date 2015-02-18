@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Käyttää myyjän <ph name="VENDOR_NAME"/> USB-laitteita</translation>
 <translation id="2616366145935564096">lukea ja muuttaa tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Vaida tietoja seuraavan nimisten tietokoneiden kanssa: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Käyttää USB:n tai lähiverkon kautta yhdistettyjä dokumenttiskannereita</translation>
 <translation id="6408118934673775994">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Vaihda tietoja minkä tahansa verkkotunnusta <ph name="DOMAIN"/> käyttävän tietokoneen kanssa</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Käyttää mikrofonia</translation>
 <translation id="7217838517480956708">Koneen ylläpitäjä vaatii laajennuksen <ph name="EXTENSION_NAME"/> asennusta. Sitä ei voi poistaa tai muuttaa.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Määrittää verkkoyhteydet</translation>
 <translation id="7154130902455071009">Vaihda aloitussivuksi <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Käyttää kaikkia näitä USB-laitteita</translation>
 <translation id="2677911863018634147">Sovellus <ph name="APP_NAME"/> pyytää käyttölupaa yhteen tai useampaan laitteeseesi.</translation>

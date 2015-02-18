@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Dostop do naprav USB prodajalca <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Branje in spreminjanje vaših podatkov na spletnem mestu <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Izmenjava podatkov z računalniki z imenom: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Dostop do optičnih bralnikov, priklopljenih prek USB-ja ali povezanih v lokalno omrežje.</translation>
 <translation id="6408118934673775994">Branje in spreminjanje vaših podatkov na spletnih mestih <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> in <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Izmenjava podatkov s katerim koli računalnikom v domeni <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Uporabite mikrofon</translation>
 <translation id="7217838517480956708">Skrbnik tega računalnika zahteva namestitev razširitve <ph name="EXTENSION_NAME"/>. Ni je mogoče odstraniti ali spremeniti.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> proizvajalca <ph name="VENDOR_NAME"/> (serijska številka <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Konfiguriranje omrežnih povezav</translation>
 <translation id="7154130902455071009">Sprememba začetne strani na: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Dostop do katere koli od teh naprav USB</translation>
 <translation id="2677911863018634147">Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene ali več vaših naprav.</translation>

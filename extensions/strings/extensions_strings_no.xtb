@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Les USB-enheter fra <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">lese og endre opplysningene dine på <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">utveksle data med datamaskiner som har navnet: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">Utvidelsesvisning (ExtensionView): <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Få tilgang til dokumentskannere som er tilkoblet via USB eller på det lokale nettverket</translation>
 <translation id="6408118934673775994">lese og endre opplysningene dine på <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> og <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">utveksle data med en hvilken som helst datamaskin i domenet <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">bruke mikrofonen din</translation>
 <translation id="7217838517480956708">Administratoren til denne maskinen krever at <ph name="EXTENSION_NAME"/> blir installert. Utvidelsen kan ikke fjernes eller endres.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> fra <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Konfigurering av nettverkstilkoblinger</translation>
 <translation id="7154130902455071009">endre startsiden din til: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Les enhver av disse USB-enhetene</translation>
 <translation id="2677911863018634147">Appen «<ph name="APP_NAME"/>» ber om tilgang til én eller flere av enhetene dine.</translation>

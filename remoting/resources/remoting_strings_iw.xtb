@@ -6,15 +6,12 @@
 Chromoting</translation>
 <translation id="1841799852846221389">משבית חיבורים מרוחקים למחשב זה...</translation>
 <translation id="2676780859508944670">עובד…</translation>
-<translation id="6062854958530969723">אתחול המארח נכשל.</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
 <translation id="5619148062500147964">למחשב זה</translation>
 <translation id="4068946408131579958">כל החיבורים</translation>
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח שולחן עבודה מרוחק של Chrome. פנה למנהל המערכת שלך לקבלת סיוע.</translation>
 <translation id="6541219117979389420">‏יומני יישומים עשויים לכלול פרטים אישיים, כולל הזהות שלך (כתובת אימייל) וגם השמות והתכונות של קבצים ותיקיות ב-Google Drive.</translation>
 <translation id="3931191050278863510">המארח הופסק.</translation>
-<translation id="3905196214175737742">דומיין לא חוקי של בעל המארח.</translation>
-<translation id="9213184081240281106">תצורה לא חוקית של המארח.</translation>
 <translation id="6998989275928107238">אל</translation>
 <translation id="406849768426631008">‏רוצה לעזור למישהו תוך כדי שאתה גם מקיים אתו שיחת וידאו צ'אט? נסה את <ph name="LINK_BEGIN"/> שולחן העבודה המרוחק ב-Google Hangouts‏<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">הגדל את החלון</translation>
@@ -135,14 +132,12 @@ Chromoting</translation>
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="8172070902751707422">‏האימות נכשל. היכנס שוב ל'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
-<translation id="7019153418965365059">שגיאת מארח לא מזוהה: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">נכשל החיבור למכשיר העברה.</translation>
 <translation id="1342297293546459414">הצג תוכן של מחשב משותף ושלוט בו.</translation>
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
 <translation id="701976023053394610">סיוע מרחוק</translation>
 <translation id="6099500228377758828">‏שירות שולחן העבודה המרוחק של Chrome</translation>
 <translation id="2747641796667576127">עדכוני תוכנה מתבצעים בדרך כלל באופן אוטומטי, אבל במקרים נדירים הם עשויים להיכשל. עדכון התוכנה לא אמור לקחת יותר ממספר דקות, וניתן לבצע אותו כשאתה מחובר למחשב באופן מרוחק.</translation>
-<translation id="5170982930780719864">מזהה מארח לא חוקי.</translation>
 <translation id="3933246213702324812">‏Chromoting ב-<ph name="HOSTNAME"/> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="6193698048504518729">התחבר אל <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">חלק מהרכיבים הדרושים חסרים. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה ונסה שוב.</translation>
@@ -151,8 +146,6 @@ Chromoting</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
 <translation id="4867841927763172006">‏שלח PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (התחברות אחרונה <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">ההגדרה הזו מנוהלת על ידי מדיניות הדומיין שלך.</translation>
 <translation id="7810127880729796595">הצג סטטיסטיקה (חיבור: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">תאריך ההתאמה</translation>
 <translation id="3989511127559254552">כדי להמשיך, ראשית עליך להעניק הרשאות גישה מורחבות למחשב שלך. עליך לעשות זאת פעם אחת בלבד.</translation>
@@ -183,7 +176,6 @@ Chromoting</translation>
 <translation id="1704090719919187045">‏העדפות מארח Chromoting</translation>
 <translation id="809687642899217504">המחשבים שלי</translation>
 <translation id="3106379468611574572">המחשב המרוחק אינו מגיב לבקשות החיבור. ודא שהוא מחובר לאינטרנט ונסה שוב.</translation>
-<translation id="8386846956409881180">‏בהגדרת המארח נעשה שימוש בפרטי כניסת OAuth לא חוקיים.</translation>
 <translation id="20876857123010370">מצב משטח מגע</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2078880767960296260">תהליך מארח</translation>
@@ -210,7 +202,6 @@ Chromoting</translation>
 <translation id="7038683108611689168">‏עזור לנו לשפר את Chromoting בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="4405930547258349619">ספריית ליבה</translation>
-<translation id="3385242214819933234">בעלים לא חוקי של המארח.</translation>
 <translation id="310979712355504754">מחק הכל</translation>
 <translation id="6542902059648396432">דווח על בעיה...</translation>
 <translation id="7649070708921625228">עזרה</translation>
@@ -244,7 +235,6 @@ Chromoting</translation>
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
 <translation id="6570205395680337606">אפס את היישום. תאבד עבודות שלא נשמרו.</translation>
-<translation id="6284412385303060032">המארח הפועל במסך הכניסה למסוף כבה כדי לתמוך במצב הסתרה על ידי מעבר אל מארח הרץ בפעילות באתר שהיא ספציפית למשתמש.</translation>
 <translation id="3596628256176442606">‏שירות זה מאפשר חיבורים נכנסים מלקוחות Chromoting.</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="837021510621780684">ממחשב זה</translation>

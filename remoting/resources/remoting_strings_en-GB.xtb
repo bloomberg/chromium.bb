@@ -6,15 +6,12 @@
 Host</translation>
 <translation id="1841799852846221389">Disabling remote connections for this computer…</translation>
 <translation id="2676780859508944670">Working…</translation>
-<translation id="6062854958530969723">Host initialisation failed.</translation>
 <translation id="5843054235973879827">Why is this safe?</translation>
 <translation id="5619148062500147964">To this computer</translation>
 <translation id="4068946408131579958">All connections</translation>
 <translation id="2208514473086078157">Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.</translation>
 <translation id="6541219117979389420">Application logs may include private information, including your identity (email address) and the names and properties of files and folders in Google Drive.</translation>
 <translation id="3931191050278863510">Host stopped.</translation>
-<translation id="3905196214175737742">Invalid host owner domain.</translation>
-<translation id="9213184081240281106">Invalid host configuration.</translation>
 <translation id="6998989275928107238">To</translation>
 <translation id="406849768426631008">Want to help someone while having a video chat with them too? Try <ph name="LINK_BEGIN"/> Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximise window</translation>
@@ -135,14 +132,12 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="7948001860594368197">Screen options</translation>
 <translation id="8172070902751707422">Authentication failed. Please sign in to Chrome Remote Desktop again.</translation>
 <translation id="5254120496627797685">Leaving this page will end your Chrome Remote Desktop session.</translation>
-<translation id="7019153418965365059">Unrecognised host error: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Failed to connect to Cast device.</translation>
 <translation id="1342297293546459414">See and control a shared computer.</translation>
 <translation id="1520828917794284345">Resize desktop to fit</translation>
 <translation id="701976023053394610">Remote Assistance</translation>
 <translation id="6099500228377758828">Chrome Remote Desktop Service</translation>
 <translation id="2747641796667576127">Software updates usually happen automatically, but can fail in some rare cases. Updating the software should take no more than a few minutes and can be done while connected to your computer remotely.</translation>
-<translation id="5170982930780719864">Invalid host id.</translation>
 <translation id="3933246213702324812">Chromoting on <ph name="HOSTNAME"/> is out-of-date and needs to be updated.</translation>
 <translation id="6193698048504518729">Connect to <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">Some required components are missing. Please make sure that you have installed the latest version of the software and try again.</translation>
@@ -151,8 +146,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2647232381348739934">Chromoting Service</translation>
 <translation id="579702532610384533">Reconnect</translation>
 <translation id="4867841927763172006">Send PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (last online <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">This setting is managed by your domain policy.</translation>
 <translation id="7810127880729796595">Show statistics (connection: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Pairing date</translation>
 <translation id="3989511127559254552">To continue, you must first grant extended access permissions to your computer. You only have to do this once.</translation>
@@ -183,7 +176,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
 <translation id="809687642899217504">My Computers</translation>
 <translation id="3106379468611574572">The remote computer is not responding to connection requests. Please verify that it is online and try again.</translation>
-<translation id="8386846956409881180">Host is configured with invalid OAuth credentials.</translation>
 <translation id="20876857123010370">Trackpad mode</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2078880767960296260">Host Process</translation>
@@ -210,7 +202,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="7038683108611689168">Help us improve Chromoting by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="4405930547258349619">Core Library</translation>
-<translation id="3385242214819933234">Invalid host owner.</translation>
 <translation id="310979712355504754">Delete all</translation>
 <translation id="6542902059648396432">Report an issue…</translation>
 <translation id="7649070708921625228">Help</translation>
@@ -244,7 +235,6 @@ Desktop Host</translation>
 <translation id="4207623512727273241">Please run the installer before continuing.</translation>
 <translation id="1324095856329524885">(this feature is not yet available for your computer)</translation>
 <translation id="6570205395680337606">Reset the application. You will lose any unsaved work.</translation>
-<translation id="6284412385303060032">Host running at the console logic screen has shut down to support curtain mode by switching to a host running in a user-specific session.</translation>
 <translation id="3596628256176442606">This service enables incoming connections from Chromoting clients.</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="837021510621780684">From this computer</translation>

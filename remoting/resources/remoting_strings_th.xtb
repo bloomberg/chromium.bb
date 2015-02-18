@@ -1,20 +1,14 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
-<translation id="337167041784729019">แสดงสถิติ</translation>
 <translation id="3233367171080043075">คุณสามารถหยุดเมื่อใดก็ได้</translation>
 <translation id="7606912958770842224">เปิดใช้งานการเชื่อมต่อระยะไกล</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
 <translation id="1841799852846221389">กำลังปิดใช้งานการเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="2676780859508944670">กำลังทำงาน…</translation>
-<translation id="6062854958530969723">การเตรียมใช้งานโฮสต์ล้มเหลว</translation>
 <translation id="5843054235973879827">เหตุใดการดำเนินการนี้จึงปลอดภัย</translation>
 <translation id="5619148062500147964">กับคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4068946408131579958">การเชื่อมต่อทั้งหมด</translation>
 <translation id="2208514473086078157">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
-<translation id="6541219117979389420">บันทึกแอปพลิเชันอาจรวมข้อมูลส่วนตัว รวมถึงข้อมูลประจำตัวของคุณ (ที่อยู่อีเมล) ตลอดจนชื่อและคุณสมบัติของไฟล์และโฟลเดอร์ใน Google ไดรฟ์</translation>
-<translation id="3931191050278863510">หยุดโฮสต์แล้ว</translation>
-<translation id="3905196214175737742">โดเมนเจ้าของโฮสต์ไม่ถูกต้อง</translation>
-<translation id="9213184081240281106">การกำหนดค่าโฮสต์ไม่ถูกต้อง</translation>
 <translation id="6998989275928107238">ถึง</translation>
 <translation id="406849768426631008">หากต้องการช่วยคนอื่นในขณะที่วิดีโอแชทกับพวกเขา ลองใช้<ph name="LINK_BEGIN"/> &quot;เดสก์ท็อปเครื่องอื่น&quot; ใน Google แฮงเอาท์<ph name="LINK_END"/></translation>
 <translation id="906458777597946297">ขยายหน้าต่างเต็มหน้าจอ</translation>
@@ -34,10 +28,6 @@ Host</translation>
 <translation id="222632161986885959">ผู้เข้าร่วมแฮงเอาท์ได้เสนอที่จะช่วยเหลือคุณโดยการควบคุมคอมพิวเตอร์ของคุณ หากคุณยอมรับ ให้ทำดังนี้:</translation>
 <translation id="2046651113449445291">ไคลเอ็นต์ต่อไปนี้ถูกจับคู่กับคอมพิวเตอร์เครื่องนี้และสามารถเชื่อมต่อโดยไม่ต้องใส่รหัส PIN คุณสามารถยกเลิกสิทธิ์นี้ได้ทุกเมื่อ ไม่ว่าจะเป็นทีละไคลเอ็นต์หรือสำหรับไคลเอ็นต์ทั้งหมด</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
-<translation id="7836926030608666805">คอมโพเนนต์ที่จำเป็นบางอย่างขาดหายไป โปรดตรวจสอบว่าคุณใช้ Chrome เวอร์ชันล่าสุดและลองอีกครั้ง</translation>
-<translation id="8355485110405946777">รวมบันทึกแอปพลิเคชันที่จะช่วยเราในการแก้ปัญหาของคุณ (บันทึกอาจมีข้อมูลส่วนตัว)</translation>
-<translation id="7869445566579231750">คุณไม่มีสิทธิ์ในการเรียกใช้แอปพลิเคชันนี้</translation>
-<translation id="8548209692293300397">ก่อนหน้านี้คุณได้ลงชื่อเข้าใช้เป็น <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>)  หากต้องการเข้าถึงคอมพิวเตอร์ในบัญชีนั้น ให้<ph name="LINK_BEGIN"/>ลงชื่อเข้าใช้ Google Chrome<ph name="LINK_END"/> ด้วยบัญชีนั้นและติดตั้ง Chrome Remote Desktop อีกครั้ง</translation>
 <translation id="7782471917492991422">โปรดตรวจสอบการตั้งค่าการจัดการพลังงานของคอมพิวเตอร์ที่ใช้ และตรวจสอบให้แน่ใจว่าไม่ได้กำหนดค่าให้เข้าสู่โหมดสลีปเมื่อไม่มีการใช้งาน</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
 <translation id="3027681561976217984">โหมดสัมผัส</translation>
@@ -45,18 +35,14 @@ Host</translation>
 <translation id="2499160551253595098">ช่วยเราปรับปรุง Chrome Remote Desktop ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
 <translation id="7868137160098754906">โปรดป้อน PIN สำหรับคอมพิวเตอร์ระยะไกล</translation>
 <translation id="677755392401385740">โฮสต์เริ่มใช้งานสำหรับผู้ใช้: <ph name="HOST_USERNAME"/></translation>
-<translation id="6441316101718669559">การรวมระบบเดสก์ท็อปไม่ได้รับการสนับสนุนบนแพลตฟอร์มนี้ คุณยังคงสามารถใช้แอปพลิเคชันนี้ได้ แต่ประสบการณ์ของผู้ใช้จะมีคุณภาพลดลง</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="195619862187186579">การจัดวางแป้นพิมพ์</translation>
 <translation id="8355326866731426344">รหัสการเข้าถึงนี้จะหมดอายุในอีก <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">ความช่วยเหลือและความคิดเห็น</translation>
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
-<translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">ไม่สามารถลงทะเบียนคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="2540992418118313681">คุณต้องการจะแชร์คอมพิวเตอร์เครื่องนี้เพื่อให้ผู้ใช้อื่นเห็นและควบคุมไหม</translation>
-<translation id="894763922177556086">ดี</translation>
 <translation id="5708869785009007625">ขณะนี้มีการแชร์เดสก์ท็อปของคุณกับ <ph name="USER"/></translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
@@ -66,7 +52,6 @@ Host</translation>
 <translation id="2813770873348017932">การเชื่อมต่อกับคอมพิวเตอร์ระยะไกลถูกบล็อกไว้ชั่วคราว เนื่องจากมีผู้พยายามเชื่อมต่อกับคอมพิวเตอร์ดังกล่าวโดยใช้ PIN ที่ไม่ถูกต้อง โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="6746493157771801606">ล้างประวัติ</translation>
 <translation id="4430435636878359009">ปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องนี้</translation>
-<translation id="2314101195544969792">เซสชัน <ph name="APPLICATION_NAME"/> ไม่มีการใช้งานมาระยะหนึ่งแล้ว และระบบจะยกเลิกการเชื่อมต่อเร็วๆ นี้</translation>
 <translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
 <translation id="9188433529406846933">ให้สิทธิ์</translation>
@@ -92,14 +77,12 @@ Host</translation>
 <translation id="629730747756840877">บัญชี</translation>
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (ล้าสมัย)</translation>
-<translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="3884839335308961732">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่ออนุญาตให้ Chrome Remote Desktop สามารถเข้าถึง</translation>
 <translation id="327263477022142889">หากต้องการช่วยปรับปรุง Chrome Remote Desktop โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">ส่ง Ctrl-Alt-Del</translation>
 <translation id="5702987232842159181">เชื่อมต่อแล้ว:</translation>
 <translation id="8509907436388546015">Desktop Integration Process</translation>
 <translation id="4736223761657662401">ประวัติการเชื่อมต่อ</translation>
-<translation id="2009755455353575666">การเชื่อมต่อล้มเหลว</translation>
 <translation id="5285241842433869526">เรียนรู้วิธีตั้งค่าคอมพิวเตอร์สำหรับการเข้าถึงระยะไกล</translation>
 <translation id="8759753423332885148">เรียนรู้เพิ่มเติม</translation>
 <translation id="4430915108080446161">กำลังสร้างรหัสการเข้าถึง...</translation>
@@ -112,7 +95,6 @@ Host</translation>
 <translation id="2353140552984634198">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chromoting</translation>
 <translation id="4481276415609939789">คุณไม่มีคอมพิวเตอร์ที่ได้ลงทะเบียนไว้ หากต้องการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์ ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
 <translation id="2013884659108657024">Chrome กำลังดาวน์โหลดตัวติดตั้ง Chrome Remote Desktop Host เมื่อดาวน์โหลดเสร็จแล้ว โปรดเรียกใช้โปรแกรมติดตั้งก่อนดำเนินการต่อ</translation>
-<translation id="7149517134817561223">แอปพลิเคชันที่จะออกคำสั่งให้โฮสต์ของ Chrome Remote Desktop</translation>
 <translation id="1742469581923031760">กำลังเชื่อมต่อ…</translation>
 <translation id="2855866366045322178">ออฟไลน์</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
@@ -126,38 +108,28 @@ Host</translation>
 <translation id="4572065712096155137">เข้าถึง</translation>
 <translation id="5908809458024685848">คุณยังไม่ได้ลงชื่อเข้าใช้ Chromoting โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
-<translation id="5510035215749041527">ยกเลิกการเชื่อมต่อเลย</translation>
 <translation id="3362124771485993931">พิมพ์ PIN ซ้ำอีกครั้ง</translation>
 <translation id="1760808606374294203">• การแก้ไขสำหรับ Android Lollipop</translation>
-<translation id="8196755618196986400">หากต้องการอนุญาตให้เราติดต่อคุณสำหรับข้อมูลเพิ่มเติม จะมีการใส่ที่อยู่อีเมลของคุณในความคิดเห็นทั้งหมดที่คุณส่งมา</translation>
 <translation id="5231421057630485350">ผู้ที่ช่วยเหลือคุณจะสามารถควบคุมเมาส์และแป้นพิมพ์ของคุณได้</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
 <translation id="8172070902751707422">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chrome Remote Desktop อีกครั้ง</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
-<translation id="7019153418965365059">ข้อผิดพลาดของโฮสต์ที่ไม่รู้จัก: <ph name="HOST_OFFLINE_REASON"/></translation>
 <translation id="712467900648340229">ไม่สามารถเชื่อมต่อเครื่องส่งได้</translation>
 <translation id="1342297293546459414">ดูและควบคุมคอมพิวเตอร์ที่ใช้งานร่วมกัน</translation>
 <translation id="1520828917794284345">ปรับขนาดเดสก์ท็อปให้พอดี</translation>
 <translation id="701976023053394610">ความช่วยเหลือจากระยะไกล</translation>
 <translation id="6099500228377758828">Chrome Remote Desktop Service</translation>
 <translation id="2747641796667576127">โดยปกติการอัปเดตซอฟต์แวร์จะทำงานโดยอัตโนมัติ แต่อาจล้มเหลวในบางกรณีซึ่งพบไม่บ่อย การอัปเดตซอฟต์แวร์จะใช้เวลาไม่เกินสองสามนาที และสามารถดำเนินการขณะเชื่อมต่อคอมพิวเตอร์จากระยะไกล</translation>
-<translation id="5170982930780719864">รหัสโฮสต์ไม่ถูกต้อง</translation>
 <translation id="3933246213702324812">Chromoting บน <ph name="HOSTNAME"/> เก่าเกินไปและต้องมีการอัปเดต</translation>
 <translation id="6193698048504518729">เชื่อมต่อกับ <ph name="HOSTNAME"/></translation>
-<translation id="4155497795971509630">คอมโพเนนต์ที่จำเป็นบางอย่างขาดหายไป โปรดตรวจสอบว่าคุณได้ติดตั้งซอฟต์แวร์เวอร์ชันล่าสุดและลองอีกครั้ง</translation>
 <translation id="8116630183974937060">เกิดข้อผิดพลาดในเครือข่าย โปรดตรวจสอบว่าอุปกรณ์ของคุณออนไลน์อยู่และลองอีกครั้ง</translation>
 <translation id="3020807351229499221">ไม่สามารถอัปเดต PIN โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
 <translation id="579702532610384533">เชื่อมต่อใหม่</translation>
 <translation id="4867841927763172006">ส่ง PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (ออนไลน์ล่าสุดเมื่อ <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">การตั้งค่านี้ได้รับการจัดการโดยนโยบายโดเมนของคุณ</translation>
-<translation id="7810127880729796595">แสดงสถิติ (การเชื่อมต่อ: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">วันที่จับคู่</translation>
-<translation id="3989511127559254552">หากต้องการดำเนินการต่อ คุณจะต้องให้สิทธิ์เพิ่มเติมในการเข้าถึงคอมพิวเตอร์ของคุณก่อน โดยต้องทำเพียงครั้งเดียว</translation>
 <translation id="5156271271724754543">โปรดป้อน PIN เดียวกันลงในทั้งสองช่อง</translation>
-<translation id="1050693411695664090">แย่</translation>
 <translation id="2118549242412205620">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์ Android ได้อย่างปลอดภัย
 
 • บนคอมพิวเตอร์แต่ละเครื่อง ให้ตั้งค่าการเข้าถึงระยะไกลโดยใช้แอป Chrome Remote Desktop จาก Chrome เว็บสโตร์ที่ https://chrome.google.com/remotedesktop
@@ -174,16 +146,13 @@ Host</translation>
 <translation id="5625493749705183369">เข้าถึงคอมพิวเตอร์เครื่องอื่นหรืออนุญาตให้ผู้ใช้อื่นเข้าถึงคอมพิวเตอร์ของคุณอย่างปลอดภัยผ่านทางอินเทอร์เน็ต</translation>
 <translation id="2512228156274966424">หมายเหตุ: เพื่อให้มั่นใจว่าทุกแป้นพิมพ์ลัดพร้อมใช้งาน คุณสามารถกำหนดค่า Chrome Remote Desktop เป็น &quot;เปิดเป็นหน้าต่าง&quot;</translation>
 <translation id="2699970397166997657">Chromoting</translation>
-<translation id="5419185025274123272">ไม่สามารถรีเซ็ตแอปพลิเคชันนี้ คุณยังคงสามารถส่งรายงานข้อบกพร่องได้</translation>
 <translation id="4812684235631257312">โฮสต์</translation>
 <translation id="6178645564515549384">โฮสต์การรับส่งข้อความดั้งเดิมสำหรับการสนับสนุนระยะไกล</translation>
 <translation id="1738759452976856405">หยุดบันทึก</translation>
-<translation id="3360306038446926262">หน้าต่าง</translation>
 <translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
 <translation id="809687642899217504">คอมพิวเตอร์ของฉัน</translation>
 <translation id="3106379468611574572">คอมพิวเตอร์ระยะไกลไม่ตอบสนองคำขอการเชื่อมต่อ โปรดตรวจยืนยันว่าคอมพิวเตอร์ดังกล่าวออนไลน์อยู่และลองอีกครั้ง</translation>
-<translation id="8386846956409881180">โฮสต์ได้รับการกำหนดค่าด้วยข้อมูลรับรอง OAuth ที่ไม่ถูกต้อง</translation>
 <translation id="20876857123010370">โหมดแทร็กแพด</translation>
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
 <translation id="2078880767960296260">Host Process</translation>
@@ -210,9 +179,7 @@ Host</translation>
 <translation id="7038683108611689168">ช่วยเราปรับปรุง Chromoting ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="4405930547258349619">Core Library</translation>
-<translation id="3385242214819933234">เจ้าของโฮสต์ไม่ถูกต้อง</translation>
 <translation id="310979712355504754">ลบทั้งหมด</translation>
-<translation id="6542902059648396432">รายงานปัญหา…</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="3581045510967524389">ไม่สามารถเชื่อมต่อเครือข่าย โปรดตรวจสอบว่าอุปกรณ์ออนไลน์อยู่</translation>
 <translation id="4517233780764084060">หมายเหตุ: เพื่อให้มั่นใจว่าทุกแป้นพิมพ์ลัดพร้อมใช้งาน คุณสามารถกำหนดค่า Chromoting เป็น &quot;เปิดเป็นหน้าต่าง&quot;</translation>
@@ -226,8 +193,6 @@ Desktop Host</translation>
 <translation id="951991426597076286">ปฏิเสธ</translation>
 <translation id="4563926062592110512">ไคลเอ็นต์ที่ยกเลิกการเชื่อมต่อ: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
-<translation id="8642984861538780905">พอใช้</translation>
-<translation id="2921543551052660690">ก่อนหน้านี้คุณได้ลงชื่อเข้าใช้เป็น <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) หากต้องการเข้าถึงคอมพิวเตอร์ในบัญชีนั้น ให้<ph name="LINK_BEGIN"/>ลงชื่อเข้าใช้ Chromium<ph name="LINK_END"/> ด้วยบัญชีนั้นและติดตั้ง Chromoting อีกครั้ง</translation>
 <translation id="7319983568955948908">หยุดการแชร์</translation>
 <translation id="6681800064886881394">ลิขสิทธิ์ 2013 Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="6640610550128933069">ออนไลน์ล่าสุด <ph name="DATE"/></translation>
@@ -242,24 +207,18 @@ Desktop Host</translation>
 <translation id="6011539954251327702">Chromoting ช่วยให้คุณแชร์คอมพิวเตอร์ผ่านเว็บได้อย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องใช้งานแอปพลิเคชัน Chromoting ซึ่งสามารถรับได้ที่ <ph name="URL"/></translation>
 <translation id="2919669478609886916">ขณะนี้คุณกำลังแชร์คอมพิวเตอร์เครื่องนี้กับผู้ใช้อื่น คุณต้องการแชร์ต่อไปหรือไม่</translation>
 <translation id="4207623512727273241">โปรดเรียกใช้ตัวติดตั้งก่อนดำเนินการต่อ</translation>
-<translation id="1324095856329524885">(คุณลักษณะนี้ยังไม่มีให้ใช้งานในคอมพิวเตอร์ของคุณ)</translation>
-<translation id="6570205395680337606">รีเซ็ตแอปพลิเคชัน คุณจะสูญเสียงานที่ไม่ได้บันทึกไว้ทั้งหมด</translation>
-<translation id="6284412385303060032">โฮสต์ที่ทำงานที่หน้าจอตรรกะของคอนโซลได้ปิดตัวลงเพื่อสนับสนุนโหมด Curtain โดยการเปลี่ยนไปเป็นโฮสต์ที่ทำงานในเซสชันเฉพาะผู้ใช้</translation>
 <translation id="3596628256176442606">บริการนี้จะช่วยให้สามารถใช้การเชื่อมต่อขาเข้าจากไคลเอ็นต์ Chromoting</translation>
 <translation id="4277463233460010382">คอมพิวเตอร์เครื่องนี้ได้รับการกำหนดค่าให้อนุญาตไคลเอ็นต์หนึ่งหรือมากกว่าสามารถเชื่อมต่อโดยไม่ต้องป้อน PIN</translation>
 <translation id="837021510621780684">จากคอมพิวเตอร์เครื่องนี้</translation>
-<translation id="518094545883702183">ข้อมูลนี้จะใช้เพื่อวินิจฉัยปัญหาที่คุณรายงานเท่านั้น โดยจะมีเพียงผู้ตรวจสอบรายงานเท่านั้นที่ใช้งานได้ และจะมีการเก็บรักษาไว้ไม่เกิน 30 วัน</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="7215059001581613786">โปรดป้อน PIN ที่ประกอบด้วยตัวเลขอย่างน้อยหกหลัก</translation>
 <translation id="8383794970363966105">ในการใช้ Chromoting คุณจะต้องเพิ่มบัญชี Google ลงในอุปกรณ์ของคุณ</translation>
 <translation id="1546934824884762070">เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดรายงานปัญหานี้ให้นักพัฒนาซอฟต์แวร์ทราบ</translation>
-<translation id="4795786176190567663">คุณไม่มีสิทธิ์ในการทำงานนี้</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="7434397035092923453">การเข้าถึงถูกปฏิเสธสำหรับไคลเอ็นต์: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="3403830762023901068">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chromoting โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="7312846573060934304">โฮสต์ออฟไลน์</translation>
-<translation id="1002108253973310084">ระบบตรวจพบเวอร์ชันของโปรโตคอลที่เข้ากันไม่ได้ โปรดตรวจสอบว่าคุณมีซอฟต์แวร์เวอร์ชันล่าสุดติดตั้งอยู่บนคอมพิวเตอร์ทั้ง 2 เครื่องแล้ว และลองอีกครั้ง</translation>
 <translation id="9016232822027372900">ยังต้องการเชื่อมต่อ</translation>
 <translation id="1818475040640568770">คอมพิวเตอร์ของคุณยังไม่ได้ลงทะเบียน</translation>
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>

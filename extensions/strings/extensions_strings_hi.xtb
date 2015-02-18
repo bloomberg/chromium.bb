@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> के USB डिवाइस ऐक्‍सेस करें</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="2518849872271000461">इस नाम वाले कंप्यूटर से डेटा का आदान-प्रदान करें: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB के द्वारा संलग्‍न किए गए या स्‍थानीय नेटवर्क पर मौजूद दस्‍तावेज़ स्‍कैनर ऐक्‍सेस करें</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> और <ph name="WEBSITE_3"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> डोमेन में किसी कंप्यूटर से डेटा का आदान-प्रदान करें</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">अपना माइक्रोफ़ोन उपयोग करें</translation>
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME"/> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> का <ph name="PRODUCT_NAME"/> (सीरियल नंबर <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">नेटवर्क कनेक्‍शन कॉन्‍फ़िगर करें</translation>
 <translation id="7154130902455071009">अपना आरंभ पृष्ठ इसमें बदलें: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">इनमें से कोई भी USB डिवाइस ऐक्‍सेस करें</translation>
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; ऐप्‍लिकेशन आपके एक या अधिक डिवाइस की ऐक्‍सेस का अनुरोध कर रहा है.</translation>

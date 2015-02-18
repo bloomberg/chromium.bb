@@ -43,7 +43,6 @@
 <translation id="568643307450491754">Encontre os seus marcadores no menu Chrome ou na barra de marcadores.</translation>
 <translation id="8556340503434111824">Está disponível uma nova versão do Google Chrome, mais rápida do que nunca.</translation>
 <translation id="8987477933582888019">Navegador de Internet</translation>
-<translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não especificado. Se o Google Chrome estiver atualmente em execução, feche-o e tente de novo.</translation>
 <translation id="3080151273017101988">Continuar a executar aplicações em segundo plano quando o Google Chrome está fechado</translation>
 <translation id="4149882025268051530">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira de novo o Google Chrome.</translation>
@@ -135,10 +134,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
         novamente para obter um desempenho melhorado.</translation>
 <translation id="2290014774651636340">As chaves da API do Google estão em falta. Algumas funcionalidades do Google Chrome serão desativadas.</translation>
 <translation id="2397416548179033562">Mostrar menu do Chrome</translation>
-<translation id="5423788048750135178">Aceda ao menu do Chrome &gt; Definições &gt; Privacidade (avançada)
-          e desative &quot;Registar previamente os recursos da página&quot;.
-          Se esta ação não resolver o problema, recomendamos que reative esta opção
-          novamente para melhorar o desempenho.</translation>
 <translation id="4794050651896644714">Guardar os detalhes no Chrome</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="5855036575689098185">O software em execução no seu computador é incompatível com o Google Chrome.</translation>

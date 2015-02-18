@@ -41,7 +41,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> இலிருந்து USB சாதனங்களை அணுகு</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> இல் உங்கள் உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="2518849872271000461">பின்வரும் பெயர்களிலுள்ள கணினிகளுடன் தரவைப் பரிமாறவும்: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">நீட்டிப்புக்காட்சி: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB அல்லது பிற அக நெட்வொர்க் மூலம் இணைக்கப்பட்ட ஆவண ஸ்கேனர்களை அணுகுதல்</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> மற்றும் <ph name="WEBSITE_3"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> களத்திலுள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்</translation>
@@ -70,7 +69,6 @@
 <translation id="4761104368405085019">உங்கள் மைக்ரோஃபோனைப் பயன்படுத்தலாம்</translation>
 <translation id="7217838517480956708">இந்தக் கணினியின் நிர்வாகிக்கு, <ph name="EXTENSION_NAME"/> ஐ நிறுவ வேண்டும். இதை அகற்றவோ மாற்றவோ முடியாது.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> இடமிருந்து <ph name="PRODUCT_NAME"/> (வரிசை எண் <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">நெட்வொர்க் இணைப்புகளை உள்ளமைக்கவும்</translation>
 <translation id="7154130902455071009">உங்கள் தொடக்கப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">இந்த USB சாதனங்கள் எதையும் அணுகலாம்</translation>
 <translation id="2677911863018634147">உங்கள் சாதனங்களின் ஒன்று அல்லது அதற்கு மேற்பட்டவற்றின் அணுகலை &quot;<ph name="APP_NAME"/>&quot; கோருகிறது.</translation>

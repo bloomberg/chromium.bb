@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="1396446129537741364">Chromium 即將顯示密碼。</translation>
 <translation id="8987477933582888019">網路瀏覽器</translation>
-<translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="580822234363523061">前往
           Chromium 選單 &gt;
@@ -178,10 +177,6 @@
 
 這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chromium。</translation>
 <translation id="8907580949721785412">Chromium 現在會嘗試顯示密碼。如果您同意的話，請輸入您的 Windows 密碼。</translation>
-<translation id="4404275227760602850">前往 Chromium 選單 &gt; [設定] &gt; (進階) [隱私權]
-          停用 [預先擷取網頁資源]。
-          如果仍然無法解決問題，建議您重新啟用這個選項，
-          讓 Chromium 的效能更優異。</translation>
 <translation id="1174473354587728743">如果您與他人共用電腦，現在可以依自己的喜好和習慣設定 Chromium。</translation>
 <translation id="9013087743919948559">新增至 Chromium</translation>
 <translation id="2525993619214772747">Chromium 出現異常行為？</translation>

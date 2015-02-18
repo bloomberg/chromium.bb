@@ -6,15 +6,12 @@
 Hostiteľ</translation>
 <translation id="1841799852846221389">Prebieha zakazovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="2676780859508944670">Spracúva sa…</translation>
-<translation id="6062854958530969723">Nepodarilo sa inicializovať hostiteľa</translation>
 <translation id="5843054235973879827">Prečo je to bezpečné?</translation>
 <translation id="5619148062500147964">K tomuto počítaču</translation>
 <translation id="4068946408131579958">Všetky pripojenia</translation>
 <translation id="2208514473086078157">Nastavenia pravidiel nepovoľujú zdieľanie tohto počítača ako hostiteľa Vzdialenej plochy Chrome. Požiadajte o pomoc svojho správcu systému.</translation>
 <translation id="6541219117979389420">Denníky aplikácie môžu obsahovať osobné informácie vrátane vašej totožnosti (e-mailovej adresy), názvov a vlastností súborov a priečinkov na Disku Google.</translation>
 <translation id="3931191050278863510">Hostenie bolo zastavené.</translation>
-<translation id="3905196214175737742">Neplatná doména vlastníka hostiteľa</translation>
-<translation id="9213184081240281106">Neplatná konfigurácia hostiteľa</translation>
 <translation id="6998989275928107238">Komu</translation>
 <translation id="406849768426631008">Chcete niekomu pomôcť a súčasne s ním viesť videohovor? Vyskúšajte funkciu <ph name="LINK_BEGIN"/>Vzdialený počítač v službe Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximalizovať okno</translation>
@@ -135,14 +132,12 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="8172070902751707422">Overenie totožnosti zlyhalo. Prihláste sa do služby Vzdialená plocha Chrome znova.</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
-<translation id="7019153418965365059">Nerozpoznaná chyba hostiteľa: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Nepodarilo sa pripojiť k zariadeniu Cast.</translation>
 <translation id="1342297293546459414">Zobrazte a ovládajte zdieľaný počítač.</translation>
 <translation id="1520828917794284345">Prispôsobiť veľkosť pracovnej plochy obrazovke klienta</translation>
 <translation id="701976023053394610">Pomoc na diaľku</translation>
 <translation id="6099500228377758828">Služba Vzdialená plocha Chrome</translation>
 <translation id="2747641796667576127">Aktualizácie systému zvyčajne prebiehajú automaticky, ale v zriedkavých prípadoch môžu zlyhať. Aktualizácia softvéru by nemala trvať dlhšie ako niekoľko sekúnd a dá sa vykonať prostredníctvom vzdialeného pripojenia k počítaču.</translation>
-<translation id="5170982930780719864">Neplatný identifikátor hostiteľa</translation>
 <translation id="3933246213702324812">Funkcia Chromoting na počítači <ph name="HOSTNAME"/> je zastaraná a vyžaduje aktualizáciu.</translation>
 <translation id="6193698048504518729">Pripojiť k počítaču <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">Niektoré potrebné komponenty chýbajú. Uistite sa, že máte nainštalovanú najnovšiu verziu príslušného softvéru a skúste to znova.</translation>
@@ -151,8 +146,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2647232381348739934">Služba Chromoting</translation>
 <translation id="579702532610384533">Znova pripojiť</translation>
 <translation id="4867841927763172006">Odoslať akciu PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (naposledy online <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">Toto nastavenie je spravované pravidlami domény.</translation>
 <translation id="7810127880729796595">Zobraziť štatistiky (pripojenie: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Dátum párovania</translation>
 <translation id="3989511127559254552">Ak chcete pokračovať, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
@@ -183,7 +176,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1704090719919187045">Predvoľby hostiteľa funkcie Chromoting</translation>
 <translation id="809687642899217504">Moje počítače</translation>
 <translation id="3106379468611574572">Vzdialený počítač nereaguje na žiadosti o pripojenie. Skontrolujte, či je online a skúste to znova.</translation>
-<translation id="8386846956409881180">Hostiteľ bol nakonfigurovaný pomocou neplatných poverení protokolu OAuth</translation>
 <translation id="20876857123010370">Režim trackpadu</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2078880767960296260">Proces hostiteľa</translation>
@@ -210,7 +202,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="7038683108611689168">Pomôžte nám zlepšiť aplikáciu Chromoting tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="4405930547258349619">Základná knižnica</translation>
-<translation id="3385242214819933234">Neplatný vlastník hostiteľa</translation>
 <translation id="310979712355504754">Odstrániť všetko</translation>
 <translation id="6542902059648396432">Nahlásiť problém...</translation>
 <translation id="7649070708921625228">Pomocník</translation>
@@ -244,7 +235,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="4207623512727273241">Pred pokračovaním spustite inštalátor.</translation>
 <translation id="1324095856329524885">(táto funkcia zatiaľ nie je k dispozícii pre váš počítač)</translation>
 <translation id="6570205395680337606">Resetovať aplikáciu. Prídete o všetku neuloženú prácu.</translation>
-<translation id="6284412385303060032">Spúšťanie hostiteľa na obrazovke modulu konzoly bolo vypnuté, aby sa tým podporil režim opony (curtain mode), a to prepnutím na hostiteľa spúšťaného v relácii konkrétneho používateľa</translation>
 <translation id="3596628256176442606">Táto služba povoľuje prichádzajúce pripojenia od klientov funkcie Chromoting.</translation>
 <translation id="4277463233460010382">Tento počítač je nakonfigurovaný tak, aby povolil pripojenie jedného alebo viacerých klientov bez zadania kódu PIN.</translation>
 <translation id="837021510621780684">Z tohto počítača</translation>

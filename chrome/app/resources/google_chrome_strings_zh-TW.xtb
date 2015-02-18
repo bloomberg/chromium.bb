@@ -45,7 +45,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="8556340503434111824">Google Chrome 推出全新版本，速度更勝以往。</translation>
 <translation id="8987477933582888019">網路瀏覽器</translation>
-<translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載 Google Chrome。</translation>
@@ -137,10 +136,6 @@ Google Chrome 無法復原您的設定。</translation>
         以增進效能。</translation>
 <translation id="2290014774651636340">缺少 Google API 金鑰，系統將停用 Google Chrome 的部分功能。</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
-<translation id="5423788048750135178">前往 Chrome 選單 &gt; [設定] &gt; (進階) [隱私權]
-          停用 [預先擷取網頁資源]。
-          如果仍然無法解決問題，建議您重新啟用這個選項，
-          讓 Chrome 的效能更優異。</translation>
 <translation id="4794050651896644714">在 Chrome 中儲存詳細資料</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>

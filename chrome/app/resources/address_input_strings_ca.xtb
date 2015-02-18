@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ca">
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="3713769522066937702">No es reconeix aquest format de codi postal. Exemple de codi postal vàlid: <ph name="EXAMPLE"/>. No sabeu el vostre codi postal? Cerqueu-lo <ph name="BEGIN_LINK"/>aquí<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Adreça postal</translation>
@@ -6,21 +8,16 @@
 <translation id="1340068511406764697">Heu de proporcionar un codi postal, per exemple <ph name="EXAMPLE"/>. No sabeu el vostre codi postal? Cerqueu-lo <ph name="BEGIN_LINK"/>aquí<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">No es reconeix aquest format de codi postal. Exemple de codi postal vàlid: <ph name="EXAMPLE"/>. No sabeu el vostre codi postal? Cerqueu-lo <ph name="BEGIN_LINK"/>aquí<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Ciutat</translation>
-<translation id="6271429879296260742">Codi PIN</translation>
 <translation id="6839929833149231406">Àrea</translation>
 <translation id="3885155851504623709">Diòcesi</translation>
 <translation id="8184169487503545976">No es reconeix el format d'aquest codi postal.</translation>
-<translation id="7805765407568469194">Poble/municipi</translation>
 <translation id="7602447984296396718">Sembla que aquest codi postal no concorda amb la resta de l'adreça.</translation>
-<translation id="8449204988444194299">Localitat</translation>
 <translation id="6247152910634872706">Organització</translation>
 <translation id="2053553514270667976">Codi postal</translation>
-<translation id="2577522251608256362">Veïnat</translation>
 <translation id="7087282848513945231">Comptat</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="7738983109397305830">Sembla que aquest codi postal no coincideix amb la resta de l'adreça. No sabeu el vostre codi postal? Cerqueu-lo <ph name="BEGIN_LINK"/>aquí<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Illa</translation>
-<translation id="6132429659673988671">Urbanització</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6970216967273061347">Districte</translation>
 <translation id="6207937957461833379">País/Regió</translation>

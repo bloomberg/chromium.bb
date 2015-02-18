@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Aceder a dispositivos USB de <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Ler e alterar os seus dados em <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Trocar dados com os computadores com os nomes <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Aceder a scanners de documentos anexados através de USB ou na rede local</translation>
 <translation id="6408118934673775994">Ler e alterar os seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Trocar dados com qualquer computador do domínio <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Utilizar o seu microfone</translation>
 <translation id="7217838517480956708">O administrador desta máquina exige que o <ph name="EXTENSION_NAME"/> seja instalado. Este não pode ser removido ou modificado.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configurar ligações de rede</translation>
 <translation id="7154130902455071009">Alterar a página de início para: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Aceder a qualquer um destes dispositivos USB</translation>
 <translation id="2677911863018634147">A aplicação&quot;<ph name="APP_NAME"/>&quot; está a solicitar acesso a um ou mais dos seus dispositivos.</translation>

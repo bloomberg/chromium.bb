@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/> થી USB ઉપકરણો ઍક્સેસ કરો</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> પર તમારો ડેટા વાંચો અને બદલો</translation>
 <translation id="2518849872271000461">આ નામના કમ્પ્યુટર્સ સાથે ડેટા વિનિમય કરો: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB અથવા સ્થાનિક નેટવર્ક મારફતે જોડાયેલ દસ્તાવેજ સ્કેનર્સની ઍક્સેસ</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> અને <ph name="WEBSITE_3"/> પર તમારો ડેટા વાંચો અને બદલો</translation>
 <translation id="961805664415579088"><ph name="DOMAIN"/> ડોમેનમાંના કોઈપણ કમ્પ્યુટર સાથે ડેટા વિનિમય કરો</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">તમારા માઇક્રોફોનનો ઉપયોગ કરો</translation>
 <translation id="7217838517480956708">આ મશીનના વ્યવસ્થાપકને ઇન્સ્ટોલ કરવા માટે <ph name="EXTENSION_NAME"/> ની આવશ્કતા છે. તેને દૂર અથવા સંશોધિત કરી શકાશે નહીં.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/> નું <ph name="PRODUCT_NAME"/> (સીરિયલ નંબર <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">નેટવર્ક કનેક્શન્સ ગોઠવો</translation>
 <translation id="7154130902455071009">તમારા પ્રારંભ પૃષ્ઠને આ પર બદલો: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">આ USB ઉપકરણોમાંથી કોઈપણ ઍક્સેસ કરો</translation>
 <translation id="2677911863018634147">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહી છે.</translation>

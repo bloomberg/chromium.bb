@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="pt-PT">
 <translation id="777702478322588152">Prefeitura</translation>
 <translation id="3713769522066937702">Este formato de código postal não é reconhecido. Exemplo de um código postal válido: <ph name="EXAMPLE"/>. Não sabe qual é o seu código postal? Descubra-o <ph name="BEGIN_LINK"/>aqui<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Morada</translation>
@@ -6,21 +8,16 @@
 <translation id="1340068511406764697">Deve fornecer um código postal, por exemplo <ph name="EXAMPLE"/>. Não sabe qual é o seu código postal? Descubra-o <ph name="BEGIN_LINK"/>aqui<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Este formato de código postal não é reconhecido. Exemplo de um código postal válido: <ph name="EXAMPLE"/>. Não sabe qual é o seu código postal? Descubra-o <ph name="BEGIN_LINK"/>aqui<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Cidade</translation>
-<translation id="6271429879296260742">Código PIN</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="3885155851504623709">Freguesia</translation>
 <translation id="8184169487503545976">Este formato de código postal não é reconhecido.</translation>
-<translation id="7805765407568469194">Aldeia/vila</translation>
 <translation id="7602447984296396718">Este código postal não parece corresponder ao resto do endereço.</translation>
-<translation id="8449204988444194299">Código de área postal</translation>
 <translation id="6247152910634872706">Entidade</translation>
 <translation id="2053553514270667976">Código postal</translation>
-<translation id="2577522251608256362">Bairro</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="7738983109397305830">Este código postal não parece corresponder com o resto deste endereço. Não sabe qual é o seu código postal? Descubra-o <ph name="BEGIN_LINK"/>aqui<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Ilha</translation>
-<translation id="6132429659673988671">Subúrbio</translation>
 <translation id="7139724024395191329">Emirado</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6207937957461833379">País/Região</translation>

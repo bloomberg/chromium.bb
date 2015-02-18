@@ -40,7 +40,6 @@
 <translation id="7039326228527141150"><ph name="VENDOR_NAME"/>의 USB 기기에 액세스</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>의 데이터를 읽고 변경</translation>
 <translation id="2518849872271000461">이름이 <ph name="HOSTNAMES"/>인 컴퓨터와 데이터 교환</translation>
-<translation id="5960890139610307736">확장보기: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">USB나 로컬 네트워크에 포함된 문서 스캐너에 액세스</translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, <ph name="WEBSITE_3"/>의 데이터를 읽고 변경</translation>
 <translation id="961805664415579088">도메인 <ph name="DOMAIN"/>에 있는 모든 컴퓨터와 데이터 교환</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">마이크 사용</translation>
 <translation id="7217838517480956708">이 기기를 설치할 때 관리자가 <ph name="EXTENSION_NAME"/>을(를) 요구합니다. 삭제 또는 수정할 수 없습니다.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/>의 제품 <ph name="PRODUCT_NAME"/>(일련 번호 <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">네트워크 연결 구성</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">이 USB 기기에 액세스</translation>
 <translation id="2677911863018634147">애플리케이션 '<ph name="APP_NAME"/>'이(가) 사용자의 기기 하나 이상에 대한 액세스 권한을 요청하고 있습니다.</translation>

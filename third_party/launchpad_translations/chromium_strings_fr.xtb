@@ -40,7 +40,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="1396446129537741364">Tentative d'affichage des mots de passe dans Chromium</translation>
 <translation id="8987477933582888019">Navigateur Web</translation>
-<translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
 <translation id="580822234363523061">Accédez au
           menu Chromium &gt;
@@ -179,10 +178,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 
 Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier un autre répertoire de profil ou utiliser une version plus récente de Chromium.</translation>
 <translation id="8907580949721785412">Chromium tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
-<translation id="4404275227760602850">Accédez au menu Chromium &gt; Paramètres &gt; (Avancés) Confidendialité,
-          puis désactivez &quot;Prélire les ressources de pages&quot;.
-          Si le problème persiste, nous vous conseillons de réactiver cette option
-          pour des performances optimales.</translation>
 <translation id="1174473354587728743">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chromium selon vos besoins.</translation>
 <translation id="9013087743919948559">Ajouter à Chromium</translation>
 <translation id="2525993619214772747">Le fonctionnement de Chrome vous semble étrange ?</translation>

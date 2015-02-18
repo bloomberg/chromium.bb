@@ -126,7 +126,6 @@
 <translation id="7987073022710626672">የChrome አገልግሎት ውል</translation>
 <translation id="5668404140385795438">የአንድ ድር ጣቢያ ማጉላትን መከልከል ጥያቄ ሻር</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (የተዘመነው በ<ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">ውይ። ይህ ገጽ ሊተረጎም አይችልም።</translation>
 <translation id="1987317783729300807">መለያዎች</translation>
 <translation id="6064211167623632605">ተፈጻሚ ዱካ</translation>
@@ -183,7 +182,6 @@
 <translation id="2699916814609764774">የመገለጫ ዱካ</translation>
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
-<translation id="6717254161209606306">ገጽ ወደ መነሻ ገጽ ላይ ለማከል ጥያቄ። የመተግበሪያ ስም፦ <ph name="APP_NAME"/>። የመተግበሪያ ዩአርኤል፦ <ph name="APP_URL"/>።</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="3338301885994755905">አግድ (የሚመከር)</translation>

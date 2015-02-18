@@ -69,7 +69,6 @@
 <translation id="6458467102616083041">Игнорируется, так как поиск по умолчанию запрещен правилами.</translation>
 <translation id="1227224963052638717">Неизвестное правило.</translation>
 <translation id="9207861905230894330">Не удалось добавить статью</translation>
-<translation id="5872918882028971132">Подсказки для родительских элементов</translation>
 <translation id="337363190475750230">Отключен</translation>
 <translation id="2367567093518048410">Уровень</translation>
 <translation id="7977590112176369853">&lt;введите запрос&gt;</translation>
@@ -110,7 +109,6 @@
 <translation id="5455374756549232013">Неверная временная метка политики</translation>
 <translation id="2025623846716345241">Подтвердить обновление страницы</translation>
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN"/></translation>
-<translation id="4300246636397505754">Подсказки для родительских элементов</translation>
 <translation id="111844081046043029">Вы действительно хотите покинуть эту страницу?</translation>
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>

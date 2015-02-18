@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
 <translation id="5238774010593222950">మరొక ఖాతాకు సైన్ ఇన్ చేయడం సాధ్యపడదు.</translation>
 <translation id="1723752762323179280">సెషన్ నుండి నిష్క్రమిస్తోంది</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">అవును</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
@@ -199,11 +198,9 @@
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> మిగిలి ఉంది</translation>
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
-<translation id="3147142846278915599">లాంచర్ (అనువర్తనాలను సమకాలీకరిస్తోంది...)</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">నిండే వరకు <ph name="HOUR"/>h <ph name="MINUTE"/>m అవుతుంది</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> నుండి SMS</translation>
-<translation id="4053612967614057854">స్క్రీన్‌పై కీబోర్డ్‌ను నిలిపివేయి</translation>
 </translationbundle>

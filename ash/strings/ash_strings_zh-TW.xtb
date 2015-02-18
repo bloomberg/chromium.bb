@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="5238774010593222950">無法登入其他帳戶。</translation>
 <translation id="1723752762323179280">結束工作階段</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">登出</translation>
@@ -199,11 +198,9 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">輸出</translation>
-<translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘才能充滿電</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="6359806961507272919">來自 <ph name="PHONE_NUMBER"/> 的簡訊</translation>
-<translation id="4053612967614057854">停用螢幕小鍵盤</translation>
 </translationbundle>

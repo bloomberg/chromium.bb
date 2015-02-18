@@ -6,15 +6,12 @@
 Chromoting</translation>
 <translation id="1841799852846221389">Desativando conexões remotas para este computador...</translation>
 <translation id="2676780859508944670">Processando…</translation>
-<translation id="6062854958530969723">Falha ao iniciar host.</translation>
 <translation id="5843054235973879827">Por que isto é seguro?</translation>
 <translation id="5619148062500147964">A este computador</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="2208514473086078157">As definições da política não permitem compartilhar este computador como um host da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para obter ajuda.</translation>
 <translation id="6541219117979389420">Os registros do aplicativo podem incluir informações particulares, inclusive sua identidade (endereço de e-mail) e os nomes e as propriedades dos arquivos e das pastas no Google Drive.</translation>
 <translation id="3931191050278863510">O host parou.</translation>
-<translation id="3905196214175737742">Domínio de proprietário de host inválido.</translation>
-<translation id="9213184081240281106">Configuração de host inválida.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="406849768426631008">Quer ajudar alguém enquanto bate-papo por vídeo com essa pessoa? Use a <ph name="LINK_BEGIN"/>Área de trabalho remota no Hangouts do Google<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Maximizar janela</translation>
@@ -135,14 +132,12 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="7948001860594368197">Opções de tela</translation>
 <translation id="8172070902751707422">Falha na autenticação. Faça login novamente na Área de trabalho remota do Google Chrome.</translation>
 <translation id="5254120496627797685">Abandonar esta página encerrará sua sessão na Área de trabalho remota do Google Chrome.</translation>
-<translation id="7019153418965365059">Erro de host não reconhecido: <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Não foi possível estabelecer conexão com o dispositivo de transmissão.</translation>
 <translation id="1342297293546459414">Ver e controlar um computador compartilhado.</translation>
 <translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
 <translation id="701976023053394610">Assistência remota</translation>
 <translation id="6099500228377758828">Serviço Área de trabalho remota do Google Chrome</translation>
 <translation id="2747641796667576127">As atualizações de software geralmente ocorrem automaticamente, mas podem falhar em casos raros. Essa atualização não deve demorar mais do que alguns minutos e pode ser feita enquanto você estiver conectado ao computador remotamente.</translation>
-<translation id="5170982930780719864">ID de host inválido.</translation>
 <translation id="3933246213702324812">O Chromoting em <ph name="HOSTNAME"/> está desatualizado e precisa ser atualizado.</translation>
 <translation id="6193698048504518729">Conectar a <ph name="HOSTNAME"/></translation>
 <translation id="4155497795971509630">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do software e tente novamente.</translation>
@@ -151,8 +146,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2647232381348739934">Serviço Chromoting</translation>
 <translation id="579702532610384533">Reconectar</translation>
 <translation id="4867841927763172006">Enviar PrtScn</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (última vez on-line em <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">Esta configuração é gerenciada pela política do seu domínio.</translation>
 <translation id="7810127880729796595">Mostrar estatísticas (conexão: <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Data do pareamento</translation>
 <translation id="3989511127559254552">Para continuar, é necessário conceder permissões de acesso estendidas ao seu computador. Você só precisará fazer isso uma vez.</translation>
@@ -183,7 +176,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1704090719919187045">Preferências do host do Chromoting</translation>
 <translation id="809687642899217504">Meus computadores</translation>
 <translation id="3106379468611574572">O computador remoto não está respondendo às solicitações de conexão. Certifique-se de que ele esteja on-line e tente novamente.</translation>
-<translation id="8386846956409881180">O host está configurado com credenciais de OAuth inválidas.</translation>
 <translation id="20876857123010370">Modo de trackpad</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2078880767960296260">Processo do host</translation>
@@ -210,7 +202,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="4405930547258349619">Biblioteca principal</translation>
-<translation id="3385242214819933234">Proprietário de host inválido.</translation>
 <translation id="310979712355504754">Excluir tudo</translation>
 <translation id="6542902059648396432">Informar um problema...</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -244,7 +235,6 @@ remota do Google Chrome</translation>
 <translation id="4207623512727273241">Execute o instalador antes de continuar.</translation>
 <translation id="1324095856329524885">Este recurso ainda não está disponível para seu computador</translation>
 <translation id="6570205395680337606">Reinicie o aplicativo. Você perderá qualquer trabalho que não tenha sido salvo.</translation>
-<translation id="6284412385303060032">O host que está sendo executado na tela de lógica do console foi encerrado para suportar o modo de cortina, alternando para um host executado em uma sessão específica do usuário.</translation>
 <translation id="3596628256176442606">Este serviço permite conexões de entrada a partir de clientes do Chromoting.</translation>
 <translation id="4277463233460010382">Este computador está configurado para permitir que um ou mais clientes se conectem sem ter que inserir um PIN.</translation>
 <translation id="837021510621780684">Deste computador</translation>

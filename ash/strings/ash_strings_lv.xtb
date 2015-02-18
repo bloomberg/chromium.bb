@@ -59,7 +59,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="8676770494376880701">Pievienots lādētājs ar mazu strāvas padevi</translation>
 <translation id="5238774010593222950">Vairs nevar pierakstīties citā kontā.</translation>
 <translation id="1723752762323179280">Iziešana no sesijas</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
@@ -199,11 +198,9 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="5102001756192215136">Atlicis: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Izvade</translation>
-<translation id="3147142846278915599">Palaišanas programma (notiek lietotņu sinhronizēšana...)</translation>
 <translation id="6911468394164995108">Pievienoties citam...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">Līdz pilnīgai uzlādei atlikušais laiks: <ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS no <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Atspējot ekrāna tastatūru</translation>
 </translationbundle>

@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Chromium kører, skal du lukke programmet og prøve igen.</translation>
 <translation id="1396446129537741364">Chromium forsøger at vise adgangskoder.</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
-<translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="580822234363523061">Gå til
           Chromium-menuen &gt;
@@ -178,10 +177,6 @@
 
 Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chromium.</translation>
 <translation id="8907580949721785412">Chromium forsøger at vise adgangskoder. Indtast din Windows-adgangskode for at tillade dette.</translation>
-<translation id="4404275227760602850">Gå til Chromium-menuen &gt; Indstillinger &gt; (Avanceret) Privatliv,
-          og fjern markeringen af &quot;Hent sideressourcer på forhånd&quot;.
-          Hvis det ikke løser problemet, bør du markere dette afkrydsningsfelt
-          igen for at forbedre effektiviteten.</translation>
 <translation id="1174473354587728743">Deler du en computer? Nu kan du konfigurere Chromium, præcist som du vil.</translation>
 <translation id="9013087743919948559">Føj til Chromium</translation>
 <translation id="2525993619214772747">Opfører Chromium sig mærkeligt?</translation>

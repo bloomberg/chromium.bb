@@ -37,7 +37,6 @@
 <translation id="4285930937574705105">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Chromium şu anda çalışır durumdaysa kapatıp yeniden deneyin.</translation>
 <translation id="1396446129537741364">Chromium, şifreleri göstermeye çalışıyor.</translation>
 <translation id="8987477933582888019">Web Tarayıcı</translation>
-<translation id="4050175100176540509">Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler mevcuttur.</translation>
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
 <translation id="580822234363523061">Chromium menüsü &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -173,10 +172,6 @@ web sitesi alışılmışın dışında ve hatalı kimlik bilgileri gönderdi. Y
 
 Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chromium sürümünü kullanın.</translation>
 <translation id="8907580949721785412">Chromium şifreleri göstermeye çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
-<translation id="4404275227760602850">Chromium menüsü &gt; Ayarlar &gt; (Gelişmiş) Gizlilik'e gidin
-          ve &quot;Sayfa kaynaklarını ön getir&quot;in işaretini kaldırın.
-          Bu işlem sorunu çözmezse performansın iyileşmesi için bu seçeneği tekrar 
-          etkinleştirmenizi öneririz.</translation>
 <translation id="1174473354587728743">Bilgisayarı paylaşıyor musunuz? Artık Chromium'u tam olarak istediğiniz gibi kurabilirsiniz.</translation>
 <translation id="9013087743919948559">Chromium'a ekle</translation>
 <translation id="2525993619214772747">Chromium Tuhaf Biçimde mi Çalışıyor?</translation>

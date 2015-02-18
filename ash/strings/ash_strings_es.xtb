@@ -59,7 +59,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="5238774010593222950">No puedo iniciar sesión en otra cuenta.</translation>
 <translation id="1723752762323179280">Saliendo de la sesión</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
@@ -199,11 +198,9 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="5102001756192215136">Queda para <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Salida</translation>
-<translation id="3147142846278915599">Menú de aplicaciones (sincronizando aplicaciones...)</translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h y <ph name="MINUTE"/> min para completar la carga</translation>
 <translation id="3077734595579995578">mayús</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Inhabilitar teclado en pantalla</translation>
 </translationbundle>

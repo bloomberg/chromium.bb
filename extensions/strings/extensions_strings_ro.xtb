@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Accesează dispozitivele USB de la <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Citește și modifică datele de pe <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Faceți schimb de date cu computerele cu numele: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Accesează scanerele de documente atașate prin USB sau dintr-o rețea locală</translation>
 <translation id="6408118934673775994">Citește și modifică datele de pe <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> și <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Faceți schimb de date cu orice computer de pe domeniul <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Utilizează microfonul</translation>
 <translation id="7217838517480956708">Administratorul acestui dispozitiv solicită instalarea extensiei <ph name="EXTENSION_NAME"/>. Aceasta nu poate fi eliminată sau modificată.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de la <ph name="VENDOR_NAME"/> (număr de serie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configurează conexiunile la rețea</translation>
 <translation id="7154130902455071009">Schimbați pagina de start la: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Accesează oricare dintre aceste dispozitive USB</translation>
 <translation id="2677911863018634147">Aplicația „<ph name="APP_NAME"/>” solicită accesul la cel puțin unul dintre dispozitivele tale.</translation>

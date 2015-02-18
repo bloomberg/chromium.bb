@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Accéder aux appareils USB de <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Accéder aux données du site <ph name="WEBSITE_1"/> et les modifier</translation>
 <translation id="2518849872271000461">Échanger des données avec les ordinateurs portant les noms suivants : <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView : <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Accéder aux scanners de documents connectés via USB ou sur le réseau local</translation>
 <translation id="6408118934673775994">Accéder aux données des sites <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> et <ph name="WEBSITE_3"/>, et les modifier</translation>
 <translation id="961805664415579088">Échanger des données avec les ordinateurs dans le domaine suivant : <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Utiliser votre micro</translation>
 <translation id="7217838517480956708">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME"/> soit installée. Celle-ci ne peut pas être supprimée ni modifiée.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (numéro de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configurer les connexions réseau</translation>
 <translation id="7154130902455071009">Utiliser l'adresse <ph name="START_PAGE"/> comme page de démarrage ?</translation>
 <translation id="1036511912703768636">Accéder à n'importe lequel de ces appareils USB</translation>
 <translation id="2677911863018634147">L'application &quot;<ph name="APP_NAME"/>&quot; demande l'accès à un ou plusieurs de vos appareils.</translation>

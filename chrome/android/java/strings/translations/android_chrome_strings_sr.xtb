@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
 <translation id="8588878054171169263">Сачувај слику</translation>
-<translation id="3303414029551471755">Желите ли да наставите са преузимањем садржаја?</translation>
 <translation id="7998918019931843664">Поново отворите затворену картицу</translation>
 <translation id="8425213833346101688">Промени</translation>
 <translation id="4996978546172906250">Дељење преко</translation>
@@ -11,95 +10,67 @@
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="5578795271662203820">Потражи ову слику на <ph name="SEARCH_ENGINE"/>-у</translation>
 <translation id="7764225426217299476">Додајте адресу</translation>
-<translation id="6085885345161726829">Када потврдите аутентичност картице, Chrome ће је кеширати локално.</translation>
 <translation id="8237438615979997762">Подаци сачувани на овом уређају, као и на Google налогу, остаће на оба места. Међутим, нови подаци или промене података неће бити синхронизовани.</translation>
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="6504836143156866575">Верзија JavaScript-а</translation>
 <translation id="869891660844655955">Датум истека</translation>
 <translation id="7644305409888602715">Превођење странице на <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="326254929494722411">Још увек нисте подесили Google налог на овом уређају</translation>
-<translation id="1446450296470737166">Пуна контрола над MIDI уређајима</translation>
-<translation id="1404122904123200417">Уграђено је у сајт <ph name="WEBSITE_URL"/></translation>
 <translation id="3895926599014793903">Принудно омогући зумирање</translation>
-<translation id="2440823041667407902">Приступ локацији</translation>
-<translation id="6600253697437303777">Питај пре приступања камери и микрофону (препоручује се)</translation>
 <translation id="7015922086425404465">Преузмите апликацију из Google Play продавнице: <ph name="APP_ACTION"/></translation>
 <translation id="1491151370853475546">Поново учитај ову страницу</translation>
 <translation id="5233638681132016545">Нова картица</translation>
 <translation id="641643625718530986">Штампај...</translation>
 <translation id="6317634962183824346">Синхронизација Android система је онемогућена. Омогућите је и покушајте поново.</translation>
 <translation id="5763382633136178763">Картице без архивирања</translation>
-<translation id="1647391597548383849">Приступ камери</translation>
 <translation id="5210365745912300556">Затвори картицу</translation>
-<translation id="5902828464777634901">Сви локални подаци које овај веб-сајт чува, укључујући колачиће, биће избрисани.</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="2154710561487035718">Копирање URL адресе</translation>
 <translation id="9189669987942139609">TB</translation>
-<translation id="2351097562818989364">Подешавања за превођење су ресетована.</translation>
 <translation id="119944043368869598">Обриши све</translation>
 <translation id="6458785801851713928">Синхронизација није доступна за домен.</translation>
 <translation id="2731700343119398978">Сачекајте…</translation>
 <translation id="6846298663435243399">Учитавање…</translation>
 <translation id="7378627244592794276">Не</translation>
-<translation id="7999064672810608036">Желите ли стварно да обришете све локалне податке, укључујући колачиће, и ресетујете све дозволе за овај веб-сајт?</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="9133515669113036225">Ресетуј акредитиве уређаја</translation>
-<translation id="2381756643783702095">Питај пре слања (препоручује се)</translation>
 <translation id="9019902583201351841">Овим управљају твоји родитељи</translation>
 <translation id="7596558890252710462">Оперативни систем</translation>
 <translation id="3358663646935160692">Овим налогом управља <ph name="DOMAIN_NAME"/>.
 
 Пријављујете се помоћу управљаног налога и дајете администратору контролу над Chrome профилом. Chrome подаци ће постати трајно повезани са овим налогом. Ако прекинете везу са овим налогом, избрисаћете локалне Chrome податке.</translation>
-<translation id="563535393368633106">Питај пре приступања (препоручује се)</translation>
 <translation id="666981079809192359">Chrome обавештење о приватности</translation>
 <translation id="1966710179511230534">Ажурирајте податке за пријављивање.</translation>
 <translation id="3410346880900521918">Ако вам се ово често приказује, испробајте ове <ph name="BEGIN_LINK"/>предлоге<ph name="END_LINK"/>.</translation>
-<translation id="5618939757577581490">Увези податке за Новчаник</translation>
 <translation id="1623104350909869708">Спречи ову страницу да прави додатне дијалоге</translation>
 <translation id="7375125077091615385">Тип:</translation>
-<translation id="1086169178231554178">SD картица није доступна</translation>
 <translation id="2498359688066513246">Помоћ и повратне информације</translation>
-<translation id="1091134514807961917">Пријављени сте на следећи Google налог.</translation>
-<translation id="7019652137705190998">Пређите у режим без архивирања да бисте прегледали приватно или се привремено пријавили</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="5595485650161345191">Измена адресе</translation>
 <translation id="4256782883801055595">Лиценце отвореног кода</translation>
 <translation id="8218346974737627104">Потврдите пријављивање</translation>
-<translation id="3350687908700087792">Затвори све картице без архивирања</translation>
-<translation id="5017989644593831205">Нисте <ph name="NOT_YOU_USER_NAME"/>?</translation>
-<translation id="8997842057643556822">Није успело прављење директоријума за преузимање на USB меморији.</translation>
-<translation id="6948694623901096205">Камера или микрофон</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE"/>, картица</translation>
 <translation id="624558823898732418">Језик са ког се преводи: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Изаберите сертификат за потврду аутентичности</translation>
-<translation id="6140912465461743537">Земља/регија</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="8719023831149562936">Није могуће пребацити актуелну картицу</translation>
 <translation id="4378154925671717803">Телефон</translation>
-<translation id="988938288723502454">Није успело прављење директоријума за преузимање на SD картици.</translation>
 <translation id="3896036286668839683">Приказивач сертификата</translation>
 <translation id="2321958826496381788">Превлачите клизач док ово не будете могли лако да прочитате. Када двапут додирнете пасус, текст треба да буде бар оволики.</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="8583805026567836021">Брисање података о налогу</translation>
 <translation id="2960796085439532066">Ауторска права <ph name="YEAR"/>. Google Inc. Сва права задржана.</translation>
 <translation id="4250680216510889253">Не</translation>
-<translation id="6388207532828177975">Обриши и ресетуј</translation>
-<translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> сачуваних података</translation>
-<translation id="3656115297268584622">Укључите локацију у <ph name="BEGIN_LINK"/>Android подешавањима<ph name="END_LINK"/>.</translation>
-<translation id="7423098979219808738">Прво питај</translation>
 <translation id="8073388330009372546">Отвори слику на новој картици</translation>
 <translation id="552553974213252141">Да ли је текст правилно издвојен?</translation>
 <translation id="1151972924205500581">Лозинка је обавезна</translation>
 <translation id="2870560284913253234">Сајт</translation>
 <translation id="2718352093833049315">Само на Wi-Fi-ју</translation>
 <translation id="7029809446516969842">Лозинке</translation>
-<translation id="5487729733663684359">Chrome ажурирања више нису подржана за ову верзију Android-а.</translation>
 <translation id="2414886740292270097">Тамнa</translation>
-<translation id="5911030830365207728">Google преводилац</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="4645575059429386691">Овим управља твој родитељ</translation>
 <translation id="8562452229998620586">Сачуване лозинке ће се појавити овде.</translation>
-<translation id="238909021488141516">Дошло је до грешке при преузимању садржаја.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
 <translation id="473775607612524610">Ажурирај</translation>
@@ -108,7 +79,6 @@
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="8374821112118309944">Морате да ажурирате TalkBack на новију верзију.</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
-<translation id="6026160407467558998">Омогућава сајтовима да покрећу JavaScript</translation>
 <translation id="8481940801237642152">Веза са овим сајтом је приватна, али неко на мрежи ће можда моћи да промени изглед странице.</translation>
 <translation id="2593272815202181319">Фиксне ширине</translation>
 <translation id="4807098396393229769">Име и презиме на картици</translation>
@@ -126,14 +96,11 @@
 <translation id="7987073022710626672">Chrome услови коришћења услуге</translation>
 <translation id="5668404140385795438">Одбијање захтева веб-сајта да се спречи увећавање</translation>
 <translation id="8428213095426709021">Подешавања</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (ажурирано је <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Упс, превођење ове странице није успело.</translation>
 <translation id="1987317783729300807">Налози</translation>
 <translation id="6064211167623632605">Путања извршне датотеке</translation>
 <translation id="10614374240317010">Никада се не чува</translation>
 <translation id="2903493209154104877">Адресе</translation>
-<translation id="3661699943263275414">Веб-сајтови треће стране могу да чувају и читају податке колачића</translation>
-<translation id="1173289567081511873">Пријављени сте на следеће Google налоге. Додајте или уклањајте налоге у Android подешавањима.</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="4827948050554950725">Додајте кредитну картицу</translation>
 <translation id="4278390842282768270">Дозвољено</translation>
@@ -142,68 +109,51 @@
 <translation id="6571070086367343653">Измена кредитне картице</translation>
 <translation id="7080851568148064063">Додај на почетни екран</translation>
 <translation id="6192792657125177640">Изузеци</translation>
-<translation id="1984937141057606926">Дозвољени, осим треће стране</translation>
 <translation id="4619298195800598081">Отвори оригин. у новој картици</translation>
 <translation id="8798099450830957504">Подразумевано</translation>
-<translation id="5308603654685598744">Када је ова функција укључена, Chrome ће нудити да преводи странице написане на другим језицима помоћу Google преводиоца.</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="885701979325669005">Складишни простор</translation>
 <translation id="3254409185687681395">Обележите ову страницу</translation>
 <translation id="907015151729920253">Паметна картица</translation>
 <translation id="2482878487686419369">Обавештења</translation>
-<translation id="4412992751769744546">Дозволи колачиће треће стране</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="3063601790762993062">Сачувај видео</translation>
 <translation id="8106211421800660735">Број кредитне картице</translation>
 <translation id="6042308850641462728">Више</translation>
 <translation id="7267430310003164111">Упит за преузимање апликације из Google Play продавнице. Назив апликације: <ph name="APP_NAME"/>. Просечна оцена апликације: <ph name="APP_RATING"/>.</translation>
-<translation id="6108923351542677676">Подешавање је у току...</translation>
 <translation id="7358682983403815415">Отворене картице, обележивачи, историја и други садржај се синхронизују са Google налогом.</translation>
 <translation id="1943432128510653496">Сачувај лозинке</translation>
 <translation id="4113030288477039509">Овим управља администратор</translation>
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="4148957013307229264">Инсталирање...</translation>
-<translation id="5271967389191913893">Уређај не може да отвори садржај за преузимање.</translation>
 <translation id="3992315671621218278">Сачувај линк</translation>
-<translation id="5324858694974489420">Родитељска подешавања</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Блокирај све сајтове</translation>
-<translation id="8168435359814927499">Садржај</translation>
 <translation id="5424715742813396254">Мењање сачуваног имена/лозинке или изузетка</translation>
-<translation id="6978479750597523876">Врати подешавања за превођење на почетне вредности</translation>
 <translation id="2476578072172137802">Подешавања сајта</translation>
 <translation id="4195643157523330669">Отвори у новој &amp;картици</translation>
 <translation id="651048280540227067">Одбацивање менија</translation>
 <translation id="748127970106343339">Потврди брисање акредитива уређаја</translation>
 <translation id="3089395242580810162">Отварање на картици без архивирања</translation>
 <translation id="1082482054625560856">Управљајте сачуваним лозинкама на <ph name="BEGIN_LINK"/>Google налогу<ph name="END_LINK"/></translation>
-<translation id="2360035970720276770">Могуће је преузети само URL-ове који садрже http или https</translation>
-<translation id="4376501731284077108">Без контроле</translation>
 <translation id="2699916814609764774">Путања профила</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="8725066075913043281">Покушајте поново</translation>
-<translation id="6717254161209606306">Упит за додавање странице на почетни екран. Назив апликације: <ph name="APP_NAME"/>. URL апликације: <ph name="APP_URL"/>.</translation>
-<translation id="7977858705483383621">Сигурна претрага</translation>
 <translation id="8909135823018751308">Дели...</translation>
-<translation id="3338301885994755905">Блокирај (препоручује се)</translation>
 <translation id="6575643671698722332">Ресетовање није успело. Уверите се да је уређај онлајн и покушајте поново.</translation>
 <translation id="654446541061731451">Изаберите картицу за пребацивање</translation>
 <translation id="4269820728363426813">Копирај адресу линка</translation>
 <translation id="2359808026110333948">Настави</translation>
 <translation id="977224059380370527">MB</translation>
 <translation id="2512222046227390255">Аутоматско попуњавање образаца</translation>
-<translation id="8515416241041728525">Додај налог за <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="1080790410959514870">Одјављујете се са налога којим управља <ph name="DOMAIN_NAME"/>. То ће избрисати Chrome податке сачуване на овом уређају, али ће подаци остати на Google налогу.</translation>
 <translation id="4510973599275542560">Не учитавај поново</translation>
 <translation id="1206892813135768548">Копирај текст линка</translation>
 <translation id="9154176715500758432">Остани на овој страници</translation>
 <translation id="1416550906796893042">Верзија апликације</translation>
-<translation id="5420752959853967987">бајт(ов)а</translation>
 <translation id="7063006564040364415">Није могуће повезивање са сервером за синхронизацију.</translation>
 <translation id="4271185234001491831">Никада не преводи <ph name="LANGUAGE"/></translation>
-<translation id="7981795308302452224">Покретање преузимања није успело</translation>
 <translation id="6671495933530132209">Копирај слику</translation>
 <translation id="5804241973901381774">Дозволе</translation>
 <translation id="8209050860603202033">Отвори слику</translation>
@@ -211,53 +161,36 @@
 <translation id="8941248009481596111">Веза са овим сајтом је приватна.</translation>
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
-<translation id="2956410042958133412">Овим налогом управљају <ph name="PARENT_NAME_1"/> и <ph name="PARENT_NAME_2"/>.</translation>
-<translation id="7048229856657573547">Управљај подацима Новчаника</translation>
 <translation id="5164482624172255778">Желите ли да Google Chrome следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE"/>?</translation>
 <translation id="4062305924942672200">Правне информације</translation>
-<translation id="515227803646670480">Обришите сачуване податке</translation>
 <translation id="8528538445849828817">Језик странице: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="7963646190083259054">Продавац:</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="6512448926095770873">Затвори ову страницу</translation>
 <translation id="3414952576877147120">Величина:</translation>
-<translation id="945632385593298557">Приступ микрофону</translation>
 <translation id="5626134646977739690">Име:</translation>
-<translation id="8617240290563765734">Желите ли да отворите предложени URL наведен у преузетом садржају?</translation>
 <translation id="5565871407246142825">Кредитне картице</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
 <translation id="6333140779060797560">Дељење преко <ph name="APPLICATION"/></translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="2888126860611144412">О Chrome прегледачу</translation>
 <translation id="5138299137310274655">Језик ове странице је <ph name="SOURCE_LANGUAGE"/>. Желите ли да преведете страницу на <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="2913331724188855103">Дозволи сајтовима да чувају и читају податке колачића (препоручује се)</translation>
-<translation id="5512137114520586844">Овим налогом управља <ph name="PARENT_NAME"/>.</translation>
 <translation id="7649070708921625228">Помоћ</translation>
-<translation id="1373696734384179344">Нема довољно меморије за преузимање изабраног садржаја.</translation>
 <translation id="969096075394517431">Промени језике</translation>
-<translation id="5085880389019676122">USB меморија није доступ.</translation>
 <translation id="1614564776292091138">Када је заштићени садржај УКЉУЧЕН, веб-сајтови могу да потврде аутентичност уређаја да би проверили да ли је овлашћен да пушта премијум, заштићене видео снимке.
 
 Када је ИСКЉУЧЕН, можда нећете моћи да пуштате премијум видео снимке на овом уређају.</translation>
 <translation id="8928220460877261598">Сада сте пријављени у Chrome.</translation>
 <translation id="5032574515228824816">Упит</translation>
-<translation id="8920114477895755567">Чекају се детаљи родитеља.</translation>
-<translation id="3003595280608617736">Нема SD картице</translation>
 <translation id="862875433388403934">Можда више нећете моћи да пуштате садржај (филмови, музика итд.) преузет у другим апликацијама док оне поново не добију лиценце на основу новог акредитива уређаја.
 
 Да бисте добили нове лиценце, повежите се на интернет и пустите преузети садржај.</translation>
 <translation id="2913733558842973836">Овај сајт је ушао у режим целог екрана.
 Превуците од врха да бисте изашли.</translation>
-<translation id="1692118695553449118">Синхронизација је укључена</translation>
 <translation id="7961015016161918242">Никад</translation>
-<translation id="6820607729870073286">Немате сачуванa подешавања веб-сајта.</translation>
-<translation id="1159783623621444829">Ово је дететов налог</translation>
 <translation id="8109148095642131923">Додавање преузете ставке у Менаџер преузимања није успело.</translation>
-<translation id="6295158916970320988">Сви сајтови</translation>
 <translation id="497421865427891073">Кретање унапред</translation>
 <translation id="4056223980640387499">Сепија</translation>
 <translation id="8310344678080805313">Стандардне картице</translation>
-<translation id="8396312449826231789">Само одобрени сајтови</translation>
 <translation id="411254640334432676">Преузимање није успело.</translation>
 <translation id="6277522088822131679">Дошло је до проблема при штампању странице. Покушајте поново.</translation>
 <translation id="7634554953375732414">Веза са овим сајтом није приватна.</translation>
@@ -265,13 +198,8 @@
 <translation id="8776285424728638733">GB</translation>
 <translation id="6612358246767739896">Заштићени садржај</translation>
 <translation id="1742134235943978220">Преведено је на <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="6738867403308150051">Преузима се...</translation>
 <translation id="6965382102122355670">Потврди</translation>
-<translation id="6375900123462779979">Приступ микрофону и камери</translation>
 <translation id="7437998757836447326">Одјављивање из Chrome-а</translation>
-<translation id="8773248244177230992">Обриши кеш</translation>
-<translation id="5127805178023152808">Синхронизација је искључена</translation>
 <translation id="5677928146339483299">Блокирано</translation>
-<translation id="5645050752379834274">Када је ова функција укључена, Chrome ће вам понудити да попуњава обрасце помоћу адреса и кредитних картица из Новчаника.</translation>
 <translation id="7561196759112975576">Увек</translation>
 </translationbundle>

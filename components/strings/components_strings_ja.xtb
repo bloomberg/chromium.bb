@@ -69,7 +69,6 @@
 <translation id="6458467102616083041">ポリシーによってデフォルトの検索が無効にされているため無視されます。</translation>
 <translation id="1227224963052638717">不明なポリシー。</translation>
 <translation id="9207861905230894330">記事を追加できませんでした。</translation>
-<translation id="5872918882028971132">保護者からのおすすめ</translation>
 <translation id="337363190475750230">プロビジョニングが解除されました</translation>
 <translation id="2367567093518048410">レベル</translation>
 <translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
@@ -110,7 +109,6 @@
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
 <translation id="2025623846716345241">再読み込みに関する確認</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN"/> のブックマーク</translation>
-<translation id="4300246636397505754">保護者からのおすすめ</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>

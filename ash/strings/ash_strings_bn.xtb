@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
 <translation id="5238774010593222950">অন্য অ্যাকাউন্টে সাইন ইন করা যাবে না।</translation>
 <translation id="1723752762323179280">সেশন থেকে প্রস্থান করা হচ্ছে</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">সাইন আউট</translation>
@@ -198,11 +197,9 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> বাকি</translation>
 <translation id="3009178788565917040">আউটপুট</translation>
-<translation id="3147142846278915599">লঞ্চার (অ্যাপ সিঙ্ক করা হচ্ছে...)</translation>
 <translation id="6911468394164995108">অন্যান্য যোগদান ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ঘন্টা <ph name="MINUTE"/> মিনিট পর্যন্ত পূর্ণ</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>-এর থেকে SMS...</translation>
-<translation id="4053612967614057854">অন-স্ক্রীন কীবোর্ড অক্ষম করুন</translation>
 </translationbundle>

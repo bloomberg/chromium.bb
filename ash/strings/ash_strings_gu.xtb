@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">નિમ્ન-પાવર ચાર્જર કનેક્ટ કર્યું છે</translation>
 <translation id="5238774010593222950">બીજા એકાઉન્ટમાં સાઇન-ઇન કરી શકતાં નથી.</translation>
 <translation id="1723752762323179280">સત્રથી બહાર નીકળી રહ્યાં છે</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">હા</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
@@ -198,11 +197,9 @@
 <translation id="4918086044614829423">સ્વીકારો</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> બાકી</translation>
 <translation id="3009178788565917040">આઉટપુટ</translation>
-<translation id="3147142846278915599">લોન્ચર (એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે..)</translation>
 <translation id="6911468394164995108">અન્યથી જોડાઓ...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ક <ph name="MINUTE"/>મિ સુધીમાં પૂર્ણ</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> તરફથી SMS</translation>
-<translation id="4053612967614057854">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કરો</translation>
 </translationbundle>

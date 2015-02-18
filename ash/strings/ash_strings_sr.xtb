@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
 <translation id="5238774010593222950">Не можете да се пријавите на још један налог.</translation>
 <translation id="1723752762323179280">Напуштање сесије</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
@@ -198,11 +197,9 @@
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="5102001756192215136">Преостало је <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">Излаз</translation>
-<translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> с <ph name="MINUTE"/> м до краја пуњења</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919">SMS са броја <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Онемогући тастатуру на екрану</translation>
 </translationbundle>

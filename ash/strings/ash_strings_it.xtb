@@ -59,7 +59,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="5238774010593222950">Impossibile accedere a un altro account.</translation>
 <translation id="1723752762323179280">Uscita dalla sessione</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">Esci</translation>
@@ -199,11 +198,9 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> rimanenti</translation>
 <translation id="3009178788565917040">Uscita</translation>
-<translation id="3147142846278915599">Avvio applicazioni (sincronizzazione delle app...)</translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h e <ph name="MINUTE"/> m per completare la ricarica</translation>
 <translation id="3077734595579995578">maiusc</translation>
 <translation id="6359806961507272919">SMS da <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Disattiva tastiera sullo schermo</translation>
 </translationbundle>

@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Piekļūt USB ierīcēm, ko piedāvā <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Lasīt un mainīt jūsu datus vietnē <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Apmainīties datiem ar šādiem datoriem: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Piekļūt dokumentu skeneriem, kas pievienoti, izmantojot USB vai lokālajā tīklā</translation>
 <translation id="6408118934673775994">Lasīt un mainīt jūsu datus vietnēs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> un <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Apmainīties datiem ar jebkuru datoru domēnā <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Izmantot jūsu mikrofonu</translation>
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME"/> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/>, ko piedāvā <ph name="VENDOR_NAME"/> (sērijas numurs: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Konfigurēt tīkla savienojumus</translation>
 <translation id="7154130902455071009">Mainiet savu sākumlapu uz šo: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Piekļūt jebkurai no šīm USB ierīcēm</translation>
 <translation id="2677911863018634147">Lietojumprogramma “<ph name="APP_NAME"/>” pieprasa piekļuvi vienai vai vairākām jūsu ierīcēm.</translation>

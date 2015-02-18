@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="5238774010593222950">无法登录其他帐户。</translation>
 <translation id="1723752762323179280">退出会话</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">退出</translation>
@@ -199,11 +198,9 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="5102001756192215136">可用时长：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3009178788565917040">输出</translation>
-<translation id="3147142846278915599">启动器（正在同步应用…）</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> 发来的短信</translation>
-<translation id="4053612967614057854">停用屏幕键盘</translation>
 </translationbundle>

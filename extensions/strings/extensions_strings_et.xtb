@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Juurdepääs müüja <ph name="VENDOR_NAME"/> USB-seadmetele</translation>
 <translation id="2616366145935564096">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Vaheta andmeid nende arvutitega: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Juurdepääs dokumendiskänneritele USB või kohaliku võrgu kaudu</translation>
 <translation id="6408118934673775994">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Vaheta andmeid mis tahes arvutiga domeenis <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Mikrofoni kasutamine</translation>
 <translation id="7217838517480956708">Seadme administraator nõuab, et <ph name="EXTENSION_NAME"/> oleks installitud. Seda ei saa eemaldada ega muuta.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> tootjalt <ph name="VENDOR_NAME"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Võrguühenduste seadistamine</translation>
 <translation id="7154130902455071009">Määrake avaleheks <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Juurdepääs ükskõik millisele nimetatud USB-seadmele</translation>
 <translation id="2677911863018634147">Rakendus „<ph name="APP_NAME"/>” taotleb juurdepääsu ühele või mitmele teie seadmele.</translation>

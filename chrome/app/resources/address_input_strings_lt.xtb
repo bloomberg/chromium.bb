@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="lt">
 <translation id="777702478322588152">Prefektūra</translation>
 <translation id="3713769522066937702">Šis pašto kodo formatas neatpažintas. Tinkamo pašto kodo pavyzdys: <ph name="EXAMPLE"/>. Nežinote savo pašto kodo? Raskite jį <ph name="BEGIN_LINK"/>čia<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Adresas</translation>
@@ -6,21 +8,16 @@
 <translation id="1340068511406764697">Turite nurodyti pašto kodą, pvz., <ph name="EXAMPLE"/>. Nežinote savo pašto kodo? Raskite jį <ph name="BEGIN_LINK"/>čia<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Šis pašto kodo formatas neatpažintas. Tinkamo pašto kodo pavyzdys: <ph name="EXAMPLE"/>. Nežinote savo pašto kodo? Raskite jį <ph name="BEGIN_LINK"/>čia<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Miestas</translation>
-<translation id="6271429879296260742">PIN kodas</translation>
 <translation id="6839929833149231406">Sritis</translation>
 <translation id="3885155851504623709">Apylinkė</translation>
 <translation id="8184169487503545976">Šis pašto kodo formatas neatpažintas.</translation>
-<translation id="7805765407568469194">Kaimas / miestelis</translation>
 <translation id="7602447984296396718">Panašu, kad šis pašto kodas neatitinka likusios adreso dalies.</translation>
-<translation id="8449204988444194299">Pašto miestas</translation>
 <translation id="6247152910634872706">Organizacija</translation>
 <translation id="2053553514270667976">Pašto kodas</translation>
-<translation id="2577522251608256362">Kaimynystė</translation>
 <translation id="7087282848513945231">Apygarda</translation>
 <translation id="2096368010154057602">Departamentas</translation>
 <translation id="7738983109397305830">Atrodo, kad šis pašto kodas neatitinka likusios adreso dalies. Nežinote savo pašto kodo? Raskite jį <ph name="BEGIN_LINK"/>čia<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Sala</translation>
-<translation id="6132429659673988671">Priemiestis</translation>
 <translation id="7139724024395191329">Emyratas</translation>
 <translation id="6970216967273061347">Rajonas</translation>
 <translation id="6207937957461833379">Šalis / regionas</translation>

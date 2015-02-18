@@ -39,7 +39,6 @@
 <translation id="4285930937574705105">Installimine ebaõnnestus tundmatu vea tõttu. Kui Chromium praegu töötab, siis sulgege see ja proovige uuesti.</translation>
 <translation id="1396446129537741364">Chromium püüab paroole kuvada.</translation>
 <translation id="8987477933582888019">Veebibrauser</translation>
-<translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="580822234363523061">Minge
           Chromiumi menüüsse &gt;
@@ -179,10 +178,6 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE"/>, või
 
 On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloog või kasutage Chromiumi uuemat versiooni.</translation>
 <translation id="8907580949721785412">Chromium proovib kuvada paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
-<translation id="4404275227760602850">Avage Chromiumi menüü &gt; Seaded &gt; (Täpsem) Privaatsus
-          ja keelake valik „Lehe ressursside eellaadimine”.
-          Kui see probleemi ei lahenda, soovitame selle valiku toimivuse
-          parandamiseks uuesti lubada.</translation>
 <translation id="1174473354587728743">Kas jagage arvutit? Saate nüüd seadistada Chromiumi just nii, nagu teile meeldib.</translation>
 <translation id="9013087743919948559">Chromiumi lisamine</translation>
 <translation id="2525993619214772747">Kas Chromium käitub veidralt?</translation>

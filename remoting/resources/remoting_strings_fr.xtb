@@ -1,20 +1,14 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
-<translation id="337167041784729019">Afficher les statistiques</translation>
 <translation id="3233367171080043075">Vous pouvez à tout moment fermer la session.</translation>
 <translation id="7606912958770842224">Activer les connexions à distance</translation>
 <translation id="3785447812627779171">Hôte
 Chromoting</translation>
 <translation id="1841799852846221389">Désactivation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="2676780859508944670">Traitement en cours…</translation>
-<translation id="6062854958530969723">Échec de l'initialisation de l'hôte.</translation>
 <translation id="5843054235973879827">En quoi est-ce sûr ?</translation>
 <translation id="5619148062500147964">À cet ordinateur</translation>
 <translation id="4068946408131579958">Toutes les connexions</translation>
 <translation id="2208514473086078157">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte du bureau à distance Google Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
-<translation id="6541219117979389420">Les journaux des applications peuvent inclure des informations confidentielles, y compris votre identité (adresse e-mail), ainsi que le nom et les propriétés des fichiers et des dossiers dans Google Drive.</translation>
-<translation id="3931191050278863510">Hôte suspendu</translation>
-<translation id="3905196214175737742">Domaine propriétaire de l'hôte incorrect.</translation>
-<translation id="9213184081240281106">Configuration d'hôte incorrecte.</translation>
 <translation id="6998989275928107238">À</translation>
 <translation id="406849768426631008">Vous voulez aider une personne au cours d'un chat vidéo avec elle ? Essayez <ph name="LINK_BEGIN"/> le Bureau à distance dans Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="906458777597946297">Agrandir la fenêtre</translation>
@@ -34,10 +28,6 @@ Chromoting</translation>
 <translation id="222632161986885959">L'un des participants à ce Hangout propose de vous aider en prenant le contrôle de votre ordinateur. Si vous acceptez :</translation>
 <translation id="2046651113449445291">Les clients suivants ont été associés à cet ordinateur. Ils peuvent donc s'y connecter sans fournir de code d'accès. Vous pouvez révoquer cette autorisation à tout moment, pour l'ensemble des clients ou individuellement.</translation>
 <translation id="7658239707568436148">Annuler</translation>
-<translation id="7836926030608666805">Certains composants nécessaires  sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Chrome, puis réessayer.</translation>
-<translation id="8355485110405946777">Inclure les journaux des applications afin de nous aider à résoudre votre problème (les journaux peuvent inclure des informations confidentielles)</translation>
-<translation id="7869445566579231750">Vous n'êtes pas autorisé à exécuter cette application.</translation>
-<translation id="8548209692293300397">Vous vous êtes auparavant connecté avec le nom d'utilisateur &quot;<ph name="USER_NAME"/>&quot; (<ph name="USER_EMAIL"/>). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN"/>connectez-vous à Google Chrome<ph name="LINK_END"/> avec ce compte, puis réinstallez le Bureau à distance Chrome.</translation>
 <translation id="7782471917492991422">Veuillez vérifier les paramètres de gestion d'alimentation de votre ordinateur et vous assurer qu'il n'est pas configuré pour se mettre en veille en cas d'inactivité.</translation>
 <translation id="7665369617277396874">Ajouter un compte</translation>
 <translation id="3027681561976217984">Mode Écran tactile</translation>
@@ -45,18 +35,14 @@ Chromoting</translation>
 <translation id="2499160551253595098">Aidez-nous à améliorer le bureau à distance Google Chrome en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="7868137160098754906">Veuillez saisir le code d'accès de l'ordinateur distant.</translation>
 <translation id="677755392401385740">Hôte démarré pour l'utilisateur &quot;<ph name="HOST_USERNAME"/>&quot;</translation>
-<translation id="6441316101718669559">L'intégration du Bureau est impossible sur cette plate-forme. Vous pouvez toujours utiliser l'application, mais avec une expérience utilisateur de moindre qualité.</translation>
 <translation id="3197730452537982411">Bureau à distance</translation>
-<translation id="195619862187186579">Dispositions de clavier</translation>
 <translation id="8355326866731426344">Ce code d'accès expire dans <ph name="TIMEOUT"/>.</translation>
 <translation id="985602178874221306">Auteurs de Chromium</translation>
 <translation id="2498359688066513246">Aide et commentaires</translation>
 <translation id="6198252989419008588">Modifier le code PIN</translation>
-<translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="2540992418118313681">Voulez-vous partager cet ordinateur pour qu'un autre utilisateur puisse consulter le contenu et en prendre le contrôle ?</translation>
-<translation id="894763922177556086">Bonne</translation>
 <translation id="5708869785009007625">Vous partagez actuellement votre bureau avec <ph name="USER"/>.</translation>
 <translation id="5601503069213153581">Code d'accès</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
@@ -66,7 +52,6 @@ Chromoting</translation>
 <translation id="2813770873348017932">Les connexions à l'ordinateur à distance sont momentanément bloquées, car un utilisateur a tenté de s'y connecter en utilisant un code d'accès erroné. Veuillez réessayer ultérieurement.</translation>
 <translation id="6746493157771801606">Effacer l'historique</translation>
 <translation id="4430435636878359009">Désactiver les connexions à distance à cet ordinateur</translation>
-<translation id="2314101195544969792">Votre session <ph name="APPLICATION_NAME"/> est inactive depuis un certain temps et risque de se fermer bientôt.</translation>
 <translation id="6001953797859482435">Préférences relatives à l'hôte Bureau à distance Google Chrome</translation>
 <translation id="225614027745146050">Bienvenue</translation>
 <translation id="9188433529406846933">Autoriser</translation>
@@ -92,14 +77,12 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="629730747756840877">Compte</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (obsolète)</translation>
-<translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="3884839335308961732">Veuillez confirmer le compte et le code d'accès ci-dessous pour autoriser l'accès du Bureau à distance Google Chrome à votre compte.</translation>
 <translation id="327263477022142889">Vous voulez nous aider à améliorer le Bureau à distance Chrome ? <ph name="LINK_BEGIN"/>Répondez à notre enquête<ph name="LINK_END"/>.</translation>
 <translation id="6612717000975622067">Envoyer Ctrl-Alt-Suppr</translation>
 <translation id="5702987232842159181">Connecté :</translation>
 <translation id="8509907436388546015">Processus d'intégration au Bureau</translation>
 <translation id="4736223761657662401">Historique des connexions</translation>
-<translation id="2009755455353575666">Échec de la connexion</translation>
 <translation id="5285241842433869526">Découvrez comment configurer l'accès à distance sur un ordinateur.</translation>
 <translation id="8759753423332885148">En savoir plus</translation>
 <translation id="4430915108080446161">Génération du code d'accès…</translation>
@@ -112,7 +95,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2353140552984634198">Vous pouvez accéder à cet ordinateur en toute sécurité via Google Chromoting.</translation>
 <translation id="4481276415609939789">Aucun ordinateur n'est enregistré. Pour activer les connexions à distance à un ordinateur, installez l'application Google Chromoting sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="2013884659108657024">Le programme d'installation de l'hôte du bureau à distance Google Chrome est en cours de téléchargement dans Google Chrome. Une fois le téléchargement terminé, veuillez lancer le programme d'installation avant de continuer.</translation>
-<translation id="7149517134817561223">Demande pour émettre des commandes à l'hôte du Bureau à distance Chrome</translation>
 <translation id="1742469581923031760">Connexion en cours…</translation>
 <translation id="2855866366045322178">hors connexion</translation>
 <translation id="8998327464021325874">Contrôleur de l'hôte Bureau à distance Google Chrome</translation>
@@ -126,38 +108,28 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="4572065712096155137">Accéder</translation>
 <translation id="5908809458024685848">Vous n'êtes pas connecté à Google Chromoting. Veuillez vous connecter, puis réessayer.</translation>
 <translation id="7401733114166276557">Bureau à distance Google Chrome</translation>
-<translation id="5510035215749041527">Se déconnecter maintenant</translation>
 <translation id="3362124771485993931">Saisissez à nouveau le code d'accès.</translation>
 <translation id="1760808606374294203">• Corrections pour Android Lollipop.</translation>
-<translation id="8196755618196986400">Afin que nous puissions vous contacter pour vous demander de nous fournir plus d'informations, votre adresse e-mail est incluse dans tous les commentaires que vous soumettez.</translation>
 <translation id="5231421057630485350">La personne qui vous vient en aide pourra prendre le contrôle de votre souris et de votre clavier.</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="7948001860594368197">Options de l'écran</translation>
 <translation id="8172070902751707422">Échec de l'authentification. Veuillez vous connecter à nouveau au bureau à distance Google Chrome.</translation>
 <translation id="5254120496627797685">En quittant cette page, vous mettrez fin à la session du bureau à distance Google Chrome.</translation>
-<translation id="7019153418965365059">Erreur d'hôte non reconnue : <ph name="HOST_OFFLINE_REASON"/>.</translation>
 <translation id="712467900648340229">Échec de la connexion à l'appareil Cast</translation>
 <translation id="1342297293546459414">Voir et contrôler un ordinateur partagé</translation>
 <translation id="1520828917794284345">Ajuster le bureau à la taille du client</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
 <translation id="6099500228377758828">Service Bureau à distance Google Chrome</translation>
 <translation id="2747641796667576127">En règle générale, les mises à jour logicielles sont automatiques, mais des problèmes d'installation surviennent parfois. Sachez que quelques minutes devraient suffire pour mettre à jour le logiciel à distance.</translation>
-<translation id="5170982930780719864">ID d'hôte incorrect.</translation>
 <translation id="3933246213702324812">La fonctionnalité Chromoting sur <ph name="HOSTNAME"/> est obsolète. Vous devez la mettre à jour.</translation>
 <translation id="6193698048504518729">Se connecter à <ph name="HOSTNAME"/></translation>
-<translation id="4155497795971509630">Certains composants nécessaires sont introuvables. Veuillez vous assurer que vous utilisez la dernière version du logiciel, puis réessayer.</translation>
 <translation id="8116630183974937060">Une erreur réseau s'est produite. Veuillez vérifier que votre appareil est en ligne, puis réessayer.</translation>
 <translation id="3020807351229499221">Échec de la mise à jour du code d'accès. Veuillez réessayer ultérieurement.</translation>
 <translation id="2647232381348739934">Service Chromoting</translation>
 <translation id="579702532610384533">Reconnexion</translation>
 <translation id="4867841927763172006">Envoyer Imp écr</translation>
-<translation id="992215271654996353"><ph name="HOSTNAME"/> (dernière connexion : <ph name="DATE_OR_TIME"/>)</translation>
-<translation id="2246783206985865117">Ce paramètre est géré par les règles de votre domaine</translation>
-<translation id="7810127880729796595">Afficher les statistiques (connexion : <ph name="QUALITY"/>)</translation>
 <translation id="5773590752998175013">Date d'association</translation>
-<translation id="3989511127559254552">Pour continuer, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="5156271271724754543">Veuillez saisir le même code d'accès dans les deux champs.</translation>
-<translation id="1050693411695664090">Médiocre</translation>
 <translation id="2118549242412205620">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android.
 
 • Sur chacun de vos ordinateurs, configurez l'accès à distance à l'aide de l'application Chrome Bureau à distance, qui est disponible sur le Chrome Web Store : https://chrome.google.com/remotedesktop.
@@ -174,16 +146,13 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="5625493749705183369">Accédez à d'autres ordinateurs ou permettez à un utilisateur d'accéder au vôtre en toute sécurité via Internet.</translation>
 <translation id="2512228156274966424">REMARQUE : Pour vous assurer que tous les raccourcis clavier sont disponibles, vous pouvez configurer le bureau à distance Chrome pour qu'il s'ouvre dans une fenêtre.</translation>
 <translation id="2699970397166997657">Google Chromoting</translation>
-<translation id="5419185025274123272">Impossible de réinitialiser l'application. Vous pouvez toujours envoyer un rapport de bug.</translation>
 <translation id="4812684235631257312">Hôte</translation>
 <translation id="6178645564515549384">Hôte de messagerie native pour l'assistance à distance</translation>
 <translation id="1738759452976856405">Arrêter l'enregistrement</translation>
-<translation id="3360306038446926262">Fenêtres</translation>
 <translation id="897805526397249209">Pour activer les connexions à distance à un autre ordinateur, installez l'application Google Chromoting sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="1704090719919187045">Préférences relatives à l'hôte Chromoting</translation>
 <translation id="809687642899217504">Mes ordinateurs</translation>
 <translation id="3106379468611574572">L'ordinateur à distance ne répond pas aux demandes de connexion. Veuillez vérifier qu'il est connecté, puis réessayer.</translation>
-<translation id="8386846956409881180">L'hôte est configuré avec des identifiants OAuth incorrects.</translation>
 <translation id="20876857123010370">Mode Pavé tactile</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2078880767960296260">Processus relatif à l'hôte</translation>
@@ -210,9 +179,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="7038683108611689168">Aidez-nous à améliorer Google Chromoting en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="4405930547258349619">Bibliothèque principale</translation>
-<translation id="3385242214819933234">Le propriétaire de l'hôte est incorrect.</translation>
 <translation id="310979712355504754">Tout supprimer</translation>
-<translation id="6542902059648396432">Signaler un problème…</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="3581045510967524389">Impossible de se connecter au réseau. Veuillez vérifier que votre appareil est en ligne.</translation>
 <translation id="4517233780764084060">REMARQUE : Pour vous assurer que tous les raccourcis clavier sont disponibles, vous pouvez configurer Chromoting en mode &quot;Ouvrir dans une fenêtre&quot;.</translation>
@@ -226,8 +193,6 @@ Google Chrome</translation>
 <translation id="951991426597076286">Refuser</translation>
 <translation id="4563926062592110512">Déconnexion du client : <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="5308380583665731573">Connexion</translation>
-<translation id="8642984861538780905">Correcte</translation>
-<translation id="2921543551052660690">Vous vous êtes auparavant connecté avec le nom d'utilisateur &quot;<ph name="USER_NAME"/>&quot; (<ph name="USER_EMAIL"/>). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN"/>connectez-vous à Chromium<ph name="LINK_END"/> avec ce compte, puis réinstallez Chromoting.</translation>
 <translation id="7319983568955948908">Arrêter le partage</translation>
 <translation id="6681800064886881394">Copyright © Google Inc. 2013. Tous droits réservés.</translation>
 <translation id="6640610550128933069">dernière connexion : <ph name="DATE"/></translation>
@@ -242,24 +207,18 @@ Google Chrome</translation>
 <translation id="6011539954251327702">L'application Google Chromoting vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Vous partagez actuellement cette machine avec un autre utilisateur. Voulez-vous continuer ce partage ?</translation>
 <translation id="4207623512727273241">Veuillez lancer le programme d'installation avant de continuer.</translation>
-<translation id="1324095856329524885">Cette fonctionnalité n'est pas encore disponible pour votre ordinateur.</translation>
-<translation id="6570205395680337606">Réinitialiser l'application (toutes les données non enregistrées seront perdues)</translation>
-<translation id="6284412385303060032">L'exécution de l'hôte sur l'écran de connexion de la console s'est arrêtée pour accepter le mode Rideau en passant à une exécution d'hôte dans une session propre à l'utilisateur.</translation>
 <translation id="3596628256176442606">Ce service permet la réception de connexions provenant des clients de Chromoting.</translation>
 <translation id="4277463233460010382">Cet ordinateur est configuré pour permettre à un ou plusieurs clients de se connecter sans saisir de code d'accès.</translation>
 <translation id="837021510621780684">À partir de cet ordinateur</translation>
-<translation id="518094545883702183">Ces informations sont conservées 30 jours au maximum et mises à disposition uniquement de la personne chargée d'étudier votre rapport afin d'identifier le problème que vous avez relevé.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="7215059001581613786">Veuillez saisir un code d'accès composé d'au moins six chiffres.</translation>
 <translation id="8383794970363966105">Pour utiliser Chromoting, vous devez ajouter un compte Google à votre appareil.</translation>
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
-<translation id="4795786176190567663">Vous n'êtes pas autorisé à effectuer cette action.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7434397035092923453">Accès refusé au client : <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte de Google Chromoting. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="7312846573060934304">L'hôte est hors ligne</translation>
-<translation id="1002108253973310084">Une version de protocole incompatible a été détectée. Veuillez vous assurer que vous utilisez la dernière version du logiciel sur les deux ordinateurs, puis réessayer.</translation>
 <translation id="9016232822027372900">Ignorer le message et se connecter</translation>
 <translation id="1818475040640568770">Vous n'avez pas d'ordinateurs enregistrés.</translation>
 <translation id="4394049700291259645">Désactiver</translation>

@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sk">
 <translation id="777702478322588152">Prefektúra</translation>
 <translation id="3713769522066937702">Formát tohto PSČ sa nedá rozpoznať. Príklad platného PSČ: <ph name="EXAMPLE"/>. Nepoznáte svoje PSČ? Zistite ho <ph name="BEGIN_LINK"/>tu<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Ulica</translation>
@@ -6,21 +8,16 @@
 <translation id="1340068511406764697">Musíte zadať poštové smerovacie číslo, napríklad <ph name="EXAMPLE"/>. Nepoznáte svoje poštové smerovacie číslo? Zistite ho <ph name="BEGIN_LINK"/>tu<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Formát tohto poštového smerovacieho čísla sa nedá rozpoznať. Príklad platného poštového smerovacieho čísla: <ph name="EXAMPLE"/>. Nepoznáte svoje poštové smerovacie číslo? Zistite ho <ph name="BEGIN_LINK"/>tu<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Mesto</translation>
-<translation id="6271429879296260742">Kód PIN</translation>
 <translation id="6839929833149231406">Oblasť</translation>
 <translation id="3885155851504623709">Okrsok</translation>
 <translation id="8184169487503545976">Tento formát PSČ nebol rozpoznaný.</translation>
-<translation id="7805765407568469194">Dedina/okres</translation>
 <translation id="7602447984296396718">PSČ zrejme nezodpovedá zvyšnej časti adresy.</translation>
-<translation id="8449204988444194299">Poštový okres</translation>
 <translation id="6247152910634872706">Organizácia</translation>
 <translation id="2053553514270667976">PSČ</translation>
-<translation id="2577522251608256362">Obvod</translation>
 <translation id="7087282848513945231">Grófstvo</translation>
 <translation id="2096368010154057602">Správna oblasť</translation>
 <translation id="7738983109397305830">Toto PSČ zrejme nezodpovedá zvyšku adresy. Nepoznáte svoje PSČ? Zistite ho <ph name="BEGIN_LINK"/>tu<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Ostrov</translation>
-<translation id="6132429659673988671">Predmestie</translation>
 <translation id="7139724024395191329">Emirát</translation>
 <translation id="6970216967273061347">Obvod</translation>
 <translation id="6207937957461833379">Krajina alebo oblasť</translation>

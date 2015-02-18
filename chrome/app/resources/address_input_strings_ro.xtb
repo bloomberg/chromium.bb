@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ro">
 <translation id="777702478322588152">Prefectură</translation>
 <translation id="3713769522066937702">Acest format de cod poștal ZIP nu este recunoscut. Exemplu de cod poștal ZIP valid: <ph name="EXAMPLE"/>. Nu știți ce cod poștal ZIP aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>
 <translation id="7393381084163773901">Adresă fizică</translation>
@@ -6,21 +8,16 @@
 <translation id="1340068511406764697">Trebuie să specificați un cod poștal, de exemplu, <ph name="EXAMPLE"/>. Nu știți ce cod poștal aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>
 <translation id="6403469950615936250">Acest format de cod poștal nu este recunoscut. Exemplu de cod poștal valid: <ph name="EXAMPLE"/>. Nu știți ce cod poștal aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>
 <translation id="6327653052522436195">Oraş</translation>
-<translation id="6271429879296260742">Cod PIN</translation>
 <translation id="6839929833149231406">Zonă</translation>
 <translation id="3885155851504623709">Parohie</translation>
 <translation id="8184169487503545976">Formatul codului poștal nu este recunoscut.</translation>
-<translation id="7805765407568469194">Sat/Comună</translation>
 <translation id="7602447984296396718">Se pare că acest cod poștal nu se potrivește cu restul adresei.</translation>
-<translation id="8449204988444194299">Regiunea poștală</translation>
 <translation id="6247152910634872706">Organizație</translation>
 <translation id="2053553514270667976">Cod zip</translation>
-<translation id="2577522251608256362">Cartier</translation>
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="7738983109397305830">Acest cod poștal ZIP nu pare să se potrivească cu restul adresei. Nu știți ce cod poștal ZIP aveți? Aflați <ph name="BEGIN_LINK"/>aici<ph name="END_LINK"/>.</translation>
 <translation id="3174168572213147020">Insulă</translation>
-<translation id="6132429659673988671">Suburbie</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6970216967273061347">Județ</translation>
 <translation id="6207937957461833379">Țară/Regiune</translation>

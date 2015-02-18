@@ -126,7 +126,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="7987073022710626672">Zmluvné podmienky prehliadača Chrome</translation>
 <translation id="5668404140385795438">Ignorovať požiadavku webových stránok na zákaz priblíženia</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
-<translation id="7493994139787901920"><ph name="VERSION"/> (Aktualizované <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="6064211167623632605">Spustiteľná cesta</translation>
@@ -183,7 +182,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="2699916814609764774">Cesta profilu</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
-<translation id="6717254161209606306">Výzva na pridanie stránky na plochu.  Názov aplikácie: <ph name="APP_NAME"/>.  Webová adresa aplikácie: <ph name="APP_URL"/>.</translation>
 <translation id="7977858705483383621">Bezpečné vyhľadávanie</translation>
 <translation id="8909135823018751308">Zdieľať…</translation>
 <translation id="3338301885994755905">Blokovať (odporúčané)</translation>

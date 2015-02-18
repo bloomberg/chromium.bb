@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">访问来自<ph name="VENDOR_NAME"/>的 USB 设备</translation>
 <translation id="2616366145935564096">读取和更改您在<ph name="WEBSITE_1"/>上的数据</translation>
 <translation id="2518849872271000461">与下列名称的计算机交换数据：<ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">使用通过 USB 连接的或本地网络中的文档扫描仪</translation>
 <translation id="6408118934673775994">读取和更改您在<ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>和<ph name="WEBSITE_3"/>上的数据</translation>
 <translation id="961805664415579088">与域 <ph name="DOMAIN"/> 中的任何计算机交换数据</translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">使用您的麦克风</translation>
 <translation id="7217838517480956708">此计算机的管理员要求安装 <ph name="EXTENSION_NAME"/>。该扩展程序无法删除或修改。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME"/>提供的<ph name="PRODUCT_NAME"/>（序列号：<ph name="SERIAL_NUMBER"/>）</translation>
-<translation id="8620765578342452535">配置网络连接</translation>
 <translation id="7154130902455071009">将您的初始页更改为：<ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">访问其中的任意 USB 设备</translation>
 <translation id="2677911863018634147">“<ph name="APP_NAME"/>”应用请求访问您的一台或多台设备。</translation>

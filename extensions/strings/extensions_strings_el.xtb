@@ -40,7 +40,6 @@
 <translation id="7039326228527141150">Πρόσβαση σε συσκευές USB από τον προμηθευτή <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/></translation>
 <translation id="2518849872271000461">Ανταλλαγή δεδομένων με τους υπολογιστές με τα εξής ονόματα: <ph name="HOSTNAMES"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Πρόσβαση στους σαρωτές εγγράφων που προσαρτώνται μέσω USB ή σε κάποιο τοπικό δίκτυο</translation>
 <translation id="6408118934673775994">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/>, στο <ph name="WEBSITE_2"/> και το <ph name="WEBSITE_3"/></translation>
 <translation id="961805664415579088">Ανταλλαγή δεδομένων με οποιονδήποτε υπολογιστή στον τομέα <ph name="DOMAIN"/></translation>
@@ -69,7 +68,6 @@
 <translation id="4761104368405085019">Χρήση του μικροφώνου σας</translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> από <ph name="VENDOR_NAME"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Διαμόρφωση συνδέσεων δικτύου</translation>
 <translation id="7154130902455071009">Αλλαγή της σελίδας έναρξης σε: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Πρόσβαση σε οποιαδήποτε από αυτές τις συσκευές USB</translation>
 <translation id="2677911863018634147">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία ή περισσότερες συσκευές σας.</translation>

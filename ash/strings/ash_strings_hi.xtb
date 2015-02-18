@@ -59,7 +59,6 @@
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
 <translation id="5238774010593222950">किसी अन्य खाते में प्रवेश नहीं कर सकते.</translation>
 <translation id="1723752762323179280">सत्र से निकल रहा है</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
 <translation id="1426410128494586442">हां</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
@@ -198,11 +197,9 @@
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> शेष</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
-<translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="412065659894267608">पूरी तरह से चार्ज होने में <ph name="HOUR"/>घं <ph name="MINUTE"/>मि शेष</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> से SMS</translation>
-<translation id="4053612967614057854">ऑन-स्‍क्रीन कीबोर्ड अक्षम करें</translation>
 </translationbundle>
