@@ -96,12 +96,30 @@ class TextureUploadPerfTest : public testing::Test {
   void SetUp() override {
     // Initialize an offscreen surface and a gl context.
     gfx::GLSurface::InitializeOneOff();
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(size_);
+    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(4, 4));
     gl_context_ = gfx::GLContext::CreateGLContext(NULL,  // share_group
                                                   surface_.get(),
                                                   gfx::PreferIntegratedGpu);
-
     ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
+    glGenTextures(1, &color_texture_);
+    glBindTexture(GL_TEXTURE_2D, color_texture_);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.width(), size_.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    glGenFramebuffersEXT(1, &framebuffer_object_);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
+
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, color_texture_, 0);
+    DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+              glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
+
+    glViewport(0, 0, size_.width(), size_.height());
+
     if (gpu_timing_.Initialize(gl_context_.get())) {
       LOG(INFO) << "Gpu timing initialized with timer type: "
                 << gpu_timing_.GetTimerTypeName();
@@ -110,7 +128,6 @@ class TextureUploadPerfTest : public testing::Test {
     } else {
       LOG(WARNING) << "Can't initialize gpu timing";
     }
-
     // Prepare a simple program and a vertex buffer that will be
     // used to draw a quad on the offscreen surface.
     vertex_shader_ = LoadShader(GL_VERTEX_SHADER, kVertexShader);
@@ -142,18 +159,14 @@ class TextureUploadPerfTest : public testing::Test {
 
   void TearDown() override {
     ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
-    if (program_object_ != 0) {
-      glDeleteProgram(program_object_);
-    }
-    if (vertex_shader_ != 0) {
-      glDeleteShader(vertex_shader_);
-    }
-    if (fragment_shader_ != 0) {
-      glDeleteShader(fragment_shader_);
-    }
-    if (vertex_buffer_ != 0) {
-      glDeleteShader(vertex_buffer_);
-    }
+    glDeleteProgram(program_object_);
+    glDeleteShader(vertex_shader_);
+    glDeleteShader(fragment_shader_);
+    glDeleteShader(vertex_buffer_);
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffersEXT(1, &framebuffer_object_);
+    glDeleteTextures(1, &color_texture_);
 
     gl_context_ = nullptr;
     surface_ = nullptr;
@@ -167,6 +180,8 @@ class TextureUploadPerfTest : public testing::Test {
                                          const GLenum format,
                                          const GLenum type) {
     ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
+    DCHECK_NE(0u, framebuffer_object_);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_object_);
 
     MeasurementTimers total_timers(&gpu_timing_);
     GLuint texture_id = 0;
@@ -178,8 +193,8 @@ class TextureUploadPerfTest : public testing::Test {
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, size_.width(), size_.height(), 0,
                  format, type, &pixels[0]);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     CheckNoGlError();
@@ -222,11 +237,13 @@ class TextureUploadPerfTest : public testing::Test {
     return measurements;
   }
 
-  const gfx::Size size_;  // for the offscreen surface and the texture
+  const gfx::Size size_;  // for the fbo and the texture
   scoped_refptr<gfx::GLContext> gl_context_;
   scoped_refptr<gfx::GLSurface> surface_;
   GPUTiming gpu_timing_;
 
+  GLuint color_texture_ = 0;
+  GLuint framebuffer_object_ = 0;
   GLuint vertex_shader_ = 0;
   GLuint fragment_shader_ = 0;
   GLuint program_object_ = 0;
