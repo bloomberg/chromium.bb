@@ -174,8 +174,9 @@ void SVGAnimateMotionElement::resetAnimatedType()
         transform->makeIdentity();
 }
 
-void SVGAnimateMotionElement::clearAnimatedType(SVGElement* targetElement)
+void SVGAnimateMotionElement::clearAnimatedType()
 {
+    SVGElement* targetElement = this->targetElement();
     if (!targetElement)
         return;
 

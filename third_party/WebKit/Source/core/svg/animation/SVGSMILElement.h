@@ -109,7 +109,7 @@ public:
     void setDocumentOrderIndex(unsigned index) { m_documentOrderIndex = index; }
 
     virtual void resetAnimatedType() = 0;
-    virtual void clearAnimatedType(SVGElement* targetElement) = 0;
+    virtual void clearAnimatedType() = 0;
     virtual void applyResultsToTarget() = 0;
 
     void connectSyncBaseConditions();

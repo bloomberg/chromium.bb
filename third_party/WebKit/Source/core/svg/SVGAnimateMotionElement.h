@@ -43,7 +43,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     virtual void resetAnimatedType() override;
-    virtual void clearAnimatedType(SVGElement* targetElement) override;
+    virtual void clearAnimatedType() override;
     virtual bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) override;
     virtual bool calculateFromAndToValues(const String& fromString, const String& toString) override;
     virtual bool calculateFromAndByValues(const String& fromString, const String& byString) override;

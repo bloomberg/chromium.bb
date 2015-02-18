@@ -272,11 +272,12 @@ static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* target
         notifyTargetAboutAnimValChange(element, attributeName);
 }
 
-void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
+void SVGAnimateElement::clearAnimatedType()
 {
     if (!m_animatedProperty)
         return;
 
+    SVGElement* targetElement = this->targetElement();
     if (!targetElement) {
         ASSERT(!m_animator);
         m_animatedProperty.clear();

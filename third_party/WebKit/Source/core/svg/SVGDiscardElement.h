@@ -45,7 +45,7 @@ private:
     explicit SVGDiscardElement(Document&);
 
     virtual void resetAnimatedType() override { }
-    virtual void clearAnimatedType(SVGElement* targetElement) override { }
+    virtual void clearAnimatedType() override { }
     virtual void applyResultsToTarget() override { }
     virtual bool hasValidAttributeType() override;
     virtual bool hasValidAttributeName() override;

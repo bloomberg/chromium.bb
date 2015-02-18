@@ -295,7 +295,7 @@ static inline void clearTimesWithDynamicOrigins(Vector<SMILTimeWithOrigin>& time
 
 void SVGSMILElement::reset()
 {
-    clearAnimatedType(m_targetElement);
+    clearAnimatedType();
 
     m_activeState = Inactive;
     m_isWaitingForFirstInterval = true;
@@ -578,7 +578,7 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
         SVGElement::InvalidationGuard invalidationGuard(this);
         buildPendingResource();
         if (m_targetElement)
-            clearAnimatedType(m_targetElement);
+            clearAnimatedType();
     } else if (inDocument()) {
         if (attrName == SVGNames::beginAttr)
             beginListChanged(elapsed());
@@ -680,7 +680,7 @@ void SVGSMILElement::setAttributeName(const QualifiedName& attributeName)
 {
     unscheduleIfScheduled();
     if (m_targetElement)
-        clearAnimatedType(m_targetElement);
+        clearAnimatedType();
     m_attributeName = attributeName;
     schedule();
 }
@@ -691,7 +691,7 @@ void SVGSMILElement::setTargetElement(SVGElement* target)
 
     if (m_targetElement) {
         // Clear values that may depend on the previous target.
-        clearAnimatedType(m_targetElement);
+        clearAnimatedType();
         disconnectSyncBaseConditions();
     }
 
@@ -1209,7 +1209,7 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
         smilEndEventSender().dispatchEventSoon(this);
         endedActiveInterval();
         if (!animationIsContributing && this == resultElement)
-            clearAnimatedType(m_targetElement);
+            clearAnimatedType();
     }
 
     // Triggering all the pending events if the animation timeline is changed.

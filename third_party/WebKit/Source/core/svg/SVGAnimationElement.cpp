@@ -729,7 +729,7 @@ void SVGAnimationElement::checkInvalidCSSAttributeType()
 
     // Clear values that may depend on the previous target.
     if (targetElement())
-        clearAnimatedType(targetElement());
+        clearAnimatedType();
 }
 
 }
