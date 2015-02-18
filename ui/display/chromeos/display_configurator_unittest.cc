@@ -975,10 +975,59 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   configurator_.SuspendDisplays();
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
+  // The configuration timer should not be started when the displays
+  // are suspended.
   configurator_.OnConfigurationChanged();
-  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
+  // Calls to SetDisplayPower and SetDisplayMode should be successful.
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_OFF,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+  configurator_.SetDisplayPower(
+      chromeos::DISPLAY_POWER_ALL_ON,
+      DisplayConfigurator::kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfiguratorTest::OnConfiguredCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          kForceDPMS,
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+
+  UpdateOutputs(2, false);
+  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
+          kUngrab,
+          NULL),
+      log_->GetActionsAndClear());
+
+  // The DisplayConfigurator should force a probe and reconfiguration at resume
+  // time.
+  UpdateOutputs(1, false);
   configurator_.ResumeDisplays();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(
@@ -992,12 +1041,12 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
       log_->GetActionsAndClear());
 
   // If a configuration task is pending when the displays are suspended, that
-  // task should not run either.
+  // task should not run either and the timer should be stopped.
   configurator_.OnConfigurationChanged();
   configurator_.SuspendDisplays();
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
-  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   configurator_.ResumeDisplays();

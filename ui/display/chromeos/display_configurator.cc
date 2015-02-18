@@ -814,6 +814,14 @@ void DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
 }
 
 void DisplayConfigurator::OnConfigurationChanged() {
+  // Don't do anything if the displays are currently suspended.  Instead we will
+  // probe and reconfigure the displays if necessary in ResumeDisplays().
+  if (displays_suspended_) {
+    VLOG(1) << "Displays are currently suspended.  Not attempting to "
+            << "reconfigure them.";
+    return;
+  }
+
   // Configure displays with |kConfigureDelayMs| delay,
   // so that time-consuming ConfigureDisplays() won't be called multiple times.
   if (configure_timer_.IsRunning()) {
@@ -859,6 +867,10 @@ void DisplayConfigurator::SuspendDisplays() {
   }
 
   displays_suspended_ = true;
+
+  // Stop |configure_timer_| because we will force probe and configure all the
+  // displays at resume time anyway.
+  configure_timer_.Stop();
 }
 
 void DisplayConfigurator::ResumeDisplays() {
@@ -880,14 +892,6 @@ void DisplayConfigurator::ConfigureDisplays() {
 }
 
 void DisplayConfigurator::RunPendingConfiguration() {
-  // Don't do anything if the displays are currently suspended.  Instead we will
-  // probe and reconfigure the displays if necessary in ResumeDisplays().
-  if (displays_suspended_) {
-    VLOG(1) << "Displays are currently suspended.  Not attempting to "
-            << "reconfigure them.";
-    return;
-  }
-
   // Configuration task is currently running. Do not start a second
   // configuration.
   if (configuration_task_)
