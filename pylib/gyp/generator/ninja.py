@@ -962,6 +962,8 @@ class NinjaWriter(object):
         include = precompiled_header.GetInclude(ext, arch)
         if include: ninja_file.variable(var, include)
 
+    arflags = config.get('arflags', [])
+
     self.WriteVariableList(ninja_file, 'cflags',
                            map(self.ExpandSpecial, cflags))
     self.WriteVariableList(ninja_file, 'cflags_c',
@@ -973,6 +975,8 @@ class NinjaWriter(object):
                              map(self.ExpandSpecial, cflags_objc))
       self.WriteVariableList(ninja_file, 'cflags_objcc',
                              map(self.ExpandSpecial, cflags_objcc))
+    self.WriteVariableList(ninja_file, 'arflags',
+                           map(self.ExpandSpecial, arflags))
     ninja_file.newline()
     outputs = []
     has_rc_source = False
@@ -2032,11 +2036,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'alink',
       description='AR $out',
-      command='rm -f $out && $ar rcs $out $in')
+      command='rm -f $out && $ar rcs $arflags $out $in')
     master_ninja.rule(
       'alink_thin',
       description='AR $out',
-      command='rm -f $out && $ar rcsT $out $in')
+      command='rm -f $out && $ar rcsT $arflags $out $in')
 
     # This allows targets that only need to depend on $lib's API to declare an
     # order-only dependency on $lib.TOC and avoid relinking such downstream
