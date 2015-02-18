@@ -435,18 +435,6 @@ static int StartApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   return ret_code;
 }
 
-void NaClChromeMainStartApp(struct NaClApp *nap,
-                            struct NaClChromeMainArgs *args) {
-  int status = 1;
-  NaClChromeMainStart(nap, args, &status);
-  /*
-   * exit_group or equiv kills any still running threads while module
-   * addr space is still valid.  otherwise we'd have to kill threads
-   * before we clean up the address space.
-   */
-  NaClExit(status);
-}
-
 int NaClChromeMainStart(struct NaClApp *nap,
                         struct NaClChromeMainArgs *args,
                         int *exit_status) {

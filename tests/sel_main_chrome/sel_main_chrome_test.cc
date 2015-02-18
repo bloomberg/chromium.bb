@@ -254,7 +254,8 @@ int main(int argc, char **argv) {
   CHECK(NaClThreadCtor(&thread, DummyRendererThread, &thread_args,
                        NACL_KERN_STACK_SIZE));
 
-  NaClChromeMainStartApp(nap, args);
-  NaClLog(LOG_FATAL, "NaClChromeMainStartApp() should never return\n");
+  int status = 1;
+  NaClChromeMainStart(nap, args, &status);
+  NaClExit(status);
   return 1;
 }

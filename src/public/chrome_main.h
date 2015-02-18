@@ -238,13 +238,6 @@ void NaClSetFatalErrorCallback(void (*func)(const char *data, size_t bytes));
 struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
 
 /*
- * Start NaCl. This does not return.
- * TODO(teravest): Remove this.
- */
-void NaClChromeMainStartApp(struct NaClApp *nap,
-                            struct NaClChromeMainArgs *args);
-
-/*
  * Start NaCl.
  * On success, returns 1 and sets exit_status to the value that the application
  * passed to _exit().
