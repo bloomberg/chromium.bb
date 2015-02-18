@@ -27,6 +27,7 @@
 #ifndef WorkerGlobalScope_h
 #define WorkerGlobalScope_h
 
+#include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/WorkerScriptController.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
@@ -141,6 +142,7 @@ protected:
 
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
     void addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
+    void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 
 private:
 #if !ENABLE(OILPAN)
@@ -158,6 +160,7 @@ private:
 
     KURL m_url;
     String m_userAgent;
+    V8CacheOptions m_v8CacheOptions;
 
     mutable RefPtrWillBeMember<WorkerConsole> m_console;
     mutable RefPtrWillBeMember<WorkerLocation> m_location;
