@@ -29,10 +29,15 @@ class MockInputApi(object):
   def AffectedFiles(self, file_filter=None):
     return self.files
 
+  def AffectedSourceFiles(self, file_filter=None):
+    return self.files
+
   def PresubmitLocalPath(self):
     return os.path.dirname(__file__)
 
   def ReadFile(self, filename, mode='rU'):
+    if hasattr(filename, 'AbsoluteLocalPath'):
+       filename = filename.AbsoluteLocalPath()
     for file_ in self.files:
       if file_.LocalPath() == filename:
         return '\n'.join(file_.NewContents())
@@ -93,6 +98,11 @@ class MockFile(object):
     return self._new_contents
 
   def LocalPath(self):
+    return self._local_path
+
+
+class MockAffectedFile(MockFile):
+  def AbsoluteLocalPath(self):
     return self._local_path
 
 

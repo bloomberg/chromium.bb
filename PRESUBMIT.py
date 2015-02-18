@@ -1305,6 +1305,36 @@ def _CheckForCopyrightedCode(input_api, output_api):
   return copyright_scanner.ScanAtPresubmit(input_api, output_api)
 
 
+def _CheckSingletonInHeaders(input_api, output_api):
+  """Checks to make sure no header files have |Singleton<|."""
+  def FileFilter(affected_file):
+    # It's ok for base/memory/singleton.h to have |Singleton<|.
+    black_list = (_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST +
+                  (r"^base[\\\/]memory[\\\/]singleton\.h$",))
+    return input_api.FilterSourceFile(affected_file, black_list=black_list)
+
+  pattern = input_api.re.compile(r'(?<!class\s)Singleton\s*<')
+  files = []
+  for f in input_api.AffectedSourceFiles(FileFilter):
+    if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
+        f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
+      contents = input_api.ReadFile(f)
+      for line in contents.splitlines(False):
+        if (not input_api.re.match(r'//', line) and # Strip C++ comment.
+            pattern.search(line)):
+          files.append(f)
+          break
+
+  if files:
+    return [ output_api.PresubmitError(
+        'Found Singleton<T> in the following header files.\n' +
+        'Please move them to an appropriate source file so that the ' +
+        'template gets instantiated in a single compilation unit.',
+        files) ]
+  return []
+
+
 _DEPRECATED_CSS = [
   # Values
   ( "-webkit-box", "flex" ),
@@ -1422,6 +1452,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForIPCRules(input_api, output_api))
   results.extend(_CheckForCopyrightedCode(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
+  results.extend(_CheckSingletonInHeaders(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
