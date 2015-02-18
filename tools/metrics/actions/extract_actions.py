@@ -38,6 +38,7 @@ from google import path_utils
 
 # Import the metrics/common module for pretty print xml.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+import presubmit_util
 import diff_util
 import pretty_print_xml
 
