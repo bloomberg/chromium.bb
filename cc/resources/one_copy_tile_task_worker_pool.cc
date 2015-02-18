@@ -167,6 +167,13 @@ void OneCopyTileTaskWorkerPool::Shutdown() {
 void OneCopyTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
   TRACE_EVENT0("cc", "OneCopyTileTaskWorkerPool::ScheduleTasks");
 
+#if DCHECK_IS_ON()
+  {
+    base::AutoLock lock(lock_);
+    DCHECK(!shutdown_);
+  }
+#endif
+
   if (tasks_pending_.none())
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
 
