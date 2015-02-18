@@ -86,6 +86,7 @@
 //<include src="ui/file_manager_dialog_base.js">
 //<include src="metadata/metadata_cache_set.js">
 //<include src="metadata/new_metadata_provider.js">
+//<include src="metadata/thumbnail_model.js">
 //
 //<include src="app_installer.js">
 //<include src="app_state_controller.js">
@@ -104,6 +105,7 @@
 //<include src="gear_menu_controller.js">
 //<include src="import_controller.js">
 //<include src="launch_param.js">
+//<include src="metadata/content_metadata_provider.js">
 //<include src="metadata/external_metadata_provider.js">
 //<include src="metadata/file_system_metadata.js">
 //<include src="metadata/file_system_metadata_provider.js">

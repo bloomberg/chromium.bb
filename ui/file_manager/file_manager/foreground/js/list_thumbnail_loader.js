@@ -11,7 +11,7 @@
  * proper priority.
  *
  * @param {!FileListModel} dataModel A file list model.
- * @param {!MetadataCache} metadataCache Metadata cache.
+ * @param {!ThumbnailModel} thumbnailModel Thumbnail metadata model.
  * @param {Function=} opt_thumbnailLoaderConstructor A constructor of thumbnail
  *     loader. This argument is used for testing.
  * @struct
@@ -20,7 +20,7 @@
  * @suppress {checkStructDictInheritance}
  */
 function ListThumbnailLoader(
-    dataModel, metadataCache, opt_thumbnailLoaderConstructor) {
+    dataModel, thumbnailModel, opt_thumbnailLoaderConstructor) {
   /**
    * @type {!FileListModel}
    * @private
@@ -28,10 +28,10 @@ function ListThumbnailLoader(
   this.dataModel_ = dataModel;
 
   /**
-   * @type {!MetadataCache}
+   * @type {!ThumbnailModel}
    * @private
    */
-  this.metadataCache_ = metadataCache;
+  this.thumbnailModel_ = thumbnailModel;
 
   /**
    * Constructor of thumbnail loader.
@@ -109,7 +109,7 @@ ListThumbnailLoader.CACHE_SIZE = 500;
 ListThumbnailLoader.prototype.onSplice_ = function(event) {
   this.cursor_ = this.beginIndex_;
   this.continue_();
-}
+};
 
 /**
  * An event handler for sorted event of data model. When list is sorted, start
@@ -120,7 +120,7 @@ ListThumbnailLoader.prototype.onSplice_ = function(event) {
 ListThumbnailLoader.prototype.onSorted_ = function(event) {
   this.cursor_ = this.beginIndex_;
   this.continue_();
-}
+};
 
 /**
  * An event handler for change event of data model.
@@ -135,7 +135,7 @@ ListThumbnailLoader.prototype.onChange_ = function(event) {
 
   this.cursor_ = this.beginIndex_;
   this.continue_();
-}
+};
 
 /**
  * Sets high priority range in the list.
@@ -153,7 +153,7 @@ ListThumbnailLoader.prototype.setHighPriorityRange = function(
   this.cursor_ = this.beginIndex_;
 
   this.continue_();
-}
+};
 
 /**
  * Returns a thumbnail of an entry if it is in cache.
@@ -164,7 +164,7 @@ ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
   // Since we want to evict cache based on high priority range, we use peek here
   // instead of get.
   return this.cache_.peek(entry.toURL()) || null;
-}
+};
 
 /**
  * Enqueues tasks if available.
@@ -195,7 +195,7 @@ ListThumbnailLoader.prototype.continue_ = function() {
   this.enqueue_(this.cursor_, entry);
   this.cursor_++;
   this.continue_();
-}
+};
 
 /**
  * Enqueues a thumbnail fetch task for an entry.
@@ -205,7 +205,7 @@ ListThumbnailLoader.prototype.continue_ = function() {
  */
 ListThumbnailLoader.prototype.enqueue_ = function(index, entry) {
   var task = new ListThumbnailLoader.Task(
-      entry, this.metadataCache_, this.thumbnailLoaderConstructor_);
+      entry, this.thumbnailModel_, this.thumbnailLoaderConstructor_);
 
   var url = entry.toURL();
   this.active_[url] = task;
@@ -219,7 +219,7 @@ ListThumbnailLoader.prototype.enqueue_ = function(index, entry) {
     delete this.active_[url];
     this.continue_();
   }.bind(this));
-}
+};
 
 /**
  * Dispatches thumbnail loaded event.
@@ -307,24 +307,24 @@ ListThumbnailLoader.ThumbnailData = function(fileUrl, dataUrl, width, height) {
    * @const {number}
    */
   this.height = height;
-}
+};
 
 /**
  * A task to load thumbnail.
  *
  * @param {!Entry} entry An entry.
- * @param {!MetadataCache} metadataCache Metadata cache.
+ * @param {!ThumbnailModel} thumbnailModel Metadata cache.
  * @param {!Function} thumbnailLoaderConstructor A constructor of thumbnail
  *     loader.
  * @constructor
  * @struct
  */
 ListThumbnailLoader.Task = function(
-    entry, metadataCache, thumbnailLoaderConstructor) {
+    entry, thumbnailModel, thumbnailLoaderConstructor) {
   this.entry_ = entry;
-  this.metadataCache_ = metadataCache;
+  this.thumbnailModel_ = thumbnailModel;
   this.thumbnailLoaderConstructor_ = thumbnailLoaderConstructor;
-}
+};
 
 /**
  * Fetches thumbnail.
@@ -333,10 +333,7 @@ ListThumbnailLoader.Task = function(
  *     resolved when thumbnail is fetched.
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
-  return new Promise(function(resolve, reject) {
-    this.metadataCache_.getLatest(
-        [this.entry_], 'thumbnail|filesystem|external|media', resolve);
-  }.bind(this)).then(function(metadatas) {
+  return this.thumbnailModel_.get([this.entry_]).then(function(metadatas) {
     return new this.thumbnailLoaderConstructor_(
         this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadatas[0])
         .loadAsDataUrl();
@@ -344,4 +341,4 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
     return new ListThumbnailLoader.ThumbnailData(
         this.entry_.toURL(), result.data, result.width, result.height);
   }.bind(this));
-}
+};

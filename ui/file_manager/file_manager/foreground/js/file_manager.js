@@ -72,6 +72,11 @@ function FileManager() {
   this.fileSystemMetadata_ = null;
 
   /**
+   * @private {ThumbnailModel}
+   */
+  this.thumbnailModel_ = null;
+
+  /**
    * File operation manager.
    * @type {FileOperationManager}
    * @private
@@ -504,8 +509,8 @@ FileManager.prototype = /** @struct */ {
         this.ui_.multiProfileShareDialog,
         assert(this.backgroundPage_.background.progressCenter),
         assert(this.fileOperationManager_),
-        assert(this.metadataCache_),
         assert(this.fileSystemMetadata_),
+        assert(this.thumbnailModel_),
         assert(this.directoryModel_),
         assert(this.volumeManager_),
         assert(this.selectionHandler_));
@@ -713,6 +718,9 @@ FileManager.prototype = /** @struct */ {
         new FileSystemMetadataProvider(this.metadataProviderCache_),
         new ExternalMetadataProvider(this.metadataProviderCache_),
         this.volumeManager_);
+    this.thumbnailModel_ = new ThumbnailModel(
+        this.fileSystemMetadata_,
+        new ContentMetadataProvider(this.metadataProviderCache_));
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
@@ -737,7 +745,6 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initAdditionalUI_ = function(callback) {
-    assert(this.metadataCache_);
     assert(this.fileSystemMetadata_);
     assert(this.volumeManager_);
     assert(this.historyLoader_);
@@ -755,7 +762,6 @@ FileManager.prototype = /** @struct */ {
     table.importEnabled = this.importEnabled_;
     FileTable.decorate(
         table,
-        this.metadataCache_,
         this.fileSystemMetadata_,
         this.volumeManager_,
         this.historyLoader_,
@@ -763,7 +769,6 @@ FileManager.prototype = /** @struct */ {
     var grid = queryRequiredElement(dom, '.thumbnail-grid');
     FileGrid.decorate(
         grid,
-        this.metadataCache_,
         this.fileSystemMetadata_,
         this.volumeManager_,
         this.historyLoader_);
@@ -885,7 +890,8 @@ FileManager.prototype = /** @struct */ {
     this.initDirectoryTree_();
 
     this.ui_.listContainer.listThumbnailLoader = new ListThumbnailLoader(
-        assert(this.directoryModel_.getFileList()), this.metadataCache_);
+        assert(this.directoryModel_.getFileList()),
+        assert(this.thumbnailModel_));
     this.ui_.listContainer.dataModel = this.directoryModel_.getFileList();
     this.ui_.listContainer.selectionModel =
         this.directoryModel_.getFileListSelection();

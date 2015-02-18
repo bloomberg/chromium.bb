@@ -42,7 +42,7 @@ function generateSampleImageDataUrl(document) {
 }
 
 var listThumbnailLoader;
-var getLatestCallbacks;
+var getCallbacks;
 var thumbnailLoadedEvents;
 var fileListModel;
 var fileSystem = new MockFileSystem('volume-id');
@@ -63,16 +63,18 @@ function setUp() {
   MockThumbnailLoader.testImageWidth = 160;
   MockThumbnailLoader.testImageHeight = 160;
 
-  getLatestCallbacks = {};
-  var metadataCache = {
-    getLatest: function(entries, type, callback) {
-      getLatestCallbacks[getKeyOfGetLatestCallback_(entries)] = callback;
+  getCallbacks = {};
+  var thumbnailModel = {
+    get: function(entries) {
+      return new Promise(function(fulfill) {
+        getCallbacks[getKeyOfGetCallback_(entries)] = fulfill;
+      });
     }
   };
 
-  fileListModel = new FileListModel(metadataCache);
+  fileListModel = new FileListModel(thumbnailModel);
 
-  listThumbnailLoader = new ListThumbnailLoader(fileListModel, metadataCache,
+  listThumbnailLoader = new ListThumbnailLoader(fileListModel, thumbnailModel,
       MockThumbnailLoader);
 
   thumbnailLoadedEvents = [];
@@ -81,21 +83,21 @@ function setUp() {
   });
 }
 
-function getKeyOfGetLatestCallback_(entries) {
+function getKeyOfGetCallback_(entries) {
   return entries.reduce(function(previous, current) {
     return previous + '|' + current.toURL();
   }, '');
 }
 
 function resolveGetLatestCallback(entries) {
-  var key = getKeyOfGetLatestCallback_(entries);
-  assert(getLatestCallbacks[key]);
-  getLatestCallbacks[key](entries.map(function() { return {}; }));
-  delete getLatestCallbacks[key];
+  var key = getKeyOfGetCallback_(entries);
+  assert(getCallbacks[key]);
+  getCallbacks[key](entries.map(function() { return {}; }));
+  delete getCallbacks[key];
 }
 
 function hasPendingGetLatestCallback(entries) {
-  return !!getLatestCallbacks[getKeyOfGetLatestCallback_(entries)];
+  return !!getCallbacks[getKeyOfGetCallback_(entries)];
 }
 
 function areEntriesInCache(entries) {
@@ -118,7 +120,7 @@ function testStory(callback) {
   // Assert that 2 fetch tasks are running.
   assertTrue(hasPendingGetLatestCallback([entry1]));
   assertTrue(hasPendingGetLatestCallback([entry2]));
-  assertEquals(2, Object.keys(getLatestCallbacks).length);
+  assertEquals(2, Object.keys(getCallbacks).length);
 
   // Fails to get thumbnail from cache for Test2.jpg.
   assertEquals(null, listThumbnailLoader.getThumbnailFromCache(entry2));
@@ -129,7 +131,7 @@ function testStory(callback) {
   // Assert that no new tasks are enqueued.
   assertTrue(hasPendingGetLatestCallback([entry1]));
   assertTrue(hasPendingGetLatestCallback([entry2]));
-  assertEquals(2, Object.keys(getLatestCallbacks).length);
+  assertEquals(2, Object.keys(getCallbacks).length);
 
   resolveGetLatestCallback([entry2]);
 
@@ -155,7 +157,7 @@ function testStory(callback) {
     return waitUntil(function() {
       return hasPendingGetLatestCallback([entry1]) &&
           hasPendingGetLatestCallback([entry4]) &&
-          Object.keys(getLatestCallbacks).length === 2;
+          Object.keys(getCallbacks).length === 2;
     });
   }).then(function() {
     // Set high priority range to 2 - 4.
@@ -167,7 +169,7 @@ function testStory(callback) {
     return waitUntil(function() {
       return hasPendingGetLatestCallback([entry3]) &&
           hasPendingGetLatestCallback([entry4]) &&
-          Object.keys(getLatestCallbacks).length === 2;
+          Object.keys(getCallbacks).length === 2;
     });
   }), callback);
 }
@@ -183,7 +185,7 @@ function testRangeIsAtTheEndOfList() {
 
   // Assert that a task is enqueued for entry5.
   assertTrue(hasPendingGetLatestCallback([entry5]));
-  assertEquals(1, Object.keys(getLatestCallbacks).length);
+  assertEquals(1, Object.keys(getCallbacks).length);
 }
 
 function testCache(callback) {
@@ -197,7 +199,7 @@ function testCache(callback) {
   // In this test case, entry 3 is resolved earlier than entry 2.
   resolveGetLatestCallback([entry3]);
   resolveGetLatestCallback([entry2]);
-  assertEquals(0, Object.keys(getLatestCallbacks).length);
+  assertEquals(0, Object.keys(getCallbacks).length);
 
   reportPromise(waitUntil(function() {
     return areEntriesInCache([entry3, entry2, entry1]);
@@ -205,7 +207,7 @@ function testCache(callback) {
     // Move high priority range to 1 - 3.
     listThumbnailLoader.setHighPriorityRange(1, 3);
     resolveGetLatestCallback([entry4]);
-    assertEquals(0, Object.keys(getLatestCallbacks).length);
+    assertEquals(0, Object.keys(getCallbacks).length);
 
     return waitUntil(function() {
       return areEntriesInCache([entry4, entry3, entry2, entry1]);
@@ -215,7 +217,7 @@ function testCache(callback) {
     listThumbnailLoader.setHighPriorityRange(4, 6);
     resolveGetLatestCallback([entry5]);
     resolveGetLatestCallback([entry6]);
-    assertEquals(0, Object.keys(getLatestCallbacks).length);
+    assertEquals(0, Object.keys(getCallbacks).length);
 
     return waitUntil(function() {
       return areEntriesInCache([entry6, entry5, entry4, entry3, entry2]);
@@ -223,13 +225,13 @@ function testCache(callback) {
   }).then(function() {
     // Move high priority range to 3 - 5.
     listThumbnailLoader.setHighPriorityRange(3, 5);
-    assertEquals(0, Object.keys(getLatestCallbacks).length);
+    assertEquals(0, Object.keys(getCallbacks).length);
     assertTrue(areEntriesInCache([entry6, entry5, entry4, entry3, entry2]));
 
     // Move high priority range to 0 - 2.
     listThumbnailLoader.setHighPriorityRange(0, 2);
     resolveGetLatestCallback([entry1]);
-    assertEquals(0, Object.keys(getLatestCallbacks).length);
+    assertEquals(0, Object.keys(getCallbacks).length);
 
     return waitUntil(function() {
       return areEntriesInCache([entry3, entry2, entry1, entry6, entry5]);
@@ -264,7 +266,7 @@ function testSortedEvent(callback) {
 
   resolveGetLatestCallback([entry1]);
   resolveGetLatestCallback([entry2]);
-  assertEquals(0, Object.keys(getLatestCallbacks).length);
+  assertEquals(0, Object.keys(getCallbacks).length);
 
   // In order to assert that following task enqueues are fired by sorted event,
   // wait until all thumbnail loads are completed.
@@ -277,7 +279,7 @@ function testSortedEvent(callback) {
 
     return waitUntil(function() {
       return hasPendingGetLatestCallback([entry5]) &&
-          hasPendingGetLatestCallback([entry4])
+          hasPendingGetLatestCallback([entry4]);
     });
   }), callback);
 }

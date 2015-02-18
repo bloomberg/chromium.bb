@@ -24,8 +24,8 @@ var FileAsyncData;
  * @param {!ProgressCenter} progressCenter To notify starting copy operation.
  * @param {!FileOperationManager} fileOperationManager File operation manager
  *     instance.
- * @param {!MetadataCache} metadataCache Metadata cache service.
  * @param {!FileSystemMetadata} fileSystemMetadata Metadata cache service.
+ * @param {!ThumbnailModel} thumbnailModel
  * @param {!DirectoryModel} directoryModel Directory model instance.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!FileSelectionHandler} selectionHandler Selection handler.
@@ -38,8 +38,8 @@ function FileTransferController(doc,
                                 multiProfileShareDialog,
                                 progressCenter,
                                 fileOperationManager,
-                                metadataCache,
                                 fileSystemMetadata,
+                                thumbnailModel,
                                 directoryModel,
                                 volumeManager,
                                 selectionHandler) {
@@ -65,18 +65,18 @@ function FileTransferController(doc,
   this.fileOperationManager_ = fileOperationManager;
 
   /**
-   * @type {!MetadataCache}
-   * @private
-   * @const
-   */
-  this.metadataCache_ = metadataCache;
-
-  /**
    * @type {!FileSystemMetadata}
    * @private
    * @const
    */
   this.fileSystemMetadata_ = fileSystemMetadata;
+
+  /**
+   * @type {!ThumbnailModel}
+   * @private
+   * @const
+   */
+  this.thumbnailModel_ = thumbnailModel;
 
   /**
    * @type {!DirectoryModel}
@@ -555,22 +555,10 @@ FileTransferController.prototype.paste =
  * @private
  */
 FileTransferController.prototype.preloadThumbnailImage_ = function(entry) {
-  var metadataPromise = new Promise(function(fulfill, reject) {
-    this.metadataCache_.getOne(
-        entry,
-        'thumbnail|filesystem',
-        function(metadata) {
-          if (metadata)
-            fulfill(metadata);
-          else
-            reject('Failed to fetch metadata.');
-        });
-  }.bind(this));
-
-  var imagePromise = metadataPromise.then(function(metadata) {
+  var imagePromise = this.thumbnailModel_.get([entry]).then(function(metadata) {
     return new Promise(function(fulfill, reject) {
       var loader = new ThumbnailLoader(
-          entry, ThumbnailLoader.LoaderType.IMAGE, metadata);
+          entry, ThumbnailLoader.LoaderType.IMAGE, metadata[0]);
       loader.loadDetachedImage(function(result) {
         if (result)
           fulfill(loader.getImage());
@@ -581,8 +569,6 @@ FileTransferController.prototype.preloadThumbnailImage_ = function(entry) {
   imagePromise.then(function(image) {
     // Store the image so that we can obtain the image synchronously.
     imagePromise.value = image;
-  }, function(error) {
-    console.error(error.stack || error);
   });
 
   this.preloadedThumbnailImagePromise_ = imagePromise;

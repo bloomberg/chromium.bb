@@ -22,16 +22,14 @@ FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
 /**
  * Decorates an HTML element to be a FileGrid.
  * @param {!Element} self The grid to decorate.
- * @param {MetadataCache} metadataCache Metadata cache for thumbnails.
  * @param {!FileSystemMetadata} fileSystemMetadata File system metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  */
 FileGrid.decorate = function(
-    self, metadataCache, fileSystemMetadata, volumeManager, historyLoader) {
+    self, fileSystemMetadata, volumeManager, historyLoader) {
   cr.ui.Grid.decorate(self);
   self.__proto__ = FileGrid.prototype;
-  self.metadataCache_ = metadataCache;
   self.fileSystemMetadata_ = fileSystemMetadata;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
@@ -178,7 +176,6 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  * Decorates thumbnail.
  * @param {cr.ui.ListItem} li List item.
  * @param {!Entry} entry Entry to render a thumbnail for.
- * @param {MetadataCache} metadataCache To retrieve thumbnail.
  * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
@@ -191,7 +188,6 @@ FileGrid.prototype.relayoutImmediately_ = function() {
 FileGrid.decorateThumbnail_ = function(
     li,
     entry,
-    metadataCache,
     fileSystemMetadata,
     volumeManager,
     historyLoader,
@@ -406,7 +402,6 @@ FileGrid.Item.decorate = function(li, entry, grid, previousItem) {
   FileGrid.decorateThumbnail_(
       li,
       entry,
-      grid.metadataCache_,
       grid.fileSystemMetadata_,
       grid.volumeManager_,
       grid.historyLoader_,

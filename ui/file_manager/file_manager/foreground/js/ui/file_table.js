@@ -224,7 +224,6 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
 /**
  * Decorates the element.
  * @param {!Element} self Table to decorate.
- * @param {MetadataCache} metadataCache To retrieve thumbnails.
  * @param {!FileSystemMetadata} fileSystemMetadata To retrieve
  *     metadata.
  * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
@@ -233,12 +232,10 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  *                           False if a file open/save dialog.
  */
 FileTable.decorate = function(
-    self, metadataCache, fileSystemMetadata, volumeManager, historyLoader,
-    fullPage) {
+    self, fileSystemMetadata, volumeManager, historyLoader, fullPage) {
   cr.ui.Table.decorate(self);
   FileTableList.decorate(self.list);
   self.__proto__ = FileTable.prototype;
-  self.metadataCache_ = metadataCache;
   self.fileSystemMetadata_ = fileSystemMetadata;
   self.volumeManager_ = volumeManager;
   self.historyLoader_ = historyLoader;
