@@ -188,7 +188,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             fallBackToLegacy = true;
 
         // FIXME: Handle keywords e.g. 'thick'
-        if (property == CSSPropertyOutlineWidth || CSSPropertyWebkitColumnRuleWidth)
+        if (property == CSSPropertyOutlineWidth || property == CSSPropertyWebkitColumnRuleWidth)
             fallBackToLegacy = true;
         break;
     case CSSPropertyOrphans:
