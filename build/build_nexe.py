@@ -957,6 +957,8 @@ def Main(argv):
     return 0
   except Error as e:
     sys.stderr.write('%s\n' % e)
+    if build is not None:
+      build.EmitDeferredLog()
     return 1
   except:
     if build is not None:
