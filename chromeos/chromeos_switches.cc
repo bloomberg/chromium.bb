@@ -229,6 +229,7 @@ const char kLoginUser[] = "login-user";
 
 // The memory pressure thresholds selection which is used to decide whether and
 // when a memory pressure event needs to get fired.
+const char kMemoryPressureExperimentName[] = "ChromeOSMemoryPressureHandling";
 const char kMemoryPressureHandlingOff[] = "memory-pressure-off";
 const char kMemoryPressureThresholds[] = "memory-pressure-thresholds";
 const char kConservativeThreshold[] = "conservative";
@@ -326,7 +327,7 @@ bool WakeOnWifiEnabled() {
 bool MemoryPressureHandlingEnabled() {
   if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMemoryPressureSystemChromeOS)) ||
-      (base::FieldTrialList::FindFullName(kMemoryPressureThresholds) ==
+      (base::FieldTrialList::FindFullName(kMemoryPressureExperimentName) ==
        kMemoryPressureHandlingOff))
     return false;
   return true;
@@ -337,7 +338,7 @@ GetMemoryPressureThresholds() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           kMemoryPressureThresholds)) {
     const std::string group_name =
-        base::FieldTrialList::FindFullName(kMemoryPressureThresholds);
+        base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
     if (group_name == kConservativeThreshold)
       return base::MemoryPressureObserverChromeOS::THRESHOLD_CONSERVATIVE;
     if (group_name == kAggressiveCacheDiscardThreshold)
