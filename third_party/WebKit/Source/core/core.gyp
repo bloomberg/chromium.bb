@@ -649,8 +649,6 @@
       'type': 'static_library',
       'dependencies': [
         '../config.gyp:config',
-        'webcore',
-        'webcore_generated',
       ],
       'defines': [
         'BLINK_IMPLEMENTATION=1',
@@ -668,6 +666,18 @@
       ],
       'sources/': [
         ['exclude', 'testing/js'],
+      ],
+      'conditions': [
+        ['component!="shared_library" or link_core_modules_separately==0', {
+          'dependencies': [
+            'webcore',
+            'webcore_generated',
+          ],
+        }, {
+          'dependencies': [
+            'webcore_shared',
+          ],
+        }]
       ],
     },
     {

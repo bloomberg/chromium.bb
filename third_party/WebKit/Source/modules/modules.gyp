@@ -64,6 +64,13 @@
         ],
         'dependencies': [
           '../core/core.gyp:webcore_shared', # modules depends on core.
+          '../platform/blink_platform.gyp:blink_common',
+          '../platform/blink_platform.gyp:blink_platform',
+          '../bindings/modules/generated.gyp:modules_event_generated',
+          '../bindings/modules/v8/generated.gyp:bindings_modules_v8_generated',
+          '../wtf/wtf.gyp:wtf',
+          '<(DEPTH)/url/url.gyp:url_lib',
+          '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         ],
       }, {
         'type': 'static_library',
