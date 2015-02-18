@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<!-- This tests that animation timeline current time and playback rate works correctly. -->
+
+<script>
+test(function() {
+    document.timeline.currentTime = 1000;
+    assert_approx_equals(document.timeline.currentTime, 1000, 0.1);
+    assert_equals(document.timeline.playbackRate, 1);
+
+    document.timeline.playbackRate = 1;
+    document.timeline.currentTime = 2000;
+    assert_approx_equals(document.timeline.currentTime, 2000, 0.1);
+    assert_equals(document.timeline.playbackRate, 1);
+
+    document.timeline.playbackRate = 0.5;
+    assert_approx_equals(document.timeline.currentTime, 2000, 0.1);
+    document.timeline.currentTime = 3000;
+    assert_approx_equals(document.timeline.currentTime, 3000, 0.1);
+    assert_equals(document.timeline.playbackRate, 0.5);
+}, 'Current time is set correctly on the animation timeline.');
+
+</script>

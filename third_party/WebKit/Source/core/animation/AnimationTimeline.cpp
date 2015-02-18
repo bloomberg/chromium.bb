@@ -230,7 +230,7 @@ void AnimationTimeline::setCurrentTimeInternal(double currentTime)
         return;
     m_zeroTime = m_playbackRate == 0
         ? currentTime
-        : (document()->animationClock().currentTime() - currentTime) / m_playbackRate;
+        : document()->animationClock().currentTime() - currentTime / m_playbackRate;
     m_zeroTimeInitialized = true;
 
     for (const auto& player : m_players) {
