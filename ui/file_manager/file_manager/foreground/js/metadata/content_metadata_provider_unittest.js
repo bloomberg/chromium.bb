@@ -35,14 +35,16 @@ function testExternalMetadataProviderBasic(callback) {
   var provider = new ContentMetadataProvider(cache, port);
   reportPromise(provider.get(
       [entryA, entryB],
-      ['thumbnailURL', 'thumbnailTransform']).then(
+      ['contentThumbnailUrl', 'contentThumbnailTransform']).then(
           function(results) {
             assertEquals(2, results.length);
-            assertEquals('filesystem://A,url', results[0].thumbnailURL);
+            assertEquals('filesystem://A,url', results[0].contentThumbnailUrl);
             assertEquals(
-                'filesystem://A,transform', results[0].thumbnailTransform);
-            assertEquals('filesystem://B,url', results[1].thumbnailURL);
+                'filesystem://A,transform',
+                results[0].contentThumbnailTransform);
+            assertEquals('filesystem://B,url', results[1].contentThumbnailUrl);
             assertEquals(
-                'filesystem://B,transform', results[1].thumbnailTransform);
+                'filesystem://B,transform',
+                results[1].contentThumbnailTransform);
           }), callback);
 }

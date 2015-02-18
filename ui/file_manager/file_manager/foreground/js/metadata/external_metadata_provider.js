@@ -27,6 +27,7 @@ var ExternalMetadataProperties;
 
 /**
  * Metadata provider for FileEntry#getMetadata.
+ * TODO(hirono): Rename thumbnailUrl with externalThumbnailUrl.
  *
  * @param {!MetadataProviderCache} cache
  * @constructor

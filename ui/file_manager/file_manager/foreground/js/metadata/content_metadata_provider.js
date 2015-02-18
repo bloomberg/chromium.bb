@@ -4,8 +4,18 @@
 
 /**
  * @typedef {{
- *   thumbnailURL:(string|undefined),
- *   thumbnailTransform: (string|undefined)
+ *  scaleX: number,
+ *  scaleY: number,
+ *  rotate90: number
+ * }}
+ */
+var ImageTransformation;
+
+/**
+ * @typedef {{
+ *   contentThumbnailUrl:(string|undefined),
+ *   contentThumbnailTransform: (!ImageTransformation|undefined),
+ *   contentImageTransform: (!ImageTransformation|undefined)
  * }}
  */
 var ContentMetadata;
@@ -19,7 +29,14 @@ var ContentMetadata;
  * @struct
  */
 function ContentMetadataProvider(cache, opt_messagePort) {
-  NewMetadataProvider.call(this, cache, ['thumbnailURL', 'thumbnailTransform']);
+  NewMetadataProvider.call(
+      this,
+      cache,
+      [
+        'contentThumbnailUrl',
+        'contentThumbnailTransform',
+        'contentImageTransform'
+      ]);
 
   /**
    * Pass all URLs to the metadata reader until we have a correct filter.
@@ -69,8 +86,9 @@ ContentMetadataProvider.WORKER_SCRIPT =
  */
 ContentMetadataProvider.convertContentMetadata = function(metadata) {
   return {
-    thumbnailURL: metadata.thumbnailURL,
-    thumbnailTransform: metadata.thumbnailTransform
+    contentThumbnailUrl: metadata['thumbnailURL'],
+    contentThumbnailTransform: metadata['thumbnailTransform'],
+    contentImageTransform: metadata['imageTransform']
   };
 };
 

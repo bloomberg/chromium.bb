@@ -66,7 +66,7 @@ FileSystemMetadata.prototype.get = function(entries, names) {
 
   // Correct property names that are valid for fileSystemMetadataProvider.
   var fileSystemPropertyNames = names.filter(function(name) {
-    return name === 'size' || name === 'modificationTime';
+    return FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
   });
 
   return Promise.all([

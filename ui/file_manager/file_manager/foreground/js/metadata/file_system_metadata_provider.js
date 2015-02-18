@@ -16,8 +16,15 @@ var FileSystemMetadataProperties;
  * @struct
  */
 function FileSystemMetadataProvider(cache) {
-  NewMetadataProvider.call(this, cache, ['modificationTime', 'size']);
+  NewMetadataProvider.call(
+      this, cache, FileSystemMetadataProvider.PROPERTY_NAMES);
 }
+
+/**
+ * @const {!Array<string>}
+ */
+FileSystemMetadataProvider.PROPERTY_NAMES =
+    ['modificationTime', 'size', 'present'];
 
 FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 
@@ -31,7 +38,8 @@ FileSystemMetadataProvider.prototype.getImpl = function(requests) {
     }).then(function(properties) {
       return {
         modificationTime: properties.modificationTime,
-        size: request.entry.isDirectory ? -1 : properties.size
+        size: request.entry.isDirectory ? -1 : properties.size,
+        present: true
       };
     });
   }));
