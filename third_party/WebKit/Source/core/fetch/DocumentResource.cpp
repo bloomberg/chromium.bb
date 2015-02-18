@@ -42,7 +42,7 @@ DocumentResource::~DocumentResource()
 {
 }
 
-void DocumentResource::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentResource)
 {
     visitor->trace(m_document);
     Resource::trace(visitor);

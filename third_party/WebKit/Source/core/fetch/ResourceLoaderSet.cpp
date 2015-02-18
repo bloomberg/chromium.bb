@@ -40,7 +40,7 @@ PassOwnPtrWillBeRawPtr<ResourceLoaderSet> ResourceLoaderSet::create()
     return adoptPtrWillBeNoop(new ResourceLoaderSet);
 }
 
-void ResourceLoaderSet::trace(Visitor* visitor)
+DEFINE_TRACE(ResourceLoaderSet)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_set);

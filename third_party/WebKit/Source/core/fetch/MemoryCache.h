@@ -78,7 +78,7 @@ public:
     {
         return adoptPtrWillBeNoop(new MemoryCacheEntry(resource));
     }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 #if ENABLE(OILPAN)
     void dispose();
 #endif
@@ -121,7 +121,7 @@ public:
     RawPtrWillBeMember<MemoryCacheEntry> m_tail;
 
     MemoryCacheLRUList() : m_head(nullptr), m_tail(nullptr) { }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 };
 
 }
@@ -135,7 +135,7 @@ class MemoryCache final : public NoBaseWillBeGarbageCollectedFinalized<MemoryCac
 public:
     static PassOwnPtrWillBeRawPtr<MemoryCache> create();
     ~MemoryCache();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     struct TypeStatistic {
         int count;

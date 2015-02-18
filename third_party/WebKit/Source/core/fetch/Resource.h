@@ -98,7 +98,7 @@ protected:
 public:
 #endif
     virtual void dispose();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
     static unsigned instanceCount() { return s_instanceCount; }
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);

@@ -73,7 +73,7 @@ ResourceLoader::~ResourceLoader()
     ASSERT(m_state == Terminated);
 }
 
-void ResourceLoader::trace(Visitor* visitor)
+DEFINE_TRACE(ResourceLoader)
 {
     visitor->trace(m_host);
     visitor->trace(m_resource);

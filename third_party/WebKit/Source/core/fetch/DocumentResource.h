@@ -38,7 +38,7 @@ public:
 
     DocumentResource(const ResourceRequest&, Type);
     virtual ~DocumentResource();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     Document* document() const { return m_document.get(); }
 

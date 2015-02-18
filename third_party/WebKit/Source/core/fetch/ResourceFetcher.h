@@ -78,7 +78,7 @@ friend class ResourceCacheValidationSuppressor;
 public:
     static PassRefPtrWillBeRawPtr<ResourceFetcher> create(DocumentLoader* documentLoader) { return adoptRefWillBeNoop(new ResourceFetcher(documentLoader)); }
     virtual ~ResourceFetcher();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 #if !ENABLE(OILPAN)
     using RefCounted<ResourceFetcher>::ref;

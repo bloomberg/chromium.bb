@@ -60,7 +60,7 @@ public:
 
     FetchContext() { }
     virtual ~FetchContext() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void reportLocalLoadFailed(const KURL&);
     virtual void addAdditionalRequestHeaders(Document*, ResourceRequest&, FetchResourceType);

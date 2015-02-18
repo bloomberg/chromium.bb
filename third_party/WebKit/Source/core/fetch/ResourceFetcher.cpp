@@ -1643,7 +1643,7 @@ void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy polic
     }
 }
 
-void ResourceFetcher::trace(Visitor* visitor)
+DEFINE_TRACE(ResourceFetcher)
 {
     visitor->trace(m_document);
     visitor->trace(m_archiveResourceCollection);

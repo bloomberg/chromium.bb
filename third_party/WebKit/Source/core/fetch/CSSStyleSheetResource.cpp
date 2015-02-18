@@ -59,7 +59,7 @@ void CSSStyleSheetResource::dispose()
     m_parsedStyleSheetCache.clear();
 }
 
-void CSSStyleSheetResource::trace(Visitor* visitor)
+DEFINE_TRACE(CSSStyleSheetResource)
 {
     visitor->trace(m_parsedStyleSheetCache);
     StyleSheetResource::trace(visitor);

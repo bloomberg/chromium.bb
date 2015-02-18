@@ -159,7 +159,7 @@ void Resource::dispose()
 {
 }
 
-void Resource::trace(Visitor* visitor)
+DEFINE_TRACE(Resource)
 {
     visitor->trace(m_loader);
     visitor->trace(m_resourceToRevalidate);

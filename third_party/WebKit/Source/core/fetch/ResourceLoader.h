@@ -48,7 +48,7 @@ class ResourceLoader final : public RefCountedWillBeGarbageCollectedFinalized<Re
 public:
     static PassRefPtrWillBeRawPtr<ResourceLoader> create(ResourceLoaderHost*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void start();
     void changeToSynchronous();
