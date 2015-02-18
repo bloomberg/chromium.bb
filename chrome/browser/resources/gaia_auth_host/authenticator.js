@@ -369,9 +369,9 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadStop_ = function(e) {
-    this.webview_.focus();
     if (!this.loaded_) {
       this.loaded_ = true;
+      this.webview_.focus();
       this.dispatchEvent(new Event('ready'));
     }
   };
