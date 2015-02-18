@@ -332,6 +332,7 @@
                   'caseq+blink@chromium.org',
                   'malch+blink@chromium.org',
                   'sergeyv+blink@chromium.org',
+                  'kozyatinskiy+blink@chromium.org',
                   'devtools-reviews@chromium.org' ],
     'bidi': [ 'leviw+bidiwatch@chromium.org' ],
     'bindings': [ 'arv+blink@chromium.org',
