@@ -25,7 +25,9 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 // http://www.w3.org/TR/page-visibility/#VisibilityState
 enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
-interface Document : Node {
+[
+    TypeChecking=Unrestricted,
+] interface Document : Node {
 
     // DOM Level 1 Core
     readonly attribute DocumentType doctype;
@@ -184,14 +186,14 @@ interface Document : Node {
     [RuntimeEnabled=Touch] Touch createTouch([Default=Undefined] optional Window window,
                                              [Default=Undefined] optional EventTarget target,
                                              [Default=Undefined] optional long identifier,
-                                             [Default=Undefined] optional double pageX,
-                                             [Default=Undefined] optional double pageY,
-                                             [Default=Undefined] optional double screenX,
-                                             [Default=Undefined] optional double screenY,
-                                             [Default=Undefined] optional double webkitRadiusX,
-                                             [Default=Undefined] optional double webkitRadiusY,
-                                             [Default=Undefined] optional float webkitRotationAngle,
-                                             [Default=Undefined] optional float webkitForce);
+                                             [Default=Undefined] optional unrestricted double pageX,
+                                             [Default=Undefined] optional unrestricted double pageY,
+                                             [Default=Undefined] optional unrestricted double screenX,
+                                             [Default=Undefined] optional unrestricted double screenY,
+                                             [Default=Undefined] optional unrestricted double webkitRadiusX,
+                                             [Default=Undefined] optional unrestricted double webkitRadiusY,
+                                             [Default=Undefined] optional unrestricted float webkitRotationAngle,
+                                             [Default=Undefined] optional unrestricted float webkitForce);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
     [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString name, optional ElementRegistrationOptions options);
