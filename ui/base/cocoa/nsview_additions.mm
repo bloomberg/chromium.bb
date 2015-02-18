@@ -75,7 +75,7 @@
 static NSView* g_ancestorBeingDrawnFrom = nil;
 static NSView* g_childBeingDrawnTo = nil;
 
-- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)rect {
+- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)dirtyRect {
   gfx::ScopedNSGraphicsContextSaveGState scopedGSState;
   NSRect frame = [self convertRect:[self bounds] toView:ancestorView];
   NSAffineTransform* transform = [NSAffineTransform transform];
@@ -91,7 +91,7 @@ static NSView* g_childBeingDrawnTo = nil;
   DCHECK(!g_ancestorBeingDrawnFrom && !g_childBeingDrawnTo);
   g_ancestorBeingDrawnFrom = ancestorView;
   g_childBeingDrawnTo = self;
-  [ancestorView drawRect:[ancestorView bounds]];
+  [ancestorView drawRect:[self convertRect:dirtyRect toView:ancestorView]];
   g_childBeingDrawnTo = nil;
   g_ancestorBeingDrawnFrom = nil;
 }

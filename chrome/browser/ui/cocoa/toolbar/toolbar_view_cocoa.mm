@@ -4,9 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_view_cocoa.h"
 
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 
 @implementation ToolbarView
@@ -18,11 +16,8 @@
   return NO;
 }
 
-- (void)drawRect:(NSRect)rect {
-  NSPoint position = [[self window]
-      themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-  [[NSGraphicsContext currentContext] cr_setPatternPhase:position forView:self];
-  [self drawBackgroundWithOpaque:YES];
+- (void)drawRect:(NSRect)dirtyRect {
+  [self drawBackground:dirtyRect];
 }
 
 // Override of |-[BackgroundGradientView strokeColor]|; make it respect opacity.

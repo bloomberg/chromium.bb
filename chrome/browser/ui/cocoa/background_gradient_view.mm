@@ -8,6 +8,7 @@
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 
 @interface BackgroundGradientView (Private)
@@ -33,11 +34,6 @@
   return self;
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
 - (void)commonInit {
   showsDivider_ = YES;
 }
@@ -49,26 +45,37 @@
   [self setNeedsDisplay:YES];
 }
 
-- (void)drawBackgroundWithOpaque:(BOOL)opaque {
-  const NSRect bounds = [self bounds];
+- (NSPoint)patternPhase {
+  return [[self window]
+      themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
+}
 
-  if (opaque) {
+- (void)drawBackground:(NSRect)dirtyRect {
+  [[NSGraphicsContext currentContext]
+      cr_setPatternPhase:[self patternPhase]
+                 forView:[self cr_viewBeingDrawnTo]];
+
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (themeProvider && themeProvider->UsingSystemTheme()) {
     // If the background image is semi transparent then we need something
     // to blend against. Using 20% black gives us a color similar to Windows.
     [[NSColor colorWithCalibratedWhite:0.2 alpha:1.0] set];
-    NSRectFill(bounds);
+    NSRectFill(dirtyRect);
   }
 
   [[self backgroundImageColor] set];
-  NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+  NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 
   if (showsDivider_) {
     // Draw bottom stroke
-    [[self strokeColor] set];
     NSRect borderRect, contentRect;
-    NSDivideRect(bounds, &borderRect, &contentRect, [self cr_lineWidth],
+    NSDivideRect([self bounds], &borderRect, &contentRect, [self cr_lineWidth],
                  NSMinYEdge);
-    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+    if (NSIntersectsRect(borderRect, dirtyRect)) {
+      [[self strokeColor] set];
+      NSRectFillUsingOperation(NSIntersectionRect(borderRect, dirtyRect),
+                               NSCompositeSourceOver);
+    }
   }
 }
 
@@ -93,15 +100,14 @@
 }
 
 - (NSColor*)backgroundImageColor {
-  ThemeService* themeProvider =
-      static_cast<ThemeService*>([[self window] themeProvider]);
+  ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
     return [[self window] backgroundColor];
 
   // Themes don't have an inactive image so only look for one if there's no
   // theme.
   BOOL isActive = [[self window] isMainWindow];
-  if (!isActive && themeProvider->UsingDefaultTheme()) {
+  if (!isActive && themeProvider->UsingSystemTheme()) {
     NSColor* color = themeProvider->GetNSImageColorNamed(
         IDR_THEME_TOOLBAR_INACTIVE);
     if (color)

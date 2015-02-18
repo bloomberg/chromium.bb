@@ -40,6 +40,8 @@
     // Register to be an URL drop target.
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
 
+    [self setShowsDivider:NO];
+
     [self setWantsLayer:YES];
   }
   return self;
@@ -48,50 +50,32 @@
 // Draw bottom border bitmap. Each tab is responsible for mimicking this bottom
 // border, unless it's the selected tab.
 - (void)drawBorder:(NSRect)dirtyRect {
-  ThemeService* themeProvider =
-      static_cast<ThemeService*>([[self window] themeProvider]);
+  NSWindow* window = [self window];
+  ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return;
 
   // First draw the toolbar bitmap, so that theme colors can shine through.
-  CGFloat backgroundHeight = 2 * [self cr_lineWidth];
-  if (NSMinY(dirtyRect) < backgroundHeight) {
-    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    NSGraphicsContext *context = [NSGraphicsContext currentContext];
-    NSPoint position = [[self window] themeImagePositionForAlignment:
-        THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-    [context cr_setPatternPhase:position forView:self];
-
-    // Themes don't have an inactive image so only look for one if there's no
-    // theme.
-    bool active =
-        [[self window] isMainWindow] || !themeProvider->UsingDefaultTheme();
-    int resource_id = active ? IDR_THEME_TOOLBAR : IDR_THEME_TOOLBAR_INACTIVE;
-    [themeProvider->GetNSImageColorNamed(resource_id) set];
-    NSRectFill(
-        NSMakeRect(NSMinX(dirtyRect), 0, NSWidth(dirtyRect), backgroundHeight));
-  }
+  NSRect backgroundRect = [self bounds];
+  backgroundRect.size.height = 2 * [self cr_lineWidth];
+  if (NSIntersectsRect(backgroundRect, dirtyRect))
+    [self drawBackground:backgroundRect];
 
   // Draw the border bitmap, which is partially transparent.
   NSImage* image = themeProvider->GetNSImageNamed(IDR_TOOLBAR_SHADE_TOP);
-  if (NSMinY(dirtyRect) >= [image size].height)
-    return;
-
-  NSRect borderRect = dirtyRect;
+  NSRect borderRect = backgroundRect;
   borderRect.size.height = [image size].height;
-  borderRect.origin.y = 0;
-
-  BOOL focused = [[self window] isMainWindow];
-  NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/ NO,
-                       NSCompositeSourceOver,
-                       focused ?  1.0 : tabs::kImageNoFocusAlpha,
-                       /*flipped=*/ NO);
+  if (NSIntersectsRect(borderRect, dirtyRect)) {
+    BOOL focused = [window isMainWindow];
+    NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/ NO,
+                         NSCompositeSourceOver,
+                         focused ?  1.0 : tabs::kImageNoFocusAlpha,
+                         /*flipped=*/ NO);
+  }
 }
 
-- (void)drawRect:(NSRect)rect {
-  NSRect boundsRect = [self bounds];
-
-  [self drawBorder:boundsRect];
+- (void)drawRect:(NSRect)dirtyRect {
+  [self drawBorder:dirtyRect];
 
   // Draw drop-indicator arrow (if appropriate).
   // TODO(viettrungluu): this is all a stop-gap measure.
@@ -120,7 +104,7 @@
 
     // Height we have to work with (insetting on the top).
     CGFloat availableHeight =
-        NSMaxY(boundsRect) - arrowTipPos.y - kArrowTopInset;
+        NSMaxY([self bounds]) - arrowTipPos.y - kArrowTopInset;
     DCHECK(availableHeight >= 5);
 
     // Based on the knobs above, calculate actual dimensions which we'll need

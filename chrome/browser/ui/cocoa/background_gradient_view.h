@@ -22,14 +22,14 @@
 // The color used for the bottom stroke. Public so subclasses can use.
 - (NSColor*)strokeColor;
 
-// Draws the background for this view. Make sure that your patternphase
-// is set up correctly in your graphics context before calling.
-// If |opaque| is true then the background image is forced to be opaque.
-// Otherwise the background image could be semi-transparent and blend against
-// subviews and sublayers. This is different from -[NSView isOpaque] since
-// a view may want a opaque non-rectangular background. The find bar is an
-// example of this.
-- (void)drawBackgroundWithOpaque:(BOOL)opaque;
+// The pattern phase that will be used by -drawBackground:.
+// Defaults to align the top of the theme image with the top of the tabs.
+// Views that draw at the bottom of the window (download bar) can override to
+// change the pattern phase.
+- (NSPoint)patternPhase;
+
+// Draws the background image into the current NSGraphicsContext.
+- (void)drawBackground:(NSRect)dirtyRect;
 
 @end
 

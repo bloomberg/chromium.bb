@@ -4,10 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_view_cocoa.h"
 
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -32,12 +30,12 @@ CGFloat kCurveSize = 8;
   [self registerForDraggedTypes:[URLDropTargetHandler handledDragTypes]];
 }
 
-- (void)drawRect:(NSRect)rect {
+- (void)drawRect:(NSRect)dirtyRect {
   const CGFloat lineWidth = [self cr_lineWidth];
   const CGFloat halfLineWidth = lineWidth / 2.0;
 
   // TODO(rohitrao): Make this prettier.
-  rect = NSInsetRect([self bounds], halfLineWidth, halfLineWidth);
+  NSRect rect = NSInsetRect([self bounds], halfLineWidth, halfLineWidth);
   rect = NSOffsetRect(rect, 0, lineWidth);
 
   NSPoint topLeft = NSMakePoint(NSMinX(rect), NSMaxY(rect));
@@ -76,15 +74,8 @@ CGFloat kCurveSize = 8;
 
   {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    NSGraphicsContext* context = [NSGraphicsContext currentContext];
     [path addClip];
-
-    // Set the pattern phase
-    NSPoint position = [[self window]
-        themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-    [context cr_setPatternPhase:position forView:self];
-
-    [super drawBackgroundWithOpaque:YES];
+    [self drawBackground:dirtyRect];
   }
 
   [[self strokeColor] set];

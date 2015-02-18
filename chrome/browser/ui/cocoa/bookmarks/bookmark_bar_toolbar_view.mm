@@ -10,10 +10,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -21,7 +19,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @interface BookmarkBarToolbarView (Private)
-- (void)drawAsDetachedBubble;
+- (void)drawAsDetachedBubble:(NSRect)dirtyRect;
 @end
 
 @implementation BookmarkBarToolbarView
@@ -36,37 +34,31 @@
   [arrow setOnMouseEntered:YES];
 }
 
-- (void)drawRect:(NSRect)rect {
+- (void)drawRect:(NSRect)dirtyRect {
   if ([controller_ isInState:BookmarkBar::DETACHED] ||
       [controller_ isAnimatingToState:BookmarkBar::DETACHED] ||
       [controller_ isAnimatingFromState:BookmarkBar::DETACHED]) {
-    [self drawAsDetachedBubble];
+    [self drawAsDetachedBubble:dirtyRect];
   } else {
-    NSPoint position = [[self window]
-        themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-    [[NSGraphicsContext currentContext]
-        cr_setPatternPhase:position
-                   forView:[self cr_viewBeingDrawnTo]];
-    [self drawBackgroundWithOpaque:YES];
+    [self drawBackground:dirtyRect];
   }
 }
 
-- (void)drawAsDetachedBubble {
+- (void)drawAsDetachedBubble:(NSRect)dirtyRect {
   CGFloat morph = [controller_ detachedMorphProgress];
-  NSRect bounds = [self bounds];
   ThemeService* themeService = [controller_ themeService];
   if (!themeService)
     return;
 
   [[NSColor whiteColor] set];
-  NSRectFill([self bounds]);
+  NSRectFill(dirtyRect);
 
   // Overlay with a lighter background color.
   NSColor* toolbarColor = gfx::SkColorToCalibratedNSColor(
-        chrome::GetDetachedBookmarkBarBackgroundColor(themeService));
+      chrome::GetDetachedBookmarkBarBackgroundColor(themeService));
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
-  NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+  NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 
   // Fade in/out the background.
   {
@@ -75,23 +67,23 @@
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextSetAlpha(cgContext, 1 - morph);
     CGContextBeginTransparencyLayer(cgContext, NULL);
-    NSPoint position = [[self window]
-        themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-    [context cr_setPatternPhase:position forView:[self cr_viewBeingDrawnTo]];
-    [self drawBackgroundWithOpaque:YES];
+    [self drawBackground:dirtyRect];
     CGContextEndTransparencyLayer(cgContext);
   }
 
   // Bottom stroke.
-  NSColor* strokeColor = gfx::SkColorToCalibratedNSColor(
-        chrome::GetDetachedBookmarkBarSeparatorColor(themeService));
-  strokeColor = [[self strokeColor] blendedColorWithFraction:morph
-                                                     ofColor:strokeColor];
-  strokeColor = [strokeColor colorWithAlphaComponent:0.5];
-  [strokeColor set];
-  NSRect strokeRect = bounds;
+  NSRect strokeRect = [self bounds];
   strokeRect.size.height = [self cr_lineWidth];
-  NSRectFillUsingOperation(strokeRect, NSCompositeSourceOver);
+  if (NSIntersectsRect(strokeRect, dirtyRect)) {
+    NSColor* strokeColor = gfx::SkColorToCalibratedNSColor(
+        chrome::GetDetachedBookmarkBarSeparatorColor(themeService));
+    strokeColor = [[self strokeColor] blendedColorWithFraction:morph
+                                                       ofColor:strokeColor];
+    strokeColor = [strokeColor colorWithAlphaComponent:0.5];
+    [strokeColor set];
+    NSRectFillUsingOperation(NSIntersectionRect(strokeRect, dirtyRect),
+                             NSCompositeSourceOver);
+  }
 }
 
 @end  // @implementation BookmarkBarToolbarView
