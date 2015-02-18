@@ -137,9 +137,13 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         const bool m_async;
 
+        // Holds the original request context (used for sanity checks).
+        const WebURLRequest::RequestContext m_requestContext;
+
         // Holds the original request for fallback in case the Service Worker
         // does not respond.
         OwnPtr<ResourceRequest> m_fallbackRequestForServiceWorker;
+
         // Holds the original request and options for it during preflight
         // request handling phase.
         OwnPtr<ResourceRequest> m_actualRequest;

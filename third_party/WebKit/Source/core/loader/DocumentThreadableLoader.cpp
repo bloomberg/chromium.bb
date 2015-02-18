@@ -89,6 +89,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_sameOriginRequest(securityOrigin()->canRequest(request.url()))
     , m_simpleRequest(true)
     , m_async(blockingBehavior == LoadAsynchronously)
+    , m_requestContext(request.requestContext())
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
     , m_requestStartedSeconds(0.0)
     , m_corsRedirectLimit(kMaxCORSRedirects)
@@ -419,8 +420,16 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     }
 
     if (response.wasFetchedViaServiceWorker()) {
-        ASSERT(m_fallbackRequestForServiceWorker);
+        // It's still possible to reach here with null m_fallbackRequestForServiceWorker
+        // if the request was for main resource loading (i.e. for SharedWorker), for which
+        // we create DocumentLoader before the controller ServiceWorker is set.
+        ASSERT(m_fallbackRequestForServiceWorker || m_requestContext == WebURLRequest::RequestContextSharedWorker);
         if (response.wasFallbackRequiredByServiceWorker()) {
+            // At this point we must have m_fallbackRequestForServiceWorker.
+            // (For SharedWorker the request won't be CORS or CORS-with-preflight,
+            // therefore fallback-to-network is handled in the browser process
+            // when the ServiceWorker does not call respondWith().)
+            ASSERT(m_fallbackRequestForServiceWorker);
             loadFallbackRequestForServiceWorker();
             return;
         }
