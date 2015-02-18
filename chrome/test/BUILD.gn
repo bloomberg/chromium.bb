@@ -12,9 +12,6 @@ import("//testing/test.gni")
 # into the build.
 group("test") {
   testonly = true
-  deps = [
-    "//chrome/test/perf",
-  ]
 }
 
 # GYP version: chrome/chrome_tests_unit.gypi:test_support_common
@@ -620,7 +617,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       "//chrome/browser",
       "//chrome/common/extensions/api",
       "//chrome/renderer",
-      "//chrome/test/perf",
       "//components/autofill/content/browser:risk_proto",
       "//components/autofill/content/browser:test_support",
       "//components/captive_portal:test_support",

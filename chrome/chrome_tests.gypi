@@ -1194,6 +1194,7 @@
       'test/perf/browser_perf_test.cc',
       'test/perf/browser_perf_test.h',
       'test/perf/mach_ports_performancetest.cc',
+      'test/perf/url_parse_perftest.cc',
     ],
     'chrome_driver_lib_sources': [
       '../third_party/webdriver/atoms.cc',
@@ -2875,58 +2876,6 @@
     },  # target 'load_library_perf_tests'
   ],
   'conditions': [
-    ['OS!="mac"', {
-      'targets': [
-        {
-          # This test appears to be a legacy target consisting of files not yet
-          # moved elsewhere.
-          #
-          # GN version: //chrome/test/perf
-          'target_name': 'perf_tests',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:test_support_perf',
-            '../testing/gtest.gyp:gtest',
-            '../url/url.gyp:url_lib',
-          ],
-          'sources': [
-            # Note: Sources list duplicated in GN build.
-            'test/perf/perftests.cc',
-            'test/perf/url_parse_perftest.cc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'configurations': {
-                'Debug_Base': {
-                  'msvs_settings': {
-                    'VCLinkerTool': {
-                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                    },
-                  },
-                },
-              },
-              'conditions': [
-                ['win_use_allocator_shim==1', {
-                  'dependencies': [
-                    '<(allocator_target)',
-                  ],
-                }],
-              ],
-            }],
-            ['os_posix == 1 and OS != "mac" and OS != "android"', {
-              'conditions': [
-                ['use_allocator!="none"', {
-                  'dependencies': [
-                    '../base/allocator/allocator.gyp:allocator',
-                  ],
-                }],
-              ],
-            }],
-          ],
-        },
-      ],
-    },],  # OS!="mac"
     ['OS == "android"', {
       'targets': [
         {
