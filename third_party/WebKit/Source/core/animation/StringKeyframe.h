@@ -19,7 +19,7 @@ public:
         return adoptRefWillBeNoop(new StringKeyframe);
     }
     void setPropertyValue(CSSPropertyID, const String& value, StyleSheetContents*);
-    void setPropertyValue(CSSPropertyID, PassRefPtr<CSSValue>);
+    void setPropertyValue(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
     void clearPropertyValue(CSSPropertyID property) { m_propertySet->removeProperty(property); }
     CSSValue* propertyValue(CSSPropertyID property) const
     {
@@ -39,7 +39,7 @@ public:
         CSSValue* value() const { return m_value.get(); }
         void setEasing(PassRefPtrWillBeRawPtr<TimingFunction> easing) { m_easing = easing; }
         virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const override final { return m_animatableValueCache.get(); }
-        void setAnimatableValue(PassRefPtr<AnimatableValue>);
+        void setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue>);
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
         virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*) const override final;

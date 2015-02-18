@@ -806,6 +806,7 @@ void CSSAnimationUpdate::trace(Visitor* visitor)
     visitor->trace(m_newAnimations);
     visitor->trace(m_suppressedAnimationPlayers);
     visitor->trace(m_animationsWithUpdates);
+    visitor->trace(m_animationsWithStyleUpdates);
 #endif
 }
 

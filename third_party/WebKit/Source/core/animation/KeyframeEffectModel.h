@@ -64,7 +64,7 @@ public:
 
     private:
         void removeRedundantKeyframes();
-        bool addSyntheticKeyframeIfRequired(PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing);
+        bool addSyntheticKeyframeIfRequired(PassRefPtr<TimingFunction> neutralKeyframeEasing);
 
         PropertySpecificKeyframeVector m_keyframes;
 
@@ -143,7 +143,7 @@ protected:
     using KeyframeGroupMap = WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup>>;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
     mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
-    RefPtrWillBeMember<TimingFunction> m_neutralKeyframeEasing;
+    RefPtr<TimingFunction> m_neutralKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;
 

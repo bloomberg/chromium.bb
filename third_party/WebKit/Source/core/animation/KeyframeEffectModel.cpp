@@ -211,10 +211,10 @@ bool KeyframeEffectModelBase::isReplaceOnly()
 void KeyframeEffectModelBase::trace(Visitor* visitor)
 {
     visitor->trace(m_keyframes);
-    visitor->trace(m_interpolationEffect);
-#if ENABLE_OILPAN
+#if ENABLE(OILPAN)
     visitor->trace(m_keyframeGroups);
 #endif
+    visitor->trace(m_interpolationEffect);
     AnimationEffect::trace(visitor);
 }
 
@@ -250,7 +250,7 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyf
     ASSERT(m_keyframes.size() >= 2);
 }
 
-bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired(PassRefPtrWillBeRawPtr<TimingFunction> easing)
+bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired(PassRefPtr<TimingFunction> easing)
 {
     ASSERT(!m_keyframes.isEmpty());
 

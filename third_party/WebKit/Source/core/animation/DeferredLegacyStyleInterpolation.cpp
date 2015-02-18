@@ -155,6 +155,7 @@ void DeferredLegacyStyleInterpolation::trace(Visitor* visitor)
 {
     visitor->trace(m_startCSSValue);
     visitor->trace(m_endCSSValue);
+    visitor->trace(m_innerInterpolation);
     StyleInterpolation::trace(visitor);
 }
 

@@ -39,7 +39,7 @@ void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& valu
         m_propertySet->setProperty(property, value, false, styleSheetContents);
 }
 
-void StringKeyframe::setPropertyValue(CSSPropertyID property, PassRefPtr<CSSValue> value)
+void StringKeyframe::setPropertyValue(CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSValue> value)
 {
     ASSERT(property != CSSPropertyInvalid);
     ASSERT(CSSAnimations::isAllowedAnimation(property));
@@ -83,7 +83,7 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     ASSERT(!isNull(m_offset));
 }
 
-void StringKeyframe::PropertySpecificKeyframe::setAnimatableValue(PassRefPtr<AnimatableValue> value)
+void StringKeyframe::PropertySpecificKeyframe::setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)
 {
     m_animatableValueCache = value;
 }

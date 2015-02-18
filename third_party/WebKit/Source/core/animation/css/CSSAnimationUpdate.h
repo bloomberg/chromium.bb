@@ -91,9 +91,19 @@ public:
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         struct CompositableStyleSnapshot {
+            DISALLOW_ALLOCATION();
+
+        public:
             RefPtrWillBeMember<AnimatableValue> opacity;
             RefPtrWillBeMember<AnimatableValue> transform;
             RefPtrWillBeMember<AnimatableValue> webkitFilter;
+
+            DEFINE_INLINE_TRACE()
+            {
+                visitor->trace(opacity);
+                visitor->trace(transform);
+                visitor->trace(webkitFilter);
+            }
         };
 
         UpdatedAnimationStyle()
@@ -111,6 +121,7 @@ public:
         {
             visitor->trace(player);
             visitor->trace(effect);
+            visitor->trace(snapshot);
         }
 
         RawPtrWillBeMember<AnimationPlayer> player;
