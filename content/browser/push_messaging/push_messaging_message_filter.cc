@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,40 +29,138 @@ const char kPushRegistrationIdServiceWorkerKey[] = "push_registration_id";
 namespace {
 
 void RecordRegistrationStatus(PushRegistrationStatus status) {
-  // Called from both UI and IO threads. Slightly racy, but acceptable, see
+  // Only called from IO thread, but would be acceptable (even though slightly
+  // racy) to call from UI thread as well, see
   // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/FNzZRJtN2aw/Aw0CWAXJJ1kJ
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.RegistrationStatus",
                             status,
                             PUSH_REGISTRATION_STATUS_LAST + 1);
 }
 
-const char kSenderIdServiceWorkerKey[] =
-    "push_sender_id";
+const char kSenderIdServiceWorkerKey[] = "push_sender_id";
 
 }  // namespace
+
+struct PushMessagingMessageFilter::RegisterData {
+  RegisterData();
+  RegisterData(const RegisterData& other) = default;
+  bool FromDocument() const;
+  int request_id;
+  GURL requesting_origin;
+  int64 service_worker_registration_id;
+  // The following two members should only be read if FromDocument() is true.
+  int render_frame_id;
+  bool user_visible_only;
+};
+
+
+// Inner core of this message filter which lives on the UI thread.
+class PushMessagingMessageFilter::Core {
+ public:
+  Core(const base::WeakPtr<PushMessagingMessageFilter>& io_parent,
+       int render_process_id);
+
+  // Public Register methods on UI thread --------------------------------------
+
+  // Called via PostTask from IO thread.
+  void RegisterOnUI(const RegisterData& data, const std::string& sender_id);
+
+  // Public Unregister methods on UI thread ------------------------------------
+
+  // Called via PostTask from IO thread.
+  void UnregisterFromService(int request_id,
+                             int64 service_worker_registration_id,
+                             const GURL& requesting_origin);
+
+  // Public GetPermission methods on UI thread ---------------------------------
+
+  // Called via PostTask from IO thread.
+  void GetPermissionStatusOnUI(const GURL& requesting_origin, int request_id);
+
+  // Public helper methods on UI thread ----------------------------------------
+
+  // Returns a push messaging service. May return null.
+  PushMessagingService* service();
+
+ private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class base::DeleteHelper<Core>;
+
+  ~Core();
+
+  // Private Register methods on UI thread -------------------------------------
+
+  void DidRegister(const RegisterData& data,
+                   const std::string& push_registration_id,
+                   PushRegistrationStatus status);
+
+  // Private Unregister methods on UI thread -----------------------------------
+
+  void DidUnregisterFromService(int request_id,
+                                int64 service_worker_registration_id,
+                                PushUnregistrationStatus unregistration_status);
+
+  // Private helper methods on UI thread ---------------------------------------
+
+  void Send(IPC::Message* message);
+
+  // Outer part of this message filter which lives on the IO thread.
+  base::WeakPtr<PushMessagingMessageFilter> io_parent_;
+
+  int render_process_id_;
+
+  base::WeakPtrFactory<Core> weak_factory_ui_to_ui_;
+
+  DISALLOW_COPY_AND_ASSIGN(Core);
+};
+
 
 PushMessagingMessageFilter::RegisterData::RegisterData()
     : request_id(0),
       service_worker_registration_id(0),
       render_frame_id(ChildProcessHost::kInvalidUniqueID),
-      user_visible_only(false) {}
+      user_visible_only(false) {
+}
 
 bool PushMessagingMessageFilter::RegisterData::FromDocument() const {
   return render_frame_id != ChildProcessHost::kInvalidUniqueID;
 }
 
+PushMessagingMessageFilter::Core::Core(
+    const base::WeakPtr<PushMessagingMessageFilter>& io_parent,
+    int render_process_id)
+    : io_parent_(io_parent),
+      render_process_id_(render_process_id),
+      weak_factory_ui_to_ui_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+PushMessagingMessageFilter::Core::~Core() {}
+
 PushMessagingMessageFilter::PushMessagingMessageFilter(
     int render_process_id,
     ServiceWorkerContextWrapper* service_worker_context)
     : BrowserMessageFilter(PushMessagingMsgStart),
-      render_process_id_(render_process_id),
       service_worker_context_(service_worker_context),
-      service_(NULL),
-      weak_factory_io_to_io_(this),
-      weak_factory_ui_to_ui_(this) {
+      weak_factory_io_to_io_(this) {
+  // Although this class is used only on the IO thread, it is constructed on UI.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Normally, it would be unsafe to obtain a weak pointer from the UI thread,
+  // but it's ok in the constructor since we can't be destroyed before our
+  // constructor finishes.
+  ui_core_.reset(new Core(weak_factory_io_to_io_.GetWeakPtr(),
+                          render_process_id));
+  PushMessagingService* push_service = ui_core_->service();
+  if (push_service)
+    push_endpoint_ = push_service->GetPushEndpoint();
 }
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
+
+void PushMessagingMessageFilter::OnDestruct() const {
+  BrowserThread::DeleteOnIOThread::Destruct(this);
+}
 
 bool PushMessagingMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
@@ -81,6 +180,10 @@ bool PushMessagingMessageFilter::OnMessageReceived(
   return handled;
 }
 
+// Register methods on both IO and UI threads, merged in order of use from
+// PushMessagingMessageFilter and Core.
+// -----------------------------------------------------------------------------
+
 void PushMessagingMessageFilter::OnRegisterFromDocument(
     int render_frame_id,
     int request_id,
@@ -89,27 +192,22 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
     int64 service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
-  ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
-          service_worker_registration_id);
-  DCHECK(service_worker_registration);
-  if (!service_worker_registration ||
-      !service_worker_registration->active_version()) {
-    PushRegistrationStatus status = PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER;
-    Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
-                                                        request_id, status));
-    RecordRegistrationStatus(status);
-    return;
-  }
-
   // TODO(peter): Persist |user_visible_only| in Service Worker storage.
-
   RegisterData data;
   data.request_id = request_id;
-  data.requesting_origin = service_worker_registration->pattern().GetOrigin();
   data.service_worker_registration_id = service_worker_registration_id;
   data.render_frame_id = render_frame_id;
   data.user_visible_only = user_visible_only;
+
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration ||
+      !service_worker_registration->active_version()) {
+    SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
+    return;
+  }
+  data.requesting_origin = service_worker_registration->pattern().GetOrigin();
 
   service_worker_context_->context()->storage()->StoreUserData(
       service_worker_registration_id,
@@ -125,39 +223,21 @@ void PushMessagingMessageFilter::OnRegisterFromWorker(
     int request_id,
     int64 service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
-          service_worker_registration_id);
-  DCHECK(service_worker_registration);
-  if (!service_worker_registration)
-    return;
-
   RegisterData data;
   data.request_id = request_id;
-  data.requesting_origin = service_worker_registration->pattern().GetOrigin();
   data.service_worker_registration_id = service_worker_registration_id;
 
-  // This sender_id will be ignored; instead it will be fetched from storage.
-  CheckForExistingRegistration(data, "" /* sender_id */);
-}
-
-void PushMessagingMessageFilter::OnGetPermissionStatus(
-    int request_id,
-    int64 service_worker_registration_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceWorkerRegistration* service_worker_registration =
       service_worker_context_->context()->GetLiveRegistration(
           service_worker_registration_id);
-  DCHECK(service_worker_registration);
-  if (!service_worker_registration)
+  if (!service_worker_registration) {
+    SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
     return;
+  }
+  data.requesting_origin = service_worker_registration->pattern().GetOrigin();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::GetPermissionStatusOnUI,
-                 this,
-                 service_worker_registration->pattern().GetOrigin(),
-                 request_id));
+  // This sender_id will be ignored; instead it will be fetched from storage.
+  CheckForExistingRegistration(data, std::string() /* sender_id */);
 }
 
 void PushMessagingMessageFilter::DidPersistSenderId(
@@ -179,8 +259,7 @@ void PushMessagingMessageFilter::CheckForExistingRegistration(
       data.service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(&PushMessagingMessageFilter::DidCheckForExistingRegistration,
-                 weak_factory_io_to_io_.GetWeakPtr(),
-                 data, sender_id));
+                 weak_factory_io_to_io_.GetWeakPtr(), data, sender_id));
 }
 
 void PushMessagingMessageFilter::DidCheckForExistingRegistration(
@@ -190,11 +269,8 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PushMessagingMessageFilter::SendRegisterSuccessOnUI,
-                   this, data, PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
-                   push_registration_id));
+    SendRegisterSuccess(data, PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
+                        push_registration_id);
     return;
   }
   // TODO(johnme): The spec allows the register algorithm to reject with an
@@ -205,8 +281,8 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
   if (data.FromDocument()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&PushMessagingMessageFilter::RegisterOnUI,
-                   this, data, sender_id));
+        base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
+                   data, sender_id));
   } else {
     service_worker_context_->context()->storage()->GetUserData(
         data.service_worker_registration_id,
@@ -227,67 +303,58 @@ void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::RegisterOnUI,
-                 this, data, sender_id));
+      base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
+                 data, sender_id));
 }
 
-void PushMessagingMessageFilter::RegisterOnUI(
-    const RegisterData& data,
+void PushMessagingMessageFilter::Core::RegisterOnUI(
+    const PushMessagingMessageFilter::RegisterData& data,
     const std::string& sender_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service()) {
-    SendRegisterError(data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
+  PushMessagingService* push_service = service();
+  if (!push_service) {
+    // TODO(johnme): Prevent websites from detecting incognito mode.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PushMessagingMessageFilter::SendRegisterError, io_parent_,
+                   data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
     return;
   }
 
   if (data.FromDocument()) {
-    service()->RegisterFromDocument(
+    push_service->RegisterFromDocument(
         data.requesting_origin, data.service_worker_registration_id, sender_id,
         render_process_id_, data.render_frame_id, data.user_visible_only,
-        base::Bind(&PushMessagingMessageFilter::DidRegister,
-                   weak_factory_ui_to_ui_.GetWeakPtr(), data));
+        base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
+                   data));
   } else {
-    service()->RegisterFromWorker(
+    push_service->RegisterFromWorker(
         data.requesting_origin, data.service_worker_registration_id, sender_id,
-        base::Bind(&PushMessagingMessageFilter::DidRegister,
-                   weak_factory_ui_to_ui_.GetWeakPtr(), data));
+        base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
+                   data));
   }
 }
 
-void PushMessagingMessageFilter::GetPermissionStatusOnUI(
-    const GURL& requesting_origin,
-    int request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service()) {
-    Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
-    return;
-  }
-  GURL embedding_origin = requesting_origin;
-  blink::WebPushPermissionStatus permission_status =
-      service()->GetPermissionStatus(requesting_origin, embedding_origin);
-  Send(new PushMessagingMsg_GetPermissionStatusSuccess(request_id,
-                                                       permission_status));
-}
-
-void PushMessagingMessageFilter::DidRegister(
+void PushMessagingMessageFilter::Core::DidRegister(
     const RegisterData& data,
     const std::string& push_registration_id,
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE) {
-    GURL push_endpoint(service()->GetPushEndpoint());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingMessageFilter::PersistRegistrationOnIO,
-                   this, data, push_endpoint, push_registration_id));
+                   io_parent_, data, push_registration_id));
   } else {
-    SendRegisterError(data, status);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PushMessagingMessageFilter::SendRegisterError, io_parent_,
+                   data, status));
   }
 }
 
 void PushMessagingMessageFilter::PersistRegistrationOnIO(
     const RegisterData& data,
-    const GURL& push_endpoint,
     const std::string& push_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->context()->storage()->StoreUserData(
@@ -297,19 +364,18 @@ void PushMessagingMessageFilter::PersistRegistrationOnIO(
       push_registration_id,
       base::Bind(&PushMessagingMessageFilter::DidPersistRegistrationOnIO,
                  weak_factory_io_to_io_.GetWeakPtr(),
-                 data, push_endpoint, push_registration_id));
+                 data, push_registration_id));
 }
 
 void PushMessagingMessageFilter::DidPersistRegistrationOnIO(
     const RegisterData& data,
-    const GURL& push_endpoint,
     const std::string& push_registration_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
     SendRegisterSuccess(data,
                         PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
-                        push_endpoint, push_registration_id);
+                        push_registration_id);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
@@ -318,13 +384,14 @@ void PushMessagingMessageFilter::DidPersistRegistrationOnIO(
 
 void PushMessagingMessageFilter::SendRegisterError(
     const RegisterData& data, PushRegistrationStatus status) {
-  // May be called from both IO and UI threads.
+  // Only called from IO thread, but would be safe to call from UI thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_RegisterFromDocumentError(
-      data.render_frame_id, data.request_id, status));
+        data.render_frame_id, data.request_id, status));
   } else {
     Send(new PushMessagingMsg_RegisterFromWorkerError(
-      data.request_id, status));
+        data.request_id, status));
   }
   RecordRegistrationStatus(status);
 }
@@ -332,28 +399,28 @@ void PushMessagingMessageFilter::SendRegisterError(
 void PushMessagingMessageFilter::SendRegisterSuccess(
     const RegisterData& data,
     PushRegistrationStatus status,
-    const GURL& push_endpoint,
     const std::string& push_registration_id) {
-  // May be called from both IO and UI threads.
+  // Only called from IO thread, but would be safe to call from UI thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (push_endpoint_.is_empty()) {
+    // TODO(johnme): Prevent websites from detecting incognito mode.
+    SendRegisterError(data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
+    return;
+  }
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_RegisterFromDocumentSuccess(
         data.render_frame_id,
-        data.request_id, push_endpoint, push_registration_id));
+        data.request_id, push_endpoint_, push_registration_id));
   } else {
     Send(new PushMessagingMsg_RegisterFromWorkerSuccess(
-        data.request_id, push_endpoint, push_registration_id));
+        data.request_id, push_endpoint_, push_registration_id));
   }
   RecordRegistrationStatus(status);
 }
 
-void PushMessagingMessageFilter::SendRegisterSuccessOnUI(
-    const RegisterData& data,
-    PushRegistrationStatus status,
-    const std::string& push_registration_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GURL push_endpoint(service()->GetPushEndpoint());
-  SendRegisterSuccess(data, status, push_endpoint, push_registration_id);
-}
+// Unregister methods on both IO and UI threads, merged in order of use from
+// PushMessagingMessageFilter and Core.
+// -----------------------------------------------------------------------------
 
 void PushMessagingMessageFilter::OnUnregister(
     int request_id, int64 service_worker_registration_id) {
@@ -361,9 +428,10 @@ void PushMessagingMessageFilter::OnUnregister(
   ServiceWorkerRegistration* service_worker_registration =
       service_worker_context_->context()->GetLiveRegistration(
           service_worker_registration_id);
-  DCHECK(service_worker_registration);
-  if (!service_worker_registration)
+  if (!service_worker_registration) {
+    DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
     return;
+  }
 
   service_worker_context_->context()->storage()->GetUserData(
       service_worker_registration_id,
@@ -387,11 +455,9 @@ void PushMessagingMessageFilter::DoUnregister(
     case SERVICE_WORKER_OK:
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&PushMessagingMessageFilter::UnregisterFromService,
-                     this,
-                     request_id,
-                     service_worker_registration_id,
-                     requesting_origin));
+          base::Bind(&Core::UnregisterFromService,
+                     base::Unretained(ui_core_.get()), request_id,
+                     service_worker_registration_id, requesting_origin));
       return;
     case SERVICE_WORKER_ERROR_NOT_FOUND:
       // We did not find a registration, stop here and notify the renderer that
@@ -421,26 +487,29 @@ void PushMessagingMessageFilter::DoUnregister(
   }
 }
 
-void PushMessagingMessageFilter::UnregisterFromService(
+void PushMessagingMessageFilter::Core::UnregisterFromService(
     int request_id,
     int64 service_worker_registration_id,
     const GURL& requesting_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service()) {
-    DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+  PushMessagingService* push_service = service();
+  if (!push_service) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PushMessagingMessageFilter::DidUnregister, io_parent_,
+                   request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR));
     return;
   }
 
-  service()->Unregister(
+  push_service->Unregister(
       requesting_origin, service_worker_registration_id,
       false /* retry_on_failure */,
-      base::Bind(&PushMessagingMessageFilter::DidUnregisterFromService,
+      base::Bind(&Core::DidUnregisterFromService,
                  weak_factory_ui_to_ui_.GetWeakPtr(),
-                 request_id,
-                 service_worker_registration_id));
+                 request_id, service_worker_registration_id));
 }
 
-void PushMessagingMessageFilter::DidUnregisterFromService(
+void PushMessagingMessageFilter::Core::DidUnregisterFromService(
     int request_id,
     int64 service_worker_registration_id,
     PushUnregistrationStatus unregistration_status) {
@@ -455,24 +524,52 @@ void PushMessagingMessageFilter::DidUnregisterFromService(
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
     case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
-      DidUnregister(request_id, unregistration_status);
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&PushMessagingMessageFilter::DidUnregister, io_parent_,
+                     request_id, unregistration_status));
       return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::ClearRegistrationData,
-                 this,
-                 service_worker_registration_id,
-                 base::Bind(&PushMessagingMessageFilter::DidUnregister,
-                            weak_factory_io_to_io_.GetWeakPtr(),
-                            request_id,
-                            unregistration_status)));
+      base::Bind(&PushMessagingMessageFilter::ClearRegistrationData, io_parent_,
+                 request_id, service_worker_registration_id,
+                 unregistration_status));
+}
+
+void PushMessagingMessageFilter::ClearRegistrationData(
+    int request_id,
+    int64 service_worker_registration_id,
+    PushUnregistrationStatus unregistration_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->context()->storage()->ClearUserData(
+      service_worker_registration_id,
+      kPushRegistrationIdServiceWorkerKey,
+      base::Bind(&PushMessagingMessageFilter::DidClearRegistrationData,
+                 weak_factory_io_to_io_.GetWeakPtr(),
+                 request_id, unregistration_status));
+}
+
+void PushMessagingMessageFilter::DidClearRegistrationData(
+    int request_id,
+    PushUnregistrationStatus unregistration_status,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(service_worker_status == SERVICE_WORKER_OK)
+      << "Got unexpected error code: " << service_worker_status
+      << " " << ServiceWorkerStatusToString(service_worker_status);
+
+  DidUnregister(request_id, unregistration_status);
 }
 
 void PushMessagingMessageFilter::DidUnregister(
     int request_id,
     PushUnregistrationStatus unregistration_status) {
+  // Only called from IO thread, but would be safe to call from UI thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (unregistration_status) {
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR:
@@ -483,18 +580,20 @@ void PushMessagingMessageFilter::DidUnregister(
       return;
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
       Send(new PushMessagingMsg_UnregisterError(
-          request_id,
-          blink::WebPushError::ErrorTypeNetwork,
+          request_id, blink::WebPushError::ErrorTypeNetwork,
           "Failed to connect to the push server."));
       return;
     case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
       Send(new PushMessagingMsg_UnregisterError(
-          request_id,
-          blink::WebPushError::ErrorTypeUnknown,
+          request_id, blink::WebPushError::ErrorTypeUnknown,
           "Unexpected error while trying to unregister from the push server."));
       return;
   }
 }
+
+// GetRegistration methods on both IO and UI threads, merged in order of use
+// from PushMessagingMessageFilter and Core.
+// -----------------------------------------------------------------------------
 
 void PushMessagingMessageFilter::OnGetRegistration(
     int request_id,
@@ -505,8 +604,7 @@ void PushMessagingMessageFilter::OnGetRegistration(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(&PushMessagingMessageFilter::DidGetRegistration,
-                 weak_factory_io_to_io_.GetWeakPtr(),
-                 request_id));
+                 weak_factory_io_to_io_.GetWeakPtr(), request_id));
 }
 
 void PushMessagingMessageFilter::DidGetRegistration(
@@ -518,11 +616,15 @@ void PushMessagingMessageFilter::DidGetRegistration(
       PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(
-              &PushMessagingMessageFilter::SendGetRegistrationSuccessOnUI,
-              this, request_id, push_registration_id));
+      if (push_endpoint_.is_empty()) {
+        // TODO(johnme): Prevent websites from detecting incognito mode.
+        Send(new PushMessagingMsg_GetRegistrationError(
+            request_id, PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR));
+        return;
+      }
+      Send(new PushMessagingMsg_GetRegistrationSuccess(request_id,
+                                                       push_endpoint_,
+                                                       push_registration_id));
       return;
     case SERVICE_WORKER_ERROR_NOT_FOUND:
       get_status = PUSH_GETREGISTRATION_STATUS_REGISTRATION_NOT_FOUND;
@@ -550,50 +652,69 @@ void PushMessagingMessageFilter::DidGetRegistration(
   // TODO(johnme): RecordGetRegistrationStatus(status); ?
 }
 
-void PushMessagingMessageFilter::SendGetRegistrationSuccessOnUI(
+// GetPermission methods on both IO and UI threads, merged in order of use from
+// PushMessagingMessageFilter and Core.
+// -----------------------------------------------------------------------------
+
+void PushMessagingMessageFilter::OnGetPermissionStatus(
     int request_id,
-    const std::string& push_registration_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GURL push_endpoint(service()->GetPushEndpoint());
-  Send(new PushMessagingMsg_GetRegistrationSuccess(request_id, push_endpoint,
-                                                   push_registration_id));
-}
-
-void PushMessagingMessageFilter::ClearRegistrationData(
-    int64 service_worker_registration_id,
-    const base::Closure& closure) {
+    int64 service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  service_worker_context_->context()->storage()->ClearUserData(
-      service_worker_registration_id,
-      kPushRegistrationIdServiceWorkerKey,
-      base::Bind(&PushMessagingMessageFilter::DidClearRegistrationData,
-                 weak_factory_io_to_io_.GetWeakPtr(),
-                 closure));
-}
-
-void PushMessagingMessageFilter::DidClearRegistrationData(
-    const base::Closure& closure,
-    ServiceWorkerStatusCode service_worker_status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  DCHECK(service_worker_status == SERVICE_WORKER_OK)
-      << "Got unexpected error code: " << service_worker_status
-      << " " << ServiceWorkerStatusToString(service_worker_status);
-
-  closure.Run();
-}
-
-PushMessagingService* PushMessagingMessageFilter::service() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service_) {
-    RenderProcessHost* process_host =
-        RenderProcessHost::FromID(render_process_id_);
-    if (!process_host)
-      return NULL;
-    service_ = process_host->GetBrowserContext()->GetPushMessagingService();
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration) {
+    Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
+    return;
   }
-  return service_;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Core::GetPermissionStatusOnUI,
+                 base::Unretained(ui_core_.get()),
+                 service_worker_registration->pattern().GetOrigin(),
+                 request_id));
+}
+
+void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
+    const GURL& requesting_origin,
+    int request_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PushMessagingService* push_service = service();
+  if (!push_service) {
+    // TODO(johnme): Prevent websites from detecting incognito mode.
+    Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
+    return;
+  }
+  GURL embedding_origin = requesting_origin;
+  blink::WebPushPermissionStatus permission_status =
+      push_service->GetPermissionStatus(requesting_origin, embedding_origin);
+  Send(new PushMessagingMsg_GetPermissionStatusSuccess(request_id,
+                                                       permission_status));
+}
+
+// Helper methods on both IO and UI threads, merged from
+// PushMessagingMessageFilter and Core.
+// -----------------------------------------------------------------------------
+
+void PushMessagingMessageFilter::Core::Send(IPC::Message* message) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::SendIPC, io_parent_,
+                 base::Passed(make_scoped_ptr(message))));
+}
+
+void PushMessagingMessageFilter::SendIPC(scoped_ptr<IPC::Message> message) {
+  Send(message.release());
+}
+
+PushMessagingService* PushMessagingMessageFilter::Core::service() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* process_host =
+      RenderProcessHost::FromID(render_process_id_);
+  return process_host
+         ? process_host->GetBrowserContext()->GetPushMessagingService()
+         : nullptr;
 }
 
 }  // namespace content
