@@ -697,6 +697,8 @@ source_set("test_support") {
     "test/tiled_layer_test_common.h",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   include_dirs = [
     ".",
     "test",

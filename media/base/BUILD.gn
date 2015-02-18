@@ -250,6 +250,8 @@ source_set("base") {
     ]
   }
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (is_linux || is_win) {
     sources += [
       "keyboard_event_counter.cc",

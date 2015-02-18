@@ -97,7 +97,10 @@ source_set("child") {
     }
   }
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   if (is_ios) {
     # iOS only needs a small portion of content; exclude all the

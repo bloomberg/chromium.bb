@@ -11,7 +11,10 @@ static_library("protocol") {
   sources =
       rebase_path(gypi_values.remoting_protocol_sources, ".", "//remoting")
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   public_deps = [
     "//third_party/libjingle",

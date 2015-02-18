@@ -40,6 +40,8 @@ static_library("browser") {
     "//net",
     "//url",
   ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 source_set("unit_tests") {

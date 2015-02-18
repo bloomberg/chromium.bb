@@ -16,7 +16,10 @@ source_set("renderer") {
                         ".",
                         "//content")
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   deps = [
     # TODO(GYP) bug 376846 remove this. This should be inherited from //net but

@@ -243,6 +243,8 @@ source_set("audio") {
       sources += get_target_outputs(":pulse_generate_stubs")
     }
   }
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 source_set("test_support") {

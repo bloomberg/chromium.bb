@@ -21,6 +21,8 @@ if (enable_webrtc || !is_android) {
       "//base/third_party/dynamic_annotations",
       "//net",
     ]
+
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 
   # A library for sending and receiving peer-issued notifications.

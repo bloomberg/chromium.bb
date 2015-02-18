@@ -130,7 +130,10 @@ source_set("common") {
                         ".",
                         "//content")
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   public_deps = [
     "//gpu/command_buffer/common",
@@ -452,6 +455,11 @@ source_set("common") {
         "sandbox_linux/android/sandbox_bpf_base_policy_android.h",
       ]
     }
+  }
+
+  if (is_win && cpu_arch == "x64") {
+    # TODO(jschuh): Remove this after crbug.com/173851 gets fixed.
+    cflags = [ "/bigobj" ]
   }
 }
 

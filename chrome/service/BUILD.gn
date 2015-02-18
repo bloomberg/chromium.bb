@@ -46,6 +46,8 @@ static_library("service") {
     "service_process_prefs.h",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//chrome:strings",
     "//chrome/common",

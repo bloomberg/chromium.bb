@@ -309,14 +309,16 @@ bool BrokerProcessDispatcher::SetSitePermission(
 
   if (flash_browser_operations_1_3_) {
     PP_Bool result = flash_browser_operations_1_3_->SetSitePermission(
-        data_str.c_str(), setting_type, sites.size(), site_array.get());
+        data_str.c_str(), setting_type,
+        static_cast<uint32_t>(sites.size()), site_array.get());
 
     return PP_ToBool(result);
   }
 
   if (flash_browser_operations_1_2_) {
     PP_Bool result = flash_browser_operations_1_2_->SetSitePermission(
-        data_str.c_str(), setting_type, sites.size(), site_array.get());
+        data_str.c_str(), setting_type,
+        static_cast<uint32_t>(sites.size()), site_array.get());
 
     return PP_ToBool(result);
   }
