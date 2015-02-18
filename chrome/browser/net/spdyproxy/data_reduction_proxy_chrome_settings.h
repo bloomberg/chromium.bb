@@ -54,6 +54,9 @@ class DataReductionProxyChromeSettings
   // Gets the client type for the data reduction proxy.
   static data_reduction_proxy::Client GetClient();
 
+  // Public for testing.
+  void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs);
+
  private:
   // Registers the DataReductionProxyEnabled synthetic field trial with
   // the group |data_reduction_proxy_enabled|.

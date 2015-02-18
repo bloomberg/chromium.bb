@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -29,13 +31,14 @@ using data_reduction_proxy::DataReductionProxySettings;
 // DIRECT for a URL. It no longer can be a ProxyConfig in the proxy preference
 // hierarchy. This method removes the Data Reduction Proxy configuration from
 // prefs, if present. |proxy_pref_name| is the name of the proxy pref.
-void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs) {
+void DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefs(
+    PrefService* prefs) {
   base::DictionaryValue* dict =
       (base::DictionaryValue*) prefs->GetUserPrefValue(prefs::kProxy);
   if (!dict)
     return;
 
-  // Clear empty "proxy" dictionary created by a bug. See http://crbug/448172
+  // Clear empty "proxy" dictionary created by a bug. See http://crbug/448172.
   if (dict->empty()) {
     prefs->ClearPref(prefs::kProxy);
     return;
@@ -44,6 +47,12 @@ void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs) {
   std::string mode;
   if (!dict->GetString("mode", &mode))
     return;
+  // Clear "system" proxy entry since this is the default. This entry was
+  // created by bug (http://crbug/448172).
+  if (ProxyModeToString(ProxyPrefs::MODE_SYSTEM) == mode) {
+    prefs->ClearPref(prefs::kProxy);
+    return;
+  }
   if (ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS) != mode)
     return;
   std::string proxy_server;
