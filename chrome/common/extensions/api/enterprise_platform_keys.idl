@@ -4,8 +4,9 @@
 
 // Use the <code>chrome.enterprise.platformKeys</code> API to generate
 // hardware-backed keys and to install certificates for these keys. The
-// certificates will be available to the platform and can, for example, be used
-// for TLS authentication and network access.
+// certificates will be managed by the platform and can be used for TLS
+// authentication, network access or by other extension through
+// $(ref:platformKeys chrome.platformKeys).
 [platforms = ("chromeos")]
 namespace enterprise.platformKeys {
   [nocompile, noinline_doc] dictionary Token {
