@@ -369,14 +369,14 @@ private:
             return;
 
         IDBAny* cursorAny = request->resultAsAny();
-        IDBCursorWithValue* cursor = 0;
+        IDBCursorWithValue* cursor = nullptr;
         if (cursorAny->type() == IDBAny::IDBCursorWithValueType)
             cursor = cursorAny->idbCursorWithValue();
 
         Vector<int64_t> indexIds;
         indexIds.append(m_indexMetadata.id);
         if (cursor && !cursor->isDeleted()) {
-            cursor->continueFunction(static_cast<IDBKey*>(0), static_cast<IDBKey*>(0), ASSERT_NO_EXCEPTION);
+            cursor->continueFunction(nullptr, nullptr, ASSERT_NO_EXCEPTION);
 
             IDBKey* primaryKey = cursor->idbPrimaryKey();
             ScriptValue value = cursor->value(m_scriptState.get());
@@ -457,7 +457,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState, const String& na
     if (exceptionState.hadException())
         return 0;
 
-    IDBRequest* indexRequest = openCursor(scriptState, static_cast<IDBKeyRange*>(0), WebIDBCursorDirectionNext, WebIDBTaskTypePreemptive);
+    IDBRequest* indexRequest = openCursor(scriptState, nullptr, WebIDBCursorDirectionNext, WebIDBTaskTypePreemptive);
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
@@ -488,7 +488,7 @@ IDBIndex* IDBObjectStore::index(const String& name, ExceptionState& exceptionSta
         return 0;
     }
 
-    const IDBIndexMetadata* indexMetadata(0);
+    const IDBIndexMetadata* indexMetadata(nullptr);
     for (IDBObjectStoreMetadata::IndexMap::const_iterator it = m_metadata.indexes.begin(); it != m_metadata.indexes.end(); ++it) {
         if (it->value.name == name) {
             indexMetadata = &it->value;

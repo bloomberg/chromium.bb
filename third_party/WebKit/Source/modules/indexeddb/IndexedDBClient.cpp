@@ -7,7 +7,7 @@
 
 namespace blink {
 
-static CreateIndexedDBClient* idbClientCreateFunction = 0;
+static CreateIndexedDBClient* idbClientCreateFunction = nullptr;
 
 void setIndexedDBClientCreateFunction(CreateIndexedDBClient createFunction)
 {

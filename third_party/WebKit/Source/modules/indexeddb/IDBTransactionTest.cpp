@@ -59,7 +59,7 @@ public:
     virtual void TearDown() override
     {
         m_executionContext->notifyContextDestroyed();
-        m_scope.scriptState()->setExecutionContext(0);
+        m_scope.scriptState()->setExecutionContext(nullptr);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }

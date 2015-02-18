@@ -175,7 +175,7 @@ void IDBRequest::setPendingCursor(IDBCursor* cursor)
 
     m_hasPendingActivity = true;
     m_pendingCursor = cursor;
-    setResult(0);
+    setResult(nullptr);
     m_readyState = PENDING;
     m_error.clear();
     m_transaction->registerRequest(this);
@@ -253,7 +253,7 @@ void IDBRequest::onSuccess(PassOwnPtr<WebIDBCursor> backend, IDBKey* key, IDBKey
         return;
 
     ASSERT(!m_pendingCursor);
-    IDBCursor* cursor = 0;
+    IDBCursor* cursor = nullptr;
     switch (m_cursorType) {
     case IndexedDB::CursorKeyOnly:
         cursor = IDBCursor::create(backend, m_cursorDirection, this, m_source.get(), m_transaction.get());
@@ -439,7 +439,7 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     }
 
     // Cursor properties should not be updated until the success event is being dispatched.
-    IDBCursor* cursorToNotify = 0;
+    IDBCursor* cursorToNotify = nullptr;
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
         if (cursorToNotify)

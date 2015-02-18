@@ -46,7 +46,7 @@ namespace blink {
 
 IDBTransaction* IDBTransaction::create(ScriptState* scriptState, int64_t id, const Vector<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db)
 {
-    IDBOpenDBRequest* openDBRequest = 0;
+    IDBOpenDBRequest* openDBRequest = nullptr;
     IDBTransaction* transaction = new IDBTransaction(scriptState, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata());
     transaction->suspendIfNeeded();
     return transaction;

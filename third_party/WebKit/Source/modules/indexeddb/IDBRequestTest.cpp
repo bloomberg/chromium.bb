@@ -65,7 +65,7 @@ public:
     virtual void TearDown() override
     {
         m_executionContext->notifyContextDestroyed();
-        m_scope.scriptState()->setExecutionContext(0);
+        m_scope.scriptState()->setExecutionContext(nullptr);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
@@ -79,7 +79,7 @@ private:
 
 TEST_F(IDBRequestTest, EventsAfterStopping)
 {
-    IDBTransaction* transaction = 0;
+    IDBTransaction* transaction = nullptr;
     IDBRequest* request = IDBRequest::create(scriptState(), IDBAny::createUndefined(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
     executionContext()->stopActiveDOMObjects();
@@ -98,7 +98,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
 
 TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 {
-    IDBTransaction* transaction = 0;
+    IDBTransaction* transaction = nullptr;
     IDBRequest* request = IDBRequest::create(scriptState(), IDBAny::createUndefined(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
 
