@@ -212,7 +212,6 @@ importer.ImportController.prototype.onClick_ =
 importer.ImportController.prototype.execute = function() {
   console.assert(!this.activeImport_,
       'Cannot execute while an import task is already active.');
-  metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
 
   var scan = this.scanManager_.getActiveScan();
   assert(scan != null);
