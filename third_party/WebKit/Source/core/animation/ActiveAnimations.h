@@ -96,8 +96,9 @@ private:
     Vector<Animation*> m_animations;
 #endif
 
-    // CSSAnimations checks if a style change is due to animation.
+    // CSSAnimations and DeferredLegacyStyleInterpolation checks if a style change is due to animation.
     friend class CSSAnimations;
+    friend class DeferredLegacyStyleInterpolation;
 };
 
 } // namespace blink

@@ -46,6 +46,8 @@ class CompositorAnimations {
 public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }
+    static bool isCompositableProperty(CSSPropertyID property) { return property == CSSPropertyOpacity || property == CSSPropertyTransform || property == CSSPropertyWebkitFilter; }
+    static CSSPropertyID CompositableProperties[3];
 
     virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const AnimationPlayer*, const AnimationEffect&, double playerPlaybackRate);
     virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const AnimationPlayer&, const AnimationEffect&);

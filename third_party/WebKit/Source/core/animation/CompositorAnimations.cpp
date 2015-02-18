@@ -119,6 +119,10 @@ bool hasIncompatibleAnimations(const Element& targetElement, const AnimationPlay
 
 }
 
+CSSPropertyID CompositorAnimations::CompositableProperties[3] = {
+    CSSPropertyOpacity, CSSPropertyTransform, CSSPropertyWebkitFilter
+};
+
 bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const AnimationEffect& effect, double minValue, double maxValue) const
 {
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
@@ -193,7 +197,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         ASSERT(keyframes.size() >= 2);
         for (const auto& keyframe : keyframes) {
             // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
-            if (keyframe->composite() != AnimationEffect::CompositeReplace || !keyframe->getAnimatableValue())
+            bool isNeutralKeyframe = keyframe->isStringPropertySpecificKeyframe() && !toStringPropertySpecificKeyframe(keyframe.get())->value() && keyframe->composite() == AnimationEffect::CompositeAdd;
+            if ((keyframe->composite() != AnimationEffect::CompositeReplace && !isNeutralKeyframe) || !keyframe->getAnimatableValue())
                 return false;
 
             switch (property) {

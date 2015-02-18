@@ -30,6 +30,13 @@ public:
 
     void addInterpolationsFromKeyframes(CSSPropertyID, Element*, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo);
 
+    template<typename T>
+    inline void forEachInterpolation(const T& callback)
+    {
+        for (auto& record : m_interpolations)
+            callback(*record->m_interpolation);
+    }
+
     void trace(Visitor*);
 
 private:

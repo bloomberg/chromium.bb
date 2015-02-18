@@ -64,7 +64,7 @@ public:
 
     private:
         void removeRedundantKeyframes();
-        bool addSyntheticKeyframeIfRequired();
+        bool addSyntheticKeyframeIfRequired(PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing);
 
         PropertySpecificKeyframeVector m_keyframes;
 
@@ -109,9 +109,27 @@ public:
         ensureInterpolationEffect(element);
     }
 
+    // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
+    void snapshotCompositableProperties(const Element*, const LayoutStyle&);
+    void updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtrWillBeRawPtr<AnimatableValue>);
+
+    template<typename T>
+    inline void forEachInterpolation(const T& callback) { m_interpolationEffect->forEachInterpolation(callback); }
+
     static KeyframeVector normalizedKeyframesForInspector(const KeyframeVector& keyframes) { return normalizedKeyframes(keyframes); }
 
+    bool affects(CSSPropertyID property) const override
+    {
+        ensureKeyframeGroups();
+        return m_keyframeGroups->contains(property);
+    }
+
 protected:
+    KeyframeEffectModelBase(PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing)
+        : m_neutralKeyframeEasing(neutralKeyframeEasing)
+    {
+    }
+
     static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
 
     // Lazily computes the groups of property-specific keyframes.
@@ -125,33 +143,31 @@ protected:
     using KeyframeGroupMap = WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup>>;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
     mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
+    RefPtrWillBeMember<TimingFunction> m_neutralKeyframeEasing;
 
     mutable bool m_hasSyntheticKeyframes;
 
     friend class KeyframeEffectModelTest;
-
-    bool affects(CSSPropertyID property) const override
-    {
-        ensureKeyframeGroups();
-        return m_keyframeGroups->contains(property);
-    }
 };
 
 template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:
     using KeyframeVector = WillBeHeapVector<RefPtrWillBeMember<Keyframe>>;
-    static PassRefPtrWillBeRawPtr<KeyframeEffectModel<Keyframe>> create(const KeyframeVector& keyframes) { return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes)); }
+    static PassRefPtrWillBeRawPtr<KeyframeEffectModel<Keyframe>> create(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing = nullptr)
+    {
+        return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes, neutralKeyframeEasing));
+    }
 
 private:
-    KeyframeEffectModel(const KeyframeVector& keyframes)
+    KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing)
+        : KeyframeEffectModelBase(neutralKeyframeEasing)
     {
         m_keyframes.appendVector(keyframes);
     }
 
     virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
     virtual bool isStringKeyframeEffectModel() const { return false; }
-
 };
 
 using KeyframeVector = KeyframeEffectModelBase::KeyframeVector;
@@ -167,6 +183,7 @@ using StringPropertySpecificKeyframeVector = StringKeyframeEffectModel::Property
 
 DEFINE_TYPE_CASTS(KeyframeEffectModelBase, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
 DEFINE_TYPE_CASTS(AnimatableValueKeyframeEffectModel, KeyframeEffectModelBase, value, value->isAnimatableValueKeyframeEffectModel(), value.isAnimatableValueKeyframeEffectModel());
+DEFINE_TYPE_CASTS(StringKeyframeEffectModel, KeyframeEffectModelBase, value, value->isStringKeyframeEffectModel(), value.isStringKeyframeEffectModel());
 
 inline const AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(const AnimationEffect* base)
 {
@@ -176,6 +193,16 @@ inline const AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffect
 inline AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(AnimationEffect* base)
 {
     return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
+}
+
+inline const StringKeyframeEffectModel* toStringKeyframeEffectModel(const AnimationEffect* base)
+{
+    return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
+}
+
+inline StringKeyframeEffectModel* toStringKeyframeEffectModel(AnimationEffect* base)
+{
+    return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
 template <>

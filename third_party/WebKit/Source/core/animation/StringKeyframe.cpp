@@ -6,6 +6,7 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/animation/ColorStyleInterpolation.h"
+#include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
@@ -36,6 +37,13 @@ void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& valu
     ASSERT(property != CSSPropertyInvalid);
     if (CSSAnimations::isAllowedAnimation(property))
         m_propertySet->setProperty(property, value, false, styleSheetContents);
+}
+
+void StringKeyframe::setPropertyValue(CSSPropertyID property, PassRefPtr<CSSValue> value)
+{
+    ASSERT(property != CSSPropertyInvalid);
+    ASSERT(CSSAnimations::isAllowedAnimation(property));
+    m_propertySet->setProperty(property, value, false);
 }
 
 PropertySet StringKeyframe::properties() const
@@ -73,6 +81,11 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
+}
+
+void StringKeyframe::PropertySpecificKeyframe::setAnimatableValue(PassRefPtr<AnimatableValue> value)
+{
+    m_animatableValueCache = value;
 }
 
 namespace {
@@ -116,6 +129,12 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
     // FIXME: Remove this flag once we can rely on legacy's behaviour being correct.
     bool forceDefaultInterpolation = false;
+
+    // FIXME: Remove this check once neutral keyframes are implemented in StringKeyframes.
+    if (!fromCSSValue || !toCSSValue)
+        return DeferredLegacyStyleInterpolation::create(fromCSSValue, toCSSValue, property);
+
+    ASSERT(fromCSSValue && toCSSValue);
 
     if (!CSSPropertyMetadata::isAnimatableProperty(property)) {
         if (fromCSSValue == toCSSValue)

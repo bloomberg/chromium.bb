@@ -6,7 +6,11 @@
 #define CSSAnimationUpdate_h
 
 #include "core/animation/Interpolation.h"
+#include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/css/CSSAnimatableValueFactory.h"
+#include "core/animation/css/CSSPropertyEquality.h"
 #include "core/css/CSSKeyframesRule.h"
+#include "core/layout/LayoutObject.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -83,6 +87,37 @@ public:
         unsigned styleRuleVersion;
     };
 
+    class UpdatedAnimationStyle {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        struct CompositableStyleSnapshot {
+            RefPtrWillBeMember<AnimatableValue> opacity;
+            RefPtrWillBeMember<AnimatableValue> transform;
+            RefPtrWillBeMember<AnimatableValue> webkitFilter;
+        };
+
+        UpdatedAnimationStyle()
+        {
+        }
+
+        UpdatedAnimationStyle(AnimationPlayer* player, KeyframeEffectModelBase* effect, const UpdatedAnimationStyle::CompositableStyleSnapshot& snapshot)
+            : player(player)
+            , effect(effect)
+            , snapshot(snapshot)
+        {
+        }
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(player);
+            visitor->trace(effect);
+        }
+
+        RawPtrWillBeMember<AnimationPlayer> player;
+        RawPtrWillBeMember<KeyframeEffectModelBase> effect;
+        CompositableStyleSnapshot snapshot;
+    };
+
     void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> animation, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         animation->setName(animationName);
@@ -105,6 +140,21 @@ public:
         m_animationsWithUpdates.append(UpdatedAnimation(name, player, animation, specifiedTiming, styleRule));
         m_suppressedAnimationPlayers.add(player);
     }
+    void updateAnimationStyle(AnimationPlayer* player, KeyframeEffectModelBase* effect, LayoutObject* renderer, const LayoutStyle& newStyle)
+    {
+        UpdatedAnimationStyle::CompositableStyleSnapshot snapshot;
+        if (renderer) {
+            const LayoutStyle& oldStyle = renderer->styleRef();
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && effect->affects(CSSPropertyOpacity))
+                snapshot.opacity = CSSAnimatableValueFactory::create(CSSPropertyOpacity, newStyle);
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && effect->affects(CSSPropertyTransform))
+                snapshot.transform = CSSAnimatableValueFactory::create(CSSPropertyTransform, newStyle);
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && effect->affects(CSSPropertyWebkitFilter))
+                snapshot.webkitFilter = CSSAnimatableValueFactory::create(CSSPropertyWebkitFilter, newStyle);
+        }
+
+        m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(player, effect, snapshot));
+    }
 
     void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertAnimation> animation)
     {
@@ -126,6 +176,7 @@ public:
     const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>& suppressedAnimationAnimationPlayers() const { return m_suppressedAnimationPlayers; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
     const WillBeHeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
+    const WillBeHeapVector<UpdatedAnimationStyle>& animationsWithStyleUpdates() const { return m_animationsWithStyleUpdates; }
 
     struct NewTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -161,6 +212,7 @@ public:
             && m_suppressedAnimationPlayers.isEmpty()
             && m_animationsWithPauseToggled.isEmpty()
             && m_animationsWithUpdates.isEmpty()
+            && m_animationsWithStyleUpdates.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
             && m_finishedTransitions.isEmpty()
@@ -180,6 +232,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>> m_suppressedAnimationPlayers;
     Vector<AtomicString> m_animationsWithPauseToggled;
     WillBeHeapVector<UpdatedAnimation> m_animationsWithUpdates;
+    WillBeHeapVector<UpdatedAnimationStyle> m_animationsWithStyleUpdates;
 
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;

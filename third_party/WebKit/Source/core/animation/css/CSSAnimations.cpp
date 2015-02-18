@@ -36,9 +36,9 @@
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
+#include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSPropertyEquality.h"
 #include "core/css/CSSKeyframeRule.h"
@@ -85,15 +85,15 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
     return property;
 }
 
-static void resolveKeyframes(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
-    AnimatableValueKeyframeVector& keyframes)
+static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframeEffect(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle,
+    const AtomicString& name, TimingFunction* defaultTimingFunction)
 {
     // When the animating element is null, use its parent for scoping purposes.
     const Element* elementForScoping = animatingElement ? animatingElement : &element;
     const StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
-    if (!keyframesRule)
-        return;
+    ASSERT(keyframesRule);
 
+    AnimatableValueKeyframeVector keyframes;
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>& styleKeyframes = keyframesRule->keyframes();
 
     // Construct and populate the style for each keyframe
@@ -199,8 +199,9 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
     }
     ASSERT(startKeyframe->properties().size() == allProperties.size());
     ASSERT(endKeyframe->properties().size() == allProperties.size());
-}
 
+    return AnimatableValueKeyframeEffectModel::create(keyframes, &keyframes[0]->easing());
+}
 } // namespace
 
 CSSAnimations::CSSAnimations()
@@ -239,10 +240,12 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
 {
     const ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
 
+    bool isAnimationStyleChange = activeAnimations && activeAnimations->isAnimationStyleChange();
+
 #if !ENABLE(ASSERT)
     // If we're in an animation style change, no animations can have started, been cancelled or changed play state.
     // When ASSERT is enabled, we verify this optimization.
-    if (activeAnimations && activeAnimations->isAnimationStyleChange())
+    if (isAnimationStyleChange)
         return;
 #endif
 
@@ -281,17 +284,15 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
                     const RunningAnimation* runningAnimation = existing->value.get();
                     AnimationPlayer* player = runningAnimation->player.get();
 
-                    ASSERT(keyframesRule);
                     if (keyframesRule != runningAnimation->styleRule || keyframesRule->version() != runningAnimation->styleRuleVersion || runningAnimation->specifiedTiming != specifiedTiming) {
-                        AnimatableValueKeyframeVector resolvedKeyframes;
-                        resolveKeyframes(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get(), resolvedKeyframes);
-
-                        update->updateAnimation(animationName, player, InertAnimation::create(AnimatableValueKeyframeEffectModel::create(resolvedKeyframes),
+                        ASSERT(!isAnimationStyleChange);
+                        update->updateAnimation(animationName, player, InertAnimation::create(
+                            createKeyframeEffect(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get()),
                             timing, isPaused, player->currentTimeInternal()), specifiedTiming, keyframesRule);
                     }
 
                     if (isPaused != player->paused()) {
-                        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
+                        ASSERT(!isAnimationStyleChange);
                         update->toggleAnimationPaused(animationName);
                     }
 
@@ -299,18 +300,16 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
                 }
             }
 
-            AnimatableValueKeyframeVector resolvedKeyframes;
-            resolveKeyframes(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get(), resolvedKeyframes);
-            if (!resolvedKeyframes.isEmpty()) {
-                ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
-                update->startAnimation(animationName, InertAnimation::create(AnimatableValueKeyframeEffectModel::create(resolvedKeyframes), timing, isPaused, 0), specifiedTiming, keyframesRule);
-            }
+            ASSERT(!isAnimationStyleChange);
+            update->startAnimation(animationName, InertAnimation::create(
+                createKeyframeEffect(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get()),
+                timing, isPaused, 0), specifiedTiming, keyframesRule);
         }
     }
 
     ASSERT(inactive.isEmpty() || cssAnimations);
     for (const AtomicString& animationName : inactive) {
-        ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
+        ASSERT(!isAnimationStyleChange);
         update->cancelAnimation(animationName, *cssAnimations->m_animations.get(animationName)->player);
     }
 }

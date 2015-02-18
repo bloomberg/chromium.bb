@@ -5,7 +5,8 @@
 #include "config.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 
-#include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/ActiveAnimations.h"
+#include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
@@ -20,12 +21,28 @@ namespace blink {
 
 void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
-    RefPtrWillBeRawPtr<LegacyStyleInterpolation> innerInterpolation = LegacyStyleInterpolation::create(
-        StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_startCSSValue),
-        StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_endCSSValue),
-        m_id);
-    innerInterpolation->interpolate(m_cachedIteration, m_cachedFraction);
-    innerInterpolation->apply(state);
+    if (m_outdated || !state.element()->activeAnimations() || !state.element()->activeAnimations()->isAnimationStyleChange()) {
+        RefPtrWillBeRawPtr<AnimatableValue> startAnimatableValue = nullptr;
+        RefPtrWillBeRawPtr<AnimatableValue> endAnimatableValue = nullptr;
+
+        // Call CSSAnimatableValueFactory::create before calling createAnimatableValueSnapshot because the latter modifies the
+        // style of the StyleResolverState.
+        if (!m_startCSSValue)
+            startAnimatableValue = CSSAnimatableValueFactory::create(m_id, state.styleRef());
+        if (!m_endCSSValue)
+            endAnimatableValue = CSSAnimatableValueFactory::create(m_id, state.styleRef());
+
+        if (m_startCSSValue)
+            startAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_startCSSValue);
+        if (m_endCSSValue)
+            endAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, *m_endCSSValue);
+
+        m_innerInterpolation = LegacyStyleInterpolation::create(startAnimatableValue, endAnimatableValue, m_id);
+        m_outdated = false;
+    }
+
+    m_innerInterpolation->interpolate(m_cachedIteration, m_cachedFraction);
+    m_innerInterpolation->apply(state);
 }
 
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSValue& value)

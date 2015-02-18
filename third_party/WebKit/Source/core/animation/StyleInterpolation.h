@@ -35,6 +35,7 @@ public:
     virtual void apply(StyleResolverState&) const = 0;
 
     virtual bool isStyleInterpolation() const override final { return true; }
+    virtual bool isDeferredLegacyStyleInterpolation() const { return false; }
 
     CSSPropertyID id() const { return m_id; }
 

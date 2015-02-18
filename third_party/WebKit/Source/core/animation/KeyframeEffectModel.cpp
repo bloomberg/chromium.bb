@@ -33,6 +33,10 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationNode.h"
+#include "core/animation/CompositorAnimations.h"
+#include "core/animation/css/CSSAnimatableValueFactory.h"
+#include "core/animation/css/CSSPropertyEquality.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -58,6 +62,47 @@ void KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     ensureInterpolationEffect();
 
     return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
+}
+
+void KeyframeEffectModelBase::snapshotCompositableProperties(const Element* element, const LayoutStyle& style)
+{
+    ASSERT(isStringKeyframeEffectModel());
+
+    ensureKeyframeGroups();
+    for (CSSPropertyID property : CompositorAnimations::CompositableProperties) {
+        if (affects(property)) {
+            for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes) {
+                auto& stringKeyframe = toStringPropertySpecificKeyframe(*keyframe);
+                if (!stringKeyframe.value()) {
+                    stringKeyframe.setAnimatableValue(CSSAnimatableValueFactory::create(property, style));
+                } else {
+                    ASSERT(!stringKeyframe.getAnimatableValue());
+                    stringKeyframe.setAnimatableValue(StyleResolver::createAnimatableValueSnapshot(const_cast<Element&>(*element), property, *stringKeyframe.value()));
+                }
+            }
+        }
+    }
+}
+
+void KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyID property, PassRefPtrWillBeRawPtr<AnimatableValue> value)
+{
+    ASSERT(CompositorAnimations::isCompositableProperty(property));
+
+    if (!value)
+        return;
+
+    ensureKeyframeGroups();
+    auto& keyframes = m_keyframeGroups->get(property)->m_keyframes;
+
+    ASSERT(keyframes.size() >= 2);
+    ASSERT(!toStringPropertySpecificKeyframe(*keyframes[0]).value() || !toStringPropertySpecificKeyframe(*keyframes[keyframes.size() - 1]).value());
+
+    if (!toStringPropertySpecificKeyframe(*keyframes.first()).value())
+        toStringPropertySpecificKeyframe(*keyframes.first()).setAnimatableValue(value);
+    if (!toStringPropertySpecificKeyframe(*keyframes.last()).value())
+        toStringPropertySpecificKeyframe(*keyframes.last()).setAnimatableValue(value);
+
+    // FIXME: Handle neutral keyframes that are not at 0% or 100%.
 }
 
 KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)
@@ -125,7 +170,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     // Add synthetic keyframes.
     m_hasSyntheticKeyframes = false;
     for (const auto& entry : *m_keyframeGroups) {
-        if (entry.value->addSyntheticKeyframeIfRequired())
+        if (entry.value->addSyntheticKeyframeIfRequired(m_neutralKeyframeEasing))
             m_hasSyntheticKeyframes = true;
 
         entry.value->removeRedundantKeyframes();
@@ -140,9 +185,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
 
     for (const auto& entry : *m_keyframeGroups) {
         const PropertySpecificKeyframeVector& keyframes = entry.value->keyframes();
-        ASSERT(keyframes[0]->composite() == AnimationEffect::CompositeReplace);
         for (size_t i = 0; i < keyframes.size() - 1; i++) {
-            ASSERT(keyframes[i + 1]->composite() == AnimationEffect::CompositeReplace);
             double applyFrom = i ? keyframes[i]->offset() : (-std::numeric_limits<double>::infinity());
             double applyTo = i == keyframes.size() - 2 ? std::numeric_limits<double>::infinity() : keyframes[i + 1]->offset();
             if (applyTo == 1)
@@ -207,18 +250,18 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyf
     ASSERT(m_keyframes.size() >= 2);
 }
 
-bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired()
+bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired(PassRefPtrWillBeRawPtr<TimingFunction> easing)
 {
     ASSERT(!m_keyframes.isEmpty());
 
     bool addedSyntheticKeyframe = false;
 
     if (m_keyframes.first()->offset() != 0.0) {
-        m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(0, nullptr));
+        m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(0, easing));
         addedSyntheticKeyframe = true;
     }
     if (m_keyframes.last()->offset() != 1.0) {
-        appendKeyframe(m_keyframes.last()->neutralKeyframe(1, nullptr));
+        appendKeyframe(m_keyframes.last()->neutralKeyframe(1, easing));
         addedSyntheticKeyframe = true;
     }
 
