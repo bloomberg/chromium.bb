@@ -886,7 +886,7 @@
                        'mlamouri+watch-sensors@chromium.org'],
     'developer_recommended_flags': ['scheib+watch@chromium.org'],
     'devtools': ['pfeldman@chromium.org', 'yurys@chromium.org',
-                 'vsevik@chromium.org', 'aandrey+blink@chromium.org',
+                 'aandrey+blink@chromium.org',
                  'devtools-reviews@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
