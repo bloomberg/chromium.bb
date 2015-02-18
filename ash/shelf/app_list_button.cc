@@ -140,8 +140,13 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* background_image =
       rb.GetImageNamed(background_image_id).ToImageSkia();
+  // TODO(mgiuca): When the "classic" app list is removed, also remove this
+  // resource and its icon file.
+  int foreground_image_id = app_list::switches::IsExperimentalAppListEnabled()
+                                ? IDR_ASH_SHELF_ICON_APPLIST
+                                : IDR_ASH_SHELF_ICON_APPLIST_CLASSIC;
   const gfx::ImageSkia* forground_image =
-      rb.GetImageNamed(IDR_ASH_SHELF_ICON_APPLIST).ToImageSkia();
+      rb.GetImageNamed(foreground_image_id).ToImageSkia();
 
   gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Rect background_bounds, forground_bounds;

@@ -15,7 +15,8 @@
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_BACKGROUND" file="common/shelf/shelf_background.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_CORNER" file="common/shelf/shelf_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_DIMMING" file="common/shelf/shelf_dimming.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST" file="common/shelf/status_app_menu_icon.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST" file="common/shelf/status_launcher_menu_icon.png" />
+      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_APPLIST_CLASSIC" file="common/shelf/status_app_menu_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_BROWSER" file="common/shelf/window_switcher_icon_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER" file="common/shelf/window_switcher_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_OVERFLOW" file="common/shelf/shelf_overflow.png" />
