@@ -10,6 +10,9 @@
     "compositor_unittests",
     "content_browsertests",
     "events_unittests",
-    "ui_touch_selection_unittests"
+    "ui_touch_selection_unittests",
+    "sbox_integration_tests",
+    "sbox_validation_tests",
+    "sbox_unittests"
   ]
 }
