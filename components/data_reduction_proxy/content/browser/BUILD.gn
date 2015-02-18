@@ -35,7 +35,9 @@ if (is_android) {
 
     deps = [
       ":browser",
+      "//skia",
       "//testing/gtest",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }
 }
