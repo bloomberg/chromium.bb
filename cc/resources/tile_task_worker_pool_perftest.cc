@@ -270,6 +270,8 @@ class TileTaskWorkerPoolPerfTest
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
+        rasterizer_ = GpuRasterizer::Create(
+            context_provider_.get(), resource_provider_.get(), false, false, 0);
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
             static_cast<GpuRasterizer*>(rasterizer_.get()));
