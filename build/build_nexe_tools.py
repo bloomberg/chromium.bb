@@ -8,6 +8,7 @@
 A set of utilities for running build commands.
 """
 
+import errno
 import os
 import subprocess
 import sys
@@ -87,8 +88,12 @@ class CommandRunner(object):
           RemoveFile(out)
           return
         except WindowsError, inst:
+          # When the errno is errno.ENOENT, we consider the output file
+          # has been already removed somewhere.
+          if inst.errno == errno.ENOENT:
+            return
           if retry > 5:
-            raise Error('FAILED to CleanOutput: ' + out)
+            raise Error('FAILED to CleanOutput: %s : %s' % (out, inst))
           self.Log('WindowsError %s while removing %s retry=%d' %
                    (inst, out, retry))
         sleep_time = 2**retry
