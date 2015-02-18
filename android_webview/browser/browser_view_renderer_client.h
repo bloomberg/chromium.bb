@@ -29,7 +29,7 @@ class BrowserViewRendererClient {
 
   // Call postInvalidateOnAnimation for invalidations. This is only used to
   // synchronize draw functor destruction.
-  virtual void InvalidateOnFunctorDestroy() = 0;
+  virtual void DetachFunctorFromView() = 0;
 
   // Called to get view's absolute location on the screen.
   virtual gfx::Point GetLocationOnScreen() = 0;

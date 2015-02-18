@@ -73,7 +73,7 @@ void RenderingTest::PostInvalidate() {
   window_->PostInvalidate();
 }
 
-void RenderingTest::InvalidateOnFunctorDestroy() {
+void RenderingTest::DetachFunctorFromView() {
 }
 
 gfx::Point RenderingTest::GetLocationOnScreen() {

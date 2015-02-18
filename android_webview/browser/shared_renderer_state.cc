@@ -335,7 +335,7 @@ void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
 
-  browser_view_renderer_->InvalidateOnFunctorDestroy();
+  browser_view_renderer_->DetachFunctorFromView();
   bool hardware_initialized = browser_view_renderer_->hardware_enabled();
   if (hardware_initialized) {
     bool draw_functor_succeeded = browser_view_renderer_->RequestDrawGL(true);

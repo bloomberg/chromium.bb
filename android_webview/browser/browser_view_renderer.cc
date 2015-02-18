@@ -279,8 +279,8 @@ void BrowserViewRenderer::DidSkipCommitFrame() {
   DidSkipCompositeInDraw();
 }
 
-void BrowserViewRenderer::InvalidateOnFunctorDestroy() {
-  client_->InvalidateOnFunctorDestroy();
+void BrowserViewRenderer::DetachFunctorFromView() {
+  client_->DetachFunctorFromView();
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {

@@ -811,11 +811,11 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   browser_view_renderer_.OnDetachedFromWindow();
 }
 
-void AwContents::InvalidateOnFunctorDestroy() {
+void AwContents::DetachFunctorFromView() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_AwContents_invalidateOnFunctorDestroy(env, obj.obj());
+    Java_AwContents_detachFunctorFromView(env, obj.obj());
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray>

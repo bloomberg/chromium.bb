@@ -32,7 +32,7 @@ class RenderingTest : public testing::Test,
   bool RequestDrawGL(bool wait_for_completion) override;
   void OnNewPicture() override;
   void PostInvalidate() override;
-  void InvalidateOnFunctorDestroy() override;
+  void DetachFunctorFromView() override;
   gfx::Point GetLocationOnScreen() override;
   void ScrollContainerViewTo(gfx::Vector2d new_value) override {}
   bool IsFlingActive() const override;

@@ -192,7 +192,7 @@ class AwContents : public FindHelper::Listener,
   // BrowserViewRendererClient implementation.
   bool RequestDrawGL(bool wait_for_completion) override;
   void PostInvalidate() override;
-  void InvalidateOnFunctorDestroy() override;
+  void DetachFunctorFromView() override;
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
   void ScrollContainerViewTo(gfx::Vector2d new_value) override;

@@ -2220,7 +2220,7 @@ public class AwContents implements SmartClipProvider,
     // Call postInvalidateOnAnimation for invalidations. This is only used to synchronize
     // draw functor destruction.
     @CalledByNative
-    private void invalidateOnFunctorDestroy() {
+    private void detachFunctorFromView() {
         mNativeGLDelegate.detachGLFunctor();
         mContainerView.invalidate();
     }
