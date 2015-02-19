@@ -158,6 +158,8 @@ public:
 
     BLINK_EXPORT static void enablePushMessagingData(bool);
 
+    BLINK_EXPORT static void enablePushMessagingHasPermission(bool);
+
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
 
 private:
