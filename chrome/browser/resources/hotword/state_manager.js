@@ -216,7 +216,8 @@ cr.define('hotword', function() {
      */
     isAlwaysOnEnabled: function() {
       assert(this.hotwordStatus_, 'No hotword status (isAlwaysOnEnabled)');
-      return this.hotwordStatus_.alwaysOnEnabled;
+      return this.hotwordStatus_.alwaysOnEnabled &&
+          !this.hotwordStatus_.trainingEnabled;
     },
 
     /**
@@ -485,6 +486,12 @@ cr.define('hotword', function() {
             UmaTriggerSources_[session.source_],
             hotword.constants.UmaTriggerSource.MAX);
       }
+
+      // If we're in always-on mode, shut down the hotword detector. The hotword
+      // stream requires that we close and re-open it after a trigger, and the
+      // only way to accomplish this is to shut everything down.
+      if (this.isAlwaysOnEnabled())
+        this.shutdownDetector_();
     },
 
     /**
