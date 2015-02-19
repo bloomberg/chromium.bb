@@ -1813,18 +1813,18 @@ layer at (-3597,0) size 4397x600 backgroundClip at (0,0) size 800x600 clip at (0
             text run at (2294,0) width 256: "\x{306E}\x{4E8C}\x{4E09}\x{53E5}\x{306E}\x{306A}\x{304B}\x{306B}\x{3053}\x{3093}\x{306A}\x{306E}\x{304C}\x{3042}\x{308B}\x{3002}"
           LayoutBR {BR} at (2294,256) size 18x0
         RenderBlock {DIV} at (2315,32) size 114x472
-          RenderText {#text} at (3,0) size 18x191
-            text run at (3,0) width 191: "\x{3000}\x{3000}We look before and after"
-          LayoutBR {BR} at (3,190) size 18x1
+          RenderText {#text} at (3,0) size 18x192
+            text run at (3,0) width 192: "\x{3000}\x{3000}We look before and after"
+          LayoutBR {BR} at (3,191) size 18x1
           RenderText {#text} at (27,0) size 18x225
             text run at (27,0) width 225: "\x{3000}\x{3000}\x{3000}\x{3000}And pine for what is not:"
           LayoutBR {BR} at (27,224) size 18x1
           RenderText {#text} at (51,0) size 18x174
             text run at (51,0) width 174: "\x{3000}\x{3000}Our sincerest laughter"
           LayoutBR {BR} at (51,173) size 18x1
-          RenderText {#text} at (75,0) size 18x234
-            text run at (75,0) width 234: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
-          LayoutBR {BR} at (75,234) size 18x0
+          RenderText {#text} at (75,0) size 18x235
+            text run at (75,0) width 235: "\x{3000}\x{3000}\x{3000}\x{3000}With some pain is fraught;"
+          LayoutBR {BR} at (75,234) size 18x1
           RenderText {#text} at (96,0) size 18x363
             text run at (96,0) width 363: "Our sweetest songs are those that tell of saddest thought."
           LayoutBR {BR} at (96,362) size 18x1

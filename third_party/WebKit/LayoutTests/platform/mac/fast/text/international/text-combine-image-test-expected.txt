@@ -98,24 +98,24 @@ layer at (166,0) size 634x600
       RenderBlock (anonymous) at (320,0) size 274x584
         RenderBlock {HR} at (0,0) size 2x584 [border: (1px inset #EEEEEE)]
         RenderBlock {P} at (34,0) size 240x584
-          RenderBlock (floating) {SPAN} at (0,321.25) size 38x262.75 [border: (1px solid #FF0000)]
-            RenderText {#text} at (7,1) size 24x117
-              text run at (7,1) width 117: "float:right:"
+          RenderBlock (floating) {SPAN} at (0,320.16) size 38x263.84 [border: (1px solid #FF0000)]
+            RenderText {#text} at (7,1) size 24x118
+              text run at (7,1) width 118: "float:right:"
             RenderInline {SPAN} at (0,0) size 24x25
-              RenderCombineText {#text} at (7,117) size 24x25
-                text run at (7,117) width 24: "2010"
-            RenderText {#text} at (7,141) size 24x25
-              text run at (7,141) width 24: "\x{5E74}"
+              RenderCombineText {#text} at (7,118) size 24x25
+                text run at (7,118) width 24: "2010"
+            RenderText {#text} at (7,142) size 24x25
+              text run at (7,142) width 24: "\x{5E74}"
             RenderInline {SPAN} at (0,0) size 24x25
-              RenderCombineText {#text} at (7,165) size 24x25
-                text run at (7,165) width 24: "1"
-            RenderText {#text} at (7,189) size 24x25
-              text run at (7,189) width 24: "\x{6708}"
+              RenderCombineText {#text} at (7,166) size 24x25
+                text run at (7,166) width 24: "1"
+            RenderText {#text} at (7,190) size 24x25
+              text run at (7,190) width 24: "\x{6708}"
             RenderInline {SPAN} at (0,0) size 24x25
-              RenderCombineText {#text} at (7,213) size 24x25
-                text run at (7,213) width 24: "20"
-            RenderText {#text} at (7,237) size 24x25
-              text run at (7,237) width 24: "\x{65E5}"
+              RenderCombineText {#text} at (7,214) size 24x25
+                text run at (7,214) width 24: "20"
+            RenderText {#text} at (7,238) size 24x25
+              text run at (7,238) width 24: "\x{65E5}"
           RenderInline {SPAN} at (0,0) size 208x576
             RenderText {#text} at (16,0) size 208x576
               text run at (16,0) width 320: "\x{305D}\x{306E}\x{5973}\x{304C}\x{306D}\x{304B}\x{3057}\x{3064}\x{3051}\x{306B}\x{6765}\x{3066}\x{304F}\x{308C}\x{308B}\x{307E}\x{3067}\x{3001}\x{308F}\x{305F}"
