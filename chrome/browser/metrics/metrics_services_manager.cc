@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -128,21 +129,17 @@ bool MetricsServicesManager::IsRapporEnabled(bool metrics_enabled) const {
 
 rappor::RecordingLevel MetricsServicesManager::GetRapporRecordingLevel(
     bool metrics_enabled) const {
-   rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
+  rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
 #if defined(GOOGLE_CHROME_BUILD)
-// TODO(holte): Remove special casing once the UIs for iOS/Android are updated
-// to allow control of the rappor.enabled pref.
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  if (metrics_enabled) {
+  if (HasRapporOption()) {
+    if (IsRapporEnabled(metrics_enabled)) {
+      recording_level = metrics_enabled ?
+                        rappor::FINE_LEVEL :
+                        rappor::COARSE_LEVEL;
+    }
+  } else if (metrics_enabled) {
     recording_level = rappor::FINE_LEVEL;
   }
-#else  // defined(OS_IOS) || defined(OS_ANDROID)
-  if (IsRapporEnabled(metrics_enabled)) {
-    recording_level = metrics_enabled ?
-                      rappor::FINE_LEVEL :
-                      rappor::COARSE_LEVEL;
-  }
-#endif  // defined(OS_IOS) || defined(OS_ANDROID)
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return recording_level;
 }

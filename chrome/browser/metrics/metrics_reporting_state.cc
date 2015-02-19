@@ -80,6 +80,10 @@ void SetMetricsReporting(bool to_update_pref,
 
 } // namespace
 
+bool HasRapporOption() {
+  return base::FieldTrialList::FindFullName("RapporOption") == "Enabled";
+}
+
 void InitiateMetricsReportingChange(
     bool enabled,
     const OnMetricsReportingCallbackType& callback_fn) {

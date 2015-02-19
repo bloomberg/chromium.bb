@@ -552,6 +552,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
 
+  values->SetBoolean("hasRapporOption", HasRapporOption());
+
   base::string16 rappor_url = base::ASCIIToUTF16(chrome::kRapporLearnMoreURL);
   values->SetString("enableRappor",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_ENABLE_RAPPOR, rappor_url));

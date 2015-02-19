@@ -473,6 +473,10 @@ cr.define('options', function() {
             loadTimeData.getBoolean('metricsReportingEnabledAtStart');
         updateMetricsRestartButton();
       }
+      // 'rapporDiv' element is only present on Chrome branded builds.
+      if ($('rapporDiv')) {
+        $('rapporDiv').hidden = !loadTimeData.getBoolean('hasRapporOption');
+      }
       $('networkPredictionOptions').onchange = function(event) {
         var value = (event.target.checked ?
             NetworkPredictionOptions.WIFI_ONLY :
