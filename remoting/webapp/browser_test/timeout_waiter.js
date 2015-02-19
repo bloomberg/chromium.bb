@@ -19,7 +19,7 @@ browserTest.Timeout = {
   DEFAULT: 5000
 };
 
-/** @interface */
+/** @constructor */
 browserTest.Predicate = function() {};
 
 /** @return {boolean} */
@@ -43,12 +43,12 @@ browserTest.waitFor = function(predicate, opt_timeout) {
       opt_timeout = browserTest.Timeout.DEFAULT;
     }
 
-    var timeout = /** @type {number} */ opt_timeout;
+    var timeout = /** @type {number} */ (opt_timeout);
     var end = Number(Date.now()) + timeout;
     var testPredicate = function() {
       if (predicate.evaluate()) {
         console.log(predicate.description() + ' satisfied.');
-        fulfill();
+        fulfill(true);
       } else if (Date.now() >= end) {
         reject(new Error('Timed out (' + opt_timeout + 'ms) waiting for ' +
                          predicate.description()));
@@ -62,43 +62,37 @@ browserTest.waitFor = function(predicate, opt_timeout) {
 };
 
 /**
- * @suppress {checkTypes}
  * @param {string} id
  * @return {browserTest.Predicate}
  */
 browserTest.isVisible = function(id) {
-  /** @type {browserTest.Predicate} */
-  return {
-    evaluate: function() {
-      /** @type {HTMLElement} */
-      var element = document.getElementById(id);
-      browserTest.expect(Boolean(element), 'No such element: ' + id);
-      return element.getBoundingClientRect().width !== 0;
-    },
-    description: function() {
-      return 'isVisible(' + id + ')';
-    }
+  var pred = new browserTest.Predicate();
+  pred.evaluate = function() {
+    /** @type {HTMLElement} */
+    var element = document.getElementById(id);
+    browserTest.expect(Boolean(element), 'No such element: ' + id);
+    return element.getBoundingClientRect().width !== 0;
   };
+  pred.description = function() {
+    return 'isVisible(' + id + ')';
+  };
+  return pred;
 };
 
 /**
- * @suppress {checkTypes}
  * @param {string} id
  * @return {browserTest.Predicate}
  */
 browserTest.isEnabled = function(id) {
-
-  /** @type {browserTest.Predicate} */
-  return {
-    evaluate: function() {
-      /** @type {HTMLElement} */
-      var element = document.getElementById(id);
-      browserTest.expect(Boolean(element), 'No such element: ' + id);
-      return !element.disabled;
-    },
-    description: function() {
-      return 'isEnabled(' + id + ')';
-    }
+  var pred = new browserTest.Predicate();
+  pred.evaluate = function() {
+    /** @type {Element} */
+    var element = document.getElementById(id);
+    browserTest.expect(Boolean(element), 'No such element: ' + id);
+    return !element.disabled;
   };
+  pred.description = function() {
+    return 'isEnabled(' + id + ')';
+  };
+  return pred;
 };
-

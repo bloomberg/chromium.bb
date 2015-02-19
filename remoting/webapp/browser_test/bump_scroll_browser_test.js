@@ -12,7 +12,10 @@
 
 'use strict';
 
-/** @constructor */
+/**
+ * @constructor
+ * @extends {base.EventSourceImpl}
+ */
 browserTest.FakeDesktopConnectedView = function() {
   this.pluginPosition = {
     top: 0,
@@ -23,6 +26,9 @@ browserTest.FakeDesktopConnectedView = function() {
 
 base.extend(browserTest.FakeDesktopConnectedView, base.EventSourceImpl);
 
+/**
+ * @return {{top: number, left:number}} The top-left corner of the plugin.
+ */
 browserTest.FakeDesktopConnectedView.prototype.getPluginPositionForTesting =
     function() {
   return this.pluginPosition;
@@ -31,12 +37,16 @@ browserTest.FakeDesktopConnectedView.prototype.getPluginPositionForTesting =
 
 /** @constructor */
 browserTest.Bump_Scroll = function() {
-  // To aviod dependencies on the actual host desktop size, we simulate a
+  // To avoid dependencies on the actual host desktop size, we simulate a
   // desktop larger or smaller than the client window. The exact value is
   // arbitrary, but must be positive.
+  /** @type {number} */
   this.kHostDesktopSizeDelta = 10;
 };
 
+/**
+ * @param {{pin:string}} data
+ */
 browserTest.Bump_Scroll.prototype.run = function(data) {
   browserTest.expect(typeof data.pin == 'string');
 
@@ -78,33 +88,43 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
   );
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.Bump_Scroll.prototype.noScrollWindowed = function() {
-  remoting.desktopConnectedView.pluginWidthForBumpScrollTesting =
-      window.innerWidth + this.kHostDesktopSizeDelta;
-  remoting.desktopConnectedView.pluginHeightForBumpScrollTesting =
-      window.innerHeight + this.kHostDesktopSizeDelta;
+  remoting.desktopConnectedView.setPluginSizeForBumpScrollTesting(
+      window.innerWidth + this.kHostDesktopSizeDelta,
+      window.innerHeight + this.kHostDesktopSizeDelta);
   this.moveMouseTo(0, 0);
   return this.verifyScroll(undefined, undefined);
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.Bump_Scroll.prototype.noScrollSmaller = function() {
-  remoting.desktopConnectedView.pluginWidthForBumpScrollTesting =
-      window.innerWidth - this.kHostDesktopSizeDelta;
-  remoting.desktopConnectedView.pluginHeightForBumpScrollTesting =
-      window.innerHeight - this.kHostDesktopSizeDelta;
+  remoting.desktopConnectedView.setPluginSizeForBumpScrollTesting(
+      window.innerWidth - this.kHostDesktopSizeDelta,
+      window.innerHeight - this.kHostDesktopSizeDelta);
   this.moveMouseTo(0, 0);
   return this.verifyScroll(undefined, undefined);
 };
 
+/**
+ * @param {number} widthFraction
+ * @param {number} heightFraction
+ * @return {Promise}
+ */
 browserTest.Bump_Scroll.prototype.scrollDirection =
     function(widthFraction, heightFraction) {
-  remoting.desktopConnectedView.pluginWidthForBumpScrollTesting =
-      screen.width + this.kHostDesktopSizeDelta;
-  remoting.desktopConnectedView.pluginHeightForBumpScrollTesting =
-      screen.height + this.kHostDesktopSizeDelta;
+  remoting.desktopConnectedView.setPluginSizeForBumpScrollTesting(
+      screen.width + this.kHostDesktopSizeDelta,
+      screen.height + this.kHostDesktopSizeDelta);
+  /** @type {number} */
   var expectedTop = heightFraction == 0.0 ? 0 :
                     heightFraction == 1.0 ? -this.kHostDesktopSizeDelta :
                     undefined;
+  /** @type {number} */
   var expectedLeft = widthFraction == 0.0 ? 0 :
                      widthFraction == 1.0 ? -this.kHostDesktopSizeDelta :
                      undefined;
@@ -114,6 +134,9 @@ browserTest.Bump_Scroll.prototype.scrollDirection =
   return result;
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.Bump_Scroll.prototype.activateFullscreen = function() {
   return new Promise(function(fulfill, reject) {
     remoting.fullscreen.activate(true, function() {
@@ -128,6 +151,10 @@ browserTest.Bump_Scroll.prototype.activateFullscreen = function() {
   });
 };
 
+/**
+ * @param {number} x
+ * @param {number} y
+ */
 browserTest.Bump_Scroll.prototype.moveMouseTo = function(x, y) {
   var e = {
     bubbles: true,
@@ -154,7 +181,10 @@ browserTest.Bump_Scroll.prototype.moveMouseTo = function(x, y) {
   document.documentElement.dispatchEvent(event);
 };
 
-// verifyScroll is complicated enough to warrant a test
+/**
+ * verifyScroll() is complicated enough to warrant a test.
+ * @return {Promise}
+ */
 browserTest.Bump_Scroll.prototype.testVerifyScroll = function() {
   var STARTED = remoting.DesktopConnectedView.Events.bumpScrollStarted;
   var STOPPED = remoting.DesktopConnectedView.Events.bumpScrollStopped;
@@ -217,9 +247,11 @@ browserTest.Bump_Scroll.prototype.testVerifyScroll = function() {
  *    the plugin, or undefined if it is not expected to change.
  * @param {browserTest.FakeDesktopConnectedView=} opt_desktopConnectedView
  *     DesktopConnectedView fake, for testing.
+ * @return {Promise}
  */
 browserTest.Bump_Scroll.prototype.verifyScroll =
     function (expectedTop, expectedLeft, opt_desktopConnectedView) {
+  /** @type {browserTest.FakeDesktopConnectedView} */
   var desktopConnectedView = opt_desktopConnectedView ||
       remoting.desktopConnectedView;
   base.debug.assert(desktopConnectedView != null);
@@ -230,6 +262,7 @@ browserTest.Bump_Scroll.prototype.verifyScroll =
   var initialTop = initialPosition.top;
   var initialLeft = initialPosition.left;
 
+  /** @return {Promise} */
   var verifyPluginPosition = function() {
     var position = desktopConnectedView.getPluginPositionForTesting();
     if (expectedLeft === undefined) {

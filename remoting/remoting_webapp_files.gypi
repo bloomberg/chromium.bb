@@ -16,7 +16,79 @@
       'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
+      'webapp/js_proto/test_proto.js',
     ],
+
+    #
+    # Webapp browsertest and unittest JavaScript files.
+    #
+
+    # Shared files for tests.
+    'remoting_webapp_test_js_common_files': [
+      'webapp/unittests/mock_signal_strategy.js',
+    ],
+    # Browser test files.
+    'remoting_webapp_browsertest_js_files': [
+      'webapp/browser_test/browser_test.js',
+      'webapp/browser_test/bump_scroll_browser_test.js',
+      'webapp/browser_test/cancel_pin_browser_test.js',
+      'webapp/browser_test/invalid_pin_browser_test.js',
+      'webapp/browser_test/it2me_browser_test.js',
+      'webapp/browser_test/mock_client_plugin.js',
+      'webapp/browser_test/mock_host_list_api.js',
+      'webapp/browser_test/mock_identity.js',
+      'webapp/browser_test/mock_oauth2_api.js',
+      'webapp/browser_test/mock_session_connector.js',
+      'webapp/browser_test/scrollbar_browser_test.js',
+      'webapp/browser_test/timeout_waiter.js',
+      'webapp/browser_test/unauthenticated_browser_test.js',
+      'webapp/browser_test/update_pin_browser_test.js',
+    ],
+    'remoting_webapp_browsertest_all_js_files': [
+      '<@(remoting_webapp_browsertest_js_files)',
+      '<@(remoting_webapp_test_js_common_files)',
+    ],
+
+    # These product files are excluded from our JavaScript unittest
+    'remoting_webapp_unittest_exclude_js_files': [
+      # background.js is where the onLoad handler is defined, which
+      # makes it the entry point of the background page.
+      'webapp/crd/js/background.js',
+    ],
+    # The unit test cases for the webapp
+    'remoting_webapp_unittest_js_files': [
+      'webapp/unittests/chrome_mocks.js',
+      'webapp/js_proto/chrome_proto.js',
+      'webapp/unittests/apps_v2_migration_unittest.js',
+      'webapp/unittests/base_unittest.js',
+      'webapp/unittests/desktop_connected_view_unittest.js',
+      'webapp/unittests/dns_blackhole_checker_unittest.js',
+      'webapp/unittests/event_hook_unittest.js',
+      'webapp/unittests/fallback_signal_strategy_unittest.js',
+      'webapp/unittests/ipc_unittest.js',
+      'webapp/unittests/it2me_helpee_channel_unittest.js',
+      'webapp/unittests/it2me_helper_channel_unittest.js',
+      'webapp/unittests/it2me_service_unittest.js',
+      'webapp/unittests/l10n_unittest.js',
+      'webapp/unittests/menu_button_unittest.js',
+      'webapp/unittests/xmpp_connection_unittest.js',
+      'webapp/unittests/xmpp_login_handler_unittest.js',
+      'webapp/unittests/xmpp_stream_parser_unittest.js',
+    ],
+    'remoting_webapp_unittest_all_js_files': [
+      '<@(remoting_webapp_unittest_js_files)',
+      '<@(remoting_webapp_test_js_common_files)',
+    ],
+    'remoting_webapp_unittest_all_files': [
+      'webapp/crd/html/menu_button.css',
+      '<@(remoting_webapp_unittest_all_js_files)',
+    ],
+    'remoting_webapp_unittest_template_main':
+      'webapp/crd/html/template_unittest.html',
+
+    #
+    # Webapp JavaScript file groups.
+    #
 
     # Auth (apps v1) JavaScript files.
     # These files aren't included directly from main.html. They are
@@ -38,6 +110,10 @@
       'webapp/crd/js/oauth2.js',
       'webapp/crd/js/oauth2_api.js',
       'webapp/crd/js/oauth2_api_impl.js',
+    ],
+    # Cast extension handler JavaScript files.
+    'remoting_webapp_js_cast_extension_files': [
+      'webapp/crd/js/cast_extension_handler.js',
     ],
     # Client JavaScript files.
     'remoting_webapp_js_client_files': [
@@ -67,10 +143,13 @@
       'webapp/crd/js/error.js',
       'webapp/crd/js/event_handlers.js',
       'webapp/crd/js/plugin_settings.js',
-      # TODO(garykac) Split out UI client stuff from remoting.js.
       'webapp/crd/js/remoting.js',
       'webapp/crd/js/typecheck.js',
       'webapp/crd/js/xhr.js',
+    ],
+    # Gnubby authentication JavaScript files.
+    'remoting_webapp_js_gnubby_auth_files': [
+      'webapp/crd/js/gnubby_auth_handler.js',
     ],
     # Host JavaScript files.
     'remoting_webapp_js_host_files': [
@@ -104,6 +183,17 @@
       'webapp/crd/js/server_log_entry.js',
       'webapp/crd/js/stats_accumulator.js',
     ],
+    # Remoting signaling files.
+    'remoting_webapp_js_signaling_files': [
+      'webapp/crd/js/dns_blackhole_checker.js',
+      'webapp/crd/js/fallback_signal_strategy.js',
+      'webapp/crd/js/signal_strategy.js',
+      'webapp/crd/js/wcs_adapter.js',
+      'webapp/crd/js/wcs_sandbox_container.js',
+      'webapp/crd/js/xmpp_connection.js',
+      'webapp/crd/js/xmpp_login_handler.js',
+      'webapp/crd/js/xmpp_stream_parser.js',
+    ],
     # UI JavaScript files.
     'remoting_webapp_js_ui_files': [
       'webapp/base/js/window_shape.js',
@@ -120,17 +210,6 @@
       'webapp/crd/js/toolbar.js',
       'webapp/crd/js/window_frame.js',
     ],
-    # Remoting signaling files.
-    'remoting_webapp_js_signaling_files': [
-      'webapp/crd/js/dns_blackhole_checker.js',
-      'webapp/crd/js/fallback_signal_strategy.js',
-      'webapp/crd/js/signal_strategy.js',
-      'webapp/crd/js/wcs_adapter.js',
-      'webapp/crd/js/wcs_sandbox_container.js',
-      'webapp/crd/js/xmpp_connection.js',
-      'webapp/crd/js/xmpp_login_handler.js',
-      'webapp/crd/js/xmpp_stream_parser.js',
-    ],
     # Remoting WCS sandbox JavaScript files.
     'remoting_webapp_js_wcs_sandbox_files': [
       'webapp/crd/js/wcs.js',
@@ -138,66 +217,6 @@
       'webapp/crd/js/wcs_sandbox_content.js',
       'webapp/crd/js/xhr_proxy.js',
     ],
-    # gnubby authentication JavaScript files.
-    'remoting_webapp_js_gnubby_auth_files': [
-      'webapp/crd/js/gnubby_auth_handler.js',
-    ],
-    # cast extension handler JavaScript files.
-    'remoting_webapp_js_cast_extension_files': [
-      'webapp/crd/js/cast_extension_handler.js',
-    ],
-    # Shared files for tests.
-    'remoting_webapp_js_test_common_files': [
-      'webapp/unittests/mock_signal_strategy.js',
-    ],
-    # browser test JavaScript files.
-    'remoting_webapp_js_browser_test_files': [
-      'webapp/browser_test/browser_test.js',
-      'webapp/browser_test/bump_scroll_browser_test.js',
-      'webapp/browser_test/cancel_pin_browser_test.js',
-      'webapp/browser_test/invalid_pin_browser_test.js',
-      'webapp/browser_test/it2me_browser_test.js',
-      'webapp/browser_test/mock_client_plugin.js',
-      'webapp/browser_test/mock_host_list_api.js',
-      'webapp/browser_test/mock_identity.js',
-      'webapp/browser_test/mock_oauth2_api.js',
-      'webapp/browser_test/mock_session_connector.js',
-      'webapp/browser_test/scrollbar_browser_test.js',
-      'webapp/browser_test/timeout_waiter.js',
-      'webapp/browser_test/unauthenticated_browser_test.js',
-      'webapp/browser_test/update_pin_browser_test.js',
-    ],
-    # These product files are excluded from our JavaScript unittest
-    'remoting_webapp_unittest_exclude_files': [
-      # background.js is where the onLoad handler is defined, which
-      # makes it the entry point of the background page.
-      'webapp/crd/js/background.js',
-    ],
-    # The unit test cases for the webapp
-    'remoting_webapp_unittest_js_files': [
-      'webapp/unittests/chrome_mocks.js',
-      'webapp/js_proto/chrome_proto.js',
-      'webapp/unittests/apps_v2_migration_unittest.js',
-      'webapp/unittests/base_unittest.js',
-      'webapp/unittests/desktop_connected_view_unittest.js',
-      'webapp/unittests/dns_blackhole_checker_unittest.js',
-      'webapp/unittests/event_hook_unittest.js',
-      'webapp/unittests/fallback_signal_strategy_unittest.js',
-      'webapp/unittests/ipc_unittest.js',
-      'webapp/unittests/it2me_helpee_channel_unittest.js',
-      'webapp/unittests/it2me_helper_channel_unittest.js',
-      'webapp/unittests/it2me_service_unittest.js',
-      'webapp/unittests/l10n_unittest.js',
-      'webapp/unittests/menu_button_unittest.js',
-      'webapp/unittests/xmpp_connection_unittest.js',
-      'webapp/unittests/xmpp_login_handler_unittest.js',
-      'webapp/unittests/xmpp_stream_parser_unittest.js',
-    ],
-    'remoting_webapp_unittest_additional_files': [
-      'webapp/crd/html/menu_button.css',
-    ],
-    'remoting_webapp_unittest_template_main':
-      'webapp/crd/html/template_unittest.html',
 
     # The shared JavaScript files required by main.html.
     'remoting_webapp_shared_main_html_js_files': [
@@ -215,10 +234,9 @@
       '<@(remoting_webapp_js_logging_files)',
       '<@(remoting_webapp_js_ui_files)',
       '<@(remoting_webapp_js_signaling_files)',
-      # Uncomment these lines to include browser test files in the web app
+      # Uncomment this line to include browser test files in the web app
       # to expedite debugging or local development.
-      # '<@(remoting_webapp_js_browser_test_files)',
-      # '<@(remoting_webapp_js_test_common_files)'
+      #'<@(remoting_webapp_browsertest_all_js_files)',
     ],
 
     # The CRD-specific JavaScript files required by main.html.

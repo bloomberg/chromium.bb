@@ -23,6 +23,7 @@
     ['run_jscompile != 0', {
       'variables': {
         'success_stamp': '<(PRODUCT_DIR)/<(_target_name)_jscompile.stamp',
+        'success_stamp_bt': '<(PRODUCT_DIR)/<(_target_name)_bt_jscompile.stamp',
       },
       'actions': [
         {
@@ -40,6 +41,26 @@
             '--no-single-file',
             '--success-stamp', '<(success_stamp)',
             '<@(remoting_webapp_crd_js_files)',
+            '<@(remoting_webapp_js_proto_files)',
+          ],
+        },
+        {
+          'action_name': 'Verify remoting webapp with browsertests',
+          'inputs': [
+            '<@(remoting_webapp_crd_js_files)',
+            '<@(remoting_webapp_browsertest_all_js_files)',
+            '<@(remoting_webapp_js_proto_files)',
+          ],
+          'outputs': [
+            '<(success_stamp_bt)',
+          ],
+          'action': [
+            'python', '../third_party/closure_compiler/checker.py',
+            '--strict',
+            '--no-single-file',
+            '--success-stamp', '<(success_stamp_bt)',
+            '<@(remoting_webapp_crd_js_files)',
+            '<@(remoting_webapp_browsertest_all_js_files)',
             '<@(remoting_webapp_js_proto_files)',
           ],
         },

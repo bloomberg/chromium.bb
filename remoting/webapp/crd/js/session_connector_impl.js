@@ -194,7 +194,7 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
    * @private
    */
   this.fetchThirdPartyToken_ = function(
-      tokenUrl, scope, onThirdPartyTokenFetched) {};
+      tokenUrl, hostPublicKey, scope, onThirdPartyTokenFetched) {};
 
   /**
    * Host 'name', as displayed in the client tool-bar. For a Me2Me connection,
@@ -219,7 +219,7 @@ remoting.SessionConnectorImpl.prototype.reset = function() {
  * @param {function(string, string, string,
  *                  function(string, string): void): void}
  *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authenticaiton server.
+ *     authentication server.
  * @param {string} clientPairingId The client id issued by the host when
  *     this device was paired, if it is already paired.
  * @param {string} clientPairedSecret The shared secret issued by the host when
@@ -298,7 +298,7 @@ remoting.SessionConnectorImpl.prototype.updatePairingInfo =
  * @param {function(string, string, string,
  *                  function(string, string): void): void}
  *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authenticaiton server.
+ *     authentication server.
  * @param {string} clientPairingId The client id issued by the host when
  *     this device was paired, if it is already paired.
  * @param {string} clientPairedSecret The shared secret issued by the host when

@@ -62,7 +62,7 @@ remoting.MockOAuth2Api.prototype.exchangeCodeForTokens = function(
 };
 
 /**
- * @param {function(string)} onDone
+ * @param {function(string,string)} onDone
  * @param {function(remoting.Error)} onError
  * @param {string} token
  */
@@ -72,7 +72,7 @@ remoting.MockOAuth2Api.prototype.getEmail = function(onDone, onError, token) {
 };
 
 /**
- * @param {function(string, string)} onDone
+ * @param {function(string,string)} onDone
  * @param {function(remoting.Error)} onError
  * @param {string} token
  */

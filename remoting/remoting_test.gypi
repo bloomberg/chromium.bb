@@ -290,8 +290,7 @@
         {
           'destination': '<(PRODUCT_DIR)/remoting/browser_test_resources',
             'files': [
-              '<@(remoting_webapp_js_test_common_files)',
-              '<@(remoting_webapp_js_browser_test_files)',
+              '<@(remoting_webapp_browsertest_all_js_files)',
             ],
         },
       ], # end of copies
@@ -334,9 +333,7 @@
           'destination': '<(output_dir)',
           'files': [
             '<@(webapp_js_files)',
-            '<@(remoting_webapp_js_test_common_files)',
-            '<@(remoting_webapp_unittest_additional_files)',
-            '<@(remoting_webapp_unittest_js_files)',
+            '<@(remoting_webapp_unittest_all_files)',
           ],
         },
       ],
@@ -347,8 +344,7 @@
             'webapp/build-html.py',
             '<(remoting_webapp_unittest_template_main)',
             '<@(webapp_js_files)',
-            '<@(remoting_webapp_js_test_common_files)',
-            '<@(remoting_webapp_unittest_js_files)'
+            '<@(remoting_webapp_unittest_all_js_files)'
           ],
           'outputs': [
             '<(output_dir)/unittest.html',
@@ -361,9 +357,8 @@
             # arguments.  Therefore, the excludejs flag must be set before the
             # instrumentedjs flag or else GYP will ignore the files in the
             # exclude list.
-            '--exclude-js', '<@(remoting_webapp_unittest_exclude_files)',
-            '--js', '<@(remoting_webapp_unittest_js_files)',
-            '<@(remoting_webapp_js_test_common_files)',
+            '--exclude-js', '<@(remoting_webapp_unittest_exclude_js_files)',
+            '--js', '<@(remoting_webapp_unittest_all_js_files)',
             '--instrument-js', '<@(webapp_js_files)',
            ],
         },

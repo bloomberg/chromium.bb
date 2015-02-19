@@ -17,6 +17,9 @@
 /** @constructor */
 browserTest.ConnectIt2Me = function() {};
 
+/**
+ * @param {{pin: string, accessCode: string}} data
+ */
 browserTest.ConnectIt2Me.prototype.run = function(data) {
   browserTest.expect(typeof data.accessCode == 'string',
                      'The access code should be an non-empty string');
@@ -28,17 +31,23 @@ browserTest.ConnectIt2Me.prototype.run = function(data) {
     return browserTest.disconnect();
   }).then(function() {
     browserTest.pass();
+  /** @param {*} reason */
   }, function(reason) {
     browserTest.fail(reason);
   });
 };
 
+/** @return {Promise} */
 browserTest.ConnectIt2Me.clickOnAccessButton = function() {
   browserTest.clickOnControl('access-mode-button');
   return browserTest.onUIMode(remoting.AppMode.CLIENT_UNCONNECTED);
 };
 
-/** @private */
+/**
+ * @param {string} code
+ * @return {Promise}
+ * @private
+ */
 browserTest.ConnectIt2Me.prototype.enterAccessCode_ = function(code) {
   document.getElementById('access-code-entry').value = code;
   browserTest.clickOnControl('connect-button');
@@ -48,6 +57,9 @@ browserTest.ConnectIt2Me.prototype.enterAccessCode_ = function(code) {
 /** @constructor */
 browserTest.InvalidAccessCode = function() {};
 
+/**
+ * @param {{pin: string, accessCode: string}} data
+ */
 browserTest.InvalidAccessCode.prototype.run = function(data) {
   browserTest.expect(typeof data.accessCode == 'string',
                      'The access code should be an non-empty string');
@@ -55,7 +67,8 @@ browserTest.InvalidAccessCode.prototype.run = function(data) {
     document.getElementById('access-code-entry').value = data.accessCode;
     browserTest.clickOnControl('connect-button');
     return browserTest.expectConnectionError(
-        remoting.ClientSession.Mode.IT2ME, remoting.Error.INVALID_ACCESS_CODE);
+        remoting.DesktopConnectedView.Mode.IT2ME,
+        remoting.Error.INVALID_ACCESS_CODE);
   }).then(function() {
     browserTest.pass();
   }, function(reason) {
@@ -86,11 +99,15 @@ browserTest.GetAccessCode.prototype.run = function() {
   });
 };
 
-// Wait for the email address of the local user to become available.  The email
-// address is required in an It2Me connection for domain policy enforcement.
-// TODO:(kelvinp) Fix this awkward behavior in the production code so that this
-// hack is no longer required.
-/** @private */
+/**
+ * Wait for the email address of the local user to become available.  The email
+ * address is required in an It2Me connection for domain policy enforcement.
+ * TODO:(kelvinp) Fix this awkward behavior in the production code so that this
+ * hack is no longer required.
+ *
+ * @return {Promise}
+ * @private
+ */
 browserTest.GetAccessCode.prototype.onUserInfoReady_ = function() {
   return new Promise(function(resolve, reject){
     remoting.identity.getUserInfo(resolve, reject);

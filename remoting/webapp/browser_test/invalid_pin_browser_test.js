@@ -16,6 +16,9 @@
 /** @constructor */
 browserTest.Invalid_PIN = function() {};
 
+/**
+ * @param {{pin:string}} data
+ */
 browserTest.Invalid_PIN.prototype.run = function(data) {
   // Input validation.
   browserTest.expect(typeof data.pin == 'string');

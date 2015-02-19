@@ -375,14 +375,14 @@ base.EventSource = function() {};
  /**
   * Add a listener |fn| to listen to |type| event.
   * @param {string} type
-  * @param {function(?=):void} fn
+  * @param {Function} fn
   */
 base.EventSource.prototype.addEventListener = function(type, fn) {};
 
  /**
   * Remove a listener |fn| to listen to |type| event.
   * @param {string} type
-  * @param {function(?=):void} fn
+  * @param {Function} fn
   */
 base.EventSource.prototype.removeEventListener = function(type, fn) {};
 
@@ -431,7 +431,7 @@ base.EventSourceImpl.prototype = {
 
   /**
     * @param {string} type
-    * @param {function(?=):void} fn
+    * @param {Function} fn
     */
   addEventListener: function(type, fn) {
     base.debug.assert(typeof fn == 'function');
@@ -443,7 +443,7 @@ base.EventSourceImpl.prototype = {
 
   /**
     * @param {string} type
-    * @param {function(?=):void} fn
+    * @param {Function} fn
     */
   removeEventListener: function(type, fn) {
     base.debug.assert(typeof fn == 'function');

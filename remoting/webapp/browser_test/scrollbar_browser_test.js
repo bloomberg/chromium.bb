@@ -53,6 +53,7 @@ browserTest.Scrollbars.prototype.run = function(data) {
 
 /**
  * Verify the test cases for the home-screen.
+ * @return {Promise}
  */
 browserTest.Scrollbars.prototype.verifyHomeScreenScrollbars_ = function() {
   // Note that, due to crbug.com/240772, if the window already has
@@ -126,6 +127,7 @@ browserTest.Scrollbars.prototype.verifyHomeScreenScrollbars_ = function() {
  * scroll-bar visible on the corresponding edge, in which case it will return
  * the scroller <div> itself.
  *
+ * @return {{horizontal: boolean, vertical:boolean}}
  * @private
  */
 browserTest.Scrollbars.prototype.getScrollbarState_ = function() {
@@ -145,6 +147,9 @@ browserTest.Scrollbars.prototype.getScrollbarState_ = function() {
  * Returns a promise that resolves if the scroll-bar state is as expected, or
  * rejects otherwise.
  *
+ * @param {boolean} horizontalExpected
+ * @param {boolean} verticalExpected
+ * @return {Promise}
  * @private
  */
 browserTest.Scrollbars.prototype.verifyScrollbarState_ =
@@ -168,9 +173,11 @@ browserTest.Scrollbars.prototype.verifyScrollbarState_ =
 
 
 /**
- * @private
+ * @param {number} width
+ * @param {number} height
  * @return {Promise} A promise that will be fulfilled when the window has
  *     been resized and it's safe to test scroll-bar visibility.
+ * @private
  */
 browserTest.Scrollbars.prototype.resize_ = function(width, height) {
   var win = chrome.app.window.current();
@@ -183,9 +190,13 @@ browserTest.Scrollbars.prototype.resize_ = function(width, height) {
 
 
 /**
- * @private
+ * @param {number} width
+ * @param {number} height
+ * @param {boolean} horizontalExpected
+ * @param {boolean} verticalExpected
  * @return {Promise} A promise that will be fulfilled when the window has
  *     been resized and it's safe to test scroll-bar visibility.
+ * @private
  */
 browserTest.Scrollbars.prototype.resizeAndVerifyScroll_ =
     function(width, height, horizontalExpected, verticalExpected) {

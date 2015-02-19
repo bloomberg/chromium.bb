@@ -32,7 +32,7 @@ remoting.SessionConnector.prototype.reset = function() {};
  * @param {function(string, string, string,
  *                  function(string, string): void): void}
  *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authenticaiton server.
+ *     authentication server.
  * @param {string} clientPairingId The client id issued by the host when
  *     this device was paired, if it is already paired.
  * @param {string} clientPairedSecret The shared secret issued by the host when

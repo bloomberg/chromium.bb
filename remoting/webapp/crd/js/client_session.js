@@ -167,9 +167,9 @@ remoting.ClientSession.State.fromString = function(state) {
 };
 
 /**
-  @constructor
   @param {remoting.ClientSession.State} current
   @param {remoting.ClientSession.State} previous
+  @constructor
 */
 remoting.ClientSession.StateEvent = function(current, previous) {
   /** @type {remoting.ClientSession.State} */

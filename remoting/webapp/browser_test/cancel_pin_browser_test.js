@@ -17,6 +17,9 @@
 /** @constructor */
 browserTest.Cancel_PIN = function() {};
 
+/**
+ * @param {{pin:string}} data
+ */
 browserTest.Cancel_PIN.prototype.run = function(data) {
   browserTest.expect(typeof data.pin == 'string');
 

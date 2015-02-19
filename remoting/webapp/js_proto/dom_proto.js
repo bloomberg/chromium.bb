@@ -34,7 +34,13 @@ Document.prototype.firstElementChild;
 Element.prototype.requestPointerLock = function() {};
 
 /** @type {boolean} */
+Element.prototype.disabled;
+
+/** @type {boolean} */
 Element.prototype.hidden;
+
+/** @type {string} */
+Element.prototype.innerText;
 
 /** @type {string} */
 Element.prototype.localName;

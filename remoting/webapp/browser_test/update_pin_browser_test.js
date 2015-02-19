@@ -18,6 +18,9 @@
 /** @constructor */
 browserTest.Update_PIN = function() {};
 
+/**
+ * @param {{new_pin:string, old_pin:string}} data
+ */
 browserTest.Update_PIN.prototype.run = function(data) {
   var LOGIN_BACKOFF_WAIT = 2000;
   // Input validation
@@ -36,7 +39,7 @@ browserTest.Update_PIN.prototype.run = function(data) {
   ).then(
     browserTest.connectMe2Me
   ).then(function(){
-    return browserTest.enterPIN_(data.new_pin, false /* expectError*/)
+    return browserTest.enterPIN(data.new_pin, false /* expectError*/)
   }).then(
     // Clean up the test by disconnecting and changing the PIN back
     browserTest.disconnect
@@ -52,6 +55,10 @@ browserTest.Update_PIN.prototype.run = function(data) {
   );
 };
 
+/**
+ * @param {string} newPin
+ * @return {Promise}
+ */
 browserTest.Update_PIN.prototype.changePIN_ = function(newPin) {
   var AppMode = remoting.AppMode;
   var HOST_RESTART_WAIT = 10000;

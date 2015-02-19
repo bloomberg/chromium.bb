@@ -108,9 +108,9 @@ remoting.DesktopConnectedView = function(session, container, hostDisplayName,
   // and height of the client plugin so that bump-scrolling can be tested
   // without relying on the actual size of the host desktop.
   /** @type {number} @private */
-  this.pluginWidthForBumpScrollTesting = 0;
+  this.pluginWidthForBumpScrollTesting_ = 0;
   /** @type {number} @private */
-  this.pluginHeightForBumpScrollTesting = 0;
+  this.pluginHeightForBumpScrollTesting_ = 0;
 
   /** @type {remoting.VideoFrameRecorder} @private */
   this.videoFrameRecorder_ = null;
@@ -186,6 +186,16 @@ remoting.DesktopConnectedView.prototype.getClientArea_ = function() {
       remoting.windowFrame.getClientArea() :
       { 'width': window.innerWidth, 'height': window.innerHeight };
 };
+
+/**
+ * @param {number} width
+ * @param {number} height
+ */
+remoting.DesktopConnectedView.prototype.setPluginSizeForBumpScrollTesting =
+    function(width, height) {
+  this.pluginWidthForBumpScrollTesting_ = width;
+  this.pluginHeightForBumpScrollTesting_ = height;
+}
 
 /**
  * Notifies the host of the client's current dimensions and DPI.
@@ -718,12 +728,12 @@ remoting.DesktopConnectedView.prototype.scroll_ = function(dx, dy) {
   var stopX = { stop: false };
   var clientArea = this.getClientArea_();
   style.marginLeft = adjustMargin(style.marginLeft, dx, clientArea.width,
-      this.pluginWidthForBumpScrollTesting || plugin.clientWidth, stopX);
+      this.pluginWidthForBumpScrollTesting_ || plugin.clientWidth, stopX);
 
   var stopY = { stop: false };
   style.marginTop = adjustMargin(
       style.marginTop, dy, clientArea.height,
-      this.pluginHeightForBumpScrollTesting || plugin.clientHeight, stopY);
+      this.pluginHeightForBumpScrollTesting_ || plugin.clientHeight, stopY);
   return stopX.stop && stopY.stop;
 };
 

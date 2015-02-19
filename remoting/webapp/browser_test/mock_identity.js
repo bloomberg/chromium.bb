@@ -67,8 +67,8 @@ remoting.MockIdentity.prototype.setAccessToken = function(accessToken) {
 
 /**
  * @param {string} token
- * @param {function()} onDone
- * @param {function()} onError
+ * @param {Function} onDone
+ * @param {function(remoting.Error)} onError
  * @param {Array<*>} values
  */
 remoting.MockIdentity.validateTokenAndCall =
@@ -85,8 +85,8 @@ remoting.MockIdentity.validateTokenAndCall =
 };
 
 /**
- * @param {function()} onDone
- * @param {function()} onError
+ * @param {Function} onDone
+ * @param {function(remoting.Error)} onError
  * @param {Array<*>} values
  */
 remoting.MockIdentity.prototype.validateTokenAndCall =

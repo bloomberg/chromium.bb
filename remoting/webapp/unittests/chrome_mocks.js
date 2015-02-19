@@ -7,18 +7,23 @@
 
 Entry = function() {};
 
-(function(scope){
-
 var chromeMocks = {};
 
+(function(){
+
+/**
+ * @constructor
+ */
 chromeMocks.Event = function() {
   this.listeners_ = [];
 };
 
+/** @param {Function} callback */
 chromeMocks.Event.prototype.addListener = function(callback) {
   this.listeners_.push(callback);
 };
 
+/** @param {Function} callback */
 chromeMocks.Event.prototype.removeListener = function(callback) {
   for (var i = 0; i < this.listeners_.length; i++) {
     if (this.listeners_[i] === callback) {
@@ -28,27 +33,49 @@ chromeMocks.Event.prototype.removeListener = function(callback) {
   }
 };
 
+/**
+ * @param {...*} var_args
+ * @return {void}
+ */
 chromeMocks.Event.prototype.mock$fire = function(var_args) {
   var params = Array.prototype.slice.call(arguments);
-  this.listeners_.forEach(function(listener){
-    listener.apply(null, params);
-  });
+  this.listeners_.forEach(
+      /** @param {Function} listener */
+      function(listener){
+        listener.apply(null, params);
+      });
 };
 
+/** @type {Object} */
 chromeMocks.runtime = {};
 
+/** @constructor */
 chromeMocks.runtime.Port = function() {
   this.onMessage = new chromeMocks.Event();
   this.onDisconnect = new chromeMocks.Event();
 
+  /** @type {string} */
   this.name = '';
+
+  /** @type {chrome.runtime.MessageSender} */
   this.sender = null;
 };
 
 chromeMocks.runtime.Port.prototype.disconnect = function() {};
-chromeMocks.runtime.Port.prototype.postMessage = function() {};
 
+/**
+ * @param {Object} message
+ */
+chromeMocks.runtime.Port.prototype.postMessage = function(message) {};
+
+/** @type {chromeMocks.Event} */
 chromeMocks.runtime.onMessage = new chromeMocks.Event();
+
+/**
+ * @param {string?} extensionId
+ * @param {*} message
+ * @param {function(*)=} responseCallback
+ */
 chromeMocks.runtime.sendMessage = function(extensionId, message,
                                            responseCallback) {
   base.debug.assert(
@@ -62,16 +89,24 @@ chromeMocks.runtime.sendMessage = function(extensionId, message,
   });
 };
 
+/** @type {string} */
 chromeMocks.runtime.id = 'extensionId';
 
+/** @type {Object} */
 chromeMocks.storage = {};
 
 // Sample implementation of chrome.StorageArea according to
 // https://developer.chrome.com/apps/storage#type-StorageArea
+/** @constructor */
 chromeMocks.StorageArea = function() {
+  /** @type {Object} */
   this.storage_ = {};
 };
 
+/**
+ * @param {!Object} keys
+ * @return {Array<string>}
+ */
 function getKeys(keys) {
   if (typeof keys === 'string') {
     return [keys];
@@ -81,6 +116,10 @@ function getKeys(keys) {
   return [];
 }
 
+/**
+ * @param {!Object} keys
+ * @param {Function} onDone
+ */
 chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
   if (!keys) {
     onDone(base.deepCopy(this.storage_));
@@ -88,30 +127,39 @@ chromeMocks.StorageArea.prototype.get = function(keys, onDone) {
   }
 
   var result = (typeof keys === 'object') ? keys : {};
-  getKeys(keys).forEach(function(key) {
-    if (key in this.storage_) {
-      result[key] = base.deepCopy(this.storage_[key]);
-    }
-  }, this);
+  getKeys(keys).forEach(
+      /** @param {string} key */
+      function(key) {
+        if (key in this.storage_) {
+          result[key] = base.deepCopy(this.storage_[key]);
+        }
+      }, this);
   onDone(result);
 };
 
+/** @param {Object} value */
 chromeMocks.StorageArea.prototype.set = function(value) {
   for (var key in value) {
     this.storage_[key] = base.deepCopy(value[key]);
   }
 };
 
+/**
+ * @param {!Object} keys
+ */
 chromeMocks.StorageArea.prototype.remove = function(keys) {
-  getKeys(keys).forEach(function(key) {
-    delete this.storage_[key];
-  }, this);
+  getKeys(keys).forEach(
+      /** @param {string} key */
+      function(key) {
+        delete this.storage_[key];
+      }, this);
 };
 
 chromeMocks.StorageArea.prototype.clear = function() {
   this.storage_ = null;
 };
 
+/** @type {chromeMocks.StorageArea} */
 chromeMocks.storage.local = new chromeMocks.StorageArea();
 
 var originals_ = null;
@@ -144,6 +192,4 @@ chromeMocks.restore = function() {
   originals_ = null;
 };
 
-scope.chromeMocks = chromeMocks;
-
-})(window);
+})();

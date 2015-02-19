@@ -14,6 +14,7 @@
 var remoting = remoting || {};
 
 /**
+ * @param {Element} container
  * @constructor
  * @implements {remoting.ClientPlugin}
  */
@@ -135,8 +136,13 @@ remoting.MockClientPlugin.prototype.setOnOutgoingIqHandler =
 remoting.MockClientPlugin.prototype.setOnDebugMessageHandler =
     function(handler) {};
 
+/**
+ * @param {function(number, number):void} handler
+ * @private
+ */
 remoting.MockClientPlugin.prototype.setConnectionStatusUpdateHandler =
     function(handler) {
+  /** @type {function(number, number):void} */
   this.connectionStatusUpdateHandler_ = handler;
 };
 

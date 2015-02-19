@@ -4,10 +4,6 @@
 
 /**
  * @fileoverview
- * @suppress {checkTypes}  By default, JSCompile is not run on test files.
- *    However, you can modify |remoting_webapp_files.gypi| locally to include
- *    the test in the package to expedite local development.  This suppress
- *    is here so that JSCompile won't complain.
  *
  * Provides basic functionality for JavaScript based browser test.
  *
@@ -44,30 +40,44 @@
 
 'use strict';
 
+/** @suppress {duplicate} */
 var browserTest = browserTest || {};
 
+/** @type {window.DomAutomationController} */
+browserTest.automationController_ = null;
+
+/**
+ * @return {void}
+ * @suppress {checkTypes|reportUnknownTypes}
+ */
 browserTest.init = function() {
   // The domAutomationController is used to communicate progress back to the
   // C++ calling code.  It will only exist if chrome is run with the flag
   // --dom-automation.  It is stubbed out here so that browser test can be run
   // under the regular app.
-  browserTest.automationController_ = window.domAutomationController || {
-    send: function(json) {
-      var result = JSON.parse(json);
-      if (result.succeeded) {
-        console.log('Test Passed.');
-      } else {
-        console.error('Test Failed.\n' +
-            result.error_message + '\n' + result.stack_trace);
+  if (window.domAutomationController) {
+    /** @type {window.DomAutomationController} */
+    browserTest.automationController_ = window.domAutomationController;
+  } else {
+    browserTest.automationController_ = {
+      send: function(json) {
+        var result = JSON.parse(json);
+        if (result.succeeded) {
+          console.log('Test Passed.');
+        } else {
+          console.error('Test Failed.\n' +
+              result.error_message + '\n' + result.stack_trace);
+        }
       }
-    }
+    };
   };
 };
 
 /**
  * Fails the C++ calling browser test with |message| if |expr| is false.
- * @param {boolean} expr
+ * @param {*} expr
  * @param {string} message
+ * @return {void}
  */
 browserTest.expect = function(expr, message) {
   if (!expr) {
@@ -76,6 +86,10 @@ browserTest.expect = function(expr, message) {
   }
 };
 
+/**
+ * @param {string|Error} error
+ * @return {void}
+ */
 browserTest.fail = function(error) {
   var error_message = error;
   var stack_trace = base.debug.callstack();
@@ -84,6 +98,8 @@ browserTest.fail = function(error) {
     error_message = error.toString();
     stack_trace = error.stack;
   }
+
+  console.error(error_message);
 
   // To run browserTest locally:
   // 1. Go to |remoting_webapp_files| and look for
@@ -102,6 +118,9 @@ browserTest.fail = function(error) {
   }));
 };
 
+/**
+ * @return {void}
+ */
 browserTest.pass = function() {
   browserTest.automationController_.send(JSON.stringify({
     succeeded: true,
@@ -110,12 +129,21 @@ browserTest.pass = function() {
   }));
 };
 
+/**
+ * @param {string} id
+ * @return {void}
+ */
 browserTest.clickOnControl = function(id) {
   var element = document.getElementById(id);
   browserTest.expect(element, 'No such element: ' + id);
   element.click();
 };
 
+/**
+ * @param {remoting.AppMode} expectedMode
+ * @param {number=} opt_timeout
+ * @return {Promise}
+ */
 browserTest.onUIMode = function(expectedMode, opt_timeout) {
   if (expectedMode == remoting.currentMode) {
     // If the current mode is the same as the expected mode, return a fulfilled
@@ -139,22 +167,27 @@ browserTest.onUIMode = function(expectedMode, opt_timeout) {
       reject('Timeout waiting for ' + expectedMode);
     }
 
+    /** @param {remoting.AppMode} mode */
     function onUIModeChanged(mode) {
       if (mode == expectedMode) {
         remoting.testEvents.removeEventListener(uiModeChanged, onUIModeChanged);
         window.clearTimeout(timerId);
         timerId = null;
-        fulfill();
+        fulfill(true);
       }
     }
 
     if (opt_timeout != browserTest.Timeout.NONE) {
-      timerId = window.setTimeout(onTimeout, opt_timeout);
+      timerId = window.setTimeout(onTimeout,
+                                  /** @type {number} */ (opt_timeout));
     }
     remoting.testEvents.addEventListener(uiModeChanged, onUIModeChanged);
   });
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.connectMe2Me = function() {
   var AppMode = remoting.AppMode;
   browserTest.clickOnControl('this-host-connect');
@@ -170,11 +203,15 @@ browserTest.connectMe2Me = function() {
     });
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.disconnect = function() {
   var AppMode = remoting.AppMode;
   var finishedMode = AppMode.CLIENT_SESSION_FINISHED_ME2ME;
   var finishedButton = 'client-finished-me2me-button';
-  if (remoting.clientSession.getMode() == remoting.ClientSession.Mode.IT2ME) {
+  if (remoting.desktopConnectedView.getMode() ==
+      remoting.DesktopConnectedView.Mode.IT2ME) {
     finishedMode = AppMode.CLIENT_SESSION_FINISHED_IT2ME;
     finishedButton = 'client-finished-it2me-button';
   }
@@ -187,6 +224,11 @@ browserTest.disconnect = function() {
   });
 };
 
+/**
+ * @param {string} pin
+ * @param {?boolean} opt_expectError
+ * @return {Promise}
+ */
 browserTest.enterPIN = function(pin, opt_expectError) {
   // Wait for 500ms before hitting the PIN button. From experiment, sometimes
   // the PIN prompt does not dismiss without the timeout.
@@ -199,7 +241,7 @@ browserTest.enterPIN = function(pin, opt_expectError) {
   }).then(function() {
     if (opt_expectError) {
       return browserTest.expectConnectionError(
-          remoting.ClientSession.Mode.ME2ME,
+          remoting.DesktopConnectedView.Mode.ME2ME,
           remoting.Error.INVALID_ACCESS_CODE);
     } else {
       return browserTest.expectConnected();
@@ -207,6 +249,11 @@ browserTest.enterPIN = function(pin, opt_expectError) {
   });
 };
 
+/**
+ * @param {remoting.DesktopConnectedView.Mode} connectionMode
+ * @param {string} errorTag
+ * @return {Promise}
+ */
 browserTest.expectConnectionError = function(connectionMode, errorTag) {
   var AppMode = remoting.AppMode;
   var Timeout = browserTest.Timeout;
@@ -214,7 +261,7 @@ browserTest.expectConnectionError = function(connectionMode, errorTag) {
   var finishButton = 'client-finished-me2me-button';
   var failureMode = AppMode.CLIENT_CONNECT_FAILED_ME2ME;
 
-  if (connectionMode == remoting.ClientSession.Mode.IT2ME) {
+  if (connectionMode == remoting.DesktopConnectedView.Mode.IT2ME) {
     failureMode = AppMode.CLIENT_CONNECT_FAILED_IT2ME;
     finishButton = 'client-finished-it2me-button';
   }
@@ -228,6 +275,7 @@ browserTest.expectConnectionError = function(connectionMode, errorTag) {
   });
 
   onFailure = onFailure.then(function() {
+    /** @type {Element} */
     var errorDiv = document.getElementById('connect-error-message');
     var actual = errorDiv.innerText;
     var expected = l10n.getTranslationOrError(errorTag);
@@ -242,6 +290,9 @@ browserTest.expectConnectionError = function(connectionMode, errorTag) {
   return Promise.race([onConnected, onFailure]);
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.expectConnected = function() {
   var AppMode = remoting.AppMode;
   // Timeout if the session is not connected within 30 seconds.
@@ -258,12 +309,20 @@ browserTest.expectConnected = function() {
   return Promise.race([onConnected, onFailure]);
 };
 
+/**
+ * @param {base.EventSource} eventSource
+ * @param {string} event
+ * @param {number} timeoutMs
+ * @param {?string} opt_expectedData
+ * @return {Promise}
+ */
 browserTest.expectEvent = function(eventSource, event, timeoutMs,
                                    opt_expectedData) {
   return new Promise(function(fullfil, reject) {
+    /** @param {string=} actualData */
     var verifyEventParameters = function(actualData) {
       if (opt_expectedData === undefined || opt_expectedData === actualData) {
-        fullfil();
+        fullfil(true);
       } else {
         reject('Bad event data; expected ' + opt_expectedData +
                '; got ' + actualData);
@@ -277,16 +336,26 @@ browserTest.expectEvent = function(eventSource, event, timeoutMs,
   });
 };
 
+/**
+ * @param {Function} testClass
+ * @param {*} data
+ * @return {void}
+ * @suppress {checkTypes|checkVars|reportUnknownTypes}
+ */
 browserTest.runTest = function(testClass, data) {
   try {
     var test = new testClass();
     browserTest.expect(typeof test.run == 'function');
     test.run(data);
-  } catch (e) {
+  } catch (/** @type {Error} */ e) {
     browserTest.fail(e);
   }
 };
 
+/**
+ * @param {string} newPin
+ * @return {Promise}
+ */
 browserTest.setupPIN = function(newPin) {
   var AppMode = remoting.AppMode;
   var HOST_SETUP_WAIT = 10000;
@@ -313,6 +382,9 @@ browserTest.setupPIN = function(newPin) {
   });
 };
 
+/**
+ * @return {Promise}
+ */
 browserTest.isLocalHostStarted = function() {
   return new Promise(function(resolve) {
     remoting.hostController.getLocalHostState(function(state) {
@@ -321,27 +393,37 @@ browserTest.isLocalHostStarted = function() {
   });
 };
 
+/**
+ * @param {string} pin
+ * @return {Promise}
+ */
 browserTest.ensureHostStartedWithPIN = function(pin) {
   // Return if host is already
-  return browserTest.isLocalHostStarted().then(function(started){
-    if (!started) {
-      console.log('browserTest: Enabling remote connection.');
-      browserTest.clickOnControl('start-daemon');
-    } else {
-      console.log('browserTest: Changing the PIN of the host to: ' + pin + '.');
-      browserTest.clickOnControl('change-daemon-pin');
-    }
-    return browserTest.setupPIN(pin);
-  });
+  return browserTest.isLocalHostStarted().then(
+      /** @param {boolean} started */
+      function(started){
+        if (!started) {
+          console.log('browserTest: Enabling remote connection.');
+          browserTest.clickOnControl('start-daemon');
+        } else {
+          console.log('browserTest: Changing the PIN of the host to: ' +
+              pin + '.');
+          browserTest.clickOnControl('change-daemon-pin');
+        }
+        return browserTest.setupPIN(pin);
+      });
 };
 
-// Called by Browser Test in C++
+/**
+ * Called by Browser Test in C++
+ * @param {string} pin
+ * @suppress {checkTypes}
+ */
 browserTest.ensureRemoteConnectionEnabled = function(pin) {
-  browserTest.ensureHostStartedWithPIN(pin).then(function(){
-    browserTest.automationController_.send(true);
-  }, function(errorMessage){
-    console.error(errorMessage);
-    browserTest.automationController_.send(false);
+  browserTest.ensureHostStartedWithPIN(pin).then(function() {
+    browserTest.pass();
+  }, function(reason) {
+    browserTest.fail(reason);
   });
 };
 
