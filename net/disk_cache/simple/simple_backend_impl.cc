@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -57,16 +58,27 @@ const char kThreadNamePrefix[] = "SimpleCache";
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
 
-// A global sequenced worker pool to use for launching all tasks.
-SequencedWorkerPool* g_sequenced_worker_pool = NULL;
+class LeakySequencedWorkerPool {
+ public:
+  LeakySequencedWorkerPool()
+      : sequenced_worker_pool_(
+            new SequencedWorkerPool(kMaxWorkerThreads, kThreadNamePrefix)) {}
 
-void MaybeCreateSequencedWorkerPool() {
-  if (!g_sequenced_worker_pool) {
-    g_sequenced_worker_pool =
-        new SequencedWorkerPool(kMaxWorkerThreads, kThreadNamePrefix);
-    g_sequenced_worker_pool->AddRef();  // Leak it.
+  void FlushForTesting() { sequenced_worker_pool_->FlushForTesting(); }
+
+  scoped_refptr<base::TaskRunner> GetTaskRunner() {
+    return sequenced_worker_pool_->GetTaskRunnerWithShutdownBehavior(
+        SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   }
-}
+
+ private:
+  scoped_refptr<SequencedWorkerPool> sequenced_worker_pool_;
+
+  DISALLOW_COPY_AND_ASSIGN(LeakySequencedWorkerPool);
+};
+
+base::LazyInstance<LeakySequencedWorkerPool>::Leaky g_sequenced_worker_pool =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool g_fd_limit_histogram_has_been_populated = false;
 
@@ -236,10 +248,7 @@ SimpleBackendImpl::~SimpleBackendImpl() {
 }
 
 int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
-  MaybeCreateSequencedWorkerPool();
-
-  worker_pool_ = g_sequenced_worker_pool->GetTaskRunnerWithShutdownBehavior(
-      SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  worker_pool_ = g_sequenced_worker_pool.Get().GetTaskRunner();
 
   index_.reset(new SimpleIndex(
       base::ThreadTaskRunnerHandle::Get(),
@@ -724,9 +733,9 @@ void SimpleBackendImpl::DoomEntriesComplete(
   callback.Run(result);
 }
 
+// static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
-  if (g_sequenced_worker_pool)
-    g_sequenced_worker_pool->FlushForTesting();
+  g_sequenced_worker_pool.Get().FlushForTesting();
 }
 
 }  // namespace disk_cache
