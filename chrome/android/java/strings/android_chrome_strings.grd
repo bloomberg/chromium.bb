@@ -980,6 +980,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the homescreen. [CHAR-LIMIT=27]">
         Add to homescreen
       </message>
+      <message name="IDS_ADDED_TO_HOMESCREEN" desc="Indicates that the current domain was added to the user's homescreen.">
+        <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph> was added to your homescreen
+      </message>
 
       <!-- WebsiteSettingsPopup (PageInfo dialog) -->
       <message name="IDS_PAGE_INFO_COPY_URL_BUTTON" desc="Text in the button that copies the URL to the clipboard.">

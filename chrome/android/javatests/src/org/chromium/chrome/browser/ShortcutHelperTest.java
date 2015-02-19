@@ -1,17 +1,20 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser;
 
 import android.content.Intent;
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.SmallTest;
+import android.text.TextUtils;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellApplication;
 import org.chromium.chrome.shell.ChromeShellApplicationObserver;
 import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -42,12 +45,13 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
             + "<head><title>" + NORMAL_TITLE + "</title></head>"
             + "<body>Not Webapp capable</body></html>");
 
+    private static final String META_APP_NAME_PAGE_TITLE = "Not the right title";
     private static final String META_APP_NAME_TITLE = "Web application-name";
     private static final String META_APP_NAME_HTML = UrlUtils.encodeHtmlDataUri(
             "<html><head>"
             + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
             + "<meta name=\"application-name\" content=\"" + META_APP_NAME_TITLE + "\">"
-            + "<title>Not the right title</title>"
+            + "<title>" + META_APP_NAME_PAGE_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
 
     private static class TestObserver implements ChromeShellApplicationObserver {
@@ -74,6 +78,8 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
+
         ShortcutHelper.setFullScreenAction(WEBAPP_ACTION_NAME);
         mActivity = launchChromeShellWithBlankPage();
 
@@ -82,19 +88,13 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         ChromeShellApplication application =
                 (ChromeShellApplication) mActivity.getApplication();
         application.addObserver(mTestObserver);
-
-        super.setUp();
     }
 
-    /**
-     * @MediumTest
-     * @Feature("{Webapp}")
-     * crbug.com/303486
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature("{Webapp}")
     public void testAddWebappShortcuts() throws InterruptedException {
         // Add a webapp shortcut and make sure the intent's parameters make sense.
-        addShortcutToURL(WEBAPP_HTML, "");
+        addShortcutToURL(WEBAPP_HTML, WEBAPP_TITLE, "");
         Intent firedIntent = mTestObserver.mFiredIntent;
         assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
 
@@ -105,7 +105,7 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
 
         // Add a second shortcut and make sure it matches the second webapp's parameters.
         mTestObserver.reset();
-        addShortcutToURL(SECOND_WEBAPP_HTML, "");
+        addShortcutToURL(SECOND_WEBAPP_HTML, SECOND_WEBAPP_TITLE, "");
         Intent newFiredIntent = mTestObserver.mFiredIntent;
         assertEquals(SECOND_WEBAPP_TITLE,
                 newFiredIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
@@ -116,14 +116,10 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         assertEquals(mActivity.getPackageName(), newLaunchIntent.getPackage());
     }
 
-    /**
-     * @MediumTest
-     * @Feature("{Webapp}")
-     * crbug.com/303486
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature("{Webapp}")
     public void testAddBookmarkShortcut() throws InterruptedException {
-        addShortcutToURL(NORMAL_HTML, "");
+        addShortcutToURL(NORMAL_HTML, NORMAL_TITLE, "");
 
         // Make sure the intent's parameters make sense.
         Intent firedIntent = mTestObserver.mFiredIntent;
@@ -135,48 +131,45 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         assertEquals(NORMAL_HTML, launchIntent.getDataString());
     }
 
-    /**
-     * @MediumTest
-     * @Feature("{Webapp}")
-     * crbug.com/303486
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature("{Webapp}")
     public void testAddWebappShortcutsWithoutTitleEdit() throws InterruptedException {
-        // Add a webapp shortcut to check unedited title.
-        addShortcutToURL(WEBAPP_HTML, "");
+        // Add a webapp shortcut using the page's title.
+        addShortcutToURL(WEBAPP_HTML, WEBAPP_TITLE, "");
         Intent firedIntent = mTestObserver.mFiredIntent;
         assertEquals(WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
     }
 
-    /**
-     * @MediumTest
-     * @Feature("{Webapp}")
-     * crbug.com/303486
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature("{Webapp}")
     public void testAddWebappShortcutsWithTitleEdit() throws InterruptedException {
-        // Add a webapp shortcut to check edited title.
-        addShortcutToURL(WEBAPP_HTML, EDITED_WEBAPP_TITLE);
+        // Add a webapp shortcut with a custom title.
+        addShortcutToURL(WEBAPP_HTML, WEBAPP_TITLE, EDITED_WEBAPP_TITLE);
         Intent firedIntent = mTestObserver.mFiredIntent;
-        assertEquals(EDITED_WEBAPP_TITLE , firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(EDITED_WEBAPP_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
     }
 
-    /**
-     * @MediumTest
-     * @Feature("{Webapp}")
-     * crbug.com/303486
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature("{Webapp}")
     public void testAddWebappShortcutsWithApplicationName() throws InterruptedException {
-        // Add a webapp shortcut to check edited title.
-        addShortcutToURL(META_APP_NAME_HTML, "");
+        addShortcutToURL(META_APP_NAME_HTML, META_APP_NAME_PAGE_TITLE, "");
         Intent firedIntent = mTestObserver.mFiredIntent;
-        assertEquals(META_APP_NAME_TITLE , firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
+        assertEquals(META_APP_NAME_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
     }
 
-    private void addShortcutToURL(String url, final String title) throws InterruptedException {
-        loadUrlWithSanitization(url);
-        assertTrue(waitForActiveShellToBeDoneLoading());
+    private void addShortcutToURL(String url, final String expectedPageTitle, final String title)
+            throws InterruptedException {
+        final Tab activeTab = getActivity().getActiveTab();
+        TabLoadObserver observer = new TabLoadObserver(activeTab, url) {
+            @Override
+            public boolean isSatisfied() {
+                // The page title is often updated over several iterations.  Wait until the right
+                // one appears.
+                return super.isSatisfied()
+                        && TextUtils.equals(activeTab.getTitle(), expectedPageTitle);
+            }
+        };
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
 
         // Add the shortcut.
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -184,8 +177,7 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
             public void run() {
                 final ShortcutHelper shortcutHelper = new ShortcutHelper(
                         mActivity.getApplicationContext(), mActivity.getActiveTab());
-                // Calling initialize() isn't strictly required but it is
-                // testing this code path.
+                // Calling initialize() isn't strictly required but it is testing this code path.
                 shortcutHelper.initialize(new ShortcutHelper.OnInitialized() {
                     @Override
                     public void onInitialized(String t) {
@@ -196,7 +188,7 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         });
 
         // Make sure that the shortcut was added.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return mTestObserver.mFiredIntent != null;

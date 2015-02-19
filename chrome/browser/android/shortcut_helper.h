@@ -91,7 +91,8 @@ class ShortcutHelper : public content::WebContentsObserver {
   // Must be called from a WorkerPool task.
   static void AddShortcutInBackgroundWithSkBitmap(
       const ShortcutInfo& info,
-      const SkBitmap& icon_bitmap);
+      const SkBitmap& icon_bitmap,
+      const bool return_to_homescreen);
 
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);

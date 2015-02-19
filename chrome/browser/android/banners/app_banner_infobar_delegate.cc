@@ -172,7 +172,8 @@ bool AppBannerInfoBarDelegate::Accept() {
         FROM_HERE,
         base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
                    info,
-                   *app_icon_.get()),
+                   *app_icon_.get(),
+                   false),
         true);
 
     TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);

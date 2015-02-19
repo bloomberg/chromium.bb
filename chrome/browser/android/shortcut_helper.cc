@@ -216,16 +216,17 @@ void ShortcutHelper::AddShortcut(
 }
 
 void ShortcutHelper::AddShortcutUsingManifestIcon() {
+  RecordAddToHomescreen();
+
   // Stop observing so we don't get destroyed while doing the last steps.
   Observe(NULL);
-
-  RecordAddToHomescreen();
 
   base::WorkerPool::PostTask(
       FROM_HERE,
       base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
                  shortcut_info_,
-                 manifest_icon_),
+                 manifest_icon_,
+                 true),
       true);
 
   Destroy();
@@ -306,12 +307,13 @@ void ShortcutHelper::AddShortcutInBackgroundWithRawBitmap(
                           &icon_bitmap);
   }
 
-  AddShortcutInBackgroundWithSkBitmap(info, icon_bitmap);
+  AddShortcutInBackgroundWithSkBitmap(info, icon_bitmap, true);
 }
 
 void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
     const ShortcutInfo& info,
-    const SkBitmap& icon_bitmap) {
+    const SkBitmap& icon_bitmap,
+    const bool return_to_homescreen) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
 
   SkColor color = color_utils::CalculateKMeanColorOfBitmap(icon_bitmap);
@@ -339,7 +341,8 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       g_value,
       b_value,
       info.display == content::Manifest::DISPLAY_MODE_STANDALONE,
-      info.orientation);
+      info.orientation,
+      return_to_homescreen);
 }
 
 void ShortcutHelper::RecordAddToHomescreen() {

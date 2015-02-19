@@ -8,11 +8,16 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.content_public.common.ScreenOrientationConstants;
 
 import java.io.ByteArrayOutputStream;
@@ -123,7 +128,8 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(Context context, String url, String title, Bitmap icon,
-            int red, int green, int blue, boolean isWebappCapable, int orientation) {
+            int red, int green, int blue, boolean isWebappCapable, int orientation,
+            boolean returnToHomescreen) {
         assert sFullScreenAction != null;
 
         Intent shortcutIntent;
@@ -161,11 +167,26 @@ public class ShortcutHelper {
         context.sendBroadcast(BookmarkUtils.createAddToHomeIntent(context, shortcutIntent, title,
                 icon, red, green, blue));
 
-        // User is sent to the homescreen as soon as the shortcut is created.
-        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-        homeIntent.addCategory(Intent.CATEGORY_HOME);
-        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(homeIntent);
+        // Alert the user about adding the shortcut.
+        if (returnToHomescreen) {
+            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+            homeIntent.addCategory(Intent.CATEGORY_HOME);
+            homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(homeIntent);
+        } else {
+            final String shortUrl = UrlUtilities.getDomainAndRegistry(url, true);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Context applicationContext = ApplicationStatus.getApplicationContext();
+                    String toastText =
+                            applicationContext.getString(R.string.added_to_homescreen, shortUrl);
+                    Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
+        }
     }
 
     private native long nativeInitialize(long tabAndroidPtr);
