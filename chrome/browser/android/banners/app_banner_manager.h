@@ -31,38 +31,10 @@ class InfoBar;
  * Manages when an app banner is created or dismissed.
  *
  * Hooks the wiring together for getting the data for a particular app.
- * Monitors at most one package at a time, and tracks the info for the
- * most recent app that was requested.  Any work in progress for other apps is
- * discarded.
+ * Monitors at most one app at a time, tracking the info for the most recently
+ * requested app. Any work in progress for other apps is discarded.
  *
- * The procedure for creating a banner spans multiple asynchronous calls across
- * the JNI boundary, as well as querying a Service to get info about the app.
- *
- * 0) A navigation of the main frame is triggered.  Upon completion of the load,
- *    the page is parsed for the correct meta tag.  If it doesn't exist, abort.
- *
- * 1) The AppBannerManager is alerted about the tag's contents, which should
- *    be the Play Store package name.  This is sent to the Java side
- *    AppBannerManager.
- *
- * 2) The AppBannerManager's ServiceDelegate is asynchronously queried about the
- *    package name.
- *
- * 3) At some point, the Java-side AppBannerManager is alerted of the completed
- *    query and is given back data about the requested package, which includes a
- *    URL for the app's icon.  This URL is sent to native code for retrieval.
- *
- * 4) The process of fetching the icon begins by invoking the BitmapFetcher,
- *    which works asynchonously.
- *
- * 5) Once the icon has been downloaded, the icon is sent to the Java-side
- *    AppBannerManager to (finally) create a AppBannerView, assuming that the
- *    app we retrieved the details for is still for the page that requested it.
- *
- * Because of the asynchronous nature of this pipeline, it's entirely possible
- * that a request to show a banner is interrupted by another request.  The
- * Java side manages what happens in these situations, which will usually result
- * in dropping the old banner request on the floor.
+ * TODO(dfalcantara): Update this when the pipeline requirements resolidify.
  */
 
 namespace banners {
@@ -71,7 +43,7 @@ class AppBannerManager : public content::WebContentsObserver {
  public:
   class BannerBitmapFetcher;
 
-  AppBannerManager(JNIEnv* env, jobject obj);
+  AppBannerManager(JNIEnv* env, jobject obj, int icon_size);
   ~AppBannerManager() override;
 
   // Destroys the AppBannerManager.
@@ -115,9 +87,6 @@ class AppBannerManager : public content::WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  // Gets the preferred icon size for the banner icons.
-  int GetPreferredIconSize();
-
   // Called when the manifest has been retrieved, or if there is no manifest to
   // retrieve.
   void OnDidGetManifest(const content::Manifest& manifest);
@@ -143,6 +112,9 @@ class AppBannerManager : public content::WebContentsObserver {
 
   // Cancels an active BitmapFetcher, stopping its banner from appearing.
   void CancelActiveFetcher();
+
+  // Icon size that we want to be use for the launcher.
+  const int preferred_icon_size_;
 
   // Fetches the icon for an app.  Weakly held because they delete themselves.
   BannerBitmapFetcher* fetcher_;

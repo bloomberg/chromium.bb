@@ -1260,7 +1260,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         initializeNative();
 
         if (AppBannerManager.isEnabled()) {
-            mAppBannerManager = new AppBannerManager(this);
+            mAppBannerManager = new AppBannerManager(this, mContext);
             addObserver(mAppBannerManager);
         }
     }

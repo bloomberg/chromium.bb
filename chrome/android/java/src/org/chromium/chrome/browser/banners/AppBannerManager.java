@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.banners;
 
+import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
@@ -64,8 +64,9 @@ public class AppBannerManager extends EmptyTabObserver {
      * Constructs an AppBannerManager for the given tab.
      * @param tab Tab that the AppBannerManager will be attached to.
      */
-    public AppBannerManager(Tab tab) {
-        mNativePointer = nativeInit();
+    public AppBannerManager(Tab tab, Context context) {
+        int iconSize = context.getResources().getDimensionPixelSize(R.dimen.app_banner_icon_size);
+        mNativePointer = nativeInit(iconSize);
         mTab = tab;
         updatePointers();
     }
@@ -95,21 +96,14 @@ public class AppBannerManager extends EmptyTabObserver {
         nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
     }
 
-    @CalledByNative
-    private int getPreferredIconSize() {
-        return ApplicationStatus.getApplicationContext().getResources().getDimensionPixelSize(
-                R.dimen.app_banner_icon_size);
-    }
-
     /**
      * Grabs package information for the banner asynchronously.
      * @param url         URL for the page that is triggering the banner.
      * @param packageName Name of the package that is being advertised.
      */
     @CalledByNative
-    private void fetchAppDetails(String url, String packageName) {
+    private void fetchAppDetails(String url, String packageName, int iconSize) {
         if (sAppDetailsDelegate == null) return;
-        int iconSize = getPreferredIconSize();
         sAppDetailsDelegate.getAppDetailsAsynchronously(
                 createAppDetailsObserver(), url, packageName, iconSize);
     }
@@ -153,7 +147,7 @@ public class AppBannerManager extends EmptyTabObserver {
     }
 
     private static native boolean nativeIsEnabled();
-    private native long nativeInit();
+    private native long nativeInit(int iconSize);
     private native void nativeDestroy(long nativeAppBannerManager);
     private native void nativeReplaceWebContents(long nativeAppBannerManager,
             WebContents webContents);

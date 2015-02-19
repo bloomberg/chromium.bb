@@ -91,8 +91,9 @@ void AppBannerManager::BannerBitmapFetcher::OnFetchComplete(
   delete this;
 }
 
-AppBannerManager::AppBannerManager(JNIEnv* env, jobject obj)
-    : fetcher_(nullptr),
+AppBannerManager::AppBannerManager(JNIEnv* env, jobject obj, int icon_size)
+    : preferred_icon_size_(icon_size),
+      fetcher_(nullptr),
       weak_java_banner_view_manager_(env, obj),
       weak_factory_(this) {
 }
@@ -179,7 +180,7 @@ void AppBannerManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
     GURL icon_url =
         ManifestIconSelector::FindBestMatchingIcon(
             web_app_data_.icons,
-            GetPreferredIconSize(),
+            preferred_icon_size_,
             gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
     if (icon_url.is_empty())
       return;
@@ -300,7 +301,8 @@ void AppBannerManager::OnDidRetrieveMetaTagContent(
   Java_AppBannerManager_fetchAppDetails(env,
                                         jobj.obj(),
                                         jurl.obj(),
-                                        jpackage.obj());
+                                        jpackage.obj(),
+                                        preferred_icon_size_);
 }
 
 bool AppBannerManager::OnAppDetailsRetrieved(JNIEnv* env,
@@ -342,22 +344,13 @@ bool AppBannerManager::FetchIcon(const GURL& image_url) {
   return true;
 }
 
-int AppBannerManager::GetPreferredIconSize() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-  if (jobj.is_null())
-    return 0;
-
-  return Java_AppBannerManager_getPreferredIconSize(env, jobj.obj());
-}
-
 // static
 base::Time AppBannerManager::GetCurrentTime() {
   return base::Time::Now() + gTimeDeltaForTesting;
 }
 
-jlong Init(JNIEnv* env, jobject obj) {
-  AppBannerManager* manager = new AppBannerManager(env, obj);
+jlong Init(JNIEnv* env, jobject obj, jint icon_size) {
+  AppBannerManager* manager = new AppBannerManager(env, obj, icon_size);
   return reinterpret_cast<intptr_t>(manager);
 }
 
