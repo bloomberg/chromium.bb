@@ -1,0 +1,34 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+# GYP: //third_party/robolectric/robolectric.gyp:android_all_jar
+java_prebuilt("android_all_java") {
+  visibility = [ ":*" ]
+  jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
+}
+
+# GYP: //third_party/robolectric/robolectric.gyp:tagsoup_jar
+java_prebuilt("tagsoup_java") {
+  visibility = [ ":*" ]
+  jar_path = "lib/tagsoup-1.2.jar"
+}
+
+# GYP: //third_party/robolectric/robolectric.gyp:json_jar
+java_prebuilt("json_java") {
+  visibility = [ ":*" ]
+  jar_path = "lib/json-20080701.jar"
+}
+
+# GYP: //third_party/robolectric/robolectric.gyp:robolectric_jar
+java_prebuilt("robolectric_java") {
+  testonly = true
+  jar_path = "lib/robolectric-2.4-jar-with-dependencies.jar"
+  deps = [
+    ":android_all_java",
+    ":tagsoup_java",
+    ":json_java",
+  ]
+}
