@@ -30,14 +30,25 @@ gfx::Size GetTextLabelsSize(const views::Label* upper_label,
                    upper_label_size.height() + lower_label_size.height());
 }
 
-// Returns either full name or username if the former is empty.
-const base::string16& GetUpperLabelText(const autofill::PasswordForm& form) {
-  return form.display_name.empty() ? form.username_value : form.display_name;
+// Returns the bold upper text for the button.
+base::string16 GetUpperLabelText(const autofill::PasswordForm& form,
+                                 CredentialsItemView::Style style) {
+  const base::string16& name = form.display_name.empty() ? form.username_value
+                                                         : form.display_name;
+  switch (style) {
+    case CredentialsItemView::ACCOUNT_CHOOSER:
+      return name;
+    case CredentialsItemView::AUTO_SIGNIN:
+      return l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
+                                        name);
+  }
+  NOTREACHED();
+  return base::string16();
 }
 
-// Returns IDP information for federated credentials and username or empty
-// string for non-federated ones.
-base::string16 GetLowerLabelText(const autofill::PasswordForm& form) {
+// Returns the lower text for the button.
+base::string16 GetLowerLabelText(const autofill::PasswordForm& form,
+                                 CredentialsItemView::Style style) {
   if (!form.federation_url.is_empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
@@ -75,6 +86,7 @@ CredentialsItemView::CredentialsItemView(
     views::ButtonListener* button_listener,
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type,
+    Style style,
     net::URLRequestContextGetter* request_context)
     : LabelButton(button_listener, base::string16()),
       form_(form),
@@ -102,11 +114,12 @@ CredentialsItemView::CredentialsItemView(
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   upper_label_ = new views::Label(
-      GetUpperLabelText(form_), rb->GetFontList(ui::ResourceBundle::BoldFont));
+      GetUpperLabelText(form_, style),
+      rb->GetFontList(ui::ResourceBundle::BoldFont));
   upper_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(upper_label_);
 
-  base::string16 lower_text = GetLowerLabelText(form_);
+  base::string16 lower_text = GetLowerLabelText(form_, style);
   if (!lower_text.empty()) {
     lower_label_ = new views::Label(
         lower_text, rb->GetFontList(ui::ResourceBundle::SmallFont));

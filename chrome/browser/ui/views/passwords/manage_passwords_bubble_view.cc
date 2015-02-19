@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -39,6 +40,7 @@
 
 namespace {
 
+const int kAutoSigninToastTimeout = 5;
 const int kDesiredBubbleWidth = 370;
 
 enum ColumnSetType {
@@ -246,8 +248,9 @@ void ManagePasswordsBubbleView::AccountChooserView::AddCredentialItemsWithType(
   for (autofill::PasswordForm* form : password_forms) {
     // Add the title to the layout with appropriate padding.
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(
-        new CredentialsItemView(this, *form, type, request_context));
+    layout->AddView(new CredentialsItemView(
+        this, *form, type, CredentialsItemView::ACCOUNT_CHOOSER,
+        request_context));
   }
 }
 
@@ -262,6 +265,55 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
   } else {
     parent_->model()->OnNopeClicked();
   }
+  parent_->Close();
+}
+
+// ManagePasswordsBubbleView::AutoSigninView ----------------------------------
+
+// A view containing just one credential that was used for for automatic signing
+// in.
+class ManagePasswordsBubbleView::AutoSigninView
+    : public views::View,
+      public views::ButtonListener {
+ public:
+  explicit AutoSigninView(ManagePasswordsBubbleView* parent);
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  void OnTimer();
+
+  base::OneShotTimer<AutoSigninView> timer_;
+  ManagePasswordsBubbleView* parent_;
+};
+
+ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  SetLayoutManager(new views::FillLayout);
+  CredentialsItemView* credential = new CredentialsItemView(
+      this,
+      parent_->model()->pending_password(),
+      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+      CredentialsItemView::AUTO_SIGNIN,
+      parent_->model()->GetProfile()->GetRequestContext());
+  AddChildView(credential);
+  // TODO(vasilii): enable the button to switch to the "Managed" state.
+  credential->SetEnabled(false);
+  parent_->set_initially_focused_view(credential);
+
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kAutoSigninToastTimeout),
+               this, &AutoSigninView::OnTimer);
+}
+
+void ManagePasswordsBubbleView::AutoSigninView::ButtonPressed(
+    views::Button* sender, const ui::Event& event) {
+  // TODO(vasilii): close the toast and switch to the "Managed" state.
+}
+
+void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
+  parent_->model()->OnAutoSignInToastTimeout();
   parent_->Close();
 }
 
@@ -974,6 +1026,8 @@ void ManagePasswordsBubbleView::Refresh() {
   } else if (model()->state() ==
                  password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     AddChildView(new AccountChooserView(this));
+  } else if (model()->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
+    AddChildView(new AutoSigninView(this));
   } else {
     AddChildView(new ManageView(this));
   }

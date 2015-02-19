@@ -182,6 +182,8 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
           metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
     } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
       display_disposition_ = metrics_util::AUTOMATIC_CREDENTIAL_REQUEST;
+    } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
+      display_disposition_ = metrics_util::AUTOMATIC_SIGNIN_TOAST;
     } else {
       display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
     }
@@ -230,13 +232,13 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
 
   metrics_util::LogUIDismissalReason(dismissal_reason_);
   // Other use cases have been reported in the callbacks like OnSaveClicked().
-  if (dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE &&
+      dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)
     RecordExperimentStatistics(web_contents(), dismissal_reason_);
 }
 
 void ManagePasswordsBubbleModel::OnCollectURLClicked(const std::string& url) {
   dismissal_reason_ = metrics_util::CLICKED_COLLECT_URL;
-  RecordExperimentStatistics(web_contents(), dismissal_reason_);
   // User interaction with bubble has happened, do not need to show bubble
   // in case it was before transition to another page.
   state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
@@ -249,7 +251,6 @@ void ManagePasswordsBubbleModel::OnCollectURLClicked(const std::string& url) {
 
 void ManagePasswordsBubbleModel::OnDoNotCollectURLClicked() {
   dismissal_reason_ = metrics_util::CLICKED_DO_NOT_COLLECT_URL;
-  RecordExperimentStatistics(web_contents(), dismissal_reason_);
   // User interaction with bubble has happened, do not need to show bubble
   // in case it was before transition to another page.
   state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
@@ -312,6 +313,10 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_MANAGE;
   ManagePasswordsUIController::FromWebContents(web_contents())
       ->NavigateToPasswordManagerSettingsPage();
+}
+
+void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
+  dismissal_reason_ = metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT;
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(

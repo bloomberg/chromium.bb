@@ -80,6 +80,9 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the manage link is clicked by the user.
   void OnManageLinkClicked();
 
+  // Called by the view code when the auto-signin toast is about to close.
+  void OnAutoSignInToastTimeout();
+
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
   void OnPasswordAction(const autofill::PasswordForm& password_form,

@@ -79,6 +79,12 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     controller()->SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   }
 
+  void PretendAutoSigningIn() {
+    model_->set_state(password_manager::ui::AUTO_SIGNIN_STATE);
+    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    controller()->SetState(password_manager::ui::AUTO_SIGNIN_STATE);
+  }
+
   void PretendManagingPasswords() {
     model_->set_state(password_manager::ui::MANAGE_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
@@ -400,5 +406,19 @@ TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::NO_DIRECT_INTERACTION,
+      1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
+  base::HistogramTester histogram_tester;
+  PretendAutoSigningIn();
+  model_->OnAutoSignInToastTimeout();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
+
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT,
       1);
 }

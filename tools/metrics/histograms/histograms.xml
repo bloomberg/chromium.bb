@@ -54402,6 +54402,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Opened automatically / Confirming generated password saved"/>
   <int value="5"
       label="Opened automatically / Offering a credential to choose"/>
+  <int value="6" label="Opened automatically / Auto-signin toast"/>
 </enum>
 
 <enum name="PasswordGenerationEvent" type="int">
@@ -54885,6 +54886,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="Clicked on a credential"/>
   <int value="9" label="Clicked collect URL"/>
   <int value="10" label="Clicked do not collect URL"/>
+  <int value="11" label="Auto-signin toast timeout"/>
 </enum>
 
 <enum name="PeerConnectionCounters" type="int">
