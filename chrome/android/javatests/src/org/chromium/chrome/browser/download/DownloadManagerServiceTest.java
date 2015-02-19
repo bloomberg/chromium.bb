@@ -392,7 +392,8 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                 (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
         long downloadId = manager.addCompletedDownload(
                 "test", "test", false, "text/html",
-                UrlUtils.getTestFilePath("clank/download/download.txt"), 4, true);
+                UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/download/download.txt"),
+                4, true);
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
@@ -423,7 +424,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                 .setDownloadId(0)
                 .setMimeType(OMADownloadHandler.OMA_DRM_MESSAGE_MIME)
                 .setFileName("test.gzip")
-                .setUrl(TestHttpServerClient.getUrl("clank/test/data/android/download/test.gzip"))
+                .setUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"))
                 .build();
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
