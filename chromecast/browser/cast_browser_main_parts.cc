@@ -95,6 +95,10 @@ struct DefaultCommandLineSwitch {
 };
 
 DefaultCommandLineSwitch g_default_switches[] = {
+  // TODO(ddorwin): Develop a permanent solution. See http://crbug.com/394926.
+  // For now, disable unprefixed EME because the video behavior not be
+  // consistent with other clients.
+  { switches::kDisableEncryptedMedia, ""},
 #if defined(OS_ANDROID)
   { switches::kMediaDrmEnableNonCompositing, ""},
   { switches::kEnableOverlayFullscreenVideo, ""},

@@ -79,8 +79,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableNotifications);
 
 #if defined(VIDEO_HOLE)
-  // Support EME/L1 with hole-punching.
+  // Support EME with hole-punching. For example, Widevine L1.
   cl->AppendSwitch(switches::kMediaDrmEnableNonCompositing);
+  cl->AppendSwitch(switches::kDisableEncryptedMedia);
 #endif
 
   // WebRTC hardware decoding is not supported, internal bug 15075307
