@@ -13,7 +13,6 @@
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"

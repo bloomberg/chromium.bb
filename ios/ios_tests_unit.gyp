@@ -15,7 +15,6 @@
         '../base/base.gyp:test_support_base',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        'ios_base.gyp:ios_consumer_base',
         'web/ios_web.gyp:ios_web',
         'web/ios_web.gyp:test_support_ios_web',
       ],

@@ -20,7 +20,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/public/consumer/base/util.h"
 #include "ios/web/public/web_thread.h"
 
 @interface SnapshotCache ()

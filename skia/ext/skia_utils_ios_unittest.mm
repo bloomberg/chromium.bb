@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/base64.h"
-#include "base/ios/ios_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
