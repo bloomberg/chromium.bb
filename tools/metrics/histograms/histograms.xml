@@ -60381,7 +60381,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Renderer4.StartToFinish"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="AutofillDataAvailability">
+<histogram_suffixes name="AutofillDataAvailability" separator=".">
   <suffix name="WithNoData" label="no autofill data"/>
   <suffix name="WithOnlyServerData" label="only server autofill data"/>
   <suffix name="WithOnlyLocalData" label="only local autofill data"/>
