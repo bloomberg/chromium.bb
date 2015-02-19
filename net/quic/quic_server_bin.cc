@@ -48,10 +48,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (line->HasSwitch("port")) {
-    int port;
-    if (base::StringToInt(line->GetSwitchValueASCII("port"), &port)) {
-      FLAGS_port = port;
-    } else {
+    if (!base::StringToInt(line->GetSwitchValueASCII("port"), &FLAGS_port)) {
       LOG(ERROR) << "--port must be an integer\n";
       return 1;
     }

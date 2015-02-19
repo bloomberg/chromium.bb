@@ -125,10 +125,7 @@ int main(int argc, char *argv[]) {
     FLAGS_host = line->GetSwitchValueASCII("host");
   }
   if (line->HasSwitch("port")) {
-    int port;
-    if (base::StringToInt(line->GetSwitchValueASCII("port"), &port)) {
-      FLAGS_port = port;
-    } else {
+    if (!base::StringToInt(line->GetSwitchValueASCII("port"), &FLAGS_port)) {
       std::cerr << "--port must be an integer\n";
       return 1;
     }
