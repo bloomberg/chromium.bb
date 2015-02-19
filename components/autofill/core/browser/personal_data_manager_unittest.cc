@@ -2709,21 +2709,22 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   EnableWalletCardImport();
 
-  // These GUIDs are reverse alphabetical to make validating expectations
-  // easier.
   CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
                           "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0,
       "Clyde Barrow", "347666888555" /* American Express */, "04", "2015");
+  credit_card0.set_use_count(2);
   personal_data_->AddCreditCard(credit_card0);
 
   CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
                           "https://www.example.com");
+  credit_card1.set_use_count(3);
   test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
   personal_data_->AddCreditCard(credit_card1);
 
   CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
                           "https://www.example.com");
+  credit_card2.set_use_count(1);
   test::SetCreditCardInfo(&credit_card2,
       "Bonnie Parker", "518765432109" /* Mastercard */, "", "");
   personal_data_->AddCreditCard(credit_card2);
@@ -2737,21 +2738,22 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME), base::string16());
   ASSERT_EQ(3U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("*8555"), suggestions[2].label);
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[1].value);
-  EXPECT_EQ(base::string16(), suggestions[1].label);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("*2109"), suggestions[0].label);
+  // Ordered by MFU.
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("*8555"), suggestions[1].label);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
+  EXPECT_EQ(base::string16(), suggestions[0].label);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("*2109"), suggestions[2].label);
 
   // Sublabel is expiration date when filling card number.
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), base::string16());
   ASSERT_EQ(2U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("American Express - 8555"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[1].label);
-  EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[0].value);
-  EXPECT_EQ(base::string16(), suggestions[0].label);
+  EXPECT_EQ(ASCIIToUTF16("American Express - 8555"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[0].label);
+  EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[1].value);
+  EXPECT_EQ(base::string16(), suggestions[1].label);
 
   // Add some server cards. If there are local dupes, the locals should be
   // hidden.

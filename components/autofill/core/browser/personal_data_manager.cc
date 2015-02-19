@@ -217,6 +217,18 @@ static bool CompareVotes(const std::pair<std::string, int>& a,
   return a.second < b.second;
 }
 
+// Ranks two data models according to their recency of use. Currently this will
+// place all server (Wallet) cards and addresses below all locally saved ones,
+// which is probably not what we want. TODO(estade): figure out relative ranking
+// of server data.
+bool RankByMfu(const AutofillDataModel* a, const AutofillDataModel* b) {
+  if (a->use_count() != b->use_count())
+    return a->use_count() > b->use_count();
+
+  // Ties are broken by MRU.
+  return a->use_date() > b->use_date();
+}
+
 }  // namespace
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
@@ -717,13 +729,16 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   base::string16 field_contents_canon =
       AutofillProfile::CanonicalizeProfileString(field_contents);
 
+  std::vector<AutofillProfile*> profiles = GetProfiles(true);
+  std::sort(profiles.begin(), profiles.end(), RankByMfu);
+
   if (field_is_autofilled) {
     // This field was previously autofilled. In this case, suggesting results
     // based on prefix is useless since it will be the same thing. Instead,
     // check for a field that may have multiple possible values (for example,
     // multiple names for the same address) and suggest the alternates. This
     // allows for easy correction of the data.
-    for (AutofillProfile* profile : GetProfiles(true)) {
+    for (AutofillProfile* profile : profiles) {
       std::vector<base::string16> values =
           GetMultiInfoInOneLine(profile, type, app_locale_);
 
@@ -750,7 +765,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   } else {
     // Match based on a prefix search.
     std::vector<AutofillProfile*> matched_profiles;
-    for (AutofillProfile* profile : GetProfiles(true)) {
+    for (AutofillProfile* profile : profiles) {
       std::vector<base::string16> values =
           GetMultiInfoInOneLine(profile, type, app_locale_);
       for (size_t i = 0; i < values.size(); i++) {
@@ -825,6 +840,8 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
         cards_to_suggest.erase(inner_it_copy);
     }
   }
+
+  cards_to_suggest.sort(RankByMfu);
 
   std::vector<Suggestion> suggestions;
   for (const CreditCard* credit_card : cards_to_suggest) {
