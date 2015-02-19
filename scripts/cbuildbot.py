@@ -56,6 +56,7 @@ from chromite.lib import cleanup
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import graphite
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -1652,8 +1653,8 @@ def _ParseCommandLine(parser, argv):
   return options, args
 
 
-def _SetupCidb(options, build_config):
-  """Set up CIDB the appropriate Setup call.
+def _SetupConnections(options, build_config):
+  """Set up CIDB and graphite connections using the appropriate Setup call.
 
   Args:
     options: Command line options structure.
@@ -1672,29 +1673,41 @@ def _SetupCidb(options, build_config):
   # specify on-or-off waterfall and on-or-off production runs of cbuildbot.
   # See crbug.com/331417
 
-  # --buildbot runs should use the production database, unless the --debug flag
-  # is also present in which case they should use the debug database.
+  # --buildbot runs should use the production services, unless the --debug flag
+  # is also present in which case they should use the debug cidb and not emit
+  # stats.
   if options.buildbot:
     if options.debug:
+      graphite.StatsFactory.SetupMock()
+      graphite.ESMetadataFactory.SetupReadOnly()
       cidb.CIDBConnectionFactory.SetupDebugCidb()
       return
     else:
+      graphite.StatsFactory.SetupProd()
+      graphite.ESMetadataFactory.SetupProd()
       cidb.CIDBConnectionFactory.SetupProdCidb()
       return
 
-  # --remote-trybot runs should use the debug database. With the exception of
-  # pre-cq builds, which should use the production database.
+  # --remote-trybot runs should use the debug database and not emit stats.
+  # With the exception of pre-cq builds, which should use the production
+  # database and emit stats.
   if options.remote_trybot:
     if build_config['pre_cq']:
+      graphite.StatsFactory.SetupProd()
+      graphite.ESMetadataFactory.SetupProd()
       cidb.CIDBConnectionFactory.SetupProdCidb()
       return
     else:
+      graphite.StatsFactory.SetupMock()
+      graphite.ESMetadataFactory.SetupReadOnly()
       cidb.CIDBConnectionFactory.SetupDebugCidb()
       return
 
   # If neither --buildbot nor --remote-trybot flag was used, don't use the
-  # database.
+  # database or emit stats.
   cidb.CIDBConnectionFactory.SetupNoCidb()
+  graphite.StatsFactory.SetupMock()
+  graphite.ESMetadataFactory.SetupReadOnly()
 
 
 # TODO(build): This function is too damn long.
@@ -1869,7 +1882,7 @@ def main(argv):
                 '_FetchSlaveStatuses',
                 return_value=mock_statuses)
 
-    _SetupCidb(options, build_config)
+    _SetupConnections(options, build_config)
     retry_stats.SetupStats()
 
     # For master-slave builds: Update slave's timeout using master's published

@@ -87,7 +87,7 @@ class EsUtilException(Exception):
 QueryResult = collections.namedtuple('QueryResult', ['total', 'hits'])
 
 
-class ESMetadata(object):
+class ESMetadataRO(object):
   """Class handling es connection for metadata."""
 
   @property
@@ -120,68 +120,6 @@ class ESMetadata(object):
     self.timeout = timeout
     self._es = None
 
-
-  def _send_data_http(self, type_str, metadata):
-    """Sends data to insert into elasticsearch using HTTP.
-
-    Args:
-      type_str: sets the _type field in elasticsearch db.
-      metadata: dictionary object containing metadata
-    """
-    self.es.index(index=self.index, doc_type=type_str, body=metadata)
-
-
-  def _send_data_udp(self, type_str, metadata):
-    """Sends data to insert into elasticsearch using UDP.
-
-    Args:
-      type_str: sets the _type field in elasticsearch db.
-      metadata: dictionary object containing metadata
-    """
-    try:
-      # Header.
-      message = json.dumps(
-          {'index': {'_index': self.index, '_type': type_str}},
-          separators=(', ', ' : '))
-      message += '\n'
-      # Metadata.
-      message += json.dumps(metadata, separators=(', ', ' : '))
-      message += '\n'
-
-      sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      sock.sendto(message, (self.host, self.udp_port))
-    except socket.error as e:
-      logging.warn(e)
-
-
-  def post(self, type_str, metadata, log_time_recorded=True, **kwargs):
-    """Wraps call of send_data, inserts entry into elasticsearch.
-
-    Args:
-      type_str: Sets the _type field in elasticsearch db.
-      metadata: Dictionary object containing metadata
-      log_time_recorded: Whether to automatically record the time
-                         this metadata is recorded. Default is True.
-      kwargs: Additional metadata fields
-    """
-    if not metadata:
-      return
-
-    metadata = metadata.copy()
-    metadata.update(kwargs)
-    # metadata should not contain anything with key '_type'
-    if '_type' in metadata:
-      type_str = metadata['_type']
-      del metadata['_type']
-    if log_time_recorded:
-      metadata['time_recorded'] = time.time()
-    try:
-      if self.use_http:
-        self._send_data_http(type_str, metadata)
-      else:
-        self._send_data_udp(type_str, metadata)
-    except elasticsearch.ElasticsearchException as e:
-      logging.error(e)
 
   # TODO(akeshet) remove this pylint workaround.
   # pylint: disable=dangerous-default-value
@@ -406,3 +344,69 @@ class ESMetadata(object):
     """The arguments to this function are the same as _compose_query."""
     query = self._compose_query(*args, **kwargs)
     return self.execute_query(query)
+
+
+class ESMetadata(ESMetadataRO):
+  """Class handling read and write es connection for metadata."""
+
+  def _send_data_http(self, type_str, metadata):
+    """Sends data to insert into elasticsearch using HTTP.
+
+    Args:
+      type_str: sets the _type field in elasticsearch db.
+      metadata: dictionary object containing metadata
+    """
+    self.es.index(index=self.index, doc_type=type_str, body=metadata)
+
+
+  def _send_data_udp(self, type_str, metadata):
+    """Sends data to insert into elasticsearch using UDP.
+
+    Args:
+      type_str: sets the _type field in elasticsearch db.
+      metadata: dictionary object containing metadata
+    """
+    try:
+      # Header.
+      message = json.dumps(
+          {'index': {'_index': self.index, '_type': type_str}},
+          separators=(', ', ' : '))
+      message += '\n'
+      # Metadata.
+      message += json.dumps(metadata, separators=(', ', ' : '))
+      message += '\n'
+
+      sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+      sock.sendto(message, (self.host, self.udp_port))
+    except socket.error as e:
+      logging.warn(e)
+
+
+  def post(self, type_str, metadata, log_time_recorded=True, **kwargs):
+    """Wraps call of send_data, inserts entry into elasticsearch.
+
+    Args:
+      type_str: Sets the _type field in elasticsearch db.
+      metadata: Dictionary object containing metadata
+      log_time_recorded: Whether to automatically record the time
+                         this metadata is recorded. Default is True.
+      kwargs: Additional metadata fields
+    """
+    if not metadata:
+      return
+
+    metadata = metadata.copy()
+    metadata.update(kwargs)
+    # metadata should not contain anything with key '_type'
+    if '_type' in metadata:
+      type_str = metadata['_type']
+      del metadata['_type']
+    if log_time_recorded:
+      metadata['time_recorded'] = time.time()
+    try:
+      if self.use_http:
+        self._send_data_http(type_str, metadata)
+      else:
+        self._send_data_udp(type_str, metadata)
+    except elasticsearch.ElasticsearchException as e:
+      logging.error(e)

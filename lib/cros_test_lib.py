@@ -33,6 +33,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import git
+from chromite.lib import graphite
 import cros_build_lib
 import gob_util
 import osutils
@@ -43,6 +44,10 @@ import timeout_util
 # of the cidb. This call ensures that they will not accidentally
 # do so through the normal cidb SetUp / GetConnectionForBuilder factory.
 cidb.CIDBConnectionFactory.SetupMockCidb()
+
+# Likewise for statsd and elastic search.
+graphite.ESMetadataFactory.SetupReadOnly()
+graphite.StatsFactory.SetupMock()
 
 
 Directory = collections.namedtuple('Directory', ['name', 'contents'])

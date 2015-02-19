@@ -813,3 +813,13 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 # How long does the AFDO_record autotest have to generate the AFDO perf data.
 AFDO_GENERATE_TIMEOUT = 90 * 60
 
+# Stats dashboard elastic search and statsd constants.
+ELASTIC_SEARCH_HOST = '146.148.70.158'
+ELASTIC_SEARCH_PORT = 9200
+ELASTIC_SEARCH_INDEX = 'metadata_index'
+ELASTIC_SEARCH_UDP_PORT = 9700
+ELASTIC_SEARCH_USE_HTTP = False
+
+STATSD_HOST = '146.148.70.158'
+STATSD_PORT = 8125
+STATSD_PREFIX = 'chromite'
