@@ -65,6 +65,7 @@ struct ivi_shell_surface
 struct ivi_shell_setting
 {
 	char *ivi_module;
+	int developermode;
 };
 
 /*
@@ -354,13 +355,17 @@ shell_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell)
+init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
+	       const struct ivi_shell_setting *setting)
 {
 	shell->compositor = compositor;
 
 	wl_list_init(&shell->ivi_surface_list);
 
 	weston_layer_init(&shell->input_panel_layer, NULL);
+
+	if (setting->developermode)
+		weston_install_debug_key_binding(compositor, MODIFIER_SUPER);
 }
 
 static int
@@ -382,6 +387,9 @@ ivi_shell_setting_create(struct ivi_shell_setting *dest,
 		result = -1;
 	}
 
+	weston_config_section_get_bool(section, "developermode",
+				       &dest->developermode, 0);
+
 	return result;
 }
 
@@ -394,36 +402,39 @@ module_init(struct weston_compositor *compositor,
 {
 	struct ivi_shell *shell;
 	struct ivi_shell_setting setting = { };
+	int retval = -1;
 
 	shell = zalloc(sizeof *shell);
 	if (shell == NULL)
 		return -1;
 
-	init_ivi_shell(compositor, shell);
+	if (ivi_shell_setting_create(&setting, compositor) != 0)
+		return -1;
+
+	init_ivi_shell(compositor, shell, &setting);
 
 	shell->destroy_listener.notify = shell_destroy;
 	wl_signal_add(&compositor->destroy_signal, &shell->destroy_listener);
 
 	if (input_panel_setup(shell) < 0)
-		return -1;
+		goto out_settings;
 
 	if (wl_global_create(compositor->wl_display,
 			     &ivi_application_interface, 1,
 			     shell, bind_ivi_application) == NULL)
-		return -1;
-
-	if (ivi_shell_setting_create(&setting, compositor) != 0)
-		return -1;
+		goto out_settings;
 
 	ivi_layout_init_with_compositor(compositor);
 
-
 	/* Call module_init of ivi-modules which are defined in weston.ini */
-	if (load_controller_modules(compositor, setting.ivi_module, argc, argv) < 0) {
-		free(setting.ivi_module);
-		return -1;
-	}
+	if (load_controller_modules(compositor, setting.ivi_module,
+				    argc, argv) < 0)
+		goto out_settings;
 
+	retval = 0;
+
+out_settings:
 	free(setting.ivi_module);
-	return 0;
+
+	return retval;
 }

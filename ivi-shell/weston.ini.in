@@ -5,6 +5,8 @@ shell=ivi-shell.so
 ivi-module=hmi-controller.so
 ivi-shell-user-interface=@abs_top_builddir@/weston-ivi-shell-user-interface
 
+#developermode=true
+
 cursor-theme=default
 cursor-size=32
 
