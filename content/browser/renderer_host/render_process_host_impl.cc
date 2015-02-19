@@ -2207,27 +2207,17 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
     return;
 #endif  // OS_WIN
 
-#if defined(OS_WIN)
-  // Same as below, but bound to an experiment (http://crbug.com/458594)
-  // initially on Windows. Enabled by default in the asbence of field trials to
-  // get coverage on the perf waterfall.
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find("BackgroundRendererProcesses");
-  if (!trial || (trial->group_name() != "Disallow" &&
-                 trial->group_name() != "AllowBackgroundModeFromRenderer")) {
-    child_process_launcher_->SetProcessBackgrounded(backgrounded);
-  }
-#else
-  // Control the background state from the browser process, otherwise the task
-  // telling the renderer to "unbackground" itself may be preempted by other
-  // tasks executing at lowered priority ahead of it or simply by not being
-  // swiftly scheduled by the OS per the low process priority
-  // (http://crbug.com/398103).
-  child_process_launcher_->SetProcessBackgrounded(backgrounded);
-#endif  // OS_WIN
-
   // Notify the child process of background state.
   Send(new ChildProcessMsg_SetProcessBackgrounded(backgrounded));
+
+#if !defined(OS_WIN)
+  // Backgrounding may require elevated privileges not available to renderer
+  // processes, so control backgrounding from the process host.
+
+  // Windows Vista+ has a fancy process backgrounding mode that can only be set
+  // from within the process.
+  child_process_launcher_->SetProcessBackgrounded(backgrounded);
+#endif  // !OS_WIN
 }
 
 void RenderProcessHostImpl::OnProcessLaunched() {
