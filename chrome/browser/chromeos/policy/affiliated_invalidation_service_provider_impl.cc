@@ -209,7 +209,7 @@ void AffiliatedInvalidationServiceProviderImpl::Shutdown() {
 
   registrar_.RemoveAll();
   profile_invalidation_service_observers_.clear();
-  DestroyDeviceInvalidationService();
+  device_invalidation_service_observer_.reset();
 
   if (invalidation_service_) {
     invalidation_service_ = nullptr;
@@ -217,6 +217,8 @@ void AffiliatedInvalidationServiceProviderImpl::Shutdown() {
     // is no longer available.
     SetInvalidationService(nullptr);
   }
+
+  DestroyDeviceInvalidationService();
 }
 
 invalidation::TiclInvalidationService*
