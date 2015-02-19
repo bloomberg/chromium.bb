@@ -69,13 +69,12 @@ FakeContentLayerClient::PaintContentsToDisplayList(
        it != draw_rects_.end(); ++it) {
     const gfx::RectF& draw_rect = it->first;
     const SkPaint& paint = it->second;
-    canvas = skia::SharePtr(
-        recorder.beginRecording(draw_rect.width(), draw_rect.height()));
+    canvas =
+        skia::SharePtr(recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
     canvas->drawRectCoords(0.f, 0.f, draw_rect.width(), draw_rect.height(),
                            paint);
     picture = skia::AdoptRef(recorder.endRecording());
-    list->AppendItem(DrawingDisplayItem::Create(
-        picture, gfx::PointF(draw_rect.x(), draw_rect.y())));
+    list->AppendItem(DrawingDisplayItem::Create(picture));
   }
 
   for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
@@ -84,8 +83,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
         recorder.beginRecording(it->bitmap.width(), it->bitmap.height()));
     canvas->drawBitmap(it->bitmap, 0.f, 0.f, &it->paint);
     picture = skia::AdoptRef(recorder.endRecording());
-    list->AppendItem(DrawingDisplayItem::Create(
-        picture, gfx::PointF(it->point.x(), it->point.y())));
+    list->AppendItem(DrawingDisplayItem::Create(picture));
   }
 
   if (fill_with_nonsolid_color_) {
@@ -94,11 +92,11 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     while (!draw_rect.IsEmpty()) {
       SkPaint paint;
       paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
-      canvas =
-          skia::SharePtr(recorder.beginRecording(clip.width(), clip.height()));
+      canvas = skia::SharePtr(
+          recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
       canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
       picture = skia::AdoptRef(recorder.endRecording());
-      list->AppendItem(DrawingDisplayItem::Create(picture, gfx::PointF()));
+      list->AppendItem(DrawingDisplayItem::Create(picture));
       draw_rect.Inset(1, 1);
     }
   }

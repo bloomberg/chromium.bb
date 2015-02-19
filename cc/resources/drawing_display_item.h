@@ -21,9 +21,9 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
  public:
   ~DrawingDisplayItem() override;
 
-  static scoped_ptr<DrawingDisplayItem> Create(skia::RefPtr<SkPicture> picture,
-                                               gfx::PointF location) {
-    return make_scoped_ptr(new DrawingDisplayItem(picture, location));
+  static scoped_ptr<DrawingDisplayItem> Create(
+      skia::RefPtr<SkPicture> picture) {
+    return make_scoped_ptr(new DrawingDisplayItem(picture));
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
@@ -35,11 +35,10 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
-  DrawingDisplayItem(skia::RefPtr<SkPicture> picture, gfx::PointF location);
+  explicit DrawingDisplayItem(skia::RefPtr<SkPicture> picture);
 
  private:
   skia::RefPtr<SkPicture> picture_;
-  gfx::PointF location_;
 };
 
 }  // namespace cc

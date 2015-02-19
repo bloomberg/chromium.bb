@@ -33,8 +33,6 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
 
   // blink::WebDisplayItemList implementation.
   virtual void appendDrawingItem(const SkPicture*);
-  virtual void appendDrawingItem(SkPicture*,
-                                 const blink::WebFloatPoint& location);
   virtual void appendClipItem(
       const blink::WebRect& clip_rect,
       const blink::WebVector<SkRRect>& rounded_clip_rects);
@@ -53,6 +51,9 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   virtual void appendFilterItem(const blink::WebFilterOperations& filters,
                                 const blink::WebFloatRect& bounds);
   virtual void appendEndFilterItem();
+  virtual void appendScrollItem(const blink::WebSize& scrollOffset,
+                                ScrollContainerId);
+  virtual void appendEndScrollItem();
 
  private:
   scoped_refptr<cc::DisplayItemList> display_item_list_;

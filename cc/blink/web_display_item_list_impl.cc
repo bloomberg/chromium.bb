@@ -35,14 +35,7 @@ scoped_refptr<cc::DisplayItemList> WebDisplayItemListImpl::ToDisplayItemList() {
 
 void WebDisplayItemListImpl::appendDrawingItem(const SkPicture* picture) {
   display_item_list_->AppendItem(cc::DrawingDisplayItem::Create(
-      skia::SharePtr(const_cast<SkPicture*>(picture)), gfx::PointF(0, 0)));
-}
-
-void WebDisplayItemListImpl::appendDrawingItem(
-    SkPicture* picture,
-    const blink::WebFloatPoint& location) {
-  display_item_list_->AppendItem(
-      cc::DrawingDisplayItem::Create(skia::SharePtr(picture), location));
+      skia::SharePtr(const_cast<SkPicture*>(picture))));
 }
 
 void WebDisplayItemListImpl::appendClipItem(
@@ -112,6 +105,18 @@ void WebDisplayItemListImpl::appendFilterItem(
 
 void WebDisplayItemListImpl::appendEndFilterItem() {
   display_item_list_->AppendItem(cc::EndFilterDisplayItem::Create());
+}
+
+void WebDisplayItemListImpl::appendScrollItem(
+    const blink::WebSize& scrollOffset,
+    ScrollContainerId) {
+  SkMatrix44 matrix;
+  matrix.setTranslate(-scrollOffset.width, -scrollOffset.height, 0);
+  appendTransformItem(matrix);
+}
+
+void WebDisplayItemListImpl::appendEndScrollItem() {
+  appendEndTransformItem();
 }
 
 WebDisplayItemListImpl::~WebDisplayItemListImpl() {

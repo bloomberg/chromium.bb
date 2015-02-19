@@ -17,9 +17,8 @@
 
 namespace cc {
 
-DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<SkPicture> picture,
-                                       gfx::PointF location)
-    : picture_(picture), location_(location) {
+DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<SkPicture> picture)
+    : picture_(picture) {
 }
 
 DrawingDisplayItem::~DrawingDisplayItem() {
@@ -28,7 +27,6 @@ DrawingDisplayItem::~DrawingDisplayItem() {
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
                                 SkDrawPictureCallback* callback) const {
   canvas->save();
-  canvas->translate(location_.x(), location_.y());
   if (callback)
     picture_->playback(canvas, callback);
   else
@@ -38,7 +36,6 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
 
 void DrawingDisplayItem::RasterForTracing(SkCanvas* canvas) const {
   canvas->save();
-  canvas->translate(location_.x(), location_.y());
   // The picture debugger in about:tracing doesn't drill down into |drawPicture|
   // operations. Calling |playback()| rather than |drawPicture()| causes the
   // skia operations in |picture_| to appear individually in the picture
@@ -53,7 +50,7 @@ bool DrawingDisplayItem::IsSuitableForGpuRasterization() const {
 }
 
 int DrawingDisplayItem::ApproximateOpCount() const {
-  return picture_->approximateOpCount() + sizeof(gfx::PointF);
+  return picture_->approximateOpCount();
 }
 
 size_t DrawingDisplayItem::PictureMemoryUsage() const {
@@ -65,9 +62,11 @@ void DrawingDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->BeginDictionary();
   array->SetString("name", "DrawingDisplayItem");
-  array->SetString("location",
-                   base::StringPrintf("[%f,%f]", picture_->cullRect().x(),
-                                      picture_->cullRect().y()));
+  array->SetString(
+      "cullRect",
+      base::StringPrintf("[%f,%f,%f,%f]", picture_->cullRect().x(),
+                         picture_->cullRect().y(), picture_->cullRect().width(),
+                         picture_->cullRect().height()));
   std::string b64_picture;
   PictureDebugUtil::SerializeAsBase64(picture_.get(), &b64_picture);
   array->SetString("skp64", b64_picture);
