@@ -40,6 +40,7 @@ class AppShimMenuControllerBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableNewBookmarkApps);
   }
 
   // Start testing apps and wait for them to launch. |flags| is a bitmask of

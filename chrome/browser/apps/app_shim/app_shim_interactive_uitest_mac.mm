@@ -45,6 +45,11 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
   AppShimInteractiveTest()
       : auto_reset_(&g_app_shims_allow_update_and_launch_in_tests, true) {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableNewBookmarkApps);
+  }
+
  private:
   // Temporarily enable app shims.
   base::AutoReset<bool> auto_reset_;

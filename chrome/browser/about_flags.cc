@@ -1537,10 +1537,11 @@ const Experiment kExperiments[] = {
 #endif
   {
     "disable-new-bookmark-apps",
-    IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_NAME,
-    IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_DESCRIPTION,
+    IDS_FLAGS_NEW_BOOKMARK_APPS_NAME,
+    IDS_FLAGS_NEW_BOOKMARK_APPS_DESCRIPTION,
     kOsWin | kOsCrOS | kOsLinux | kOsMac,
-    SINGLE_VALUE_TYPE(switches::kDisableNewBookmarkApps)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewBookmarkApps,
+                              switches::kDisableNewBookmarkApps)
   },
 #if defined(OS_MACOSX)
   {

@@ -1466,6 +1466,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClNonSfiMode,
 #endif
       switches::kEnableNetBenchmarking,
+      switches::kEnableNewBookmarkApps,
       switches::kEnableOutOfProcessPdf,
       switches::kEnablePluginPlaceholderShadowDom,
       switches::kEnableShowModalDialog,

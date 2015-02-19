@@ -145,10 +145,16 @@ void ParseWebAppFromWebDocument(WebFrame* frame,
       //
       // Bookmark apps also support "apple-touch-icon" and
       // "apple-touch-icon-precomposed".
+#if defined(OS_CHROMEOS)
+      bool bookmark_apps_enabled = !base::CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableNewBookmarkApps);
+#else
+      bool bookmark_apps_enabled = base::CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableNewBookmarkApps);
+#endif
       if (LowerCaseEqualsASCII(rel, "icon") ||
           LowerCaseEqualsASCII(rel, "shortcut icon") ||
-          (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-               switches::kDisableNewBookmarkApps) &&
+          (bookmark_apps_enabled &&
            (LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
             LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
         AddInstallIcon(elem, &app_info->icons);

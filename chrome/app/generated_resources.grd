@@ -6666,11 +6666,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Do not use Smart Lock, which allows you to unlock your Chromebook when in proximity to your phone. If you are the owner of the device, this also turns off Smart Lock on sign-in screen.
         </message>
       </if>
-      <message name="IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_NAME" desc="Name of the flag to disable the new bookmark app system.">
-        Disable the new bookmark app system.
+      <message name="IDS_FLAGS_NEW_BOOKMARK_APPS_NAME" desc="Name of the flag to enable the new bookmark app system.">
+        Enable the new bookmark app system.
       </message>
-      <message name="IDS_FLAGS_DISABLE_NEW_BOOKMARK_APPS_DESCRIPTION" desc="Description for the flag to disable the new bookmark app system.">
-        Disables the new system for creating bookmark apps.
+      <message name="IDS_FLAGS_NEW_BOOKMARK_APPS_DESCRIPTION" desc="Description for the flag to enable the new bookmark app system.">
+        Enables the new system for creating bookmark apps.
       </message>
       <message name="IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
         Disable creation of app shims for hosted apps on Mac.

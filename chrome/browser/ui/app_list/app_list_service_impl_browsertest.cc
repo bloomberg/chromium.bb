@@ -160,6 +160,8 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
 // Test that all the items in the context menu for a hosted app have valid
 // labels.
 IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableNewBookmarkApps);
   AppListService* service = test::GetAppListService();
   EXPECT_TRUE(service);
 
