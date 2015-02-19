@@ -83,6 +83,7 @@
     }],
     ['OS == "ios"', {
       'includes': [
+        'open_from_clipboard.gypi',
         'webp_transcode.gypi',
       ],
     }],

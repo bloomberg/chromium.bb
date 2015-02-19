@@ -7592,6 +7592,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileOmniboxClipboardChanged">
+  <owner>jif@chromium.org</owner>
+  <description>
+    Emitted when Chrome detects that the clipboard contains a new URL. This
+    occurs either when Chrome enters the foreground and notices that the content
+    of the clipboard changed, or when the clipboard changes while Chrome is in
+    the foreground.
+  </description>
+</action>
+
 <action name="MobileOmniboxRefineSuggestion">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

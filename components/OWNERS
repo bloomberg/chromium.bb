@@ -145,6 +145,9 @@ per-file onc.gypi=gspencer@chromium.org
 per-file onc.gypi=pneubeck@chromium.org
 per-file onc.gypi=stevenjb@chromium.org
 
+per-file open_from_clipboard.gypi=jif@chromium.org
+per-file open_from_clipboard_strings.grdp=jif@chromium.org
+
 per-file packed_ct_ev_whitelist.gypi=eranm@chromium.org
 per-file packed_ct_ev_whitelist.gypi=rsleevi@chromium.org
 
