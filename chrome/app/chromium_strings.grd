@@ -1223,7 +1223,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         Touch to Search
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION_2" desc="Part 2 of the description of the Contextual Search feature. See explanation in DESCRIPTION_1.">
-        sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
+        sends a word and its surrounding context to Google Search, returning definitions, pictures, and other search results.
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTIN" desc="Text for the button the user clicks to opt in.">
         Accept &amp; Search
