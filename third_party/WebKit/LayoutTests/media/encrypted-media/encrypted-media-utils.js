@@ -158,11 +158,18 @@ function verifyKeyStatuses(keyStatuses, keys)
     });
 }
 
-// Encodes data into base64 string without trailing '='.
-function base64Encode(data)
+// Encodes |data| into base64url string. There is no '=' padding, and the
+// characters '-' and '_' must be used instead of '+' and '/', respectively.
+function base64urlEncode(data)
 {
     var result = btoa(String.fromCharCode.apply(null, data));
-    return result.replace(/=+$/g, '');
+    return result.replace(/=+$/g, '').replace(/\+/g, "-").replace(/\//g, "_");
+}
+
+// Decode |encoded| using base64url decoding.
+function base64urlDecode(encoded)
+{
+    return atob(encoded.replace(/\-/g, "+").replace(/\_/g, "/"));
 }
 
 // For Clear Key, the License Format is a JSON Web Key (JWK) Set, which contains
@@ -178,9 +185,9 @@ function createJWK(keyId, key)
 {
     var jwk = '{"kty":"oct","alg":"A128KW","kid":"';
     // FIXME: Should use base64URLEncoding.
-    jwk += base64Encode(keyId);
+    jwk += base64urlEncode(keyId);
     jwk += '","k":"';
-    jwk += base64Encode(key);
+    jwk += base64urlEncode(key);
     jwk += '"}';
     return jwk;
 }
@@ -220,7 +227,7 @@ function extractSingleKeyIdFromMessage(message)
         // FIXME: Switch to base64url. See
         // https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#using-base64url
         assert_equals(1, json.kids.length);
-        var decoded_key = atob(json.kids[0]);
+        var decoded_key = base64urlDecode(json.kids[0]);
         // Convert to an Uint8Array and return it.
         return stringToUint8Array(decoded_key);
     }
