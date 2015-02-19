@@ -107,6 +107,9 @@ public:
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
     void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
+
+    // Return the visual bounding box based on the supplied flow-thread bounding box. Both
+    // rectangles are completely physical in terms of writing mode.
     LayoutRect fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const;
 
     LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const

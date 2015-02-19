@@ -157,7 +157,8 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragme
     // Then there's the output from this method - the stuff we put into the list of fragments. The
     // fragment.paginationOffset point is the actual visual translation required to get from a
     // location in the flow thread to a location in a given column. The fragment.paginationClip
-    // rectangle, on the other hand, is in flow thread coordinates.
+    // rectangle, on the other hand, is in flow thread coordinates, but otherwise completely
+    // physical in terms of writing mode.
     //
     // All other rectangles in this method are sized physically, and the inline direction coordinate
     // is physical too, but the block direction coordinate is "logical top". This is the same as

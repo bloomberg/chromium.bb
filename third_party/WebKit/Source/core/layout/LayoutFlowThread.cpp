@@ -96,7 +96,12 @@ void LayoutFlowThread::validateRegions()
 void LayoutFlowThread::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(paintInvalidationContainer != this); // A flow thread should never be an invalidation container.
+    // |rect| is a layout rectangle, where the block direction coordinate is flipped for writing
+    // mode. fragmentsBoundingBox(), on the other hand, works on physical rectangles, so we need to
+    // flip the rectangle before and after calling it.
+    flipForWritingMode(rect);
     rect = fragmentsBoundingBox(rect);
+    flipForWritingMode(rect);
     RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
