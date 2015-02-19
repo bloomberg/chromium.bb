@@ -858,7 +858,6 @@ void FrameView::performLayout(LayoutObject* rootForThisLayout, bool inSubtreeLay
 
     forceLayoutParentViewIfNeeded();
 
-    // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
     rootForThisLayout->layout();
     gatherDebugLayoutRects(rootForThisLayout);
 
