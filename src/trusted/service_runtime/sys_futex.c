@@ -6,10 +6,107 @@
 
 #include "native_client/src/trusted/service_runtime/sys_futex.h"
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+#if NACL_LINUX
+
+#include <errno.h>
+#include <linux/futex.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_clock.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+
+static void AbsTimeToRelTime(const struct nacl_abi_timespec *abstime,
+                             const struct nacl_abi_timespec *now,
+                             struct timespec *host_reltime) {
+  host_reltime->tv_sec = abstime->tv_sec - now->tv_sec;
+  host_reltime->tv_nsec = abstime->tv_nsec - now->tv_nsec;
+  if (host_reltime->tv_nsec < 0) {
+    host_reltime->tv_sec -= 1;
+    host_reltime->tv_nsec += 1000000000;
+  }
+}
+
+int32_t NaClSysFutexWaitAbs(struct NaClAppThread *natp, uint32_t addr,
+                            uint32_t value, uint32_t abstime_ptr) {
+  int result;
+  struct NaClApp *nap = natp->nap;
+  struct nacl_abi_timespec abstime;
+  struct nacl_abi_timespec now;
+  struct timespec host_rel_timeout;
+
+  uintptr_t sysaddr = NaClUserToSysAddrRange(nap, addr, sizeof(uint32_t));
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(1, "NaClSysFutexWaitAbs: address out of range\n");
+    return -NACL_ABI_EFAULT;
+  }
+
+  if (abstime_ptr != 0) {
+    if (!NaClCopyInFromUser(nap, &abstime, abstime_ptr, sizeof(abstime))) {
+      return -NACL_ABI_EFAULT;
+    }
+    result = NaClClockGetTime(NACL_CLOCK_REALTIME, &now);
+    if (result != 0) {
+      return result;
+    }
+    AbsTimeToRelTime(&abstime, &now, &host_rel_timeout);
+    /*
+     * Linux's FUTEX_WAIT returns EINVAL for negative timeout, but an absolute
+     * time that is in the past is a valid argument to irt_futex_wait_abs(),
+     * and a caller expects ETIMEDOUT.
+     */
+    if (host_rel_timeout.tv_sec < 0) {
+      return -NACL_ABI_ETIMEDOUT;
+    }
+  }
+
+  if (syscall(__NR_futex,
+              sysaddr,
+              FUTEX_WAIT_PRIVATE,
+              value,
+              (abstime_ptr != 0 ? (uintptr_t) &host_rel_timeout : 0),
+              0,
+              0)) {
+    /*
+     * The non-Linux implementation will crash on a bad address here,
+     * so ensure the Linux implementation behaves consistently.
+     */
+    if (errno == EFAULT) {
+      NaClLog(LOG_FATAL,
+              "NaClSysFutexWaitAbs: Futex syscall returned EFAULT; "
+              "aborting for consistency\n");
+    }
+    return -NaClXlateErrno(errno);
+  }
+  return 0;
+}
+
+int32_t NaClSysFutexWake(struct NaClAppThread *natp, uint32_t addr,
+                         uint32_t nwake) {
+  int woken_count;
+  struct NaClApp *nap = natp->nap;
+
+  uintptr_t sysaddr = NaClUserToSysAddrRange(nap, addr, sizeof(uint32_t));
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(1, "NaClSysFutexWake: address out of range\n");
+    return 0;
+  }
+  woken_count =
+      syscall(__NR_futex, sysaddr, FUTEX_WAKE_PRIVATE, nwake, 0, 0, 0);
+  if (woken_count < 0) {
+    return -NaClXlateErrno(errno);
+  }
+  return woken_count;
+}
+
+#else
 
 /*
  * This is a simple futex implementation that is based on the
@@ -17,20 +114,16 @@
  * (irt_futex.c), which in turn was based on futex_emulation.c from
  * nacl-glibc.
  *
- * There are some ways the performance of this implementation could be
- * improved:
+ * The main way the performance of this implementation could be improved
+ * is as follows:
  *
- *  * On Linux, use the kernel's futex() syscall with
- *    FUTEX_PRIVATE_FLAG.
+ * The current futex_wake() implementation does a linear search while
+ * holding a global lock, which could perform poorly if there are large
+ * numbers of waiting threads.
  *
- *  * The current futex_wake() implementation does a linear search
- *    while holding a global lock, which could perform poorly if there
- *    are large numbers of waiting threads.
- *
- *    We could use a hash table rather than a single linked list for
- *    looking up wait addresses.  Furthermore, to reduce lock
- *    contention, we could use one lock per hash bucket rather than a
- *    single lock.
+ * We could use a hash table rather than a single linked list for looking
+ * up wait addresses.  Furthermore, to reduce lock contention, we could
+ * use one lock per hash bucket rather than a single lock.
  */
 
 
@@ -155,3 +248,5 @@ int32_t NaClSysFutexWake(struct NaClAppThread *natp, uint32_t addr,
 
   return woken_count;
 }
+
+#endif
