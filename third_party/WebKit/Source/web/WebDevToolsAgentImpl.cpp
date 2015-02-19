@@ -585,9 +585,4 @@ bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
         || commandName == InspectorBackendDispatcher::commandName(InspectorBackendDispatcher::kDebugger_setBreakpointsActiveCmd);
 }
 
-void WebDevToolsAgent::processPendingMessages()
-{
-    PageScriptDebugServer::shared().runPendingTasks();
-}
-
 } // namespace blink

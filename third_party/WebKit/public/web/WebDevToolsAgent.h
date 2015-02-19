@@ -82,7 +82,6 @@ public:
     // Asynchronously request debugger to pause immediately and run the command.
     BLINK_EXPORT static void interruptAndDispatch(MessageDescriptor*);
     BLINK_EXPORT static bool shouldInterruptForMessage(const WebString&);
-    BLINK_EXPORT static void processPendingMessages();
 
 };
 
