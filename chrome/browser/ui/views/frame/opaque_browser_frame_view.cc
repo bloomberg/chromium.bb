@@ -335,11 +335,9 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
         BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH :
         BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
 
-    if (switches::IsFastUserSwitching() || !isRightClick) {
-      browser_view()->ShowAvatarBubbleFromAvatarButton(
-          mode,
-          signin::ManageAccountsParams());
-    }
+    browser_view()->ShowAvatarBubbleFromAvatarButton(
+        mode,
+        signin::ManageAccountsParams());
   }
 }
 

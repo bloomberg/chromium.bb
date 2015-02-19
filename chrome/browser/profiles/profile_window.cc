@@ -509,10 +509,7 @@ void BubbleViewModeFromAvatarBubbleMode(
       *tutorial_mode = TUTORIAL_MODE_SHOW_ERROR;
       return;
     case BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH:
-      if (switches::IsFastUserSwitching())
-        *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
-      else
-        *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+      *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
       return;
     default:
       *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
