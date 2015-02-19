@@ -30,6 +30,16 @@ function filter_display_language_names {
      }
      /^    Types\{$/,/^    \}$/d
      /^    Variants\{$/,/^    \}$/d' ${target}
+
+    # Delete an empty "Languages" block. Otherwise, getting the display
+    # name for all the language in a given locale (e.g. en_GB) would fail
+    # when the above filtering sed command results in an empty "Languages"
+    # block.
+    sed -r -i \
+    '/^    Languages\{$/ {
+       N
+       /^    Languages\{\n    \}/ d
+     }' ${target}
   done
 }
 
