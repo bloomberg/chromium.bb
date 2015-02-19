@@ -728,18 +728,20 @@ AutomationRootNodeImpl.prototype = {
 
     // TODO(dtseng): Make into set listing all hosting node roles.
     if (nodeData.role == schema.RoleType.webView) {
-      if (nodeImpl.pendingChildFrame === undefined)
+      if (nodeImpl.childTreeID !== nodeData.intAttributes.childTreeId)
         nodeImpl.pendingChildFrame = true;
 
       if (nodeImpl.pendingChildFrame) {
         nodeImpl.childTreeID = nodeData.intAttributes.childTreeId;
-        automationInternal.enableFrame(nodeImpl.childTreeID);
         automationUtil.storeTreeCallback(nodeImpl.childTreeID, function(root) {
           nodeImpl.pendingChildFrame = false;
           nodeImpl.childTree = root;
           privates(root).impl.hostTree = node;
+          if (root.attributes.docLoadingProgress == 1)
+            privates(root).impl.dispatchEvent(schema.EventType.loadComplete);
           nodeImpl.dispatchEvent(schema.EventType.childrenChanged);
         });
+        automationInternal.enableFrame(nodeImpl.childTreeID);
       }
     }
     for (var key in AutomationAttributeDefaults) {
