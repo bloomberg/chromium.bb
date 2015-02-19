@@ -1053,6 +1053,7 @@ body.selecting .thumbnail-grid .thumbnail-item[selected] .checkmark {
 
 .thumbnail-grid .img-container > .thumbnail {
   -webkit-user-drag: none;
+  background-color: rgb(230, 230, 230);
   background-position: center;
   background-size: cover;
   height: 100%;
