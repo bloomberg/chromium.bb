@@ -123,7 +123,7 @@ def _StartActivityAndWaitForLinkerTestStatus(device, timeout):
   """
 
   # 1. Start recording logcat with appropriate filters.
-  with device.GetLogcatMonitor(filters=_LOGCAT_FILTERS) as logmon:
+  with device.GetLogcatMonitor(filter_specs=_LOGCAT_FILTERS) as logmon:
 
     # 2. Force-start activity.
     device.StartActivity(
