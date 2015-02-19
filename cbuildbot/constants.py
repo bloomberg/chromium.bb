@@ -296,7 +296,7 @@ CHANGE_PREFIX = {
 # List of remotes that are ok to include in the external manifest.
 EXTERNAL_REMOTES = (EXTERNAL_REMOTE, CHROMIUM_REMOTE)
 
-PROJECT_SDK_GROUPS = ('minilayout',)
+PROJECT_SDK_GROUPS = ('project_sdk',)
 
 # Mapping 'remote name' -> regexp that matches names of repositories on that
 # remote that can be branched when creating CrOS branch. Branching script will

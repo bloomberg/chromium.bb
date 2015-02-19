@@ -594,19 +594,19 @@ class ProjectSdkManifestTest(cros_test_lib.TestCase):
 
   <project name="int" remote="cros-int" />
   <project groups="foo,bar" name="int-other-groups" remote="cros-int" />
-  <project groups="minilayout" name="int-mini" remote="cros-int" />
-  <project groups="minilayout,foo" name="int-mini-groups" remote="cros-int" />
+  <project groups="project_sdk" name="int-mini" remote="cros-int" />
+  <project groups="project_sdk,foo" name="int-mini-groups" remote="cros-int" />
 
   <project name="exp" remote="cros" />
   <project groups="foo,bar" name="exp-other-groups" remote="cros" />
-  <project groups="minilayout" name="exp-mini" remote="cros" />
-  <project groups="minilayout,foo" name="exp-mini-groups" remote="cros" />
+  <project groups="project_sdk" name="exp-mini" remote="cros" />
+  <project groups="project_sdk,foo" name="exp-mini-groups" remote="cros" />
 
   <project name="def-other-groups" />
   <project groups="foo,bar" name="def-other-groups" />
-  <project groups="minilayout" name="def-mini" />
-  <project groups="minilayout,foo" name="def-mini-groups" />
-  <project groups="minilayout , foo" name="def-spacing" />
+  <project groups="project_sdk" name="def-mini" />
+  <project groups="project_sdk,foo" name="def-mini-groups" />
+  <project groups="project_sdk , foo" name="def-spacing" />
 
   <repo-hooks enabled-list="pre-upload" in-project="chromiumos/repohooks"/>
 </manifest>
@@ -616,11 +616,11 @@ class ProjectSdkManifestTest(cros_test_lib.TestCase):
   <remote alias="cros" fetch="https://url/" name="chromium"/>
   <remote fetch="https://url" name="cros"/>
   <default remote="cros" revision="refs/heads/master" sync-j="8"/>
-  <project groups="minilayout" name="exp-mini" remote="cros"/>
-  <project groups="minilayout,foo" name="exp-mini-groups" remote="cros"/>
-  <project groups="minilayout" name="def-mini"/>
-  <project groups="minilayout,foo" name="def-mini-groups"/>
-  <project groups="minilayout , foo" name="def-spacing"/>
+  <project groups="project_sdk" name="exp-mini" remote="cros"/>
+  <project groups="project_sdk,foo" name="exp-mini-groups" remote="cros"/>
+  <project groups="project_sdk" name="def-mini"/>
+  <project groups="project_sdk,foo" name="def-mini-groups"/>
+  <project groups="project_sdk , foo" name="def-spacing"/>
   <repo-hooks enabled-list="pre-upload" in-project="chromiumos/repohooks"/>
 </manifest>'''
 
