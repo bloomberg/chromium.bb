@@ -506,7 +506,7 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
       "[{\"success\":false, \"errorMessage\":\"fake_error\"}]",
       browser(),
       extension_function_test_utils::NONE));
-  EXPECT_EQ(false, result.success);
+  EXPECT_FALSE(result.success);
   EXPECT_EQ("fake_error", result.error);
 
   // Test SetAutoPairingResult call with success.
@@ -518,9 +518,8 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
       "[{\"success\":true}]",
       browser(),
       extension_function_test_utils::NONE));
-  EXPECT_EQ(true, result.success);
+  EXPECT_TRUE(result.success);
   EXPECT_TRUE(result.error.empty());
 }
 
 }  // namespace
-
