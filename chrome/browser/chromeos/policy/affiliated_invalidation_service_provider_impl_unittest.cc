@@ -625,4 +625,36 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
   EXPECT_FALSE(provider_->GetDeviceInvalidationServiceForTest());
 }
 
+// A consumer is registered with the AffiliatedInvalidationServiceProviderImpl.
+// A device-global invalidation service exists, is connected and is made
+// available to the consumer. Verifies that when the provider is shut down, the
+// consumer is informed that no invalidation service is available for use
+// anymore before the device-global invalidation service is destroyed.
+// This is a regression test for http://crbug.com/455504.
+TEST_F(AffiliatedInvalidationServiceProviderImplTest,
+       ConnectedDeviceGlobalInvalidationServiceOnShutdown) {
+  consumer_.reset(new FakeConsumer(provider_.get()));
+
+  // Verify that a device-global invalidation service has been created.
+  EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
+
+  // Indicate that the device-global invalidation service connected. Verify that
+  // that the consumer is informed about this.
+  ConnectDeviceGlobalInvalidationService();
+
+  // Shut down the |provider_|. Verify that the |consumer_| is informed that no
+  // invalidation service is available for use anymore. This also serves as a
+  // regression test which verifies that the invalidation service is not
+  // destroyed until the |consumer_| has been informed: If the invalidation
+  // service was destroyed too early, the |consumer_| would still be registered
+  // as an observer and the invalidation service's destructor would DCHECK().
+  EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
+  provider_->Shutdown();
+  EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
+  EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
+
+  // Verify that the device-global invalidation service has been destroyed.
+  EXPECT_FALSE(provider_->GetDeviceInvalidationServiceForTest());
+}
+
 }  // namespace policy
