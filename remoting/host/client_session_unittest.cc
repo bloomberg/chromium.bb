@@ -384,7 +384,7 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
 
   ConnectClientSession();
 
-  // With for the first frame.
+  // Wait for the first frame.
   run_loop.Run();
 
   // Inject test events that are expected to be injected.
@@ -445,8 +445,7 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   client_session_.reset();
 }
 
-// crbug.com/458691
-TEST_F(ClientSessionTest, DISABLED_LocalInputTest) {
+TEST_F(ClientSessionTest, LocalInputTest) {
   CreateClientSession();
 
   protocol::MouseEvent mouse_event1;
@@ -502,8 +501,7 @@ TEST_F(ClientSessionTest, DISABLED_LocalInputTest) {
   ConnectClientSession();
 }
 
-// crbug.com/458691
-TEST_F(ClientSessionTest, DISABLED_RestoreEventState) {
+TEST_F(ClientSessionTest, RestoreEventState) {
   CreateClientSession();
 
   protocol::KeyEvent key1;
@@ -559,8 +557,7 @@ TEST_F(ClientSessionTest, DISABLED_RestoreEventState) {
   ConnectClientSession();
 }
 
-// crbug.com/458691
-TEST_F(ClientSessionTest, DISABLED_ClampMouseEvents) {
+TEST_F(ClientSessionTest, ClampMouseEvents) {
   CreateClientSession();
 
   Expectation authenticated =

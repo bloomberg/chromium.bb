@@ -60,7 +60,12 @@ VideoFramePump::VideoFramePump(
       capturer_(capturer.Pass()),
       encoder_(encoder.Pass()),
       video_stub_(video_stub),
-      keep_alive_timer_(true, true),
+      keep_alive_timer_(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kKeepAlivePacketIntervalMs),
+          base::Bind(&VideoFramePump::SendKeepAlivePacket,
+                     base::Unretained(this)),
+          false),
       capture_scheduler_(base::Bind(&VideoFramePump::CaptureNextFrame,
                                     base::Unretained(this))),
       latest_event_timestamp_(0),
@@ -70,10 +75,6 @@ VideoFramePump::VideoFramePump(
 
   capturer_->Start(this);
   capture_scheduler_.Start();
-
-  keep_alive_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kKeepAlivePacketIntervalMs),
-      base::Bind(&VideoFramePump::SendKeepAlivePacket, base::Unretained(this)));
 }
 
 VideoFramePump::~VideoFramePump() {
