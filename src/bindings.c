@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011 Intel Corporation
+ * Copyright © 2011-2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <linux/input.h>
 
 #include "compositor.h"
 
@@ -420,4 +421,148 @@ weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 	}
 
 	return count;
+}
+
+struct debug_binding_grab {
+	struct weston_keyboard_grab grab;
+	struct weston_seat *seat;
+	uint32_t key[2];
+	int key_released[2];
+};
+
+static void
+debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
+		  uint32_t key, uint32_t state)
+{
+	struct debug_binding_grab *db = (struct debug_binding_grab *) grab;
+	struct weston_compositor *ec = db->seat->compositor;
+	struct wl_display *display = ec->wl_display;
+	struct wl_resource *resource;
+	uint32_t serial;
+	int send = 0, terminate = 0;
+	int check_binding = 1;
+	int i;
+	struct wl_list *resource_list;
+
+	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
+		/* Do not run bindings on key releases */
+		check_binding = 0;
+
+		for (i = 0; i < 2; i++)
+			if (key == db->key[i])
+				db->key_released[i] = 1;
+
+		if (db->key_released[0] && db->key_released[1]) {
+			/* All key releases been swalled so end the grab */
+			terminate = 1;
+		} else if (key != db->key[0] && key != db->key[1]) {
+			/* Should not swallow release of other keys */
+			send = 1;
+		}
+	} else if (key == db->key[0] && !db->key_released[0]) {
+		/* Do not check bindings for the first press of the binding
+		 * key. This allows it to be used as a debug shortcut.
+		 * We still need to swallow this event. */
+		check_binding = 0;
+	} else if (db->key[1]) {
+		/* If we already ran a binding don't process another one since
+		 * we can't keep track of all the binding keys that were
+		 * pressed in order to swallow the release events. */
+		send = 1;
+		check_binding = 0;
+	}
+
+	if (check_binding) {
+		if (weston_compositor_run_debug_binding(ec, db->seat, time,
+							key, state)) {
+			/* We ran a binding so swallow the press and keep the
+			 * grab to swallow the released too. */
+			send = 0;
+			terminate = 0;
+			db->key[1] = key;
+		} else {
+			/* Terminate the grab since the key pressed is not a
+			 * debug binding key. */
+			send = 1;
+			terminate = 1;
+		}
+	}
+
+	if (send) {
+		serial = wl_display_next_serial(display);
+		resource_list = &grab->keyboard->focus_resource_list;
+		wl_resource_for_each(resource, resource_list) {
+			wl_keyboard_send_key(resource, serial, time, key, state);
+		}
+	}
+
+	if (terminate) {
+		weston_keyboard_end_grab(grab->keyboard);
+		if (grab->keyboard->input_method_resource)
+			grab->keyboard->grab = &grab->keyboard->input_method_grab;
+		free(db);
+	}
+}
+
+static void
+debug_binding_modifiers(struct weston_keyboard_grab *grab, uint32_t serial,
+			uint32_t mods_depressed, uint32_t mods_latched,
+			uint32_t mods_locked, uint32_t group)
+{
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
+
+	resource_list = &grab->keyboard->focus_resource_list;
+
+	wl_resource_for_each(resource, resource_list) {
+		wl_keyboard_send_modifiers(resource, serial, mods_depressed,
+					   mods_latched, mods_locked, group);
+	}
+}
+
+static void
+debug_binding_cancel(struct weston_keyboard_grab *grab)
+{
+	struct debug_binding_grab *db = (struct debug_binding_grab *) grab;
+
+	weston_keyboard_end_grab(grab->keyboard);
+	free(db);
+}
+
+struct weston_keyboard_grab_interface debug_binding_keyboard_grab = {
+	debug_binding_key,
+	debug_binding_modifiers,
+	debug_binding_cancel,
+};
+
+static void
+debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
+{
+	struct debug_binding_grab *grab;
+
+	grab = calloc(1, sizeof *grab);
+	if (!grab)
+		return;
+
+	grab->seat = seat;
+	grab->key[0] = key;
+	grab->grab.interface = &debug_binding_keyboard_grab;
+	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
+}
+
+/** Install the trigger binding for debug bindings.
+ *
+ * \param compositor The compositor.
+ * \param mod The modifier.
+ *
+ * This will add a key binding for modifier+SHIFT+SPACE that will trigger
+ * debug key bindings.
+ */
+WL_EXPORT void
+weston_install_debug_key_binding(struct weston_compositor *compositor,
+				 uint32_t mod)
+{
+	weston_compositor_add_key_binding(compositor, KEY_SPACE,
+					  mod | MODIFIER_SHIFT,
+					  debug_binding, NULL);
 }
