@@ -56,7 +56,9 @@ void TileItemView::SetSelected(bool selected) {
 
   selected_ = selected;
   UpdateBackgroundColor();
-  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+
+  if (selected)
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void TileItemView::SetParentBackgroundColor(SkColor color) {
