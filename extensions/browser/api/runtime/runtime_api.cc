@@ -46,6 +46,7 @@ namespace {
 
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
+const char kFailedToCreateOptionsPage[] = "Could not create an options page.";
 const char kInstallId[] = "id";
 const char kInstallReason[] = "reason";
 const char kInstallReasonChromeUpdate[] = "chrome_update";
@@ -268,6 +269,10 @@ bool RuntimeAPI::RestartDevice(std::string* error_message) {
   return delegate_->RestartDevice(error_message);
 }
 
+bool RuntimeAPI::OpenOptionsPage(const Extension* extension) {
+  return delegate_->OpenOptionsPage(extension);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // static
@@ -423,6 +428,13 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
   } else {
     Respond(Error(kPageLoadError));
   }
+}
+
+ExtensionFunction::ResponseAction RuntimeOpenOptionsPageFunction::Run() {
+  RuntimeAPI* api = RuntimeAPI::GetFactoryInstance()->Get(browser_context());
+  return RespondNow(api->OpenOptionsPage(extension())
+                        ? NoArguments()
+                        : Error(kFailedToCreateOptionsPage));
 }
 
 ExtensionFunction::ResponseAction RuntimeSetUninstallURLFunction::Run() {

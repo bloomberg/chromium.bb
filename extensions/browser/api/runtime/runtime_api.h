@@ -64,6 +64,7 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   void OpenURL(const GURL& uninstall_url);
   bool GetPlatformInfo(core_api::runtime::PlatformInfo* info);
   bool RestartDevice(std::string* error_message);
+  bool OpenOptionsPage(const Extension* extension);
 
  private:
   friend class BrowserContextKeyedAPIFactory<RuntimeAPI>;
@@ -160,6 +161,15 @@ class RuntimeGetBackgroundPageFunction : public UIThreadExtensionFunction {
 
  private:
   void OnPageLoaded(ExtensionHost*);
+};
+
+class RuntimeOpenOptionsPageFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("runtime.openOptionsPage", RUNTIME_OPENOPTIONSPAGE)
+
+ protected:
+  ~RuntimeOpenOptionsPageFunction() override {}
+  ResponseAction Run() override;
 };
 
 class RuntimeSetUninstallURLFunction : public UIThreadExtensionFunction {

@@ -575,9 +575,10 @@ WindowController* ExtensionTabUtil::GetWindowControllerOfTab(
   return NULL;
 }
 
-void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
+bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
                                        Browser* browser) {
-  DCHECK(OptionsPageInfo::HasOptionsPage(extension));
+  if (!OptionsPageInfo::HasOptionsPage(extension))
+    return false;
 
   // Force the options page to open in non-OTR window, because it won't be
   // able to save settings from OTR.
@@ -617,6 +618,8 @@ void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
         browser->tab_strip_model()->GetActiveWebContents();
     web_contents->GetDelegate()->ActivateContents(web_contents);
   }
+
+  return true;
 }
 
 }  // namespace extensions

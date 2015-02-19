@@ -70,6 +70,11 @@ class RuntimeAPIDelegate {
   // Request a restart of the host device. Returns false iff the device
   // will not be restarted.
   virtual bool RestartDevice(std::string* error_message) = 0;
+
+  // Open |extension|'s options page, if it has one. Returns true if an
+  // options page was opened, false otherwise. See the docs of the
+  // chrome.runtime.openOptionsPage function for the gritty details.
+  virtual bool OpenOptionsPage(const Extension* extension);
 };
 
 }  // namespace extensions

@@ -48061,6 +48061,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="960" label="FILEMANAGERPRIVATE_ISUMAENABLED"/>
   <int value="961" label="WEBVIEWINTERNAL_SETALLOWSCALING"/>
   <int value="962" label="PLATFORMKEYSINTERNAL_GETPUBLICKEY"/>
+  <int value="963" label="RUNTIME_OPENOPTIONSPAGE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

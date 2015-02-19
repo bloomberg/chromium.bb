@@ -50,6 +50,7 @@ class ChromeRuntimeAPIDelegate : public extensions::RuntimeAPIDelegate,
   bool GetPlatformInfo(
       extensions::core_api::runtime::PlatformInfo* info) override;
   bool RestartDevice(std::string* error_message) override;
+  bool OpenOptionsPage(const extensions::Extension* extension) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,

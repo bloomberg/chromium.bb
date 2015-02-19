@@ -43,6 +43,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
 
 namespace extensions {
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeOpenOptionsPage) {
+  ASSERT_TRUE(RunExtensionTest("runtime/open_options_page"));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeOpenOptionsPageError) {
+  ASSERT_TRUE(RunExtensionTest("runtime/open_options_page_error"));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeGetPlatformInfo) {
   scoped_ptr<base::Value> result(
       extension_function_test_utils::RunFunctionAndReturnSingleResult(

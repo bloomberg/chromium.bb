@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -238,6 +239,15 @@ bool ChromeRuntimeAPIDelegate::RestartDevice(std::string* error_message) {
 #endif
   *error_message = "Function available only for ChromeOS kiosk mode.";
   return false;
+}
+
+bool ChromeRuntimeAPIDelegate::OpenOptionsPage(const Extension* extension) {
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  Browser* browser =
+      chrome::FindLastActiveWithProfile(profile, chrome::GetActiveDesktop());
+  if (!browser)
+    return false;
+  return extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser);
 }
 
 void ChromeRuntimeAPIDelegate::Observe(

@@ -1021,6 +1021,7 @@ enum HistogramValue {
   FILEMANAGERPRIVATE_ISUMAENABLED,
   WEBVIEWINTERNAL_SETALLOWSCALING,
   PLATFORMKEYSINTERNAL_GETPUBLICKEY,
+  RUNTIME_OPENOPTIONSPAGE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
