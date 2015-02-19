@@ -80,6 +80,9 @@ class PushMessagingMessageFilter::Core {
 
   // Public helper methods on UI thread ----------------------------------------
 
+  // Called (directly) from both the UI and IO threads.
+  bool is_incognito() const { return is_incognito_; }
+
   // Returns a push messaging service. May return null.
   PushMessagingService* service();
 
@@ -110,6 +113,8 @@ class PushMessagingMessageFilter::Core {
 
   int render_process_id_;
 
+  bool is_incognito_;
+
   base::WeakPtrFactory<Core> weak_factory_ui_to_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
@@ -134,6 +139,9 @@ PushMessagingMessageFilter::Core::Core(
       render_process_id_(render_process_id),
       weak_factory_ui_to_ui_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* process_host =
+      RenderProcessHost::FromID(render_process_id_);  // Can't be null yet.
+  is_incognito_ = process_host->GetBrowserContext()->IsOffTheRecord();
 }
 
 PushMessagingMessageFilter::Core::~Core() {}
@@ -313,11 +321,28 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service = service();
   if (!push_service) {
-    // TODO(johnme): Prevent websites from detecting incognito mode.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&PushMessagingMessageFilter::SendRegisterError, io_parent_,
-                   data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
+    if (!is_incognito()) {
+      // TODO(johnme): Might be better not to expose the API in this case.
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&PushMessagingMessageFilter::SendRegisterError,
+                     io_parent_,
+                     data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
+    } else {
+      // Prevent websites from detecting incognito mode, by emulating what would
+      // have happened if we had a PushMessagingService available.
+      if (!data.FromDocument() || !data.user_visible_only) {
+        // Throw a permission denied error under the same circumstances.
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(&PushMessagingMessageFilter::SendRegisterError,
+                       io_parent_,
+                       data, PUSH_REGISTRATION_STATUS_PERMISSION_DENIED));
+      }
+      // Else leave the promise hanging forever, to simulate a user ignoring the
+      // infobar. TODO(johnme): Simulate the user dismissing the infobar after a
+      // random time period.
+    }
     return;
   }
 
@@ -403,7 +428,9 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (push_endpoint_.is_empty()) {
-    // TODO(johnme): Prevent websites from detecting incognito mode.
+    // This shouldn't be possible in incognito mode, since we've already checked
+    // that we have an existing registration. Hence it's ok to throw an error.
+    DCHECK(!ui_core_->is_incognito());
     SendRegisterError(data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
     return;
   }
@@ -524,6 +551,9 @@ void PushMessagingMessageFilter::Core::UnregisterFromService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service = service();
   if (!push_service) {
+    // This shouldn't be possible in incognito mode, since we've already checked
+    // that we have an existing registration. Hence it's ok to throw an error.
+    DCHECK(!is_incognito());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingMessageFilter::DidUnregister, io_parent_,
@@ -647,10 +677,11 @@ void PushMessagingMessageFilter::DidGetRegistration(
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
       if (push_endpoint_.is_empty()) {
-        // TODO(johnme): Prevent websites from detecting incognito mode.
-        Send(new PushMessagingMsg_GetRegistrationError(
-            request_id, PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR));
-        return;
+        // Return not found in incognito mode, so websites can't detect it.
+        get_status = ui_core_->is_incognito()
+                     ? PUSH_GETREGISTRATION_STATUS_REGISTRATION_NOT_FOUND
+                     : PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+        break;
       }
       Send(new PushMessagingMsg_GetRegistrationSuccess(request_id,
                                                        push_endpoint_,
@@ -710,15 +741,19 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
     const GURL& requesting_origin,
     int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  blink::WebPushPermissionStatus permission_status;
   PushMessagingService* push_service = service();
-  if (!push_service) {
-    // TODO(johnme): Prevent websites from detecting incognito mode.
+  if (push_service) {
+    GURL embedding_origin = requesting_origin;
+    permission_status =
+        push_service->GetPermissionStatus(requesting_origin, embedding_origin);
+  } else if (is_incognito()) {
+    // Return default, so the website can't detect incognito mode.
+    permission_status = blink::WebPushPermissionStatusDefault;
+  } else {
     Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
     return;
   }
-  GURL embedding_origin = requesting_origin;
-  blink::WebPushPermissionStatus permission_status =
-      push_service->GetPermissionStatus(requesting_origin, embedding_origin);
   Send(new PushMessagingMsg_GetPermissionStatusSuccess(request_id,
                                                        permission_status));
 }
