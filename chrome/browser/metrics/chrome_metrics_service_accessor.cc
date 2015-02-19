@@ -4,8 +4,11 @@
 
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_services_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/variations/metrics_util.h"
@@ -15,28 +18,33 @@
 #endif
 
 // static
+// TODO(asvitkine): This function does not report the correct value on Android,
+// see http://crbug.com/362192.
 bool ChromeMetricsServiceAccessor::IsMetricsReportingEnabled() {
-  bool result = false;
-  const PrefService* local_state = g_browser_process->local_state();
-  if (local_state) {
-    const PrefService::Preference* uma_pref =
-        local_state->FindPreference(prefs::kMetricsReportingEnabled);
-    if (uma_pref) {
-      bool success = uma_pref->GetValue()->GetAsBoolean(&result);
-      DCHECK(success);
-    }
+  // If the user permits metrics reporting with the checkbox in the
+  // prefs, we turn on recording.  We disable metrics completely for
+  // non-official builds, or when field trials are forced.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceFieldTrials)) {
+    return false;
   }
-  return result;
+
+  bool enabled = false;
+#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &enabled);
+#else
+  enabled = g_browser_process->local_state()->
+      GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  return enabled;
 }
 
 bool ChromeMetricsServiceAccessor::IsCrashReportingEnabled() {
 #if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  bool reporting_enabled = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &reporting_enabled);
-  return reporting_enabled;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Android has its own settings for metrics / crash uploading.
   const PrefService* prefs = g_browser_process->local_state();
   return prefs->GetBoolean(prefs::kCrashReportingEnabled);

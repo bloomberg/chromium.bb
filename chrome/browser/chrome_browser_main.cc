@@ -676,11 +676,7 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   g_browser_process->metrics_service()->CheckForClonedInstall(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
-  bool may_record = g_browser_process->GetMetricsServicesManager()->
-      IsMetricsReportingEnabled();
-
-  g_browser_process->GetMetricsServicesManager()->UpdatePermissions(
-      may_record, true);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
 }
 
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {

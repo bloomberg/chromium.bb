@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -109,8 +110,7 @@ metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_,
-        base::Bind(&MetricsServicesManager::IsMetricsReportingEnabled,
-                   base::Unretained(this)),
+        base::Bind(&ChromeMetricsServiceAccessor::IsMetricsReportingEnabled),
         base::Bind(&PostStoreMetricsClientInfo),
         base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
   }
@@ -178,24 +178,7 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
   GetRapporService()->Update(GetRapporRecordingLevel(may_record), may_upload);
 }
 
-// TODO(asvitkine): This function does not report the correct value on Android,
-// see http://crbug.com/362192.
-bool MetricsServicesManager::IsMetricsReportingEnabled() const {
-  // If the user permits metrics reporting with the checkbox in the
-  // prefs, we turn on recording.  We disable metrics completely for
-  // non-official builds, or when field trials are forced.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceFieldTrials))
-    return false;
-
-  bool enabled = false;
-#if defined(GOOGLE_CHROME_BUILD)
-#if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enabled);
-#else
-  enabled = local_state_->GetBoolean(prefs::kMetricsReportingEnabled);
-#endif  // #if defined(OS_CHROMEOS)
-#endif  // defined(GOOGLE_CHROME_BUILD)
-  return enabled;
+void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
+  return UpdatePermissions(
+      ChromeMetricsServiceAccessor::IsMetricsReportingEnabled(), may_upload);
 }

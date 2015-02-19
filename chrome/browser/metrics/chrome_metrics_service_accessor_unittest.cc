@@ -26,6 +26,7 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
 };
 
 TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
+#if defined(GOOGLE_CHROME_BUILD)
 #if !defined(OS_CHROMEOS)
   GetLocalState()->SetBoolean(prefs::kMetricsReportingEnabled, false);
   EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
@@ -36,6 +37,10 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
 #else
   // ChromeOS does not register prefs::kMetricsReportingEnabled and uses
   // device settings for metrics reporting.
+  EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
+#endif
+#else
+  // Metrics Reporting is never enabled when GOOGLE_CHROME_BUILD is undefined.
   EXPECT_FALSE(ChromeMetricsServiceAccessor::IsMetricsReportingEnabled());
 #endif
 }

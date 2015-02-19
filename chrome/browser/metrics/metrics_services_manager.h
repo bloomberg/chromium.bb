@@ -56,8 +56,8 @@ class MetricsServicesManager {
   // metrics change.
   void UpdatePermissions(bool may_record, bool may_upload);
 
-  // Returns true iff metrics reporting is enabled.
-  bool IsMetricsReportingEnabled() const;
+  // Update the managed services when permissions for uploading metrics change.
+  void UpdateUploadPermissions(bool may_upload);
 
   // Returns true iff Rappor reporting is enabled.
   bool IsRapporEnabled(bool metrics_enabled) const;

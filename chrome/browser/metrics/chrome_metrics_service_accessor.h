@@ -66,6 +66,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class options::BrowserOptionsHandler;
   friend void InitiateMetricsReportingChange(
       bool, const OnMetricsReportingCallbackType&);
+  friend class MetricsServicesManager;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
