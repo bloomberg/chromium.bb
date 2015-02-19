@@ -154,9 +154,9 @@ bool ThreadProxy::IsStarted() const {
 }
 
 bool ThreadProxy::CommitToActiveTree() const {
-  // With ThreadProxy we use a pending tree and activate it once it's ready to
-  // draw.
-  return false;
+  // With ThreadProxy and impl-side painting, we use a pending tree and activate
+  // it once it's ready to draw.
+  return !impl().layer_tree_host_impl->settings().impl_side_painting;
 }
 
 void ThreadProxy::SetLayerTreeHostClientReady() {

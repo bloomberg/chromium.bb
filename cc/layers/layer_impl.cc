@@ -517,7 +517,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       draw_checkerboard_for_missing_tiles_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
-  layer->SetHasRenderSurface(!!render_surface());
+  layer->SetHasRenderSurface(!!render_surface() || layer->HasCopyRequest());
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);

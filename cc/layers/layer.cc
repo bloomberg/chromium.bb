@@ -909,7 +909,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       draw_checkerboard_for_missing_tiles_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
-  layer->SetHasRenderSurface(has_render_surface_);
+  layer->SetHasRenderSurface(has_render_surface_ || layer->HasCopyRequest());
   if (!layer->FilterIsAnimatingOnImplOnly() && !FilterIsAnimating())
     layer->SetFilters(filters_);
   DCHECK(!(FilterIsAnimating() && layer->FilterIsAnimatingOnImplOnly()));

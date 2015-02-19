@@ -1203,12 +1203,30 @@ struct PreCalculateMetaInformationRecursiveData {
   }
 };
 
+static bool ValidateRenderSurface(LayerImpl* layer) {
+  // This test verifies that there are no cases where a LayerImpl needs
+  // a render surface, but doesn't have one.
+  if (layer->render_surface())
+    return true;
+
+  return layer->filters().IsEmpty() && layer->background_filters().IsEmpty() &&
+         !layer->mask_layer() && !layer->replica_layer() &&
+         !IsRootLayer(layer) && !layer->is_root_for_isolated_group() &&
+         !layer->HasCopyRequest();
+}
+
+static bool ValidateRenderSurface(Layer* layer) {
+  return true;
+}
+
 // Recursively walks the layer tree to compute any information that is needed
 // before doing the main recursion.
 template <typename LayerType>
 static void PreCalculateMetaInformation(
     LayerType* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
+  DCHECK(ValidateRenderSurface(layer));
+
   layer->draw_properties().sorted_for_recursion = false;
   layer->draw_properties().has_child_with_a_scroll_parent = false;
 
