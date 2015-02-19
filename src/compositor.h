@@ -802,6 +802,12 @@ struct weston_view {
 	struct {
 		int dirty;
 
+		/* Approximations in global coordinates:
+		 * - boundingbox is guaranteed to include the whole view in
+		 *   the smallest possible single rectangle.
+		 * - opaque is guaranteed to be fully opaque, though not
+		 *   necessarily include all opaque areas.
+		 */
 		pixman_region32_t boundingbox;
 		pixman_region32_t opaque;
 
