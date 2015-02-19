@@ -49,14 +49,10 @@ class ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy 
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_PRE_FINALIZER(ServiceWorker, dispose);
 public:
-    // For CallbackPromiseAdapter
     typedef WebServiceWorker WebType;
-    static PassRefPtrWillBeRawPtr<ServiceWorker> take(ScriptPromiseResolver*, WebType* worker);
-
     static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebType*);
 
     ~ServiceWorker() override;
-    static void dispose(WebType*);
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
     void terminate(ExceptionState&);
@@ -66,7 +62,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.
-    virtual bool isReady() override;
     virtual void dispatchStateChangeEvent() override;
 
     // AbstractWorker overrides.
@@ -76,18 +71,8 @@ public:
 private:
     class ThenFunction;
 
-    enum ProxyState {
-        Initial,
-        RegisterPromisePending,
-        Ready,
-        ContextStopped
-    };
-
     static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebType*);
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
-    void setProxyState(ProxyState);
-    void onPromiseResolved();
-    void waitOnPromise(ScriptPromiseResolver*);
 
     // ActiveDOMObject overrides.
     virtual bool hasPendingActivity() const override;
@@ -96,7 +81,7 @@ private:
     void dispose();
 
     OwnPtr<WebServiceWorker> m_outerWorker;
-    ProxyState m_proxyState;
+    bool m_wasStopped;
 };
 
 } // namespace blink
