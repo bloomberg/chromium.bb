@@ -179,12 +179,12 @@ div.splitter {
 
 #directory-tree .tree-row > .expand-icon {
   flex: none;
-  height: 37px;
+  height: 36px;
   left: 3px;
-  margin: -12px -4px -13px;
+  margin: -12px -2px;
   right: 3px;
   top: 0;
-  width: 37px;
+  width: 36px;
 }
 
 #directory-tree .tree-row > .volume-icon {

@@ -5,269 +5,150 @@
 /* Small icons for file types, used in lists and menus. */
 [file-type-icon] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GENERIC) 1x,
-      url(chrome://theme/IDR_FILETYPE_GENERIC@2x) 2x);
+      url(../images/filetype/filetype_generic.png) 1x,
+      url(../images/filetype/2x/filetype_generic.png) 2x);
   background-position: center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
 }
 
-list.autocomplete-suggestions [selected] [file-type-icon] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GENERIC_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GENERIC_WHITE@2x) 2x);
-}
-
 [file-type-icon='archive'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_ARCHIVE) 1x,
-      url(chrome://theme/IDR_FILETYPE_ARCHIVE@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='archive'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_ARCHIVE_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_ARCHIVE_WHITE@2x) 2x);
+      url(../images/filetype/filetype_archive.png) 1x,
+      url(../images/filetype/2x/filetype_archive.png) 2x);
 }
 
 [file-type-icon='audio'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_AUDIO) 1x,
-      url(chrome://theme/IDR_FILETYPE_AUDIO@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='audio'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_AUDIO_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_AUDIO_WHITE@2x) 2x);
+      url(../images/filetype/filetype_audio.png) 1x,
+      url(../images/filetype/2x/filetype_audio.png) 2x);
 }
 
 [file-type-icon='excel'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_EXCEL) 1x,
-      url(chrome://theme/IDR_FILETYPE_EXCEL@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='excel'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_EXCEL_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_EXCEL_WHITE@2x) 2x);
+      url(../images/filetype/filetype_excel.png) 1x,
+      url(../images/filetype/2x/filetype_excel.png) 2x);
 }
 
 [file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FOLDER) 1x,
-      url(chrome://theme/IDR_FILETYPE_FOLDER@2x) 2x);
+      url(../images/filetype/filetype_folder.png) 1x,
+      url(../images/filetype/2x/filetype_folder.png) 2x);
 }
 
 .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FOLDER_SHARED) 1x,
-      url(chrome://theme/IDR_FILETYPE_FOLDER_SHARED@2x) 2x);
+      url(../images/filetype/filetype_folder_shared.png) 1x,
+      url(../images/filetype/2x/filetype_folder_shared.png) 2x);
 }
 
-list.autocomplete-suggestions [selected] .shared[file-type-icon='folder'] {
+tree .tree-item[selected] > .tree-row > [file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FOLDER_SHARED_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_FOLDER_SHARED_WHITE@2x) 2x);
+      url(../images/filetype/filetype_folder_active.png) 1x,
+      url(../images/filetype/2x/filetype_folder_active.png) 2x);
 }
 
-list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
+tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FOLDER_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_FOLDER_WHITE@2x) 2x);
+      url(../images/filetype/filetype_folder_shared_active.png) 1x,
+      url(../images/filetype/2x/filetype_folder_shared_active.png) 2x);
 }
 
+/* TODO(fukino): Check if 'form' is in use, and remove this if possible. */
 [file-type-icon='form'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FORM) 1x,
-      url(chrome://theme/IDR_FILETYPE_FORM@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='form'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FORM_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_FORM_WHITE@2x) 2x);
+      url(../images/filetype/filetype_form.png) 1x,
+      url(../images/filetype/2x/filetype_form.png) 2x);
 }
 
 [file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GDOC) 1x,
-      url(chrome://theme/IDR_FILETYPE_GDOC@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gdoc'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GDOC_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GDOC_WHITE@2x) 2x);
+      url(../images/filetype/filetype_gdoc.png) 1x,
+      url(../images/filetype/2x/filetype_gdoc.png) 2x);
 }
 
 [file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GDRAW) 1x,
-      url(chrome://theme/IDR_FILETYPE_GDRAW@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gdraw'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GDRAW_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GDRAW_WHITE@2x) 2x);
+      url(../images/filetype/filetype_gdraw.png) 1x,
+      url(../images/filetype/2x/filetype_gdraw.png) 2x);
 }
 
 [file-type-icon='glink'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GLINK) 1x,
-      url(chrome://theme/IDR_FILETYPE_GLINK@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='glink'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GLINK_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GLINK_WHITE@2x) 2x);
+      url(../images/filetype/filetype_generic.png) 1x,
+      url(../images/filetype/2x/filetype_generic.png) 2x);
 }
 
 [file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GSHEET) 1x,
-      url(chrome://theme/IDR_FILETYPE_GSHEET@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gsheet'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GSHEET_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GSHEET_WHITE@2x) 2x);
+      url(../images/filetype/filetype_gsheet.png) 1x,
+      url(../images/filetype/2x/filetype_gsheet.png) 2x);
 }
 
 [file-type-icon='gslides'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GSLIDES) 1x,
-      url(chrome://theme/IDR_FILETYPE_GSLIDES@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gslides'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GSLIDES_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GSLIDES_WHITE@2x) 2x);
+      url(../images/filetype/filetype_gslides.png) 1x,
+      url(../images/filetype/2x/filetype_gslides.png) 2x);
 }
 
 [file-type-icon='gtable'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GTABLE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GTABLE@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GTABLE_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GTABLE_WHITE@2x) 2x);
+      url(../images/filetype/filetype_gtable.png) 1x,
+      url(../images/filetype/2x/filetype_gtable.png) 2x);
 }
 
 [file-type-icon='gform'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FORM) 1x,
-      url(chrome://theme/IDR_FILETYPE_FORM@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gform'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_FORM_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_FORM_WHITE@2x) 2x);
+      url(../images/filetype/filetype_form.png) 1x,
+      url(../images/filetype/2x/filetype_form.png) 2x);
 }
 
 [file-type-icon='gmap'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GMAP) 1x,
-      url(chrome://theme/IDR_FILETYPE_GMAP@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='gmap'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_GMAP_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_GMAP_WHITE@2x) 2x);
+      url(../images/filetype/filetype_map.png) 1x,
+      url(../images/filetype/2x/filetype_map.png) 2x);
 }
 
 [file-type-icon='image'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_IMAGE) 1x,
-      url(chrome://theme/IDR_FILETYPE_IMAGE@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='image'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_IMAGE_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_IMAGE_WHITE@2x) 2x);
+      url(../images/filetype/filetype_image.png) 1x,
+      url(../images/filetype/2x/filetype_image.png) 2x);
 }
 
 [file-type-icon='pdf'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_PDF) 1x,
-      url(chrome://theme/IDR_FILETYPE_PDF@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='pdf'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_PDF_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_PDF_WHITE@2x) 2x);
+      url(../images/filetype/filetype_pdf.png) 1x,
+      url(../images/filetype/2x/filetype_pdf.png) 2x);
 }
 
 [file-type-icon='ppt'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_PPT) 1x,
-      url(chrome://theme/IDR_FILETYPE_PPT@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='ppt'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_PPT_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_PPT_WHITE@2x) 2x);
+      url(../images/filetype/filetype_ppt.png) 1x,
+      url(../images/filetype/2x/filetype_ppt.png) 2x);
 }
 
 [file-type-icon='script'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_SCRIPT) 1x,
-      url(chrome://theme/IDR_FILETYPE_SCRIPT@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='script'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_SCRIPT_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_SCRIPT_WHITE@2x) 2x);
+      url(../images/filetype/filetype_script.png) 1x,
+      url(../images/filetype/2x/filetype_script.png) 2x);
 }
 
 [file-type-icon='sites'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_SITES) 1x,
-      url(chrome://theme/IDR_FILETYPE_SITES@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='sites'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_SITES_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_SITES_WHITE@2x) 2x);
+      url(../images/filetype/filetype_sites.png) 1x,
+      url(../images/filetype/2x/filetype_sites.png) 2x);
 }
 
 [file-type-icon='video'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_VIDEO) 1x,
-      url(chrome://theme/IDR_FILETYPE_VIDEO@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='video'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_VIDEO_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_VIDEO_WHITE@2x) 2x);
+      url(../images/filetype/filetype_video.png) 1x,
+      url(../images/filetype/2x/filetype_video.png) 2x);
 }
 
 [file-type-icon='word'] {
   background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_WORD) 1x,
-      url(chrome://theme/IDR_FILETYPE_WORD@2x) 2x);
-}
-
-list.autocomplete-suggestions [selected] [file-type-icon='word'] {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_FILETYPE_WORD_WHITE) 1x,
-      url(chrome://theme/IDR_FILETYPE_WORD_WHITE@2x) 2x);
+      url(../images/filetype/filetype_word.png) 1x,
+      url(../images/filetype/2x/filetype_word.png) 2x);
 }
 
 [file-type-icon='drive'] {

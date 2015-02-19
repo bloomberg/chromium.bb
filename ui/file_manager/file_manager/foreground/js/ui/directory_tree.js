@@ -41,10 +41,8 @@ Object.freeze(DirectoryItemTreeBaseMethods);
 var TREE_ITEM_INNTER_HTML =
     '<div class="tree-row">' +
     ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
-    ' <span class="expand-icon">' +
-    '  <core-icon icon="expand-more" class="expand-icon"></core-icon>' +
-    ' </span>' +
-    ' <core-icon class="icon"></core-icon>' +
+    ' <span class="expand-icon"></span>' +
+    ' <span class="icon"></span>' +
     ' <span class="label entry-name"></span>' +
     '</div>' +
     '<div class="tree-children"></div>';
@@ -354,7 +352,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
   if (location && location.rootType && location.isRootEntry) {
     icon.setAttribute('volume-type-icon', location.rootType);
   } else {
-    icon.icon = 'folder';
+    icon.setAttribute('file-type-icon', 'folder');
     item.updateSharedStatusIcon();
   }
 
@@ -397,14 +395,11 @@ SubDirectoryItem.prototype.setContextMenu = function(menu) {
  * @override
  */
 SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
-  var iconElement = this.querySelector('.icon');
+  var icon = this.querySelector('.icon');
   this.parentTree_.fileSystemMetadata.notifyEntriesChanged([this.dirEntry_]);
   this.parentTree_.fileSystemMetadata.get([this.dirEntry_], ['shared']).then(
       function(metadata) {
-        if (metadata[0].shared)
-          iconElement.icon = 'folder-shared';
-        else
-          iconElement.icon = 'folder';
+        icon.classList.toggle('shared', metadata[0] && metadata[0].shared);
       });
 };
 
