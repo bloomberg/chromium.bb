@@ -325,6 +325,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/455665
 "race:mojo::common::*::tick_clock\n"
 
+// https://crbug.com/459429
+"race:randomnessPid\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
