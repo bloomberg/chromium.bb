@@ -1209,8 +1209,11 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       if (AutofillType(current_type).group() == PHONE_HOME)
         already_saw_current_type = false;
 
-      // Ignore non-focusable field while inferring boundaries between sections.
-      if (!field->is_focusable)
+      // Ignore non-focusable field and presentation role fields while inferring
+      // boundaries between sections.
+      bool ignored_field = !field->is_focusable ||
+          field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+      if (ignored_field)
         already_saw_current_type = false;
 
       // Some forms have adjacent fields of the same type.  Two common examples:
@@ -1225,20 +1228,23 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       if (current_type == previous_type)
         already_saw_current_type = false;
 
-      previous_type = current_type;
-
       if (current_type != UNKNOWN_TYPE && already_saw_current_type) {
         // We reached the end of a section, so start a new section.
         seen_types.clear();
         current_section = field->unique_name();
       }
 
-      // Only consider a type "seen" if it was focusable. Some forms have
+      // Only consider a type "seen" if it was not ignored. Some forms have
       // sections for different locales, only one of which is enabled at a
       // time. Each section may duplicate some information (e.g. postal code)
       // and we don't want that to cause section splits.
-      if (field->is_focusable)
+      // Also only set |previous_type| when the field was not ignored. This
+      // prevents ignored fields from breaking up fields that are otherwise
+      // adjacent.
+      if (!ignored_field) {
         seen_types.insert(current_type);
+        previous_type = current_type;
+      }
 
       field->set_section(base::UTF16ToUTF8(current_section));
     }
