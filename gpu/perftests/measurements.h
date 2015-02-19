@@ -9,10 +9,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "gpu/command_buffer/service/gpu_timing.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace gpu {
+class GPUTiming;
+class GPUTimer;
 struct Measurement {
   Measurement();
   Measurement(const Measurement& m);

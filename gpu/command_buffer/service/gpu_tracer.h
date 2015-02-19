@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/gpu_export.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace gpu {
 namespace gles2 {

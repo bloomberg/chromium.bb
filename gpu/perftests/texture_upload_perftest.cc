@@ -6,8 +6,10 @@
 #include <vector>
 
 #include "base/containers/small_map.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/gpu_timing.h"
 #include "gpu/perftests/measurements.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"

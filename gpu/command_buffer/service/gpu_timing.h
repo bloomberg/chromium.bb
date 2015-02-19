@@ -8,10 +8,12 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/gpu_export.h"
-#include "ui/gl/gl_bindings.h"
+
+namespace gfx {
+class GLContext;
+}
 
 namespace gpu {
-
 class GPUTiming;
 
 // Class to compute the amount of time it takes to fully
@@ -30,7 +32,7 @@ class GPU_EXPORT GPUTimer {
   int64 GetDeltaElapsed();
 
  private:
-  GLuint queries_[2];
+  unsigned int queries_[2];
   int64 offset_ = 0;
   bool end_requested_ = false;
   GPUTiming* gpu_timing_;

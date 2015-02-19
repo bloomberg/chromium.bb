@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gpu_timing.h"
 
 #include "base/time/time.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_version_info.h"
 
