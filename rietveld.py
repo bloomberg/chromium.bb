@@ -600,7 +600,7 @@ class JwtOAuth2Rietveld(Rietveld):
     self._xsrf_token = None
     self._xsrf_token_time = None
 
-    self._maxtries = 40 or maxtries
+    self._maxtries = maxtries or 40
 
 
 class CachingRietveld(Rietveld):
