@@ -81,15 +81,18 @@ void Shader::DoCompile() {
     glGetShaderiv(service_id_,
                   GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
                   &max_len);
+    source_for_driver = "\0";
     translated_source_.resize(max_len);
-    GLint len = 0;
-    glGetTranslatedShaderSourceANGLE(
-        service_id_, translated_source_.size(),
-        &len, &translated_source_.at(0));
-    DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len == 0 || translated_source_[len] == '\0');
-    translated_source_.resize(len);
-    source_for_driver = translated_source_.c_str();
+    if (max_len) {
+      GLint len = 0;
+      glGetTranslatedShaderSourceANGLE(
+          service_id_, translated_source_.size(),
+          &len, &translated_source_.at(0));
+      DCHECK(max_len == 0 || len < max_len);
+      DCHECK(len == 0 || translated_source_[len] == '\0');
+      translated_source_.resize(len);
+      source_for_driver = translated_source_.c_str();
+    }
   }
 
   GLint status = GL_FALSE;
@@ -97,18 +100,21 @@ void Shader::DoCompile() {
   if (status == GL_TRUE) {
     valid_ = true;
   } else {
+    valid_ = false;
+
     // We cannot reach here if we are using the shader translator.
     // All invalid shaders must be rejected by the translator.
     // All translated shaders must compile.
     GLint max_len = 0;
     glGetShaderiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
     log_info_.resize(max_len);
-    GLint len = 0;
-    glGetShaderInfoLog(service_id_, log_info_.size(), &len, &log_info_.at(0));
-    DCHECK(max_len == 0 || len < max_len);
-    DCHECK(len == 0 || log_info_[len] == '\0');
-    valid_ = false;
-    log_info_.resize(len);
+    if (max_len) {
+      GLint len = 0;
+      glGetShaderInfoLog(service_id_, log_info_.size(), &len, &log_info_.at(0));
+      DCHECK(max_len == 0 || len < max_len);
+      DCHECK(len == 0 || log_info_[len] == '\0');
+      log_info_.resize(len);
+    }
     LOG_IF(ERROR, translator)
         << "Shader translator allowed/produced an invalid shader "
         << "unless the driver is buggy:"
