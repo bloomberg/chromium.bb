@@ -203,7 +203,15 @@ bool WifiCredentialSyncableService::AddToSyncedNetworks(
     return false;
   }
 
-  // TODO(quiche): Handle case where network already exists.
+  const SsidAndSecurityClass network_id(
+      credential.ssid(), credential.security_class());
+  if (synced_networks_and_passphrases_.find(network_id) !=
+      synced_networks_and_passphrases_.end()) {
+    // TODO(quiche): If passphrase has changed, submit this to sync as
+    // an ACTION_UPDATE. crbug.com/431436
+    return false;
+  }
+
   syncer::SyncChangeList change_list;
   syncer::SyncError sync_error;
   sync_pb::EntitySpecifics wifi_credential_specifics;
@@ -218,6 +226,7 @@ bool WifiCredentialSyncableService::AddToSyncedNetworks(
     return false;
   }
 
+  synced_networks_and_passphrases_[network_id] = credential.passphrase();
   return true;
 }
 

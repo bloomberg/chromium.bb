@@ -31,6 +31,7 @@ using syncer::SyncErrorFactoryMock;
 
 namespace {
 
+const char kSsid[] = "fake-ssid";
 const char kSsidNonUtf8[] = "\xc0";
 
 // Fake implementation of WifiConfigDelegate, which provides the
@@ -280,6 +281,58 @@ TEST_F(WifiCredentialSyncableServiceTest, AddToSyncedNetworksSuccess) {
   StartSyncing();
   EXPECT_TRUE(AddToSyncedNetworks(
       "fake-item-id", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
+  EXPECT_EQ(1, change_processor_changes_size());
+}
+
+TEST_F(WifiCredentialSyncableServiceTest,
+       AddToSyncedNetworksDifferentSecurityClassesSuccess) {
+  StartSyncing();
+  EXPECT_TRUE(AddToSyncedNetworks(
+      "fake-item-id", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
+  EXPECT_TRUE(AddToSyncedNetworks(
+      "fake-item-id-2",
+      MakeCredential(kSsidNonUtf8, SECURITY_CLASS_WEP, "")));
+  EXPECT_EQ(2, change_processor_changes_size());
+}
+
+TEST_F(WifiCredentialSyncableServiceTest,
+       AddToSyncedNetworksDifferentSsidsSuccess) {
+  StartSyncing();
+  EXPECT_TRUE(AddToSyncedNetworks(
+      "fake-item-id", MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
+  EXPECT_TRUE(AddToSyncedNetworks(
+      "fake-item-id-2", MakeCredential(kSsid, SECURITY_CLASS_NONE, "")));
+  EXPECT_EQ(2, change_processor_changes_size());
+}
+
+TEST_F(WifiCredentialSyncableServiceTest,
+       AddToSyncedNetworksDuplicateAddPskNetwork) {
+  const std::string passphrase("psk-passphrase");
+  StartSyncing();
+  EXPECT_TRUE(
+      AddToSyncedNetworks(
+          "fake-item-id",
+          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_PSK, passphrase)));
+  EXPECT_EQ(1, change_processor_changes_size());
+  EXPECT_FALSE(
+      AddToSyncedNetworks(
+          "fake-item-id",
+          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_PSK, passphrase)));
+  EXPECT_EQ(1, change_processor_changes_size());
+}
+
+TEST_F(WifiCredentialSyncableServiceTest,
+       AddToSyncedNetworksDuplicateAddOpenNetwork) {
+  StartSyncing();
+  EXPECT_TRUE(
+      AddToSyncedNetworks(
+          "fake-item-id",
+          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
+  EXPECT_EQ(1, change_processor_changes_size());
+  EXPECT_FALSE(
+      AddToSyncedNetworks(
+          "fake-item-id",
+          MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, "")));
   EXPECT_EQ(1, change_processor_changes_size());
 }
 

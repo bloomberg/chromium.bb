@@ -5,17 +5,20 @@
 #ifndef COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
 #define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
 
+#include <map>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/wifi_sync/wifi_config_delegate.h"
+#include "components/wifi_sync/wifi_credential.h"
+#include "components/wifi_sync/wifi_security_class.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/syncable_service.h"
 
 namespace wifi_sync {
-class WifiCredential;
 
 // KeyedService that synchronizes WiFi credentials between local settings,
 // and Chrome Sync.
@@ -62,6 +65,11 @@ class WifiCredentialSyncableService
                            const WifiCredential& credential);
 
  private:
+  using SsidAndSecurityClass =
+      std::pair<WifiCredential::SsidBytes, WifiSecurityClass>;
+  using SsidAndSecurityClassToPassphrase =
+      std::map<SsidAndSecurityClass, std::string>;
+
   // The syncer::ModelType that this SyncableService processes and
   // generates updates for.
   static const syncer::ModelType kModelType;
@@ -72,6 +80,11 @@ class WifiCredentialSyncableService
   // Our SyncChangeProcessor instance. Used to push changes into
   // Chrome Sync.
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+
+  // The networks and passphrases that are already known by Chrome
+  // Sync. All synced networks must be included in this map, even if
+  // they do not use passphrases.
+  SsidAndSecurityClassToPassphrase synced_networks_and_passphrases_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiCredentialSyncableService);
 };
