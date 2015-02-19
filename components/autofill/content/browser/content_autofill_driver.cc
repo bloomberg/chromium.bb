@@ -101,8 +101,8 @@ void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
   if (!RendererIsAvailable())
     return;
 
-  std::vector<FormDataPredictions> type_predictions;
-  FormStructure::GetFieldTypePredictions(forms, &type_predictions);
+  std::vector<FormDataPredictions> type_predictions =
+      FormStructure::GetFieldTypePredictions(forms);
   render_frame_host_->Send(new AutofillMsg_FieldTypePredictionsAvailable(
       render_frame_host_->GetRoutingID(), type_predictions));
 }

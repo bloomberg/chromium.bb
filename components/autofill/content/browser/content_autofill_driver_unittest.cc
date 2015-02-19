@@ -30,7 +30,7 @@ namespace autofill {
 
 namespace {
 
-const std::string kAppLocale = "en-US";
+const char kAppLocale[] = "en-US";
 const AutofillManager::AutofillDownloadManagerState kDownloadState =
     AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER;
 
@@ -272,8 +272,8 @@ TEST_F(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
   test::CreateTestAddressFormData(&form);
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms(1, &form_structure);
-  std::vector<FormDataPredictions> expected_type_predictions;
-  FormStructure::GetFieldTypePredictions(forms, &expected_type_predictions);
+  std::vector<FormDataPredictions> expected_type_predictions =
+      FormStructure::GetFieldTypePredictions(forms);
   driver_->SendAutofillTypePredictionsToRenderer(forms);
 
   std::vector<FormDataPredictions> output_type_predictions;

@@ -76,11 +76,10 @@ class FormStructure {
   static void ParseQueryResponse(const std::string& response_xml,
                                  const std::vector<FormStructure*>& forms);
 
-  // Fills |forms| with the details from the given |form_structures| and their
-  // fields' predicted types.
-  static void GetFieldTypePredictions(
-      const std::vector<FormStructure*>& form_structures,
-      std::vector<FormDataPredictions>* forms);
+  // Returns predictions using the details from the given |form_structures| and
+  // their fields' predicted types.
+  static std::vector<FormDataPredictions> GetFieldTypePredictions(
+      const std::vector<FormStructure*>& form_structures);
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.

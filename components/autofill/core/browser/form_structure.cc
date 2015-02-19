@@ -624,17 +624,17 @@ void FormStructure::ParseQueryResponse(
 }
 
 // static
-void FormStructure::GetFieldTypePredictions(
-    const std::vector<FormStructure*>& form_structures,
-    std::vector<FormDataPredictions>* forms) {
-  forms->clear();
-  forms->reserve(form_structures.size());
+std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
+    const std::vector<FormStructure*>& form_structures) {
+  std::vector<FormDataPredictions> forms;
+  forms.reserve(form_structures.size());
   for (size_t i = 0; i < form_structures.size(); ++i) {
     FormStructure* form_structure = form_structures[i];
     FormDataPredictions form;
     form.data.name = form_structure->form_name_;
     form.data.origin = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
+    form.data.is_form_tag = form_structure->is_form_tag_;
     form.signature = form_structure->FormSignature();
 
     for (std::vector<AutofillField*>::const_iterator field =
@@ -652,8 +652,9 @@ void FormStructure::GetFieldTypePredictions(
       form.fields.push_back(annotated_field);
     }
 
-    forms->push_back(form);
+    forms.push_back(form);
   }
+  return forms;
 }
 
 std::string FormStructure::FormSignature() const {
