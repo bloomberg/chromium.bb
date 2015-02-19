@@ -25,6 +25,7 @@
         'load_committed_details.cc',
         'navigation/navigation_item_impl.h',
         'navigation/navigation_item_impl.mm',
+        'public/block_types.h',
         'public/browser_state.h',
         'public/favicon_status.cc',
         'public/favicon_status.h',
