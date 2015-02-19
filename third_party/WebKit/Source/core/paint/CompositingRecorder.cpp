@@ -13,15 +13,15 @@
 
 namespace blink {
 
-CompositingRecorder::CompositingRecorder(GraphicsContext* graphicsContext, DisplayItemClient client, const CompositeOperator preCompositeOp, const WebBlendMode& preBlendMode, const float opacity, const CompositeOperator postCompositeOp)
+CompositingRecorder::CompositingRecorder(GraphicsContext* graphicsContext, DisplayItemClient client, const CompositeOperator compositeOp, const WebBlendMode& blendMode, const float opacity)
     : m_client(client)
     , m_graphicsContext(graphicsContext)
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
-        m_graphicsContext->displayItemList()->add(BeginCompositingDisplayItem::create(m_client, preCompositeOp, preBlendMode, opacity, postCompositeOp));
+        m_graphicsContext->displayItemList()->add(BeginCompositingDisplayItem::create(m_client, compositeOp, blendMode, opacity));
     } else {
-        BeginCompositingDisplayItem beginCompositingDisplayItem(m_client, preCompositeOp, preBlendMode, opacity, postCompositeOp);
+        BeginCompositingDisplayItem beginCompositingDisplayItem(m_client, compositeOp, blendMode, opacity);
         beginCompositingDisplayItem.replay(graphicsContext);
     }
 }

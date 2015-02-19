@@ -16,7 +16,7 @@ class LayoutObject;
 
 class CompositingRecorder {
 public:
-    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const CompositeOperator preCompositeOp, const WebBlendMode& preBlendMode, const float opacity, const CompositeOperator postCompositeOp);
+    explicit CompositingRecorder(GraphicsContext*, DisplayItemClient, const CompositeOperator, const WebBlendMode&, const float);
 
     ~CompositingRecorder();
 

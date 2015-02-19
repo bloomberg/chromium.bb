@@ -288,10 +288,8 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;
-        if (hasCompositing || opacity < 1) {
-            SkXfermode::Mode postCompositeOp = hasCompositing ? SkXfermode::kSrcOver_Mode : compositeOp;
-            compositingRecorder = adoptPtr(new CompositingRecorder(&recordingContext, displayItemClient(), compositeOperatorFromSkia(compositeOp), blendModeFromSkia(compositeOp), opacity, compositeOperatorFromSkia(postCompositeOp)));
-        }
+        if (hasCompositing || opacity < 1)
+            compositingRecorder = adoptPtr(new CompositingRecorder(&recordingContext, displayItemClient(), compositeOperatorFromSkia(compositeOp), blendModeFromSkia(compositeOp), opacity));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.

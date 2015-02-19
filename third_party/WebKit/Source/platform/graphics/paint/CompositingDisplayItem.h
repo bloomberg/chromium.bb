@@ -19,17 +19,16 @@ namespace blink {
 class PLATFORM_EXPORT BeginCompositingDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const CompositeOperator preCompositeOp, const WebBlendMode& preBlendMode, const float opacity, const CompositeOperator postCompositeOp)
+    static PassOwnPtr<BeginCompositingDisplayItem> create(DisplayItemClient client, const CompositeOperator compositeOp, const WebBlendMode& blendMode, const float opacity)
     {
-        return adoptPtr(new BeginCompositingDisplayItem(client, preCompositeOp, preBlendMode, opacity, postCompositeOp));
+        return adoptPtr(new BeginCompositingDisplayItem(client, compositeOp, blendMode, opacity));
     }
 
-    BeginCompositingDisplayItem(DisplayItemClient client, const CompositeOperator preCompositeOp, const WebBlendMode& preBlendMode, const float opacity, const CompositeOperator postCompositeOp)
+    BeginCompositingDisplayItem(DisplayItemClient client, const CompositeOperator compositeOp, const WebBlendMode& blendMode, const float opacity)
         : PairedBeginDisplayItem(client, BeginCompositing)
-        , m_preCompositeOp(preCompositeOp)
-        , m_preBlendMode(preBlendMode)
-        , m_opacity(opacity)
-        , m_postCompositeOp(postCompositeOp) { }
+        , m_compositeOp(compositeOp)
+        , m_blendMode(blendMode)
+        , m_opacity(opacity) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -38,10 +37,9 @@ private:
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    const CompositeOperator m_preCompositeOp;
-    const WebBlendMode m_preBlendMode;
+    const CompositeOperator m_compositeOp;
+    const WebBlendMode m_blendMode;
     const float m_opacity;
-    const CompositeOperator m_postCompositeOp;
 };
 
 class PLATFORM_EXPORT EndCompositingDisplayItem : public PairedEndDisplayItem {

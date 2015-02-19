@@ -14,22 +14,20 @@ namespace blink {
 
 void BeginCompositingDisplayItem::replay(GraphicsContext* context)
 {
-    context->setCompositeOperation(WebCoreCompositeToSkiaComposite(m_preCompositeOp, m_preBlendMode));
-    context->beginLayer(m_opacity, WebCoreCompositeToSkiaComposite(m_preCompositeOp, m_preBlendMode));
-    context->setCompositeOperation(WebCoreCompositeToSkiaComposite(m_postCompositeOp, WebBlendModeNormal));
+    context->beginLayer(m_opacity, WebCoreCompositeToSkiaComposite(m_compositeOp, m_blendMode));
 }
 
 void BeginCompositingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     // FIXME: Change this to appendCompositingItem.
-    list->appendTransparencyItem(m_opacity, m_preBlendMode);
+    list->appendTransparencyItem(m_opacity, m_blendMode);
 }
 
 #ifndef NDEBUG
 void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", preCompositingOp: %d, preBlendMode: %d, opacity: %f, postCompositingOp: %d", m_preCompositeOp, m_preBlendMode, m_opacity, m_postCompositeOp));
+    stringBuilder.append(WTF::String::format(", compositingOp: %d, blendMode: %d, opacity: %f", m_compositeOp, m_blendMode, m_opacity));
 }
 #endif
 
