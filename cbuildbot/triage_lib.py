@@ -741,12 +741,18 @@ class CalculateSuspects(object):
 
       failed_configs = [x for x in relevant_configs if x in failing]
       if not failed_configs:
+        logging.info('All the %s relevant config(s) for change %s passed, so '
+                     'it will be submitted.', len(relevant_configs),
+                     cros_patch.GetChangesAsString([change]))
         fully_verified.add(change)
       else:
         # Examine the failures and see if we can safely ignore them
         # for the change.
         failed_messages = [x for x in messages if x.builder in failed_configs]
         if cls._CanIgnoreFailures(failed_messages, change, build_root):
+          logging.info('All failures of relevant configs for change %s are '
+                       'ignorable by this change, so it will be submitted.',
+                       cros_patch.GetChangesAsString([change]))
           fully_verified.add(change)
 
     return fully_verified
