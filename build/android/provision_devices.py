@@ -178,7 +178,7 @@ def ProvisionDevice(device, options):
     if options.disable_network:
       device_settings.ConfigureContentSettings(
           device, device_settings.NETWORK_DISABLED_SETTINGS)
-    if options.wait_for_battery:
+    if options.min_battery_level is not None:
       try:
         battery_info = device.old_interface.GetBatteryInfo()
       except Exception as e:
@@ -241,24 +241,11 @@ def main():
   logging.getLogger().addHandler(custom_handler)
   logging.getLogger().setLevel(logging.INFO)
 
-  # TODO(perezju): This script used to rely on the builder name to determine
-  # the desired device configuration for perf bots. To safely phase this out,
-  # we now:
-  # - expose these configuration settings as command line options
-  # - set default values for these options based on the builder name, thus
-  #   matching the previous behaviour of the script on all bots.
-  # - explicitly adding these options on the perf bots will also maintain the
-  #   script behaviour, namely:
-  #     --wait-for-battery --disable-network --disable-java-debug
-  # - after all perf-bot recipes are updated, we can remove the following
-  #   builder-name-sniffing code and replace |is_perf| with |False|.
-  is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
-
   # Recommended options on perf bots:
   # --disable-network
   #     TODO(tonyg): We eventually want network on. However, currently radios
   #     can cause perfbots to drain faster than they charge.
-  # --wait-for-battery
+  # --min-battery-level 95
   #     Some perf bots run benchmarks with USB charging disabled which leads
   #     to gradual draining of the battery. We must wait for a full charge
   #     before starting a run in order to keep the devices online.
@@ -274,20 +261,15 @@ def main():
                       help='when wiping the device, max number of seconds to'
                       ' wait after each reboot '
                       '(default: %s)' % _DEFAULT_TIMEOUTS.HELP_TEXT)
-  parser.add_argument('--wait-for-battery', action='store_true',
-                      default=is_perf,
-                      help='wait for the battery on the devices to charge')
-  parser.add_argument('--min-battery-level', default=95, type=int,
-                      metavar='NUM',
-                      help='when waiting for battery, minimum battery level'
-                      ' required to continue (default: %(default)s)')
+  parser.add_argument('--min-battery-level', type=int, metavar='NUM',
+                      help='wait for the device to reach this minimum battery'
+                      ' level before trying to continue')
   parser.add_argument('--disable-location', action='store_true',
                       help='disable Google location services on devices')
   parser.add_argument('--disable-network', action='store_true',
-                      default=is_perf,
                       help='disable network access on devices')
   parser.add_argument('--disable-java-debug', action='store_false',
-                      dest='enable_java_debug', default=not is_perf,
+                      dest='enable_java_debug', default=True,
                       help='disable Java property asserts and JNI checking')
   parser.add_argument('-t', '--target', default='Debug',
                       help='the build target (default: %(default)s)')
