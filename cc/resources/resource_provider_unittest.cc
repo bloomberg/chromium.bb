@@ -522,8 +522,7 @@ void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
     EXPECT_EQ(0u, context->NumTextures());
 
   uint8_t data[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  resource_provider->SetPixels(id, data, rect, rect, gfx::Vector2d());
+  resource_provider->CopyToResource(id, data, size);
   if (expected_default_type == ResourceProvider::GLTexture)
     EXPECT_EQ(1u, context->NumTextures());
 
@@ -608,6 +607,38 @@ TEST_P(ResourceProviderTest, Upload) {
   resource_provider_->DeleteResource(id);
 }
 
+TEST_P(ResourceProviderTest, SimpleUpload) {
+  gfx::Size size(2, 2);
+  ResourceFormat format = RGBA_8888;
+  size_t pixel_size = TextureSizeBytes(size, format);
+  ASSERT_EQ(16U, pixel_size);
+
+  ResourceProvider::ResourceId id = resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
+
+  uint8_t image[16] = {0};
+  resource_provider_->CopyToResource(id, image, size);
+  {
+    uint8_t result[16] = {0};
+    uint8_t expected[16] = {0};
+    GetResourcePixels(resource_provider_.get(), context(), id, size, format,
+                      result);
+    EXPECT_EQ(0, memcmp(expected, result, pixel_size));
+  }
+
+  for (uint8_t i = 0; i < pixel_size; ++i)
+    image[i] = i;
+  resource_provider_->CopyToResource(id, image, size);
+  {
+    uint8_t result[16] = {0};
+    uint8_t expected[16] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    GetResourcePixels(resource_provider_.get(), context(), id, size, format,
+                      result);
+    EXPECT_EQ(0, memcmp(expected, result, pixel_size));
+  }
+}
+
 TEST_P(ResourceProviderTest, TransferGLResources) {
   if (GetParam() != ResourceProvider::GLTexture)
     return;
@@ -619,13 +650,12 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = { 5, 5, 5, 5 };
-  child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id2, data2, size);
 
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -863,8 +893,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = {1, 2, 3, 4};
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id1, data1, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -969,13 +998,12 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = { 5, 5, 5, 5 };
-  child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id2, data2, size);
 
   scoped_ptr<SharedBitmap> shared_bitmap(CreateAndFillSharedBitmap(
       shared_bitmap_manager_.get(), gfx::Size(1, 1), 0));
@@ -1171,8 +1199,7 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   ResourceProvider::ResourceId id1 = child_resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  child_resource_provider->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider->CopyToResource(id1, data1, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -1218,8 +1245,7 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id1, data1, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -1266,13 +1292,12 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = {5, 5, 5, 5};
-  child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id2, data2, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -1360,13 +1385,12 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = {1, 2, 3, 4};
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id1, data1, size);
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = {5, 5, 5, 5};
-  child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id2, data2, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -1471,8 +1495,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   ResourceProvider::ResourceId id = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id, data, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -1521,8 +1544,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   ResourceProvider::ResourceId id = child_resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data[4] = {1, 2, 3, 4};
-  gfx::Rect rect(size);
-  child_resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
+  child_resource_provider_->CopyToResource(id, data, size);
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -1695,10 +1717,9 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     Mock::VerifyAndClearExpectations(child_context);
 
     uint8_t data[4] = { 1, 2, 3, 4 };
-    gfx::Rect rect(size);
 
     EXPECT_CALL(*child_context, bindTexture(GL_TEXTURE_2D, child_texture_id));
-    child_resource_provider->SetPixels(id, data, rect, rect, gfx::Vector2d());
+    child_resource_provider->CopyToResource(id, data, size);
     Mock::VerifyAndClearExpectations(child_context);
 
     // The texture is set to |child_filter| in the child.
@@ -3035,7 +3056,6 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   gfx::Size size(2, 2);
   gfx::Vector2d offset(0, 0);
-  gfx::Rect rect(0, 0, 2, 2);
   ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId id = 0;
   uint8_t pixels[16] = { 0 };
@@ -3062,7 +3082,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
   EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _)).Times(1);
   EXPECT_CALL(*context, texSubImage2D(_, _, _, _, 2, 2, _, _, _)).Times(1);
-  resource_provider->SetPixels(id, pixels, rect, rect, offset);
+  resource_provider->CopyToResource(id, pixels, size);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
@@ -3595,7 +3615,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   resource_provider->DeleteResource(id);
 }
 
-TEST_P(ResourceProviderTest, CompressedTextureETC1SetPixels) {
+TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
   if (GetParam() != ResourceProvider::GLTexture)
     return;
 
@@ -3629,8 +3649,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1SetPixels) {
   EXPECT_CALL(*context,
               compressedTexImage2D(
                   _, 0, _, size.width(), size.height(), _, _, _)).Times(1);
-  resource_provider->SetPixels(
-      id, pixels, gfx::Rect(size), gfx::Rect(size), gfx::Vector2d(0, 0));
+  resource_provider->CopyToResource(id, pixels, size);
 
   EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
   resource_provider->DeleteResource(id);

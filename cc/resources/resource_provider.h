@@ -150,11 +150,15 @@ class CC_EXPORT ResourceProvider {
 
   // Update pixels from image, copying source_rect (in image) to dest_offset (in
   // the resource).
+  // NOTE: DEPRECATED. Use CopyToResource() instead.
   void SetPixels(ResourceId id,
                  const uint8_t* image,
                  const gfx::Rect& image_rect,
                  const gfx::Rect& source_rect,
                  const gfx::Vector2d& dest_offset);
+  void CopyToResource(ResourceId id,
+                      const uint8_t* image,
+                      const gfx::Size& image_size);
 
   // Check upload status.
   size_t NumBlockingUploads();

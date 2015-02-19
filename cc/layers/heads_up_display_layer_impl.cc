@@ -210,13 +210,10 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   size_t row_bytes = 0;
   const void* pixels = hud_surface_->getCanvas()->peekPixels(&info, &row_bytes);
   DCHECK(pixels);
-  gfx::Rect content_rect(internal_content_bounds_);
   DCHECK(info.colorType() == kN32_SkColorType);
-  resource_provider->SetPixels(resources_.back()->id(),
-                               static_cast<const uint8_t*>(pixels),
-                               content_rect,
-                               content_rect,
-                               gfx::Vector2d());
+  resource_provider->CopyToResource(resources_.back()->id(),
+                                    static_cast<const uint8_t*>(pixels),
+                                    internal_content_bounds_);
 }
 
 void HeadsUpDisplayLayerImpl::ReleaseResources() {

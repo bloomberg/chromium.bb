@@ -124,19 +124,16 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
                           SkColorGetR(texel_color),
                           SkColorGetG(texel_color),
                           SkColorGetB(texel_color));
-  std::vector<uint32_t> pixels(rect.size().GetArea(), pixel_color);
+  size_t num_pixels = static_cast<size_t>(rect.width()) * rect.height();
+  std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
   ResourceProvider::ResourceId resource =
       resource_provider->CreateResource(rect.size(),
                                         GL_CLAMP_TO_EDGE,
                                         ResourceProvider::TextureHintImmutable,
                                         RGBA_8888);
-  resource_provider->SetPixels(
-      resource,
-      reinterpret_cast<uint8_t*>(&pixels.front()),
-      rect,
-      rect,
-      gfx::Vector2d());
+  resource_provider->CopyToResource(
+      resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -1333,12 +1330,9 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
           RGBA_8888);
   {
     SkAutoLockPixels lock(bitmap);
-    this->resource_provider_->SetPixels(
-        mask_resource_id,
-        reinterpret_cast<uint8_t*>(bitmap.getPixels()),
-        mask_rect,
-        mask_rect,
-        gfx::Vector2d());
+    this->resource_provider_->CopyToResource(
+        mask_resource_id, reinterpret_cast<uint8_t*>(bitmap.getPixels()),
+        mask_rect.size());
   }
 
   // This RenderPassDrawQuad does not include the full |viewport_rect| which is
@@ -2124,12 +2118,8 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
 
   {
     SkAutoLockPixels lock(bitmap);
-    this->resource_provider_->SetPixels(
-        resource,
-        static_cast<uint8_t*>(bitmap.getPixels()),
-        gfx::Rect(tile_size),
-        gfx::Rect(tile_size),
-        gfx::Vector2d());
+    this->resource_provider_->CopyToResource(
+        resource, static_cast<uint8_t*>(bitmap.getPixels()), tile_size);
   }
 
   RenderPassId id(1, 1);
@@ -2465,7 +2455,7 @@ TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  gfx::Rect texture_rect(4, 4);
+  gfx::Size texture_size(4, 4);
   SkPMColor colors[4] = {
     SkPreMultiplyColor(SkColorSetARGB(255, 0, 255, 0)),
     SkPreMultiplyColor(SkColorSetARGB(255, 0, 128, 0)),
@@ -2480,33 +2470,23 @@ TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
   };
   ResourceProvider::ResourceId resource =
       this->resource_provider_->CreateResource(
-          texture_rect.size(),
-          GL_REPEAT,
-          ResourceProvider::TextureHintImmutable,
+          texture_size, GL_REPEAT, ResourceProvider::TextureHintImmutable,
           RGBA_8888);
-  this->resource_provider_->SetPixels(
-      resource,
-      reinterpret_cast<uint8_t*>(pixels),
-      texture_rect,
-      texture_rect,
-      gfx::Vector2d());
+  this->resource_provider_->CopyToResource(
+      resource, reinterpret_cast<uint8_t*>(pixels), texture_size);
 
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   TextureDrawQuad* texture_quad =
       pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   texture_quad->SetNew(
-      shared_state,
-      gfx::Rect(this->device_viewport_size_),
-      gfx::Rect(),
-      gfx::Rect(this->device_viewport_size_),
-      resource,
+      shared_state, gfx::Rect(this->device_viewport_size_), gfx::Rect(),
+      gfx::Rect(this->device_viewport_size_), resource,
       true,                     // premultiplied_alpha
       gfx::PointF(0.0f, 0.0f),  // uv_top_left
       gfx::PointF(              // uv_bottom_right
-          this->device_viewport_size_.width() / texture_rect.width(),
-          this->device_viewport_size_.height() / texture_rect.height()),
-      SK_ColorWHITE,
-      vertex_opacity,
+          this->device_viewport_size_.width() / texture_size.width(),
+          this->device_viewport_size_.height() / texture_size.height()),
+      SK_ColorWHITE, vertex_opacity,
       false,   // flipped
       false);  // nearest_neighbor
 

@@ -3384,11 +3384,9 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       format = ETC1;
       break;
   }
-  id =
-      resource_provider_->CreateResource(bitmap.GetSize(),
-                                         wrap_mode,
-                                         ResourceProvider::TextureHintImmutable,
-                                         format);
+  id = resource_provider_->CreateResource(
+      bitmap.GetSize(), wrap_mode, ResourceProvider::TextureHintImmutable,
+      format);
 
   UIResourceData data;
   data.resource_id = id;
@@ -3398,11 +3396,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   ui_resource_map_[uid] = data;
 
   AutoLockUIResourceBitmap bitmap_lock(bitmap);
-  resource_provider_->SetPixels(id,
-                                bitmap_lock.GetPixels(),
-                                gfx::Rect(bitmap.GetSize()),
-                                gfx::Rect(bitmap.GetSize()),
-                                gfx::Vector2d(0, 0));
+  resource_provider_->CopyToResource(id, bitmap_lock.GetPixels(),
+                                     bitmap.GetSize());
   MarkUIResourceNotEvicted(uid);
 }
 

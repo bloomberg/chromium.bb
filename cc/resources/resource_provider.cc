@@ -780,6 +780,54 @@ void ResourceProvider::SetPixels(ResourceId id,
   }
 }
 
+void ResourceProvider::CopyToResource(ResourceId id,
+                                      const uint8_t* image,
+                                      const gfx::Size& image_size) {
+  Resource* resource = GetResource(id);
+  DCHECK(!resource->locked_for_write);
+  DCHECK(!resource->lock_for_read_count);
+  DCHECK(resource->origin == Resource::Internal);
+  DCHECK_EQ(resource->exported_count, 0);
+  DCHECK(ReadLockFenceHasPassed(resource));
+  LazyAllocate(resource);
+
+  DCHECK_EQ(image_size.width(), resource->size.width());
+  DCHECK_EQ(image_size.height(), resource->size.height());
+
+  if (resource->type == Bitmap) {
+    DCHECK_EQ(Bitmap, resource->type);
+    DCHECK(resource->allocated);
+    DCHECK_EQ(RGBA_8888, resource->format);
+    SkImageInfo source_info =
+        SkImageInfo::MakeN32Premul(image_size.width(), image_size.height());
+    size_t image_stride = image_size.width() * 4;
+
+    ScopedWriteLockSoftware lock(this, id);
+    SkCanvas dest(lock.sk_bitmap());
+    dest.writePixels(source_info, image, image_stride, 0, 0);
+  } else {
+    DCHECK(resource->gl_id);
+    DCHECK(!resource->pending_set_pixels);
+    DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    DCHECK(texture_uploader_.get());
+    gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
+
+    if (resource->format == ETC1) {
+      size_t num_bytes = static_cast<size_t>(image_size.width()) *
+                         image_size.height() * BitsPerPixel(ETC1) / 8;
+      gl->CompressedTexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(ETC1),
+                               image_size.width(), image_size.height(), 0,
+                               num_bytes, image);
+    } else {
+      gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_size.width(),
+                        image_size.height(), GLDataFormat(resource->format),
+                        GLDataType(resource->format), image);
+    }
+  }
+}
+
 size_t ResourceProvider::NumBlockingUploads() {
   if (!texture_uploader_)
     return 0;

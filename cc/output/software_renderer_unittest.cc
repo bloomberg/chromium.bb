@@ -174,17 +174,11 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   cyan_tile.allocN32Pixels(inner_size.width(), inner_size.height());
   cyan_tile.eraseColor(SK_ColorCYAN);
 
-  resource_provider()->SetPixels(
-      resource_yellow,
-      static_cast<uint8_t*>(yellow_tile.getPixels()),
-      gfx::Rect(outer_size),
-      gfx::Rect(outer_size),
-      gfx::Vector2d());
-  resource_provider()->SetPixels(resource_cyan,
-                                 static_cast<uint8_t*>(cyan_tile.getPixels()),
-                                 gfx::Rect(inner_size),
-                                 gfx::Rect(inner_size),
-                                 gfx::Vector2d());
+  resource_provider()->CopyToResource(
+      resource_yellow, static_cast<uint8_t*>(yellow_tile.getPixels()),
+      outer_size);
+  resource_provider()->CopyToResource(
+      resource_cyan, static_cast<uint8_t*>(cyan_tile.getPixels()), inner_size);
 
   gfx::Rect root_rect = outer_rect;
 
@@ -265,11 +259,8 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
           0, visible_rect.bottom() - 1, tile_rect.width(), tile_rect.bottom()),
       SK_ColorYELLOW);
 
-  resource_provider()->SetPixels(resource_cyan,
-                                 static_cast<uint8_t*>(cyan_tile.getPixels()),
-                                 gfx::Rect(tile_size),
-                                 gfx::Rect(tile_size),
-                                 gfx::Vector2d());
+  resource_provider()->CopyToResource(
+      resource_cyan, static_cast<uint8_t*>(cyan_tile.getPixels()), tile_size);
 
   gfx::Rect root_rect(tile_size);
 
