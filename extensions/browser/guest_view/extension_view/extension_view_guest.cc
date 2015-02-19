@@ -5,6 +5,7 @@
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
@@ -126,11 +127,20 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
-  if (!render_frame_host->GetParent())
-    view_page_ = url;
+  if (render_frame_host->GetParent())
+    return;
+
+  view_page_ = url;
+
+  // Gets chrome-extension://extensionid/ prefix.
+  std::string prefix = url.GetWithEmptyPath().spec();
+  std::string relative_url = url.spec();
+
+  // Removes the prefix.
+  ReplaceFirstSubstringAfterOffset(&relative_url, 0, prefix, "");
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guestview::kUrl, url.spec());
+  args->SetString(guestview::kUrl, relative_url);
   DispatchEventToView(
       new GuestViewBase::Event(extensionview::kEventLoadCommit, args.Pass()));
 }
