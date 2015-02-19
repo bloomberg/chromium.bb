@@ -5,7 +5,6 @@
 #include "components/wifi/fake_wifi_service.h"
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "components/onc/onc_constants.h"
 
@@ -23,25 +22,6 @@ FakeWiFiService::FakeWiFiService() {
     network_properties.ssid = "wifi1";
     network_properties.security = onc::wifi::kWEP_PSK;
     network_properties.signal_strength = 40;
-    network_properties.json_extra =
-      "{"
-      "  \"MacAddress\": \"00:11:22:AA:BB:CC\","
-      "  \"IPAddressConfigType\": \"Static\","
-      "  \"IPConfigs\": [{"
-      "     \"Gateway\": \"0.0.0.1\","
-      "     \"IPAddress\": \"0.0.0.0\","
-      "     \"RoutingPrefix\": 0,"
-      "     \"Type\": \"IPv4\""
-      "  }],"
-      "  \"StaticIPConfig\": {"
-      "     \"IPAddress\": \"1.2.3.4\","
-      "     \"Type\": \"IPv4\""
-      "  },"
-      "  \"WiFi\": {"
-      "    \"Frequency\": 2400,"
-      "    \"FrequencyList\": [2400]"
-      "  }"
-      "}";
     networks_.push_back(network_properties);
   }
   {

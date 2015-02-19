@@ -20,6 +20,13 @@
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+// This tests the Windows / Mac implementation of the networkingPrivate API
+// (NetworkingPrivateServiceClient). Note, only a subset of the
+// networkingPrivate API is implemented in NetworkingPrivateServiceClient, so
+// this uses its own set of test expectations to reflect that. The expectations
+// should be kept similar to the ChromeOS (primary) implementation as much as
+// possible. See also crbug.com/460119.
+
 using testing::Return;
 using testing::_;
 
@@ -28,12 +35,6 @@ using extensions::NetworkingPrivateDelegateFactory;
 using extensions::NetworkingPrivateEventRouter;
 using extensions::NetworkingPrivateEventRouterFactory;
 using extensions::NetworkingPrivateServiceClient;
-
-// This tests the Windows / Mac implementation of the networkingPrivate API.
-// Note: the expectations in test/data/extensions/api_test/networking/test.js
-// are shared between this and the Chrome OS tests. TODO(stevenjb): Develop
-// a mechanism to specify the test expectations from here to eliminate that
-// dependency.
 
 namespace {
 
@@ -69,7 +70,7 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
   NetworkingPrivateServiceClientApiTest() {}
 
   bool RunNetworkingSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("networking",
+    return RunExtensionSubtest("networking_private/service_client",
                                "main.html?" + subtest,
                                kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
@@ -134,14 +135,14 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
       << message_;
 }
 
-// TODO(stevenjb/mef): Fix these, crbug.com/371442.
+// TODO(stevenjb/mef): Implement |limit| to fix this, crbug.com/371442.
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
                        DISABLED_GetNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getNetworks")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
-                       DISABLED_GetVisibleNetworks) {
+                       GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }
 
@@ -150,9 +151,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
 }
 
-// TODO(stevenjb/mef): Fix this, crbug.com/371442.
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
-                       DISABLED_RequestNetworkScan) {
+                       RequestNetworkScan) {
   EXPECT_TRUE(RunNetworkingSubtest("requestNetworkScan")) << message_;
 }
 
@@ -195,9 +195,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
       << message_;
 }
 
-// TODO(stevenjb/mef): Fix this, crbug.com/371442.
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateServiceClientApiTest,
-                       DISABLED_OnNetworkListChangedEvent) {
+                       OnNetworkListChangedEvent) {
   EXPECT_TRUE(RunNetworkingSubtest("onNetworkListChangedEvent")) << message_;
 }
 

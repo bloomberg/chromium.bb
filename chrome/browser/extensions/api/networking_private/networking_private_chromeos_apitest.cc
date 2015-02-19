@@ -43,11 +43,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-// This tests the Chrome OS implementaiton of the networkingPrivate API.
-// Note: the expectations in test/data/extensions/api_test/networking/test.js
-// are shared between this and the Win/Mac tests. TODO(stevenjb): Develop
-// a mechanism to specify the test expecations from here to eliminate that
-// dependency.
+// This tests the Chrome OS implementation of the networkingPrivate API
+// (NetworkingPrivateChromeOS). Note: The test expectations for chromeos, and
+// win/mac (NetworkingPrivateServiceClient) are different to reflect the
+// different implementations, but should be kept similar where possible.
 
 using testing::Return;
 using testing::_;
@@ -137,7 +136,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
         device_test_(NULL) {}
 
   bool RunNetworkingSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("networking",
+    return RunExtensionSubtest("networking_private/chromeos",
                                "main.html?" + subtest,
                                kFlagEnableFileAccess | kFlagLoadAsComponent);
   }

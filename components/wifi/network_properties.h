@@ -48,8 +48,6 @@ struct WIFI_EXPORT NetworkProperties {
   Frequency frequency;
   FrequencySet frequency_set;
 
-  std::string json_extra;  // Extra JSON properties for unit tests
-
   scoped_ptr<base::DictionaryValue> ToValue(bool network_list) const;
   // Updates only properties set in |value|.
   bool UpdateFromValue(const base::DictionaryValue& value);

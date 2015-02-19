@@ -20,6 +20,11 @@ namespace extensions {
 // This tests just the interface for the networkingPrivate API, i.e. it ensures
 // that the delegate methods are called as expected.
 
+// The implementations (which differ significantly between chromeos and
+// windows/mac) are tested independently in
+// networking_private_[chromeos|service_client]_apitest.cc.
+// See also crbug.com/460119.
+
 namespace {
 
 const char kFailure[] = "Failure";
