@@ -659,7 +659,98 @@ body.selecting #search-box {
   flex: none;
   flex-direction: row;
   outline: none;
-  padding: 10px;
+  padding: 8px 4px;
+}
+
+.dialog-footer .buttonbar {
+  display: flex;
+  height: 32px;
+}
+
+/* Copy style from paper-button for buttons on the footer. */
+.dialog-footer button {
+  -webkit-user-select: none;
+  background: transparent;
+  border: 0;
+  border-image: none;
+  border-radius: 3px;
+  box-sizing: border-box;
+  cursor: pointer;
+  margin: 0 0.29em;
+  min-width: 5.14em;
+  outline: none;
+  text-align: center;
+  text-transform: uppercase;
+  z-index: 0;
+}
+
+.dialog-footer button:hover {
+  border-image: none;  /* Overrides the definition of common.css. */
+}
+
+.dialog-footer paper-button,
+.dialog-footer button {
+  height: 32px;
+  margin: 0 4px;
+  min-width: 92px;
+}
+
+.dialog-footer paper-button[disabled],
+.dialog-footer paper-button[disabled]:hover,
+.dialog-footer button[disabled],
+.dialog-footer button[disabled]:hover {
+  background-color: rgb(234, 234, 234);
+  color: rgb(168, 168, 168);
+}
+
+.dialog-footer .primary,
+.dialog-footer .primary:hover {
+  background-color: rgb(27, 168, 243);
+  color: white;
+}
+
+.dialog-footer .secondary,
+.dialog-footer .secondary:hover {
+  color: rgb(27, 168, 243);
+}
+
+.dialog-footer input {
+  color: red;
+  margin: 3px 0 !important;
+}
+
+.dialog-footer paper-input-decorator {
+  color: rgb(51, 51, 51);
+  padding: 4px 0;
+  width: 100%;
+}
+
+.dialog-footer paper-input-decorator /deep/ .unfocused-underline {
+  background-color: rgb(207, 207, 207);
+}
+
+.dialog-footer paper-input-decorator /deep/ .focused-underline {
+  background-color: rgb(27, 168, 243);
+}
+
+.dialog-footer select {
+  -webkit-appearance: none;
+  background: -webkit-image-set(
+     url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
+     url(../images/common/2x/disclosure_arrow_dk_grey_down.png) 2x) no-repeat
+     right transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(207, 207, 207);
+  border-radius: 0;
+  color: rgb(51, 51, 51);
+  cursor: pointer;
+  margin: 0 32px 0 36px;
+  outline: none;
+  padding: 0 12px 0 0;
+}
+
+.dialog-footer select:hover {
+  border-image: none;
 }
 
 .progressable:not([progress]) .progress-bar,
@@ -729,14 +820,6 @@ body.selecting .breadcrumbs {
 
 html[dir='rtl'] .breadcrumbs .separator {
   -webkit-transform: scaleX(-1);
-}
-
-#filename-input-box input {
-  border: 1px solid #c8c8c8;
-  border-radius: 1px;
-  box-sizing: border-box;
-  height: 31px;  /* border-box */
-  margin-right: 30px;
 }
 
 .filelist-panel {
@@ -1135,6 +1218,7 @@ li[renaming=''] .badge {
 }
 
 .dialog-footer > .right {
+  align-items: center;
   flex: none;
   justify-content: flex-end;
 }
@@ -1312,18 +1396,6 @@ li[renaming=''] .badge {
   align-items: center;
   display: flex;
   flex: auto;
-}
-
-#filename-input-box input {
-  flex: auto;
-  padding: 1px 2px;
-}
-
-#filename-input-box .filename-label {
-  background-color: white;
-  color: #333;
-  flex: none;
-  padding-right: 4px;
 }
 
 body:not([type='saveas-file']) #filename-input-box {

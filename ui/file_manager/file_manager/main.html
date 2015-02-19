@@ -454,13 +454,16 @@
     <div class="dialog-footer progressable" tabindex="-1"
          visibleif="saveas-file open-file open-multi-file folder upload-folder">
       <div class="left">
-        <button id="new-folder-button" i18n-content="NEW_FOLDER_BUTTON_LABEL"
+        <!-- TODO(fukino): Turn this button into paper-button when the CommandButton supports paper-button. -->
+        <button id="new-folder-button" class="primary"
+                i18n-content="NEW_FOLDER_BUTTON_LABEL"
                 visibleif="saveas-file folder" command="#new-folder"
-                tabindex="4">
+                tabindex="4" disabled>
         </button>
         <div id="filename-input-box" visibleif="saveas-file">
-          <div class="filename-label" i18n-content="FILENAME_LABEL"></div>
-          <input class="entry-name" type="text" spellcheck="false" tabindex="1">
+          <paper-input-decorator i18n-values="label:FILENAME_LABEL">
+            <input is="core-input" class="entry-name" type="text" spellcheck="false" tabindex="1">
+          </paper-input-decorator>
         </div>
         <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
         <div class="progress-bar" visibleif="saveas-file">
@@ -469,8 +472,8 @@
       </div>
       <div class="right buttonbar">
         <select class="file-type" hidden></select>
-        <button class="ok" disabled tabindex="2"></button>
-        <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="3"></button>
+        <paper-button class="cancel secondary" i18n-content="CANCEL_LABEL" tabindex="3"></paper-button>
+        <paper-button class="ok primary" disabled tabindex="2"></paper-button>
       </div>
     </div>
     <div id="drag-container"></div>

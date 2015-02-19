@@ -115,39 +115,6 @@ input.common[type='checkbox']::after {
   opacity: 0.7;
 }
 
-.buttonbar {
-  display: flex;
-  height: 31px;
-}
-
-.buttonbar button:active img {
-  opacity: 1.0;
-}
-
-.buttonbar button:hover img {
-  opacity: 0.72;
-}
-
-.buttonbar button[disabled] img {
-  opacity: 0.9;
-}
-
-.buttonbar button img {
-  display: inline-block;
-  margin: -3px 0 0;
-  opacity: 0.55;
-  vertical-align: middle;
-}
-
-.buttonbar button.menubutton span.disclosureindicator {
-  -webkit-transform: rotate(90deg);
-  float: right;
-  margin-left: 7px;
-  margin-top: 10px;
-  opacity: .8;
-  transition: none;
-}
-
 span.disclosureindicator {
   background-image: -webkit-image-set(
     url(../images/common/disclosure_arrow_dk_grey.png) 1x,
