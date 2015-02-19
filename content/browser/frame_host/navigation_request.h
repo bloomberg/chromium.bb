@@ -78,6 +78,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   const CommonNavigationParams& common_params() const { return common_params_; }
 
+  const BeginNavigationParams& begin_params() const { return begin_params_; }
+
   const CommitNavigationParams& commit_params() const { return commit_params_; }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }

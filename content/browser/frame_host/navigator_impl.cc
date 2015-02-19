@@ -703,14 +703,27 @@ void NavigatorImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     scoped_refptr<ResourceRequestBody> body) {
+  // This is a renderer-initiated navigation.
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   DCHECK(frame_tree_node);
 
-  // This is a renderer-initiated navigation, so generate a new
-  // NavigationRequest and store it in the map.
-  // TODO(clamy): Renderer-initiated navigations should not always cancel the
-  // current one.
+  NavigationRequest* ongoing_navigation_request =
+      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+
+  // The renderer-initiated navigation request is ignored iff a) there is an
+  // ongoing request b) which is browser or user-initiated and c) the renderer
+  // request is not user-initiated.
+  if (ongoing_navigation_request &&
+      (ongoing_navigation_request->browser_initiated() ||
+       ongoing_navigation_request->begin_params().has_user_gesture) &&
+      !begin_params.has_user_gesture) {
+    return;
+  }
+
+  // In all other cases the current navigation, if any, is canceled and a new
+  // NavigationRequest is created and stored in the map. Actual cancellation
+  // happens when the existing request map entry is replaced and destroyed.
   scoped_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateRendererInitiated(
           frame_tree_node, common_params, begin_params, body);

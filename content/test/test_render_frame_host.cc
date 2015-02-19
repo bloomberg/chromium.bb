@@ -187,9 +187,10 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   OnDidCommitProvisionalLoad(msg);
 }
 
-void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
-  BeginNavigationParams begin_params(
-      "GET", std::string(), net::LOAD_NORMAL, false);
+void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url,
+                                                     bool has_user_gesture) {
+  BeginNavigationParams begin_params("GET", std::string(), net::LOAD_NORMAL,
+                                     has_user_gesture);
   CommonNavigationParams common_params;
   common_params.url = url;
   common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
@@ -215,9 +216,9 @@ void TestRenderFrameHost::PrepareForCommit(const GURL& url) {
       static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
           ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
 
-  // We are simulating a renderer-initiated navigation.
+  // We are simulating a renderer-initiated user-initiated navigation.
   if (!request) {
-    SendBeginNavigationWithURL(url);
+    SendBeginNavigationWithURL(url, true);
     request = static_cast<NavigatorImpl*>(frame_tree_node_->navigator())
         ->GetNavigationRequestForNodeForTesting(frame_tree_node_);
   }

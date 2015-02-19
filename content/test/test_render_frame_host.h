@@ -85,7 +85,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       int response_code,
       const base::FilePath* file_path_for_history_item,
       const std::vector<GURL>& redirects);
-  void SendBeginNavigationWithURL(const GURL& url);
+  void SendBeginNavigationWithURL(const GURL& url, bool has_user_gesture);
 
   void DidDisownOpener();
 
