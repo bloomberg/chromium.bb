@@ -24,7 +24,7 @@ scoped_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   return make_scoped_ptr(new SearchBoxModel::SpeechButtonProperty(
-      *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
+      *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_ON),
       l10n_util::GetStringUTF16(IDS_APP_LIST_HOTWORD_LISTENING),
       *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_OFF),
       l10n_util::GetStringUTF16(IDS_APP_LIST_START_SPEECH_RECOGNITION)));
