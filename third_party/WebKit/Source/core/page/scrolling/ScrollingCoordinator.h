@@ -136,6 +136,7 @@ private:
     void setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons);
 
     bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const;
+    bool hasVisibleViewportConstrainedObjects(FrameView*) const;
 
     void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);
     void setTouchEventTargetRects(LayerHitTestRects&);
