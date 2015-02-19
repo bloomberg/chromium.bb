@@ -138,7 +138,7 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
   if (!allow_surfaceless_)
     return nullptr;
 
-  return scoped_ptr<SurfaceOzoneEGL>(
+  return make_scoped_ptr(
       new GbmSurfaceless(window_manager_->GetWindowDelegate(widget)));
 }
 

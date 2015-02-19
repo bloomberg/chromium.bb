@@ -198,8 +198,8 @@ void MessageCenterTray::ShowNotifierSettingsBubble() {
 scoped_ptr<ui::MenuModel> MessageCenterTray::CreateNotificationMenuModel(
     const NotifierId& notifier_id,
     const base::string16& display_source) {
-  return scoped_ptr<ui::MenuModel>(new NotificationMenuModel(
-      this, notifier_id, display_source));
+  return make_scoped_ptr(
+      new NotificationMenuModel(this, notifier_id, display_source));
 }
 
 void MessageCenterTray::OnNotificationAdded(

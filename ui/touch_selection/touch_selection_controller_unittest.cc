@@ -97,8 +97,7 @@ class TouchSelectionControllerTest : public testing::Test,
   }
 
   scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return scoped_ptr<TouchHandleDrawable>(
-        new MockTouchHandleDrawable(&dragging_enabled_));
+    return make_scoped_ptr(new MockTouchHandleDrawable(&dragging_enabled_));
   }
 
   void AllowShowingOnTapForEmptyEditable() {

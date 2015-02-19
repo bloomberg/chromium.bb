@@ -354,7 +354,7 @@ class OzonePlatformEgltest : public OzonePlatform {
         delegate, &eglplatform_shim_, event_factory_ozone_.get(), bounds));
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+    return make_scoped_ptr(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {

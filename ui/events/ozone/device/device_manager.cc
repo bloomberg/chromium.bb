@@ -14,9 +14,9 @@ namespace ui {
 
 scoped_ptr<DeviceManager> CreateDeviceManager() {
 #if defined(USE_UDEV)
-  return scoped_ptr<DeviceManager>(new DeviceManagerUdev());
+  return make_scoped_ptr(new DeviceManagerUdev());
 #else
-  return scoped_ptr<DeviceManager>(new DeviceManagerManual());
+  return make_scoped_ptr(new DeviceManagerManual());
 #endif
 }
 

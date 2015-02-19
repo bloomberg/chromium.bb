@@ -10,7 +10,7 @@ namespace ui {
 
 scoped_ptr<NativeDisplayDelegate>
 DisplayConfigurator::CreatePlatformNativeDisplayDelegate() {
-  return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateX11());
+  return make_scoped_ptr(new NativeDisplayDelegateX11());
 }
 
 }  // namespace ui

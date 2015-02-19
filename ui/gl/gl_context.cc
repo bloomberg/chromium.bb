@@ -106,8 +106,8 @@ const GLVersionInfo* GLContext::GetVersionInfo() {
   if(!version_info_) {
     std::string version = GetGLVersion();
     std::string renderer = GetGLRenderer();
-    version_info_ = scoped_ptr<GLVersionInfo>(
-        new GLVersionInfo(version.c_str(), renderer.c_str()));
+    version_info_ =
+        make_scoped_ptr(new GLVersionInfo(version.c_str(), renderer.c_str()));
   }
   return version_info_.get();
 }

@@ -631,7 +631,7 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
 RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
 scoped_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType() const {
-  return scoped_ptr<RenderTextHarfBuzz>(new RenderTextHarfBuzz);
+  return make_scoped_ptr(new RenderTextHarfBuzz);
 }
 
 const base::string16& RenderTextHarfBuzz::GetDisplayText() {

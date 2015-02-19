@@ -84,7 +84,7 @@ class OzonePlatformDri : public OzonePlatform {
     return platform_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
+    return make_scoped_ptr(new NativeDisplayDelegateProxy(
         gpu_platform_support_host_.get(), device_manager_.get(),
         display_manager_.get()));
   }

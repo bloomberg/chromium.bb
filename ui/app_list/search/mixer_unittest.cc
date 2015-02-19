@@ -35,7 +35,7 @@ class TestSearchResult : public SearchResult {
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
   scoped_ptr<SearchResult> Duplicate() const override {
-    return scoped_ptr<SearchResult>(new TestSearchResult(id(), relevance()));
+    return make_scoped_ptr(new TestSearchResult(id(), relevance()));
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference

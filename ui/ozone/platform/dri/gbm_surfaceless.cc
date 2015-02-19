@@ -43,7 +43,7 @@ bool GbmSurfaceless::OnSwapBuffersAsync(
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
-  return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(window_delegate_));
+  return make_scoped_ptr(new DriVSyncProvider(window_delegate_));
 }
 
 }  // namespace ui

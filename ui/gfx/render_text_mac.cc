@@ -25,7 +25,7 @@ RenderTextMac::~RenderTextMac() {
 }
 
 scoped_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
-  return scoped_ptr<RenderTextMac>(new RenderTextMac);
+  return make_scoped_ptr(new RenderTextMac);
 }
 
 const base::string16& RenderTextMac::GetDisplayText() {

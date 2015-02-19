@@ -35,7 +35,7 @@ scoped_ptr<TestEventTarget> TestEventTarget::RemoveChild(TestEventTarget *c) {
   if (iter != children_.end()) {
     children_.weak_erase(iter);
     c->set_parent(NULL);
-    return scoped_ptr<TestEventTarget>(c);
+    return make_scoped_ptr(c);
   }
   return nullptr;
 }
@@ -64,7 +64,7 @@ EventTarget* TestEventTarget::GetParentTarget() {
 }
 
 scoped_ptr<EventTargetIterator> TestEventTarget::GetChildIterator() const {
-  return scoped_ptr<EventTargetIterator>(
+  return make_scoped_ptr(
       new EventTargetIteratorImpl<TestEventTarget>(children_.get()));
 }
 

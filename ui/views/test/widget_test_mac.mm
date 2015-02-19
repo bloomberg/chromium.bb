@@ -79,7 +79,7 @@ ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
 
 // static
 scoped_ptr<WidgetTest::FakeActivation> WidgetTest::FakeWidgetIsActiveAlways() {
-  return scoped_ptr<FakeActivation>(new FakeActivationMac);
+  return make_scoped_ptr(new FakeActivationMac);
 }
 
 }  // namespace test

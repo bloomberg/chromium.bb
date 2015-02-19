@@ -207,7 +207,7 @@ scoped_ptr<gfx::Canvas> CommonThemeCreateCanvas(SkCanvas* sk_canvas) {
   // scale factor from canvas scale.
   SkMatrix m = sk_canvas->getTotalMatrix();
   float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
-  return scoped_ptr<gfx::Canvas>(
+  return make_scoped_ptr(
       gfx::Canvas::CreateCanvasWithoutScaling(sk_canvas, device_scale));
 }
 

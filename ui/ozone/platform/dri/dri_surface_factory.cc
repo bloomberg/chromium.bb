@@ -25,7 +25,7 @@ DriSurfaceFactory::~DriSurfaceFactory() {
 
 scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
-  return scoped_ptr<ui::SurfaceOzoneCanvas>(
+  return make_scoped_ptr(
       new DriSurface(window_manager_->GetWindowDelegate(widget)));
 }
 

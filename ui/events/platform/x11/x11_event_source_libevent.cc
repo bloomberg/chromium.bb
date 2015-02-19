@@ -61,8 +61,7 @@ class X11EventSourceLibevent : public X11EventSource,
 }  // namespace
 
 scoped_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
-  return scoped_ptr<PlatformEventSource>(
-      new X11EventSourceLibevent(gfx::GetXDisplay()));
+  return make_scoped_ptr(new X11EventSourceLibevent(gfx::GetXDisplay()));
 }
 
 }  // namespace ui

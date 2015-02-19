@@ -79,7 +79,7 @@ void DriSurface::PresentCanvas(const gfx::Rect& damage) {
 }
 
 scoped_ptr<gfx::VSyncProvider> DriSurface::CreateVSyncProvider() {
-  return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(window_delegate_));
+  return make_scoped_ptr(new DriVSyncProvider(window_delegate_));
 }
 
 void DriSurface::UpdateNativeSurface(const gfx::Rect& damage) {

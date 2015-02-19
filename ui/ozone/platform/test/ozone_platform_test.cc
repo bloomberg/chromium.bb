@@ -59,7 +59,7 @@ class OzonePlatformTest : public OzonePlatform {
         new TestWindow(delegate, window_manager_.get(), bounds));
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+    return make_scoped_ptr(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {

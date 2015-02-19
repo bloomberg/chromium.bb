@@ -55,7 +55,7 @@ class OzonePlatformCaca : public OzonePlatform {
     return caca_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+    return make_scoped_ptr(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {

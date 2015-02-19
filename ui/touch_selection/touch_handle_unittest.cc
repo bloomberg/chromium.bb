@@ -92,8 +92,7 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
   void SetNeedsAnimate() override { needs_animate_ = true; }
 
   scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return scoped_ptr<TouchHandleDrawable>(
-        new MockTouchHandleDrawable(&drawable_data_));
+    return make_scoped_ptr(new MockTouchHandleDrawable(&drawable_data_));
   }
 
   base::TimeDelta GetTapTimeout() const override {

@@ -217,12 +217,12 @@ scoped_ptr<ui::Renderer> RendererFactory::CreateRenderer(
     const gfx::Size& size) {
   switch (type_) {
     case GL:
-      return scoped_ptr<ui::Renderer>(new ui::GlRenderer(widget, size));
+      return make_scoped_ptr(new ui::GlRenderer(widget, size));
     case SURFACELESS_GL:
-      return scoped_ptr<ui::Renderer>(
+      return make_scoped_ptr(
           new ui::SurfacelessGlRenderer(widget, size, &buffer_factory_));
     case SOFTWARE:
-      return scoped_ptr<ui::Renderer>(new ui::SoftwareRenderer(widget, size));
+      return make_scoped_ptr(new ui::SoftwareRenderer(widget, size));
   }
 
   return nullptr;
