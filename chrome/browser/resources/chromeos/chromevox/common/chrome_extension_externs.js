@@ -1511,7 +1511,6 @@ chrome.automation.RoleType = {
     unknown: 'unknown',
     tooltip: 'tooltip',
     webArea: 'webArea',
-    webView: 'webView',
     window: 'window'
 };
 /**

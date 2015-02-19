@@ -6,7 +6,6 @@ goog.provide('cvox.ChromeVoxEditableTextBase');
 goog.provide('cvox.TextChangeEvent');
 goog.provide('cvox.TypingEcho');
 
-goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.TtsInterface');
 goog.require('goog.i18n.MessageFormat');

@@ -29,24 +29,11 @@ ChromeVoxNextE2ETest.prototype = {
     GEN('#include "base/command_line.h"');
   },
 
-  /**
-   * Launches a new tab with the given document, and runs callback when a load
-   * complete fires.
-   * @param {function() : void} doc Snippet wrapped inside of a function.
-   * @param {function()} opt_callback Called once the document is ready.
-   */
-  runWithLoadedTree: function(doc, callback) {
-    chrome.automation.getDesktop(function(r) {
-      function callbackInternal(evt) {
-        if (!evt.target.attributes.url ||
-            evt.target.attributes.url.indexOf('test') == -1)
-          return;
-
-        r.removeEventListener(callbackInternal);
-        callback(evt.target);
-      }
-      r.addEventListener('loadComplete', callbackInternal, true);
-      this.runWithTab(doc);
+  runWithAutomation: function(doc, callback) {
+    this.runWithDocument(doc, function() {
+      chrome.automation.getTree(function(root) {
+        callback(root);
+      }.bind(this));
     }.bind(this));
   }
 };

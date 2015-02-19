@@ -92,17 +92,22 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
 
 /** Tests feedback once a page loads. */
 TEST_F('BackgroundTest', 'InitialFeedback', function() {
-  cvox.ChromeVox.tts.expectSpeech('start', testDone);
+  cvox.ChromeVox.tts.expectSpeech('start', function() {
+    global.backgroundObj.onGotCommand('nextLine');
+  }, true);
+  cvox.ChromeVox.tts.expectSpeech('end', testDone, true);
 
-  this.runWithTab(function() {/*!
+  this.runWithDocument(function() {/*!
     <p>start
     <p>end
-  */});
+  */},
+  function() {});
 });
 
 /** Tests consistency of navigating forward and backward. */
 TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
-  this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
+  cvox.ChromeVox.tts.expectSpeech('start', null, true);
+  this.runWithDocument(this.linksAndHeadingsDoc, function() {
       var doCmd = this.doCmd.bind(this);
       var expectAfter =
           cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
@@ -132,7 +137,8 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
 });
 
 TEST_F('BackgroundTest', 'CaretNavigation', function() {
-  this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
+  cvox.ChromeVox.tts.expectSpeech('start', null, true);
+  this.runWithDocument(this.linksAndHeadingsDoc, function() {
       var doCmd = this.doCmd.bind(this);
       var expectAfter =
           cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
@@ -162,7 +168,7 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
 
 // Flaky: http://crbug.com/451362
 TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
-  this.runWithLoadedTree(this.formsDoc, function(tabId) {
+  this.runWithDocument(this.formsDoc, function(tabId) {
     var sendDownToSelect =
         this.sendKeyToElement.bind(this, tabId, 'Down', '#fruitSelect');
     var expect = cvox.ChromeVox.tts.expectSpeech.bind(cvox.ChromeVox.tts);
@@ -174,7 +180,8 @@ TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
 });
 
 TEST_F('BackgroundTest', 'ContinuousRead', function() {
-  this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
+  cvox.ChromeVox.tts.expectSpeech('start', null, true);
+  this.runWithDocument(this.linksAndHeadingsDoc, function() {
     var doCmd = this.doCmd.bind(this);
     var expect =
         cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);

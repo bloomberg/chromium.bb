@@ -52,9 +52,6 @@ class VIEWS_EXPORT AXAuraObjCache {
   // Remove a cached entry based on an id.
   void Remove(int32 id);
 
-  // Indicates if this object's currently being destroyed.
-  bool is_destroying() { return is_destroying_; }
-
  private:
   friend struct DefaultSingletonTraits<AXAuraObjCache>;
 
@@ -77,9 +74,6 @@ class VIEWS_EXPORT AXAuraObjCache {
 
   std::map<int32, AXAuraObjWrapper*> cache_;
   int32 current_id_;
-
-  // True immediately when entering this object's destructor.
-  bool is_destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(AXAuraObjCache);
 };

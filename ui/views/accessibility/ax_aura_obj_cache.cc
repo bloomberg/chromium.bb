@@ -76,11 +76,10 @@ void AXAuraObjCache::Remove(int32 id) {
   delete obj;
 }
 
-AXAuraObjCache::AXAuraObjCache() : current_id_(1), is_destroying_(false) {
+AXAuraObjCache::AXAuraObjCache() : current_id_(1) {
 }
 
 AXAuraObjCache::~AXAuraObjCache() {
-  is_destroying_ = true;
   STLDeleteContainerPairSecondPointers(cache_.begin(), cache_.end());
   cache_.clear();
 }
