@@ -55,7 +55,7 @@
         <item name="android:background">@drawable/button_compat</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
-    <style name="ButtonBorderlessCompat" parent="ButtonCompat">
+    <style name="ButtonCompatBorderless" parent="ButtonCompat">
         <item name="android:background">@drawable/button_borderless_compat</item>
     </style>
 

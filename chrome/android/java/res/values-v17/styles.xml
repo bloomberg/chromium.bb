@@ -184,6 +184,12 @@
     </style>
 
     <!-- Buttons -->
+    <style name="ButtonCompatOverlay">
+        <item name="android:buttonStyle">@style/ButtonCompat</item>
+    </style>
+    <style name="ButtonCompatBorderlessOverlay">
+        <item name="android:buttonStyle">@style/ButtonCompatBorderless</item>
+    </style>
     <style name="ButtonCompatBase">
         <item name="android:minWidth">88dp</item>
         <item name="android:minHeight">36dp</item>
@@ -199,8 +205,9 @@
     </style>
     <style name="ButtonCompat" parent="ButtonCompatBase">
         <item name="android:background">@drawable/button_compat_shape</item>
+        <item name="android:textStyle">bold</item>
     </style>
-    <style name="ButtonBorderlessCompat" parent="ButtonCompat">
+    <style name="ButtonCompatBorderless" parent="ButtonCompat">
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 

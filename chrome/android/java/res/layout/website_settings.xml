@@ -50,7 +50,7 @@
             android:paddingStart="@dimen/website_settings_popup_button_padding_sides"
             android:text="@string/page_info_copy_url_button"
             android:textColor="@color/light_active_color"
-            style="@style/ButtonBorderlessCompat" />
+            style="@style/ButtonCompatBorderless" />
     </LinearLayout>
 
     <!-- Horizontal separator -->
@@ -92,7 +92,7 @@
                 android:paddingStart="@dimen/website_settings_popup_button_padding_sides"
                 android:text="@string/page_info_site_settings_button"
                 android:textColor="@color/website_settings_popup_button_text"
-                style="@style/ButtonBorderlessCompat" />
+                style="@style/ButtonCompatBorderless" />
         </FrameLayout>
     </LinearLayout>
 

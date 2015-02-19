@@ -49,8 +49,7 @@ public class ButtonCompat extends Button {
      * Returns a new borderless material-style button.
      */
     public static Button createBorderlessButton(Context context) {
-        Context wrapper = new ContextThemeWrapper(context, R.style.ButtonBorderlessCompat);
-        return new Button(wrapper, null, 0);
+        return new Button(new ContextThemeWrapper(context, R.style.ButtonCompatBorderlessOverlay));
     }
 
     /**
@@ -68,10 +67,9 @@ public class ButtonCompat extends Button {
     }
 
     private ButtonCompat(Context context, int buttonColor, AttributeSet attrs) {
-        // To apply the ButtonCompat style to this view, use a ContextThemeWrapper to inject the
-        // ButtonCompat style into the current theme, and pass 0 as the defStyleAttr to the super
-        // constructor to prevent the default Button style from being applied.
-        super(new ContextThemeWrapper(context, R.style.ButtonCompat), attrs, 0);
+        // To apply the ButtonCompat style to this view, use a ContextThemeWrapper to overlay the
+        // ButtonCompatThemeOverlay, which simply sets the buttonStyle to @style/ButtonCompat.
+        super(new ContextThemeWrapper(context, R.style.ButtonCompatOverlay), attrs);
 
         getBackground().mutate();
         setButtonColor(buttonColor);
