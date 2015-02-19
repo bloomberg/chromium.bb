@@ -107,6 +107,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/nss_ssl_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
@@ -1611,6 +1612,16 @@ SECStatus SSLClientSocketNSS::Core::CanFalseStartCallback(
                                           &negotiated_extension);
   }
   if (rv != SECSuccess || !negotiated_extension) {
+    *can_false_start = PR_FALSE;
+    return SECSuccess;
+  }
+
+  SSLChannelInfo channel_info;
+  SECStatus ok =
+      SSL_GetChannelInfo(socket, &channel_info, sizeof(channel_info));
+  if (ok != SECSuccess || channel_info.length != sizeof(channel_info) ||
+      channel_info.protocolVersion < SSL_LIBRARY_VERSION_TLS_1_2 ||
+      !IsSecureTLSCipherSuite(channel_info.cipherSuite)) {
     *can_false_start = PR_FALSE;
     return SECSuccess;
   }

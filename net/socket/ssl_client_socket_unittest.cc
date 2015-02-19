@@ -2933,10 +2933,12 @@ TEST_F(SSLClientSocketFalseStartTest,
 #endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
-  // False Start requires NPN and a forward-secret cipher suite.
+  // False Start requires NPN/ALPN, perfect forward secrecy, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
@@ -2949,22 +2951,39 @@ TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   SSLConfig client_config;
   client_config.next_protos.clear();
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
 }
 
-// Test that False Start is disabled without a forward-secret cipher suite.
+// Test that False Start is disabled without perfect forward secrecy.
 TEST_F(SSLClientSocketFalseStartTest, NoForwardSecrecy) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
   ASSERT_NO_FATAL_FAILURE(
       TestFalseStart(server_options, client_config, false));
+}
+
+// Test that False Start is disabled without an AEAD.
+TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
+  SpawnedTestServer::SSLOptions server_options;
+  server_options.key_exchanges =
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
+  server_options.enable_npn = true;
+  SSLConfig client_config;
+  client_config.next_protos.push_back(kProtoHTTP11);
+  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
 }
 
 // Test that sessions are resumable after receiving the server Finished message.

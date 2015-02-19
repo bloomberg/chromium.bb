@@ -797,7 +797,7 @@ int SSLClientSocketOpenSSL::Init() {
   mode.ConfigureFlag(SSL_MODE_RELEASE_BUFFERS, true);
   mode.ConfigureFlag(SSL_MODE_CBC_RECORD_SPLITTING, true);
 
-  mode.ConfigureFlag(SSL_MODE_HANDSHAKE_CUTTHROUGH,
+  mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START,
                      ssl_config_.false_start_enabled);
 
   SSL_set_mode(ssl_, mode.set_mask);
