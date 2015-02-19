@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <style>
+            .scrollviewer {
+                display: flex;
+                height: 100px;
+            }
+
+            .scrollviewer-content {
+                position: relative;
+                flex: 1 0 1px;
+            }
+
+            .entry-container-center {
+                display: flex;
+                position: absolute;
+                height: 23px;
+                align-items: center;
+            }
+
+            .entry-container-stretch-row {
+                display: flex;
+                position: absolute;
+                height: 23px;
+                align-items: stretch;
+                flex-direction: row;
+            }
+
+            .entry-container-stretch-column {
+                display: flex;
+                position: absolute;
+                height: 23px;
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .entry {
+                border: 1px solid black;
+                margin: 0;
+                outline: 0;
+            }
+
+        </style>
+    </head>
+    <body>
+        <p>Click into each input element and type a character. The size of the element should not change</p>
+        <br />
+        <p>Inner flex box is row-based and center-aligned</p>
+        <div class="scrollviewer">
+            <div class="scrollviewer-content">
+                <div class="entry-container-center">
+                    <input type="text" class="entry"></input>
+                </div>
+            </div>
+        </div>
+
+        <p>Inner flex box is row-based and vertically stretched</p>
+        <div class="scrollviewer">
+            <div class="scrollviewer-content">
+                <div class="entry-container-stretch-row">
+                    <input type="text" class="entry"></input>
+                </div>
+            </div>
+        </div>
+
+        <p>Inner flex box is column-based and vertically stretched</p>
+        <div class="scrollviewer">
+            <div class="scrollviewer-content">
+                <div class="entry-container-stretch-column">
+                    <input type="text" class="entry"></input>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
