@@ -764,9 +764,7 @@ void AutofillManager::OnLoadedServerPredictions(
 
 void AutofillManager::OnUnmaskResponse(const UnmaskResponse& response) {
   unmask_response_ = response;
-  // TODO(estade): use month/year.
-  real_pan_client_.UnmaskCard(unmasking_card_, base::UTF16ToASCII(response.cvc),
-                              response.risk_data);
+  real_pan_client_.UnmaskCard(unmasking_card_, response);
 }
 
 void AutofillManager::OnUnmaskPromptClosed() {

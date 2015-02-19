@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -53,8 +54,7 @@ class RealPanWalletClient : public net::URLFetcherDelegate,
 
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const CreditCard& card,
-                  const std::string& cvc,
-                  const std::string& risk_data);
+                  const CardUnmaskDelegate::UnmaskResponse& response);
 
   // Cancels and clears the current |request_|.
   void CancelRequest();

@@ -8,7 +8,9 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -54,9 +56,9 @@ void RealPanWalletClient::Prepare() {
     StartTokenFetch();
 }
 
-void RealPanWalletClient::UnmaskCard(const CreditCard& card,
-                                     const std::string& cvc,
-                                     const std::string& risk_data) {
+void RealPanWalletClient::UnmaskCard(
+    const CreditCard& card,
+    const CardUnmaskDelegate::UnmaskResponse& response) {
   DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
 
   request_.reset(net::URLFetcher::Create(
@@ -66,16 +68,23 @@ void RealPanWalletClient::UnmaskCard(const CreditCard& card,
   base::DictionaryValue request_dict;
   request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
   request_dict.SetString("credit_card_id", card.server_id());
-  request_dict.SetString("risk_data_base64", risk_data);
+  request_dict.SetString("risk_data_base64", response.risk_data);
   request_dict.Set("context", make_scoped_ptr(new base::DictionaryValue()));
+
+  int value = 0;
+  if (base::StringToInt(response.exp_month, &value))
+    request_dict.SetInteger("expiration_month", value);
+  if (base::StringToInt(response.exp_year, &value))
+    request_dict.SetInteger("expiration_year", value);
 
   std::string json_request;
   base::JSONWriter::Write(&request_dict, &json_request);
-  std::string post_body = base::StringPrintf(kUnmaskCardRequestFormat,
-      net::EscapeUrlEncodedData(json_request, true).c_str(),
-      net::EscapeUrlEncodedData(cvc, true).c_str());
+  std::string post_body =
+      base::StringPrintf(kUnmaskCardRequestFormat,
+                         net::EscapeUrlEncodedData(json_request, true).c_str(),
+                         net::EscapeUrlEncodedData(
+                             base::UTF16ToASCII(response.cvc), true).c_str());
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
-  // TODO(estade): remove this when possible.
   request_->AddExtraRequestHeader(
       net::HttpRequestHeaders::kAcceptEncoding + std::string(": chunked;q=0"));
 
