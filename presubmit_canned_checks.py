@@ -971,26 +971,11 @@ def _CheckConstNSObject(input_api, output_api, source_file_filter):
 
 
 def CheckSingletonInHeaders(input_api, output_api, source_file_filter=None):
-  """Checks to make sure no header files have |Singleton<|."""
-  pattern = input_api.re.compile(r'(?<!class\s)Singleton\s*<')
-  files = []
-  for f in input_api.AffectedSourceFiles(source_file_filter):
-    if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
-        f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
-      contents = input_api.ReadFile(f)
-      for line in contents.splitlines(False):
-        if (not input_api.re.match(r'//', line) and # Strip C++ comment.
-            pattern.search(line)):
-          files.append(f)
-          break
-
-  if files:
-    return [ output_api.PresubmitError(
-        'Found Singleton<T> in the following header files.\n' +
-        'Please move them to an appropriate source file so that the ' +
-        'template gets instantiated in a single compilation unit.',
-        files) ]
-  return []
+  """Deprecated, must be removed."""
+  return [
+    output_api.PresubmitNotifyResult(
+        'CheckSingletonInHeaders is deprecated, please remove it.')
+  ]
 
 
 def PanProjectChecks(input_api, output_api,
@@ -1077,9 +1062,6 @@ def PanProjectChecks(input_api, output_api,
       input_api, output_api, source_file_filter=sources))
   snapshot("checking nsobjects")
   results.extend(_CheckConstNSObject(
-      input_api, output_api, source_file_filter=sources))
-  snapshot("checking singletons")
-  results.extend(CheckSingletonInHeaders(
       input_api, output_api, source_file_filter=sources))
 
   # The following checks are only done on commit, since the commit bot will
