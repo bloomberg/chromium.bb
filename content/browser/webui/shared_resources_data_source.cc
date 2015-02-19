@@ -26,11 +26,12 @@ using ResourcesMap = base::hash_map<std::string, int>;
 
 // TODO(rkc): Once we have a separate source for apps, remove '*/apps/' aliases.
 const char* kPathAliases[][2] = {
-  {"../../../third_party/polymer/components-chromium/", "polymer/"},
-  {"../../resources/default_100_percent/common/", "images/apps/"},
-  {"../../resources/default_200_percent/common/", "images/2x/apps/"},
-  {"../../webui/resources/cr_elements/", "cr_elements/"}
-};
+    {"../../../third_party/polymer/components-chromium/", "polymer/"},
+    {"../../../third_party/web-animations-js/sources/",
+     "polymer/web-animations-js/"},
+    {"../../resources/default_100_percent/common/", "images/apps/"},
+    {"../../resources/default_200_percent/common/", "images/2x/apps/"},
+    {"../../webui/resources/cr_elements/", "cr_elements/"}};
 
 void AddResource(const std::string& path,
                  int resource_id,

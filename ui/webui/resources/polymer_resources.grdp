@@ -30,6 +30,15 @@
   <structure name="IDR_POLYMER_CORE_ANIMATED_PAGES_TRANSITIONS_HERO_TRANSITION_HTML"
              file="../../../third_party/polymer/components-chromium/core-animated-pages/transitions/hero-transition.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_ANIMATION_CORE_ANIMATION_EXTRACTED_JS"
+             file="../../../third_party/polymer/components-chromium/core-animation/core-animation-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_ANIMATION_CORE_ANIMATION_HTML"
+             file="../../../third_party/polymer/components-chromium/core-animation/core-animation.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_ANIMATION_WEB_ANIMATIONS_HTML"
+             file="../../../third_party/polymer/components-chromium/core-animation/web-animations.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_FOCUSABLE_CORE_FOCUSABLE_HTML"
              file="../../../third_party/polymer/components-chromium/core-focusable/core-focusable.html"
              type="chrome_html" />
@@ -317,5 +326,11 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_POLYMER_POLYMER_JS"
              file="../../../third_party/polymer/components-chromium/polymer/polymer.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
+             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS_MAP"
+             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js.map"
              type="chrome_html" />
 </grit-part>

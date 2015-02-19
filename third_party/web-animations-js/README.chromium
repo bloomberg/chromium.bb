@@ -1,0 +1,26 @@
+Name: Web Animations JS
+Short Name: web-animations-js
+URL: https://github.com/web-animations/web-animations-js
+Version: 1.0.5
+License: Apache 2.0
+License File: LICENSE
+Security Critical: no
+
+Description:
+An emulator of the Web Animations specification. Web Animations is a new
+specification for animated content on the web. It's being developed as a W3C
+specification as part of the CSS and SVG working groups. Latest specification at
+http://w3c.github.io/web-animations/.
+
+Used as a dependency of Polymer framework (see src/third_party/polymer). If
+using directly, rather than through Polymer, use only the minified source.
+Otherwise there may be CSP issues with inline scripts, etc. This should only
+be updated via third_party/polymer/reproduce.sh after bumping the version number
+in third_party/polymer/bower.json.
+
+Local Modifications:
+- The test and node_modules directories were removed. COPYING was renamed to LICENSE.
+- Delete .travis-setup.sh because it is missing a license header. The header
+  has been added upstream in
+  https://github.com/web-animations/web-animations-next/pull/289. Once that is
+  released, .travis-setup.sh can be added back in.
