@@ -158,14 +158,10 @@ DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
   return DispatchMouseEnterOrExit(window, event, ui::ET_MOUSE_EXITED);
 }
 
-void WindowEventDispatcher::ProcessedTouchEvent(ui::TouchEvent* event,
-                                                Window* window,
+void WindowEventDispatcher::ProcessedTouchEvent(Window* window,
                                                 ui::EventResult result) {
-  // Once we've fully migrated to the eager gesture detector, we won't need to
-  // pass an event here.
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures(
-      ui::GestureRecognizer::Get()->AckAsyncTouchEvent(
-          *event, result, window));
+      ui::GestureRecognizer::Get()->AckAsyncTouchEvent(result, window));
   DispatchDetails details = ProcessGestures(gestures.get());
   if (details.dispatcher_destroyed)
     return;

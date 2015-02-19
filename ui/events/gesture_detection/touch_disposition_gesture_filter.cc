@@ -172,7 +172,7 @@ TouchDispositionGestureFilter::OnGesturePacket(
 
 void TouchDispositionGestureFilter::OnTouchEventAckForQueueFront(
     bool event_consumed) {
-  // Spurious touch acks from the renderer should not trigger a crash.
+  // Spurious asynchronous acks should not trigger a crash.
   if (IsEmpty() || (Head().empty() && sequences_.size() == 1))
     return;
 

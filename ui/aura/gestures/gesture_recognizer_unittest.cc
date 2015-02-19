@@ -337,15 +337,9 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   explicit QueueTouchEventDelegate(WindowEventDispatcher* dispatcher)
       : window_(NULL),
         dispatcher_(dispatcher),
-        queue_events_(true),
-        synchronous_ack_for_next_event_(AckState::PENDING) {
-  }
-  ~QueueTouchEventDelegate() override {
-    while(!queue_.empty()) {
-      delete queue_.front();
-      queue_.pop();
-    }
-  }
+        synchronous_ack_for_next_event_(AckState::PENDING) {}
+
+  ~QueueTouchEventDelegate() override {}
 
   void OnTouchEvent(ui::TouchEvent* event) override {
     event->DisableSynchronousHandling();
@@ -358,8 +352,6 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
           window_);
       synchronous_ack_for_next_event_ = AckState::PENDING;
     }
-    if (queue_events_)
-      queue_.push(new ui::TouchEvent(*event, window_, window_));
   }
 
   void ReceivedAck() {
@@ -371,7 +363,6 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   }
 
   void set_window(Window* w) { window_ = w; }
-  void set_queue_events(bool queue) { queue_events_ = queue; }
   void set_synchronous_ack_for_next_event(bool consumed) {
     DCHECK(synchronous_ack_for_next_event_ == AckState::PENDING);
     synchronous_ack_for_next_event_ =
@@ -386,16 +377,12 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   };
 
   void ReceivedAckImpl(bool prevent_defaulted) {
-    scoped_ptr<ui::TouchEvent> event(queue_.front());
-    dispatcher_->ProcessedTouchEvent(event.get(), window_,
-        prevent_defaulted ? ui::ER_HANDLED : ui::ER_UNHANDLED);
-    queue_.pop();
+    dispatcher_->ProcessedTouchEvent(
+        window_, prevent_defaulted ? ui::ER_HANDLED : ui::ER_UNHANDLED);
   }
 
-  std::queue<ui::TouchEvent*> queue_;
   Window* window_;
   WindowEventDispatcher* dispatcher_;
-  bool queue_events_;
   AckState synchronous_ack_for_next_event_;
 
   DISALLOW_COPY_AND_ASSIGN(QueueTouchEventDelegate);

@@ -1163,22 +1163,42 @@ void RenderWidgetHostViewAura::GestureEventAck(
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
+    const TouchEventWithLatencyInfo& touch,
+    InputEventAckState ack_result) {
   ScopedVector<ui::TouchEvent> events;
-  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events,
-                                           SCREEN_COORDINATES))
-    return;
-
   aura::WindowTreeHost* host = window_->GetHost();
   // |host| is NULL during tests.
   if (!host)
     return;
 
-  ui::EventResult result = (ack_result ==
-      INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
-  for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
-      end = events.end(); iter != end; ++iter) {
-    host->dispatcher()->ProcessedTouchEvent((*iter), window_, result);
+  ui::EventResult result = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
+                               ? ui::ER_HANDLED
+                               : ui::ER_UNHANDLED;
+
+  blink::WebTouchPoint::State required_state;
+  switch (touch.event.type) {
+    case blink::WebInputEvent::TouchStart:
+      required_state = blink::WebTouchPoint::StatePressed;
+      break;
+    case blink::WebInputEvent::TouchEnd:
+      required_state = blink::WebTouchPoint::StateReleased;
+      break;
+    case blink::WebInputEvent::TouchMove:
+      required_state = blink::WebTouchPoint::StateMoved;
+      break;
+    case blink::WebInputEvent::TouchCancel:
+      required_state = blink::WebTouchPoint::StateCancelled;
+      break;
+    default:
+      required_state = blink::WebTouchPoint::StateUndefined;
+      NOTREACHED();
+      break;
+  }
+
+  // Only send acks for changed touches.
+  for (size_t i = 0; i < touch.event.touchesLength; ++i) {
+    if (touch.event.touches[i].state == required_state)
+      host->dispatcher()->ProcessedTouchEvent(window_, result);
   }
 }
 

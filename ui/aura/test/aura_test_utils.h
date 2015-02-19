@@ -6,17 +6,21 @@
 #define UI_AURA_TEST_AURA_TEST_UTILS_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class Point;
 }
 
 namespace aura {
+class WindowEventDispatcher;
 class WindowTreeHost;
 
 namespace test {
 
 const gfx::Point& QueryLatestMousePositionRequestInHost(WindowTreeHost* host);
+void SetHostDispatcher(WindowTreeHost* host,
+                       scoped_ptr<WindowEventDispatcher> dispatcher);
 
 }  // namespace test
 }  // namespace aura

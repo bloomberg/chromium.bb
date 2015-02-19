@@ -251,9 +251,11 @@ bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
   return gesture_provider->OnTouchEvent(event);
 }
 
+// TODO(tdresser): we should take a unique_event_id here, and validate
+// that the correct event is being acked. See crbug.com/457669 for
+// details.
 GestureRecognizer::Gestures*
 GestureRecognizerImpl::AckAsyncTouchEvent(
-    const TouchEvent& event,
     ui::EventResult result,
     GestureConsumer* consumer) {
   GestureProviderAura* gesture_provider =

@@ -847,17 +847,13 @@ TEST_F(WindowEventDispatcherTest, MouseEventWithoutTargetWindow) {
             recorder_second.mouse_locations()[0].ToString());
 }
 
-// Verifies that a direct call to ProcessedTouchEvent() with a
-// TOUCH_PRESSED event does not cause a crash.
+// Verifies that a direct call to ProcessedTouchEvent() does not cause a crash.
 TEST_F(WindowEventDispatcherTest, CallToProcessedTouchEvent) {
   test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
 
-  ui::TouchEvent touch(
-      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1, ui::EventTimeForNow());
-  host()->dispatcher()->ProcessedTouchEvent(
-      &touch, window.get(), ui::ER_UNHANDLED);
+  host()->dispatcher()->ProcessedTouchEvent(window.get(), ui::ER_UNHANDLED);
 }
 
 // This event handler requests the dispatcher to start holding pointer-move
@@ -2451,7 +2447,7 @@ class AsyncWindowDelegate : public test::TestWindowDelegate {
     // Convert touch event back to root window coordinates.
     event->ConvertLocationToTarget(window_, window_->GetRootWindow());
     event->DisableSynchronousHandling();
-    dispatcher_->ProcessedTouchEvent(event, window_, ui::ER_UNHANDLED);
+    dispatcher_->ProcessedTouchEvent(window_, ui::ER_UNHANDLED);
     event->StopPropagation();
   }
 

@@ -43,6 +43,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -208,12 +209,38 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   base::Callback<void(bool)> callback_;
 };
 
+class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
+ public:
+  FakeWindowEventDispatcher(aura::WindowTreeHost* host)
+      : WindowEventDispatcher(host),
+        processed_touch_event_count_(0) {}
+
+  void ProcessedTouchEvent(aura::Window* window,
+                           ui::EventResult result) override {
+    WindowEventDispatcher::ProcessedTouchEvent(window, result);
+    processed_touch_event_count_++;
+  }
+
+  size_t processed_touch_event_count() {
+    return processed_touch_event_count_;
+  }
+
+ private:
+  size_t processed_touch_event_count_;
+};
+
 class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
  public:
   FakeRenderWidgetHostViewAura(RenderWidgetHost* widget,
                                bool is_guest_view_hack)
       : RenderWidgetHostViewAura(widget, is_guest_view_hack),
         has_resize_lock_(false) {}
+
+  void UseFakeDispatcher() {
+    dispatcher_ = new FakeWindowEventDispatcher(window()->GetHost());
+    scoped_ptr<aura::WindowEventDispatcher> dispatcher(dispatcher_);
+    aura::test::SetHostDispatcher(window()->GetHost(), dispatcher.Pass());
+  }
 
   ~FakeRenderWidgetHostViewAura() override {}
 
@@ -285,6 +312,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   scoped_ptr<cc::CopyOutputRequest> last_copy_request_;
   // null if there are 0 active touch points.
   scoped_ptr<blink::WebTouchEvent> touch_event_;
+  FakeWindowEventDispatcher* dispatcher_;
 };
 
 // A layout manager that always resizes a child to the root window size.
@@ -3163,6 +3191,29 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   // Check if the canScroll set to true when ctrl-touchpad-scroll is generated
   // from scroll event.
   EXPECT_TRUE(wheel_event->canScroll);
+}
+
+// Ensures that the mapping from ui::TouchEvent to blink::WebTouchEvent doesn't
+// lose track of the number of acks required.
+TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
+  view_->InitAsFullscreen(parent_view_);
+  view_->Show();
+  view_->UseFakeDispatcher();
+
+  ui::TouchEvent press1(
+      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0, ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&press1);
+  SendInputEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  ui::TouchEvent press2(
+      ui::ET_TOUCH_PRESSED, gfx::Point(20, 20), 1, ui::EventTimeForNow());
+  view_->OnTouchEvent(&press2);
+  SendInputEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  EXPECT_EQ(2U, view_->dispatcher_->processed_touch_event_count());
 }
 
 }  // namespace content
