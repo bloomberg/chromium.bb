@@ -39,7 +39,7 @@ class MockCommand(partial_mock.PartialMock):
 
   def Run(self, inst):
     with self.rc_mock:
-      self.backup['Run'](inst)
+      return self.backup['Run'](inst)
 
 
 class CommandTest(cros_test_lib.MockTestCase):

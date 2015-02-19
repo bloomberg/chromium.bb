@@ -23,7 +23,7 @@ class MockShellCommand(init_unittest.MockCommand):
     init_unittest.MockCommand.__init__(self, *args, **kwargs)
 
   def Run(self, inst):
-    init_unittest.MockCommand.Run(self, inst)
+    return init_unittest.MockCommand.Run(self, inst)
 
 
 def _SshConnectError():
@@ -62,8 +62,8 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     self.remote_access_instance = self.patched_remote_access.return_value
     self.remote_sh_function = self.remote_access_instance.RemoteSh
 
-  def testSshSuccess(self):
-    """Tests flow for a basic connection.
+  def testSshInteractive(self):
+    """Tests flow for an interactive session.
 
     User should not be prompted for input, and SSH should be attempted
     once.
@@ -72,8 +72,34 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     self.cmd_mock.inst.Run()
     self.assertEqual(self.remote_sh_function.call_count, 1)
     self.assertFalse(self.prompt_function.called)
-    # Make sure that RemoteSh() started an interactive session (cmd is None).
-    self.assertIs(self.remote_sh_function.call_args[0][0], None)
+    # Make sure that RemoteSh() started an interactive session (no cmd).
+    self.assertEqual(self.remote_sh_function.call_args[0][0], [])
+
+  def testSshNonInteractiveSingleArg(self):
+    """Tests a non-interactive command as a single argument.
+
+    Example: cros shell 1.1.1.1 "ls -l /etc"
+    """
+    self.SetupCommandMock([self.DEVICE, 'ls -l /etc'])
+    self.cmd_mock.inst.Run()
+    self.assertEqual(self.remote_sh_function.call_args[0][0], ['ls -l /etc'])
+
+  def testSshNonInteractiveMultipleArgs(self):
+    """Tests a non-interactive command as multiple arguments with "--".
+
+    Example: cros shell 1.1.1.1 -- ls -l /etc
+    """
+    self.SetupCommandMock([self.DEVICE, '--', 'ls', '-l', '/etc'])
+    self.cmd_mock.inst.Run()
+    self.assertEqual(self.remote_sh_function.call_args[0][0],
+                     ['ls', '-l', '/etc'])
+
+  def testSshReturnValue(self):
+    """Tests that `cros shell` returns the exit code of RemoteSh()."""
+    self.SetupCommandMock([self.DEVICE])
+    self.remote_sh_function.return_value = cros_build_lib.CommandResult(
+        returncode=42)
+    self.assertEqual(self.cmd_mock.inst.Run(), 42)
 
   def testSshKeyChangeOK(self):
     """Tests a host SSH key changing but the user giving it the OK.
@@ -86,7 +112,8 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     self.remote_sh_function.side_effect = [_KeyMismatchError(), None]
     # User chooses to continue.
     self.prompt_function.return_value = True
-    self.cmd_mock.inst.Run()
+    with cros_test_lib.OutputCapturer():
+      self.cmd_mock.inst.Run()
     self.assertTrue(self.prompt_function.called)
     self.assertEqual(self.remote_sh_function.call_count, 2)
     self.assertTrue(self.remove_known_host_function.called)
@@ -101,7 +128,8 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     self.remote_sh_function.side_effect = _KeyMismatchError()
     # User chooses to abort.
     self.prompt_function.return_value = False
-    self.cmd_mock.inst.Run()
+    with cros_test_lib.OutputCapturer():
+      self.cmd_mock.inst.Run()
     self.assertTrue(self.prompt_function.called)
     self.assertEqual(self.remote_sh_function.call_count, 1)
     self.assertFalse(self.remove_known_host_function.called)
@@ -114,7 +142,8 @@ class ShellTest(cros_test_lib.MockTempDirTestCase):
     """
     self.SetupCommandMock([self.DEVICE])
     self.remote_sh_function.side_effect = _SshConnectError()
-    self.cmd_mock.inst.Run()
+    with cros_test_lib.OutputCapturer():
+      self.cmd_mock.inst.Run()
     self.assertFalse(self.prompt_function.called)
     self.assertEqual(self.remote_sh_function.call_count, 1)
     self.assertFalse(self.remove_known_host_function.called)

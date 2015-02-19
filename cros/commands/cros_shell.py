@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import argparse
 import logging
 import urlparse
 
@@ -19,13 +20,37 @@ from chromite.lib import remote_access
 class ShellCommand(cros.CrosCommand):
   """Opens a remote shell over SSH on the target device.
 
-  Unlike other `cros` commands, this allows for both SSH key and user
-  password authentication.
+  Can be used to start an interactive session or execute a command
+  remotely. Interactive sessions can be terminated like a normal SSH
+  session using Ctrl+D, `exit`, or `logout`.
 
-  Because the user may transmit his password to this device, either
-  during authentication or during the session, the known_hosts file is
-  used by default to prevent connecting to the wrong device.
+  Unlike other `cros` commands, this allows for both SSH key and user
+  password authentication. Because a password may be transmitted, the
+  known_hosts file is used by default to protect against connecting to
+  the wrong device.
+
+  The exit code will be the same as the last executed command.
   """
+
+  EPILOG = """
+Examples:
+  Start an interactive session:
+    cros shell <ip>
+    cros shell <user>@<ip>:<port>
+
+  Non-interactive remote command:
+    cros shell <ip> -- cat var/log/messages
+
+Quoting can be tricky; the rules are the same as with ssh:
+  Special symbols will end the command unless quoted:
+    cros shell <ip> -- cat /var/log/messages > log.txt   (saves locally)
+    cros shell <ip> -- "cat /var/log/messages > log.txt" (saves remotely)
+
+  One set of quotes is consumed locally, so remote commands that
+  require quotes will need double quoting:
+    cros shell <ip> -- sh -c "exit 42"    (executes: sh -c exit 42)
+    cros shell <ip> -- sh -c "'exit 42'"  (executes: sh -c 'exit 42')
+"""
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -49,13 +74,17 @@ class ShellCommand(cros.CrosCommand):
     """Adds a parser."""
     super(cls, ShellCommand).AddParser(parser)
     parser.add_argument(
-        'device', help='IP[:port] address of the target device.')
+        'device', help='[user@]IP[:port] address of the target device. Defaults'
+                       ' to user=root, port=22')
     parser.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
     parser.add_argument(
         '--no-known-hosts', action='store_false', dest='known_hosts',
         default=True, help='Do not use a known_hosts file.')
+    parser.add_argument(
+        'command', nargs=argparse.REMAINDER,
+        help='(optional) Command to execute on the device.')
 
   def _ReadOptions(self):
     """Processes options and set variables."""
@@ -107,7 +136,13 @@ class ShellCommand(cros.CrosCommand):
                ' before continuing.' % self.ssh_hostname)
 
   def _StartSsh(self):
-    """Starts an interactive SSH session.
+    """Starts an SSH session or executes a remote command.
+
+    Requires that _ReadOptions() has already been called to provide the
+    SSH configuration.
+
+    Returns:
+      The SSH return code.
 
     Raises:
       SSHConnectionError on SSH connect failure.
@@ -121,12 +156,12 @@ class ShellCommand(cros.CrosCommand):
       remote = remote_access.RemoteAccess(
           self.ssh_hostname, tempdir, port=self.ssh_port,
           username=self.ssh_username, private_key=self.ssh_private_key)
-      remote.RemoteSh(None,
-                      connect_settings=self._ConnectSettings(),
-                      error_code_ok=True,
-                      mute_output=False,
-                      redirect_stderr=True,
-                      capture_output=False)
+      return remote.RemoteSh(self.options.command,
+                             connect_settings=self._ConnectSettings(),
+                             error_code_ok=True,
+                             mute_output=False,
+                             redirect_stderr=True,
+                             capture_output=False).returncode
 
   def Run(self):
     """Runs `cros shell`."""
@@ -136,7 +171,7 @@ class ShellCommand(cros.CrosCommand):
     # overall failures.
     try:
       try:
-        self._StartSsh()
+        return self._StartSsh()
       except remote_access.SSHConnectionError as e:
         # Handle a mismatched host key; mismatched keys are a bit of a pain to
         # fix manually since `ssh-keygen -R` doesn't work within the chroot.
@@ -147,7 +182,7 @@ class ShellCommand(cros.CrosCommand):
             remote_access.RemoveKnownHost(self.ssh_hostname)
             # The user already OK'd so we can skip the additional SSH check.
             self.host_key_checking = 'no'
-            self._StartSsh()
+            return self._StartSsh()
           else:
             raise
         else:

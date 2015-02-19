@@ -264,8 +264,8 @@ class RemoteAccess(object):
     """Run a sh command on the remote device through ssh.
 
     Args:
-      cmd: The command string or list to run. None will start an interactive
-           session.
+      cmd: The command string or list to run. None or empty string/list will
+           start an interactive session.
       connect_settings: The SSH connect settings to use.
       error_code_ok: Does not throw an exception when the command exits with a
                      non-zero returncode.  This does not cover the case where
@@ -296,7 +296,7 @@ class RemoteAccess(object):
     ssh_cmd = self._GetSSHCmd(connect_settings)
     ssh_cmd.append(self.target_ssh_url)
 
-    if cmd is not None:
+    if cmd:
       ssh_cmd.append('--')
 
       if remote_sudo and self.username != ROOT_ACCOUNT:
