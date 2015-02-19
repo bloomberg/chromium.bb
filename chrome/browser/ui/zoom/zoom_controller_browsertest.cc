@@ -8,6 +8,7 @@
 #include "base/process/kill.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -158,6 +159,57 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesCanZoom) {
   EXPECT_EQ(
       content::PAGE_TYPE_ERROR,
       web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+
+  double old_zoom_level = zoom_controller->GetZoomLevel();
+  double new_zoom_level = old_zoom_level + 0.5;
+
+  // The following attempt to change the zoom level for an error page should
+  // fail.
+  zoom_controller->SetZoomLevel(new_zoom_level);
+  EXPECT_FLOAT_EQ(new_zoom_level, zoom_controller->GetZoomLevel());
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
+                       ErrorPagesCanZoomAfterTabRestore) {
+  // This url is meant to cause a network error page to be loaded.
+  // Tests can't reach the network, so this test should continue
+  // to work even if the domain listed is someday registered.
+  GURL url("http://kjfhkjsdf.com");
+
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_TRUE(tab_strip);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  {
+    content::WebContents* web_contents = tab_strip->GetActiveWebContents();
+
+    EXPECT_EQ(
+        content::PAGE_TYPE_ERROR,
+        web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+
+    content::WebContentsDestroyedWatcher destroyed_watcher(web_contents);
+    tab_strip->CloseWebContentsAt(tab_strip->active_index(),
+                                  TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+    destroyed_watcher.Wait();
+  }
+  EXPECT_EQ(1, tab_strip->count());
+
+  content::WebContentsAddedObserver new_web_contents_observer;
+  chrome::RestoreTab(browser());
+  content::WebContents* web_contents =
+      new_web_contents_observer.GetWebContents();
+  content::WaitForLoadStop(web_contents);
+
+  EXPECT_EQ(2, tab_strip->count());
+
+  EXPECT_EQ(
+      content::PAGE_TYPE_ERROR,
+      web_contents->GetController().GetLastCommittedEntry()->GetPageType());
+
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
 
   double old_zoom_level = zoom_controller->GetZoomLevel();
   double new_zoom_level = old_zoom_level + 0.5;

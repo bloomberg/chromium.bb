@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/page_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
@@ -4535,6 +4536,63 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   // repost warning dialog.
   controller_impl().Reload(true);
   EXPECT_EQ(0, delegate->repost_form_warning_count());
+}
+
+TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
+  GURL url("http://foo");
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = 1;
+  params.url = url;
+  params.transition = ui::PAGE_TRANSITION_LINK;
+  params.gesture = NavigationGestureUser;
+  params.page_state = PageState::CreateFromURL(url);
+  params.was_within_same_page = false;
+  params.is_post = true;
+  params.post_id = 2;
+  params.url_is_unreachable = true;
+  // Navigate to new page
+  {
+    LoadCommittedDetails details;
+    controller_impl().RendererDidNavigate(main_test_rfh(), params, &details);
+    EXPECT_EQ(PAGE_TYPE_ERROR,
+              controller_impl().GetLastCommittedEntry()->GetPageType());
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, details.type);
+  }
+
+  // Navigate to existing page.
+  {
+    LoadCommittedDetails details;
+    controller_impl().RendererDidNavigate(main_test_rfh(), params, &details);
+    EXPECT_EQ(PAGE_TYPE_ERROR,
+              controller_impl().GetLastCommittedEntry()->GetPageType());
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, details.type);
+  }
+
+  // Navigate to same page.
+  // Note: The call to LoadURL() creates a pending entry in order to trigger the
+  // same-page transition.
+  controller_impl().LoadURL(
+      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  params.transition = ui::PAGE_TRANSITION_TYPED;
+  {
+    LoadCommittedDetails details;
+    controller_impl().RendererDidNavigate(main_test_rfh(), params, &details);
+    EXPECT_EQ(PAGE_TYPE_ERROR,
+              controller_impl().GetLastCommittedEntry()->GetPageType());
+    EXPECT_EQ(NAVIGATION_TYPE_SAME_PAGE, details.type);
+  }
+
+  // Navigate in page.
+  params.url = GURL("http://foo#foo");
+  params.transition = ui::PAGE_TRANSITION_LINK;
+  params.was_within_same_page = true;
+  {
+    LoadCommittedDetails details;
+    controller_impl().RendererDidNavigate(main_test_rfh(), params, &details);
+    EXPECT_EQ(PAGE_TYPE_ERROR,
+              controller_impl().GetLastCommittedEntry()->GetPageType());
+    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, details.type);
+  }
 }
 
 }  // namespace content

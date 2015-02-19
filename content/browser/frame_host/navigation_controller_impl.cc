@@ -1057,10 +1057,6 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
     new_entry = new NavigationEntryImpl(*pending_entry_);
 
-    // Don't use the page type from the pending entry. Some interstitial page
-    // may have set the type to interstitial. Once we commit, however, the page
-    // type must always be normal.
-    new_entry->set_page_type(PAGE_TYPE_NORMAL);
     update_virtual_url = new_entry->update_virtual_url_with_url();
   } else {
     new_entry = new NavigationEntryImpl;
@@ -1081,8 +1077,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     update_virtual_url = needs_update;
   }
 
-  if (params.url_is_unreachable)
-    new_entry->set_page_type(PAGE_TYPE_ERROR);
+  // Don't use the page type from the pending entry. Some interstitial page
+  // may have set the type to interstitial. Once we commit, however, the page
+  // type must always be normal or error.
+  new_entry->set_page_type(params.url_is_unreachable ? PAGE_TYPE_ERROR
+                                                     : PAGE_TYPE_NORMAL);
   new_entry->SetURL(params.url);
   if (update_virtual_url)
     UpdateVirtualURLToURL(new_entry, params.url);
@@ -1133,6 +1132,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   NavigationEntryImpl* entry = entries_[entry_index].get();
 
   // The URL may have changed due to redirects.
+  entry->set_page_type(params.url_is_unreachable ? PAGE_TYPE_ERROR
+                                                 : PAGE_TYPE_NORMAL);
   entry->SetURL(params.url);
   entry->SetReferrer(params.referrer);
   if (entry->update_virtual_url_with_url())
@@ -1185,6 +1186,8 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->set_unique_id(pending_entry_->GetUniqueID());
 
   // The URL may have changed due to redirects.
+  existing_entry->set_page_type(params.url_is_unreachable ? PAGE_TYPE_ERROR
+                                                          : PAGE_TYPE_NORMAL);
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
   existing_entry->SetURL(params.url);
@@ -1211,6 +1214,8 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
   // entry and it will be the same page as the new navigation (minus the
   // reference fragments, of course).  We'll update the URL of the existing
   // entry without pruning the forward history.
+  existing_entry->set_page_type(params.url_is_unreachable ? PAGE_TYPE_ERROR
+                                                          : PAGE_TYPE_NORMAL);
   existing_entry->SetURL(params.url);
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
