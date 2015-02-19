@@ -643,7 +643,7 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   ResourceProvider::ResourceId u_plane_resource_id = 532;
   ResourceProvider::ResourceId v_plane_resource_id = 4;
   ResourceProvider::ResourceId a_plane_resource_id = 63;
-  YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601_JPEG;
+  YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_9_NEW(YUVVideoDrawQuad, opaque_rect, visible_rect, tex_coord_rect,
@@ -899,7 +899,7 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   ResourceProvider::ResourceId u_plane_resource_id = 532;
   ResourceProvider::ResourceId v_plane_resource_id = 4;
   ResourceProvider::ResourceId a_plane_resource_id = 63;
-  YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601_JPEG;
+  YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::JPEG;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_9_NEW(YUVVideoDrawQuad, opaque_rect, visible_rect, tex_coord_rect,

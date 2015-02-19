@@ -1901,8 +1901,11 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   float yuv_to_rgb_rec601[9] = {
       1.164f, 1.164f, 1.164f, 0.0f, -.391f, 2.018f, 1.596f, -.813f, 0.0f,
   };
-  float yuv_to_rgb_rec601_jpeg[9] = {
+  float yuv_to_rgb_jpeg[9] = {
       1.f, 1.f, 1.f, 0.0f, -.34414f, 1.772f, 1.402f, -.71414f, 0.0f,
+  };
+  float yuv_to_rgb_rec709[9] = {
+      1.164f, 1.164f, 1.164f, 0.0f, -0.213f, 2.112f, 1.793f, -0.533f, 0.0f,
   };
 
   // These values map to 16, 128, and 128 respectively, and are computed
@@ -1911,12 +1914,12 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   //   Y - 16   : Gives 16 values of head and footroom for overshooting
   //   U - 128  : Turns unsigned U into signed U [-128,127]
   //   V - 128  : Turns unsigned V into signed V [-128,127]
-  float yuv_adjust_rec601[3] = {
+  float yuv_adjust_constrained[3] = {
       -0.0625f, -0.5f, -0.5f,
   };
 
   // Same as above, but without the head and footroom.
-  float yuv_adjust_rec601_jpeg[3] = {
+  float yuv_adjust_full[3] = {
       0.0f, -0.5f, -0.5f,
   };
 
@@ -1926,11 +1929,15 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   switch (quad->color_space) {
     case YUVVideoDrawQuad::REC_601:
       yuv_to_rgb = yuv_to_rgb_rec601;
-      yuv_adjust = yuv_adjust_rec601;
+      yuv_adjust = yuv_adjust_constrained;
       break;
-    case YUVVideoDrawQuad::REC_601_JPEG:
-      yuv_to_rgb = yuv_to_rgb_rec601_jpeg;
-      yuv_adjust = yuv_adjust_rec601_jpeg;
+    case YUVVideoDrawQuad::REC_709:
+      yuv_to_rgb = yuv_to_rgb_rec709;
+      yuv_adjust = yuv_adjust_constrained;
+      break;
+    case YUVVideoDrawQuad::JPEG:
+      yuv_to_rgb = yuv_to_rgb_jpeg;
+      yuv_adjust = yuv_adjust_full;
       break;
   }
 

@@ -570,7 +570,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     const bool with_alpha = (video_frame->format() == media::VideoFrame::YV12A);
     const YUVVideoDrawQuad::ColorSpace color_space =
         (video_frame->format() == media::VideoFrame::YV12J
-             ? YUVVideoDrawQuad::REC_601_JPEG
+             ? YUVVideoDrawQuad::JPEG
              : YUVVideoDrawQuad::REC_601);
     const gfx::Rect rect(shared_state->content_bounds);
     const gfx::Rect opaque_rect(0, 0, 0, 0);

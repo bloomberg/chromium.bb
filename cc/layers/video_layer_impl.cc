@@ -222,10 +222,13 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       DCHECK_GE(frame_resources_.size(), 3u);
       if (frame_resources_.size() < 3u)
         break;
-      YUVVideoDrawQuad::ColorSpace color_space =
-          frame_->format() == media::VideoFrame::YV12J
-              ? YUVVideoDrawQuad::REC_601_JPEG
-              : YUVVideoDrawQuad::REC_601;
+      YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
+      if (frame_->format() == media::VideoFrame::YV12J) {
+        color_space = YUVVideoDrawQuad::JPEG;
+      } else if (frame_->format() == media::VideoFrame::YV12HD) {
+        color_space = YUVVideoDrawQuad::REC_709;
+      }
+
       gfx::RectF tex_coord_rect(
           tex_x_offset, tex_y_offset, tex_width_scale, tex_height_scale);
       YUVVideoDrawQuad* yuv_video_quad =

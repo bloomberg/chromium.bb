@@ -43,10 +43,8 @@ COMPILE_ASSERT(
     cc::YUVVideoDrawQuad::REC_601 ==
         static_cast<cc::YUVVideoDrawQuad::ColorSpace>(YUV_COLOR_SPACE_REC_601),
     rec_601_enum_matches);
-COMPILE_ASSERT(cc::YUVVideoDrawQuad::REC_601_JPEG ==
-                   static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
-                       YUV_COLOR_SPACE_REC_601_JPEG),
-               rec_601_jpeg_enum_matches);
+// TODO(jamesr): Add REC_709 and JPEG to the YUVColorSpace enum upstream in
+// mojo.
 
 namespace {
 

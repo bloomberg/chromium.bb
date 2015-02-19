@@ -16,9 +16,10 @@ namespace cc {
 class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
  public:
   enum ColorSpace {
-    REC_601,       // SDTV standard with restricted "studio swing" color range.
-    REC_601_JPEG,  // Full color range [0, 255] variant of the above.
-    COLOR_SPACE_LAST = REC_601_JPEG
+    REC_601,  // SDTV standard with restricted "studio swing" color range.
+    REC_709,  // HDTV standard with restricted "studio swing" color range.
+    JPEG,     // Full color range [0, 255] JPEG color space.
+    COLOR_SPACE_LAST = JPEG
   };
 
   ~YUVVideoDrawQuad() override;
