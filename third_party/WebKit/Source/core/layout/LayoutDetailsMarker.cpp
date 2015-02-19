@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderDetailsMarker.h"
+#include "core/layout/LayoutDetailsMarker.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
@@ -31,12 +31,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderDetailsMarker::RenderDetailsMarker(Element* element)
+LayoutDetailsMarker::LayoutDetailsMarker(Element* element)
     : RenderBlockFlow(element)
 {
 }
 
-RenderDetailsMarker::Orientation RenderDetailsMarker::orientation() const
+LayoutDetailsMarker::Orientation LayoutDetailsMarker::orientation() const
 {
     switch (style()->writingMode()) {
     case TopToBottomWritingMode:
@@ -59,12 +59,12 @@ RenderDetailsMarker::Orientation RenderDetailsMarker::orientation() const
     return Right;
 }
 
-void RenderDetailsMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutDetailsMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     DetailsMarkerPainter(*this).paint(paintInfo, paintOffset);
 }
 
-bool RenderDetailsMarker::isOpen() const
+bool LayoutDetailsMarker::isOpen() const
 {
     for (LayoutObject* renderer = parent(); renderer; renderer = renderer->parent()) {
         if (!renderer->node())

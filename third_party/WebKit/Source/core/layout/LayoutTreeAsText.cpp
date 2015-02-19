@@ -36,6 +36,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutDetailsMarker.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -49,7 +50,6 @@
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutTreeAsText.h"
 #include "core/page/PrintContext.h"
-#include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListItem.h"
@@ -309,17 +309,17 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
 
     if (o.isDetailsMarker()) {
         ts << ": ";
-        switch (toRenderDetailsMarker(&o)->orientation()) {
-        case RenderDetailsMarker::Left:
+        switch (toLayoutDetailsMarker(&o)->orientation()) {
+        case LayoutDetailsMarker::Left:
             ts << "left";
             break;
-        case RenderDetailsMarker::Right:
+        case LayoutDetailsMarker::Right:
             ts << "right";
             break;
-        case RenderDetailsMarker::Up:
+        case LayoutDetailsMarker::Up:
             ts << "up";
             break;
-        case RenderDetailsMarker::Down:
+        case LayoutDetailsMarker::Down:
             ts << "down";
             break;
         }

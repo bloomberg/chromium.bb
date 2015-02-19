@@ -36,9 +36,9 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/layout/LayoutDetailsMarker.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderDetailsMarker.h"
 #include "platform/LayoutTestSupport.h"
 #include "wtf/TemporaryChange.h"
 
@@ -71,7 +71,7 @@ PickerIndicatorElement::~PickerIndicatorElement()
 
 LayoutObject* PickerIndicatorElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderDetailsMarker(this);
+    return new LayoutDetailsMarker(this);
 }
 
 void PickerIndicatorElement::defaultEventHandler(Event* event)

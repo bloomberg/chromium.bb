@@ -40,12 +40,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,5) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (0,5) size 10.55x10.55: right
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (0,5) size 10.55x10.55: down
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -53,12 +53,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: right
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: up
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -66,12 +66,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: down
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: right
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -79,12 +79,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,0) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (5,0) size 10.55x10.55: down
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,0) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,0) size 10.55x10.55: left
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -96,12 +96,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: left
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: down
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -109,12 +109,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: up
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -122,12 +122,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: up
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: right
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -135,12 +135,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: up
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: left
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -183,12 +183,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,5) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (0,5) size 10.55x10.55: right
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (0,5) size 10.55x10.55: down
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -196,12 +196,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: right
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (0,3.45) size 10.55x10.55: up
                     RenderText {#text} at (16,0) size 55x19
                       text run at (16,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -209,12 +209,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: down
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,0) size 10.55x10.55: right
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -222,12 +222,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,0) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (5,0) size 10.55x10.55: down
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,0) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,0) size 10.55x10.55: left
                     RenderText {#text} at (0,16) size 19x55
                       text run at (0,16) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -239,12 +239,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (54,5) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (54,5) size 10.55x10.55: left
                     RenderText {#text} at (0,0) size 54x19
                       text run at (0,0) width 54: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (54,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (54,5) size 10.55x10.55: down
                     RenderText {#text} at (0,0) size 54x19
                       text run at (0,0) width 54: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -252,12 +252,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (60.39,3.45) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (60.39,3.45) size 10.55x10.55: left
                     RenderText {#text} at (0,0) size 54x19
                       text run at (0,0) width 54: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (60.39,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (60.39,3.45) size 10.55x10.55: up
                     RenderText {#text} at (0,0) size 54x19
                       text run at (0,0) width 54: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -265,12 +265,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,60.39) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (3.45,60.39) size 10.55x10.55: up
                     RenderText {#text} at (0,0) size 19x54
                       text run at (0,0) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,60.39) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,60.39) size 10.55x10.55: right
                     RenderText {#text} at (0,0) size 19x54
                       text run at (0,0) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -278,12 +278,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,60.39) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (5,60.39) size 10.55x10.55: up
                     RenderText {#text} at (0,0) size 19x54
                       text run at (0,0) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,60.39) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,60.39) size 10.55x10.55: left
                     RenderText {#text} at (0,0) size 19x54
                       text run at (0,0) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -326,12 +326,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (24.53,5) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (24.53,5) size 10.55x10.55: right
                     RenderText {#text} at (41,0) size 55x19
                       text run at (41,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (24.53,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (24.53,5) size 10.55x10.55: down
                     RenderText {#text} at (41,0) size 55x19
                       text run at (41,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -339,12 +339,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (24.53,3.45) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (24.53,3.45) size 10.55x10.55: right
                     RenderText {#text} at (41,0) size 55x19
                       text run at (41,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (24.53,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (24.53,3.45) size 10.55x10.55: up
                     RenderText {#text} at (41,0) size 55x19
                       text run at (41,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -352,12 +352,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,24.53) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (3.45,24.53) size 10.55x10.55: down
                     RenderText {#text} at (0,41) size 19x55
                       text run at (0,41) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,24.53) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,24.53) size 10.55x10.55: right
                     RenderText {#text} at (0,41) size 19x55
                       text run at (0,41) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -365,12 +365,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,24.53) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (5,24.53) size 10.55x10.55: down
                     RenderText {#text} at (0,41) size 19x55
                       text run at (0,41) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,24.53) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,24.53) size 10.55x10.55: left
                     RenderText {#text} at (0,41) size 19x55
                       text run at (0,41) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -382,12 +382,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (78.53,5) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (78.53,5) size 10.55x10.55: left
                     RenderText {#text} at (24,0) size 55x19
                       text run at (24,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (78.53,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (78.53,5) size 10.55x10.55: down
                     RenderText {#text} at (24,0) size 55x19
                       text run at (24,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -395,12 +395,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (84.92,3.45) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (84.92,3.45) size 10.55x10.55: left
                     RenderText {#text} at (24,0) size 55x19
                       text run at (24,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (84.92,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (84.92,3.45) size 10.55x10.55: up
                     RenderText {#text} at (24,0) size 55x19
                       text run at (24,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -408,12 +408,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,84.92) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (3.45,84.92) size 10.55x10.55: up
                     RenderText {#text} at (0,24) size 19x55
                       text run at (0,24) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,84.92) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,84.92) size 10.55x10.55: right
                     RenderText {#text} at (0,24) size 19x55
                       text run at (0,24) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -421,12 +421,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,84.92) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (5,84.92) size 10.55x10.55: up
                     RenderText {#text} at (0,24) size 19x55
                       text run at (0,24) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,84.92) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,84.92) size 10.55x10.55: left
                     RenderText {#text} at (0,24) size 19x55
                       text run at (0,24) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -469,12 +469,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (49.06,5) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (49.06,5) size 10.55x10.55: right
                     RenderText {#text} at (66,0) size 54x19
                       text run at (66,0) width 54: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (49.06,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (49.06,5) size 10.55x10.55: down
                     RenderText {#text} at (66,0) size 54x19
                       text run at (66,0) width 54: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -482,12 +482,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (49.06,3.45) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (49.06,3.45) size 10.55x10.55: right
                     RenderText {#text} at (66,0) size 54x19
                       text run at (66,0) width 54: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (49.06,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (49.06,3.45) size 10.55x10.55: up
                     RenderText {#text} at (66,0) size 54x19
                       text run at (66,0) width 54: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -495,12 +495,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,49.06) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (3.45,49.06) size 10.55x10.55: down
                     RenderText {#text} at (0,66) size 19x54
                       text run at (0,66) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,49.06) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,49.06) size 10.55x10.55: right
                     RenderText {#text} at (0,66) size 19x54
                       text run at (0,66) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -508,12 +508,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,49.06) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (5,49.06) size 10.55x10.55: down
                     RenderText {#text} at (0,66) size 19x54
                       text run at (0,66) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,49.06) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,49.06) size 10.55x10.55: left
                     RenderText {#text} at (0,66) size 19x54
                       text run at (0,66) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -525,12 +525,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: left
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: down
+                    LayoutDetailsMarker {DIV} at (103.06,5) size 10.55x10.55: down
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -538,12 +538,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: left
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                 RenderBlock {DETAILS} at (0,20) size 120x20
                   RenderBlock {SUMMARY} at (0,0) size 120x20
-                    RenderDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (109.45,3.45) size 10.55x10.55: up
                     RenderText {#text} at (49,0) size 55x19
                       text run at (49,0) width 55: "summary"
                   RenderBlock {DIV} at (0,20) size 120x0
@@ -551,12 +551,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: up
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: right
+                    LayoutDetailsMarker {DIV} at (3.45,109.45) size 10.55x10.55: right
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120
@@ -564,12 +564,12 @@ layer at (0,0) size 785x1508 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               RenderBlock {DIV} at (2,2) size 120x120
                 RenderBlock {DETAILS} at (0,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: up
+                    LayoutDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: up
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                 RenderBlock {DETAILS} at (20,0) size 20x120
                   RenderBlock {SUMMARY} at (0,0) size 20x120
-                    RenderDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: left
+                    LayoutDetailsMarker {DIV} at (5,109.45) size 10.55x10.55: left
                     RenderText {#text} at (0,49) size 19x55
                       text run at (0,49) width 54: "summary"
                   RenderBlock {DIV} at (20,0) size 0x120

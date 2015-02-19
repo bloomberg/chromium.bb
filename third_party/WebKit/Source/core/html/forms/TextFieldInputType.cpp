@@ -48,11 +48,11 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutDetailsMarker.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/rendering/RenderDetailsMarker.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/text/WTFString.h"
 
@@ -67,7 +67,7 @@ private:
 
     virtual LayoutObject* createRenderer(const LayoutStyle&) override
     {
-        return new RenderDetailsMarker(this);
+        return new LayoutDetailsMarker(this);
     }
 
     virtual void* preDispatchEventHandler(Event* event) override

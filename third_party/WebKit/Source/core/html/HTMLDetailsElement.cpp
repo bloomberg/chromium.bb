@@ -129,7 +129,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         else
             content->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
-        // Invalidate the RenderDetailsMarker in order to turn the arrow signifying if the
+        // Invalidate the LayoutDetailsMarker in order to turn the arrow signifying if the
         // details element is open or closed.
         Element* summary = findMainSummary();
         ASSERT(summary);

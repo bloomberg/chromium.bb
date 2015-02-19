@@ -6,13 +6,13 @@ layer at (0,0) size 800x54
       LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (3,3) size 117x13
           RenderBlock {DIV} at (0,0) size 102.28x13
-          RenderDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
+          LayoutDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
       RenderText {#text} at (123,0) size 4x18
         text run at (123,0) width 4: " "
       LayoutTextControl {INPUT} at (127,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (3,3) size 117x13
           RenderBlock {DIV} at (0,0) size 102.28x13
-          RenderDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
+          LayoutDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
       RenderText {#text} at (250,0) size 4x18
         text run at (250,0) width 4: " "
       LayoutBR {BR} at (254,0) size 0x18
@@ -35,7 +35,7 @@ layer at (11,30) size 102x13
 layer at (138,30) size 102x13
   RenderBlock {DIV} at (0,0) size 102.28x13
 hidden layer at (113,31) size 15x11 transparent
-  RenderDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
+  LayoutDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
 hidden layer at (240,31) size 15x11 transparent
-  RenderDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
+  LayoutDetailsMarker {DIV} at (102.28,1.02) size 14.72x10.97: down
 caret: position 0 of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of body

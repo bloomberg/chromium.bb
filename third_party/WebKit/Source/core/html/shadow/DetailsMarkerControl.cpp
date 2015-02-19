@@ -33,7 +33,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLSummaryElement.h"
-#include "core/rendering/RenderDetailsMarker.h"
+#include "core/layout/LayoutDetailsMarker.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ DetailsMarkerControl::DetailsMarkerControl(Document& document)
 
 LayoutObject* DetailsMarkerControl::createRenderer(const LayoutStyle&)
 {
-    return new RenderDetailsMarker(this);
+    return new LayoutDetailsMarker(this);
 }
 
 bool DetailsMarkerControl::rendererIsNeeded(const LayoutStyle& style)

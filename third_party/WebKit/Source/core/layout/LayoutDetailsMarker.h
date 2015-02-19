@@ -18,31 +18,31 @@
  *
  */
 
-#ifndef RenderDetailsMarker_h
-#define RenderDetailsMarker_h
+#ifndef LayoutDetailsMarker_h
+#define LayoutDetailsMarker_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-class RenderDetailsMarker final : public RenderBlockFlow {
+class LayoutDetailsMarker final : public RenderBlockFlow {
 public:
-    RenderDetailsMarker(Element*);
+    LayoutDetailsMarker(Element*);
 
     enum Orientation { Up, Down, Left, Right };
 
     Orientation orientation() const;
 
 private:
-    virtual const char* renderName() const override { return "RenderDetailsMarker"; }
+    virtual const char* renderName() const override { return "LayoutDetailsMarker"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || RenderBlockFlow::isOfType(type); }
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
     bool isOpen() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderDetailsMarker, isDetailsMarker());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDetailsMarker, isDetailsMarker());
 
 }
 
-#endif // RenderDetailsMarker_h
+#endif // LayoutDetailsMarker_h
