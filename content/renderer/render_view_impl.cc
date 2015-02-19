@@ -1134,6 +1134,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 #if defined(OS_WIN)
   settings->setShowContextMenuOnMouseUp(true);
 #endif
+
+#if defined(OS_MACOSX)
+  settings->setDoubleTapToZoomEnabled(true);
+#endif
 }
 
 /*static*/
