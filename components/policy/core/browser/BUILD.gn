@@ -54,7 +54,6 @@ source_set("browser") {
     ]
 
     deps += [
-      "//components/autofill/core/browser",
       "//components/autofill/core/common",
       "//components/policy",
       "//components/policy/proto",

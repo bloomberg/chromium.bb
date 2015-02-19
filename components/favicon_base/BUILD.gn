@@ -24,6 +24,7 @@ source_set("favicon_base") {
     "//skia",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/geometry",
     "//url",
   ]
 }
@@ -39,5 +40,6 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }

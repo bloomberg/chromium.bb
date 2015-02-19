@@ -34,7 +34,8 @@
     # GN version: //components/policy/core/browser
     ['configuration_policy==1', {
       'dependencies': [
-        'autofill_core_browser',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
         'autofill_core_common',
         'cloud_policy_proto',
         'policy',
