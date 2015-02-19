@@ -209,7 +209,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/libvpx.git' + '@' +  Var('libvpx_revision'),
 
   'src/third_party/ffmpeg':
-   Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '2e38ab8c03616a4c3c121f581b67dab99b2b21d7',
+   Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'd4b1674dcd2f742403179a3ef8e6dd8d7aaecf1a',
 
   'src/third_party/libjingle/source/talk':
     Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + 'e8e238406f16de47fb7e8daa8fde40784c7d0e91',
