@@ -138,23 +138,16 @@ DaemonControllerDelegateLinux::~DaemonControllerDelegateLinux() {
 DaemonController::State DaemonControllerDelegateLinux::GetState() {
   base::FilePath script_path;
   if (!GetScriptPath(&script_path)) {
-    return DaemonController::STATE_NOT_IMPLEMENTED;
+    LOG(ERROR) << "GetScriptPath() failed.";
+    return DaemonController::STATE_UNKNOWN;
   }
   base::CommandLine command_line(script_path);
   command_line.AppendArg("--get-status");
 
   std::string status;
   int exit_code = 0;
-  bool result =
-      base::GetAppOutputWithExitCode(command_line, &status, &exit_code);
-  if (!result) {
-    // TODO(jamiewalch): When we have a good story for installing, return
-    // NOT_INSTALLED rather than NOT_IMPLEMENTED (the former suppresses
-    // the relevant UI in the web-app).
-    return DaemonController::STATE_NOT_IMPLEMENTED;
-  }
-
-  if (exit_code != 0) {
+  if (!base::GetAppOutputWithExitCode(command_line, &status, &exit_code) ||
+      exit_code != 0) {
     LOG(ERROR) << "Failed to run \"" << command_line.GetCommandLineString()
                << "\". Exit code: " << exit_code;
     return DaemonController::STATE_UNKNOWN;
@@ -167,6 +160,8 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
   } else if (status == "STOPPED") {
     return DaemonController::STATE_STOPPED;
   } else if (status == "NOT_IMPLEMENTED") {
+    // Chrome Remote Desktop is not currently supported on the underlying Linux
+    // Distro.
     return DaemonController::STATE_NOT_IMPLEMENTED;
   } else {
     LOG(ERROR) << "Unknown status string returned from  \""
@@ -177,9 +172,6 @@ DaemonController::State DaemonControllerDelegateLinux::GetState() {
 }
 
 scoped_ptr<base::DictionaryValue> DaemonControllerDelegateLinux::GetConfig() {
-  if (GetState() == DaemonController::STATE_NOT_IMPLEMENTED)
-    return nullptr;
-
   scoped_ptr<base::DictionaryValue> config(
       HostConfigFromJsonFile(GetConfigPath()));
   if (!config)

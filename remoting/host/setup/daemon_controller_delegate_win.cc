@@ -361,10 +361,6 @@ DaemonControllerDelegateWin::~DaemonControllerDelegateWin() {
 }
 
 DaemonController::State DaemonControllerDelegateWin::GetState() {
-  if (base::win::GetVersion() < base::win::VERSION_XP) {
-    return DaemonController::STATE_NOT_IMPLEMENTED;
-  }
-
   // TODO(alexeypa): Make the thread alertable, so we can switch to APC
   // notifications rather than polling.
   ScopedScHandle service = OpenService(SERVICE_QUERY_STATUS);

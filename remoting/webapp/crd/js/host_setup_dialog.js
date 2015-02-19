@@ -229,7 +229,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
 
   var installed =
       state != remoting.HostController.State.NOT_INSTALLED &&
-      state != remoting.HostController.State.INSTALLING;
+      state != remoting.HostController.State.UNKNOWN;
 
   // Skip the installation step when the host is already installed.
   if (installed) {
@@ -373,7 +373,7 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
   var onHostState = function(state) {
     var installed =
         state != remoting.HostController.State.NOT_INSTALLED &&
-        state != remoting.HostController.State.INSTALLING;
+        state != remoting.HostController.State.UNKNOWN;
 
     if (installed) {
       that.flow_.switchToNextStep();

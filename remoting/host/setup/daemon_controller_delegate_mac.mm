@@ -39,7 +39,7 @@ DaemonControllerDelegateMac::~DaemonControllerDelegateMac() {
 DaemonController::State DaemonControllerDelegateMac::GetState() {
   pid_t job_pid = base::mac::PIDForJob(kServiceName);
   if (job_pid < 0) {
-    return DaemonController::STATE_NOT_INSTALLED;
+    return DaemonController::STATE_UNKNOWN;
   } else if (job_pid == 0) {
     // Service is stopped, or a start attempt failed.
     return DaemonController::STATE_STOPPED;

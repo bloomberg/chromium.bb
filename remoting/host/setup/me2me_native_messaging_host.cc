@@ -391,12 +391,6 @@ void Me2MeNativeMessagingHost::ProcessGetDaemonState(
     case DaemonController::STATE_NOT_IMPLEMENTED:
       response->SetString("state", "NOT_IMPLEMENTED");
       break;
-    case DaemonController::STATE_NOT_INSTALLED:
-      response->SetString("state", "NOT_INSTALLED");
-      break;
-    case DaemonController::STATE_INSTALLING:
-      response->SetString("state", "INSTALLING");
-      break;
     case DaemonController::STATE_STOPPED:
       response->SetString("state", "STOPPED");
       break;

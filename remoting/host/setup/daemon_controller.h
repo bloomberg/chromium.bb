@@ -24,20 +24,15 @@ class AutoThreadTaskRunner;
 
 class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
  public:
-  // Note that these enumeration values are duplicated in host_controller.js and
-  // must be kept in sync.
+  // These enumeration values are duplicated in host_controller.js except that
+  // NOT_INSTALLED is missing here. DaemonController runs in either the remoting
+  // host or the native messaging host which are only installed as part of the
+  // host package so the host must have already been installed.
   enum State {
     // Placeholder state for platforms on which the daemon process is not
     // implemented. The web-app will not show the corresponding UI. This value
     // will eventually be deprecated or removed.
-    STATE_NOT_IMPLEMENTED = -1,
-    // The daemon is not installed. This is functionally equivalent to
-    // STATE_STOPPED, but the start method is expected to be significantly
-    // slower, and might involve user interaction. It might be appropriate to
-    // indicate this in the UI.
-    STATE_NOT_INSTALLED = 0,
-    // The daemon is being installed.
-    STATE_INSTALLING = 1,
+    STATE_NOT_IMPLEMENTED = 0,
     // The daemon is installed but not running. Call Start to start it.
     STATE_STOPPED = 2,
     // The daemon process is starting.
@@ -47,9 +42,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     STATE_STARTED = 4,
     // The daemon process is stopping.
     STATE_STOPPING = 5,
-    // The state cannot be determined. This could indicate that the plugin
-    // has not been provided with sufficient information, for example, the
-    // user for which to query state on a multi-user system.
+    // The state cannot be determined.
     STATE_UNKNOWN = 6
   };
 

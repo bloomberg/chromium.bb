@@ -12,13 +12,12 @@ remoting.HostController = function() {
   this.hostDaemonFacade_ = this.createDaemonFacade_();
 };
 
-// Note that the values in the enums below are copied from
-// daemon_controller.h and must be kept in sync.
+// The values in the enums below are duplicated in daemon_controller.h except
+// for NOT_INSTALLED.
 /** @enum {number} */
 remoting.HostController.State = {
-  NOT_IMPLEMENTED: -1,
-  NOT_INSTALLED: 0,
-  INSTALLING: 1,
+  NOT_IMPLEMENTED: 0,
+  NOT_INSTALLED: 1,
   STOPPED: 2,
   STARTING: 3,
   STARTED: 4,
