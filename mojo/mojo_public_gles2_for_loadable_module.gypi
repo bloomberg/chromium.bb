@@ -31,17 +31,6 @@
           'GLES2_USE_MOJO',
         ],
       },
-      'all_dependent_settings': {
-        'conditions': [
-          # We need to be able to call the MojoSetGLES2Thunks() function in
-          # gles2_thunks.cc
-          ['OS=="android"', {
-            'ldflags!': [
-              '-Wl,--exclude-libs=ALL',
-            ],
-          }],
-        ],
-      },
       'sources': [
         '<(DEPTH)/third_party/mojo/src/mojo/public/c/gles2/gles2.h',
         '<(DEPTH)/third_party/mojo/src/mojo/public/c/gles2/gles2_export.h',

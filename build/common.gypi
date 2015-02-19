@@ -4588,9 +4588,6 @@
             ],
             'conditions': [
               ['component=="static_library" and android_webview_build==0', {
-                'ldflags': [
-                  '-Wl,--exclude-libs=ALL',
-                ],
                 'target_conditions': [
                   ['use_native_jni_exports==0', {
                     # Use a linker version script to strip JNI exports from
@@ -4658,6 +4655,20 @@
                 'ldflags': [
                   '--sysroot=<(android_ndk_sysroot)',
                   '-nostdlib',
+                  # Don't allow visible symbols from libgcc or stlport to be
+                  # re-exported.
+                  '-Wl,--exclude-libs=libgcc.a',
+                  '-Wl,--exclude-libs=libstlport_static.a',
+                  # Don't allow visible symbols from libraries that contain
+                  # assembly code with symbols that aren't hidden properly.
+                  # http://crbug.com/448386
+                  '-Wl,--exclude-libs=libcommon_audio.a',
+                  '-Wl,--exclude-libs=libcommon_audio_neon.a',
+                  '-Wl,--exclude-libs=libcommon_audio_sse2.a',
+                  '-Wl,--exclude-libs=libiSACFix.a',
+                  '-Wl,--exclude-libs=libisac_neon.a',
+                  '-Wl,--exclude-libs=libopus.a',
+                  '-Wl,--exclude-libs=libvpx.a',
                 ],
                 'libraries': [
                   '-l<(android_stlport_library)',
@@ -4774,9 +4785,6 @@
                 ],
               }],
               ['_type=="shared_library" or _type=="loadable_module"', {
-                'ldflags!': [
-                  '-Wl,--exclude-libs=ALL',
-                ],
                 'ldflags': [
                   '-Wl,-shared,-Bsymbolic',
                 ],
