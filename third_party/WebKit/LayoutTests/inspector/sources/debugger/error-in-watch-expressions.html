@@ -9,22 +9,16 @@ var test = function()
 {
     var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
     watchExpressionsPane.expand();
-
-    var watchExpressionsSection = watchExpressionsPane.section;
-    watchExpressionsSection.watchExpressions = [];
-    watchExpressionsSection.watchExpressions.push("#$%");
-    watchExpressionsSection.update();
+    watchExpressionsPane.addExpression("#$%");
 
     InspectorTest.runAfterPendingDispatches(step1);
 
     function step1()
     {
-        InspectorTest.addResult(watchExpressionsSection.element.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
+        InspectorTest.addResult(watchExpressionsPane.bodyElement.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
 
         // Clear watch expressions after execution.
-        watchExpressionsSection.watchExpressions = [];
-        watchExpressionsSection.update();
-
+        watchExpressionsPane._deleteAllButtonClicked();
         InspectorTest.completeTest();
     }
 }

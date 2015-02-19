@@ -4,7 +4,6 @@ Bug 70718
 Script source was shown.
 Set timer for test function.
 Watch expressions updated.
-[expanded]  
-    window.document: #document
-    windowa.document: ReferenceError: windowa is not defined
+'window.document' => 'document'
+'windowa.document' => '<not available>'
 
