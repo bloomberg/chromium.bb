@@ -12,6 +12,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -23,6 +24,7 @@
 #include "net/base/request_priority.h"
 #include "url/gurl.h"
 
+struct ResourceHostMsg_Request;
 struct ResourceMsg_RequestCompleteData;
 
 namespace blink {
@@ -36,16 +38,17 @@ struct RedirectInfo;
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
-class ResourceLoaderBridge;
+class ResourceRequestBody;
 class ThreadedDataProvider;
 struct ResourceResponseInfo;
 struct RequestInfo;
 struct ResourceResponseHead;
 struct SiteIsolationResponseMetaData;
+struct SyncLoadResponse;
 
-// This class serves as a communication interface between the
-// ResourceDispatcherHost in the browser process and the ResourceLoaderBridge in
-// the child process.  It can be used from any child process.
+// This class serves as a communication interface to the ResourceDispatcherHost
+// in the browser process. It can be used from any child process.
+// Virtual methods are for tests.
 class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
  public:
   ResourceDispatcher(
@@ -56,19 +59,23 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
-  // this can be tested regardless of the ResourceLoaderBridge::Create
-  // implementation.  Virtual for tests.
-  virtual ResourceLoaderBridge* CreateBridge(const RequestInfo& request_info);
+  // Call this method to load the resource synchronously (i.e., in one shot).
+  // This is an alternative to the StartAsync method. Be warned that this method
+  // will block the calling thread until the resource is fully downloaded or an
+  // error occurs. It could block the calling thread for a long time, so only
+  // use this if you really need it!  There is also no way for the caller to
+  // interrupt this method. Errors are reported via the status field of the
+  // response parameter.
+  void StartSync(const RequestInfo& request_info,
+                 ResourceRequestBody* request_body,
+                 SyncLoadResponse* response);
 
-  // Adds a request from the |pending_requests_| list, returning the new
-  // requests' ID.
-  int AddPendingRequest(RequestPeer* callback,
-                        ResourceType resource_type,
-                        int origin_pid,
-                        const GURL& frame_origin,
-                        const GURL& request_url,
-                        bool download_to_file);
+  // Call this method to initiate the request. If this method succeeds, then
+  // the peer's methods will be called asynchronously to report various events.
+  // Returns the request id.
+  virtual int StartAsync(const RequestInfo& request_info,
+                         ResourceRequestBody* request_body,
+                         RequestPeer* peer);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
@@ -76,7 +83,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
   // Cancels a request in the |pending_requests_| list.  The request will be
   // removed from the dispatcher as well.
-  void CancelPendingRequest(int request_id);
+  virtual void Cancel(int request_id);
 
   // Toggles the is_deferred attribute for the specified request.
   void SetDefersLoading(int request_id, bool value);
@@ -104,8 +111,6 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     DCHECK(pending_requests_.empty());
     message_sender_ = sender;
   }
-
-  IPC::Sender* message_sender() const { return message_sender_; }
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcher.
@@ -226,6 +231,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // ReleaseResourcesInDataMessage and removing them from the queue. Intended
   // for use on deferred message queues that are no longer needed.
   static void ReleaseResourcesInMessageQueue(MessageQueue* queue);
+
+  scoped_ptr<ResourceHostMsg_Request> CreateRequest(
+      const RequestInfo& request_info,
+      ResourceRequestBody* request_body,
+      GURL* frame_origin);
 
   IPC::Sender* message_sender_;
 

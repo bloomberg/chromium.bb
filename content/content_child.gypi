@@ -184,8 +184,6 @@
       'child/request_info.h',
       'child/resource_dispatcher.cc',
       'child/resource_dispatcher.h',
-      'child/resource_loader_bridge.cc',
-      'child/resource_loader_bridge.h',
       'child/resource_scheduling_filter.cc',
       'child/resource_scheduling_filter.h',
       'child/runtime_features.cc',

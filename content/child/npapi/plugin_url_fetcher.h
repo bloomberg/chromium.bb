@@ -15,7 +15,6 @@
 namespace content {
 class MultipartResponseDelegate;
 class PluginStreamUrl;
-class ResourceLoaderBridge;
 
 // Fetches URLS for a plugin using ResourceDispatcher.
 class PluginURLFetcher : public RequestPeer {
@@ -83,10 +82,9 @@ class PluginURLFetcher : public RequestPeer {
   bool copy_stream_data_;
   int64 data_offset_;
   bool pending_failure_notification_;
+  int request_id_;
 
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
-
-  scoped_ptr<ResourceLoaderBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginURLFetcher);
 };

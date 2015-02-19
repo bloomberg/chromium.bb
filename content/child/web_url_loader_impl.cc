@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// An implementation of WebURLLoader in terms of ResourceLoaderBridge.
-
 #include "content/child/web_url_loader_impl.h"
 
 #include <algorithm>
@@ -18,16 +16,17 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/multipart_response_delegate.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
-#include "content/child/resource_loader_bridge.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/web_data_consumer_handle_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
+#include "content/common/resource_messages.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/request_peer.h"
@@ -331,7 +330,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
  private:
   friend class base::RefCounted<Context>;
-  ~Context() override {}
+  ~Context() override;
 
   // We can optimize the handling of data URLs in most cases.
   bool CanHandleDataURLRequestLocally() const;
@@ -345,10 +344,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   ResourceDispatcher* resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WebReferrerPolicy referrer_policy_;
-  scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
-  scoped_ptr<ResourceLoaderBridge> completed_bridge_;
   scoped_ptr<StreamOverrideParameters> stream_override_;
   mojo::ScopedDataPipeProducerHandle body_stream_writer_;
   mojo::common::HandleWatcher body_stream_writer_watcher_;
@@ -358,6 +355,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   bool got_all_stream_body_data_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
+  int request_id_;
 };
 
 WebURLLoaderImpl::Context::Context(
@@ -370,14 +368,13 @@ WebURLLoaderImpl::Context::Context(
       task_runner_(task_runner),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       got_all_stream_body_data_(false),
-      defers_loading_(NOT_DEFERRING)  {
+      defers_loading_(NOT_DEFERRING),
+      request_id_(-1) {
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
-  if (bridge_) {
-    bridge_->Cancel();
-    bridge_.reset();
-  }
+  if (resource_dispatcher_)  // NULL in unittest.
+    resource_dispatcher_->Cancel(request_id_);
 
   // Ensure that we do not notify the multipart delegate anymore as it has
   // its own pointer to the client.
@@ -393,8 +390,7 @@ void WebURLLoaderImpl::Context::Cancel() {
 }
 
 void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
-  if (bridge_)
-    bridge_->SetDefersLoading(value);
+  resource_dispatcher_->SetDefersLoading(request_id_, value);
   if (value && defers_loading_ == NOT_DEFERRING) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
@@ -408,23 +404,22 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
 
 void WebURLLoaderImpl::Context::DidChangePriority(
     WebURLRequest::Priority new_priority, int intra_priority_value) {
-  if (bridge_)
-    bridge_->DidChangePriority(
-        ConvertWebKitPriorityToNetPriority(new_priority), intra_priority_value);
+  resource_dispatcher_->DidChangePriority(
+      request_id_,
+      ConvertWebKitPriorityToNetPriority(new_priority),
+      intra_priority_value);
 }
 
 bool WebURLLoaderImpl::Context::AttachThreadedDataReceiver(
     blink::WebThreadedDataReceiver* threaded_data_receiver) {
-  if (bridge_)
-    return bridge_->AttachThreadedDataReceiver(threaded_data_receiver);
+  resource_dispatcher_->AttachThreadedDataReceiver(
+      request_id_, threaded_data_receiver);
 
   return false;
 }
 
 void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                       SyncLoadResponse* sync_load_response) {
-  DCHECK(!bridge_.get());
-
   request_ = request;  // Save the request.
   if (request.extraData()) {
     RequestExtraData* extra_data =
@@ -509,19 +504,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.fetch_request_context_type = GetRequestContextType(request);
   request_info.fetch_frame_type = GetRequestContextFrameType(request);
   request_info.extra_data = request.extraData();
-  bridge_.reset(resource_dispatcher_->CreateBridge(request_info));
-  bridge_->SetRequestBody(GetRequestBodyForWebURLRequest(request).get());
+
+  scoped_refptr<ResourceRequestBody> request_body =
+      GetRequestBodyForWebURLRequest(request).get();
 
   if (sync_load_response) {
-    bridge_->SyncLoad(sync_load_response);
+    resource_dispatcher_->StartSync(
+        request_info, request_body.get(), sync_load_response);
     return;
   }
 
-  // TODO(mmenke):  This case probably never happens, anyways.  Probably should
-  // not handle this case at all.  If it's worth handling, this code currently
-  // results in the request just hanging, which should be fixed.
-  if (!bridge_->Start(this))
-    bridge_.reset();
+  request_id_ = resource_dispatcher_->StartAsync(
+      request_info, request_body.get(), this);
 }
 
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
@@ -739,11 +733,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     multipart_delegate_.reset(NULL);
   }
 
-  // Prevent any further IPC to the browser now that we're complete, but
-  // don't delete it to keep any downloaded temp files alive.
-  DCHECK(!completed_bridge_.get());
-  completed_bridge_.swap(bridge_);
-
   if (client_) {
     if (error_code != net::OK) {
       client_->didFail(loader_, CreateError(request_.url(),
@@ -768,6 +757,12 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   }
 }
 
+WebURLLoaderImpl::Context::~Context() {
+  if (request_id_ >= 0) {
+    resource_dispatcher_->RemovePendingRequest(request_id_);
+  }
+}
+
 bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
   GURL url = request_.url();
   if (!url.SchemeIs(url::kDataScheme))
@@ -783,8 +778,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
   // download.
   //
   // NOTE: We special case MIME types we can render both for performance
-  // reasons as well as to support unit tests, which do not have an underlying
-  // ResourceLoaderBridge implementation.
+  // reasons as well as to support unit tests.
 
 #if defined(OS_ANDROID)
   // For compatibility reasons on Android we need to expose top-level data://
