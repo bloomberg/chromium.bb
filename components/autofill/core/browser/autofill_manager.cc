@@ -591,7 +591,7 @@ void AutofillManager::FillOrPreviewCreditCardForm(
     credit_card_form_event_logger_->OnDidFillSuggestion(credit_card);
   }
 
-  FillOrPreviewDataModelForm(action, query_id, form, field, &credit_card,
+  FillOrPreviewDataModelForm(action, query_id, form, field, credit_card,
                              variant, true /* is_credit_card */);
 }
 
@@ -605,7 +605,7 @@ void AutofillManager::FillOrPreviewProfileForm(
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
     address_form_event_logger_->OnDidFillSuggestion(profile);
 
-  FillOrPreviewDataModelForm(action, query_id, form, field, &profile, variant,
+  FillOrPreviewDataModelForm(action, query_id, form, field, profile, variant,
                              false /* is_credit_card */);
 }
 
@@ -643,7 +643,7 @@ void AutofillManager::FillCreditCardForm(int query_id,
   }
 
   FillOrPreviewDataModelForm(AutofillDriver::FORM_DATA_ACTION_FILL, query_id,
-                             form, field, &credit_card, 0, true);
+                             form, field, credit_card, 0, true);
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
@@ -1039,7 +1039,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     int query_id,
     const FormData& form,
     const FormFieldData& field,
-    const AutofillDataModel* data_model,
+    const AutofillDataModel& data_model,
     size_t variant,
     bool is_credit_card) {
   FormStructure* form_structure = NULL;
@@ -1055,14 +1055,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
   base::string16 profile_full_name;
   std::string profile_language_code;
   if (!is_credit_card) {
-    profile_full_name = data_model->GetInfo(
+    profile_full_name = data_model.GetInfo(
         AutofillType(NAME_FULL), app_locale_);
     profile_language_code =
-        static_cast<const AutofillProfile*>(data_model)->language_code();
+        static_cast<const AutofillProfile*>(&data_model)->language_code();
   }
-
-  if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
-    personal_data_->RecordUseOf(*data_model);
 
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
@@ -1070,7 +1067,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
       if (iter->SameFieldAs(field)) {
-        base::string16 value = data_model->GetInfoForVariant(
+        base::string16 value = data_model.GetInfoForVariant(
             autofill_field->Type(), variant, app_locale_);
         if (AutofillField::FillFormField(*autofill_field,
                                          value,
@@ -1092,6 +1089,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
         break;
       }
     }
+
+    // Note that this may invalidate |data_model|, particularly if it is a Mac
+    // address book entry.
+    if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
+      personal_data_->RecordUseOf(data_model);
 
     driver_->SendFormDataToRenderer(query_id, action, result);
     return;
@@ -1122,15 +1124,15 @@ void AutofillManager::FillOrPreviewDataModelForm(
         field_group_type == initiating_group_type) {
       use_variant = variant;
     }
-    base::string16 value = data_model->GetInfoForVariant(
+    base::string16 value = data_model.GetInfoForVariant(
         cached_field->Type(), use_variant, app_locale_);
     if (is_credit_card &&
         cached_field->Type().GetStorableType() ==
             CREDIT_CARD_VERIFICATION_CODE) {
-      // If this is |unmasking_card_|, |unmask_response_,cvc| should be
+      // If this is |unmasking_card_|, |unmask_response_.cvc| should be
       // non-empty and vice versa.
       value = unmask_response_.cvc;
-      DCHECK_EQ(&unmasking_card_ == data_model, value.empty());
+      DCHECK_EQ(&unmasking_card_ == &data_model, !value.empty());
     }
 
     // Must match ForEachMatchingFormField() in form_autofill_util.cc.
@@ -1167,6 +1169,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
   // positives and to avoid wasting memory.
   if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
     autofilled_form_signatures_.pop_back();
+
+  // Note that this may invalidate |data_model|, particularly if it is a Mac
+  // address book entry.
+  if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
+    personal_data_->RecordUseOf(data_model);
 
   driver_->SendFormDataToRenderer(query_id, action, result);
 }

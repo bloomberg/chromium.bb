@@ -281,7 +281,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                                   int query_id,
                                   const FormData& form,
                                   const FormFieldData& field,
-                                  const AutofillDataModel* data_model,
+                                  const AutofillDataModel& data_model,
                                   size_t variant,
                                   bool is_credit_card);
 
