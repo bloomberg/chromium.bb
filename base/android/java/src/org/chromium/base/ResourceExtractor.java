@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Trace;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -56,6 +58,8 @@ public class ResourceExtractor {
 
     private class ExtractTask extends AsyncTask<Void, Void, Void> {
         private static final int BUFFER_SIZE = 16 * 1024;
+
+        private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
 
         public ExtractTask() {
         }
@@ -211,6 +215,23 @@ public class ResourceExtractor {
             return null;
         }
 
+        private void onPostExecuteImpl() {
+            for (int i = 0; i < mCompletionCallbacks.size(); i++) {
+                mCompletionCallbacks.get(i).run();
+            }
+            mCompletionCallbacks.clear();
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            beginTraceSection("ResourceExtractor.ExtractTask.onPostExecute");
+            try {
+                onPostExecuteImpl();
+            } finally {
+                endTraceSection();
+            }
+        }
+
         // Looks for a timestamp file on disk that indicates the version of the APK that
         // the resource paks were extracted from. Returns null if a timestamp was found
         // and it indicates that the resources match the current APK. Otherwise returns
@@ -335,6 +356,13 @@ public class ResourceExtractor {
         mContext = context.getApplicationContext();
     }
 
+    /**
+     * Synchronously wait for the resource extraction to be completed.
+     * <p>
+     * This method is bad and you should feel bad for using it.
+     *
+     * @see #addCompletionCallback(Runnable)
+     */
     public void waitForCompletion() {
         if (shouldSkipPakExtraction()) {
             return;
@@ -351,6 +379,35 @@ public class ResourceExtractor {
             deleteFiles();
         } catch (InterruptedException e3) {
             deleteFiles();
+        }
+    }
+
+    /**
+     * Adds a callback to be notified upon the completion of resource extraction.
+     * <p>
+     * If the resource task has already completed, the callback will be posted to the UI message
+     * queue.  Otherwise, it will be executed after all the resources have been extracted.
+     * <p>
+     * This must be called on the UI thread.  The callback will also always be executed on
+     * the UI thread.
+     *
+     * @param callback The callback to be enqueued.
+     */
+    public void addCompletionCallback(Runnable callback) {
+        ThreadUtils.assertOnUiThread();
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        if (shouldSkipPakExtraction()) {
+            handler.post(callback);
+            return;
+        }
+
+        assert mExtractTask != null;
+        assert !mExtractTask.isCancelled();
+        if (mExtractTask.getStatus() == AsyncTask.Status.FINISHED) {
+            handler.post(callback);
+        } else {
+            mExtractTask.mCompletionCallbacks.add(callback);
         }
     }
 
