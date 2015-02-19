@@ -26,45 +26,53 @@ class FakeBrowser(object):
 # pylint: disable=protected-access
 class FastNavigationProfileExtenderTest(unittest.TestCase):
   def testPerformNavigations(self):
-    extender = FastNavigationProfileExtender()
-    num_urls = extender._NUM_PARALLEL_PAGES * 3 + 4
-    num_tabs = extender._NUM_TABS
+    maximum_batch_size = 15
+    extender = FastNavigationProfileExtender(maximum_batch_size)
 
     navigation_urls = []
-    for i in range(num_urls):
+    for i in range(extender._NUM_TABS):
       navigation_urls.append('http://test%s.com' % i)
+    batch_size = 5
+    navigation_urls_batch = navigation_urls[3:3 + batch_size]
 
-    extender._navigation_urls = navigation_urls
-    extender._browser = FakeBrowser(num_tabs)
+    extender.GetUrlIterator = mock.MagicMock(
+        return_value=iter(navigation_urls_batch))
+    extender.ShouldExitAfterBatchNavigation = mock.MagicMock(return_value=True)
     extender._WaitForQueuedTabsToLoad = mock.MagicMock()
+
+    extender._browser = FakeBrowser(extender._NUM_TABS)
     extender._BatchNavigateTabs = mock.MagicMock()
 
     # Set up a callback to record the tabs and urls in each navigation.
-    batch_callback_tabs = []
-    batch_callback_urls = []
+    callback_tabs_batch = []
+    callback_urls_batch = []
     def SideEffect(*args, **_):
       batch = args[0]
       for tab, url in batch:
-        batch_callback_tabs.append(tab)
-        batch_callback_urls.append(url)
+        callback_tabs_batch.append(tab)
+        callback_urls_batch.append(url)
     extender._BatchNavigateTabs.side_effect = SideEffect
 
     # Perform the navigations.
     extender._PerformNavigations()
 
-    # Each url should have been navigated to exactly once.
-    self.assertEqual(set(batch_callback_urls), set(navigation_urls))
+    # Each url in the batch should have been navigated to exactly once.
+    self.assertEqual(set(callback_urls_batch), set(navigation_urls_batch))
 
-    # The first 4 tabs should have been navigated 4 times. The remaining tabs
-    # should have been navigated 3 times.
-    num_navigations_per_tab = 3
-    num_tabs_with_one_extra_navigation = 4
+    # The other urls should not have been navigated to.
+    navigation_urls_remaining = (set(navigation_urls) -
+        set(navigation_urls_batch))
+    self.assertFalse(navigation_urls_remaining & set(callback_urls_batch))
+
+    # The first couple of tabs should have been navigated once. The remaining
+    # tabs should not have been navigated.
     for i in range(len(extender._browser.tabs)):
       tab = extender._browser.tabs[i]
 
-      expected_tab_navigation_count = num_navigations_per_tab
-      if i < num_tabs_with_one_extra_navigation:
-        expected_tab_navigation_count += 1
+      if i < batch_size:
+        expected_tab_navigation_count = 1
+      else:
+        expected_tab_navigation_count = 0
 
-      count = batch_callback_tabs.count(tab)
+      count = callback_tabs_batch.count(tab)
       self.assertEqual(count, expected_tab_navigation_count)

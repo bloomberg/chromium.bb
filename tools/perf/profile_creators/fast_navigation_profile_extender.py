@@ -6,6 +6,7 @@ import time
 from telemetry.core import browser_finder
 from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
+from telemetry.core import platform
 from telemetry.core import util
 
 
@@ -21,24 +22,26 @@ class FastNavigationProfileExtender(object):
       with the number of batches, but does not scale with the size of the
       batch.
   """
-  def __init__(self):
+  def __init__(self, maximum_batch_size):
+    """Initializer.
+
+    Args:
+      maximum_batch_size: A positive integer indicating the number of tabs to
+      simultaneously perform navigations.
+    """
     super(FastNavigationProfileExtender, self).__init__()
+
+    # The path of the profile that the browser will use while it's running.
+    # This member is initialized during SetUp().
+    self._profile_path = None
 
     # A reference to the browser that will be performing all of the tab
     # navigations.
+    # This member is initialized during SetUp().
     self._browser = None
 
-    # A static copy of the urls that this class is going to navigate to.
-    self._navigation_urls = None
-
     # The number of tabs to use.
-    self._NUM_TABS = 15
-
-    # The number of pages to load in parallel.
-    self._NUM_PARALLEL_PAGES = 15
-
-    assert self._NUM_PARALLEL_PAGES <= self._NUM_TABS, (' the batch size can\'t'
-        ' be larger than the number of available tabs')
+    self._NUM_TABS = maximum_batch_size
 
     # The amount of time to wait for a batch of pages to finish loading.
     self._BATCH_PAGE_LOAD_TIMEOUT_IN_SECONDS = 10
@@ -55,19 +58,68 @@ class FastNavigationProfileExtender(object):
       profile, and sufficient information to choose a specific browser binary.
     """
     try:
-      self._navigation_urls = self.GetUrlsToNavigate()
-      self._SetUpBrowser(finder_options)
+      self.SetUp(finder_options)
       self._PerformNavigations()
     finally:
-      self._TearDownBrowser()
+      self.TearDown()
 
-  def GetUrlsToNavigate(self):
-    """Returns a list of urls to be navigated to.
+  def GetUrlIterator(self):
+    """Gets URLs for the browser to navigate to.
+
+    Intended for subclass override.
+
+    Returns:
+      An iterator whose elements are urls to be navigated to.
+    """
+    raise NotImplementedError()
+
+  def ShouldExitAfterBatchNavigation(self):
+    """Returns a boolean indicating whether profile extension is finished.
 
     Intended for subclass override.
     """
     raise NotImplementedError()
 
+  def SetUp(self, finder_options):
+    """Finds the browser, starts the browser, and opens the requisite number of
+    tabs.
+
+    Can be overridden by subclasses. Subclasses must call the super class
+    implementation.
+    """
+    self._profile_path = finder_options.output_profile_path
+    possible_browser = self._GetPossibleBrowser(finder_options)
+
+    assert possible_browser.supports_tab_control
+    assert (platform.GetHostPlatform().GetOSName() in
+        ["win", "mac", "linux"])
+    self._browser = possible_browser.Create(finder_options)
+
+    while(len(self._browser.tabs) < self._NUM_TABS):
+      self._browser.tabs.New()
+
+  def TearDown(self):
+    """Teardown that is guaranteed to be executed before the instance is
+    destroyed.
+
+    Can be overridden by subclasses. Subclasses must call the super class
+    implementation.
+    """
+    if self._browser:
+      self._browser.Close()
+      self._browser = None
+
+  def CleanUpAfterBatchNavigation(self):
+    """A hook for subclasses to perform cleanup after each batch of
+    navigations.
+
+    Can be overridden by subclasses.
+    """
+    pass
+
+  @property
+  def profile_path(self):
+    return self._profile_path
 
   def _GetPossibleBrowser(self, finder_options):
     """Return a possible_browser with the given options."""
@@ -162,40 +214,38 @@ class FastNavigationProfileExtender(object):
         # Ignore time outs and web page crashes.
         pass
 
-  def _SetUpBrowser(self, finder_options):
-    """Finds the browser, starts the browser, and opens the requisite number of
-    tabs."""
-    possible_browser = self._GetPossibleBrowser(finder_options)
-    self._browser = possible_browser.Create(finder_options)
-
-    for _ in range(self._NUM_TABS):
-      self._browser.tabs.New()
+  def _GetUrlsToNavigate(self, url_iterator):
+    """Returns an array of urls to navigate to, given a url_iterator."""
+    urls = []
+    for _ in xrange(self._NUM_TABS):
+      try:
+        urls.append(url_iterator.next())
+      except StopIteration:
+        break
+    return urls
 
   def _PerformNavigations(self):
-    """Performs the navigations specified by |_navigation_urls| in large
-    batches."""
-    # The index of the first url that has not yet been navigated to.
-    navigation_url_index = 0
+    """Repeatedly fetches a batch of urls, and navigates to those urls. This
+    will run until an empty batch is returned, or
+    ShouldExitAfterBatchNavigation() returns True.
+    """
+    url_iterator = self.GetUrlIterator()
     while True:
-      # Generate the next batch of navigations.
+      urls = self._GetUrlsToNavigate(url_iterator)
+
+      if len(urls) == 0:
+        break
+
       batch = []
-      max_index = min(navigation_url_index + self._NUM_PARALLEL_PAGES,
-          len(self._navigation_urls))
-      for i in range(navigation_url_index, max_index):
-        url = self._navigation_urls[i]
-        tab = self._browser.tabs[i % self._NUM_TABS]
+      for i in range(len(urls)):
+        url = urls[i]
+        tab = self._browser.tabs[i]
         batch.append((tab, url))
-      navigation_url_index = max_index
 
       queued_tabs = self._BatchNavigateTabs(batch)
       self._WaitForQueuedTabsToLoad(queued_tabs)
 
-      if navigation_url_index == len(self._navigation_urls):
-        break
+      self.CleanUpAfterBatchNavigation()
 
-  def _TearDownBrowser(self):
-    """Teardown that is guaranteed to be executed before the instance is
-    destroyed."""
-    if self._browser:
-      self._browser.Close()
-      self._browser = None
+      if self.ShouldExitAfterBatchNavigation():
+        break
