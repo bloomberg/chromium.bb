@@ -491,12 +491,8 @@
         }],
         ['OS=="mac"', {
           'sources!': [
-            # LayoutThemeChromiumSkia is not used on mac since LayoutThemeChromiumMac
-            # does not reference the Skia code that is used by Windows, Linux and Android.
-            'layout/LayoutThemeChromiumSkia.cpp',
-            'layout/LayoutThemeChromiumSkia.h',
-
-            # LayoutThemeChromiumFontProvider is used by LayoutThemeChromiumSkia.
+            # LayoutThemeChromiumFontProvider is used by
+            # LayoutThemeChromiumDefault.
             'layout/LayoutThemeChromiumFontProvider.cpp',
             'layout/LayoutThemeChromiumFontProvider.h',
           ],

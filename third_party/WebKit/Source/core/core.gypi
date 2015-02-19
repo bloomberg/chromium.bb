@@ -681,8 +681,6 @@
             'layout/LayoutThemeChromiumLinux.h',
             'layout/LayoutThemeChromiumMac.h',
             'layout/LayoutThemeChromiumMac.mm',
-            'layout/LayoutThemeChromiumSkia.cpp',
-            'layout/LayoutThemeChromiumSkia.h',
             'layout/LayoutThemeChromiumWin.cpp',
             'layout/LayoutThemeChromiumWin.h',
             'layout/LayoutTreeAsText.cpp',

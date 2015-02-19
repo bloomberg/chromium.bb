@@ -275,8 +275,6 @@ source_set("remaining") {
       "layout/LayoutThemeChromiumDefault.h",
       "layout/LayoutThemeChromiumFontProvider.cpp",
       "layout/LayoutThemeChromiumFontProvider.h",
-      "layout/LayoutThemeChromiumSkia.cpp",
-      "layout/LayoutThemeChromiumSkia.h",
     ]
     libs += [ "Carbon.framework" ]
     # Some Mac-specific parts of WebKit won't compile without having this
