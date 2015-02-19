@@ -58,8 +58,14 @@ void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
 }  // namespace
 
 MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
-    : local_state_(local_state) {
+    : local_state_(local_state),
+      may_upload_(false),
+      may_record_(false) {
   DCHECK(local_state);
+  pref_change_registrar_.Init(local_state);
+  pref_change_registrar_.Add(rappor::prefs::kRapporEnabled,
+      base::Bind(&MetricsServicesManager::UpdateRapporService,
+                 base::Unretained(this)));
 }
 
 MetricsServicesManager::~MetricsServicesManager() {
@@ -144,8 +150,19 @@ rappor::RecordingLevel MetricsServicesManager::GetRapporRecordingLevel(
   return recording_level;
 }
 
+void MetricsServicesManager::UpdateRapporService() {
+  GetRapporService()->Update(GetRapporRecordingLevel(may_record_), may_upload_);
+}
+
 void MetricsServicesManager::UpdatePermissions(bool may_record,
                                                bool may_upload) {
+  // Stash the current permissions so that we can update the RapporService
+  // correctly when the Rappor preference changes.  The metrics recording
+  // preference partially determines the initial rappor setting, and also
+  // controls whether FINE metrics are sent.
+  may_record_ = may_record;
+  may_upload_ = may_upload;
+
   metrics::MetricsService* metrics = GetMetricsService();
 
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
@@ -172,7 +189,7 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
     metrics->Stop();
   }
 
-  GetRapporService()->Update(GetRapporRecordingLevel(may_record), may_upload);
+  UpdateRapporService();
 }
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
