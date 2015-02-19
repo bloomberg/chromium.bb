@@ -89,7 +89,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterStringPref(prefs::kLogoutStartedLast, std::string());
   registry->RegisterBooleanPref(prefs::kResolveDeviceTimezoneByGeolocation,
-                                false);
+                                true);
 }
 
 // static
@@ -319,7 +319,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterBooleanPref(
-      prefs::kResolveTimezoneByGeolocation, false,
+      prefs::kResolveTimezoneByGeolocation, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
