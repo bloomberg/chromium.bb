@@ -91,17 +91,25 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
             ratingView.setRating(mAppData.rating());
             layout.getPrimaryButton().setButtonColor(getContext().getResources().getColor(
                     R.color.app_banner_install_button_bg));
-            layout.setContentDescription(context.getString(
+            mTitleView.setContentDescription(context.getString(
                     R.string.app_banner_view_native_app_accessibility, mAppTitle,
                     mAppData.rating()));
             mTitleView.removeView(webAppUrl);
+            updateButton();
         } else {
             // Web app.
             webAppUrl.setText(mAppUrl);
-            layout.setContentDescription(context.getString(
+            mTitleView.setContentDescription(context.getString(
                     R.string.app_banner_view_web_app_accessibility, mAppTitle,
                     mAppUrl));
             mTitleView.removeView(ratingView);
+
+        }
+
+        // Hide uninteresting views from accessibility.
+        ratingView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        if (mIconView != null) {
+            mIconView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         }
 
         // Set up clicking on the controls to bring up the app details.
@@ -127,13 +135,15 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
     }
 
     private void updateButton() {
+        assert mAppData != null;
+
         String text;
         String accessibilityText = null;
         boolean enabled = true;
         if (mInstallState == INSTALL_STATE_NOT_INSTALLED) {
             text = mAppData.installButtonText();
-            accessibilityText =
-                    getContext().getString(R.string.app_banner_install_accessibility, text);
+            accessibilityText = getContext().getString(
+                    R.string.app_banner_view_native_app_install_accessibility, text);
         } else if (mInstallState == INSTALL_STATE_INSTALLING) {
             text = getContext().getString(R.string.app_banner_installing);
             enabled = false;
