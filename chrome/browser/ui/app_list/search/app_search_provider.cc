@@ -32,7 +32,7 @@ class AppSearchProvider::App {
   explicit App(const extensions::Extension* extension,
                const base::Time& last_launch_time)
       : app_id_(extension->id()),
-        indexed_name_(base::UTF8ToUTF16(extension->name())),
+        indexed_name_(base::UTF8ToUTF16(extension->short_name())),
         last_launch_time_(last_launch_time) {}
   ~App() {}
 
