@@ -10307,6 +10307,9 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
           Manage search engines...
         </message>
+        <message name="IDS_OPTIONS_ENABLE_GOOGLE_NOW" desc="The label of the 'Enable Google Now' checkbox in search options.">
+          Show Google Now cards in the launcher 
+        </message>
         <message name="IDS_OPTIONS_HOMEPAGE_NTP" desc="The value displayed on the settings page to indicate that we're using the new tab page as the homepage">
           New Tab page
         </message>
