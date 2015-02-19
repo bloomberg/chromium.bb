@@ -1318,4 +1318,39 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
   EXPECT_EQ(url, observer.last_navigation_url());
 }
 
+// Ensure that the renderer does not crash when navigating a frame that has a
+// sibling RemoteFrame.  See https://crbug.com/426953.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateWithSiblingRemoteFrame) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Make sure the first frame is out of process.
+  ASSERT_EQ(2U, root->child_count());
+  FrameTreeNode* node2 = root->child_at(0);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            node2->current_frame_host()->GetSiteInstance());
+
+  // Make sure the second frame is in the parent's process.
+  FrameTreeNode* node3 = root->child_at(1);
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            node3->current_frame_host()->GetSiteInstance());
+
+  // Navigate the second iframe (node3) to a URL in its own process.
+  GURL title_url = embedded_test_server()->GetURL("/title2.html");
+  NavigateFrameToURL(node3, title_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(title_url, observer.last_navigation_url());
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            node3->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(node3->current_frame_host()->IsRenderFrameLive());
+}
+
 }  // namespace content

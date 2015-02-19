@@ -86,6 +86,11 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
          child = child->nextSibling()) {
       RenderFrameImpl* child_render_frame =
           RenderFrameImpl::FromWebFrame(child);
+      // TODO(creis): A child frame may be a RenderFrameProxy.  We should still
+      // process its children, but that will be possible when we move this code
+      // to the browser process in https://crbug.com/236848.
+      if (!child_render_frame)
+        continue;
       HistoryNode* child_history_node =
           entry_->GetHistoryNodeForFrame(child_render_frame);
       if (!child_history_node)
