@@ -66,10 +66,9 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
 
   // Gets the properties of the network with id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
-  void GetProperties(
-      const std::string& service_path,
-      const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const;
+  void GetProperties(const std::string& service_path,
+                     const network_handler::DictionaryResultCallback& callback,
+                     const network_handler::ErrorCallback& error_callback);
 
   // Sets the properties of the network with id |service_path|. This means the
   // given properties will be merged with the existing settings, and it won't
@@ -159,7 +158,15 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
                                   NetworkConfigurationObserver::Source source,
                                   const base::Closure& callback);
 
-  // Invoke the callback and inform NetworkStateHandler to request an update
+  // Set the Name and GUID properties correctly and Invoke |callback|.
+  void GetPropertiesCallback(
+      const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& service_path,
+      DBusMethodCallStatus call_status,
+      const base::DictionaryValue& properties);
+
+  // Invoke |callback| and inform NetworkStateHandler to request an update
   // for the service after setting properties.
   void SetPropertiesSuccessCallback(
       const std::string& service_path,
@@ -172,7 +179,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const std::string& dbus_error_name,
       const std::string& dbus_error_message);
 
-  // Invoke the callback and inform NetworkStateHandler to request an update
+  // Invoke |callback| and inform NetworkStateHandler to request an update
   // for the service after clearing properties.
   void ClearPropertiesSuccessCallback(
       const std::string& service_path,

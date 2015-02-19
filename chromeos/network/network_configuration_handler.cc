@@ -49,33 +49,6 @@ void InvokeErrorCallback(const std::string& service_path,
       error_callback, service_path, error_name, error_msg);
 }
 
-void GetPropertiesCallback(
-    const network_handler::DictionaryResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& service_path,
-    DBusMethodCallStatus call_status,
-    const base::DictionaryValue& properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    // Because network services are added and removed frequently, we will see
-    // failures regularly, so don't log these.
-    network_handler::RunErrorCallback(error_callback,
-                                      service_path,
-                                      network_handler::kDBusFailedError,
-                                      network_handler::kDBusFailedErrorMessage);
-    return;
-  }
-  if (callback.is_null())
-    return;
-
-  // Get the correct name from WifiHex if necessary.
-  scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
-  std::string name =
-      shill_property_util::GetNameFromProperties(service_path, properties);
-  if (!name.empty())
-    properties_copy->SetStringWithoutPathExpansion(shill::kNameProperty, name);
-  callback.Run(service_path, *properties_copy.get());
-}
-
 void SetNetworkProfileErrorCallback(
     const std::string& service_path,
     const std::string& profile_path,
@@ -229,12 +202,12 @@ void NetworkConfigurationHandler::RemoveObserver(
 void NetworkConfigurationHandler::GetProperties(
     const std::string& service_path,
     const network_handler::DictionaryResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) const {
+    const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("GetProperties", service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
-      base::Bind(&GetPropertiesCallback,
-                 callback, error_callback, service_path));
+      base::Bind(&NetworkConfigurationHandler::GetPropertiesCallback,
+                 AsWeakPtr(), callback, error_callback, service_path));
 }
 
 void NetworkConfigurationHandler::SetProperties(
@@ -430,6 +403,45 @@ void NetworkConfigurationHandler::SetNetworkProfileCompleted(
   FOR_EACH_OBSERVER(
       NetworkConfigurationObserver, observers_,
       OnConfigurationProfileChanged(service_path, profile_path, source));
+}
+
+void NetworkConfigurationHandler::GetPropertiesCallback(
+    const network_handler::DictionaryResultCallback& callback,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& service_path,
+    DBusMethodCallStatus call_status,
+    const base::DictionaryValue& properties) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    // Because network services are added and removed frequently, we will see
+    // failures regularly, so don't log these.
+    network_handler::RunErrorCallback(error_callback, service_path,
+                                      network_handler::kDBusFailedError,
+                                      network_handler::kDBusFailedErrorMessage);
+    return;
+  }
+  if (callback.is_null())
+    return;
+
+  // Get the correct name from WifiHex if necessary.
+  scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
+  std::string name =
+      shill_property_util::GetNameFromProperties(service_path, properties);
+  if (!name.empty())
+    properties_copy->SetStringWithoutPathExpansion(shill::kNameProperty, name);
+
+  // Get the GUID property from NetworkState if it is not set in Shill.
+  std::string guid;
+  properties.GetStringWithoutPathExpansion(::onc::network_config::kGUID, &guid);
+  if (guid.empty()) {
+    const NetworkState* network_state =
+        network_state_handler_->GetNetworkState(service_path);
+    if (network_state) {
+      properties_copy->SetStringWithoutPathExpansion(
+          ::onc::network_config::kGUID, network_state->guid());
+    }
+  }
+
+  callback.Run(service_path, *properties_copy.get());
 }
 
 void NetworkConfigurationHandler::SetPropertiesSuccessCallback(

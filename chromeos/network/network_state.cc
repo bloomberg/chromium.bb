@@ -202,6 +202,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
   dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid());
   dictionary->SetStringWithoutPathExpansion(shill::kSecurityClassProperty,
                                             security_class());
+  dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
+                                            profile_path());
 
   if (visible()) {
     if (!error().empty())

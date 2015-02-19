@@ -32,7 +32,7 @@ var NetworkUI = (function() {
     'Type',
     'profile_path',
     'visible',
-    'onc_source'
+    'Source'
   ];
 
   /**
@@ -143,6 +143,16 @@ var NetworkUI = (function() {
   };
 
   /**
+   * Returns a valid HTMLElement id from |guid|.
+   *
+   * @param {string} guid A GUID which may start with a digit
+   * @return {string} A valid HTMLElement id.
+   */
+  var idFromGuid = function(guid) {
+    return '_' + guid.replace(/[{}]/g, '');
+  };
+
+  /**
    * This callback function is triggered when visible networks are received.
    *
    * @param {Array} states A list of network state information for each
@@ -198,7 +208,7 @@ var NetworkUI = (function() {
     emptyCell.style.border = 'none';
     expandedRow.appendChild(emptyCell);
     var detailCell = document.createElement('td');
-    detailCell.id = guid;
+    detailCell.id = idFromGuid(guid);
     detailCell.className = 'state-table-expanded-cell';
     detailCell.colSpan = baseRow.childNodes.length - 1;
     expandedRow.appendChild(detailCell);
@@ -236,7 +246,7 @@ var NetworkUI = (function() {
       return;
     }
 
-    var detailCell = document.querySelector('td#' + guid);
+    var detailCell = document.querySelector('td#' + idFromGuid(guid));
     if (!detailCell) {
       console.error('No cell for GUID: ' + guid);
       return;

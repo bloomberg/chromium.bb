@@ -7,8 +7,11 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/onc/onc_translator.h"
@@ -146,9 +149,18 @@ scoped_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
   base::DictionaryValue shill_dictionary;
   network->GetStateProperties(&shill_dictionary);
 
+  // NetworkState is always associated with the primary user profile, regardless
+  // of what profile is associated with the page that calls this method. We do
+  // not expose any sensitive properties in the resulting dictionary, it is
+  // only used to show connection state and icons.
+  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
+  NetworkHandler::Get()
+      ->managed_network_configuration_handler()
+      ->FindPolicyByGUID(user_id_hash, network->guid(), &onc_source);
+
   scoped_ptr<base::DictionaryValue> onc_dictionary =
-      TranslateShillServiceToONCPart(shill_dictionary,
-                                     ::onc::ONC_SOURCE_UNKNOWN,
+      TranslateShillServiceToONCPart(shill_dictionary, onc_source,
                                      &onc::kNetworkWithStateSignature);
   return onc_dictionary.Pass();
 }
@@ -164,18 +176,15 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
       pattern, configured_only, visible_only, limit, &network_states);
 
   scoped_ptr<base::ListValue> network_properties_list(new base::ListValue);
-  for (NetworkStateHandler::NetworkStateList::iterator it =
-           network_states.begin();
-       it != network_states.end();
-       ++it) {
+  for (const NetworkState* state : network_states) {
     scoped_ptr<base::DictionaryValue> onc_dictionary =
-        TranslateNetworkStateToONC(*it);
+        TranslateNetworkStateToONC(state);
 
     if (debugging_properties) {
-      onc_dictionary->SetBoolean("connectable", (*it)->connectable());
-      onc_dictionary->SetBoolean("visible", (*it)->visible());
-      onc_dictionary->SetString("profile_path", (*it)->profile_path());
-      onc_dictionary->SetString("service_path", (*it)->path());
+      onc_dictionary->SetBoolean("connectable", state->connectable());
+      onc_dictionary->SetBoolean("visible", state->visible());
+      onc_dictionary->SetString("profile_path", state->profile_path());
+      onc_dictionary->SetString("service_path", state->path());
     }
 
     network_properties_list->Append(onc_dictionary.release());

@@ -137,6 +137,7 @@ var availableTests = [
           "GUID": "stub_wifi1_guid",
           "Name": "wifi1",
           "Type": "WiFi",
+          "Source":"User",
           "WiFi": {
             "Security": "WEP-PSK",
             "SignalStrength": 40
@@ -145,6 +146,7 @@ var availableTests = [
           "GUID": "stub_wifi2_guid",
           "Name": "wifi2_PSK",
           "Type": "WiFi",
+          "Source":"User",
           "WiFi": {
             "Security": "WPA-PSK",
           }
@@ -159,6 +161,7 @@ var availableTests = [
               "ConnectionState": "Connected",
               "GUID": "stub_wifi1_guid",
               "Name": "wifi1",
+              "Source":"User",
               "Type": "WiFi",
               "WiFi": {
                 "Security": "WEP-PSK",
@@ -177,6 +180,7 @@ var availableTests = [
                   },
                   "GUID": "stub_ethernet_guid",
                   "Name": "eth0",
+                  "Source":"Device",
                   "Type": "Ethernet"
                 }], result);
               }));
@@ -194,6 +198,7 @@ var availableTests = [
                     },
                     "GUID": "stub_ethernet_guid",
                     "Name": "eth0",
+                    "Source":"Device",
                     "Type": "Ethernet"
                   },
                   {
@@ -201,6 +206,7 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_wifi1_guid",
                     "Name": "wifi1",
+                    "Source": "User",
                     "Type": "WiFi",
                     "WiFi": {
                       "Security": "WEP-PSK",
@@ -212,6 +218,7 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_wimax_guid",
                     "Name": "wimax",
+                    "Source":"User",
                     "Type": "WiMAX",
                     "WiMAX": {
                       "SignalStrength": 40
@@ -221,6 +228,7 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_vpn1_guid",
                     "Name": "vpn1",
+                    "Source":"User",
                     "Type": "VPN"
                   },
                   {
@@ -228,6 +236,7 @@ var availableTests = [
                     "ConnectionState": "NotConnected",
                     "GUID": "stub_wifi2_guid",
                     "Name": "wifi2_PSK",
+                    "Source": "User",
                     "Type": "WiFi",
                     "WiFi": {
                       "Security": "WPA-PSK",
@@ -245,6 +254,7 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_wifi1_guid",
                     "Name": "wifi1",
+                    "Source": "User",
                     "Type": "WiFi",
                     "WiFi": {
                       "Security": "WEP-PSK",
@@ -256,6 +266,7 @@ var availableTests = [
                     "ConnectionState": "NotConnected",
                     "GUID": "stub_wifi2_guid",
                     "Name": "wifi2_PSK",
+                    "Source": "User",
                     "Type": "WiFi",
                     "WiFi": {
                       "Security": "WPA-PSK",
@@ -463,6 +474,7 @@ var availableTests = [
           "ConnectionState": "NotConnected",
           "GUID": "stub_wifi2_guid",
           "Name": "wifi2_PSK",
+          "Source": "User",
           "Type": "WiFi",
           "WiFi": {
             "Security": "WPA-PSK",
