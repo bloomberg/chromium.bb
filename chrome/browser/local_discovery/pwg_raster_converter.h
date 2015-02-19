@@ -12,6 +12,10 @@ namespace base {
 class FilePath;
 }
 
+namespace cloud_devices {
+class CloudDeviceDescription;
+}
+
 namespace gfx {
 class Size;
 }
@@ -35,6 +39,19 @@ class PWGRasterConverter {
   virtual ~PWGRasterConverter() {}
 
   static scoped_ptr<PWGRasterConverter> CreateDefault();
+
+  // Generates conversion settings to be used with converter from printer
+  // capabilities and page size.
+  // TODO(vitalybuka): Extract page size from pdf document data.
+  static printing::PdfRenderSettings GetConversionSettings(
+      const cloud_devices::CloudDeviceDescription& printer_capabilities,
+      const gfx::Size& page_size);
+
+  // Generates pwg bitmap settings to be used with the converter from
+  // device capabilites and printing ticket.
+  static printing::PwgRasterSettings GetBitmapSettings(
+      const cloud_devices::CloudDeviceDescription& printer_capabilities,
+      const cloud_devices::CloudDeviceDescription& ticket);
 
   virtual void Start(base::RefCountedMemory* data,
                      const printing::PdfRenderSettings& conversion_settings,

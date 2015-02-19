@@ -21,8 +21,6 @@
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
-#include "printing/units.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_elider.h"
 #endif  // ENABLE_PRINT_PREVIEW
 
@@ -399,7 +397,6 @@ PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
       has_extended_workflow_(false),
       started_(false),
       offline_(false),
-      dpi_(printing::kDefaultPdfDpi),
       invalid_job_retries_(0),
       weak_factory_(this) {
 }
@@ -452,8 +449,7 @@ void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
 
 void PrivetLocalPrintOperationImpl::StartInitialRequest() {
   use_pdf_ = false;
-  using namespace cloud_devices::printer;
-  ContentTypesCapability content_types;
+  cloud_devices::printer::ContentTypesCapability content_types;
   if (content_types.LoadFrom(capabilities_)) {
     use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
                content_types.Contains(kPrivetContentTypeAny);
@@ -462,10 +458,6 @@ void PrivetLocalPrintOperationImpl::StartInitialRequest() {
   if (use_pdf_) {
     StartPrinting();
   } else {
-    DpiCapability dpis;
-    if (dpis.LoadFrom(capabilities_)) {
-      dpi_ = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
-    }
     StartConvertToPWG();
   }
 }
@@ -546,71 +538,14 @@ void PrivetLocalPrintOperationImpl::StartPrinting() {
   }
 }
 
-void PrivetLocalPrintOperationImpl::FillPwgRasterSettings(
-    printing::PwgRasterSettings* transform_settings) {
-  using namespace cloud_devices::printer;
-  PwgRasterConfigCapability raster_capability;
-  // If the raster capability fails to load, raster_capability will contain
-  // the default value.
-  raster_capability.LoadFrom(capabilities_);
-
-  DuplexTicketItem duplex_item;
-  DuplexType duplex_value = NO_DUPLEX;
-
-  DocumentSheetBack document_sheet_back =
-      raster_capability.value().document_sheet_back;
-
-  if (duplex_item.LoadFrom(ticket_)) {
-    duplex_value = duplex_item.value();
-  }
-
-  transform_settings->odd_page_transform = printing::TRANSFORM_NORMAL;
-  switch (duplex_value) {
-    case NO_DUPLEX:
-      transform_settings->odd_page_transform = printing::TRANSFORM_NORMAL;
-      break;
-    case LONG_EDGE:
-      if (document_sheet_back == ROTATED) {
-        transform_settings->odd_page_transform = printing::TRANSFORM_ROTATE_180;
-      } else if (document_sheet_back == FLIPPED) {
-        transform_settings->odd_page_transform =
-            printing::TRANSFORM_FLIP_VERTICAL;
-      }
-      break;
-    case SHORT_EDGE:
-      if (document_sheet_back == MANUAL_TUMBLE) {
-        transform_settings->odd_page_transform = printing::TRANSFORM_ROTATE_180;
-      } else if (document_sheet_back == FLIPPED) {
-        transform_settings->odd_page_transform =
-            printing::TRANSFORM_FLIP_HORIZONTAL;
-      }
-  }
-
-  transform_settings->rotate_all_pages =
-      raster_capability.value().rotate_all_pages;
-
-  transform_settings->reverse_page_order =
-      raster_capability.value().reverse_order_streaming;
-}
-
 void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
-  printing::PwgRasterSettings transform_settings;
-
-  FillPwgRasterSettings(&transform_settings);
-
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
 
-  double scale = dpi_;
-  scale /= printing::kPointsPerInch;
-  // Make vertical rectangle to optimize streaming to printer. Fix orientation
-  // by autorotate.
-  gfx::Rect area(std::min(page_size_.width(), page_size_.height()) * scale,
-                 std::max(page_size_.width(), page_size_.height()) * scale);
   pwg_raster_converter_->Start(
       data_.get(),
-      printing::PdfRenderSettings(area, dpi_, true),
-      transform_settings,
+      PWGRasterConverter::GetConversionSettings(capabilities_, page_size_),
+      PWGRasterConverter::GetBitmapSettings(capabilities_, ticket_),
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                  base::Unretained(this)));
 }

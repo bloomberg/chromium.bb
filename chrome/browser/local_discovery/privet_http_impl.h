@@ -16,10 +16,6 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace printing {
-struct PwgRasterSettings;
-};
-
 namespace local_discovery {
 
 class PrivetHTTPClient;
@@ -206,7 +202,6 @@ class PrivetLocalPrintOperationImpl
   void OnCreatejobResponse(bool has_error,
                            const base::DictionaryValue* value);
   void OnPWGRasterConverted(bool success, const base::FilePath& pwg_file_path);
-  void FillPwgRasterSettings(printing::PwgRasterSettings* transfrom_settings);
 
   PrivetHTTPClient* privet_client_;
   PrivetLocalPrintOperation::Delegate* delegate_;
@@ -224,7 +219,6 @@ class PrivetLocalPrintOperationImpl
   bool started_;
   bool offline_;
   gfx::Size page_size_;
-  int dpi_;
 
   std::string user_;
   std::string jobname_;
