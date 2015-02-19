@@ -4,6 +4,7 @@
 
 #include "media/cdm/json_web_key.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,7 +126,7 @@ TEST_F(JSONWebKeyTest, ExtractValidJWKKeys) {
       "      \"kty\": \"oct\","
       "      \"alg\": \"A128KW\","
       "      \"kid\": \"JCUmJygpKissLS4vMA\","
-      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA\""
+      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4_QA\""
       "    }"
       "  ]"
       "}";
@@ -152,7 +153,7 @@ TEST_F(JSONWebKeyTest, ExtractValidJWKKeys) {
       "      \"kty\": \"oct\","
       "      \"alg\": \"A128KW\","
       "      \"kid\": \"JCUmJygpKissLS4vMA\","
-      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4/QA\""
+      "      \"k\":\"MTIzNDU2Nzg5Ojs8PT4_QA\""
       "    }"
       "  ]"
       "}";
@@ -469,6 +470,32 @@ TEST_F(JSONWebKeyTest, ExtractLicense) {
 
   // Correct tag, but invalid base64 encoding.
   ExtractKeyFromLicenseAndExpect("{\"kids\":[\"!@#$%^&*()\"]}", false, NULL, 0);
+}
+
+TEST_F(JSONWebKeyTest, Base64UrlEncoding) {
+  const uint8 data1[] = { 0xfb, 0xfd, 0xfb, 0xfd, 0xfb, 0xfd, 0xfb };
+
+  // Verify that |data1| contains invalid base64url characters '+' and '/'
+  // and is padded with = when converted to base64.
+  std::string encoded_text;
+  base::Base64Encode(
+      std::string(reinterpret_cast<const char*>(&data1[0]), arraysize(data1)),
+      &encoded_text);
+  EXPECT_EQ(encoded_text, "+/37/fv9+w==");
+  EXPECT_NE(encoded_text.find('+'), std::string::npos);
+  EXPECT_NE(encoded_text.find('/'), std::string::npos);
+  EXPECT_NE(encoded_text.find('='), std::string::npos);
+
+  // base64url characters '-' and '_' not in base64 encoding.
+  EXPECT_EQ(encoded_text.find('-'), std::string::npos);
+  EXPECT_EQ(encoded_text.find('_'), std::string::npos);
+
+  CreateLicenseAndExpect(data1, arraysize(data1), MediaKeys::TEMPORARY_SESSION,
+                         "{\"kids\":[\"-_37_fv9-w\"],\"type\":\"temporary\"}");
+
+  ExtractKeyFromLicenseAndExpect(
+      "{\"kids\":[\"-_37_fv9-w\"],\"type\":\"temporary\"}", true, data1,
+      arraysize(data1));
 }
 
 }  // namespace media
