@@ -1,0 +1,49 @@
+# attempt to normalize all files, this is typically a good thing
+* text=auto
+
+*.gypi text
+*.gyp  text
+
+*.cc  text
+*.cpp text
+*.c   text
+*.hpp text
+*.h   text
+*.hxx text
+
+*.css  text
+*.html text
+*.htm  text
+*.json text
+*.js   text
+*.svg  text
+
+*.idl text
+*.in  text
+*.mk  text
+*.py  text
+*.txt text
+*.xml text
+*.xsd text
+
+# shell scripts (typically run through cygwin during the build process) must
+# have LF endings
+*.sh eol=lf
+
+*.avi  binary
+*.gif  binary
+*.jpeg binary
+*.jpg  binary
+*.mov  binary
+*.mp3  binary
+*.mp4  binary
+*.mpeg binary
+*.mpg  binary
+*.oga  binary
+*.ogg  binary
+*.ogv  binary
+*.ogx  binary
+*.png  binary
+*.webm binary
+*.webp binary
+
