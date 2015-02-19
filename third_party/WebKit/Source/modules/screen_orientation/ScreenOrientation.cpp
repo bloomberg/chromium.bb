@@ -88,6 +88,12 @@ ScreenOrientation* ScreenOrientation::create(LocalFrame* frame)
 {
     ASSERT(frame);
 
+    // Check if the ScreenOrientationController is supported for the
+    // frame. It will not be for all LocalFrames, or the frame may
+    // have been detached.
+    if (!ScreenOrientationController::from(*frame))
+        return nullptr;
+
     ScreenOrientation* orientation = new ScreenOrientation(frame);
     ASSERT(orientation->controller());
     // FIXME: ideally, we would like to provide the ScreenOrientationController

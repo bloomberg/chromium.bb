@@ -42,7 +42,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
+    ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
+
     static WebScreenOrientationType computeOrientation(FrameView*);
 
     // Inherited from PlatformEventController.
