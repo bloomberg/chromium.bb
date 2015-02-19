@@ -17,6 +17,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -243,8 +244,13 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
     return;
   fetcher_ = nullptr;
 
-  if (!bitmap || url != app_icon_url_)
+  if (!web_contents()
+      || web_contents()->IsBeingDestroyed()
+      || validated_url_ != web_contents()->GetURL()
+      || !bitmap
+      || url != app_icon_url_) {
     return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
@@ -265,6 +271,9 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
         new SkBitmap(*bitmap),
         native_app_data_,
         native_app_package_);
+
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Shown",
+                                            web_contents()->GetURL());
   } else if (!web_app_data_.IsEmpty()){
     RecordCouldShowBanner(web_app_data_.start_url.spec());
     if (!CheckIfShouldShow(web_app_data_.start_url.spec()))
@@ -275,6 +284,9 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
         app_title_,
         new SkBitmap(*bitmap),
         web_app_data_);
+
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Shown",
+                                            web_contents()->GetURL());
   }
 
   if (weak_infobar_ptr != nullptr)

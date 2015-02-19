@@ -17,6 +17,7 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -121,12 +122,18 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
         native_app_package_,
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
         AppBannerManager::GetCurrentTime());
+
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Dismissed",
+                                            web_contents->GetURL());
   } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents, web_contents->GetURL(),
         web_app_data_.start_url.spec(),
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
         AppBannerManager::GetCurrentTime());
+
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Dismissed",
+                                            web_contents->GetURL());
   }
 }
 
@@ -177,6 +184,8 @@ bool AppBannerInfoBarDelegate::Accept() {
         true);
 
     TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.WebApp.Installed",
+                                            web_contents->GetURL());
     return true;
   }
 
@@ -229,6 +238,8 @@ void AppBannerInfoBarDelegate::OnInstallIntentReturned(
         AppBannerManager::GetCurrentTime());
 
     TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_STARTED);
+    rappor::SampleDomainAndRegistryFromGURL("AppBanner.NativeApp.Installed",
+                                            web_contents->GetURL());
   }
 
   UpdateInstallState(env, obj);
