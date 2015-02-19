@@ -79,14 +79,10 @@ content::WebContents* CardUnmaskPromptControllerImpl::GetWebContents() {
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
-  // TODO(estade): i18n.
-  if (ShouldRequestExpirationDate()) {
-    return base::ASCIIToUTF16("Update your card ") +
-           card_.TypeAndLastFourDigits();
-  }
-
-  return base::ASCIIToUTF16("Verify your card ") +
-      card_.TypeAndLastFourDigits();
+  int ids = ShouldRequestExpirationDate()
+      ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE
+      : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE;
+  return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
