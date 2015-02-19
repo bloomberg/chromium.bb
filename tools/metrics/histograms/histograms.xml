@@ -6456,6 +6456,81 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.Setup.Devices.Count.Eligible">
+  <owner>isherman@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    The number of eligible devices that the CryptAuth server returns during the
+    Smart Lock setup flow.
+  </summary>
+  <details>
+    Note that a single user might report multiple values, for example if she
+    tries to complete the setup flow with a device in airplane mode, and then
+    tries again taking the device out of airplane mode.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.Setup.Devices.Count.Ineligible">
+  <owner>isherman@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    The number of ineligible devices that the CryptAuth server returns during
+    the Smart Lock setup flow.
+  </summary>
+  <details>
+    Note that a single user might report multiple values, for example if she
+    tries to complete the setup flow with a device in airplane mode, and then
+    tries again taking the device out of airplane mode.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.Setup.Devices.HasSecureScreenLock"
+    enum="EasyUnlockHasSecureScreenLock">
+  <owner>isherman@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Whether the user's phone has a secure screen lock installed. Recorded during
+    Smart Lock setup, when the user's phone first connects to the Chromebook.
+  </summary>
+</histogram>
+
+<histogram name="EasyUnlock.Setup.Devices.HasSmartLockEnabled"
+    enum="EasyUnlockHasSmartLockEnabled">
+  <owner>isherman@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Whether the user's phone has Smart Lock for Android enabled. Recorded during
+    Smart Lock (for Chrome) setup, when the user selects the phone to use as her
+    unlock key.
+  </summary>
+  <details>
+    Note that this histogram tracks whether the setting under Settings ~>
+    Security ~> Trust agents ~> Smart Lock (Google) is enabled, which is the
+    default state. It does _not_ measure whether users have any Smart Lock
+    trustlets enabled.
+  </details>
+</histogram>
+
+<histogram name="EasyUnlock.Setup.Devices.IneligibilityReason"
+    enum="EasyUnlockDeviceIneligibilityReason">
+  <owner>isherman@chromium.org</owner>
+  <owner>xiaowenx@chromium.org</owner>
+  <summary>
+    Records the most actionable reason why none of a user's devices were
+    eligible as unlock keys for Smart Lock. This is recorded during the Smart
+    Lock setup flow, only if the CryptAuth server returns no eligible devices
+    for the user.
+  </summary>
+  <details>
+    To be precise, this metric tracks the _least_ actionable _reason_ why the
+    _most_ actionable _device_ is not eligible as an unlock key. For example,
+    suppose that the user has 10 ineligible devices returned. This metric tries
+    to identify the most likely candidate device for use as a Smart Lock key,
+    and then records the most confounding reason why that device is still not
+    eligible to be used as an unlock key.
+  </details>
+</histogram>
+
 <histogram name="EasyUnlock.SetupStateOnClose" enum="EasyUnlockSetupState">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -46161,6 +46236,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Enable"/>
   <int value="5" label="Disable"/>
   <int value="6" label="Dismiss ('done')"/>
+</enum>
+
+<enum name="EasyUnlockDeviceIneligibilityReason" type="int">
+  <int value="0" label="Unrecognized reason">
+    The server reported a reason that the client is not aware of. This should
+    only be recorded if the client's list of possible reasons is out of date.
+  </int>
+  <int value="1" label="Unknown">
+    The server returned the value &quot;Unknown&quot;.
+  </int>
+  <int value="2" label="Screen too large"/>
+  <int value="3" label="Phone lacks Bluetooth"/>
+  <int value="4" label="Bad OS version"/>
+  <int value="5" label="Bad software version (GMS Core)"/>
+  <int value="6" label="Auto unlocking not supported"/>
+  <int value="7" label="Invalid credentials"/>
+  <int value="8" label="Device offline"/>
+  <int value="9" label="No recent updates"/>
+</enum>
+
+<enum name="EasyUnlockHasSecureScreenLock" type="int">
+  <int value="0" label="Lacks secure screen lock"/>
+  <int value="1" label="Has secure screen lock"/>
+</enum>
+
+<enum name="EasyUnlockHasSmartLockEnabled" type="int">
+  <int value="0" label="Smart Lock for Android disabled"/>
+  <int value="1" label="Smart Lock for Android enabled"/>
 </enum>
 
 <enum name="EasyUnlockNotificationEvent" type="int">
