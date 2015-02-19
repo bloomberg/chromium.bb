@@ -335,12 +335,14 @@ inline PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::createCSSImageValueWi
 
 static inline bool isComma(CSSParserValue* value)
 {
-    return value && value->unit == CSSParserValue::Operator && value->iValue == ',';
+    ASSERT(value);
+    return value->unit == CSSParserValue::Operator && value->iValue == ',';
 }
 
 static bool consumeComma(CSSParserValueList* valueList)
 {
-    if (!isComma(valueList->current()))
+    CSSParserValue* value = valueList->current();
+    if (!value || !isComma(value))
         return false;
     valueList->next();
     return true;
@@ -1605,7 +1607,7 @@ bool CSSPropertyParser::parseFillShorthand(CSSPropertyID propId, const CSSProper
 
     while (m_valueList->current()) {
         CSSParserValue* val = m_valueList->current();
-        if (val->unit == CSSParserValue::Operator && val->iValue == ',') {
+        if (isComma(val)) {
             // We hit the end.  Fill in all remaining values with the initial value.
             m_valueList->next();
             for (i = 0; i < numProperties; ++i) {
@@ -2533,7 +2535,7 @@ void CSSPropertyParser::parseFillPosition(CSSParserValueList* valueList, RefPtrW
     unsigned numberOfValues = 0;
     for (unsigned i = valueList->currentIndex(); i < valueList->size(); ++i, ++numberOfValues) {
         CSSParserValue* current = valueList->valueAt(i);
-        if (isComma(current) || !current || isForwardSlashOperator(current) || !isPotentialPositionValue(current))
+        if (!current || isComma(current) || isForwardSlashOperator(current) || !isPotentialPositionValue(current))
             break;
     }
 
@@ -2607,7 +2609,7 @@ void CSSPropertyParser::parse2ValuesFillPosition(CSSParserValueList* valueList, 
     CSSParserValue* value = valueList->next();
 
     // First check for the comma.  If so, we are finished parsing this value or value pair.
-    if (isComma(value))
+    if (value && isComma(value))
         value = 0;
 
     if (value) {
@@ -4611,8 +4613,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFamily()
 
     while (value) {
         CSSParserValue* nextValue = m_valueList->next();
-        bool nextValBreaksFont = !nextValue ||
-                                 (nextValue->unit == CSSParserValue::Operator && nextValue->iValue == ',');
+        bool nextValBreaksFont = !nextValue || isComma(nextValue);
         bool nextValIsFontName = nextValue &&
             ((nextValue->id >= CSSValueSerif && nextValue->id <= CSSValueWebkitBody) ||
             (nextValue->unit == CSSPrimitiveValue::CSS_STRING || nextValue->unit == CSSPrimitiveValue::CSS_IDENT));
@@ -8169,8 +8170,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
         else if (value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
             ret->append(CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType) value->unit));
         value = m_valueList->next();
-        if (value && value->unit == CSSParserValue::Operator && value->iValue == ',')
-            value = m_valueList->next();
+        bool commaConsumed = consumeComma(m_valueList);
+        value = m_valueList->current();
+        if (commaConsumed && !value)
+            return nullptr;
     }
     if (!validPrimitive)
         return nullptr;
@@ -8410,7 +8413,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPrope
         a = args->next();
         if (!a)
             break;
-        if (a->unit != CSSParserValue::Operator || a->iValue != ',')
+        if (!isComma(a))
             return nullptr;
         a = args->next();
 
