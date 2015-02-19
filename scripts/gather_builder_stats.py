@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
-import os
 import re
 import sys
 
@@ -18,7 +17,6 @@ from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gdata_lib
-from chromite.lib import graphite
 from chromite.lib import gs
 from chromite.lib import table
 
@@ -36,9 +34,6 @@ CANARY = constants.CANARY_TYPE
 
 # Number of parallel processes used when uploading/downloading GS files.
 MAX_PARALLEL = 40
-
-# The graphite graphs use seconds since epoch start as time value.
-EPOCH_START = metadata_lib.EPOCH_START
 
 # Formats we like for output.
 NICE_DATE_FORMAT = metadata_lib.NICE_DATE_FORMAT
@@ -62,21 +57,6 @@ class DataError(GatherStatsError):
 
 class SpreadsheetError(GatherStatsError):
   """Raised when there is a problem with the stats spreadsheet."""
-
-
-def _SendToCarbon(builds, token_funcs):
-  """Send data for |builds| to Carbon/Graphite according to |token_funcs|.
-
-  Args:
-    builds: List of BuildData objects.
-    token_funcs: List of functors that each take a BuildData object as the only
-      argument and return a string.  Each line of data to send to Carbon is
-      constructed by taking the strings returned from these functors and
-      concatenating them using single spaces.
-  """
-  lines = [' '.join([str(func(b)) for func in token_funcs]) for b in builds]
-  cros_build_lib.Info('Sending %d lines to Graphite now.', len(lines))
-  graphite.SendToCarbon(lines)
 
 
 # TODO(dgarrett): Discover list from Json. Will better track slave changes.
@@ -560,7 +540,6 @@ class StatsManager(object):
     1) Read a bunch of metadata.json URLs for the config target that are
        are no older than the given start date.
     2) Upload data to a Google Sheet, if specified by the subclass.
-    3) Upload data to Graphite, if specified by the subclass.
   """
   # Subclasses can overwrite any of these.
   TABLE_CLASS = None
@@ -569,7 +548,6 @@ class StatsManager(object):
   # self.summary to (ws_name, colIx) tuples from the spreadsheet which
   # should be overwritten with the data from the self.summary[key]
   SUMMARY_SPREADSHEET_COLUMNS = {}
-  CARBON_FUNCS_BY_VERSION = None
   BOT_TYPE = None
 
   # Whether to grab a count of what data has been written to sheets before.
@@ -671,13 +649,6 @@ class StatsManager(object):
 
     return -1
 
-  @property
-  def carbon_version(self):
-    if self.CARBON_FUNCS_BY_VERSION:
-      return len(self.CARBON_FUNCS_BY_VERSION) - 1
-
-    return -1
-
   def UploadToSheet(self, creds):
     assert creds
 
@@ -728,17 +699,6 @@ class StatsManager(object):
     for key, (ws_name, colIx) in self.SUMMARY_SPREADSHEET_COLUMNS.iteritems():
       uploader.UploadColumnToWorksheet(ws_name, colIx, self.summary[key])
 
-
-  def SendToCarbon(self):
-    if self.CARBON_FUNCS_BY_VERSION:
-      for version, func in enumerate(self.CARBON_FUNCS_BY_VERSION):
-        # Filter for builds that need to send data to Graphite.
-        builds = [b for b in self.builds if b.carbon_version < version]
-        cros_build_lib.Info('Found %d builds that need to send Graphite v%d'
-                            ' data.', len(builds), version)
-        if builds:
-          func(self, builds)
-
   def MarkGathered(self):
     """Mark each metadata.json in self.builds as processed.
 
@@ -748,7 +708,6 @@ class StatsManager(object):
     if self.UPLOAD_ROW_PER_BUILD:
       metadata_lib.BuildData.MarkBuildsGathered(self.builds,
                                                 self.sheets_version,
-                                                self.carbon_version,
                                                 gs_ctx=self.gs_ctx)
 
 
@@ -762,20 +721,6 @@ class CQSlaveStats(StatsManager):
   def __init__(self, slave_target, **kwargs):
     super(CQSlaveStats, self).__init__(slave_target, **kwargs)
 
-  # TODO(mtennant): This is totally untested, but is a refactoring of the
-  # graphite code that was in place before for CQ slaves.
-  def _SendToCarbonV0(self, builds):
-    # Send runtime data.
-    def _GetGraphName(build):
-      bot_id = build['bot-config'].replace('-', '.')
-      return 'buildbot.builders.%s.duration_seconds' % bot_id
-
-    _SendToCarbon(builds, (
-        _GetGraphName,
-        lambda b: b.runtime_seconds,
-        lambda b: b.epoch_time_seconds,
-    ))
-
 
 class CQMasterStats(StatsManager):
   """Manager stats gathering for the Commit Queue Master."""
@@ -786,26 +731,6 @@ class CQMasterStats(StatsManager):
 
   def __init__(self, **kwargs):
     super(CQMasterStats, self).__init__(CQ_MASTER, **kwargs)
-
-  def _SendToCarbonV0(self, builds):
-    # Send runtime data.
-    _SendToCarbon(builds, (
-        lambda b: 'buildbot.cq.run_time_seconds',
-        lambda b: b.runtime_seconds,
-        lambda b: b.epoch_time_seconds,
-    ))
-
-    # Send CLs per run data.
-    _SendToCarbon(builds, (
-        lambda b: 'buildbot.cq.cls_per_run',
-        lambda b: b.count_changes,
-        lambda b: b.epoch_time_seconds,
-    ))
-
-  # Organized by by increasing graphite version numbers, starting at 0.
-  CARBON_FUNCS_BY_VERSION = (
-      _SendToCarbonV0,
-  )
 
 
 class PFQMasterStats(StatsManager):
@@ -902,9 +827,6 @@ def GetParser():
   mode.add_argument('--no-upload', action='store_false', default=True,
                     dest='upload',
                     help='Skip uploading results to spreadsheet')
-  mode.add_argument('--no-carbon', action='store_false', default=True,
-                    dest='carbon',
-                    help='Skip sending results to carbon/graphite')
   mode.add_argument('--no-mark-gathered', action='store_false', default=True,
                     dest='mark_gathered',
                     help='Skip marking results as gathered.')
@@ -967,7 +889,7 @@ def main(argv):
   if options.cq_slaves:
     targets = _GetSlavesOfMaster(CQ_MASTER)
     for target in targets:
-      # TODO(mtennant): Add spreadsheet and/or graphite support for cq-slaves.
+      # TODO(mtennant): Add spreadsheet support for cq-slaves.
       stats_managers.append(CQSlaveStats(target))
 
   # If options.save is set and any of the instructions include a table class,
@@ -994,59 +916,8 @@ def main(argv):
       if options.upload:
         stats_mgr.UploadToSheet(creds)
 
-      # Send data to Carbon/Graphite, if applicable.
-      if options.carbon:
-        stats_mgr.SendToCarbon()
-
       # Mark these metadata.json files as processed.
       if options.mark_gathered:
         stats_mgr.MarkGathered()
 
     cros_build_lib.Info('Finished with %s.\n\n', stats_mgr.config_target)
-
-
-# Background: This function logs the number of tryjob runs, both internal
-# and external, to Graphite.  It gets the data from git logs.  It was in
-# place, in a very different form, before the migration to
-# gather_builder_stats.  It is simplified here, but entirely untested and
-# not plumbed into gather_builder_stats anywhere.
-def GraphiteTryJobInfoUpToNow(internal, start_date, end_date):
-  """Find the amount of tryjobs that finished on a particular day.
-
-  Args:
-    internal: If true report for internal, if false report external.
-    start_date: datetime.date object for date to start on.
-    end_date: datetime.date object for date to end on.
-  """
-  carbon_lines = []
-
-  # Apparently scottz had 'trybot' and 'trybot-internal' checkouts in
-  # his home directory which this code relied on.  Any new solution that
-  # also relies on git logs will need a place to look for them.
-  if internal:
-    repo_path = '/some/path/to/trybot-internal'
-    marker = 'internal'
-  else:
-    repo_path = '/some/path/to/trybot'
-    marker = 'external'
-
-  # Make sure the trybot checkout is up to date.
-  os.chdir(repo_path)
-  cros_build_lib.RunCommand(['git', 'pull'], cwd=repo_path)
-
-  # Now get a list of datetime objects, in hourly deltas.
-  start = datetime.datetime(start_date.year, start_date.month, start_date.day)
-  hour_delta = datetime.timedelta(hours=1)
-  end = start + hour_delta
-  while end < end_date:
-    git_cmd = ['git', 'log', '--since="%s"' % start,
-               '--until="%s"' % end, '--name-only', '--pretty=format:']
-    result = cros_build_lib.RunCommand(git_cmd, cwd=repo_path)
-
-    # Expect one line per tryjob run in the specified hour.
-    count = len(l for l in result.output.splitlines() if l.strip())
-
-    carbon_lines.append('buildbot.tryjobs.%s.hourly %s %s' %
-                        (marker, count, (end - EPOCH_START).total_seconds()))
-
-  graphite.SendToCarbon(carbon_lines)
