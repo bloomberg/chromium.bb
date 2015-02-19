@@ -20,8 +20,8 @@ MockPresentationClient::MockPresentationClient(MockPresentationService* service)
 
 MockPresentationClient::~MockPresentationClient() {
   DCHECK(!controller_);
-  DCHECK(service_);
-  service_->UnregisterPresentationClientMock(this);
+  if (service_)
+    service_->UnregisterPresentationClientMock(this);
 }
 
 void MockPresentationClient::SetScreenAvailability(bool available) {
@@ -38,6 +38,7 @@ void MockPresentationClient::SetScreenAvailability(bool available) {
 
 void MockPresentationClient::Reset() {
   screen_availability_ = false;
+  service_ = nullptr;
 }
 
 void MockPresentationClient::setController(
