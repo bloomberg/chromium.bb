@@ -9,6 +9,8 @@ The script expects arguments that specify zips file in the google storage
 bucket named: <dir in SDK extras>_<package name>_<version>.zip. The file will
 be extracted in the android_tools/sdk/extras directory on the test bots. This
 script will not do anything for developers.
+
+TODO(navabi): Move this script (crbug.com/459819).
 """
 
 import json
@@ -46,6 +48,9 @@ def clean_and_extract(dir_name, package_name, zip_file):
 def main():
   if not os.environ.get('CHROME_HEADLESS'):
     # This is not a buildbot checkout.
+    return 0
+  elif 'OS=android' not in os.environ.get('GYP_DEFINES', ''):
+    # Not an Android buildbot.
     return 0
   # Update the android_sdk_extras.json file to update downloaded packages.
   with open(SDK_EXTRAS_JSON_FILE) as json_file:
