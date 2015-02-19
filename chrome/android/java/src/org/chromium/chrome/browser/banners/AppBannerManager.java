@@ -140,6 +140,12 @@ public class AppBannerManager extends EmptyTabObserver {
         nativeSetTimeDeltaForTesting(days);
     }
 
+    /** Disables the HTTPS scheme requirement for testing. */
+    @VisibleForTesting
+    static void disableSecureSchemeCheckForTesting() {
+        nativeDisableSecureSchemeCheckForTesting();
+    }
+
     /** Returns whether a BitmapFetcher is actively retrieving an app icon. */
     @VisibleForTesting
     public boolean isFetcherActiveForTesting() {
@@ -156,5 +162,6 @@ public class AppBannerManager extends EmptyTabObserver {
 
     // Testing methods.
     private static native void nativeSetTimeDeltaForTesting(int days);
+    private static native void nativeDisableSecureSchemeCheckForTesting();
     private native boolean nativeIsFetcherActive(long nativeAppBannerManager);
 }

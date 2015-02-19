@@ -93,6 +93,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         mActivityTab = getActivity().getActiveTab();
         mInfoBarContainer = mActivityTab.getInfoBarContainer();
         mAppBannerManager = mActivityTab.getAppBannerManagerForTesting();
+        AppBannerManager.disableSecureSchemeCheckForTesting();
     }
 
     private boolean waitUntilNoInfoBarsExist() throws Exception {

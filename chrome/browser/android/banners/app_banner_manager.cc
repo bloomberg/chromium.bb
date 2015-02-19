@@ -44,6 +44,7 @@ using base::android::ConvertUTF16ToJavaString;
 namespace {
 const char kBannerTag[] = "google-play-id";
 base::TimeDelta gTimeDeltaForTesting;
+bool gDisableSecureCheckForTesting = false;
 }  // namespace
 
 namespace banners {
@@ -131,6 +132,11 @@ void AppBannerManager::DidFinishLoad(
   if (render_frame_host->GetParent())
     return;
   validated_url_ = validated_url;
+
+  // A secure scheme is required to show banners, so exit early if we see the
+  // URL is invalid.
+  if (!validated_url_.SchemeIsSecure() && !gDisableSecureCheckForTesting)
+    return;
 
   // See if the page has a manifest. Using Unretained(this) here is safe as the
   // lifetime of this object extends beyond the lifetime of the web_contents(),
@@ -361,6 +367,10 @@ jboolean IsEnabled(JNIEnv* env, jclass clazz) {
 
 void SetTimeDeltaForTesting(JNIEnv* env, jclass clazz, jint days) {
   gTimeDeltaForTesting = base::TimeDelta::FromDays(days);
+}
+
+void DisableSecureSchemeCheckForTesting(JNIEnv* env, jclass clazz) {
+  gDisableSecureCheckForTesting = true;
 }
 
 // Register native methods

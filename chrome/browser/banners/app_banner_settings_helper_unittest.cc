@@ -9,7 +9,7 @@
 
 namespace {
 
-const char kTestURL[] = "http://www.google.com";
+const char kTestURL[] = "https://www.google.com";
 const char kTestPackageName[] = "test.package";
 
 base::Time GetReferenceTime() {
