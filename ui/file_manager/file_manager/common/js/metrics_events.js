@@ -84,7 +84,10 @@ metrics.ImportEvents = {
       .action('Files Deduped By History'),
 
   CONTENT_DEDUPE_COUNT: metrics.event.Builders_.IMPORT
-      .action('Files Deduped By Content')
+      .action('Files Deduped By Content'),
+
+  HISTORY_CHANGED: metrics.event.Builders_.IMPORT
+      .action('History Changed')
 };
 
 // namespace

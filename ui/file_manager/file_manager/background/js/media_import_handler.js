@@ -200,6 +200,9 @@ importer.MediaImportHandler.ImportTask = function(
 
   /** @private {number} Number of files deduped by content dedupe. */
   this.dedupeCount_ = 0;
+
+  /** @private {number} */
+  this.errorCount_ = 0;
 };
 
 /** @struct */
@@ -464,9 +467,7 @@ importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.onError_ = function(error) {
   this.notify(importer.TaskQueue.UpdateType.ERROR);
-  // TODO(kenobi): Impedence mismatch: this gets called per-file, which is
-  // different from onSuccess, which reports overall import success.
-  this.tracker_.send(metrics.ImportEvents.ERROR);
+  this.errorCount_++;
 };
 
 /**
@@ -482,6 +483,8 @@ importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ = function() {
   this.tracker_.send(
       metrics.ImportEvents.FILE_COUNT
           .value(importFileCount));
+
+  this.tracker_.send(metrics.ImportEvents.ERROR.value(this.errorCount_));
 
   // Send aggregate deduplication timings, to avoid flooding analytics with one
   // timing per file.
