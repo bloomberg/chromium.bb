@@ -284,6 +284,12 @@ const char* GetConnectionDescriptionString() {
   // This function only seems usefully defined on Windows currently.
   if (type == NetworkChangeNotifier::CONNECTION_UNKNOWN ||
       type == NetworkChangeNotifier::CONNECTION_WIFI) {
+    // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422516 QuicConnectionLogger GetConnectionDescriptionString1"));
+
     WifiPHYLayerProtocol wifi_type = GetWifiPHYLayerProtocol();
     switch (wifi_type) {
       case WIFI_PHY_LAYER_PROTOCOL_NONE:
