@@ -903,6 +903,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return OK;
   }
 
+  if (proxy_info_.is_quic() && using_quic_ &&
+      result == ERR_QUIC_PROTOCOL_ERROR) {
+    using_quic_ = false;
+    return ReconsiderProxyAfterError(result);
+  }
+
   // TODO(willchan): Make this a bit more exact. Maybe there are recoverable
   // errors, such as ignoring certificate errors for Alternate-Protocol.
   if (result < 0 && waiting_job_) {
@@ -1313,6 +1319,7 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
     case ERR_PROXY_CERTIFICATE_INVALID:
     // This can happen when trying to talk SSL to a non-SSL server (Like a
     // captive portal).
+    case ERR_QUIC_PROTOCOL_ERROR:
     case ERR_SSL_PROTOCOL_ERROR:
       break;
     case ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
