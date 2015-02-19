@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_syncable_service.h"
 
 #if defined(PASSWORD_MANAGER_ENABLE_SYNC)
 #include "components/password_manager/core/browser/password_syncable_service.h"
