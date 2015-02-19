@@ -263,7 +263,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dfalcantara@chromium.org</owner>
   <summary>
     App banners promote an application related to the current website, and are
     requested specifically through the current page's HTML.  This stat tracks
@@ -273,7 +273,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dfalcantara@chromium.org</owner>
   <summary>
     App banners promote an application related to the current website, and are
     requested specifically through the current page's HTML.  This stat tracks
@@ -283,7 +283,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AppBanners.InstallEvent" enum="AppBannersInstallEvent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>dfalcantara@chromium.org</owner>
   <summary>
     App banners promote an application related to the current website, and are
     requested specifically through the current page's HTML.  This stat tracks
@@ -43428,23 +43428,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="41" label="Error/unknown reason for dismissal"/>
   <int value="42" label="User opened the application after installing it"/>
   <int value="43" label="User clicked on the banner"/>
-  <int value="44" label="User swiped the banner away"/>
+  <int value="44" label="(Obsolete) User swiped the banner away"/>
   <int value="45" label="User hit the X button"/>
   <int value="46" label="User began app install, but it didn't finish in time"/>
-  <int value="47" label="Automatic dismissal: User navigated elsewhere"/>
+  <int value="47" label="Banner was dismissed for any reason"/>
 </enum>
 
 <enum name="AppBannersDisplayEvent" type="int">
   <int value="1" label="Banner was requested by the site"/>
   <int value="2" label="User previously blocked the same banner"/>
   <int value="3" label="User blocked too many other banners from the site"/>
-  <int value="4" label="Banner created."/>
+  <int value="4" label="Banner created"/>
+  <int value="5" label="User already installed the app"/>
+  <int value="6" label="User ignored the banner last time"/>
+  <int value="7" label="Manifest lacks a service worker"/>
+  <int value="8" label="Site hasn't been visited frequently enough"/>
 </enum>
 
 <enum name="AppBannersInstallEvent" type="int">
-  <int value="21" label="User triggered the app install dialog"/>
-  <int value="22" label="User began installing the app"/>
-  <int value="23" label="User waited for the app to finish installing"/>
+  <int value="21" label="(Native app) User triggered the app install dialog"/>
+  <int value="22" label="(Native app) User began installing the app"/>
+  <int value="23"
+      label="(Native app) User waited for the app to finish installing"/>
+  <int value="24" label="(Web app) User installed a web app"/>
 </enum>
 
 <enum name="AppCacheCheckResponseResult" type="int">

@@ -10,11 +10,10 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
-#include "chrome/browser/android/banners/app_banner_metrics_ids.h"
-#include "chrome/browser/android/banners/app_banner_utilities.h"
 #include "chrome/browser/android/manifest_icon_selector.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
+#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -153,6 +152,8 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
     return;
   }
 
+  banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
+
   web_app_data_ = manifest;
   app_title_ = web_app_data_.name.string();
 
@@ -184,6 +185,8 @@ void AppBannerManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
       return;
 
     FetchIcon(icon_url);
+  } else {
+    TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
   }
 }
 
@@ -268,7 +271,7 @@ void AppBannerManager::OnFetchComplete(BannerBitmapFetcher* fetcher,
   }
 
   if (weak_infobar_ptr != nullptr)
-    banners::TrackDisplayEvent(DISPLAY_CREATED);
+    banners::TrackDisplayEvent(DISPLAY_EVENT_CREATED);
 }
 
 void AppBannerManager::OnDidRetrieveMetaTagContent(
@@ -282,7 +285,7 @@ void AppBannerManager::OnDidRetrieveMetaTagContent(
     return;
   }
 
-  banners::TrackDisplayEvent(DISPLAY_BANNER_REQUESTED);
+  banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
 
   // Send the info to the Java side to get info about the app.
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -351,14 +354,6 @@ int AppBannerManager::GetPreferredIconSize() {
 // static
 base::Time AppBannerManager::GetCurrentTime() {
   return base::Time::Now() + gTimeDeltaForTesting;
-}
-
-void RecordDismissEvent(JNIEnv* env, jclass clazz, jint metric) {
-  banners::TrackDismissEvent(metric);
-}
-
-void RecordInstallEvent(JNIEnv* env, jclass clazz, jint metric) {
-  banners::TrackInstallEvent(metric);
 }
 
 jlong Init(JNIEnv* env, jobject obj) {

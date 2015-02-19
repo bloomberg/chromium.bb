@@ -33,10 +33,6 @@
       'browser/android/banners/app_banner_infobar_delegate.h',
       'browser/android/banners/app_banner_manager.cc',
       'browser/android/banners/app_banner_manager.h',
-      'browser/android/banners/app_banner_metrics_id_list.h',
-      'browser/android/banners/app_banner_metrics_ids.h',
-      'browser/android/banners/app_banner_utilities.cc',
-      'browser/android/banners/app_banner_utilities.h',
       'browser/android/bookmarks/bookmarks_bridge.cc',
       'browser/android/bookmarks/bookmarks_bridge.h',
       'browser/android/bookmarks/partner_bookmarks_reader.cc',
@@ -182,6 +178,8 @@
       'browser/autofill/risk_util.h',
       'browser/autofill/validation_rules_storage_factory.cc',
       'browser/autofill/validation_rules_storage_factory.h',
+      'browser/banners/app_banner_metrics.cc',
+      'browser/banners/app_banner_metrics.h',
       'browser/banners/app_banner_settings_helper.cc',
       'browser/banners/app_banner_settings_helper.h',
       'browser/bitmap_fetcher/bitmap_fetcher.cc',
@@ -3625,19 +3623,6 @@
             'source_file': 'browser/android/activity_type_ids.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
-        },
-        {
-          # GN: //chrome/android:app_banner_metrics_ids_javagen
-          'target_name': 'app_banner_metrics_ids_java',
-          'type': 'none',
-          'sources': [
-            'android/java/AppBannerMetricsIds.template',
-          ],
-          'variables': {
-            'package_name': 'org/chromium/chrome/browser/banners',
-            'template_deps': ['browser/android/banners/app_banner_metrics_id_list.h'],
-          },
-          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
           # GN: //chrome/android:resource_id_javagen

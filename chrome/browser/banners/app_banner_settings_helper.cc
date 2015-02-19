@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -188,8 +189,10 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
   base::Time added_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
-  if (!added_time.is_null())
+  if (!added_time.is_null()) {
+    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
     return false;
+  }
 
   base::Time blocked_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
@@ -199,6 +202,7 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
   // null events will always be greater than the limits.
   if (time - blocked_time <
       base::TimeDelta::FromDays(kMinimumBannerBlockedToBannerShown)) {
+    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
     return false;
   }
 
@@ -207,12 +211,18 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
                            APP_BANNER_EVENT_DID_SHOW);
   if (time - shown_time <
       base::TimeDelta::FromDays(kMinimumDaysBetweenBannerShows)) {
+    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
     return false;
   }
 
   std::vector<base::Time> could_show_events = GetCouldShowBannerEvents(
       web_contents, origin_url, package_name_or_start_url);
-  return could_show_events.size() >= kCouldShowEventsToTrigger;
+  if (could_show_events.size() < kCouldShowEventsToTrigger) {
+    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
+    return false;
+  }
+
+  return true;
 }
 
 std::vector<base::Time> AppBannerSettingsHelper::GetCouldShowBannerEvents(

@@ -163,8 +163,4 @@ public class AppBannerManager extends EmptyTabObserver {
     // Testing methods.
     private static native void nativeSetTimeDeltaForTesting(int days);
     private native boolean nativeIsFetcherActive(long nativeAppBannerManager);
-
-    // UMA tracking.
-    private static native void nativeRecordDismissEvent(int metric);
-    private static native void nativeRecordInstallEvent(int metric);
 }

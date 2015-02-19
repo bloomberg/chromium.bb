@@ -14,6 +14,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
@@ -87,6 +88,7 @@ AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
 }
 
 AppBannerInfoBarDelegate::~AppBannerInfoBarDelegate() {
+  TrackDismissEvent(DISMISS_EVENT_DISMISSED);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AppBannerInfoBarDelegate_destroy(env,
                                         java_delegate_.obj());
@@ -111,6 +113,8 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
   if (!web_contents)
     return;
 
+  TrackDismissEvent(DISMISS_EVENT_CLOSE_BUTTON);
+
   if (!native_app_data_.is_null()) {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents, web_contents->GetURL(),
@@ -129,21 +133,32 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
 bool AppBannerInfoBarDelegate::Accept() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-  if (!web_contents)
+  if (!web_contents) {
+    TrackDismissEvent(DISMISS_EVENT_ERROR);
     return true;
+  }
 
   if (!native_app_data_.is_null()) {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-    if (tab == nullptr)
+    if (tab == nullptr) {
+      TrackDismissEvent(DISMISS_EVENT_ERROR);
       return true;
+    }
 
-    return Java_AppBannerInfoBarDelegate_installOrOpenNativeApp(
+    bool was_opened = Java_AppBannerInfoBarDelegate_installOrOpenNativeApp(
         env,
         java_delegate_.obj(),
         tab->GetJavaObject().obj(),
         native_app_data_.obj());
+
+    if (was_opened) {
+      TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
+    } else {
+      TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_TRIGGERED);
+    }
+    return was_opened;
   } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
         web_contents, web_contents->GetURL(),
@@ -159,6 +174,8 @@ bool AppBannerInfoBarDelegate::Accept() {
                    info,
                    *app_icon_.get()),
         true);
+
+    TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);
     return true;
   }
 
@@ -176,13 +193,17 @@ bool AppBannerInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       InfoBarService::WebContentsFromInfoBar(infobar());
   TabAndroid* tab = web_contents ? TabAndroid::FromWebContents(web_contents)
                                  : nullptr;
-  if (tab == nullptr)
+  if (tab == nullptr) {
+    TrackDismissEvent(DISMISS_EVENT_ERROR);
     return true;
+  }
 
   Java_AppBannerInfoBarDelegate_showAppDetails(env,
                                                java_delegate_.obj(),
                                                tab->GetJavaObject().obj(),
                                                native_app_data_.obj());
+
+  TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
   return true;
 }
 
@@ -205,6 +226,8 @@ void AppBannerInfoBarDelegate::OnInstallIntentReturned(
         native_app_package_,
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
         AppBannerManager::GetCurrentTime());
+
+    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_STARTED);
   }
 
   UpdateInstallState(env, obj);
@@ -217,8 +240,10 @@ void AppBannerInfoBarDelegate::OnInstallFinished(JNIEnv* env,
     return;
 
   if (success) {
+    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_COMPLETED);
     UpdateInstallState(env, obj);
   } else if (infobar()->owner()) {
+    TrackDismissEvent(DISMISS_EVENT_INSTALL_TIMEOUT);
     infobar()->owner()->RemoveInfoBar(infobar());
   }
 }

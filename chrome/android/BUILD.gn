@@ -104,7 +104,6 @@ android_library("chrome_java") {
   ]
 
   srcjar_deps = [
-    ":app_banner_metrics_ids_javagen",
     ":chrome_android_java_enums_srcjar",
     ":chrome_version_srcjar",
     ":resource_id_javagen",
@@ -136,17 +135,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "org/chromium/chrome/browser/profiles/ProfileAccountManagementMetrics.java",
     "org/chromium/chrome/browser/sync/ModelTypeSelection.java",
     "org/chromium/chrome/browser/ui/toolbar/ToolbarModelSecurityLevel.java",
-  ]
-}
-
-# GYP: //chrome/chrome_browser.gypi:app_banner_metrics_ids_java
-java_cpp_template("app_banner_metrics_ids_javagen") {
-  sources = [
-    "java/AppBannerMetricsIds.template",
-  ]
-  package_name = "org/chromium/chrome/browser/banners"
-  inputs = [
-    "../browser/android/banners/app_banner_metrics_id_list.h",
   ]
 }
 
