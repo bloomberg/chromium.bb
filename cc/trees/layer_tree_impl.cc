@@ -538,15 +538,22 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   if (!needs_update_draw_properties_)
     return true;
 
-  // For max_texture_size.
+  // Calling UpdateDrawProperties must clear this flag, so there can be no
+  // early outs before this.
+  needs_update_draw_properties_ = false;
+
+  // For max_texture_size.  When the renderer is re-created in
+  // CreateAndSetRenderer, the needs update draw properties flag is set
+  // again.
   if (!layer_tree_host_impl_->renderer())
     return false;
 
+  // Clear this after the renderer early out, as it should still be
+  // possible to hit test even without a renderer.
+  render_surface_layer_list_.clear();
+
   if (!root_layer())
     return false;
-
-  needs_update_draw_properties_ = false;
-  render_surface_layer_list_.clear();
 
   {
     TRACE_EVENT2(

@@ -532,9 +532,8 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     DebugScopedSetImplThread impl(const_cast<SingleThreadProxy*>(this));
     if (layer_tree_host_impl_->settings().impl_side_painting) {
       layer_tree_host_impl_->ActivateSyncTree();
-      bool update_lcd_text = false;
-      layer_tree_host_impl_->active_tree()->UpdateDrawProperties(
-          update_lcd_text);
+      DCHECK(!layer_tree_host_impl_->active_tree()
+                  ->needs_update_draw_properties());
       layer_tree_host_impl_->PrepareTiles();
       layer_tree_host_impl_->SynchronouslyInitializeAllTiles();
     }
