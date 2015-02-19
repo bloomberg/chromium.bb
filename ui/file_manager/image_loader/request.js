@@ -228,6 +228,9 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
 
   // Fetch the image via authorized XHR and parse it.
   var parseImage = function(contentType, blob) {
+    if (contentType)
+      this.contentType_ = contentType;
+
     this.image_.src = URL.createObjectURL(blob);
   }.bind(this);
 
@@ -243,6 +246,19 @@ function AuthorizedXHR() {
   this.xhr_ = null;
   this.aborted_ = false;
 }
+
+/**
+ * A map which is used to estimate content type from extension.
+ * @enum {string}
+ */
+AuthorizedXHR.ExtensionContentTypeMap = {
+  gif: 'image/gif',
+  png: 'image/png',
+  svg: 'image/svg',
+  bmp: 'image/bmp',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg'
+};
 
 /**
  * Aborts the current request (if running).
@@ -268,6 +284,12 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
   // Do not call any callbacks when aborting.
   var onMaybeSuccess = /** @type {function(string, Blob)} */ (
       function(contentType, response) {
+        // When content type is not available, try to estimate it from url.
+        if (!contentType) {
+          contentType = AuthorizedXHR.ExtensionContentTypeMap[
+              this.extractExtension_(url)];
+        }
+
         if (!this.aborted_)
           onSuccess(contentType, response);
       }.bind(this));
@@ -315,6 +337,16 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
 
   // Make the request with reusing the current token. If it fails, then retry.
   requestTokenAndCall(false, onMaybeSuccess, maybeRetryCall);
+};
+
+/**
+ * Extracts extension from url.
+ * @param {string} url Url.
+ * @return {string} Extracted extensiion, e.g. png.
+ */
+AuthorizedXHR.prototype.extractExtension_ = function(url) {
+  var result = (/\.([a-zA-Z]+)$/i).exec(url);
+  return result ? result[1] : '';
 };
 
 /**

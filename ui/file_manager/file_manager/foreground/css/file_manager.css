@@ -1272,6 +1272,7 @@ li[renaming=''] .badge {
 
 #list-container list li .detail-thumbnail {
   -webkit-user-drag: none;
+  background-color: rgb(245, 245, 245);
   background-position: center;
   background-size: cover;
   border-radius: 14px;
