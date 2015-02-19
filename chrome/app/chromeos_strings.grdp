@@ -6117,6 +6117,6 @@ All users must sign out to continue.
     If set, automatic timezone update by the current geolocation is turned off.
   </message>
   <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
-    Automatically resolve timezone by geolocation
+    Set time zone automatically using your location
   </message>
 </grit-part>
