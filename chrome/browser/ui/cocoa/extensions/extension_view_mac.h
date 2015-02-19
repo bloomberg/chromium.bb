@@ -53,8 +53,10 @@ class ExtensionViewMac : public extensions::ExtensionView {
   // Informs the view that its containing window's frame changed.
   void WindowFrameChanged();
 
+  // Create the host view, adding it as a subview of |superview|.
+  void CreateWidgetHostViewIn(gfx::NativeView superview);
+
   // extensions::ExtensionView:
-  void Init() override;
   Browser* GetBrowser() override;
   gfx::NativeView GetNativeView() override;
   void ResizeDueToAutoResize(const gfx::Size& new_size) override;
@@ -66,8 +68,6 @@ class ExtensionViewMac : public extensions::ExtensionView {
 
  private:
   content::RenderViewHost* render_view_host() const;
-
-  void CreateWidgetHostView();
 
   // We wait to show the ExtensionView until several things have loaded.
   void ShowIfCompletelyLoaded();

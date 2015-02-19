@@ -38,8 +38,9 @@ void ExtensionViewMac::WindowFrameChanged() {
     render_view_host()->GetView()->WindowFrameChanged();
 }
 
-void ExtensionViewMac::Init() {
-  CreateWidgetHostView();
+void ExtensionViewMac::CreateWidgetHostViewIn(gfx::NativeView superview) {
+  [superview addSubview:GetNativeView()];
+  extension_host_->CreateRenderViewSoon();
 }
 
 Browser* ExtensionViewMac::GetBrowser() {
@@ -87,10 +88,6 @@ void ExtensionViewMac::DidStopLoading() {
 
 content::RenderViewHost* ExtensionViewMac::render_view_host() const {
   return extension_host_->render_view_host();
-}
-
-void ExtensionViewMac::CreateWidgetHostView() {
-  extension_host_->CreateRenderViewSoon();
 }
 
 void ExtensionViewMac::ShowIfCompletelyLoaded() {

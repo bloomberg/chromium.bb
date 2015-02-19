@@ -46,12 +46,13 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 
 @interface ExtensionPopupController (Private)
 // Callers should be using the public static method for initialization.
-// NOTE: This takes ownership of |host|.
-- (id)initWithHost:(extensions::ExtensionViewHost*)host
-      parentWindow:(NSWindow*)parentWindow
-        anchoredAt:(NSPoint)anchoredAt
-     arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
-           devMode:(BOOL)devMode;
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+                anchoredAt:(NSPoint)anchoredAt
+             arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
+                   devMode:(BOOL)devMode;
+
+// Set the ExtensionViewHost, taking ownership.
+- (void)setExtensionViewHost:(scoped_ptr<extensions::ExtensionViewHost>)host;
 
 // Called when the extension's hosted NSView has been resized.
 - (void)extensionViewFrameChanged;
@@ -150,11 +151,10 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
 @synthesize extensionId = extensionId_;
 
-- (id)initWithHost:(extensions::ExtensionViewHost*)host
-      parentWindow:(NSWindow*)parentWindow
-        anchoredAt:(NSPoint)anchoredAt
-     arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
-           devMode:(BOOL)devMode {
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+                anchoredAt:(NSPoint)anchoredAt
+             arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
+                   devMode:(BOOL)devMode {
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
@@ -167,36 +167,9 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:anchoredAt])) {
-    host_.reset(host);
-    extensionId_ = host_->extension_id();
     beingInspected_ = devMode;
     ignoreWindowDidResignKey_ = NO;
-
-    InfoBubbleView* view = self.bubble;
-    [view setArrowLocation:arrowLocation];
-
-    extensionView_ = host->view()->GetNativeView();
-    container_.reset(new ExtensionPopupContainer(self));
-    static_cast<ExtensionViewMac*>(host->view())
-        ->set_container(container_.get());
-
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(extensionViewFrameChanged)
-                   name:NSViewFrameDidChangeNotification
-                 object:extensionView_];
-
-    [view addSubview:extensionView_];
-
-    notificationBridge_.reset(new DevtoolsNotificationBridge(self));
-    registrar_.reset(new content::NotificationRegistrar);
-    if (beingInspected_) {
-      // Listen for the extension to finish loading so the dev tools can be
-      // opened.
-      registrar_->Add(notificationBridge_.get(),
-                      extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                      content::Source<BrowserContext>(host->browser_context()));
-    }
+    [[self bubble] setArrowLocation:arrowLocation];
   }
   return self;
 }
@@ -285,34 +258,60 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // Make Mac behavior the same with Windows and others.
   if (gPopup) {
     std::string extension_id = url.host();
-    extensions::ExtensionViewHost* host = [gPopup extensionViewHost];
-    if (extension_id == host->extension_id()) {
-      [gPopup close];
+    std::string old_extension_id = [gPopup extensionViewHost]->extension_id();
+    [gPopup close];  // Starts the animation to fade out the popup.
+    if (extension_id == old_extension_id)
       return nil;
-    }
   }
 
-  extensions::ExtensionViewHost* host =
-      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser);
-  DCHECK(host);
-  if (!host)
-    return nil;
-
-  [gPopup close];
-
-  // Takes ownership of |host|. Also will autorelease itself when the popup is
-  // closed, so no need to do that here.
+  // Create the popup first. This establishes an initially hidden NSWindow so
+  // that the renderer is able to gather correct screen metrics for the initial
+  // paint.
   gPopup = [[ExtensionPopupController alloc]
-      initWithHost:host
-      parentWindow:browser->window()->GetNativeWindow()
-        anchoredAt:anchoredAt
-     arrowLocation:arrowLocation
-           devMode:devMode];
+      initWithParentWindow:browser->window()->GetNativeWindow()
+                anchoredAt:anchoredAt
+             arrowLocation:arrowLocation
+                   devMode:devMode];
+
+  scoped_ptr<extensions::ExtensionViewHost> host(
+      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser));
+  DCHECK(host);
+  [gPopup setExtensionViewHost:host.Pass()];
   return gPopup;
 }
 
 + (ExtensionPopupController*)popup {
   return gPopup;
+}
+
+- (void)setExtensionViewHost:(scoped_ptr<extensions::ExtensionViewHost>)host {
+  DCHECK(!host_);
+  DCHECK(host);
+  host_.swap(host);
+
+  extensionId_ = host_->extension_id();
+  container_.reset(new ExtensionPopupContainer(self));
+  ExtensionViewMac* hostView = static_cast<ExtensionViewMac*>(host_->view());
+  hostView->set_container(container_.get());
+  hostView->CreateWidgetHostViewIn([self bubble]);
+
+  extensionView_ = hostView->GetNativeView();
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center addObserver:self
+             selector:@selector(extensionViewFrameChanged)
+                 name:NSViewFrameDidChangeNotification
+               object:extensionView_];
+
+  notificationBridge_.reset(new DevtoolsNotificationBridge(self));
+  registrar_.reset(new content::NotificationRegistrar);
+  if (beingInspected_) {
+    // Listen for the extension to finish loading so the dev tools can be
+    // opened.
+    registrar_->Add(notificationBridge_.get(),
+                    extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                    content::Source<BrowserContext>(host_->browser_context()));
+  }
 }
 
 - (void)extensionViewFrameChanged {
@@ -382,7 +381,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // When we update the size, the window will become visible. Stay hidden until
   // the host is loaded.
   pendingSize_ = newSize;
-  if (!host_->did_stop_loading())
+  if (!host_ || !host_->did_stop_loading())
     return;
 
   // No need to use CA here, our caller calls us repeatedly to animate the

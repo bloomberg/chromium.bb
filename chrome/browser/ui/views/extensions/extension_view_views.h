@@ -56,7 +56,6 @@ class ExtensionViewViews : public views::NativeViewHost,
   void SetIsClipped(bool is_clipped);
 
   // extensions::ExtensionView:
-  void Init() override;
   Browser* GetBrowser() override;
   gfx::NativeView GetNativeView() override;
   void ResizeDueToAutoResize(const gfx::Size& new_size) override;

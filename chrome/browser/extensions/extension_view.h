@@ -25,9 +25,6 @@ class ExtensionView {
  public:
   virtual ~ExtensionView() {}
 
-  // Initialize the view, once a newly created view has been set in the host.
-  virtual void Init() = 0;
-
   // If attached to a Browser (e.g. popups), the Browser it is attached to.
   virtual Browser* GetBrowser() = 0;
 

@@ -81,10 +81,6 @@ void ExtensionViewViews::SetIsClipped(bool is_clipped) {
   }
 }
 
-void ExtensionViewViews::Init() {
-  // Initialization continues in ViewHierarchyChanged().
-}
-
 Browser* ExtensionViewViews::GetBrowser() {
   return browser_;
 }
