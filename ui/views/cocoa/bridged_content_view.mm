@@ -67,6 +67,8 @@ gfx::Point MovePointToWindow(const NSPoint& point,
           eventFlags:(int)eventFlags;
 
 // Menu action handlers.
+- (void)undo:(id)sender;
+- (void)redo:(id)sender;
 - (void)cut:(id)sender;
 - (void)copy:(id)sender;
 - (void)paste:(id)sender;
@@ -165,6 +167,27 @@ gfx::Point MovePointToWindow(const NSPoint& point,
   hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
 }
 
+- (void)undo:(id)sender {
+  // This DCHECK is more strict than a similar check in handleAction:. It can be
+  // done here because the actors sending these actions should be calling
+  // validateUserInterfaceItem: before enabling UI that allows these messages to
+  // be sent. Checking it here would be too late to provide correct UI feedback
+  // (e.g. there will be no "beep").
+  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_UNDO));
+  [self handleAction:IDS_APP_UNDO
+             keyCode:ui::VKEY_Z
+             domCode:ui::DomCode::KEY_Z
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)redo:(id)sender {
+  DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_REDO));
+  [self handleAction:IDS_APP_REDO
+             keyCode:ui::VKEY_Z
+             domCode:ui::DomCode::KEY_Z
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
 - (void)cut:(id)sender {
   DCHECK(textInputClient_->IsEditCommandEnabled(IDS_APP_CUT));
   [self handleAction:IDS_APP_CUT
@@ -243,7 +266,9 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 
 - (void)keyDown:(NSEvent*)theEvent {
   // Convert the event into an action message, according to OSX key mappings.
+  inKeyDown_ = YES;
   [self interpretKeyEvents:@[ theEvent ]];
+  inKeyDown_ = NO;
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -568,7 +593,17 @@ gfx::Point MovePointToWindow(const NSPoint& point,
     return;
 
   textInputClient_->DeleteRange(gfx::Range(replacementRange));
-  textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+
+  // If a single character is inserted by keyDown's call to interpretKeyEvents:
+  // then use InsertChar() to allow editing events to be merged. The second
+  // argument is the key modifier, which interpretKeyEvents: will have already
+  // processed, so don't send it to InsertChar() as well. E.g. Alt+S puts 'ß' in
+  // |text| but sending 'Alt' to InsertChar would filter it out since it thinks
+  // it's a command. Actual commands (e.g. Cmd+S) won't go through insertText:.
+  if (inKeyDown_ && [text length] == 1)
+    textInputClient_->InsertChar([text characterAtIndex:0], 0);
+  else
+    textInputClient_->InsertText(base::SysNSStringToUTF16(text));
 }
 
 - (NSRange)markedRange {
@@ -620,6 +655,10 @@ gfx::Point MovePointToWindow(const NSPoint& point,
 
   SEL action = [item action];
 
+  if (action == @selector(undo:))
+    return textInputClient_->IsEditCommandEnabled(IDS_APP_UNDO);
+  if (action == @selector(redo:))
+    return textInputClient_->IsEditCommandEnabled(IDS_APP_REDO);
   if (action == @selector(cut:))
     return textInputClient_->IsEditCommandEnabled(IDS_APP_CUT);
   if (action == @selector(copy:))

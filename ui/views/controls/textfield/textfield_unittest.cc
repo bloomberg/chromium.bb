@@ -1087,11 +1087,11 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   EXPECT_STR_EQ("", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("hello world", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("h welloorld", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("h welloorld", textfield_->text());
 }
 
@@ -1141,11 +1141,11 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   EXPECT_STR_EQ("", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("hello world", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("h worlellod", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("h worlellod", textfield_->text());
 }
 
@@ -1364,9 +1364,9 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   EXPECT_STR_EQ("", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("a", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("a", textfield_->text());
 
   // AppendText
@@ -1375,7 +1375,7 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   EXPECT_STR_EQ("ab", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("a", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("ab", textfield_->text());
 
   // SetText
@@ -1387,9 +1387,9 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   EXPECT_STR_EQ("abc", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("ab", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("abc", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("abc", textfield_->text());
   textfield_->SetText(ASCIIToUTF16("123"));
   textfield_->SetText(ASCIIToUTF16("123"));
@@ -1406,11 +1406,11 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   EXPECT_STR_EQ("ab", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("a", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("ab", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("123", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("1234", textfield_->text());
 
   // Undoing to the same text shouldn't call ContentsChanged.
@@ -1422,13 +1422,13 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   EXPECT_STR_EQ("abc", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("1234", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("abc", textfield_->text());
 
   // Delete/Backspace
   SendKeyEvent(ui::VKEY_BACK);
   EXPECT_STR_EQ("ab", textfield_->text());
-  SendKeyEvent(ui::VKEY_HOME);
+  SendHomeEvent(false);
   SendKeyEvent(ui::VKEY_DELETE);
   EXPECT_STR_EQ("b", textfield_->text());
   SendKeyEvent(ui::VKEY_A, false, true);
@@ -1440,15 +1440,37 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   EXPECT_STR_EQ("ab", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
   EXPECT_STR_EQ("abc", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("ab", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("b", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("", textfield_->text());
-  SendKeyEvent(ui::VKEY_Y, false, true);
+  SendKeyEvent(ui::VKEY_Z, true, true);
   EXPECT_STR_EQ("", textfield_->text());
 }
+
+// Most platforms support Ctrl+Y as an alternative to Ctrl+Shift+Z, but on Mac
+// that is bound to "Show full history", so is not mapped as an editing
+// command. So, on Mac, send Cmd+Shift+Z.
+#if !defined(OS_MACOSX)
+
+// Test that Ctrl+Y works for Redo, as well as Ctrl+Shift+Z.
+TEST_F(TextfieldTest, RedoWithCtrlY) {
+  InitTextfield();
+  SendKeyEvent(ui::VKEY_A);
+  EXPECT_STR_EQ("a", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Y, false, true);
+  EXPECT_STR_EQ("a", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_STR_EQ("", textfield_->text());
+  SendKeyEvent(ui::VKEY_Z, true, true);
+  EXPECT_STR_EQ("a", textfield_->text());
+}
+
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(TextfieldTest, CutCopyPaste) {
   InitTextfield();

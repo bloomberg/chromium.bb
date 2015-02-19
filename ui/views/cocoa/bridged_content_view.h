@@ -32,6 +32,9 @@ class View;
 
   // A tracking area installed to enable mouseMoved events.
   ui::ScopedCrTrackingArea trackingArea_;
+
+  // Whether the view is reacting to a keyDown event on the view.
+  BOOL inKeyDown_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;
