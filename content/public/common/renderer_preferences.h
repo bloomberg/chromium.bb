@@ -96,6 +96,9 @@ struct CONTENT_EXPORT RendererPreferences {
   // Set to true to indicate that the preference to set DNT to 1 is enabled.
   bool enable_do_not_track;
 
+  // Set to false to indicate that WebRTC should use the OS default routing.
+  bool enable_webrtc_multiple_routes;
+
   // Default page zoom level.
   double default_zoom_level;
 

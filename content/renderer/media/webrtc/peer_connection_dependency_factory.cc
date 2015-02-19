@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -33,6 +34,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/render_view_impl.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -114,14 +116,14 @@ void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
-  P2PPortAllocatorFactory(
-      P2PSocketDispatcher* socket_dispatcher,
-      rtc::NetworkManager* network_manager,
-      rtc::PacketSocketFactory* socket_factory)
+  P2PPortAllocatorFactory(P2PSocketDispatcher* socket_dispatcher,
+                          rtc::NetworkManager* network_manager,
+                          rtc::PacketSocketFactory* socket_factory,
+                          bool enable_multiple_routes)
       : socket_dispatcher_(socket_dispatcher),
         network_manager_(network_manager),
-        socket_factory_(socket_factory) {
-  }
+        socket_factory_(socket_factory),
+        enable_multiple_routes_(enable_multiple_routes) {}
 
   cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
@@ -147,6 +149,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
           turn_configurations[i].server.hostname(),
           turn_configurations[i].server.port()));
     }
+    config.enable_multiple_routes = enable_multiple_routes_;
 
     return new P2PPortAllocator(
         socket_dispatcher_.get(), network_manager_, socket_factory_, config);
@@ -161,6 +164,10 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   // PeerConnectionDependencyFactory.
   rtc::NetworkManager* network_manager_;
   rtc::PacketSocketFactory* socket_factory_;
+
+  // When false, only 'any' address (all 0s) will be bound for address
+  // discovery.
+  bool enable_multiple_routes_;
 };
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
@@ -394,11 +401,21 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   if (!GetPcFactory().get())
     return NULL;
 
+  // Copy the flag from Preference associated with this WebFrame.
+  bool enable_multiple_routes = true;
+  if (web_frame && web_frame->view()) {
+    RenderViewImpl* renderer_view_impl =
+        RenderViewImpl::FromWebView(web_frame->view());
+    if (renderer_view_impl) {
+      enable_multiple_routes = renderer_view_impl->renderer_preferences()
+                                    .enable_webrtc_multiple_routes;
+    }
+  }
+
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
-        new rtc::RefCountedObject<P2PPortAllocatorFactory>(
-            p2p_socket_dispatcher_.get(),
-            network_manager_,
-            socket_factory_.get());
+      new rtc::RefCountedObject<P2PPortAllocatorFactory>(
+          p2p_socket_dispatcher_.get(), network_manager_, socket_factory_.get(),
+          enable_multiple_routes);
 
   PeerConnectionIdentityService* identity_service =
       new PeerConnectionIdentityService(

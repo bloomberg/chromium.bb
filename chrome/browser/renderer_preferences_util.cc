@@ -46,6 +46,10 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
+#if defined(ENABLE_WEBRTC)
+  prefs->enable_webrtc_multiple_routes =
+      pref_service->GetBoolean(prefs::kWebRTCMultipleRoutesEnabled);
+#endif
 
   double default_zoom_level = 0;
   bool default_zoom_level_set = false;

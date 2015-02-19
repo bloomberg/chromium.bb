@@ -419,6 +419,10 @@ extern const char kCopresenceAuthenticatedDeviceId[];
 extern const char kCopresenceAnonymousDeviceId[];
 #endif
 
+#if defined(ENABLE_WEBRTC)
+extern const char kWebRTCMultipleRoutesEnabled[];
+#endif
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

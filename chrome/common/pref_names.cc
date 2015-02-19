@@ -1248,6 +1248,12 @@ const char kCopresenceAuthenticatedDeviceId[] =
 const char kCopresenceAnonymousDeviceId[] = "apps.copresence.unauth_device_id";
 #endif
 
+// Whether WebRTC should bind to individual NICs to explore all possible routing
+// options. Default is true.
+#if defined(ENABLE_WEBRTC)
+const char kWebRTCMultipleRoutesEnabled[] = "webrtc.multiple_routes_enabled";
+#endif
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

@@ -36,6 +36,9 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
 
     // Disable TCP-based transport when set to true.
     bool disable_tcp_transport;
+
+    // Disable binding to individual NICs when set to false.
+    bool enable_multiple_routes;
   };
 
   P2PPortAllocator(P2PSocketDispatcher* socket_dispatcher,

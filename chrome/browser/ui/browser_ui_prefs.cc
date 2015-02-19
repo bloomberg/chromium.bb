@@ -157,6 +157,12 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kEnableDoNotTrack,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if defined(ENABLE_WEBRTC)
+  registry->RegisterBooleanPref(
+      prefs::kWebRTCMultipleRoutesEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 
   // Dictionaries to keep track of default tasks in the file browser.
   registry->RegisterDictionaryPref(

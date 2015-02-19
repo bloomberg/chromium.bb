@@ -31,6 +31,8 @@ P2PPortAllocator::P2PPortAllocator(
   uint32 flags = 0;
   if (config_.disable_tcp_transport)
     flags |= cricket::PORTALLOCATOR_DISABLE_TCP;
+  if (!config_.enable_multiple_routes)
+    flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
   set_flags(flags);
   set_allow_tcp_listen(false);
 }
