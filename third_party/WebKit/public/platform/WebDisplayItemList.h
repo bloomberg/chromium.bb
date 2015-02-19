@@ -52,15 +52,9 @@ public:
     virtual void appendEndFilterItem() = 0;
 
     // Scroll containers are identified by an opaque pointer.
-    // FIXME: Make these pure virtual once the embedder implements them.
     using ScrollContainerId = const void*;
-    virtual void appendScrollItem(const WebSize& scrollOffset, ScrollContainerId)
-    {
-        SkMatrix44 matrix;
-        matrix.setTranslate(-scrollOffset.width, -scrollOffset.height, 0);
-        appendTransformItem(matrix);
-    }
-    virtual void appendEndScrollItem() { appendEndTransformItem(); }
+    virtual void appendScrollItem(const WebSize& scrollOffset, ScrollContainerId) = 0;
+    virtual void appendEndScrollItem() = 0;
 };
 
 } // namespace blink
