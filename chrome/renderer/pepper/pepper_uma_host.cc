@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -30,11 +31,11 @@ namespace {
 
 const char* const kPredefinedAllowedUMAOrigins[] = {
     "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see http://crbug.com/317833
-    "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see http://crbug.com/317833
+    "4EB74897CB187C7633357C2FE832E0AD6A44883A",  // see http://crbug.com/317833
 };
 
 const char* const kWhitelistedHistogramPrefixes[] = {
-    "22F67DA2061FFC4DC9A4974036348D9C38C22919"  // see http://crbug.com/390221
+    "22F67DA2061FFC4DC9A4974036348D9C38C22919",  // see http://crbug.com/390221
 };
 
 const char* const kWhitelistedPluginBaseNames[] = {
@@ -42,7 +43,7 @@ const char* const kWhitelistedPluginBaseNames[] = {
     kWidevineCdmAdapterFileName,  // see http://crbug.com/368743
                                   // and http://crbug.com/410630
 #endif
-    "libpdf.so"                   // see http://crbug.com/405305
+    ChromeContentClient::kPDFPluginPath,
 };
 
 std::string HashPrefix(const std::string& histogram) {
@@ -106,13 +107,12 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
   }
 
   if (IsPluginWhitelisted() &&
-      allowed_histogram_prefixes_.find(HashPrefix(histogram)) !=
-          allowed_histogram_prefixes_.end()) {
+      ContainsKey(allowed_histogram_prefixes_, HashPrefix(histogram))) {
     return true;
   }
 
-  if (allowed_plugin_base_names_.find(plugin_base_name_.MaybeAsASCII()) !=
-      allowed_plugin_base_names_.end()) {
+  if (ContainsKey(allowed_plugin_base_names_,
+                  plugin_base_name_.MaybeAsASCII())) {
     return true;
   }
 

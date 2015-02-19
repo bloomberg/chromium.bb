@@ -21,9 +21,9 @@ std::string GetUserAgent();
 
 class ChromeContentClient : public content::ContentClient {
  public:
-  static const char* const kPDFPluginName;
-  static const char* const kPDFPluginPath;
-  static const char* const kRemotingViewerPluginPath;
+  static const char kPDFPluginName[];
+  static const char kPDFPluginPath[];
+  static const char kRemotingViewerPluginPath[];
 
   // The methods below are called by child processes to set the function
   // pointers for built-in plugins. We avoid linking these plugins into
