@@ -13,17 +13,21 @@ namespace variables {
 
 // Builtin vars ----------------------------------------------------------------
 
-extern const char kBuildCpuArch[];
-extern const char kBuildCpuArch_HelpShort[];
-extern const char kBuildCpuArch_Help[];
+extern const char kHostCpu[];
+extern const char kHostCpu_HelpShort[];
+extern const char kHostCpu_Help[];
 
-extern const char kBuildOs[];
-extern const char kBuildOs_HelpShort[];
-extern const char kBuildOs_Help[];
+extern const char kHostOs[];
+extern const char kHostOs_HelpShort[];
+extern const char kHostOs_Help[];
 
-extern const char kCpuArch[];
-extern const char kCpuArch_HelpShort[];
-extern const char kCpuArch_Help[];
+extern const char kCurrentCpu[];
+extern const char kCurrentCpu_HelpShort[];
+extern const char kCurrentCpu_Help[];
+
+extern const char kCurrentOs[];
+extern const char kCurrentOs_HelpShort[];
+extern const char kCurrentOs_Help[];
 
 extern const char kCurrentToolchain[];
 extern const char kCurrentToolchain_HelpShort[];
@@ -32,10 +36,6 @@ extern const char kCurrentToolchain_Help[];
 extern const char kDefaultToolchain[];
 extern const char kDefaultToolchain_HelpShort[];
 extern const char kDefaultToolchain_Help[];
-
-extern const char kOs[];
-extern const char kOs_HelpShort[];
-extern const char kOs_Help[];
 
 extern const char kPythonPath[];
 extern const char kPythonPath_HelpShort[];
@@ -52,6 +52,14 @@ extern const char kRootGenDir_Help[];
 extern const char kRootOutDir[];
 extern const char kRootOutDir_HelpShort[];
 extern const char kRootOutDir_Help[];
+
+extern const char kTargetCpu[];
+extern const char kTargetCpu_HelpShort[];
+extern const char kTargetCpu_Help[];
+
+extern const char kTargetOs[];
+extern const char kTargetOs_HelpShort[];
+extern const char kTargetOs_Help[];
 
 extern const char kTargetGenDir[];
 extern const char kTargetGenDir_HelpShort[];

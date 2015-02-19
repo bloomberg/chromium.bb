@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 config("compiler_defaults") {
-  if (os == "linux") {
+  if (current_os == "linux") {
     cflags = [
       "-fPIC",
       "-pthread",

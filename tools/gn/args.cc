@@ -18,10 +18,12 @@ const char kBuildArgs_Help[] =
     "\n"
     "  First, system default arguments are set based on the current system.\n"
     "  The built-in arguments are:\n"
-    "   - cpu_arch (by default this is the same as \"default_cpu_arch\")\n"
-    "   - default_cpu_arch\n"
-    "   - default_os\n"
-    "   - os (by default this is the same as \"default_os\")\n"
+    "   - host_cpu\n"
+    "   - host_os\n"
+    "   - current_cpu\n"
+    "   - current_os\n"
+    "   - target_cpu\n"
+    "   - target_os\n"
     "\n"
     "  If specified, arguments from the --args command line flag are used. If\n"
     "  that flag is not specified, args from previous builds in the build\n"
@@ -221,9 +223,6 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
 #else
   #error Unknown OS type.
 #endif
-  Value os_val(nullptr, std::string(os));
-  dest->SetValue(variables::kBuildOs, os_val, nullptr);
-  dest->SetValue(variables::kOs, os_val, nullptr);
 
   // Host architecture.
   static const char kX86[] = "x86";
@@ -231,7 +230,7 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   static const char kArm[] = "arm";
   const char* arch = nullptr;
 
-  // Set the CPU architecture based on the underlying OS, not
+  // Set the host CPU architecture based on the underlying OS, not
   // whatever the current bit-tedness of the GN binary is.
   std::string os_arch = base::SysInfo::OperatingSystemArchitecture();
   if (os_arch == "x86")
@@ -243,22 +242,36 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   else
     CHECK(false) << "OS architecture not handled.";
 
-  Value arch_val(nullptr, std::string(arch));
-  dest->SetValue(variables::kBuildCpuArch, arch_val, nullptr);
-  dest->SetValue(variables::kCpuArch, arch_val, nullptr);
-
   // Save the OS and architecture as build arguments that are implicitly
   // declared. This is so they can be overridden in a toolchain build args
   // override, and so that they will appear in the "gn args" output.
-  //
-  // Do not declare the build* variants since these shouldn't be changed.
-  //
+  Value empty_string(nullptr, std::string());
+
+  Value os_val(nullptr, std::string(os));
+  dest->SetValue(variables::kHostOs, os_val, nullptr);
+  dest->SetValue(variables::kTargetOs, empty_string, nullptr);
+  dest->SetValue(variables::kCurrentOs, empty_string, nullptr);
+
+  Value arch_val(nullptr, std::string(arch));
+  dest->SetValue(variables::kHostCpu, arch_val, nullptr);
+  dest->SetValue(variables::kTargetCpu, empty_string, nullptr);
+  dest->SetValue(variables::kCurrentCpu, empty_string, nullptr);
+
+  declared_arguments_[variables::kHostOs] = os_val;
+  declared_arguments_[variables::kCurrentOs] = empty_string;
+  declared_arguments_[variables::kTargetOs] = empty_string;
+  declared_arguments_[variables::kHostCpu] = arch_val;
+  declared_arguments_[variables::kCurrentCpu] = empty_string;
+  declared_arguments_[variables::kTargetCpu] = empty_string;
+
   // Mark these variables used so the build config file can override them
   // without geting a warning about overwriting an unused variable.
-  declared_arguments_[variables::kOs] = os_val;
-  declared_arguments_[variables::kCpuArch] = arch_val;
-  dest->MarkUsed(variables::kCpuArch);
-  dest->MarkUsed(variables::kOs);
+  dest->MarkUsed(variables::kHostCpu);
+  dest->MarkUsed(variables::kCurrentCpu);
+  dest->MarkUsed(variables::kTargetCpu);
+  dest->MarkUsed(variables::kHostOs);
+  dest->MarkUsed(variables::kCurrentOs);
+  dest->MarkUsed(variables::kTargetOs);
 }
 
 void Args::ApplyOverridesLocked(const Scope::KeyValueMap& values,

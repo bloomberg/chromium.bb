@@ -8,23 +8,152 @@ namespace variables {
 
 // Built-in variables ----------------------------------------------------------
 
-const char kCpuArch[] = "cpu_arch";
-const char kCpuArch_HelpShort[] =
-    "cpu_arch: [string] Current processor architecture.";
-const char kCpuArch_Help[] =
-    "cpu_arch: Current processor architecture.\n"
+const char kHostCpu[] = "host_cpu";
+const char kHostCpu_HelpShort[] =
+    "host_cpu: [string] The processor architecture that GN is running on.";
+const char kHostCpu_Help[] =
+    "host_cpu: The processor architecture that GN is running on.\n"
     "\n"
-    "  The initial value is based on the current architecture of the host\n"
-    "  system. However, the build configuration can set this to any value.\n"
+    "  This is value is exposed so that cross-compile toolchains can\n"
+    "  access the host architecture when needed.\n"
     "\n"
-    "  This value is not used internally by GN for any purpose, so you can\n"
-    "  set it to whatever value is relevant to your build.\n"
+    "  The value should generally be considered read-only, but it can be\n"
+    "  overriden in order to handle unusual cases where there might\n"
+    "  be multiple plausible values for the host architecture (e.g., if\n"
+    "  you can do either 32-bit or 64-bit builds). The value is not used\n"
+    "  internally by GN for any purpose.\n"
     "\n"
-    "Possible initial values set by GN:\n"
+    "Some possible values:\n"
+    "  - \"x64\"\n"
+    "  - \"x86\"\n";
+
+const char kHostOs[] = "host_os";
+const char kHostOs_HelpShort[] =
+    "host_os: [string] The operating system that GN is running on.";
+const char kHostOs_Help[] =
+    "host_os: [string] The operating system that GN is running on.\n"
+    "\n"
+    "  This value is exposed so that cross-compiles can access the host\n"
+    "  build system's settings.\n"
+    "\n"
+    "  This value should generally be treated as read-only. It, however,\n"
+    "  is not used internally by GN for any purpose.\n"
+    "\n"
+    "Some possible values:\n"
+    "  - \"linux\"\n"
+    "  - \"mac\"\n"
+    "  - \"win\"\n";
+
+const char kTargetCpu[] = "target_cpu";
+const char kTargetCpu_HelpShort[] =
+    "target_cpu: [string] The desired cpu architecture for the build.";
+const char kTargetCpu_Help[] =
+    "target_cpu: The desired cpu architecture for the build.\n"
+    "\n"
+    "  This value should be used to indicate the desired architecture for\n"
+    "  the primary objects of the build. It will match the cpu architecture\n"
+    "  of the default toolchain.\n"
+    "\n"
+    "  In many cases, this is the same as \"host_cpu\", but in the case\n"
+    "  of cross-compiles, this can be set to something different. This \n"
+    "  value is different from \"current_cpu\" in that it can be referenced\n"
+    "  from inside any toolchain. This value can also be ignored if it is\n"
+    "  not needed or meaningful for a project.\n"
+    "\n"
+    "  This value is not used internally by GN for any purpose, so it\n"
+    "  may be set to whatever value is needed for the build.\n"
+    "  GN defaults this value to the empty string (\"\") and the\n"
+    "  configuration files should set it to an appropriate value\n"
+    "  (e.g., setting it to the value of \"host_cpu\") if it is not\n"
+    "  overridden on the command line or in the args.gn file.\n"
+    "\n"
+    "  Where practical, use one of the following list of common values:\n"
+    "\n"
+    "Possible values:\n"
     "  - \"x86\"\n"
     "  - \"x64\"\n"
     "  - \"arm\"\n"
+    "  - \"arm64\"\n"
     "  - \"mipsel\"\n";
+
+const char kTargetOs[] = "target_os";
+const char kTargetOs_HelpShort[] =
+    "target_os: [string] The desired operating system for the build.";
+const char kTargetOs_Help[] =
+    "target_os: The desired operating system for the build.\n"
+    "\n"
+    "  This value should be used to indicate the desired operating system\n"
+    "  for the primary object(s) of the build. It will match the OS of\n"
+    "  the default toolchain.\n"
+    "\n"
+    "  In many cases, this is the same as \"host_os\", but in the case of\n"
+    "  cross-compiles, it may be different. This variable differs from\n"
+    "  \"current_os\" in that it can be referenced from inside any\n"
+    "  toolchain and will always return the initial value.\n"
+    "\n"
+    "  This should be set to the most specific value possible. So,\n"
+    "  \"android\" or \"chromeos\" should be used instead of \"linux\"\n"
+    "  where applicable, even though Android and ChromeOS are both Linux\n"
+    "  variants. This can mean that one needs to write\n"
+    "\n"
+    "      if (target_os == \"android\" || target_os == \"linux\") {\n"
+    "          # ...\n"
+    "      }\n"
+    "\n"
+    "  and so forth.\n"
+    "\n"
+    "  This value is not used internally by GN for any purpose, so it\n"
+    "  may be set to whatever value is needed for the build.\n"
+    "  GN defaults this value to the empty string (\"\") and the\n"
+    "  configuration files should set it to an appropriate value\n"
+    "  (e.g., setting it to the value of \"host_os\") if it is not\n"
+    "  set via the command line or in the args.gn file.\n"
+    "\n"
+    "  Where practical, use one of the following list of common values:\n"
+    "\n"
+    "Possible values:\n"
+    "  - \"android\"\n"
+    "  - \"chromeos\"\n"
+    "  - \"ios\"\n"
+    "  - \"linux\"\n"
+    "  - \"nacl\"\n"
+    "  - \"mac\"\n"
+    "  - \"win\"\n";
+
+const char kCurrentCpu[] = "current_cpu";
+const char kCurrentCpu_HelpShort[] =
+    "current_cpu: [string] The processor architecture of the current "
+        "toolchain.";
+const char kCurrentCpu_Help[] =
+    "current_cpu: The processor architecture of the current toolchain.\n"
+    "\n"
+    "  The build configuration usually sets this value based on the value\n"
+    "  of \"host_cpu\" (see \"gn help host_cpu\") and then threads\n"
+    "  this through the toolchain definitions to ensure that it always\n"
+    "  reflects the appropriate value.\n"
+    "\n"
+    "  This value is not used internally by GN for any purpose. It is\n"
+    "  set it to the empty string (\"\") by default but is declared so\n"
+    "  that it can be overridden on the command line if so desired.\n"
+    "\n"
+    "  See \"gn help target_cpu\" for a list of common values returned.\n";
+
+const char kCurrentOs[] = "current_os";
+const char kCurrentOs_HelpShort[] =
+    "current_os: [string] The operating system of the current toolchain.";
+const char kCurrentOs_Help[] =
+    "current_os: The operating system of the current toolchain.\n"
+    "\n"
+    "  The build configuration usually sets this value based on the value\n"
+    "  of \"target_os\" (see \"gn help target_os\"), and then threads this\n"
+    "  through the toolchain definitions to ensure that it always reflects\n"
+    "  the appropriate value.\n"
+    "\n"
+    "  This value is not used internally by GN for any purpose. It is\n"
+    "  set it to the empty string (\"\") by default but is declared so\n"
+    "  that it can be overridden on the command line if so desired.\n"
+    "\n"
+    "  See \"gn help target_os\" for a list of common values returned.\n";
 
 const char kCurrentToolchain[] = "current_toolchain";
 const char kCurrentToolchain_HelpShort[] =
@@ -42,30 +171,6 @@ const char kCurrentToolchain_Help[] =
     "    executable(\"output_thats_64_bit_only\") {\n"
     "      ...\n";
 
-const char kBuildCpuArch[] = "build_cpu_arch";
-const char kBuildCpuArch_HelpShort[] =
-    "build_cpu_arch: [string] The default value for the \"cpu_arch\" "
-    "variable.";
-const char kBuildCpuArch_Help[] =
-    "build_cpu_arch: The default value for the \"cpu_arch\" variable.\n"
-    "\n"
-    "  This value has the same definition as \"cpu_arch\" (see\n"
-    "  \"gn help cpu_arch\") but should be treated as read-only. This is so\n"
-    "  the build can override the \"cpu_arch\" variable for doing\n"
-    "  cross-compiles, but can still access the host build system's CPU\n"
-    "  architecture.\n";
-
-const char kBuildOs[] = "build_os";
-const char kBuildOs_HelpShort[] =
-    "build_os: [string] The default value for the \"os\" variable.";
-const char kBuildOs_Help[] =
-    "build_os: [string] The default value for the \"os\" variable.\n"
-    "\n"
-    "  This value has the same definition as \"os\" (see \"gn help os\") but\n"
-    "  should be treated as read-only. This is so the build can override\n"
-    "  the \"os\" variable for doing cross-compiles, but can still access\n"
-    "  the host build system's operating system type.\n";
-
 const char kDefaultToolchain[] = "default_toolchain";
 const char kDefaultToolchain_HelpShort[] =
     "default_toolchain: [string] Label of the default toolchain.";
@@ -74,33 +179,6 @@ const char kDefaultToolchain_Help[] =
     "\n"
     "  A fully-qualified label representing the default toolchain, which may\n"
     "  not necessarily be the current one (see \"current_toolchain\").\n";
-
-const char kOs[] = "os";
-const char kOs_HelpShort[] =
-    "os: [string] Indicates the operating system of the current build.";
-const char kOs_Help[] =
-    "os: Indicates the operating system of the current build."
-    "\n"
-    "  This value is set by default based on the current host operating\n"
-    "  system. The build configuration can override the value to anything\n"
-    "  it wants, or it can be set via the build arguments on the command\n"
-    "  line.\n"
-    "\n"
-    "  If you want to know the default value without any overrides, you can\n"
-    "  use \"default_os\" (see \"gn help default_os\").\n"
-    "\n"
-    "  Note that this returns the most specific value. So even though\n"
-    "  Android and ChromeOS are both Linux, the more specific value will\n"
-    "  be returned.\n"
-    "\n"
-    "Some possible values:\n"
-    "  - \"amiga\"\n"
-    "  - \"android\"\n"
-    "  - \"chromeos\"\n"
-    "  - \"ios\"\n"
-    "  - \"linux\"\n"
-    "  - \"mac\"\n"
-    "  - \"win\"\n";
 
 const char kPythonPath[] = "python_path";
 const char kPythonPath_HelpShort[] =
@@ -975,16 +1053,18 @@ VariableInfo::VariableInfo(const char* in_help_short, const char* in_help)
 const VariableInfoMap& GetBuiltinVariables() {
   static VariableInfoMap info_map;
   if (info_map.empty()) {
-    INSERT_VARIABLE(BuildCpuArch)
-    INSERT_VARIABLE(BuildOs)
-    INSERT_VARIABLE(CpuArch)
+    INSERT_VARIABLE(CurrentCpu)
+    INSERT_VARIABLE(CurrentOs)
     INSERT_VARIABLE(CurrentToolchain)
     INSERT_VARIABLE(DefaultToolchain)
-    INSERT_VARIABLE(Os)
+    INSERT_VARIABLE(HostCpu)
+    INSERT_VARIABLE(HostOs)
     INSERT_VARIABLE(PythonPath)
     INSERT_VARIABLE(RootBuildDir)
     INSERT_VARIABLE(RootGenDir)
     INSERT_VARIABLE(RootOutDir)
+    INSERT_VARIABLE(TargetCpu)
+    INSERT_VARIABLE(TargetOs)
     INSERT_VARIABLE(TargetGenDir)
     INSERT_VARIABLE(TargetOutDir)
   }

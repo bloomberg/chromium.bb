@@ -16,10 +16,11 @@ syn keyword     gnConditional       if else
 hi def link     gnConditional       Conditional
 
 " Predefined variables
-syn keyword     gnPredefVar build_cpu_arch build_os cpu_arch current_toolchain
-syn keyword     gnPredefVar default_toolchain os python_path root_build_dir
-syn keyword     gnPredefVar root_gen_dir root_out_dir target_gen_dir
-syn keyword     gnPredefVar target_out_dir
+syn keyword     gnPredefVar current_cpu current_os current_toolchain
+syn keyword     gnPredefVar default_toolchain host_cpu host_os
+syn keyword     gnPredefVar root_build_dir root_gen_dir root_out_dir
+syn keyword     gnPredefVar target_cpu target_gen_dir target_out_dir
+syn keyword     gnPredefVar target_os
 syn keyword     gnPredefVar true false
 hi def link     gnPredefVar         Constant
 
