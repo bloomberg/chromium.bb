@@ -6,6 +6,7 @@ package org.chromium.android_webview.test.util;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.view.View;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.AwTestBase;
@@ -41,6 +42,20 @@ public class GraphicsTestUtils {
     public static Bitmap drawAwContents(
             AwContents awContents, int width, int height, float dx, float dy) {
         return doDrawAwContents(awContents, width, height, dx, dy);
+    }
+
+    /**
+     * Draws the supplied {@link View} into the returned {@link Bitmap}.
+     *
+     * @param view The view to draw
+     * @param width The width of the bitmap
+     * @param height The height of the bitmap
+     */
+    public static Bitmap drawView(View view, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+        return bitmap;
     }
 
     public static int sampleBackgroundColorOnUiThread(final AwContents awContents)
