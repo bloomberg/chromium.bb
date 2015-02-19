@@ -29,7 +29,6 @@ void MockPresentationService::SetScreenAvailability(bool available) {
 
 void MockPresentationService::Reset() {
   FOR_EACH_OBSERVER(MockPresentationClient, presentation_clients_, Reset());
-  presentation_clients_.Clear();
   screen_availability_ = false;
 }
 
