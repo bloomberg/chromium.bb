@@ -842,6 +842,29 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                              ['id', 'build_config', 'start_time',
                               'finish_time', 'status'])
 
+  @minimum_schema(30)
+  def GetSlaveStages(self, master_build_id):
+    """Gets all the stages of slave builds to given build.
+
+    Args:
+      master_build_id: build id of the master build to fetch the slave
+                       stages for.
+
+    Returns:
+      A list containing, for each stage of each slave build found,
+      a dictionary with keys (id, build_id, name, board, status, last_updated,
+      start_time, finish_time, final, build_config).
+    """
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+    results = self._Execute(
+        'SELECT %s, b.build_config FROM buildStageTable bs JOIN buildTable b '
+        'ON build_id = b.id where b.master_build_id = %s' %
+        (', '.join(bs_prepended_columns), master_build_id)).fetchall()
+    columns = bs_table_columns + ['build_config']
+    return [dict(zip(columns, values)) for values in results]
+
   @minimum_schema(32)
   def GetTimeToDeadline(self, build_id):
     """Gets the time remaining till the deadline for given build_id.

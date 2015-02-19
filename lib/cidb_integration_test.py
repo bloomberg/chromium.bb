@@ -392,11 +392,18 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
+    master_build_id = bot_db.InsertBuild('master build',
+                                         constants.WATERFALL_INTERNAL,
+                                         1,
+                                         'master_config',
+                                         'master.hostname')
+
     build_id = bot_db.InsertBuild('builder name',
                                   constants.WATERFALL_INTERNAL,
                                   1,
                                   'build_config',
-                                  'bot_hostname')
+                                  'bot_hostname',
+                                  master_build_id=master_build_id)
 
     build_stage_id = bot_db.InsertBuildStage(build_id,
                                              'My Stage',
@@ -423,6 +430,12 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
       e = ValueError('The value was erroneous.')
       bot_db.InsertFailure(build_stage_id, type(e).__name__, str(e), category)
       self.assertTrue(bot_db.HasBuildStageFailed(build_stage_id))
+
+    slave_stages = bot_db.GetSlaveStages(master_build_id)
+    self.assertEqual(len(slave_stages), 1)
+    self.assertEqual(slave_stages[0]['status'], 'pass')
+    self.assertEqual(slave_stages[0]['build_config'], 'build_config')
+    self.assertEqual(slave_stages[0]['name'], 'My Stage')
 
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""
