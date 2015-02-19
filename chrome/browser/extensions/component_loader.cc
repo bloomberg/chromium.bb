@@ -59,6 +59,10 @@
 #include "chrome/grit/chromium_strings.h"
 #endif
 
+#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/google_now_extension.h"
+#endif
+
 using content::BrowserThread;
 
 namespace extensions {
@@ -614,6 +618,14 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN;
 
   bool enabled = enabled_via_field_trial || enabled_via_trunk_build;
+
+#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+  // Don't load if newer trial is running (== new extension id is available).
+  std::string ignored_extension_id;
+  if (GetGoogleNowExtensionId(&ignored_extension_id)) {
+    enabled = false;
+  }
+#endif
 
   if (!skip_session_components && enabled) {
     Add(IDR_GOOGLE_NOW_MANIFEST,
