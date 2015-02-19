@@ -328,6 +328,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/459429
 "race:randomnessPid\n"
 
+// https://crbug.com/460243
+"race:IPC::ChannelMojoHost::OnClientLaunched\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
