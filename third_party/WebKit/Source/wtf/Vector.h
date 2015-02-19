@@ -559,7 +559,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         T* inlineBuffer() { return reinterpret_cast_ptr<T*>(m_inlineBuffer.buffer); }
         const T* inlineBuffer() const { return reinterpret_cast_ptr<const T*>(m_inlineBuffer.buffer); }
 
-        AlignedBuffer<m_inlineBufferSize, WTF_CONTAINER_BUFFER_ALIGNMENT(T)> m_inlineBuffer;
+        AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
         template<typename U, size_t inlineBuffer, typename V>
         friend class Deque;
     };
