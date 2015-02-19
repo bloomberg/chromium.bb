@@ -66,7 +66,7 @@ base::DictionaryValue* BuildTargetDescriptor(
 base::DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode accessibility_mode = web_contents->GetAccessibilityMode();
+  AccessibilityMode accessibility_mode = AccessibilityModeOff;
 
   std::string title;
   GURL url;
@@ -80,6 +80,7 @@ base::DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
     NavigationEntry* entry = controller.GetVisibleEntry();
     if (entry != NULL && entry->GetURL().is_valid())
       favicon_url = entry->GetFavicon().url;
+    accessibility_mode = web_contents->GetAccessibilityMode();
   }
 
   return BuildTargetDescriptor(url,

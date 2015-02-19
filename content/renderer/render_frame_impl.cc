@@ -227,11 +227,12 @@ static base::LazyInstance<RoutingIDFrameMap> g_routing_id_frame_map =
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
 base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
 
-int64 ExtractPostId(const WebHistoryItem& item) {
-  if (item.isNull())
+int64 ExtractPostId(HistoryEntry* entry) {
+  if (!entry)
     return -1;
 
-  if (item.httpBody().isNull())
+  const WebHistoryItem& item = entry->root();
+  if (item.isNull() || item.httpBody().isNull())
     return -1;
 
   return item.httpBody().identifier();
@@ -3774,7 +3775,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     base::string16 method = request.httpMethod();
     if (EqualsASCII(method, "POST")) {
       params.is_post = true;
-      params.post_id = ExtractPostId(entry->root());
+      params.post_id = ExtractPostId(entry);
     }
 
     // Send the user agent override back.
