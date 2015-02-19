@@ -797,12 +797,6 @@ crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
-crbug.com/458813 fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
-crbug.com/458813 fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
-crbug.com/458813 virtual/slimmingpaint/fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
-crbug.com/458813 virtual/slimmingpaint/fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
-crbug.com/458813 virtual/slimmingpaint/fast/frames/iframe-scaling-with-scroll.html [ NeedsRebaseline ]
-
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
