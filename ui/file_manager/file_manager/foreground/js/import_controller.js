@@ -440,7 +440,7 @@ importer.ClickSource = {
  */
 importer.RuntimeCommandWidget = function() {
 
-  /** @private {Element} */
+  /** @private {HTMLElement} */
   this.detailsPanel_ = document.getElementById('cloud-import-details');
   this.detailsPanel_.addEventListener(
       'transitionend',
