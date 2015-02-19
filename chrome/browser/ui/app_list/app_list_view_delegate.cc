@@ -503,6 +503,7 @@ void AppListViewDelegate::OpenSearchResult(
   if (auto_launch)
     base::RecordAction(base::UserMetricsAction("AppList_AutoLaunched"));
   search_controller_->OpenResult(result, event_flags);
+  is_voice_query_ = false;
 }
 
 void AppListViewDelegate::InvokeSearchResultAction(
@@ -517,10 +518,12 @@ base::TimeDelta AppListViewDelegate::GetAutoLaunchTimeout() {
 }
 
 void AppListViewDelegate::AutoLaunchCanceled() {
-  base::RecordAction(base::UserMetricsAction("AppList_AutoLaunchCanceled"));
+  if (is_voice_query_) {
+    base::RecordAction(base::UserMetricsAction("AppList_AutoLaunchCanceled"));
+    // Cancelling the auto launch means we are no longer in a voice query.
+    is_voice_query_ = false;
+  }
   auto_launch_timeout_ = base::TimeDelta();
-  // Cancelling the auto launch means we are no longer in a voice query.
-  is_voice_query_ = false;
 }
 
 void AppListViewDelegate::ViewInitialized() {
