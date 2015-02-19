@@ -331,6 +331,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/460243
 "race:IPC::ChannelMojoHost::OnClientLaunched\n"
 
+// https://crbug.com/454655
+"race:content::BrowserTestBase::PostTaskToInProcessRendererAndWait\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
