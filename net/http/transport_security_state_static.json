@@ -219,6 +219,7 @@
     { "name": "googlemail.com", "mode": "force-https", "pins": "google" },
     { "name": "www.gmail.com", "mode": "force-https", "pins": "google" },
     { "name": "www.googlemail.com", "mode": "force-https", "pins": "google" },
+    { "name": "chrome.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "market.android.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "ssl.google-analytics.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "drive.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
@@ -2186,6 +2187,7 @@
     "2MDN_NET",
     "FACEBOOK_COM",
     "SPIDEROAK_COM",
-    "BLOGGER_COM"
+    "BLOGGER_COM",
+    "CHROME_COM"
   ]
 }
