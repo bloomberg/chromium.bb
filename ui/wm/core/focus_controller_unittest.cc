@@ -22,6 +22,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/base_focus_rules.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
@@ -1111,6 +1112,26 @@ class FocusControllerParentHideTest : public FocusControllerHideTest {
  public:
   FocusControllerParentHideTest() : FocusControllerHideTest(true) {}
 
+  // The parent window's visibility change should not change its transient child
+  // window's modality property.
+  void TransientChildWindowActivationTest() {
+    aura::Window* w1 = root_window()->GetChildById(1);
+    aura::Window* w11 = root_window()->GetChildById(11);
+    ::wm::AddTransientChild(w1, w11);
+    w11->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+
+    EXPECT_EQ(ui::MODAL_TYPE_NONE, w1->GetProperty(aura::client::kModalKey));
+    EXPECT_EQ(ui::MODAL_TYPE_WINDOW, w11->GetProperty(aura::client::kModalKey));
+
+    // Hide the parent window w1 and show it again.
+    w1->Hide();
+    w1->Show();
+
+    // Test that child window w11 doesn't change its modality property.
+    EXPECT_EQ(ui::MODAL_TYPE_NONE, w1->GetProperty(aura::client::kModalKey));
+    EXPECT_EQ(ui::MODAL_TYPE_WINDOW, w11->GetProperty(aura::client::kModalKey));
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FocusControllerParentHideTest);
 };
@@ -1274,6 +1295,10 @@ FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
 
 // See description above DontPassDeletedWindow() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
+
+// See description above TransientChildWindowActivationTest() for details.
+FOCUS_CONTROLLER_TEST(FocusControllerParentHideTest,
+                      TransientChildWindowActivationTest);
 
 // - Verifies that the focused text input client is cleard when the window focus
 //   changes.
