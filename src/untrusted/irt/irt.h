@@ -240,7 +240,16 @@ struct nacl_irt_thread {
   int (*thread_nice)(const int nice);
 };
 
-/* The irt_futex interface is based on Linux's futex() system call. */
+/*
+ * The irt_futex interface is based on Linux's futex() system call.
+ *
+ * irt_futex provides process-private futexes, so futex wait queues are
+ * associated with numeric virtual addresses only.  This is equivalent to
+ * Linux's FUTEX_PRIVATE_FLAG.  If a page is mmap()'d twice, futex_wake()
+ * on one mapping will *not* wake a thread that is waiting on the other
+ * mapping with futex_wait_abs() -- futex wait queues are not associated
+ * with pages' identities.
+ */
 #define NACL_IRT_FUTEX_v0_1        "nacl-irt-futex-0.1"
 struct nacl_irt_futex {
   /*
