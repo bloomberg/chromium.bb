@@ -167,7 +167,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     typedef std::vector<std::pair<BlobEntryKey, std::string> >
         BlobEntryKeyValuePairVec;
 
-    class WriteDescriptor {
+    class CONTENT_EXPORT WriteDescriptor {
      public:
       WriteDescriptor(const GURL& url,
                       int64_t key,
@@ -177,6 +177,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
                       int64_t key,
                       int64_t size,
                       base::Time last_modified);
+      WriteDescriptor(const WriteDescriptor& other);
+      ~WriteDescriptor();
+      WriteDescriptor& operator=(const WriteDescriptor& other);
 
       bool is_file() const { return is_file_; }
       const GURL& url() const {

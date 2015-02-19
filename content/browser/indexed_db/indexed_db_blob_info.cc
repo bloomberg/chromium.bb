@@ -49,7 +49,12 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(int64 key,
     : is_file_(true), type_(type), size_(-1), file_name_(file_name), key_(key) {
 }
 
-IndexedDBBlobInfo::~IndexedDBBlobInfo() {}
+IndexedDBBlobInfo::IndexedDBBlobInfo(const IndexedDBBlobInfo& other) = default;
+
+IndexedDBBlobInfo::~IndexedDBBlobInfo() = default;
+
+IndexedDBBlobInfo& IndexedDBBlobInfo::operator=(
+    const IndexedDBBlobInfo& other) = default;
 
 void IndexedDBBlobInfo::set_size(int64 size) {
   DCHECK_EQ(-1, size_);

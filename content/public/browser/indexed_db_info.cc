@@ -15,4 +15,8 @@ IndexedDBInfo::IndexedDBInfo(const GURL& origin,
       last_modified_(last_modified),
       connection_count_(connection_count) {}
 
+IndexedDBInfo::IndexedDBInfo(const IndexedDBInfo& other) = default;
+IndexedDBInfo::~IndexedDBInfo() = default;
+IndexedDBInfo& IndexedDBInfo::operator=(const IndexedDBInfo& other) = default;
+
 }  // namespace content

@@ -13,20 +13,19 @@
 
 namespace content {
 
-struct IndexedDBIndexMetadata {
+struct CONTENT_EXPORT IndexedDBIndexMetadata {
   static const int64 kInvalidId = -1;
 
-  IndexedDBIndexMetadata() {}
+  IndexedDBIndexMetadata();
   IndexedDBIndexMetadata(const base::string16& name,
                          int64 id,
                          const IndexedDBKeyPath& key_path,
                          bool unique,
-                         bool multi_entry)
-      : name(name),
-        id(id),
-        key_path(key_path),
-        unique(unique),
-        multi_entry(multi_entry) {}
+                         bool multi_entry);
+  IndexedDBIndexMetadata(const IndexedDBIndexMetadata& other);
+  ~IndexedDBIndexMetadata();
+  IndexedDBIndexMetadata& operator=(const IndexedDBIndexMetadata& other);
+
   base::string16 name;
   int64 id;
   IndexedDBKeyPath key_path;
@@ -45,7 +44,11 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
                                const IndexedDBKeyPath& key_path,
                                bool auto_increment,
                                int64 max_index_id);
+  IndexedDBObjectStoreMetadata(const IndexedDBObjectStoreMetadata& other);
   ~IndexedDBObjectStoreMetadata();
+  IndexedDBObjectStoreMetadata& operator=(
+      const IndexedDBObjectStoreMetadata& other);
+
   base::string16 name;
   int64 id;
   IndexedDBKeyPath key_path;
@@ -70,7 +73,9 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
                             const base::string16& version,
                             int64 int_version,
                             int64 max_object_store_id);
+  IndexedDBDatabaseMetadata(const IndexedDBDatabaseMetadata& other);
   ~IndexedDBDatabaseMetadata();
+  IndexedDBDatabaseMetadata& operator=(IndexedDBDatabaseMetadata& other);
 
   base::string16 name;
   int64 id;

@@ -6,6 +6,28 @@
 
 namespace content {
 
+IndexedDBIndexMetadata::IndexedDBIndexMetadata() = default;
+
+IndexedDBIndexMetadata::IndexedDBIndexMetadata(const base::string16& name,
+                                               int64 id,
+                                               const IndexedDBKeyPath& key_path,
+                                               bool unique,
+                                               bool multi_entry)
+    : name(name),
+      id(id),
+      key_path(key_path),
+      unique(unique),
+      multi_entry(multi_entry) {
+}
+
+IndexedDBIndexMetadata::IndexedDBIndexMetadata(
+    const IndexedDBIndexMetadata& other) = default;
+
+IndexedDBIndexMetadata::~IndexedDBIndexMetadata() = default;
+
+IndexedDBIndexMetadata& IndexedDBIndexMetadata::operator=(
+    const IndexedDBIndexMetadata& other) = default;
+
 IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
     const base::string16& name,
     int64 id,
@@ -18,11 +40,19 @@ IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
       auto_increment(auto_increment),
       max_index_id(max_index_id) {}
 
-IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata() {}
-IndexedDBObjectStoreMetadata::~IndexedDBObjectStoreMetadata() {}
+IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata() = default;
+
+IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
+    const IndexedDBObjectStoreMetadata& other) = default;
+
+IndexedDBObjectStoreMetadata::~IndexedDBObjectStoreMetadata() = default;
+
+IndexedDBObjectStoreMetadata& IndexedDBObjectStoreMetadata::operator=(
+    const IndexedDBObjectStoreMetadata& other) = default;
 
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata()
     : int_version(NO_INT_VERSION) {}
+
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
     const base::string16& name,
     int64 id,
@@ -35,6 +65,12 @@ IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
       int_version(int_version),
       max_object_store_id(max_object_store_id) {}
 
-IndexedDBDatabaseMetadata::~IndexedDBDatabaseMetadata() {}
+IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
+    const IndexedDBDatabaseMetadata& other) = default;
+
+IndexedDBDatabaseMetadata::~IndexedDBDatabaseMetadata() = default;
+
+IndexedDBDatabaseMetadata& IndexedDBDatabaseMetadata::operator=(
+    IndexedDBDatabaseMetadata& other) = default;
 
 }  // namespace content

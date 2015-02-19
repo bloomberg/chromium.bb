@@ -27,7 +27,10 @@ IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
 IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& key)
     : lower_(key), upper_(key), lower_open_(false), upper_open_(false) {}
 
-IndexedDBKeyRange::~IndexedDBKeyRange() {}
+IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKeyRange& other) = default;
+IndexedDBKeyRange::~IndexedDBKeyRange() = default;
+IndexedDBKeyRange& IndexedDBKeyRange::operator=(
+    const IndexedDBKeyRange& other) = default;
 
 bool IndexedDBKeyRange::IsOnlyKey() const {
   if (lower_open_ || upper_open_)

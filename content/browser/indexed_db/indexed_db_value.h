@@ -18,7 +18,9 @@ struct CONTENT_EXPORT IndexedDBValue {
   IndexedDBValue();
   IndexedDBValue(const std::string& input_bits,
                  const std::vector<IndexedDBBlobInfo>& input_blob_info);
+  IndexedDBValue(const IndexedDBValue& other);
   ~IndexedDBValue();
+  IndexedDBValue& operator=(const IndexedDBValue& other);
 
   void swap(IndexedDBValue& value) {
     bits.swap(value.bits);

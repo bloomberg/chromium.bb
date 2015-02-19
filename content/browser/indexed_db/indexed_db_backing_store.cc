@@ -4402,4 +4402,12 @@ IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
       last_modified_(last_modified) {
 }
 
+IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(
+    const WriteDescriptor& other) = default;
+IndexedDBBackingStore::Transaction::WriteDescriptor::~WriteDescriptor() =
+    default;
+IndexedDBBackingStore::Transaction::WriteDescriptor&
+    IndexedDBBackingStore::Transaction::WriteDescriptor::
+    operator=(const WriteDescriptor& other) = default;
+
 }  // namespace content

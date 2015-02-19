@@ -33,7 +33,9 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
                     const base::string16& type,
                     const base::string16& file_name);
 
+  IndexedDBBlobInfo(const IndexedDBBlobInfo& other);
   ~IndexedDBBlobInfo();
+  IndexedDBBlobInfo& operator=(const IndexedDBBlobInfo& other);
 
   bool is_file() const { return is_file_; }
   const std::string& uuid() const { return uuid_; }

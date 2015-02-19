@@ -20,7 +20,10 @@ IndexedDBKeyPath::IndexedDBKeyPath(const base::string16& string)
 IndexedDBKeyPath::IndexedDBKeyPath(const std::vector<base::string16>& array)
     : type_(WebIDBKeyPathTypeArray), array_(array) {}
 
-IndexedDBKeyPath::~IndexedDBKeyPath() {}
+IndexedDBKeyPath::IndexedDBKeyPath(const IndexedDBKeyPath& other) = default;
+IndexedDBKeyPath::~IndexedDBKeyPath() = default;
+IndexedDBKeyPath& IndexedDBKeyPath::operator=(const IndexedDBKeyPath& other) =
+    default;
 
 const std::vector<base::string16>& IndexedDBKeyPath::array() const {
   DCHECK(type_ == blink::WebIDBKeyPathTypeArray);

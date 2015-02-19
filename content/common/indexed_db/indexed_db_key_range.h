@@ -19,7 +19,9 @@ class CONTENT_EXPORT IndexedDBKeyRange {
                     const IndexedDBKey& upper,
                     bool lower_open,
                     bool upper_open);
+  IndexedDBKeyRange(const IndexedDBKeyRange& other);
   ~IndexedDBKeyRange();
+  IndexedDBKeyRange& operator=(const IndexedDBKeyRange& other);
 
   const IndexedDBKey& lower() const { return lower_; }
   const IndexedDBKey& upper() const { return upper_; }

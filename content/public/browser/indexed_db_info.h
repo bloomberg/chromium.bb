@@ -18,6 +18,9 @@ class CONTENT_EXPORT IndexedDBInfo {
                 int64 size,
                 const base::Time& last_modified,
                 size_t connection_count);
+  IndexedDBInfo(const IndexedDBInfo& other);
+  ~IndexedDBInfo();
+  IndexedDBInfo& operator=(const IndexedDBInfo& other);
 
   GURL origin_;
   int64 size_;

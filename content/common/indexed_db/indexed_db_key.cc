@@ -92,7 +92,9 @@ IndexedDBKey::IndexedDBKey(const base::string16& string)
       size_estimate_(kOverheadSize +
                      (string.length() * sizeof(base::string16::value_type))) {}
 
-IndexedDBKey::~IndexedDBKey() {}
+IndexedDBKey::IndexedDBKey(const IndexedDBKey& other) = default;
+IndexedDBKey::~IndexedDBKey() = default;
+IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) = default;
 
 bool IndexedDBKey::IsValid() const {
   if (type_ == WebIDBKeyTypeInvalid || type_ == WebIDBKeyTypeNull)
