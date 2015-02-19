@@ -118,7 +118,7 @@ void RendererClipboardDelegate::WriteBookmark(ui::ClipboardType clipboard_type,
                                               const GURL& url,
                                               const base::string16& title) {
   RenderThreadImpl::current()->Send(
-      new ClipboardHostMsg_WriteBookmark(clipboard_type, url, title));
+      new ClipboardHostMsg_WriteBookmark(clipboard_type, url.spec(), title));
 }
 
 bool RendererClipboardDelegate::WriteImage(ui::ClipboardType clipboard_type,

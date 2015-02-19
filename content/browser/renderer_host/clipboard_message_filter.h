@@ -71,7 +71,7 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
   void OnWriteCustomData(ui::ClipboardType clipboard_type,
                          const std::map<base::string16, base::string16>& data);
   void OnWriteBookmark(ui::ClipboardType clipboard_type,
-                       const GURL& url,
+                       const std::string& url,
                        const base::string16& title);
   void OnWriteImage(ui::ClipboardType clipboard_type,
                     const gfx::Size& size,

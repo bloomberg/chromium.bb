@@ -236,9 +236,9 @@ void ClipboardMessageFilter::OnWriteCustomData(
 }
 
 void ClipboardMessageFilter::OnWriteBookmark(ui::ClipboardType clipboard_type,
-                                             const GURL& url,
+                                             const std::string& url,
                                              const base::string16& title) {
-  clipboard_writer_->WriteBookmark(title, url.spec());
+  clipboard_writer_->WriteBookmark(title, url);
 }
 
 void ClipboardMessageFilter::OnWriteImage(ui::ClipboardType clipboard_type,

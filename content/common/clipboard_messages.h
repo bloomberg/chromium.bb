@@ -83,9 +83,13 @@ IPC_MESSAGE_CONTROL1(ClipboardHostMsg_WriteSmartPasteMarker,
 IPC_MESSAGE_CONTROL2(ClipboardHostMsg_WriteCustomData,
                      ui::ClipboardType /* type */,
                      CustomDataMap /* custom data */)
+// TODO(dcheng): The |url| parameter should really be a GURL, but <canvas>'s
+// copy as image tries to set very long data: URLs on the clipboard. Using
+// GURL causes the browser to kill the renderer for sending a bad IPC (GURLs
+// bigger than 2 megabytes are considered to be bad). https://crbug.com/459822
 IPC_MESSAGE_CONTROL3(ClipboardHostMsg_WriteBookmark,
                      ui::ClipboardType /* type */,
-                     GURL /* url */,
+                     std::string /* url */,
                      base::string16 /* title */)
 IPC_SYNC_MESSAGE_CONTROL3_0(ClipboardHostMsg_WriteImage,
                             ui::ClipboardType /* type */,
