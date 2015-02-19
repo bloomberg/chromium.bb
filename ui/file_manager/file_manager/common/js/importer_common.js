@@ -13,6 +13,16 @@ importer.ScanEvent = {
 };
 
 /**
+ * Storage keys for settings saved by importer.
+ * @enum {string}
+ */
+importer.Setting = {
+  HAS_COMPLETED_IMPORT: 'importer-has-completed-import',
+  MACHINE_ID: 'importer-machine-id',
+  PHOTOS_APP_ENABLED: 'importer-photo-app-enabled'
+};
+
+/**
  * @typedef {function(
  *     !importer.ScanEvent, importer.ScanResult)}
  */
@@ -135,33 +145,25 @@ importer.importEnabled = function() {
 };
 
 /**
- * Local storage key for machine id.
- * @const {string}
- */
-importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_ = 'photo-auto-import-enabled';
-
-/**
  * Handles a message from Pulsar...in which we presume we are being
  * informed of its "Automatically import stuff." state.
  *
  * While the runtime message system is loosey goosey about types,
  * we fully expect message to be a boolean value.
  *
+ * @param {*} message
+ *
  * @return {!Promise} Resolves once the message has been handled.
  */
 importer.handlePhotosAppMessage = function(message) {
-  return new Promise(
-      function(resolve, reject) {
-        if (typeof message === 'boolean') {
-          var values = {};
-          values[importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_] = message;
-          chrome.storage.local.set(values, /** @type {function()} */ (resolve));
-        } else {
-          console.error(
-              'Unrecognized message type received from photos app: ' + message);
-          reject(undefined);
-        }
-      });
+  if (typeof message !== 'boolean') {
+    console.error(
+        'Unrecognized message type received from photos app: ' + message);
+    return Promise.reject();
+  }
+
+  var storage = importer.ChromeLocalStorage.getInstance();
+  return storage.set(importer.Setting.PHOTOS_APP_ENABLED, message);
 };
 
 /**
@@ -169,23 +171,8 @@ importer.handlePhotosAppMessage = function(message) {
  *     is enabled.
  */
 importer.isPhotosAppImportEnabled = function() {
-  return new Promise(
-      function(resolve, reject) {
-        chrome.storage.local.get(
-            importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_,
-            /** @param {Object.<string, ?>} values */
-            function(values) {
-              if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-              } else {
-                // If photos app has never told us what's up with their
-                // settings, we'll just assume they aren't disabled.
-                resolve(
-                    importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_ in values &&
-                    values[importer.PHOTOS_IMPORT_ENABLED_STORAGE_KEY_]);
-              }
-            });
-      });
+  var storage = importer.ChromeLocalStorage.getInstance();
+  return storage.get(importer.Setting.PHOTOS_APP_ENABLED, false);
 };
 
 /**
@@ -209,46 +196,24 @@ importer.getDirectoryNameForDate = function(date) {
 };
 
 /**
- * Local storage key for machine id.
- * @const {string}
- */
-importer.MACHINE_ID_STORAGE_KEY_ = 'importer-machine-id';
-
-/**
  * @return {!Promise.<number>} Resolves with an integer that is probably
  *     relatively unique to this machine (among a users machines).
  */
 importer.getMachineId = function() {
-  return new Promise(
-      function(resolve, reject) {
-        chrome.storage.local.get(
-            importer.MACHINE_ID_STORAGE_KEY_,
-            /** @param {Object.<string, ?>} values */
-            function(values) {
-              if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-                return;
-              }
-
-              var machineId = values[importer.MACHINE_ID_STORAGE_KEY_];
-              if (!!machineId) {
-                resolve(machineId);
-              } else {
-                var machineId = importer.generateMachineId_();
-                var newValues = {};
-                newValues[importer.MACHINE_ID_STORAGE_KEY_] = machineId;
-                chrome.storage.local.set(
-                    newValues,
+  var storage = importer.ChromeLocalStorage.getInstance();
+  return storage.get(importer.Setting.MACHINE_ID)
+      .then(
+          function(id) {
+            if (id) {
+              return id;
+            }
+            var id = importer.generateMachineId_();
+            return storage.set(importer.Setting.MACHINE_ID, id)
+                .then(
                     function() {
-                      if (chrome.runtime.lastError) {
-                        reject(chrome.runtime.lastError);
-                      } else {
-                        resolve(machineId);
-                      }
+                      return id;
                     });
-              }
-            });
-      });
+          });
 };
 
 /**
@@ -768,4 +733,68 @@ importer.getLogger = function() {
             importer.getDebugLogFilename()));
   }
   return importer.logger_;
+};
+
+/**
+ * Friendly wrapper around chrome.storage.local.
+ *
+ * NOTE: If you want to use this in a test, install MockChromeStorageAPI.
+ *
+ * @constructor
+ */
+importer.ChromeLocalStorage = function() {};
+
+/**
+ * @param {string} key
+ * @param {string|number|boolean} value
+ * @return {!Promise} Resolves when operation is complete
+ */
+importer.ChromeLocalStorage.prototype.set = function(key, value) {
+  return new Promise(
+      function(resolve, reject) {
+        var values = {};
+        values[key] = value;
+        chrome.storage.local.set(
+            values,
+            function() {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                resolve(undefined);
+              }
+            });
+      });
+};
+
+/**
+ * @param {string} key
+ * @param {T=} opt_default
+ * @return {!Promise.<T>} Resolves with the value, or {@code opt_default} when
+ *     no value entry existis, or {@code undefined}.
+ * @template T
+ */
+importer.ChromeLocalStorage.prototype.get = function(key, opt_default) {
+  return new Promise(
+      function(resolve, reject) {
+        chrome.storage.local.get(
+            key,
+            /** @param {Object.<string, ?>} values */
+            function(values) {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else if (key in values) {
+                resolve(values[key]);
+              } else {
+                resolve(opt_default);
+              }
+            });
+      });
+};
+
+/** @private @const {!importer.ChromeLocalStorage} */
+importer.ChromeLocalStorage.INSTANCE_ = new importer.ChromeLocalStorage();
+
+/** @return {!importer.ChromeLocalStorage} */
+importer.ChromeLocalStorage.getInstance = function() {
+  return importer.ChromeLocalStorage.INSTANCE_;
 };

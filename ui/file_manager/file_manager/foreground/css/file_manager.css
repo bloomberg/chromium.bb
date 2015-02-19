@@ -442,7 +442,7 @@ body.selecting #gear-button {
 }
 
 #cloud-import-details.hidden {
-  -webkit-transform: translateX(25px);
+  -webkit-transform: translateY(-10px);
   opacity: 0;
 }
 

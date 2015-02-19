@@ -45,6 +45,8 @@ function setUp() {
     recordEnum: function() {}
   };
 
+  new MockChromeStorageAPI();
+
   widget = new importer.TestCommandWidget();
 
   volumeManager = new MockVolumeManager();
@@ -178,6 +180,7 @@ function testFinalizeScans_TriggersUpdate(callback) {
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
   environment.directoryChangedListener_();  // initiates a scan.
+  widget.resetPromises();
   mediaScanner.finalizeScans();
 
   reportPromise(widget.updateResolver.promise, callback);
@@ -504,6 +507,12 @@ importer.TestCommandWidget.prototype.toggleDetails = function() {
       this.toggleDetailsResolver.settled,
       'Toggle details promise should not have been settled.');
   this.toggleDetailsResolver.resolve();
+};
+
+/** @override */
+importer.TestCommandWidget.prototype.setDetailsBannerVisible =
+    function(visible) {
+  // TODO(smckay)
 };
 
 /**

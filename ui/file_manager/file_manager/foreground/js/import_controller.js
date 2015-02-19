@@ -36,6 +36,9 @@ importer.ImportController =
   /** @private {!importer.ControllerEnvironment} */
   this.environment_ = environment;
 
+  /** @private {!importer.ChromeLocalStorage} */
+  this.storage_ = importer.ChromeLocalStorage.getInstance();
+
   /** @private {!importer.ImportRunner} */
   this.importRunner_ = importRunner;
 
@@ -88,6 +91,16 @@ importer.ImportController =
 
   this.commandWidget_.addClickListener(
       this.onClick_.bind(this));
+
+  this.storage_.get(importer.Setting.HAS_COMPLETED_IMPORT, false)
+      .then(
+          /**
+           * @param {boolean} importCompleted If so, we hide the banner
+           * @this {importer.ImportController}
+           */
+          function(importCompleted) {
+            this.commandWidget_.setDetailsBannerVisible(!importCompleted);
+          }.bind(this));
 };
 
 /**
@@ -175,6 +188,8 @@ importer.ImportController.prototype.onImportFinished_ = function(task) {
   this.previousImport_ = this.activeImport_;
   this.activeImport_ = null;
   this.scanManager_.reset();
+  this.storage_.set(importer.Setting.HAS_COMPLETED_IMPORT, true);
+  this.commandWidget_.setDetailsBannerVisible(false);
   this.checkState_();
 };
 
@@ -318,7 +333,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
  */
 importer.ImportController.prototype.updateUi_ =
     function(activityState, opt_scan) {
-  this.lastActivityState_ = activityState
+  this.lastActivityState_ = activityState;
   this.commandWidget_.update(activityState, opt_scan);
 };
 
@@ -402,6 +417,11 @@ importer.CommandWidget.prototype.update;
 importer.CommandWidget.prototype.toggleDetails;
 
 /**
+ * Sets the details banner visibility.
+ */
+importer.CommandWidget.prototype.setDetailsBannerVisible;
+
+/**
  * @enum {string}
  */
 importer.ClickSource = {
@@ -419,6 +439,24 @@ importer.ClickSource = {
  * @struct
  */
 importer.RuntimeCommandWidget = function() {
+
+  /** @private {Element} */
+  this.detailsPanel_ = document.getElementById('cloud-import-details');
+  this.detailsPanel_.addEventListener(
+      'transitionend',
+      this.onDetailsTransitionEnd_.bind(this),
+      false);
+
+  // Any clicks on document outside of the details panel
+  // result in the panel being hidden.
+  document.onclick = this.onDetailsFocusLost_.bind(this);
+
+  // Stop further propagation of click events.
+  // This allows us to listen for *any other* clicks
+  // to hide the panel.
+  this.detailsPanel_.onclick = function(event) {
+    event.stopPropagation();
+  };
 
   /** @private {Element} */
   this.mainButton_ = document.getElementById('cloud-import-button');
@@ -443,17 +481,13 @@ importer.RuntimeCommandWidget = function() {
       this, importer.ClickSource.DESTINATION);
 
   /** @private {Element} */
-  this.detailsPanel_ = document.getElementById('cloud-import-details');
-  this.detailsPanel_.addEventListener(
-      'transitionend',
-      this.onDetailsTransitionEnd_.bind(this),
-      false);
-
-  /** @private {Element} */
   this.toolbarIcon_ =
       document.querySelector('#cloud-import-button core-icon');
   this.statusIcon_ =
       document.querySelector('#cloud-import-details .status core-icon');
+
+  /** @private {Element} */
+  this.detailsBanner_ = document.querySelector('#cloud-import-details .banner');
 
   /** @private {function(!importer.ClickSource)} */
   this.clickListener_;
@@ -493,11 +527,19 @@ importer.RuntimeCommandWidget.prototype.onButtonClicked_ =
     default:
       assertNotReached('Unhandled click source: ' + source);
   }
+
+  event.stopPropagation();
 };
 
 /** @override */
 importer.RuntimeCommandWidget.prototype.toggleDetails = function() {
     this.setDetailsVisible_(this.detailsPanel_.className === 'hidden');
+};
+
+/** @override */
+importer.RuntimeCommandWidget.prototype.setDetailsBannerVisible =
+    function(visible) {
+  this.detailsBanner_.hidden = !visible;
 };
 
 /**
@@ -507,9 +549,17 @@ importer.RuntimeCommandWidget.prototype.toggleDetails = function() {
 importer.RuntimeCommandWidget.prototype.setDetailsVisible_ = function(visible) {
   if (visible) {
     this.detailsPanel_.hidden = false;
+
+    // The following line is a hacky way to force the container to lay out
+    // contents so that the transition is triggered.
+    // This line MUST appear before clearing the classname.
+    this.detailsPanel_.scrollTop += 0;
+
     this.detailsPanel_.className = '';
   } else {
     this.detailsPanel_.className = 'hidden';
+    // transition duration is 200ms. Let's wait for 400ms.
+    ensureTransitionEndEvent(this.detailsPanel_, 400);
   }
 };
 
@@ -524,6 +574,12 @@ importer.RuntimeCommandWidget.prototype.onDetailsTransitionEnd_ =
   }
 };
 
+/** @private */
+importer.RuntimeCommandWidget.prototype.onDetailsFocusLost_ =
+    function() {
+  this.setDetailsVisible_(false);
+};
+
 /** @override */
 importer.RuntimeCommandWidget.prototype.update =
     function(activityState, opt_scan) {
@@ -535,12 +591,6 @@ importer.RuntimeCommandWidget.prototype.update =
 
       this.mainButton_.hidden = true;
       this.sideButton_.hidden = true;
-
-      this.mainButton_.setAttribute(
-          'title',
-          '** SHOULD NOT BE VISIBLE **');
-      this.statusContent_.innerHTML =
-          '** SHOULD NOT BE VISIBLE **';
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-off');
       this.statusIcon_.setAttribute('icon', 'cloud-off');

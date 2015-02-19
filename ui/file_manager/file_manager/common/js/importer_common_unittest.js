@@ -31,6 +31,9 @@ loadTimeData.data = {
 
 // Set up the test components.
 function setUp() {
+
+  new MockChromeStorageAPI();
+
   var cameraFileSystem = new MockFileSystem(
       'camera-fs', 'filesystem:camera-123');
   var sdFileSystem = new MockFileSystem(
@@ -104,9 +107,7 @@ function testResolver_Reject(callback) {
           });
 }
 
-function testGetMachineId(callback) {
-  var storage = new MockChromeStorageAPI();
-
+function testGetMachineId_Persisted(callback) {
   var promise = importer.getMachineId().then(
       function(firstMachineId) {
         assertTrue(100000 <= firstMachineId <= 9999999);
@@ -119,16 +120,12 @@ function testGetMachineId(callback) {
 }
 
 function testPhotosApp_DefaultDisabled(callback) {
-  var storage = new MockChromeStorageAPI();
-
   var promise = importer.isPhotosAppImportEnabled().then(assertFalse);
 
   reportPromise(promise, callback);
 }
 
 function testPhotosApp_ImportEnabled(callback) {
-  var storage = new MockChromeStorageAPI();
-
   var promise = importer.handlePhotosAppMessage(true).then(
       function() {
         return importer.isPhotosAppImportEnabled().then(assertTrue);
@@ -138,8 +135,6 @@ function testPhotosApp_ImportEnabled(callback) {
 }
 
 function testPhotosApp_ImportDisabled(callback) {
-  var storage = new MockChromeStorageAPI();
-
   var promise = importer.handlePhotosAppMessage(false).then(
       function() {
         return importer.isPhotosAppImportEnabled().then(assertFalse);
@@ -149,8 +144,6 @@ function testPhotosApp_ImportDisabled(callback) {
 }
 
 function testHistoryFilename(callback) {
-  var storage = new MockChromeStorageAPI();
-
   var promise = importer.getHistoryFilename().then(
       function(firstName) {
         assertTrue(!!firstName && firstName.length > 10);
@@ -158,6 +151,24 @@ function testHistoryFilename(callback) {
             function(secondName) {
               assertEquals(firstName, secondName);
             });
+      });
+
+  reportPromise(promise, callback);
+}
+
+function testLocalStorageWrapper(callback) {
+  var storage = new importer.ChromeLocalStorage();
+  var promise = Promise.all([
+    storage.set('lamb', 'chop'),
+    storage.set('isPoodle', true),
+    storage.set('age of grandma', 103)
+  ]).then(
+      function() {
+        return Promise.all([
+          storage.get('lamb').then(assertEquals.bind(null, 'chop')),
+          storage.get('isPoodle').then(assertEquals.bind(null, true)),
+          storage.get('age of grandma').then(assertEquals.bind(null, 103))
+        ]);
       });
 
   reportPromise(promise, callback);

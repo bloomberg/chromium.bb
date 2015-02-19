@@ -182,7 +182,7 @@ importer.TaskQueue.BaseTask = function(taskId) {
   /** @private {!Array<!importer.TaskQueue.Task.Observer>} */
   this.observers_ = [];
 
-  /** @private {!importer.Resolver} */
+  /** @private {!importer.Resolver<!importer.TaskQueue.UpdateType>} */
   this.finishedResolver_ = new importer.Resolver();
 };
 
@@ -191,7 +191,8 @@ importer.TaskQueue.BaseTask.prototype = {
   /** @return {string} The task ID. */
   get taskId() { return this.taskId_; },
 
-  /** @return {!Promise} Resolves when task is complete, rejects on error. */
+  /** @return {!Promise<!importer.TaskQueue.UpdateType>} Resolves when task
+      is complete, or cancelled, rejects on error. */
   get whenFinished() { return this.finishedResolver_.promise; }
 };
 
@@ -211,9 +212,8 @@ importer.TaskQueue.BaseTask.prototype.run = function() {};
 importer.TaskQueue.BaseTask.prototype.notify = function(updateType, opt_data) {
   switch (updateType) {
     case importer.TaskQueue.UpdateType.CANCELED:
-    case importer.TaskQueue.UpdateType.ERROR:
     case importer.TaskQueue.UpdateType.SUCCESS:
-      this.finishedResolver_.resolve();
+      this.finishedResolver_.resolve(updateType);
   }
 
   this.observers_.forEach(
