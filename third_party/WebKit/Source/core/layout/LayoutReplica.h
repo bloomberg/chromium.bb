@@ -26,20 +26,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderReplica_h
-#define RenderReplica_h
+#ifndef LayoutReplica_h
+#define LayoutReplica_h
 
 #include "core/rendering/RenderBox.h"
 
 namespace blink {
 
-class RenderReplica final : public RenderBox {
+class LayoutReplica final : public RenderBox {
 public:
-    static RenderReplica* createAnonymous(Document*);
+    static LayoutReplica* createAnonymous(Document*);
 
-    virtual ~RenderReplica();
+    virtual ~LayoutReplica();
 
-    virtual const char* renderName() const override { return "RenderReplica"; }
+    virtual const char* renderName() const override { return "LayoutReplica"; }
 
     virtual LayerType layerTypeRequired() const override { return NormalLayer; }
 
@@ -48,7 +48,7 @@ public:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
 private:
-    RenderReplica();
+    LayoutReplica();
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectReplica || RenderBox::isOfType(type); }
     virtual void computePreferredLogicalWidths() override;
@@ -57,4 +57,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderReplica_h
+#endif // LayoutReplica_h

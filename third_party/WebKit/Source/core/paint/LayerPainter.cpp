@@ -79,7 +79,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
     if (m_renderLayer.paintsWithTransparency(paintingInfo.paintBehavior))
         paintFlags |= PaintLayerHaveTransparency;
 
-    // PaintLayerAppliedTransform is used in RenderReplica, to avoid applying the transform twice.
+    // PaintLayerAppliedTransform is used in LayoutReplica, to avoid applying the transform twice.
     if (m_renderLayer.paintsWithTransform(paintingInfo.paintBehavior) && !(paintFlags & PaintLayerAppliedTransform)) {
         paintLayerWithTransform(context, paintingInfo, paintFlags);
         return;

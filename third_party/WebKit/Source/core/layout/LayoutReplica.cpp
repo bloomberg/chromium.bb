@@ -27,14 +27,14 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderReplica.h"
+#include "core/layout/LayoutReplica.h"
 
 #include "core/layout/Layer.h"
 #include "core/paint/ReplicaPainter.h"
 
 namespace blink {
 
-RenderReplica::RenderReplica()
+LayoutReplica::LayoutReplica()
     : RenderBox(0)
 {
     // This is a hack. Replicas are synthetic, and don't pick up the attributes of the
@@ -44,18 +44,18 @@ RenderReplica::RenderReplica()
     setReplaced(true);
 }
 
-RenderReplica* RenderReplica::createAnonymous(Document* document)
+LayoutReplica* LayoutReplica::createAnonymous(Document* document)
 {
-    RenderReplica* renderer = new RenderReplica();
+    LayoutReplica* renderer = new LayoutReplica();
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }
 
-RenderReplica::~RenderReplica()
+LayoutReplica::~LayoutReplica()
 {
 }
 
-void RenderReplica::layout()
+void LayoutReplica::layout()
 {
     setFrameRect(parentBox()->borderBoxRect());
     addVisualOverflow(parentBox()->visualOverflowRect());
@@ -63,14 +63,14 @@ void RenderReplica::layout()
     clearNeedsLayout();
 }
 
-void RenderReplica::computePreferredLogicalWidths()
+void LayoutReplica::computePreferredLogicalWidths()
 {
     m_minPreferredLogicalWidth = parentBox()->size().width();
     m_maxPreferredLogicalWidth = m_minPreferredLogicalWidth;
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderReplica::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutReplica::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ReplicaPainter(*this).paint(paintInfo, paintOffset);
 }

@@ -52,7 +52,7 @@
 namespace blink {
 
 class Layer;
-class RenderReplica;
+class LayoutReplica;
 
 class LayerReflectionInfo {
     WTF_MAKE_NONCOPYABLE(LayerReflectionInfo);
@@ -60,7 +60,7 @@ public:
     explicit LayerReflectionInfo(RenderBox&);
     void destroy();
 
-    RenderReplica* reflection() const { return m_reflection; }
+    LayoutReplica* reflection() const { return m_reflection; }
     Layer* reflectionLayer() const;
 
     bool isPaintingInsideReflection() const { return m_isPaintingInsideReflection; }
@@ -74,7 +74,7 @@ private:
     const RenderBox& box() const { return *m_box; }
 
     RenderBox* m_box;
-    RenderReplica* m_reflection;
+    LayoutReplica* m_reflection;
 
     // A state bit tracking if we are painting inside a replica.
     unsigned m_isPaintingInsideReflection : 1;

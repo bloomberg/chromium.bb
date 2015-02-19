@@ -46,9 +46,9 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutReplica.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/paint/LayerPainter.h"
-#include "core/rendering/RenderReplica.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 
@@ -62,7 +62,7 @@ LayerReflectionInfo::LayerReflectionInfo(RenderBox& renderer)
 {
     UseCounter::count(box().document(), UseCounter::Reflection);
 
-    m_reflection = RenderReplica::createAnonymous(&box().document());
+    m_reflection = LayoutReplica::createAnonymous(&box().document());
     m_reflection->setParent(m_box); // We create a 1-way connection.
 }
 
