@@ -223,14 +223,14 @@ class HarfBuzzLineBreaker {
                       bool multiline,
                       const base::string16& text,
                       const BreakList<size_t>* words,
-                      const ScopedVector<internal::TextRunHarfBuzz>& runs)
+                      const internal::TextRunList& run_list)
       : max_width_((max_width == 0) ? SK_ScalarMax : SkIntToScalar(max_width)),
         min_baseline_(min_baseline),
         min_height_(min_height),
         multiline_(multiline),
         text_(text),
         words_(words),
-        runs_(runs),
+        run_list_(run_list),
         text_x_(0),
         line_x_(0),
         max_descent_(0),
@@ -241,7 +241,7 @@ class HarfBuzzLineBreaker {
 
   // Breaks the run at given |run_index| into Line structs.
   void AddRun(int run_index) {
-    const internal::TextRunHarfBuzz* run = runs_[run_index];
+    const internal::TextRunHarfBuzz* run = run_list_.runs()[run_index];
     base::char16 first_char = text_[run->range.start()];
     if (multiline_ && first_char == '\n') {
       AdvanceLine();
@@ -275,7 +275,7 @@ class HarfBuzzLineBreaker {
   // them. Adds a new Line to the back of |lines_| whenever a new segment can't
   // be added without the Line's width exceeding |max_width_|.
   void BreakRun(int run_index) {
-    const internal::TextRunHarfBuzz& run = *runs_[run_index];
+    const internal::TextRunHarfBuzz& run = *(run_list_.runs()[run_index]);
     SkScalar width = 0;
     size_t next_char = run.range.start();
 
@@ -375,6 +375,12 @@ class HarfBuzzLineBreaker {
   void AdvanceLine() {
     if (!lines_.empty()) {
       internal::Line* line = &lines_.back();
+      std::sort(line->segments.begin(), line->segments.end(),
+                [this](const internal::LineSegment& s1,
+                       const internal::LineSegment& s2) -> bool {
+                  return run_list_.logical_to_visual(s1.run) <
+                         run_list_.logical_to_visual(s2.run);
+                });
       line->size.set_height(std::max(min_height_, max_descent_ + max_ascent_));
       line->baseline =
           std::max(min_baseline_, SkScalarRoundToInt(max_ascent_));
@@ -394,7 +400,7 @@ class HarfBuzzLineBreaker {
       DCHECK_EQ(0, width);
       return;
     }
-    const internal::TextRunHarfBuzz& run = *runs_[run_index];
+    const internal::TextRunHarfBuzz& run = *(run_list_.runs()[run_index]);
 
     internal::LineSegment segment;
     segment.run = run_index;
@@ -437,7 +443,7 @@ class HarfBuzzLineBreaker {
   const bool multiline_;
   const base::string16& text_;
   const BreakList<size_t>* const words_;
-  const ScopedVector<internal::TextRunHarfBuzz>& runs_;
+  const internal::TextRunList& run_list_;
 
   // Stores the resulting lines.
   std::vector<internal::Line> lines_;
@@ -970,8 +976,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
     HarfBuzzLineBreaker line_breaker(
         display_rect().width(), font_list().GetBaseline(),
         std::max(font_list().GetHeight(), min_line_height()), multiline(),
-        GetDisplayText(), multiline() ? &GetLineBreaks() : nullptr,
-        run_list->runs());
+        GetDisplayText(), multiline() ? &GetLineBreaks() : nullptr, *run_list);
 
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
     tracked_objects::ScopedTracker tracking_profile3(
@@ -979,8 +984,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
             "431326 RenderTextHarfBuzz::EnsureLayout3"));
 
     for (size_t i = 0; i < run_list->size(); ++i)
-      line_breaker.AddRun(run_list->visual_to_logical(i));
-
+      line_breaker.AddRun(i);
     std::vector<internal::Line> lines;
     line_breaker.Finalize(&lines, &total_size_);
     set_lines(&lines);
@@ -988,15 +992,20 @@ void RenderTextHarfBuzz::EnsureLayout() {
 }
 
 void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
+  internal::SkiaTextRenderer renderer(canvas);
+  DrawVisualTextInternal(&renderer);
+}
+
+void RenderTextHarfBuzz::DrawVisualTextInternal(
+    internal::SkiaTextRenderer* renderer) {
   DCHECK(!update_layout_run_list_);
   DCHECK(!update_display_run_list_);
   DCHECK(!update_display_text_);
   if (lines().empty())
     return;
 
-  internal::SkiaTextRenderer renderer(canvas);
-  ApplyFadeEffects(&renderer);
-  ApplyTextShadows(&renderer);
+  ApplyFadeEffects(renderer);
+  ApplyTextShadows(renderer);
   ApplyCompositionAndSelectionStyles();
 
   internal::TextRunList* run_list = GetRunList();
@@ -1006,10 +1015,10 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
     SkScalar preceding_segment_widths = 0;
     for (const internal::LineSegment& segment : line.segments) {
       const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
-      renderer.SetTypeface(run.skia_face.get());
-      renderer.SetTextSize(SkIntToScalar(run.font_size));
-      renderer.SetFontRenderParams(run.render_params,
-                                   background_is_transparent());
+      renderer->SetTypeface(run.skia_face.get());
+      renderer->SetTextSize(SkIntToScalar(run.font_size));
+      renderer->SetFontRenderParams(run.render_params,
+                                    background_is_transparent());
       Range glyphs_range = run.CharRangeToGlyphRange(segment.char_range);
       scoped_ptr<SkPoint[]> positions(new SkPoint[glyphs_range.length()]);
       SkScalar offset_x =
@@ -1036,8 +1045,8 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
         if (colored_glyphs.is_empty())
           continue;
 
-        renderer.SetForegroundColor(it->second);
-        renderer.DrawPosText(
+        renderer->SetForegroundColor(it->second);
+        renderer->DrawPosText(
             &positions[colored_glyphs.start() - glyphs_range.start()],
             &run.glyphs[colored_glyphs.start()], colored_glyphs.length());
         int start_x = SkScalarRoundToInt(
@@ -1047,15 +1056,15 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
                 ? (SkFloatToScalar(segment.width) + preceding_segment_widths +
                    SkIntToScalar(origin.x()))
                 : positions[colored_glyphs.end() - glyphs_range.start()].x());
-        renderer.DrawDecorations(start_x, origin.y(), end_x - start_x,
-                                 run.underline, run.strike,
-                                 run.diagonal_strike);
+        renderer->DrawDecorations(start_x, origin.y(), end_x - start_x,
+                                  run.underline, run.strike,
+                                  run.diagonal_strike);
       }
       preceding_segment_widths += SkFloatToScalar(segment.width);
     }
   }
 
-  renderer.EndDiagonalStrike();
+  renderer->EndDiagonalStrike();
 
   UndoCompositionAndSelectionStyles();
 }
@@ -1377,8 +1386,8 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
     const SkScalar y_offset = SkFixedToScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
     run->width += (glyph_width_for_test_ > 0)
-                      ? SkIntToScalar(glyph_width_for_test_)
-                      : SkFixedToScalar(hb_positions[i].x_advance);
+                      ? glyph_width_for_test_
+                      : SkFixedToFloat(hb_positions[i].x_advance);
     // Round run widths if subpixel positioning is off to match native behavior.
     if (!run->render_params.subpixel_positioning)
       run->width = std::floor(run->width + 0.5f);

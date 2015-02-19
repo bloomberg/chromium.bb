@@ -92,6 +92,76 @@ void VerifyLineSegments(const Range& expected_range,
     EXPECT_EQ(expected_range, segments[0].char_range);
 }
 
+// The class which records the drawing operations so that the test case can
+// verify where exactly the glyphs are drawn.
+class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
+ public:
+  struct TextLog {
+    TextLog() : glyph_count(0u) {}
+    PointF origin;
+    size_t glyph_count;
+  };
+
+  struct DecorationLog {
+    DecorationLog(int x, int y, int width, bool underline, bool strike,
+                  bool diagonal_strike)
+        : x(x), y(y), width(width), underline(underline), strike(strike),
+          diagonal_strike(diagonal_strike) {}
+    int x;
+    int y;
+    int width;
+    bool underline;
+    bool strike;
+    bool diagonal_strike;
+  };
+
+  explicit TestSkiaTextRenderer(Canvas* canvas)
+      : internal::SkiaTextRenderer(canvas) {}
+  ~TestSkiaTextRenderer() override {}
+
+  void GetTextLogAndReset(std::vector<TextLog>* text_log) {
+    text_log_.swap(*text_log);
+    text_log_.clear();
+  }
+
+  void GetDecorationLogAndReset(std::vector<DecorationLog>* decoration_log) {
+    decoration_log_.swap(*decoration_log);
+    decoration_log_.clear();
+  }
+
+ private:
+  // internal::SkiaTextRenderer:
+  void DrawPosText(const SkPoint* pos,
+                   const uint16* glyphs,
+                   size_t glyph_count) override {
+    TextLog log_entry;
+    log_entry.glyph_count = glyph_count;
+    if (glyph_count > 0) {
+      log_entry.origin =
+          PointF(SkScalarToFloat(pos[0].x()), SkScalarToFloat(pos[0].y()));
+      for (size_t i = 1U; i < glyph_count; ++i) {
+        log_entry.origin.SetToMin(
+            PointF(SkScalarToFloat(pos[i].x()), SkScalarToFloat(pos[i].y())));
+      }
+    }
+    text_log_.push_back(log_entry);
+    internal::SkiaTextRenderer::DrawPosText(pos, glyphs, glyph_count);
+  }
+
+  void DrawDecorations(int x, int y, int width, bool underline, bool strike,
+                       bool diagonal_strike) override {
+    decoration_log_.push_back(
+        DecorationLog(x, y, width, underline, strike, diagonal_strike));
+    internal::SkiaTextRenderer::DrawDecorations(
+        x, y, width, underline, strike, diagonal_strike);
+  }
+
+  std::vector<TextLog> text_log_;
+  std::vector<DecorationLog> decoration_log_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSkiaTextRenderer);
+};
+
 }  // namespace
 
 class RenderTextTest : public testing::Test {
@@ -1919,11 +1989,15 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
     const wchar_t* const text;
     const Range first_line_char_range;
     const Range second_line_char_range;
+    bool is_ltr;
   } kTestStrings[] = {
-    { L"abc defg hijkl", Range(0, 9), Range(9, 14) },
-    { L"qwertyzxcvbn", Range(0, 10), Range(10, 12) },
+    { L"abc defg hijkl", Range(0, 9), Range(9, 14), true },
+    { L"qwertyzxcvbn", Range(0, 10), Range(10, 12), true },
+    { L"\x0627\x0644\x0644\x063A\x0629 "
+      L"\x0627\x0644\x0639\x0631\x0628\x064A\x0629",
+      Range(0, 6), Range(6, 13), false },
     { L"\x062A\x0641\x0627\x062D\x05EA\x05E4\x05D5\x05D6\x05D9"
-      L"\x05DA\x05DB\x05DD", Range(4, 12), Range(0, 4) }
+      L"\x05DA\x05DB\x05DD", Range(0, 4), Range(4, 12), false }
   };
 
   RenderTextHarfBuzz render_text;
@@ -1932,12 +2006,17 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
   render_text.set_glyph_width_for_test(5);
   render_text.SetDisplayRect(Rect(50, 1000));
   render_text.SetMultiline(true);
+  render_text.SetHorizontalAlignment(ALIGN_TO_HEAD);
+
   Canvas canvas;
+  TestSkiaTextRenderer renderer(&canvas);
 
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text.SetText(WideToUTF16(kTestStrings[i].text));
-    render_text.Draw(&canvas);
+    render_text.EnsureLayout();
+    render_text.DrawVisualTextInternal(&renderer);
+
     ASSERT_EQ(2U, render_text.lines_.size());
     ASSERT_EQ(1U, render_text.lines_[0].segments.size());
     EXPECT_EQ(kTestStrings[i].first_line_char_range,
@@ -1945,6 +2024,26 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
     ASSERT_EQ(1U, render_text.lines_[1].segments.size());
     EXPECT_EQ(kTestStrings[i].second_line_char_range,
               render_text.lines_[1].segments[0].char_range);
+
+    std::vector<TestSkiaTextRenderer::TextLog> text_log;
+    renderer.GetTextLogAndReset(&text_log);
+    ASSERT_EQ(2U, text_log.size());
+    // NOTE: this expectation compares the character length and glyph counts,
+    // which isn't always equal. This is okay only because all the test
+    // strings are simple (like, no compound characters nor UTF16-surrogate
+    // pairs). Be careful in case more complicated test strings are added.
+    EXPECT_EQ(kTestStrings[i].first_line_char_range.length(),
+              text_log[0].glyph_count);
+    EXPECT_EQ(kTestStrings[i].second_line_char_range.length(),
+              text_log[1].glyph_count);
+    EXPECT_LT(text_log[0].origin.y(), text_log[1].origin.y());
+    if (kTestStrings[i].is_ltr) {
+      EXPECT_EQ(0, text_log[0].origin.x());
+      EXPECT_EQ(0, text_log[1].origin.x());
+    } else {
+      EXPECT_LT(0, text_log[0].origin.x());
+      EXPECT_LT(0, text_log[1].origin.x());
+    }
   }
 }
 
@@ -2036,6 +2135,61 @@ TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
     render_text.Draw(&canvas);
 
     EXPECT_EQ(1U, render_text.lines_.size());
+  }
+}
+
+// Make sure the horizontal positions of runs in a line (left-to-right for
+// LTR languages and right-to-left for RTL languages).
+TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {
+  const struct {
+    const wchar_t* const text;
+    const Range first_run_char_range;
+    const Range second_run_char_range;
+    bool is_rtl;
+  } kTestStrings[] = {
+    { L"abc\x3042\x3044\x3046\x3048\x304A", Range(0, 3), Range(3, 8), false },
+    { L"\x062A\x0641\x0627\x062D"
+      L"\x05EA\x05E4\x05D5\x05D6\x05D9\x05DA\x05DB\x05DD",
+      Range(0, 4), Range(4, 12), true },
+  };
+
+  RenderTextHarfBuzz render_text;
+  Canvas canvas;
+  TestSkiaTextRenderer renderer(&canvas);
+
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text.SetText(WideToUTF16(kTestStrings[i].text));
+
+    render_text.EnsureLayout();
+    const internal::TextRunList* run_list = render_text.GetRunList();
+    ASSERT_EQ(2U, run_list->runs().size());
+    EXPECT_EQ(kTestStrings[i].first_run_char_range, run_list->runs()[0]->range);
+    EXPECT_EQ(kTestStrings[i].second_run_char_range,
+              run_list->runs()[1]->range);
+    // If it's RTL, the visual order is reversed.
+    if (kTestStrings[i].is_rtl) {
+      EXPECT_EQ(1U, run_list->logical_to_visual(0));
+      EXPECT_EQ(0U, run_list->logical_to_visual(1));
+    } else {
+      EXPECT_EQ(0U, run_list->logical_to_visual(0));
+      EXPECT_EQ(1U, run_list->logical_to_visual(1));
+    }
+
+    render_text.DrawVisualTextInternal(&renderer);
+
+    std::vector<TestSkiaTextRenderer::TextLog> text_log;
+    renderer.GetTextLogAndReset(&text_log);
+
+    EXPECT_EQ(2U, text_log.size());
+
+    // Verifies the DrawText happens in the visual order and left-to-right.
+    // If the text is RTL, the logically first run should be drawn at last.
+    EXPECT_EQ(run_list->runs()[run_list->logical_to_visual(0)]->glyph_count,
+              text_log[0].glyph_count);
+    EXPECT_EQ(run_list->runs()[run_list->logical_to_visual(1)]->glyph_count,
+              text_log[1].glyph_count);
+    EXPECT_LT(text_log[0].origin.x(), text_log[1].origin.x());
   }
 }
 

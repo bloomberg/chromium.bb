@@ -164,6 +164,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   friend class RenderTextTest;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_HorizontalPositions);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
+                           HarfBuzz_TextPositionWithFractionalSize);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByEmoji);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemeCases);
@@ -174,9 +177,12 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline test
   // will become really flaky.
-  void set_glyph_width_for_test(uint8 test_width) {
+  void set_glyph_width_for_test(float test_width) {
     glyph_width_for_test_ = test_width;
   }
+
+  // The actual implementation of the text drawing.
+  void DrawVisualTextInternal(internal::SkiaTextRenderer* renderer);
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
@@ -256,7 +262,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SizeF total_size_;
 
   // Fixed width of glyphs. This should only be set in test environments.
-  uint8 glyph_width_for_test_;
+  float glyph_width_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzz);
 };

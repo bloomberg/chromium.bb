@@ -45,10 +45,10 @@ class RenderTextTest;
 namespace internal {
 
 // Internal helper class used by derived classes to draw text through Skia.
-class SkiaTextRenderer {
+class GFX_EXPORT SkiaTextRenderer {
  public:
   explicit SkiaTextRenderer(Canvas* canvas);
-  ~SkiaTextRenderer();
+  virtual ~SkiaTextRenderer();
 
   void SetDrawLooper(SkDrawLooper* draw_looper);
   void SetFontRenderParams(const FontRenderParams& params,
@@ -63,14 +63,14 @@ class SkiaTextRenderer {
   // two metrics must be set together.
   void SetUnderlineMetrics(SkScalar thickness, SkScalar position);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
-  void DrawPosText(const SkPoint* pos,
-                   const uint16* glyphs,
-                   size_t glyph_count);
+  virtual void DrawPosText(const SkPoint* pos,
+                           const uint16* glyphs,
+                           size_t glyph_count);
   // Draw underline and strike-through text decorations.
   // Based on |SkCanvas::DrawTextDecorations()| and constants from:
   //   third_party/skia/src/core/SkTextFormatParams.h
-  void DrawDecorations(int x, int y, int width, bool underline, bool strike,
-                       bool diagonal_strike);
+  virtual void DrawDecorations(int x, int y, int width, bool underline,
+                               bool strike, bool diagonal_strike);
   // Finishes any ongoing diagonal strike run.
   void EndDiagonalStrike();
   void DrawUnderline(int x, int y, int width);
