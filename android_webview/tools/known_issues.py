@@ -45,6 +45,7 @@ KNOWN_INCOMPATIBLE = {
         'third_party/elfutils',
         'third_party/instrumented_libraries',
         'third_party/liblouis',
+        'third_party/llvm',
         'third_party/speech-dispatcher',
         'third_party/sudden_motion_sensor',
         'third_party/swiftshader',
