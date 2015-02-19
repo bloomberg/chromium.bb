@@ -152,7 +152,7 @@ class ScreenlockBridge {
   };
 
   static ScreenlockBridge* Get();
-  static std::string GetAuthenticatedUserEmail(Profile* profile);
+  static std::string GetAuthenticatedUserEmail(const Profile* profile);
 
   void SetLockHandler(LockHandler* lock_handler);
   void SetFocusedUser(const std::string& user_id);

@@ -107,7 +107,8 @@ class PlatformVerificationFlow
 
     // Gets the user associated with the given |web_contents|.  NULL may be
     // returned.
-    virtual user_manager::User* GetUser(content::WebContents* web_contents) = 0;
+    virtual const user_manager::User* GetUser(
+        content::WebContents* web_contents) = 0;
 
     // Gets the content settings map associated with the given |web_contents|.
     virtual HostContentSettingsMap* GetContentSettings(

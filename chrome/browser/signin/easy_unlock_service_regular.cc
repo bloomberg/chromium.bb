@@ -302,7 +302,7 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   // ephemeral accounts can be locked, so we should revisit this use case.
   // TODO(tengs): Remove this special case and test this code path after test
   // refactoring is landed (crbug.com/414829).
-  user_manager::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile());
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user->email() != chromeos::login::kStubUser &&

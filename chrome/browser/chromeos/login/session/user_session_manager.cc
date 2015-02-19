@@ -445,7 +445,7 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
     return;
   }
 
-  user_manager::User* user =
+  const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(user_profile);
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
@@ -858,7 +858,8 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
 void UserSessionManager::InitProfilePreferences(
     Profile* profile,
     const UserContext& user_context) {
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (user->is_active()) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();
@@ -1513,7 +1514,7 @@ void UserSessionManager::RespectLocalePreferenceWrapper(
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  user_manager::User* const user =
+  const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   locale_util::SwitchLanguageCallback locale_switched_callback(base::Bind(
       &UserSessionManager::RunCallbackOnLocaleLoaded, callback,

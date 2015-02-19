@@ -471,9 +471,10 @@ void ChangePictureOptionsHandler::OnDecodeImageFailed(
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
-user_manager::User* ChangePictureOptionsHandler::GetUser() const {
+const user_manager::User* ChangePictureOptionsHandler::GetUser() const {
   Profile* profile = Profile::FromWebUI(web_ui());
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return user_manager::UserManager::Get()->GetActiveUser();
   return user;

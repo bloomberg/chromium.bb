@@ -154,7 +154,7 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
     // ignore it.
     return;
   }
-  user_manager::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user ||
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->

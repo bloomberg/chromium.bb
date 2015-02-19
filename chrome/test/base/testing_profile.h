@@ -237,7 +237,7 @@ class TestingProfile : public Profile {
   TestingProfile* AsTestingProfile() override;
 
   // Profile
-  std::string GetProfileUserName() override;
+  std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
 
   // DEPRECATED, because it's fragile to change a profile from non-incognito
@@ -275,6 +275,7 @@ class TestingProfile : public Profile {
   net::CookieMonster* GetCookieMonster();
 
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
 
   net::URLRequestContextGetter* GetMediaRequestContext() override;
   net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(

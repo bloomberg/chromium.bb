@@ -1059,7 +1059,8 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
     return;
   }
 
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (user == NULL)
     return;
 

@@ -50,7 +50,7 @@ std::string EscapeFileSystemId(const std::string& file_system_id) {
 base::FilePath GetMountPath(Profile* profile,
                             const std::string& extension_id,
                             const std::string& file_system_id) {
-  user_manager::User* const user =
+  const user_manager::User* const user =
       user_manager::UserManager::IsInitialized()
           ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())

@@ -64,7 +64,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return NULL;  // On the login screen only device network policies apply.
 
-  user_manager::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
   // Currently, only the network policy of the primary user is supported. See

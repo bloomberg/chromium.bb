@@ -141,7 +141,8 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
 }
 
 void SAMLOfflineSigninLimiter::ForceOnlineLogin() {
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile_);
   if (!user) {
     NOTREACHED();
     return;

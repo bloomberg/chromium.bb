@@ -120,7 +120,7 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // Returns user related to current WebUI. If this user doesn't exist,
   // returns active user.
-  user_manager::User* GetUser() const;
+  const user_manager::User* GetUser() const;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 

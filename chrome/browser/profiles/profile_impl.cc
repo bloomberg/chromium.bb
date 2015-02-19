@@ -754,9 +754,9 @@ ProfileImpl::~ProfileImpl() {
     SetExitType(EXIT_NORMAL);
 }
 
-std::string ProfileImpl::GetProfileUserName() {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(this);
+std::string ProfileImpl::GetProfileUserName() const {
+  const SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(this);
   if (signin_manager)
     return signin_manager->GetAuthenticatedUsername();
 
@@ -939,6 +939,11 @@ Profile::ExitType ProfileImpl::GetLastSessionExitType() {
 }
 
 PrefService* ProfileImpl::GetPrefs() {
+  return const_cast<PrefService*>(
+      static_cast<const ProfileImpl*>(this)->GetPrefs());
+}
+
+const PrefService* ProfileImpl::GetPrefs() const {
   DCHECK(prefs_);  // Should explicitly be initialized.
   return prefs_.get();
 }

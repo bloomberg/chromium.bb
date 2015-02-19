@@ -187,7 +187,8 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Secondary users and public session users cannot change the locale.
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (user &&
       user->email() == user_manager->GetPrimaryUser()->email() &&
       user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {

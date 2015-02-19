@@ -18,7 +18,7 @@
 bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
   UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
-  user_manager::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (!user->GetGivenName().empty()) {
     localized_strings->SetString(

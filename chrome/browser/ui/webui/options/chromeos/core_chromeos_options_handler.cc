@@ -99,7 +99,8 @@ base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
 // Checks whether this is a secondary user in a multi-profile session.
 bool IsSecondaryUser(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   return user && user->email() != user_manager->GetPrimaryUser()->email();
 }
 

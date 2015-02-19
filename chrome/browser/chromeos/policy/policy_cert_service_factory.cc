@@ -95,8 +95,9 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  user_manager::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
-      profile->GetOriginalProfile());
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          profile->GetOriginalProfile());
   if (!user)
     return NULL;
 

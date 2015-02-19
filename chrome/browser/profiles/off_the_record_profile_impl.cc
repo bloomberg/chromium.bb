@@ -225,7 +225,7 @@ void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
                      base::Unretained(this)));
 }
 
-std::string OffTheRecordProfileImpl::GetProfileUserName() {
+std::string OffTheRecordProfileImpl::GetProfileUserName() const {
   // Incognito profile should not return the username.
   return std::string();
 }
@@ -295,6 +295,10 @@ bool OffTheRecordProfileImpl::IsLegacySupervised() {
 }
 
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
+  return prefs_;
+}
+
+const PrefService* OffTheRecordProfileImpl::GetPrefs() const {
   return prefs_;
 }
 

@@ -522,7 +522,7 @@ void SetGuestLocale(Profile* const profile) {
       new GuestLanguageSetCallbackData(profile));
   locale_util::SwitchLanguageCallback callback(base::Bind(
       &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass())));
-  user_manager::User* const user =
+  const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   UserSessionManager::GetInstance()->RespectLocalePreference(
       profile, user, callback);

@@ -37,7 +37,7 @@ class OffTheRecordProfileImpl : public Profile {
   void Init();
 
   // Profile implementation.
-  std::string GetProfileUserName() override;
+  std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
   Profile* GetOffTheRecordProfile() override;
   void DestroyOffTheRecordProfile() override;
@@ -48,6 +48,7 @@ class OffTheRecordProfileImpl : public Profile {
   bool IsLegacySupervised() override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   PrefService* GetOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;
   net::URLRequestContextGetter* CreateRequestContext(

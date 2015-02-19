@@ -42,11 +42,13 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
   // null if no SigninManager instance currently exists (will not create a new
   // instance).
   static SigninManagerBase* GetForProfileIfExists(Profile* profile);
+  static const SigninManagerBase* GetForProfileIfExists(const Profile* profile);
 #else
   // On non-ChromeOS platforms, the SigninManager the factory creates will be
   // an instance of the extended SigninManager class.
   static SigninManager* GetForProfile(Profile* profile);
   static SigninManager* GetForProfileIfExists(Profile* profile);
+  static const SigninManager* GetForProfileIfExists(const Profile* profile);
 #endif
 
   // Returns an instance of the SigninManagerFactory singleton.

@@ -995,8 +995,9 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     const std::string& onc_blob,
     const std::string& passcode,
     net::NSSCertDatabase* nssdb) {
-  user_manager::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
-      Profile::FromWebUI(web_ui()));
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          Profile::FromWebUI(web_ui()));
 
   if (!user) {
     std::string error = "User not found.";

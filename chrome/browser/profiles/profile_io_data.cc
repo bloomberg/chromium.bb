@@ -419,7 +419,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if defined(OS_CHROMEOS)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
-    user_manager::User* user =
+    const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     // No need to initialize NSS for users with empty username hash:
     // Getters for a user's NSS slots always return NULL slot if the user's

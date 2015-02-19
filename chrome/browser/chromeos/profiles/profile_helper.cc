@@ -109,7 +109,7 @@ Profile* ProfileHelper::GetSigninProfile() {
 }
 
 // static
-std::string ProfileHelper::GetUserIdHashFromProfile(Profile* profile) {
+std::string ProfileHelper::GetUserIdHashFromProfile(const Profile* profile) {
   if (!profile)
     return std::string();
 
@@ -140,7 +140,7 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 }
 
 // static
-bool ProfileHelper::IsSigninProfile(Profile* profile) {
+bool ProfileHelper::IsSigninProfile(const Profile* profile) {
   return profile->GetPath().BaseName().value() == chrome::kInitialProfile;
 }
 
@@ -148,7 +148,8 @@ bool ProfileHelper::IsSigninProfile(Profile* profile) {
 bool ProfileHelper::IsOwnerProfile(Profile* profile) {
   if (!profile)
     return false;
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
 
@@ -156,10 +157,11 @@ bool ProfileHelper::IsOwnerProfile(Profile* profile) {
 }
 
 // static
-bool ProfileHelper::IsPrimaryProfile(Profile* profile) {
+bool ProfileHelper::IsPrimaryProfile(const Profile* profile) {
   if (!profile)
     return false;
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
   return user == user_manager::UserManager::Get()->GetPrimaryUser();
@@ -260,12 +262,12 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
   return profile;
 }
 
-user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
+const user_manager::User* ProfileHelper::GetUserByProfile(
+    const Profile* profile) const {
   // This map is non-empty only in tests.
   if (enable_profile_to_user_testing || !user_list_for_testing_.empty()) {
     if (always_return_primary_user_for_testing)
-      return const_cast<user_manager::User*>(
-          user_manager::UserManager::Get()->GetPrimaryUser());
+      return user_manager::UserManager::Get()->GetPrimaryUser();
 
     const std::string& user_name = profile->GetProfileUserName();
     for (user_manager::UserList::const_iterator it =
@@ -277,8 +279,7 @@ user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
     }
 
     // In case of test setup we should always default to primary user.
-    return const_cast<user_manager::User*>(
-        user_manager::UserManager::Get()->GetPrimaryUser());
+    return user_manager::UserManager::Get()->GetPrimaryUser();
   }
 
   DCHECK(!content::BrowserThread::IsThreadInitialized(
@@ -314,8 +315,13 @@ user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) {
   return active_user &&
                  ProfileHelper::GetProfilePathByUserIdHash(
                      active_user->username_hash()) == profile->GetPath()
-             ? const_cast<user_manager::User*>(active_user)
+             ? active_user
              : NULL;
+}
+
+user_manager::User* ProfileHelper::GetUserByProfile(Profile* profile) const {
+  return const_cast<user_manager::User*>(
+      GetUserByProfile(static_cast<const Profile*>(profile)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

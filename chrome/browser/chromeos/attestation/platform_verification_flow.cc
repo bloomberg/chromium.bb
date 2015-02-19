@@ -97,7 +97,8 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
     return url;
   }
 
-  user_manager::User* GetUser(content::WebContents* web_contents) override {
+  const user_manager::User* GetUser(
+      content::WebContents* web_contents) override {
     return ProfileHelper::Get()->GetUserByProfile(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   }
@@ -286,7 +287,7 @@ void PlatformVerificationFlow::OnConsentResponse(
 
   // At this point all user interaction is complete and we can proceed with the
   // certificate request.
-  user_manager::User* user = delegate_->GetUser(context.web_contents);
+  const user_manager::User* user = delegate_->GetUser(context.web_contents);
   if (!user) {
     ReportError(context.callback, INTERNAL_ERROR);
     LOG(ERROR) << "Profile does not map to a valid user.";

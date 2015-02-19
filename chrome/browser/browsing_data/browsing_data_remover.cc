@@ -702,7 +702,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
 #if defined(OS_CHROMEOS)
     // On Chrome OS, also delete any content protection platform keys.
-    user_manager::User* user =
+    const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
     if (!user) {
       LOG(WARNING) << "Failed to find user for current profile.";

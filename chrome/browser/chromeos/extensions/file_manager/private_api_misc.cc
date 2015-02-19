@@ -97,7 +97,7 @@ GetLoggedInProfileInfoList() {
 } // namespace
 
 bool FileManagerPrivateLogoutUserForReauthenticationFunction::RunSync() {
-  user_manager::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (user) {
     user_manager::UserManager::Get()->SaveUserOAuthStatus(

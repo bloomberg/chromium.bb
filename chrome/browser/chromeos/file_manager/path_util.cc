@@ -61,7 +61,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
   // to "Downloads". Note that some profiles (like login or test profiles)
   // are not associated with an user account. In that case, no suffix is added
   // because such a profile never belongs to a multi-profile session.
-  user_manager::User* const user =
+  const user_manager::User* const user =
       user_manager::UserManager::IsInitialized()
           ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())

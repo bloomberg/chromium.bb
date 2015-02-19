@@ -36,6 +36,13 @@ SigninManagerBase* SigninManagerFactory::GetForProfileIfExists(
       GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
+const SigninManagerBase* SigninManagerFactory::GetForProfileIfExists(
+    const Profile* profile) {
+  return static_cast<const SigninManagerBase*>(
+      GetInstance()->GetServiceForBrowserContext(
+          const_cast<Profile*>(profile), false));
+}
+
 // static
 SigninManagerBase* SigninManagerFactory::GetForProfile(
     Profile* profile) {
@@ -54,6 +61,14 @@ SigninManager* SigninManagerFactory::GetForProfile(Profile* profile) {
 SigninManager* SigninManagerFactory::GetForProfileIfExists(Profile* profile) {
   return static_cast<SigninManager*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
+}
+
+// static
+const SigninManager* SigninManagerFactory::GetForProfileIfExists(
+    const Profile* profile) {
+  return static_cast<const SigninManager*>(
+      GetInstance()->GetServiceForBrowserContext(
+          const_cast<Profile*>(profile), false));
 }
 #endif
 

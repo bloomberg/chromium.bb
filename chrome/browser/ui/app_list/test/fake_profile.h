@@ -31,7 +31,7 @@ class FakeProfile : public Profile {
   FakeProfile(const std::string& name, const base::FilePath& path);
 
   // Profile overrides.
-  std::string GetProfileUserName() override;
+  std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
   base::FilePath GetPath() const override;
   scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -61,6 +61,7 @@ class FakeProfile : public Profile {
   bool IsLegacySupervised() override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   PrefService* GetOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContext() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;

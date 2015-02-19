@@ -756,8 +756,9 @@ void SelectClientCertificates(const ClientCertificateRequest& request,
   cert_request_info->cert_key_types = request.certificate_key_types;
   cert_request_info->cert_authorities = request.certificate_authorities;
 
-  user_manager::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
-      Profile::FromBrowserContext(browser_context));
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          Profile::FromBrowserContext(browser_context));
 
   // Use the device-wide system key slot only if the user is of the same
   // domain as the device is registered to.

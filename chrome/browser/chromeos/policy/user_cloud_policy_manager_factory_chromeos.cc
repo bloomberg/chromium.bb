@@ -125,7 +125,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // |user| should never be NULL except for the signin profile. This object is
   // created as part of the Profile creation, which happens right after
   // sign-in. The just-signed-in User is the active user during that time.
-  user_manager::User* user =
+  const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   CHECK(user);
 

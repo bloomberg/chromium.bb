@@ -219,7 +219,8 @@ class EasyUnlockService : public KeyedService {
   void Shutdown() override;
 
   // Exposes the profile to which the service is attached to subclasses.
-  Profile* profile() const { return profile_; }
+  const Profile* profile() const { return profile_; }
+  Profile* profile() { return profile_; }
 
   // Opens an Easy Unlock Setup app window.
   void OpenSetupApp();

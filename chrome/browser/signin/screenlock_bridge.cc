@@ -109,10 +109,11 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetHardlockOnClick() {
 }
 
 // static
-std::string ScreenlockBridge::GetAuthenticatedUserEmail(Profile* profile) {
+std::string ScreenlockBridge::GetAuthenticatedUserEmail(
+    const Profile* profile) {
   // |profile| has to be a signed-in profile with SigninManager already
   // created. Otherwise, just crash to collect stack.
-  SigninManagerBase* signin_manager =
+  const SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile);
   return signin_manager->GetAuthenticatedUsername();
 }

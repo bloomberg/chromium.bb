@@ -44,7 +44,8 @@ ManagerPasswordServiceFactory::
 KeyedService* ManagerPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
   if (ChromeUserManager::Get()->GetSupervisedUserManager()->HasSupervisedUsers(
           user->email())) {
     ManagerPasswordService* result = new ManagerPasswordService();

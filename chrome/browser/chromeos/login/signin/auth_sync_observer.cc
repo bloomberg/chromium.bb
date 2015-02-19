@@ -48,7 +48,8 @@ void AuthSyncObserver::OnStateChanged() {
          user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile_);
   GoogleServiceAuthError::State state =
       sync_service->GetAuthError().state();
   if (state != GoogleServiceAuthError::NONE &&

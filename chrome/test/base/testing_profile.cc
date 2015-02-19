@@ -696,7 +696,7 @@ TestingProfile* TestingProfile::AsTestingProfile() {
   return this;
 }
 
-std::string TestingProfile::GetProfileUserName() {
+std::string TestingProfile::GetProfileUserName() const {
   return profile_name_;
 }
 
@@ -820,6 +820,11 @@ if (!policy_service_) {
 }
 
 PrefService* TestingProfile::GetPrefs() {
+  DCHECK(prefs_);
+  return prefs_.get();
+}
+
+const PrefService* TestingProfile::GetPrefs() const {
   DCHECK(prefs_);
   return prefs_.get();
 }

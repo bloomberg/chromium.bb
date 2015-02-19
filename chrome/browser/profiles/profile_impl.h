@@ -93,7 +93,7 @@ class ProfileImpl : public Profile {
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   // Note that this implementation returns the Google-services username, if any,
   // not the Chrome user's display name.
-  std::string GetProfileUserName() override;
+  std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
   bool IsOffTheRecord() const override;
   Profile* GetOffTheRecordProfile() override;
@@ -105,6 +105,7 @@ class ProfileImpl : public Profile {
   bool IsLegacySupervised() override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
+  const PrefService* GetPrefs() const override;
   chrome::ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;

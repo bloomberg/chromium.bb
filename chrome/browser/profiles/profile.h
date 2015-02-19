@@ -153,7 +153,7 @@ class Profile : public content::BrowserContext {
 
   // Returns the username associated with this profile, if any. In non-test
   // implementations, this is usually the Google-services email address.
-  virtual std::string GetProfileUserName() = 0;
+  virtual std::string GetProfileUserName() const = 0;
 
   // Returns the profile type.
   virtual ProfileType GetProfileType() const = 0;
@@ -192,6 +192,7 @@ class Profile : public content::BrowserContext {
   // Retrieves a pointer to the PrefService that manages the
   // preferences for this user profile.
   virtual PrefService* GetPrefs() = 0;
+  virtual const PrefService* GetPrefs() const = 0;
 
   // Retrieves a pointer to the PrefService that manages the default zoom
   // level and the per-host zoom levels for this user profile.

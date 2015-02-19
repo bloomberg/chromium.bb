@@ -54,7 +54,7 @@ UserAccountsDelegateChromeOS::GetSecondaryAccountIds() {
 
 std::string UserAccountsDelegateChromeOS::GetAccountDisplayName(
     const std::string& account_id) {
-  user_manager::User* user =
+  const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(user_profile_);
   if (gaia::AreEmailsSame(user->email(), account_id) &&
       !user->display_email().empty())
