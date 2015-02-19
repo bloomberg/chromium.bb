@@ -17,8 +17,10 @@ AXWidgetObjWrapper::AXWidgetObjWrapper(Widget* widget) : widget_(widget) {
 }
 
 AXWidgetObjWrapper::~AXWidgetObjWrapper() {
-  widget_->RemoveObserver(this);
-  widget_->RemoveRemovalsObserver(this);
+  if (!AXAuraObjCache::GetInstance()->is_destroying()) {
+    widget_->RemoveObserver(this);
+    widget_->RemoveRemovalsObserver(this);
+  }
   widget_ = NULL;
 }
 

@@ -43,11 +43,6 @@ ChromeVoxE2ETest.prototype = {
   /** @override */
   testGenPreamble: function() {
     GEN_BLOCK(function() {/*!
-  if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false,
-        ui::A11Y_NOTIFICATION_NONE);
-  }
-
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),
@@ -58,11 +53,26 @@ ChromeVoxE2ETest.prototype = {
   },
 
   /**
-   * Run a test with the specified HTML snippet loaded.
+   * Launch a new tab, wait until tab status complete, then run callback.
    * @param {function() : void} doc Snippet wrapped inside of a function.
    * @param {function()} callback Called once the document is ready.
    */
-  runWithDocument: function(doc, callback) {
+  runWithLoadedTab: function(doc, callback) {
+    this.launchNewTabWithDoc(doc, function(tab) {
+      chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+        if (tabId == tab.id && changeInfo.status == 'complete') {
+          callback(tabId);
+        }
+      });
+    });
+  },
+
+  /**
+   * Launches the given document in a new tab.
+   * @param {function() : void} doc Snippet wrapped inside of a function.
+   * @param {function()} opt_callback Called once the document is created.
+   */
+  runWithTab: function(doc, opt_callback) {
     var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
     var url = 'data:text/html,<!doctype html>' +
         docString +
@@ -71,13 +81,7 @@ ChromeVoxE2ETest.prototype = {
       active: true,
       url: url
     };
-    chrome.tabs.create(createParams, function(tab) {
-      chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-        if (tabId == tab.id && changeInfo.status == 'complete') {
-          callback(tabId);
-        }
-      });
-    });
+    chrome.tabs.create(createParams, opt_callback);
   },
 
   /**

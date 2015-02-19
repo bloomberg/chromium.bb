@@ -27,7 +27,7 @@ AutomationUtilE2ETest.prototype = {
 };
 
 TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
-  this.runWithAutomation(this.basicDoc,
+  this.runWithLoadedTree(this.basicDoc,
     function(root) {
       var expectedLength = 1;
       while (root) {
@@ -40,7 +40,7 @@ TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
 });
   
 TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
-  this.runWithAutomation(this.basicDoc, function(root) {
+  this.runWithLoadedTree(this.basicDoc, function(root) {
     var leftmost = root, rightmost = root;
     while (leftmost.firstChild)
       leftmost = leftmost.firstChild;
@@ -83,7 +83,7 @@ TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
 });
   
 TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
-  this.runWithAutomation(this.basicDoc, function(root) {
+  this.runWithLoadedTree(this.basicDoc, function(root) {
     var left = root, right = root;
 
     // Same node.
