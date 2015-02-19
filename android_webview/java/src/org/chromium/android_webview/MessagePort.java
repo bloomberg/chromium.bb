@@ -37,10 +37,10 @@ import android.util.Log;
 public class MessagePort implements PostMessageSender.PostMessageSenderDelegate {
 
     /**
-     * The interface for message handler for receiving messages. Called on a background thread.
+     * The message event handler for receiving messages. Called on a background thread.
      */
-    public static interface MessageHandler {
-        void onMessage(String message);
+    public abstract static class WebEventHandler {
+        public abstract void onMessage(String message);
     };
 
     /**
@@ -63,7 +63,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     private static final String TAG = "MessagePort";
     private static final int PENDING = -1;
     private int mPortId = PENDING;
-    private MessageHandler mHandler;
+    private WebEventHandler mWebEventHandler;
     private AwMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
@@ -108,8 +108,8 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         mTransferred = true;
     }
 
-    public void setMessageHandler(MessageHandler handler) {
-        mHandler = handler;
+    public void setWebEventHandler(WebEventHandler webEventHandler) {
+        mWebEventHandler = webEventHandler;
     }
 
     public void onMessage(String message) {
@@ -117,11 +117,11 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
             Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
             return;
         }
-        if (mHandler == null) {
+        if (mWebEventHandler == null) {
             Log.w(TAG, "No handler set for port [" + mPortId + "], dropping message " + message);
             return;
         }
-        mHandler.onMessage(message);
+        mWebEventHandler.onMessage(message);
     }
 
     public void postMessage(String message, MessagePort[] msgPorts) throws IllegalStateException {

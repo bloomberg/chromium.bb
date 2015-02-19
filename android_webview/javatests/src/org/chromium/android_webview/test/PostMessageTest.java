@@ -322,7 +322,7 @@ public class PostMessageTest extends AwTestBase {
                 MessagePort[] channel = mAwContents.createMessageChannel();
                 // verify communication from JS to Java.
                 channelContainer.set(channel);
-                channel[0].setMessageHandler(new MessagePort.MessageHandler() {
+                channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
@@ -404,7 +404,7 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                channel[0].setMessageHandler(new MessagePort.MessageHandler() {
+                channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
@@ -434,7 +434,7 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 MessagePort[] channel = mAwContents.createMessageChannel();
-                channel[0].setMessageHandler(new MessagePort.MessageHandler() {
+                channel[0].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
@@ -461,7 +461,7 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 MessagePort[] channel = mAwContents.createMessageChannel();
-                channel[1].setMessageHandler(new MessagePort.MessageHandler() {
+                channel[1].setWebEventHandler(new MessagePort.WebEventHandler() {
                     @Override
                     public void onMessage(String message) {
                         channelContainer.setMessage(message);
@@ -566,8 +566,8 @@ public class PostMessageTest extends AwTestBase {
             return mPort.isClosed();
         }
         @Override
-        public void setMessageHandler(MessageHandler handler) {
-            mPort.setMessageHandler(handler);
+        public void setWebEventHandler(WebEventHandler handler) {
+            mPort.setWebEventHandler(handler);
         }
         @Override
         public void onMessage(String message) {
