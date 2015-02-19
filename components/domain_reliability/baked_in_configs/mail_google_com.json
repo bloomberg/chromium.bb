@@ -1,5 +1,5 @@
 {
-  "config_version": "mail-google-com $Revision: #5 $",
+  "config_version": "mail-google-com $Revision: #6 $",
   "config_valid_until": 1446336000,
   "monitored_domain": "mail.google.com",
   "collectors": [
@@ -23,6 +23,12 @@
     {
       "resource_name": "gmail-home",
       "url_patterns": ["http*://mail.google.com/"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "gmail-persistent",
+      "url_patterns": ["http*://mail.google.com/*/channel/bind*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     },
