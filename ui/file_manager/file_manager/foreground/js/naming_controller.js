@@ -103,7 +103,7 @@ NamingController.prototype.validateFileNameForSaving = function(filename) {
         if (!isValid)
           return Promise.reject('Invalid filename.');
 
-        if (util.isFakeEntry(directory)) {
+        if (directory && util.isFakeEntry(directory)) {
           // Can't save a file into a fake directory.
           return Promise.reject('Cannot save into fake entry.');
         }

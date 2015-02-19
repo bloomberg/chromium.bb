@@ -223,7 +223,7 @@ DirectoryItem.prototype.handleClick = function(e) {
  */
 DirectoryItem.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
-  if (util.isFakeEntry(this.entry)) {
+  if (!this.entry || util.isFakeEntry(this.entry)) {
     if (opt_errorCallback)
       opt_errorCallback();
     return;
@@ -445,6 +445,11 @@ function VolumeItem(modelItem, tree) {
 
 VolumeItem.prototype = {
   __proto__: DirectoryItem.prototype,
+  /**
+   * Directory entry for the display root, whose initial value is null.
+   * @type {DirectoryEntry}
+   * @override
+   */
   get entry() {
     return this.volumeInfo_.displayRoot;
   },

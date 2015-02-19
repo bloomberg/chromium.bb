@@ -1091,7 +1091,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
  * Creates directory contents for the entry and query.
  *
  * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} entry Current directory.
+ * @param {!DirectoryEntry} entry Current directory.
  * @param {string=} opt_query Search query string.
  * @return {DirectoryContents} Directory contents.
  * @private
