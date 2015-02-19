@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
+#include "extensions/browser/api/printer_provider/printer_provider_api.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,10 +23,25 @@ namespace content {
 class BrowserContext;
 }
 
+namespace cloud_devices {
+class CloudDeviceDescription;
+}
+
+namespace gfx {
+class Size;
+}
+
+namespace local_discovery {
+class PWGRasterConverter;
+}
+
 // Implementation of PrinterHandler interface backed by printerProvider
 // extension API.
 class ExtensionPrinterHandler : public PrinterHandler {
  public:
+  using RefCountedMemoryCallback =
+      base::Callback<void(const scoped_refptr<base::RefCountedMemory>&)>;
+
   explicit ExtensionPrinterHandler(content::BrowserContext* browser_context);
 
   ~ExtensionPrinterHandler() override;
@@ -41,10 +57,29 @@ class ExtensionPrinterHandler : public PrinterHandler {
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
                   const std::string& ticket_json,
+                  const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedMemory>& print_data,
                   const PrinterHandler::PrintCallback& callback) override;
 
  private:
+  // Converts |data| to PWG raster format (from PDF) for a printer described
+  // by |printer_description|.
+  // |callback| is called with the converted data.
+  void ConvertToPWGRaster(
+      const scoped_refptr<base::RefCountedMemory>& data,
+      const cloud_devices::CloudDeviceDescription& printer_description,
+      const std::string& ticket,
+      const gfx::Size& page_size,
+      const RefCountedMemoryCallback& callback);
+
+  // Sets print job document data and dispatches it using printerProvider API.
+  // TODO(tbarzic): Move PrinterProvider::PrintJob to it's own file so it can
+  // be forward-declared.
+  void DispatchPrintJob(
+      const PrinterHandler::PrintCallback& callback,
+      scoped_ptr<extensions::PrinterProviderAPI::PrintJob> print_job,
+      const scoped_refptr<base::RefCountedMemory>& data);
+
   // Methods used as wrappers to callbacks for extensions::PrinterProviderAPI
   // methods, primarily so the callbacks can be bound to this class' weak ptr.
   // They just propagate results to callbacks passed to them.
@@ -61,6 +96,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
                          const std::string& status);
 
   content::BrowserContext* browser_context_;
+
+  scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter_;
 
   base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_;
 

@@ -21,6 +21,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace gfx {
+class Size;
+}
+
 // Wrapper around PrinterProviderAPI to be used by print preview.
 // It makes request lifetime management easier, and hides details of more
 // complex operations like printing from the print preview handler.
@@ -58,12 +62,15 @@ class PrinterHandler {
   // |destination_id|: The printer to which print job should be sent.
   // |capability|: Capability reported by the printer.
   // |ticket_json|: The print job ticket as JSON string.
+  // |page_size|: The document page size.
   // |print_data|: The document bytes to print.
   // |callback| should be called in the response to the request.
+  // TODO(tbarzic): Page size should be extracted from print data.
   virtual void StartPrint(
       const std::string& destination_id,
       const std::string& capability,
       const std::string& ticket_json,
+      const gfx::Size& page_size,
       const scoped_refptr<base::RefCountedMemory>& print_data,
       const PrintCallback& callback) = 0;
 };

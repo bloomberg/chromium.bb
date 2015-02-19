@@ -889,9 +889,14 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     std::string destination_id;
     std::string print_ticket;
     std::string capabilities;
+    int width = 0;
+    int height = 0;
     if (!settings->GetString(printing::kSettingDeviceName, &destination_id) ||
         !settings->GetString(printing::kSettingTicket, &print_ticket) ||
-        !settings->GetString(printing::kSettingCapabilities, &capabilities)) {
+        !settings->GetString(printing::kSettingCapabilities, &capabilities) ||
+        !settings->GetInteger(printing::kSettingPageWidth, &width) ||
+        !settings->GetInteger(printing::kSettingPageHeight, &height) ||
+        width <= 0 || height <= 0) {
       NOTREACHED();
       OnExtensionPrintResult(false, "FAILED");
       return;
@@ -907,9 +912,9 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
     EnsureExtensionPrinterHandlerSet();
     extension_printer_handler_->StartPrint(
-        destination_id, capabilities, print_ticket, data,
-        base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
-                   base::Unretained(this)));
+        destination_id, capabilities, print_ticket, gfx::Size(width, height),
+        data, base::Bind(&PrintPreviewHandler::OnExtensionPrintResult,
+                         base::Unretained(this)));
     return;
   }
 
