@@ -8,7 +8,6 @@
  * @param {!Array<string>} validPropertyNames
  * @constructor
  * @struct
- * @template T
  */
 function NewMetadataProvider(cache, validPropertyNames) {
   /**
@@ -38,9 +37,10 @@ function NewMetadataProvider(cache, validPropertyNames) {
 /**
  * Obtains the metadata for the request.
  * @param {!Array<!MetadataRequest>} requests
- * @return {!Promise<!Array<!T>>} Promise with obtained metadata. It should not
- *     return rejected promise. Instead it should return undefined property for
- *     property error, and should return empty object for entry error.
+ * @return {!Promise<!Array<!MetadataItem>>} Promise with obtained metadata. It
+ *     should not return rejected promise. Instead it should return undefined
+ *     property for property error, and should return empty MetadataItem for
+ *     entry error.
  * @protected
  */
 NewMetadataProvider.prototype.getImpl;
@@ -49,7 +49,7 @@ NewMetadataProvider.prototype.getImpl;
  * Obtains metadata for entries.
  * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Promise<!Array<!T>>}
+ * @return {!Promise<!Array<!MetadataItem>>}
  */
 NewMetadataProvider.prototype.get = function(entries, names) {
   // Check if the property name is correct or not.
@@ -70,9 +70,9 @@ NewMetadataProvider.prototype.get = function(entries, names) {
   this.cache_.startRequests(requestId, requests);
 
   // Register callback.
-  var promise = new Promise(function(fulfill, reject) {
+  var promise = new Promise(function(fulfill) {
     this.callbackRequests_.push(new MetadataProviderCallbackRequest(
-        entries, names, snapshot, fulfill, reject));
+        entries, names, snapshot, fulfill));
   }.bind(this));
 
   // If the requests are not empty, call the requests.
@@ -114,7 +114,7 @@ NewMetadataProvider.prototype.get = function(entries, names) {
  * Obtains metadata cache for entries.
  * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Array<!T>}
+ * @return {!Array<!MetadataItem>}
  */
 NewMetadataProvider.prototype.getCache = function(entries, names) {
   // Check if the property name is correct or not.
@@ -128,14 +128,11 @@ NewMetadataProvider.prototype.getCache = function(entries, names) {
  * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
  * @param {!MetadataCacheSet} cache
- * @param {function(!T):undefined} fulfill
- * @param {function():undefined} reject
+ * @param {function(!MetadataItem):undefined} fulfill
  * @constructor
  * @struct
- * @template T
  */
-function MetadataProviderCallbackRequest(
-    entries, names, cache, fulfill, reject) {
+function MetadataProviderCallbackRequest(entries, names, cache, fulfill) {
   /**
    * @private {!Array<!Entry>}
    * @const
@@ -155,16 +152,10 @@ function MetadataProviderCallbackRequest(
   this.cache_ = cache;
 
   /**
-   * @private {function(!T):undefined}
+   * @private {function(!MetadataItem):undefined}
    * @const
    */
   this.fulfill_ = fulfill;
-
-  /**
-   * @private {function():undefined}
-   * @const
-   */
-  this.reject_ = reject;
 }
 
 /**
@@ -172,7 +163,7 @@ function MetadataProviderCallbackRequest(
  * If all the requested property are served, it invokes the callback.
  * @param {number} requestId
  * @param {!Array<!Entry>} entries
- * @param {!Array<!Object>} objects
+ * @param {!Array<!MetadataItem>} objects
  * @return {boolean} Whether the callback is invoked or not.
  */
 MetadataProviderCallbackRequest.prototype.storeProperties = function(

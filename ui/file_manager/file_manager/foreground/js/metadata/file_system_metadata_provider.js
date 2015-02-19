@@ -3,17 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{modificationTime:Date, size:number, contentMimeType:string,
- *     present:boolean, availableOffline: boolean}}
- */
-var FileSystemMetadataProperties;
-
-/**
  * Metadata provider for FileEntry#getMetadata.
  *
  * @param {!MetadataProviderCache} cache
  * @constructor
- * @extends {NewMetadataProvider<!FileSystemMetadataProperties>}
+ * @extends {NewMetadataProvider}
  * @struct
  */
 function FileSystemMetadataProvider(cache) {
@@ -25,7 +19,7 @@ function FileSystemMetadataProvider(cache) {
  * @const {!Array<string>}
  */
 FileSystemMetadataProvider.PROPERTY_NAMES = [
-    'modificationTime', 'size', 'present', 'availableOffline', 'contentMimeType'
+  'modificationTime', 'size', 'present', 'availableOffline', 'contentMimeType'
 ];
 
 FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
@@ -48,19 +42,16 @@ FileSystemMetadataProvider.prototype.getImpl = function(requests) {
           }
         })
     ]).then(function(results) {
-      var result = {
-        modificationTime: results[0].modificationTime,
-        size: request.entry.isDirectory ? -1 : results[0].size,
-        present: true,
-        availableOffline: true,
-      };
-
+      var item = new MetadataItem();
+      item.modificationTime = results[0].modificationTime;
+      item.size = request.entry.isDirectory ? -1 : results[0].size;
+      item.present = true;
+      item.availableOffline = true;
       if (results[1] !== null)
-        result['contentMimeType'] = results[1];
-
-      return result;
+        item.contentMimeType = results[1];
+      return item;
     }, function() {
-      return {};
+      return new MetadataItem();
     });
   }));
 };

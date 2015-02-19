@@ -63,7 +63,7 @@ MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
  * @param {number} requestId Request ID. If a newer operation has already been
  *     done, the results must be ingored.
  * @param {!Array<!Entry>} entries
- * @param {!Array<!Object>} results
+ * @param {!Array<!MetadataItem>} results
  * @return {boolean} Whether at least one result is stored or not.
  */
 MetadataCacheSet.prototype.storeProperties = function(

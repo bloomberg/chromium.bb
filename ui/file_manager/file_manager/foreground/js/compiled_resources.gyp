@@ -94,6 +94,7 @@
           './metadata/metadata_cache.js',
           './metadata/metadata_cache_item.js',
           './metadata/metadata_cache_set.js',
+          './metadata/metadata_item.js',
           './metadata/new_metadata_provider.js',
           './metadata/thumbnail_model.js',
           './metadata_update_controller.js',

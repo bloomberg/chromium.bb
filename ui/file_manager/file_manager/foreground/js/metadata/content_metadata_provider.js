@@ -3,28 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{
- *  scaleX: number,
- *  scaleY: number,
- *  rotate90: number
- * }}
- */
-var ImageTransformation;
-
-/**
- * @typedef {{
- *   contentThumbnailUrl:(string|undefined),
- *   contentThumbnailTransform: (!ImageTransformation|undefined),
- *   contentImageTransform: (!ImageTransformation|undefined)
- * }}
- */
-var ContentMetadata;
-
-/**
  * @param {!MetadataProviderCache} cache
  * @param {!MessagePort=} opt_messagePort Message port overriding the default
  *     worker port.
- * @extends {NewMetadataProvider<!ContentMetadata>}
+ * @extends {NewMetadataProvider}
  * @constructor
  * @struct
  */
@@ -32,11 +14,7 @@ function ContentMetadataProvider(cache, opt_messagePort) {
   NewMetadataProvider.call(
       this,
       cache,
-      [
-        'contentThumbnailUrl',
-        'contentThumbnailTransform',
-        'contentImageTransform'
-      ]);
+      ContentMetadataProvider.PROPERTY_NAMES);
 
   /**
    * Pass all URLs to the metadata reader until we have a correct filter.
@@ -72,6 +50,17 @@ function ContentMetadataProvider(cache, opt_messagePort) {
 }
 
 /**
+ * @const {!Array<string>}
+ */
+ContentMetadataProvider.PROPERTY_NAMES = [
+  'contentThumbnailUrl',
+  'contentThumbnailTransform',
+  'contentImageTransform',
+  'mediaTitle',
+  'mediaArtist'
+];
+
+/**
  * Path of a worker script.
  * @const {string}
  */
@@ -82,14 +71,14 @@ ContentMetadataProvider.WORKER_SCRIPT =
 /**
  * Converts content metadata from parsers to the internal format.
  * @param {Object} metadata The content metadata.
- * @return {!ContentMetadata} Converted metadata.
+ * @return {!MetadataItem} Converted metadata.
  */
 ContentMetadataProvider.convertContentMetadata = function(metadata) {
-  return {
-    contentThumbnailUrl: metadata['thumbnailURL'],
-    contentThumbnailTransform: metadata['thumbnailTransform'],
-    contentImageTransform: metadata['imageTransform']
-  };
+  var item = new MetadataItem();
+  item.contentThumbnailUrl = metadata['thumbnailURL'];
+  item.contentThumbnailTransform = metadata['thumbnailTransform'];
+  item.contentImageTransform = metadata ['imageTransform'];
+  return item;
 };
 
 ContentMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
@@ -188,7 +177,8 @@ ContentMetadataProvider.prototype.onResult_ = function(url, metadata) {
   for (var i = 0; i < callbacks.length; i++) {
     callbacks[i](
         metadata ?
-        ContentMetadataProvider.convertContentMetadata(metadata) : {});
+        ContentMetadataProvider.convertContentMetadata(metadata) :
+        new MetadataItem());
   }
 };
 
@@ -204,7 +194,7 @@ ContentMetadataProvider.prototype.onError_ =
     function(url, step, error, metadata) {
   if (MetadataCache.log)  // Avoid log spam by default.
     console.warn('metadata: ' + url + ': ' + step + ': ' + error);
-  this.onResult_(url, {});
+  this.onResult_(url, new MetadataItem());
 };
 
 /**

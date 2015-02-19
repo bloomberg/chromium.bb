@@ -44,7 +44,7 @@ function FileSystemMetadata(
  * Obtains metadata for entries.
  * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Promise<!Array<!ExternalMetadataProperties>>}
+ * @return {!Promise<!Array<!MetadataItem>>}
  */
 FileSystemMetadata.prototype.get = function(entries, names) {
   var localEntries = [];
@@ -90,7 +90,7 @@ FileSystemMetadata.prototype.get = function(entries, names) {
  * Obtains metadata cache for entries.
  * @param {!Array<!Entry>} entries Entries.
  * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Array<!ExternalMetadataProperties>}
+ * @return {!Array<!MetadataItem>}
  */
 FileSystemMetadata.prototype.getCache = function(entries, names) {
   return this.cache_.get(entries, names);

@@ -3,58 +3,41 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{
- *   size: number,
- *   shared: (boolean|undefined),
- *   modificationTime: Date,
- *   thumbnailUrl: (string|undefined),
- *   externalFileUrl: (string|undefined),
- *   imageWidth: (number|undefined),
- *   imageHeight: (number|undefined),
- *   imageRotation: (number|undefined),
- *   pinned: (boolean|undefined),
- *   present: (boolean|undefined),
- *   hosted: (boolean|undefined),
- *   dirty: (boolean|undefined),
- *   availableOffline: (boolean|undefined),
- *   availableWhenMetered: (boolean|undefined),
- *   customIconUrl: string,
- *   contentMimeType: string,
- *   sharedWithMe: (boolean|undefined)
- * }}
- */
-var ExternalMetadataProperties;
-
-/**
  * Metadata provider for FileEntry#getMetadata.
  * TODO(hirono): Rename thumbnailUrl with externalThumbnailUrl.
  *
  * @param {!MetadataProviderCache} cache
  * @constructor
- * @extends {NewMetadataProvider<!ExternalMetadataProperties>}
+ * @extends {NewMetadataProvider}
  * @struct
  */
 function ExternalMetadataProvider(cache) {
-  NewMetadataProvider.call(this, cache, [
-    'availableOffline',
-    'availableWhenMetered',
-    'contentMimeType',
-    'customIconUrl',
-    'dirty',
-    'externalFileUrl',
-    'hosted',
-    'imageHeight',
-    'imageRotation',
-    'imageWidth',
-    'modificationTime',
-    'pinned',
-    'present',
-    'shared',
-    'sharedWithMe',
-    'size',
-    'thumbnailUrl'
-  ]);
+  NewMetadataProvider.call(
+      this, cache, ExternalMetadataProvider.PROPERTY_NAMES);
 }
+
+/**
+ * @const {!Array<string>}
+ */
+ExternalMetadataProvider.PROPERTY_NAMES = [
+  'availableOffline',
+  'availableWhenMetered',
+  'contentMimeType',
+  'customIconUrl',
+  'dirty',
+  'externalFileUrl',
+  'hosted',
+  'imageHeight',
+  'imageRotation',
+  'imageWidth',
+  'modificationTime',
+  'pinned',
+  'present',
+  'shared',
+  'sharedWithMe',
+  'size',
+  'thumbnailUrl'
+];
 
 ExternalMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
 
@@ -80,7 +63,7 @@ ExternalMetadataProvider.prototype.getImpl = function(requests) {
           if (!chrome.runtime.lastError)
             fulfill(this.convertResults_(requests, results));
           else
-            fulfill(requests.map(function() { return {}; }));
+            fulfill(requests.map(function() { return new MetadataItem(); }));
         }.bind(this));
   }.bind(this));
 };
@@ -88,32 +71,32 @@ ExternalMetadataProvider.prototype.getImpl = function(requests) {
 /**
  * @param {!Array<!MetadataRequest>} requests
  * @param {!Array<!EntryProperties>} propertiesList
- * @return {!Array<!ExternalMetadataProperties>}
+ * @return {!Array<!MetadataItem>}
  */
 ExternalMetadataProvider.prototype.convertResults_ =
     function(requests, propertiesList) {
   var results = [];
   for (var i = 0; i < propertiesList.length; i++) {
     var properties = propertiesList[i];
-    results.push({
-      availableOffline: properties.availableOffline,
-      availableWhenMetered: properties.availableWhenMetered,
-      contentMimeType: properties.contentMimeType || '',
-      customIconUrl: properties.customIconUrl || '',
-      dirty: properties.dirty,
-      externalFileUrl: properties.externalFileUrl,
-      hosted: properties.hosted,
-      imageHeight: properties.imageHeight,
-      imageRotation: properties.imageRotation,
-      imageWidth: properties.imageWidth,
-      modificationTime: new Date(properties.modificationTime),
-      pinned: properties.pinned,
-      present: properties.present,
-      shared: properties.shared,
-      sharedWithMe: properties.sharedWithMe,
-      size: requests[i].entry.isFile ? (properties.size || 0) : -1,
-      thumbnailUrl: properties.thumbnailUrl
-    });
+    var item = new MetadataItem();
+    item.availableOffline = properties.availableOffline;
+    item.availableWhenMetered = properties.availableWhenMetered;
+    item.contentMimeType = properties.contentMimeType || '';
+    item.customIconUrl = properties.customIconUrl || '';
+    item.dirty = properties.dirty;
+    item.externalFileUrl = properties.externalFileUrl;
+    item.hosted = properties.hosted;
+    item.imageHeight = properties.imageHeight;
+    item.imageRotation = properties.imageRotation;
+    item.imageWidth = properties.imageWidth;
+    item.modificationTime = new Date(properties.modificationTime);
+    item.pinned = properties.pinned;
+    item.present = properties.present;
+    item.shared = properties.shared;
+    item.sharedWithMe = properties.sharedWithMe;
+    item.size = requests[i].entry.isFile ? (properties.size || 0) : -1;
+    item.thumbnailUrl = properties.thumbnailUrl;
+    results.push(item);
   }
   return results;
 };

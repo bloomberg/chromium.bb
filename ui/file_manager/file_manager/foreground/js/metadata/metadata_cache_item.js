@@ -54,11 +54,12 @@ MetadataCacheItem.prototype.startRequests = function(requestId, names) {
 /**
  * Feeds the result of startRequests.
  * @param {number} requestId Request ID passed when calling startRequests.
- * @param {!Object} object Map of property name and value.
+ * @param {!MetadataItem} typedObject Map of property name and value.
  * @return {boolean} Whether at least one property is updated or not.
  */
-MetadataCacheItem.prototype.storeProperties = function(requestId, object) {
+MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
   var changed = false;
+  var object = /** @type {!Object} */(typedObject);
   for (var name in object) {
     if (!this.properties_[name])
       this.properties_[name] = new MetadataCacheItemProperty();
@@ -93,16 +94,16 @@ MetadataCacheItem.prototype.invalidate = function(requestId) {
  * Obtains property for entries and names.
  * Note that it returns invalidated properties also.
  * @param {!Array<string>} names
- * @return {!Object}
+ * @return {!MetadataItem}
  */
 MetadataCacheItem.prototype.get = function(names) {
-  var result = {};
+  var result = /** @type {!Object} */(new MetadataItem());
   for (var i = 0; i < names.length; i++) {
     var name = names[i];
     if (this.properties_[name])
       result[name] = this.properties_[name].value;
   }
-  return result;
+  return /** @type {!MetadataItem} */(result);
 };
 
 /**
