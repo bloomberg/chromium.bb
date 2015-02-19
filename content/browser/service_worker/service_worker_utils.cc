@@ -77,7 +77,9 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
       error_message->append("set by Service-Worker-Allowed: ");
     error_message->append("'");
     error_message->append(max_scope_string);
-    error_message->append("').");
+    error_message->append(
+        "'). Adjust the scope, move the Service Worker script, or use the "
+        "Service-Worker-Allowed HTTP header to allow the scope.");
     return false;
   }
   return true;
