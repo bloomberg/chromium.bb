@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/pref_filter.h"
@@ -501,6 +501,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
+  SCOPED_UMA_HISTOGRAM_TIMER("PrefService.CreateProfilePrefsTime");
 
   // A StartSyncFlare used to kick sync early in case of a reset event. This is
   // done since sync may bring back the user's server value post-reset which

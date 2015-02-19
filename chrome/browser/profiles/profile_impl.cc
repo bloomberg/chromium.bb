@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -266,10 +267,10 @@ PrefStore* CreateExtensionPrefStore(Profile* profile,
 Profile* Profile::CreateProfile(const base::FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode) {
-  TRACE_EVENT_BEGIN1("browser",
-                     "Profile::CreateProfile",
-                     "profile_path",
-                     path.value().c_str());
+  TRACE_EVENT1("browser,startup",
+               "Profile::CreateProfile",
+               "profile_path",
+               path.AsUTF8Unsafe());
 
   // Get sequenced task runner for making sure that file operations of
   // this profile (defined by |path|) are executed in expected order
@@ -282,9 +283,9 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
     CreateProfileDirectory(sequenced_task_runner.get(), path);
   } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     if (!base::PathExists(path)) {
-      // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
-      // profile directory.  We should eventually be able to run in this
-      // situation.
+      // TODO(rogerta): http://crbug/160553 - Bad things happen if we can't
+      // write to the profile directory.  We should eventually be able to run in
+      // this situation.
       if (!base::CreateDirectory(path))
         return NULL;
     }
@@ -411,7 +412,7 @@ ProfileImpl::ProfileImpl(
       start_time_(Time::Now()),
       delegate_(delegate),
       predictor_(NULL) {
-  TRACE_EVENT0("browser", "ProfileImpl::ctor")
+  TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
@@ -666,12 +667,6 @@ void ProfileImpl::DoFinalInit() {
   // as a URLDataSource early.
   RegisterDomDistillerViewerSource(this);
 
-  // Creation has been finished.
-  TRACE_EVENT_END1("browser",
-                   "Profile::CreateProfile",
-                   "profile_path",
-                   path_.value().c_str());
-
 #if defined(OS_CHROMEOS)
   if (chromeos::UserSessionManager::GetInstance()
           ->RestartToApplyPerSessionFlagsIfNeed(this, true)) {
@@ -848,7 +843,8 @@ ExtensionSpecialStoragePolicy*
 }
 
 void ProfileImpl::OnPrefsLoaded(bool success) {
-  TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded")
+  TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded");
+  SCOPED_UMA_HISTOGRAM_TIMER("Profile.OnPrefsLoadedTime");
   if (!success) {
     if (delegate_)
       delegate_->OnProfileCreated(this, false, false);

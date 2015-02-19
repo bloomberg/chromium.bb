@@ -256,6 +256,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns true if the profile was added, false otherwise.
   bool AddProfile(Profile* profile);
 
+  // Synchronously creates and returns a profile. This handles both the full
+  // creation and adds it to the set managed by this ProfileManager.
+  Profile* CreateAndInitializeProfile(const base::FilePath& profile_dir);
+
   // Schedules the profile at the given path to be deleted on shutdown.
   void FinishDeletingProfile(const base::FilePath& profile_dir);
 

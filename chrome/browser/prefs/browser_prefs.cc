@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -379,7 +379,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 // Register prefs applicable to all profiles.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  TRACE_EVENT0("browser", "chrome::RegisterUserPrefs");
+  TRACE_EVENT0("browser", "chrome::RegisterProfilePrefs");
+  SCOPED_UMA_HISTOGRAM_TIMER("Settings.RegisterProfilePrefsTime");
   // User prefs. Please keep this list alphabetized.
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   bookmarks::RegisterProfilePrefs(registry);

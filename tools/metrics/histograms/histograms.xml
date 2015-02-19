@@ -27403,6 +27403,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PrefService.CreateProfilePrefsTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>The amount of time that elapsed during CreateProfilePrefs.</summary>
+</histogram>
+
 <histogram name="Prerender.AbandonTimeUntilUsed" units="milliseconds">
   <owner>davidben@chromium.org</owner>
   <owner>tburkard@chromium.org</owner>
@@ -28462,6 +28467,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Size of the cookies database.</summary>
 </histogram>
 
+<histogram name="Profile.CreateAndInitializeProfile" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>Length of time to setup profile.</summary>
+</histogram>
+
+<histogram name="Profile.CreateProfileHelperTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during ProfileManager::CreateProfileHelper.
+    This is called when a profile is created synchronously (usually at startup).
+  </summary>
+</histogram>
+
 <histogram name="Profile.CreateResult" enum="ProfileCreateResult">
   <owner>pam@chromium.org</owner>
   <owner>rlp@chromium.org</owner>
@@ -28551,6 +28569,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Profile.GetProfile" units="milliseconds">
+  <obsolete>
+    Deprecated 02/2015. Profile.CreateAndInitializeProfile is more useful.
+  </obsolete>
   <owner>rkaplow@chromium.org</owner>
   <summary>Length of time to retrieve profile.</summary>
 </histogram>
@@ -28722,6 +28743,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Counts the number of profiles unused within the past 28 days on a user's
     machine. This is counts at least every 24 hours while Chrome is running, so
     always de-dupe the results with Show User Counts.
+  </summary>
+</histogram>
+
+<histogram name="Profile.OnPrefsLoadedTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during ProfileImpl::OnPrefsLoaded.
   </summary>
 </histogram>
 
@@ -33385,6 +33413,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Settings.PinnedTabs">
   <owner>mpearson@chromium.org</owner>
   <summary>The number of pinned tabs opened when a profile is loaded.</summary>
+</histogram>
+
+<histogram name="Settings.RegisterProfilePrefsTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during RegisterProfilePrefs.
+  </summary>
 </histogram>
 
 <histogram name="Settings.ShowHomeButton" enum="BooleanEnabled">

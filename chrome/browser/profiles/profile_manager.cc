@@ -374,21 +374,13 @@ Profile* ProfileManager::GetActiveUserProfile() {
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::GetProfile");
-  SCOPED_UMA_HISTOGRAM_TIMER("Profile.GetProfile");
 
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
   if (NULL != profile)
     return profile;
-
-  profile = CreateProfileHelper(profile_dir);
-  DCHECK(profile);
-  if (profile) {
-    bool result = AddProfile(profile);
-    DCHECK(result);
-  }
-  return profile;
+  return CreateAndInitializeProfile(profile_dir);
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
@@ -402,10 +394,10 @@ void ProfileManager::CreateProfileAsync(
     const base::string16& icon_url,
     const std::string& supervised_user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  TRACE_EVENT1("startup",
+  TRACE_EVENT1("browser,startup",
                "ProfileManager::CreateProfileAsync",
                "profile_path",
-               profile_path.value().c_str());
+               profile_path.AsUTF8Unsafe());
 
   // Make sure that this profile is not pending deletion.
   if (IsProfileMarkedForDeletion(profile_path)) {
@@ -1076,6 +1068,8 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 
 Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
+  SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateProfileHelperTime");
+
   return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
 }
 
@@ -1140,6 +1134,19 @@ bool ProfileManager::AddProfile(Profile* profile) {
   InitProfileUserPrefs(profile);
   DoFinalInit(profile, ShouldGoOffTheRecord(profile));
   return true;
+}
+
+Profile* ProfileManager::CreateAndInitializeProfile(
+    const base::FilePath& profile_dir) {
+  TRACE_EVENT0("browser", "ProfileManager::CreateAndInitializeProfile");
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("Profile.CreateAndInitializeProfile");
+  Profile* profile = CreateProfileHelper(profile_dir);
+  DCHECK(profile);
+  if (profile) {
+    bool result = AddProfile(profile);
+    DCHECK(result);
+  }
+  return profile;
 }
 
 void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
