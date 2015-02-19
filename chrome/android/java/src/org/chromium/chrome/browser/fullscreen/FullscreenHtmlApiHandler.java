@@ -70,21 +70,16 @@ public class FullscreenHtmlApiHandler {
     /**
      * Delegate that allows embedders to react to fullscreen API requests.
      */
-    // TODO(changwan): change this to interface
-    public static class FullscreenHtmlApiDelegate {
+    public interface FullscreenHtmlApiDelegate {
         /**
          * @return The Y offset to be applied to the fullscreen notification.
          */
-        public int getNotificationOffsetY() {
-            return 0;
-        }
+        int getNotificationOffsetY();
 
         /**
          * @return The view that the fullscreen notification will be pinned to.
          */
-        public View getNotificationAnchorView() {
-            return null;
-        }
+        View getNotificationAnchorView();
 
         /**
          * Notifies the delegate that entering fullscreen has been requested and allows them
@@ -93,24 +88,13 @@ public class FullscreenHtmlApiHandler {
          * Once the delegate has hidden the their controls, it must call
          * {@link FullscreenHtmlApiHandler#enterFullscreen(Tab)}.
          */
-        public void onEnterFullscreen() {}
+        void onEnterFullscreen();
 
         /**
          * Cancels a pending enter fullscreen request if present.
          * @return Whether the request was cancelled.
          */
-        public boolean cancelPendingEnterFullscreen() {
-            return true;
-        }
-
-        /**
-         * Notifies the delegate that the window UI has fully exited fullscreen and gives
-         * the embedder a chance to update their controls.
-         *
-         * @param contentViewCore The CVC for the tab whose fullscreen is being exited.
-         */
-        // TODO(changwan): remove
-        public void onFullscreenExited(ContentViewCore contentViewCore) {}
+        boolean cancelPendingEnterFullscreen();
 
         /**
          * Notifies the delegate that the window UI has fully exited fullscreen and gives
@@ -118,15 +102,13 @@ public class FullscreenHtmlApiHandler {
          *
          * @param tab The tab whose fullscreen is being exited.
          */
-        public void onFullscreenExited(Tab tab) {}
+        void onFullscreenExited(Tab tab);
 
         /**
          * @return Whether the notification bubble should be shown. For fullscreen video in
          *         overlay mode, the notification bubble should be disabled.
          */
-        public boolean shouldShowNotificationBubble() {
-            return true;
-        }
+        boolean shouldShowNotificationBubble();
     }
 
     // This static inner class holds a WeakReference to the outer object, to avoid triggering the
@@ -299,16 +281,6 @@ public class FullscreenHtmlApiHandler {
      */
     public void enterFullscreen(final Tab tab) {
         ContentViewCore contentViewCore = tab.getContentViewCore();
-        enterFullscreen(contentViewCore);
-        mTabInFullscreen = tab;
-    }
-
-    /**
-     * Handles hiding the system UI components to allow the content to take up the full screen.
-     * @param tab The CVC for the tab that is entering fullscreen.
-     */
-    // TODO(changwan): remove
-    public void enterFullscreen(final ContentViewCore contentViewCore) {
         if (contentViewCore == null) return;
         final View contentView = contentViewCore.getContainerView();
         int systemUiVisibility = contentView.getSystemUiVisibility();
@@ -352,6 +324,7 @@ public class FullscreenHtmlApiHandler {
         contentView.addOnLayoutChangeListener(mFullscreenOnLayoutChangeListener);
         contentView.setSystemUiVisibility(systemUiVisibility);
         mContentViewCoreInFullscreen = contentViewCore;
+        mTabInFullscreen = tab;
     }
 
     /**
