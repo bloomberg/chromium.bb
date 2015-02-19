@@ -293,6 +293,20 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   ~GuestViewBase() override;
 
+  // Convert sizes in pixels from logical to physical numbers of pixels.
+  // Note that a size can consist of a fractional number of logical pixels
+  // (hence |logical_pixels| is represented as a double), but will always
+  // consist of an integral number of physical pixels (hence the return value
+  // is represented as an int).
+  int LogicalPixelsToPhysicalPixels(double logical_pixels);
+
+  // Convert sizes in pixels from physical to logical numbers of pixels.
+  // Note that a size can consist of a fractional number of logical pixels
+  // (hence the return value is represented as a double), but will always
+  // consist of an integral number of physical pixels (hence |physical_pixels|
+  // is represented as an int).
+  double PhysicalPixelsToLogicalPixels(int physical_pixels);
+
   // WebContentsObserver implementation.
   void DidStopLoading(content::RenderViewHost* render_view_host) final;
   void RenderViewReady() final;
@@ -342,20 +356,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Get the zoom factor for the embedder's web contents.
   double GetEmbedderZoomFactor();
-
-  // Convert sizes in pixels from logical to physical numbers of pixels.
-  // Note that a size can consist of a fractional number of logical pixels
-  // (hence |logical_pixels| is represented as a double), but will always
-  // consist of an integral number of physical pixels (hence the return value
-  // is represented as an int).
-  int LogicalPixelsToPhysicalPixels(double logical_pixels);
-
-  // Convert sizes in pixels from physical to logical numbers of pixels.
-  // Note that a size can consist of a fractional number of logical pixels
-  // (hence the return value is represented as a double), but will always
-  // consist of an integral number of physical pixels (hence |physical_pixels|
-  // is represented as an int).
-  double PhysicalPixelsToLogicalPixels(int physical_pixels);
 
   void SetUpSizing(const base::DictionaryValue& params);
 

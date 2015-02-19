@@ -510,6 +510,18 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
   WillAttachToEmbedder();
 }
 
+int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) {
+  DCHECK(logical_pixels >= 0);
+  double zoom_factor = GetEmbedderZoomFactor();
+  return lround(logical_pixels * zoom_factor);
+}
+
+double GuestViewBase::PhysicalPixelsToLogicalPixels(int physical_pixels) {
+  DCHECK(physical_pixels >= 0);
+  double zoom_factor = GetEmbedderZoomFactor();
+  return physical_pixels / zoom_factor;
+}
+
 void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
   if (IsPreferredSizeModeEnabled()) {
     render_view_host->EnablePreferredSizeMode();
@@ -729,18 +741,6 @@ double GuestViewBase::GetEmbedderZoomFactor() {
   double zoom_factor =
       content::ZoomLevelToZoomFactor(zoom_controller->GetZoomLevel());
   return zoom_factor;
-}
-
-int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) {
-  DCHECK(logical_pixels >= 0);
-  double zoom_factor = GetEmbedderZoomFactor();
-  return static_cast<int>(logical_pixels * zoom_factor + 0.5);
-}
-
-double GuestViewBase::PhysicalPixelsToLogicalPixels(int physical_pixels) {
-  DCHECK(physical_pixels >= 0);
-  double zoom_factor = GetEmbedderZoomFactor();
-  return physical_pixels * zoom_factor;
 }
 
 void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {

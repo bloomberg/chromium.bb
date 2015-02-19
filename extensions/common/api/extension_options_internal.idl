@@ -12,8 +12,8 @@ namespace extensionOptionsInternal {
   };
 
   dictionary PreferredSizeChangedOptions {
-    long width;
-    long height;
+    double width;
+    double height;
   };
 
   interface Events {

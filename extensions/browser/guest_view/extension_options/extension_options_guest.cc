@@ -162,8 +162,9 @@ bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
 
 void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   extension_options_internal::PreferredSizeChangedOptions options;
-  options.width = pref_size.width();
-  options.height = pref_size.height();
+  // Convert the size from physical pixels to logical pixels.
+  options.width = PhysicalPixelsToLogicalPixels(pref_size.width());
+  options.height = PhysicalPixelsToLogicalPixels(pref_size.height());
   DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnPreferredSizeChanged::kEventName,
       options.ToValue()));
