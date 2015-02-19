@@ -411,7 +411,6 @@ struct NaClApp {
 
   const struct NaClValidatorInterface *validator;
 
-#if !NACL_LINUX
   /*
    * Mutex for protecting futex_wait_list_head.  Lock ordering:
    * NaClApp::mu may be claimed after futex_wait_list_mu but never
@@ -425,7 +424,6 @@ struct NaClApp {
    * holding the mutex futex_wait_list_mu.
    */
   struct NaClListNode       futex_wait_list_head;
-#endif
 };
 
 

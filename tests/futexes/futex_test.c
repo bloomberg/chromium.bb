@@ -318,20 +318,6 @@ void test_futex_wakeup_address(void) {
   ASSERT_EQ(pthread_join(thread2.tid, NULL), 0);
 }
 
-/*
- * Check that bad untrusted addresses are just ignored.
- */
-void test_futex_wakeup_null(void) {
-  int count = 9999; /* Dummy value: should be overwritten. */
-  int rc = futex_wake(NULL, 1, &count);
-  ASSERT_EQ(rc, 0);
-  ASSERT_EQ(count, 0);
-
-  count = 9999;
-  rc = futex_wake(NULL, INT_MAX, &count);
-  ASSERT_EQ(rc, 0);
-  ASSERT_EQ(count, 0);
-}
 
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
@@ -356,7 +342,6 @@ int main(void) {
   RUN_TEST(test_futex_wakeup);
   RUN_TEST(test_futex_wakeup_limit);
   RUN_TEST(test_futex_wakeup_address);
-  RUN_TEST(test_futex_wakeup_null);
 
   return 0;
 }

@@ -274,20 +274,16 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->sc_nprocessors_onln = sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 
-#if !NACL_LINUX
   if (!NaClMutexCtor(&nap->futex_wait_list_mu)) {
     goto cleanup_exception_mu;
   }
   nap->futex_wait_list_head.next = &nap->futex_wait_list_head;
   nap->futex_wait_list_head.prev = &nap->futex_wait_list_head;
-#endif
 
   return 1;
 
-#if !NACL_LINUX
  cleanup_exception_mu:
   NaClMutexDtor(&nap->exception_mu);
-#endif
  cleanup_desc_mu:
   NaClFastMutexDtor(&nap->desc_mu);
  cleanup_threads_mu:
