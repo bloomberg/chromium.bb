@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/animation/animatable/AnimatableSVGLength.h"
 
 namespace blink {

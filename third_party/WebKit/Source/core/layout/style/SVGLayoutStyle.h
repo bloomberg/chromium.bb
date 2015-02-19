@@ -23,8 +23,6 @@
 #ifndef SVGLayoutStyle_h
 #define SVGLayoutStyle_h
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/css/CSSValueList.h"
 #include "core/layout/style/DataRef.h"
 #include "core/layout/style/LayoutStyleConstants.h"
 #include "core/layout/style/SVGLayoutStyleDefs.h"

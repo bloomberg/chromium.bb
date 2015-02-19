@@ -28,6 +28,7 @@
 #define StyleBuilderConverter_h
 
 #include "core/css/CSSValue.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/style/QuotesData.h"
 #include "core/layout/style/ShadowList.h"

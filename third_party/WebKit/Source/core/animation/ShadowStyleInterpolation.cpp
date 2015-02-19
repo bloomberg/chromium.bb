@@ -8,6 +8,7 @@
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/resolver/StyleBuilder.h"
 
