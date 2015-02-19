@@ -80,7 +80,7 @@ MetadataDispatcher.prototype.init_ = function() {
   // Inform our owner that we're done initializing.
   // If we need to pass more data back, we can add it to the param array.
   this.postMessage('initialized', [this.parserRegexp_]);
-  this.log('initialized with URL filter ' + this.parserRegexp_);
+  this.vlog('initialized with URL filter ' + this.parserRegexp_);
 };
 
 /**
@@ -199,13 +199,13 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
     function getEntry(parser) {
       webkitResolveLocalFileSystemURL(
           fileURL,
-          function(entry) { nextStep(entry, parser) },
+          function(entry) { nextStep(entry, parser); },
           onError);
     },
 
     // Step three, turn the entry into a file.
     function getFile(entry, parser) {
-      entry.file(function(file) { nextStep(file, parser) }, onError);
+      entry.file(function(file) { nextStep(file, parser); }, onError);
     },
 
     // Step four, parse the file content.

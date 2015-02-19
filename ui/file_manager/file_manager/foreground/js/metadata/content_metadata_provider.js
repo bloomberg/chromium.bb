@@ -77,7 +77,9 @@ ContentMetadataProvider.convertContentMetadata = function(metadata) {
   var item = new MetadataItem();
   item.contentThumbnailUrl = metadata['thumbnailURL'];
   item.contentThumbnailTransform = metadata['thumbnailTransform'];
-  item.contentImageTransform = metadata ['imageTransform'];
+  item.contentImageTransform = metadata['imageTransform'];
+  item.mediaTitle = metadata['title'];
+  item.mediaArtist = metadata['artist'];
   return item;
 };
 
@@ -190,10 +192,11 @@ ContentMetadataProvider.prototype.onResult_ = function(url, metadata) {
  * @param {Object?} metadata The metadata, if available.
  * @private
  */
-ContentMetadataProvider.prototype.onError_ =
-    function(url, step, error, metadata) {
-  if (MetadataCache.log)  // Avoid log spam by default.
-    console.warn('metadata: ' + url + ': ' + step + ': ' + error);
+ContentMetadataProvider.prototype.onError_ = function(
+    url, step, error, metadata) {
+  console.error(
+      'ContentMetadataProvider failed to obtain metadata: '+
+      url + ': ' + step + ': ' + error);
   this.onResult_(url, new MetadataItem());
 };
 
@@ -203,6 +206,5 @@ ContentMetadataProvider.prototype.onError_ =
  * @private
  */
 ContentMetadataProvider.prototype.onLog_ = function(arglist) {
-  if (MetadataCache.log)  // Avoid log spam by default.
-    console.log.apply(console, ['metadata:'].concat(arglist));
+  console.log.apply(console, ['ContentMetadataProvider log:'].concat(arglist));
 };

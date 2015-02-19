@@ -7,7 +7,7 @@
  * @type {string}
  * @const
  */
-ContentProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
+ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 
 /**
  * @param {HTMLElement} container Container element.
@@ -17,7 +17,8 @@ function AudioPlayer(container) {
   this.container_ = container;
   this.volumeManager_ = new VolumeManagerWrapper(
       VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
-  this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
+  this.fileSystemMetadata_ = FileSystemMetadata.create(
+      new MetadataProviderCache(), this.volumeManager_);
   this.selectedEntry_ = null;
 
   this.model_ = new AudioPlayerModel();
@@ -72,7 +73,7 @@ function AudioPlayer(container) {
  * Initial load method (static).
  */
 AudioPlayer.load = function() {
-  document.ondragstart = function(e) { e.preventDefault() };
+  document.ondragstart = function(e) { e.preventDefault(); };
 
   AudioPlayer.instance =
       new AudioPlayer(document.querySelector('.audio-player'));
@@ -237,11 +238,12 @@ AudioPlayer.prototype.select_ = function(newTrack, time) {
  * @private
  */
 AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
-  this.metadataCache_.getOne(entry, 'thumbnail|media|external',
+  this.fileSystemMetadata_.get(
+      [entry], ['mediaTitle', 'mediaArtist', 'present']).then(
       function(generation, metadata) {
         // Do nothing if another load happened since the metadata request.
         if (this.playlistGeneration_ == generation)
-          callback(metadata);
+          callback(metadata[0]);
       }.bind(this, this.playlistGeneration_));
 };
 
@@ -257,7 +259,7 @@ AudioPlayer.prototype.onError_ = function() {
   this.fetchMetadata_(
       this.entries_[track],
       function(metadata) {
-        var error = (!navigator.onLine && !metadata.external.present) ?
+        var error = (!navigator.onLine && !metadata.present) ?
             this.offlineString_ : this.errorString_;
         this.displayMetadata_(track, metadata, error);
         this.scheduleAutoAdvance_();
@@ -389,7 +391,7 @@ AudioPlayer.TrackInfo = function(entry, onClick) {
 /**
  * @return {HTMLDivElement} The wrapper element for the track.
  */
-AudioPlayer.TrackInfo.prototype.getBox = function() { return this.box_ };
+AudioPlayer.TrackInfo.prototype.getBox = function() { return this.box_; };
 
 /**
  * @return {string} Default track title (file name extracted from the url).
@@ -422,10 +424,8 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
     metadata, error) {
   // TODO(yoshiki): Handle error in better way.
   // TODO(yoshiki): implement artwork (metadata.thumbnail)
-  this.title = (metadata.media && metadata.media.title) ||
-      this.getDefaultTitle();
-  this.artist = error ||
-      (metadata.media && metadata.media.artist) || this.getDefaultArtist();
+  this.title = metadata.mediaTitle || this.getDefaultTitle();
+  this.artist = error || metadata.mediaArtist || this.getDefaultArtist();
 };
 
 // Starts loading the audio player.

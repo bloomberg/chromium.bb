@@ -128,4 +128,14 @@ function MetadataItem() {
    * @public {string|undefined}
    */
   this.externalFileUrl;
+
+  /**
+   * @public {string|undefined}
+   */
+  this.mediaTitle;
+
+  /**
+   * @public {string|undefined}
+   */
+  this.mediaArtist;
 }
