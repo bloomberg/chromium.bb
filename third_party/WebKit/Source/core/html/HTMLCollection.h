@@ -65,7 +65,7 @@ public:
     Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
     Element* traverseBackwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
@@ -82,7 +82,7 @@ protected:
         void addElementWithId(const AtomicString& id, Element* element) { addElementToMap(m_idCache, id, element); }
         void addElementWithName(const AtomicString& name, Element* element) { addElementToMap(m_nameCache, name, element); }
 
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
 #if ENABLE(OILPAN)
             visitor->trace(m_idCache);

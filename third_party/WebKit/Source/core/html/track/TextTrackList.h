@@ -76,7 +76,7 @@ public:
     void scheduleChangeEvent();
     void removeAllInbandTracks();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit TextTrackList(HTMLMediaElement*);

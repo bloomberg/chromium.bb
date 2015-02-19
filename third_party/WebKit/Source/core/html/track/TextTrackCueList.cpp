@@ -143,7 +143,7 @@ void TextTrackCueList::invalidateCueIndexes(size_t start)
         m_list[i]->invalidateCueIndex();
 }
 
-void TextTrackCueList::trace(Visitor* visitor)
+DEFINE_TRACE(TextTrackCueList)
 {
     visitor->trace(m_list);
     visitor->trace(m_activeCues);

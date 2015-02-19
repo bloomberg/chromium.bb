@@ -294,7 +294,7 @@ class FormKeyGenerator final : public NoBaseWillBeGarbageCollectedFinalized<Form
 
 public:
     static PassOwnPtrWillBeRawPtr<FormKeyGenerator> create() { return adoptPtrWillBeNoop(new FormKeyGenerator); }
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_formToKeyMap);
@@ -389,7 +389,7 @@ PassRefPtrWillBeRawPtr<DocumentState> DocumentState::create()
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState)
 
-void DocumentState::trace(Visitor* visitor)
+DEFINE_TRACE(DocumentState)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_formControls);
@@ -456,7 +456,7 @@ FormController::~FormController()
 {
 }
 
-void FormController::trace(Visitor* visitor)
+DEFINE_TRACE(FormController)
 {
     visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_documentState);

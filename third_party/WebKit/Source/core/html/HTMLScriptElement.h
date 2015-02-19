@@ -46,7 +46,7 @@ public:
 
     ScriptLoader* loader() const { return m_loader.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);

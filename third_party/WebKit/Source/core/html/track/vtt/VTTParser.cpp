@@ -559,7 +559,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     }
 }
 
-void VTTParser::trace(Visitor* visitor)
+DEFINE_TRACE(VTTParser)
 {
     visitor->trace(m_document);
     visitor->trace(m_cueList);

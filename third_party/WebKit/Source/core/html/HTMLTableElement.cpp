@@ -554,7 +554,7 @@ const AtomicString& HTMLTableElement::summary() const
     return getAttribute(summaryAttr);
 }
 
-void HTMLTableElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLTableElement)
 {
     visitor->trace(m_sharedCellStyle);
     HTMLElement::trace(visitor);

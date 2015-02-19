@@ -117,7 +117,7 @@ public:
     virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);

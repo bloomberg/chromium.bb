@@ -1149,7 +1149,7 @@ void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObjectOES* vert
     }
 }
 
-void WebGL2RenderingContextBase::trace(Visitor* visitor)
+DEFINE_TRACE(WebGL2RenderingContextBase)
 {
     WebGLRenderingContextBase::trace(visitor);
 }

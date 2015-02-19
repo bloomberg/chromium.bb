@@ -47,7 +47,7 @@ PassRefPtrWillBeRawPtr<LabelsNodeList> LabelableElement::labels()
     return ensureCachedCollection<LabelsNodeList>(LabelsNodeListType);
 }
 
-void LabelableElement::trace(Visitor* visitor)
+DEFINE_TRACE(LabelableElement)
 {
     HTMLElement::trace(visitor);
 }

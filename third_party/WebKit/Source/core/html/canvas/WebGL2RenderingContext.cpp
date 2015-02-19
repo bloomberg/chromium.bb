@@ -67,7 +67,7 @@ void WebGL2RenderingContext::registerContextExtensions()
     registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
 }
 
-void WebGL2RenderingContext::trace(Visitor* visitor)
+DEFINE_TRACE(WebGL2RenderingContext)
 {
     visitor->trace(m_webglDebugRendererInfo);
     visitor->trace(m_webglDebugShaders);

@@ -60,7 +60,7 @@ public:
     HTMLMediaElement* mediaElement() const { return m_mediaElement; }
     Node* owner() const;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     TrackBase(Type, const AtomicString& label, const AtomicString& language, const String& id);

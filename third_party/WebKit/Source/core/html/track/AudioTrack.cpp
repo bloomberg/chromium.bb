@@ -20,7 +20,7 @@ AudioTrack::~AudioTrack()
 {
 }
 
-void AudioTrack::trace(Visitor* visitor)
+DEFINE_TRACE(AudioTrack)
 {
     TrackBase::trace(visitor);
 }

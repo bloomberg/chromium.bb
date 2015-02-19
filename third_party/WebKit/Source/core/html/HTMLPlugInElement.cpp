@@ -85,7 +85,7 @@ HTMLPlugInElement::~HTMLPlugInElement()
     }
 }
 
-void HTMLPlugInElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLPlugInElement)
 {
     visitor->trace(m_imageLoader);
     visitor->trace(m_placeholder);

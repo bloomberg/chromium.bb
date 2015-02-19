@@ -78,7 +78,7 @@ HTMLFormControlElement::~HTMLFormControlElement()
 #endif
 }
 
-void HTMLFormControlElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLFormControlElement)
 {
     FormAssociatedElement::trace(visitor);
     LabelableElement::trace(visitor);

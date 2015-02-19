@@ -61,7 +61,7 @@ public:
     virtual void ownerInserted() { }
     virtual bool hasLoaded() const = 0;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     RawPtrWillBeMember<HTMLLinkElement> m_owner;

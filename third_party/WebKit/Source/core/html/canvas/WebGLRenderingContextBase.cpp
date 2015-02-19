@@ -513,7 +513,7 @@ public:
 
     virtual void onContextLost() { m_context->forceLostContext(WebGLRenderingContextBase::RealLostContext, WebGLRenderingContextBase::Auto); }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_context);
     }
@@ -542,7 +542,7 @@ public:
         InspectorInstrumentation::didFireWebGLErrorOrWarning(m_context->canvas(), message);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_context);
     }
@@ -5943,13 +5943,13 @@ void WebGLRenderingContextBase::findNewMaxNonDefaultTextureUnit()
     m_onePlusMaxNonDefaultTextureUnit = 0;
 }
 
-void WebGLRenderingContextBase::TextureUnitState::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState)
 {
     visitor->trace(m_texture2DBinding);
     visitor->trace(m_textureCubeMapBinding);
 }
 
-void WebGLRenderingContextBase::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLRenderingContextBase)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_contextObjects);

@@ -211,7 +211,7 @@ double TimeRanges::nearest(double newPlaybackPosition, double currentPlaybackPos
     return bestMatch;
 }
 
-void TimeRanges::trace(Visitor* visitor)
+DEFINE_TRACE(TimeRanges)
 {
     visitor->trace(m_ranges);
 }

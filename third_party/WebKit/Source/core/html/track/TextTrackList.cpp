@@ -324,7 +324,7 @@ HTMLMediaElement* TextTrackList::owner() const
     return m_owner;
 }
 
-void TextTrackList::trace(Visitor* visitor)
+DEFINE_TRACE(TextTrackList)
 {
     visitor->trace(m_owner);
     visitor->trace(m_asyncEventQueue);

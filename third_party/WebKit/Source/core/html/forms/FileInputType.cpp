@@ -59,7 +59,7 @@ PassRefPtrWillBeRawPtr<InputType> FileInputType::create(HTMLInputElement& elemen
     return adoptRefWillBeNoop(new FileInputType(element));
 }
 
-void FileInputType::trace(Visitor* visitor)
+DEFINE_TRACE(FileInputType)
 {
     visitor->trace(m_fileList);
     BaseClickableWithKeyInputType::trace(visitor);

@@ -52,7 +52,7 @@ public:
 
     void detachContext();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit WebGLContextObject(WebGLRenderingContextBase*);

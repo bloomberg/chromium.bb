@@ -84,7 +84,7 @@ public:
             return range.m_start >= m_end;
         }
 
-        void trace(Visitor*) { }
+        DEFINE_INLINE_TRACE() { }
     };
 
     static PassRefPtrWillBeRawPtr<TimeRanges> create()
@@ -111,7 +111,7 @@ public:
 
     double nearest(double newPlaybackPosition, double currentPlaybackPosition) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     TimeRanges() { }

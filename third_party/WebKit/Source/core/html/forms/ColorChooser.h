@@ -41,7 +41,7 @@ class ColorChooser : public WillBeGarbageCollectedMixin {
 public:
     ColorChooser();
     virtual ~ColorChooser();
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void setSelectedColor(const Color&) { }
     virtual void endChooser() { }

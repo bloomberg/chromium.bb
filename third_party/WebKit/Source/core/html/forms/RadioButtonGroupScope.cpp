@@ -40,7 +40,7 @@ public:
     void remove(HTMLInputElement*);
     bool contains(HTMLInputElement*) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RadioButtonGroup();
@@ -174,7 +174,7 @@ bool RadioButtonGroup::contains(HTMLInputElement* button) const
     return m_members.contains(button);
 }
 
-void RadioButtonGroup::trace(Visitor* visitor)
+DEFINE_TRACE(RadioButtonGroup)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_members);
@@ -275,7 +275,7 @@ void RadioButtonGroupScope::removeButton(HTMLInputElement* element)
     }
 }
 
-void RadioButtonGroupScope::trace(Visitor* visitor)
+DEFINE_TRACE(RadioButtonGroupScope)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_nameToGroupMap);

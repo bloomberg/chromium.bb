@@ -58,7 +58,7 @@ public:
     MediaKeyError* errorCode() const { return m_errorCode.get(); }
     unsigned short systemCode() const { return m_systemCode; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaKeyEvent();

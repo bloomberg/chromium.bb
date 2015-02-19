@@ -62,7 +62,7 @@ public:
 
     void invalidate();
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_currentNode);
     }

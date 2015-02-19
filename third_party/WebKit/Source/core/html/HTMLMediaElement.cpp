@@ -3578,7 +3578,7 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
     HTMLElement::defaultEventHandler(event);
 }
 
-void HTMLMediaElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLMediaElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_playedTimeRanges);
@@ -3594,7 +3594,7 @@ void HTMLMediaElement::trace(Visitor* visitor)
     visitor->trace(m_textTracksWhenResourceSelectionBegan);
     visitor->trace(m_mediaController);
 #if ENABLE(WEB_AUDIO)
-    visitor->registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
+    visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
 #endif
     HeapSupplementable<HTMLMediaElement>::trace(visitor);
 #endif

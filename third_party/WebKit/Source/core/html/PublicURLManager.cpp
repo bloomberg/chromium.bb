@@ -104,7 +104,7 @@ void PublicURLManager::stop()
     m_registryToURL.clear();
 }
 
-void PublicURLManager::trace(Visitor* visitor)
+DEFINE_TRACE(PublicURLManager)
 {
     ActiveDOMObject::trace(visitor);
 }

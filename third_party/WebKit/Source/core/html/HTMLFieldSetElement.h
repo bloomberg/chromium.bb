@@ -34,7 +34,7 @@ class HTMLFieldSetElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     HTMLLegendElement* legend() const;
 
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();

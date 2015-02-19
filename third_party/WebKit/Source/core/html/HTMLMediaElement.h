@@ -76,7 +76,7 @@ public:
     static void setMediaStreamRegistry(URLRegistry*);
     static bool isMediaStreamURL(const String& url);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 #if ENABLE(WEB_AUDIO)
     void clearWeakMembers(Visitor*);
 #endif

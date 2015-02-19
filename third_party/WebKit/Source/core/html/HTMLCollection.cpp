@@ -497,7 +497,7 @@ HTMLCollection::NamedItemCache::NamedItemCache()
 {
 }
 
-void HTMLCollection::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLCollection)
 {
     visitor->trace(m_namedItemCache);
     visitor->trace(m_collectionItemsCache);

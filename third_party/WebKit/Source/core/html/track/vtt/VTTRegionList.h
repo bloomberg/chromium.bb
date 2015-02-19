@@ -50,7 +50,7 @@ public:
     void add(PassRefPtrWillBeRawPtr<VTTRegion>);
     bool remove(VTTRegion*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     VTTRegionList();

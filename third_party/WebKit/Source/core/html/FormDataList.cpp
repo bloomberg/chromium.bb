@@ -288,18 +288,18 @@ CString FormDataList::encodeAndNormalize(const String& string) const
     return normalizeLineEndingsToCRLF(encodedString);
 }
 
-void FormDataList::trace(Visitor* visitor)
+DEFINE_TRACE(FormDataList)
 {
     visitor->trace(m_items);
 }
 
 
-void FormDataList::Entry::trace(Visitor* visitor)
+DEFINE_TRACE(FormDataList::Entry)
 {
     visitor->trace(m_file);
 }
 
-void FormDataList::Item::trace(Visitor* visitor)
+DEFINE_TRACE(FormDataList::Item)
 {
     visitor->trace(m_blob);
 }

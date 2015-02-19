@@ -269,7 +269,7 @@ HTMLMediaElement* HTMLTrackElement::mediaElement() const
     return nullptr;
 }
 
-void HTMLTrackElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLTrackElement)
 {
     visitor->trace(m_track);
     HTMLElement::trace(visitor);

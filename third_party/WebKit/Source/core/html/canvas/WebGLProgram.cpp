@@ -202,7 +202,7 @@ void WebGLProgram::cacheInfoIfNeeded()
     m_infoValid = true;
 }
 
-void WebGLProgram::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLProgram)
 {
     visitor->trace(m_vertexShader);
     visitor->trace(m_fragmentShader);

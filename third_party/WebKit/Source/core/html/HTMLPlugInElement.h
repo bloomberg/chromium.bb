@@ -45,7 +45,7 @@ enum PreferPlugInsForImagesOption {
 class HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 #if ENABLE(OILPAN)
     virtual void disconnectContentFrame() override;
     void shouldDisposePlugin();

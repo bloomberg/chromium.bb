@@ -43,7 +43,7 @@ public:
 
     GLint location() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 protected:
     WebGLUniformLocation(WebGLProgram*, GLint location);

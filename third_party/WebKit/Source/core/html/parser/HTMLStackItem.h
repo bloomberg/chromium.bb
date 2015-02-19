@@ -209,7 +209,7 @@ public:
             || tagName == HTMLNames::xmpTag;
     }
 
-    void trace(Visitor* visitor) { visitor->trace(m_node); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
 
 private:
     HTMLStackItem(PassRefPtrWillBeRawPtr<ContainerNode> node, ItemType type)

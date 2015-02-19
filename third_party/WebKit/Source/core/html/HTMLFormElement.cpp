@@ -99,7 +99,7 @@ HTMLFormElement::~HTMLFormElement()
 #endif
 }
 
-void HTMLFormElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLFormElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pastNamesMap);

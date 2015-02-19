@@ -69,7 +69,7 @@ public:
     const StylePropertySet* additionalCellStyle();
     const StylePropertySet* additionalGroupStyle(bool rows);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit HTMLTableElement(Document&);

@@ -87,7 +87,7 @@ public:
     void clearExecutionContext() { m_executionContext = nullptr; }
 #endif
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MediaController(ExecutionContext*);

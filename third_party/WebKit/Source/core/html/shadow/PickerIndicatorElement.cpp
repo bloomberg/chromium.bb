@@ -191,7 +191,7 @@ void PickerIndicatorElement::didNotifySubtreeInsertionsToDocument()
     setAttribute(roleAttr, "button");
 }
 
-void PickerIndicatorElement::trace(Visitor* visitor)
+DEFINE_TRACE(PickerIndicatorElement)
 {
     visitor->trace(m_pickerIndicatorOwner);
     HTMLDivElement::trace(visitor);

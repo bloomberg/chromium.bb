@@ -46,7 +46,7 @@ class HTMLFormElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);
     virtual ~HTMLFormElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void setNeedsValidityCheck(ValidityRecalcReason, bool isValid);
 

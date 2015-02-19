@@ -82,7 +82,7 @@ void HTMLTemplateElement::didMoveToNewDocument(Document& oldDocument)
     document().ensureTemplateDocument().adoptIfNeeded(*m_content);
 }
 
-void HTMLTemplateElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLTemplateElement)
 {
     visitor->trace(m_content);
     HTMLElement::trace(visitor);

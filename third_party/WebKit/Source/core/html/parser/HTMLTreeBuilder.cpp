@@ -314,7 +314,7 @@ HTMLTreeBuilder::~HTMLTreeBuilder()
 {
 }
 
-void HTMLTreeBuilder::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLTreeBuilder)
 {
     visitor->trace(m_fragmentContext);
     visitor->trace(m_tree);
@@ -350,7 +350,7 @@ HTMLTreeBuilder::FragmentParsingContext::~FragmentParsingContext()
 {
 }
 
-void HTMLTreeBuilder::FragmentParsingContext::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLTreeBuilder::FragmentParsingContext)
 {
     visitor->trace(m_fragment);
     visitor->trace(m_contextElementStackItem);

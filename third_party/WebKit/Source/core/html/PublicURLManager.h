@@ -54,7 +54,7 @@ public:
     // ActiveDOMObject interface.
     virtual void stop() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit PublicURLManager(ExecutionContext*);

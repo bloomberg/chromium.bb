@@ -353,7 +353,7 @@ HTMLConstructionSite::~HTMLConstructionSite()
     ASSERT(m_pendingText.isEmpty());
 }
 
-void HTMLConstructionSite::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLConstructionSite)
 {
     visitor->trace(m_document);
     visitor->trace(m_attachmentRoot);
@@ -878,7 +878,7 @@ void HTMLConstructionSite::fosterParent(PassRefPtrWillBeRawPtr<Node> node)
     queueTask(task);
 }
 
-void HTMLConstructionSite::PendingText::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLConstructionSite::PendingText)
 {
     visitor->trace(parent);
     visitor->trace(nextChild);

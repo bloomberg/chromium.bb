@@ -217,7 +217,7 @@ public:
 
     void restoreCanvasMatrixClipStack();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
@@ -244,7 +244,7 @@ private:
         // CSSFontSelectorClient implementation
         virtual void fontsNeedUpdate(CSSFontSelector*) override;
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
         unsigned m_unrealizedSaveCount;
 

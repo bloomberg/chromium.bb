@@ -83,7 +83,7 @@ void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& returnValue)
     }
 }
 
-void TrackEvent::trace(Visitor* visitor)
+DEFINE_TRACE(TrackEvent)
 {
     visitor->trace(m_track);
     Event::trace(visitor);

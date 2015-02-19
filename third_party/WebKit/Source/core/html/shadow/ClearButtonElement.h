@@ -44,7 +44,7 @@ public:
     static PassRefPtrWillBeRawPtr<ClearButtonElement> create(Document&, ClearButtonOwner&);
     void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ClearButtonElement(Document&, ClearButtonOwner&);

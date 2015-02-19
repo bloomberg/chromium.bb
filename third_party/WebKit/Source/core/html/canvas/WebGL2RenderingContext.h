@@ -19,7 +19,7 @@ public:
     String contextName() const override { return "WebGL2RenderingContext"; }
     void registerContextExtensions() override;
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);

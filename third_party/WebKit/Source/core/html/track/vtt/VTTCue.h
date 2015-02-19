@@ -60,7 +60,7 @@ public:
     VTTCue* getCue() const { return m_cue; }
     void applyCSSProperties(const VTTDisplayParameters&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     VTTCueBox(Document&, VTTCue*);
@@ -142,7 +142,7 @@ public:
     virtual String toString() const override;
 #endif
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     VTTCue(Document&, double startTime, double endTime, const String& text);

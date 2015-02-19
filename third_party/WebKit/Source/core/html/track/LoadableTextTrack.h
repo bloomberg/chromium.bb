@@ -58,7 +58,7 @@ public:
     virtual bool isDefault() const override { return m_isDefault; }
     virtual void setIsDefault(bool isDefault) override  { m_isDefault = isDefault; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     // TextTrackLoaderClient

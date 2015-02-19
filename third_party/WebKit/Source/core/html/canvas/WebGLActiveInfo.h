@@ -45,7 +45,7 @@ public:
     GLenum type() const { return m_type; }
     GLint size() const { return m_size; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     WebGLActiveInfo(const String& name, GLenum type, GLint size)

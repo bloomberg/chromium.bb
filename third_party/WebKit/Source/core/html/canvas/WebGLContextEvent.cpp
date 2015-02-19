@@ -54,7 +54,7 @@ const AtomicString& WebGLContextEvent::interfaceName() const
     return EventNames::WebGLContextEvent;
 }
 
-void WebGLContextEvent::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLContextEvent)
 {
     Event::trace(visitor);
 }

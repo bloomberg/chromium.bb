@@ -20,7 +20,7 @@ public:
     }
 
     virtual ~VideoTrack();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool selected() const { return m_selected; }
     void setSelected(bool);

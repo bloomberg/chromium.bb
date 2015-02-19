@@ -50,7 +50,7 @@ PassRefPtrWillBeRawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document
     return adoptRefWillBeNoop(new HTMLFieldSetElement(document, form));
 }
 
-void HTMLFieldSetElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLFieldSetElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_associatedElements);

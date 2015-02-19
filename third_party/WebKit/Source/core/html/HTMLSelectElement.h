@@ -127,7 +127,7 @@ public:
 
     int listIndexForOption(const HTMLOptionElement&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     HTMLSelectElement(Document&, HTMLFormElement*);

@@ -115,7 +115,7 @@ public:
     virtual void stateWillChange() { }
     virtual void stateDidChange();
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     // Stating from most conservative state.

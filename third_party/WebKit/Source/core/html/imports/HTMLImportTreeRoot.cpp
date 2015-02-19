@@ -100,7 +100,7 @@ void HTMLImportTreeRoot::recalcTimerFired(Timer<HTMLImportTreeRoot>*)
     } while (m_recalcTimer.isActive());
 }
 
-void HTMLImportTreeRoot::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLImportTreeRoot)
 {
     visitor->trace(m_document);
     visitor->trace(m_imports);

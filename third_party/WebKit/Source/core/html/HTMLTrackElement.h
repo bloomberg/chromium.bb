@@ -56,7 +56,7 @@ public:
 
     const AtomicString& mediaElementCrossOriginAttribute() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit HTMLTrackElement(Document&);

@@ -42,7 +42,7 @@ class FormAttributeTargetObserver : public IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void idTargetChanged() override;
 
 private:
@@ -61,7 +61,7 @@ FormAssociatedElement::~FormAssociatedElement()
     // We can't call setForm here because it contains virtual calls.
 }
 
-void FormAssociatedElement::trace(Visitor* visitor)
+DEFINE_TRACE(FormAssociatedElement)
 {
     visitor->trace(m_formAttributeTargetObserver);
     visitor->trace(m_form);
@@ -346,7 +346,7 @@ FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,
 {
 }
 
-void FormAttributeTargetObserver::trace(Visitor* visitor)
+DEFINE_TRACE(FormAttributeTargetObserver)
 {
     visitor->trace(m_element);
     IdTargetObserver::trace(visitor);

@@ -36,7 +36,7 @@ class HTMLObjectElement final : public HTMLPlugInElement, public FormAssociatedE
 public:
     static PassRefPtrWillBeRawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     const String& classId() const { return m_classId; }
 

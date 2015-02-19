@@ -378,7 +378,7 @@ void ImageDocument::dispose()
 }
 #endif
 
-void ImageDocument::trace(Visitor* visitor)
+DEFINE_TRACE(ImageDocument)
 {
     visitor->trace(m_imageElement);
     HTMLDocument::trace(visitor);

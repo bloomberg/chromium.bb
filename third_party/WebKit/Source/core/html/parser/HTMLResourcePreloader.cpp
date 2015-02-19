@@ -74,7 +74,7 @@ PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> HTMLResourcePreloader::create(Docu
     return adoptPtrWillBeNoop(new HTMLResourcePreloader(document));
 }
 
-void HTMLResourcePreloader::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLResourcePreloader)
 {
     visitor->trace(m_document);
 }

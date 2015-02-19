@@ -58,7 +58,7 @@ public:
         virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
         virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
 
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     protected:
         WebGLAttachment();
@@ -101,7 +101,7 @@ public:
 
     GLenum getDrawBuffer(GLenum);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit WebGLFramebuffer(WebGLRenderingContextBase*);

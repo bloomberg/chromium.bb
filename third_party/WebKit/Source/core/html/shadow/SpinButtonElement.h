@@ -70,7 +70,7 @@ public:
 
     void forwardEvent(Event*);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SpinButtonElement(Document&, SpinButtonOwner&);

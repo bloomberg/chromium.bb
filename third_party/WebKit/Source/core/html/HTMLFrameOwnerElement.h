@@ -82,7 +82,7 @@ public:
     virtual void dispatchLoad() override;
     virtual SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);

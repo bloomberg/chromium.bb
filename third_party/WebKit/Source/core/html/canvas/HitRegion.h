@@ -37,7 +37,7 @@ public:
     Element* control() const { return m_control.get(); }
     WindRule fillRule() const { return m_fillRule; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     HitRegion(const Path&, const HitRegionOptions&);
@@ -68,7 +68,7 @@ public:
 
     unsigned getHitRegionsCount() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     HitRegionManager() { }

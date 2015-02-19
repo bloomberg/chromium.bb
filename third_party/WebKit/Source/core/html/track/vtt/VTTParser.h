@@ -108,7 +108,7 @@ public:
     void getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue>>&);
     void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     VTTParser(VTTParserClient*, Document&);

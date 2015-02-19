@@ -20,7 +20,7 @@ VideoTrack::~VideoTrack()
 {
 }
 
-void VideoTrack::trace(Visitor* visitor)
+DEFINE_TRACE(VideoTrack)
 {
     TrackBase::trace(visitor);
 }

@@ -59,7 +59,7 @@ struct ClickHandlingState final : public NoBaseWillBeGarbageCollected<ClickHandl
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 
 public:
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool checked;
     bool indeterminate;
@@ -76,7 +76,7 @@ class InputTypeView : public RefCountedWillBeGarbageCollectedFinalized<InputType
 public:
     static PassRefPtrWillBeRawPtr<InputTypeView> create(HTMLInputElement&);
     virtual ~InputTypeView();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     virtual void handleClickEvent(MouseEvent*);

@@ -77,7 +77,7 @@ public:
         bool operator==(Element* element) const { return !m_item ? !element : m_item->element() == element; }
         bool operator!=(Element* element) const { return !m_item ? !!element : m_item->element() != element; }
 
-        void trace(Visitor* visitor) { visitor->trace(m_item); }
+        DEFINE_INLINE_TRACE() { visitor->trace(m_item); }
 
     private:
         RefPtrWillBeMember<HTMLStackItem> m_item;
@@ -125,7 +125,7 @@ public:
     const Entry& at(size_t i) const { return m_entries[i]; }
     Entry& at(size_t i) { return m_entries[i]; }
 
-    void trace(Visitor* visitor) { visitor->trace(m_entries); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_entries); }
 
 #ifndef NDEBUG
     void show();

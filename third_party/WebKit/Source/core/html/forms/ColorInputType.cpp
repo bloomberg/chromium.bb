@@ -85,7 +85,7 @@ ColorInputType::~ColorInputType()
 {
 }
 
-void ColorInputType::trace(Visitor* visitor)
+DEFINE_TRACE(ColorInputType)
 {
     visitor->trace(m_chooser);
     BaseClickableWithKeyInputType::trace(visitor);

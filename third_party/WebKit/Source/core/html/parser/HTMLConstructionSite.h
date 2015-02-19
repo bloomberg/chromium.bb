@@ -56,7 +56,7 @@ public:
     {
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(parent);
         visitor->trace(nextChild);
@@ -112,7 +112,7 @@ public:
     HTMLConstructionSite(Document*, ParserContentPolicy);
     HTMLConstructionSite(DocumentFragment*, ParserContentPolicy);
     ~HTMLConstructionSite();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void detach();
 
@@ -297,7 +297,7 @@ private:
             return stringBuilder.isEmpty();
         }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         RefPtrWillBeMember<ContainerNode> parent;
         RefPtrWillBeMember<Node> nextChild;

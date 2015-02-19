@@ -46,7 +46,7 @@ public:
 
     virtual bool canContainRangeEndPoint() const override { return false; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit HTMLProgressElement(Document&);

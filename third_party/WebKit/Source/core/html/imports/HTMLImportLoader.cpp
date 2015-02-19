@@ -225,7 +225,7 @@ PassRefPtrWillBeRawPtr<CustomElementSyncMicrotaskQueue> HTMLImportLoader::microt
     return m_microtaskQueue;
 }
 
-void HTMLImportLoader::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLImportLoader)
 {
     visitor->trace(m_controller);
 #if ENABLE(OILPAN)

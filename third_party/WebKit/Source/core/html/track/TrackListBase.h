@@ -108,7 +108,7 @@ public:
 
     Node* owner() const { return m_mediaElement; }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_tracks);
         visitor->trace(m_mediaElement);

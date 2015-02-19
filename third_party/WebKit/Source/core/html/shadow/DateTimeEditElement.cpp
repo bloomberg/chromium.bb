@@ -455,7 +455,7 @@ DateTimeEditElement::~DateTimeEditElement()
 #endif
 }
 
-void DateTimeEditElement::trace(Visitor* visitor)
+DEFINE_TRACE(DateTimeEditElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_fields);

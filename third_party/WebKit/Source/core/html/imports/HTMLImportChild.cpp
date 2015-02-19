@@ -221,7 +221,7 @@ void HTMLImportChild::showThis()
 }
 #endif
 
-void HTMLImportChild::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLImportChild)
 {
     visitor->trace(m_customElementMicrotaskStep);
     visitor->trace(m_loader);

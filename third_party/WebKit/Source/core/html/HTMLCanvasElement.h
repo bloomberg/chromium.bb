@@ -66,7 +66,7 @@ public:
     virtual void canvasDestroyed(HTMLCanvasElement*) = 0;
 #endif
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 class HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient {
@@ -164,7 +164,7 @@ public:
 
     void doDeferredPaintInvalidation();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Methods used for testing
     void createImageBufferUsingSurface(PassOwnPtr<ImageBufferSurface>);

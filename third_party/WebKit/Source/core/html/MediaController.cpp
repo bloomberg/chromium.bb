@@ -605,7 +605,7 @@ void MediaController::scheduleTimeupdateEvent()
     m_previousTimeupdateTime = now;
 }
 
-void MediaController::trace(Visitor* visitor)
+DEFINE_TRACE(MediaController)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_mediaElements);

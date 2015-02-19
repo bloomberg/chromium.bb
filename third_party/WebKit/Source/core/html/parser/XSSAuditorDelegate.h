@@ -69,7 +69,7 @@ class XSSAuditorDelegate final {
     WTF_MAKE_NONCOPYABLE(XSSAuditorDelegate);
 public:
     explicit XSSAuditorDelegate(Document*);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void didBlockScript(const XSSInfo&);
     void setReportURL(const KURL& url) { m_reportURL = url; }

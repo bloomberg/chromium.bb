@@ -43,7 +43,7 @@ class FormDataList;
 class TextFieldInputType : public InputType, protected SpinButtonElement::SpinButtonOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextFieldInputType);
 public:
-    virtual void trace(Visitor* visitor) override { InputType::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { InputType::trace(visitor); }
 
 protected:
     TextFieldInputType(HTMLInputElement&);

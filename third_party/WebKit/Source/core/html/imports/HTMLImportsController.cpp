@@ -165,7 +165,7 @@ Document* HTMLImportsController::loaderDocumentAt(size_t i) const
     return loaderAt(i)->document();
 }
 
-void HTMLImportsController::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLImportsController)
 {
     visitor->trace(m_root);
     visitor->trace(m_loaders);

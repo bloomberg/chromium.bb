@@ -178,7 +178,7 @@ size_t LoadableTextTrack::trackElementIndex()
     return 0;
 }
 
-void LoadableTextTrack::trace(Visitor* visitor)
+DEFINE_TRACE(LoadableTextTrack)
 {
     visitor->trace(m_trackElement);
     visitor->trace(m_loader);

@@ -694,7 +694,7 @@ void HTMLCanvasElement::notifySurfaceInvalid()
     }
 }
 
-void HTMLCanvasElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLCanvasElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_observers);

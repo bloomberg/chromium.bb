@@ -211,7 +211,7 @@ LayoutObject* VTTCueBox::createRenderer(const LayoutStyle&)
     return new RenderVTTCue(this);
 }
 
-void VTTCueBox::trace(Visitor* visitor)
+DEFINE_TRACE(VTTCueBox)
 {
     visitor->trace(m_cue);
     HTMLDivElement::trace(visitor);
@@ -1126,7 +1126,7 @@ Document& VTTCue::document() const
     return m_cueBackgroundBox->document();
 }
 
-void VTTCue::trace(Visitor* visitor)
+DEFINE_TRACE(VTTCue)
 {
     visitor->trace(m_vttNodeTree);
     visitor->trace(m_cueBackgroundBox);

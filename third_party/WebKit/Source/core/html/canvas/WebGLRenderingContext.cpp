@@ -127,7 +127,7 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
 }
 
-void WebGLRenderingContext::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLRenderingContext)
 {
     visitor->trace(m_angleInstancedArrays);
     visitor->trace(m_chromiumSubscribeUniform);

@@ -139,7 +139,7 @@ void LinkImport::ownerInserted()
         m_child->ownerInserted();
 }
 
-void LinkImport::trace(Visitor* visitor)
+DEFINE_TRACE(LinkImport)
 {
     visitor->trace(m_child);
     HTMLImportChildClient::trace(visitor);

@@ -49,7 +49,7 @@ class HTMLInputElement : public HTMLTextFormControlElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLInputElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange);
 

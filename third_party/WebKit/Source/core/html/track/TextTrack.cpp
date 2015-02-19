@@ -446,7 +446,7 @@ Node* TextTrack::owner() const
     return mediaElement();
 }
 
-void TextTrack::trace(Visitor* visitor)
+DEFINE_TRACE(TextTrack)
 {
     visitor->trace(m_cues);
     visitor->trace(m_regions);

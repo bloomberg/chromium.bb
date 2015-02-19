@@ -56,7 +56,7 @@ public:
 
     bool updateCueIndex(TextTrackCue*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     TextTrackCueList();

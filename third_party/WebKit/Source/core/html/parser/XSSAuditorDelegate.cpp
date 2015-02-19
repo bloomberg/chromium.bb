@@ -74,7 +74,7 @@ XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
     ASSERT(m_document);
 }
 
-void XSSAuditorDelegate::trace(Visitor* visitor)
+DEFINE_TRACE(XSSAuditorDelegate)
 {
     visitor->trace(m_document);
 }

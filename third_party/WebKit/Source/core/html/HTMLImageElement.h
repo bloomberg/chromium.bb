@@ -48,7 +48,7 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     int width(bool ignorePendingStylesheets = false);
     int height(bool ignorePendingStylesheets = false);

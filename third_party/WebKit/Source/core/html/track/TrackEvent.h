@@ -59,7 +59,7 @@ public:
 
     void track(VideoTrackOrAudioTrackOrTextTrack&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     TrackEvent();

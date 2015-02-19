@@ -176,7 +176,7 @@ void HTMLProgressElement::willAddFirstAuthorShadowRoot()
     lazyReattachIfAttached();
 }
 
-void HTMLProgressElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLProgressElement)
 {
     visitor->trace(m_value);
     LabelableElement::trace(visitor);

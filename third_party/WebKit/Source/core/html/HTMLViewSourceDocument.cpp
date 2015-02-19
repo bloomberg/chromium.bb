@@ -312,7 +312,7 @@ void HTMLViewSourceDocument::maybeAddSpanForAnnotation(SourceAnnotation annotati
     }
 }
 
-void HTMLViewSourceDocument::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLViewSourceDocument)
 {
     visitor->trace(m_current);
     visitor->trace(m_tbody);

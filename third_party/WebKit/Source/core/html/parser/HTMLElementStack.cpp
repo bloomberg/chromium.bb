@@ -149,7 +149,7 @@ bool HTMLElementStack::ElementRecord::isAbove(ElementRecord* other) const
     return false;
 }
 
-void HTMLElementStack::ElementRecord::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLElementStack::ElementRecord)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_item);
@@ -616,7 +616,7 @@ HTMLElementStack::ElementRecord* HTMLElementStack::furthestBlockForFormattingEle
     return nullptr;
 }
 
-void HTMLElementStack::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLElementStack)
 {
     visitor->trace(m_top);
     visitor->trace(m_rootNode);

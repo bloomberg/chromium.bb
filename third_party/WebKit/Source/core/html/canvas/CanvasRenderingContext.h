@@ -63,7 +63,7 @@ public:
 
     virtual blink::WebLayer* platformLayer() const { return nullptr; }
 
-    virtual void trace(Visitor* visitor) { visitor->trace(m_canvas); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_canvas); }
 
     bool wouldTaintOrigin(CanvasImageSource*);
 

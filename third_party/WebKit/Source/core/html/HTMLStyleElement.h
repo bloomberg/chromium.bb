@@ -50,7 +50,7 @@ public:
     void dispatchPendingEvent(StyleEventSender*);
     static void dispatchPendingLoadEvents();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLStyleElement(Document&, bool createdByParser);

@@ -97,7 +97,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CustomElementSyncMicrotaskQueue> microtaskQueue() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLImportLoader(HTMLImportsController*);

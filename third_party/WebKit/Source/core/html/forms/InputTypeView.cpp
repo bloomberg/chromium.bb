@@ -44,7 +44,7 @@ InputTypeView::~InputTypeView()
 {
 }
 
-void InputTypeView::trace(Visitor* visitor)
+DEFINE_TRACE(InputTypeView)
 {
     visitor->trace(m_element);
 }
@@ -227,7 +227,7 @@ AXObject* InputTypeView::popupRootAXObject()
     return 0;
 }
 
-void ClickHandlingState::trace(Visitor* visitor)
+DEFINE_TRACE(ClickHandlingState)
 {
     visitor->trace(checkedRadioButton);
 }

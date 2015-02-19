@@ -51,7 +51,7 @@ public:
         return adoptRefWillBeNoop(new PluginDocumentParser(document));
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_embedElement);
         RawDataDocumentParser::trace(visitor);
@@ -185,7 +185,7 @@ void PluginDocument::detach(const AttachContext& context)
     HTMLDocument::detach(context);
 }
 
-void PluginDocument::trace(Visitor* visitor)
+DEFINE_TRACE(PluginDocument)
 {
     visitor->trace(m_pluginNode);
     HTMLDocument::trace(visitor);

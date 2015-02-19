@@ -83,7 +83,7 @@ public:
 
     MediaControlElementType displayType() { return m_displayType; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     MediaControlElement(MediaControls&, MediaControlElementType, HTMLElement*);
@@ -104,7 +104,7 @@ private:
 class MediaControlDivElement : public HTMLDivElement, public MediaControlElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
 public:
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     MediaControlDivElement(MediaControls&, MediaControlElementType);
@@ -118,7 +118,7 @@ private:
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
 public:
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     MediaControlInputElement(MediaControls&, MediaControlElementType);

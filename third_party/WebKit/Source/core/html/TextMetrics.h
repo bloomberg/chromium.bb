@@ -74,7 +74,7 @@ public:
     float ideographicBaseline() const { return m_ideographicBaseline; }
     void setIdeographicBaseline(float ideographicBaseline) { m_ideographicBaseline = ideographicBaseline; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     TextMetrics()

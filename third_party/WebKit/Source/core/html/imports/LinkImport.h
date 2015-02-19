@@ -59,7 +59,7 @@ public:
     virtual void process() override;
     virtual Type type() const override { return Import; }
     virtual bool hasLoaded() const override;
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void ownerInserted() override;
 
     // HTMLImportChildClient

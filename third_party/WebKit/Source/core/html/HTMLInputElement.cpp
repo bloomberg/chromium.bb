@@ -89,7 +89,7 @@ class ListAttributeTargetObserver : public IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver> create(const AtomicString& id, HTMLInputElement*);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void idTargetChanged() override;
 
 private:
@@ -143,7 +143,7 @@ PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& docu
     return inputElement.release();
 }
 
-void HTMLInputElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLInputElement)
 {
     visitor->trace(m_inputType);
     visitor->trace(m_inputTypeView);
@@ -1784,7 +1784,7 @@ ListAttributeTargetObserver::ListAttributeTargetObserver(const AtomicString& id,
 {
 }
 
-void ListAttributeTargetObserver::trace(Visitor* visitor)
+DEFINE_TRACE(ListAttributeTargetObserver)
 {
     visitor->trace(m_element);
     IdTargetObserver::trace(visitor);

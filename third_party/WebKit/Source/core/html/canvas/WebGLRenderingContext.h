@@ -40,7 +40,7 @@ public:
     virtual String contextName() const override { return "WebGLRenderingContext"; }
     virtual void registerContextExtensions() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);

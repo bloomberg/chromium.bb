@@ -86,7 +86,7 @@ bool ClearButtonElement::isClearButtonElement() const
     return true;
 }
 
-void ClearButtonElement::trace(Visitor* visitor)
+DEFINE_TRACE(ClearButtonElement)
 {
     visitor->trace(m_clearButtonOwner);
     HTMLDivElement::trace(visitor);

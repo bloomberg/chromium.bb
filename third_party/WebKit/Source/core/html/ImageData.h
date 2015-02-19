@@ -55,7 +55,7 @@ public:
     const DOMUint8ClampedArray* data() const { return m_data.get(); }
     DOMUint8ClampedArray* data() { return m_data.get(); }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;
 

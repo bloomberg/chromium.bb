@@ -353,7 +353,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
     }
 }
 
-void HTMLScriptRunner::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLScriptRunner)
 {
     visitor->trace(m_document);
     visitor->trace(m_host);

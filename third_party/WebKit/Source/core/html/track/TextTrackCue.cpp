@@ -162,7 +162,7 @@ const AtomicString& TextTrackCue::interfaceName() const
     return EventTargetNames::TextTrackCue;
 }
 
-void TextTrackCue::trace(Visitor* visitor)
+DEFINE_TRACE(TextTrackCue)
 {
     visitor->trace(m_track);
     EventTargetWithInlineData::trace(visitor);

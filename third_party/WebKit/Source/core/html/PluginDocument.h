@@ -46,7 +46,7 @@ public:
 
     virtual void detach(const AttachContext& = AttachContext()) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit PluginDocument(const DocumentInit&);

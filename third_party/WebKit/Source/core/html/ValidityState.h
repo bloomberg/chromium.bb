@@ -39,7 +39,7 @@ public:
     {
         return adoptPtrWillBeNoop(new ValidityState(control));
     }
-    void trace(Visitor* visitor) { visitor->trace(m_control); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_control); }
 
 #if !ENABLE(OILPAN)
     void ref() { m_control->ref(); }

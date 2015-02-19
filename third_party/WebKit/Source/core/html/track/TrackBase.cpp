@@ -64,7 +64,7 @@ Node* TrackBase::owner() const
     return m_mediaElement;
 }
 
-void TrackBase::trace(Visitor* visitor)
+DEFINE_TRACE(TrackBase)
 {
     visitor->trace(m_mediaElement);
 }

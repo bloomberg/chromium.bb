@@ -469,7 +469,7 @@ void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
     displayLastVTTCueBox();
 }
 
-void VTTRegion::trace(Visitor* visitor)
+DEFINE_TRACE(VTTRegion)
 {
     visitor->trace(m_cueContainer);
     visitor->trace(m_regionDisplayTree);

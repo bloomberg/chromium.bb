@@ -257,7 +257,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     return parentFrame->loader().client()->createFrame(url, frameName, this, shouldCheckContentSecurityPolicy);
 }
 
-void HTMLFrameOwnerElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLFrameOwnerElement)
 {
     visitor->trace(m_contentFrame);
     visitor->trace(m_widget);

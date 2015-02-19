@@ -39,7 +39,7 @@ public:
 
     virtual bool willRespondToMouseClickEvents() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual HTMLFormElement* formOwner() const override;
 

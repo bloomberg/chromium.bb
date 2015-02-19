@@ -45,7 +45,7 @@ namespace {
     public:
         static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLRenderbuffer*);
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
@@ -70,7 +70,7 @@ namespace {
         return adoptRefWillBeNoop(new WebGLRenderbufferAttachment(renderbuffer));
     }
 
-    void WebGLRenderbufferAttachment::trace(Visitor* visitor)
+    DEFINE_TRACE(WebGLRenderbufferAttachment)
     {
         visitor->trace(m_renderbuffer);
         WebGLFramebuffer::WebGLAttachment::trace(visitor);
@@ -153,7 +153,7 @@ namespace {
     public:
         static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLTexture*, GLenum target, GLint level);
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     private:
         WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level);
@@ -180,7 +180,7 @@ namespace {
         return adoptRefWillBeNoop(new WebGLTextureAttachment(texture, target, level));
     }
 
-    void WebGLTextureAttachment::trace(Visitor* visitor)
+    DEFINE_TRACE(WebGLTextureAttachment)
     {
         visitor->trace(m_texture);
         WebGLFramebuffer::WebGLAttachment::trace(visitor);
@@ -631,7 +631,7 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
     return GL_NONE;
 }
 
-void WebGLFramebuffer::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLFramebuffer)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_attachments);

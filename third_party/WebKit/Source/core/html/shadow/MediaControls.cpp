@@ -550,7 +550,7 @@ void MediaControls::updateTextTrackDisplay()
     m_textDisplayContainer->updateDisplay();
 }
 
-void MediaControls::trace(Visitor* visitor)
+DEFINE_TRACE(MediaControls)
 {
     visitor->trace(m_mediaElement);
     visitor->trace(m_panel);

@@ -65,7 +65,7 @@ PassRefPtrWillBeRawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& docu
     return video.release();
 }
 
-void HTMLVideoElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLVideoElement)
 {
     visitor->trace(m_imageLoader);
     HTMLMediaElement::trace(visitor);

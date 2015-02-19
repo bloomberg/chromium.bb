@@ -45,7 +45,7 @@ public:
 #endif
     virtual bool isSync() const = 0;
     virtual HTMLLinkElement* link() = 0;
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

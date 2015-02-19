@@ -58,7 +58,7 @@ void HitRegion::removePixels(const Path& clearArea)
     m_path.subtractPath(clearArea);
 }
 
-void HitRegion::trace(Visitor* visitor)
+DEFINE_TRACE(HitRegion)
 {
     visitor->trace(m_control);
 }
@@ -160,7 +160,7 @@ unsigned HitRegionManager::getHitRegionsCount() const
     return m_hitRegionList.size();
 }
 
-void HitRegionManager::trace(Visitor* visitor)
+DEFINE_TRACE(HitRegionManager)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_hitRegionList);

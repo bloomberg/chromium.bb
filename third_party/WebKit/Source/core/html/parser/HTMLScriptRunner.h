@@ -65,7 +65,7 @@ public:
     // ResourceClient
     virtual void notifyFinished(Resource*) override;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);

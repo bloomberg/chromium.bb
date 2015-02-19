@@ -54,7 +54,7 @@ public:
     Code code() const { return m_code; }
     unsigned systemCode() { return m_systemCode; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     MediaKeyError(Code code, unsigned systemCode)

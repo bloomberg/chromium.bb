@@ -376,7 +376,7 @@ public:
     void populateSubscribedValuesCHROMIUM(GLenum target);
     void uniformValuebufferCHROMIUM(const WebGLUniformLocation*, GLenum target, GLenum subscription);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Returns approximate gpu memory allocated per pixel.
     int externallyAllocatedBytesPerPixel();
@@ -387,7 +387,7 @@ public:
         RefPtrWillBeMember<WebGLTexture> m_texture2DBinding;
         RefPtrWillBeMember<WebGLTexture> m_textureCubeMapBinding;
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
     };
 
     void setFilterLevel(SkPaint::FilterLevel);
@@ -627,7 +627,7 @@ protected:
         virtual const char* extensionName() const = 0;
         virtual void loseExtension() = 0;
 
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     private:
         bool m_draft;
@@ -681,7 +681,7 @@ protected:
             }
         }
 
-        virtual void trace(Visitor* visitor) override
+        DEFINE_INLINE_VIRTUAL_TRACE()
         {
             visitor->trace(m_extension);
             ExtensionTracker::trace(visitor);

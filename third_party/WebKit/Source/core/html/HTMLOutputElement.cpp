@@ -128,7 +128,7 @@ void HTMLOutputElement::setDefaultValue(const String& value)
 }
 
 
-void HTMLOutputElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLOutputElement)
 {
     visitor->trace(m_tokens);
     HTMLFormControlElement::trace(visitor);

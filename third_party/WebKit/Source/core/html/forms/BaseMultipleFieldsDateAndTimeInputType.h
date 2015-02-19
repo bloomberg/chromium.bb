@@ -54,7 +54,7 @@ class BaseMultipleFieldsDateAndTimeInputType
 public:
     virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const = 0;
 
-    virtual void trace(Visitor* visitor) override { BaseDateAndTimeInputType::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { BaseDateAndTimeInputType::trace(visitor); }
 
 protected:
     BaseMultipleFieldsDateAndTimeInputType(HTMLInputElement&);

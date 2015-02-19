@@ -43,7 +43,7 @@ class ColorInputType final : public BaseClickableWithKeyInputType, public ColorC
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
     virtual ~ColorInputType();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // ColorChooserClient implementation.
     virtual void didChooseColor(const Color&) override;

@@ -45,7 +45,7 @@ class FileList;
 class FileInputType final : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
     static FileList* createFileList(const Vector<FileChooserFileInfo>& files, bool hasWebkitDirectoryAttr);
 

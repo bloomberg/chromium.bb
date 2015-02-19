@@ -61,7 +61,7 @@ public:
         return true;
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_formData);
         PairIterable<String, FormDataEntryValue>::IterationSource::trace(visitor);

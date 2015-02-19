@@ -43,7 +43,7 @@ class Element;
 class ColorChooserClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~ColorChooserClient();
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual void didChooseColor(const Color&) = 0;
     virtual void didEndChooser() = 0;

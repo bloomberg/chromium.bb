@@ -45,7 +45,7 @@ public:
     PassRefPtrWillBeRawPtr<LabelsNodeList> labels();
     virtual bool supportLabels() const { return false; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     LabelableElement(const QualifiedName& tagName, Document&);

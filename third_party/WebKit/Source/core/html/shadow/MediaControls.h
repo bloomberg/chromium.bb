@@ -71,7 +71,7 @@ public:
 
     void mediaElementFocused();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit MediaControls(HTMLMediaElement&);

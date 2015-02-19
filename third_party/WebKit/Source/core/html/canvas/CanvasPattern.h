@@ -53,7 +53,7 @@ public:
 
     bool originClean() const { return m_originClean; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     void setTransform(SVGMatrixTearOff*);
 

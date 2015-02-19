@@ -71,7 +71,7 @@ public:
     virtual HTMLImportLoader* loader() const override;
     virtual void stateWillChange() override;
     virtual void stateDidChange() override;
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 #if !defined(NDEBUG)
     virtual void showThis() override;

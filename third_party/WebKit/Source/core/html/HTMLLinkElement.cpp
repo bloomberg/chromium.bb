@@ -450,7 +450,7 @@ DOMSettableTokenList* HTMLLinkElement::sizes() const
     return m_sizes.get();
 }
 
-void HTMLLinkElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLLinkElement)
 {
     visitor->trace(m_link);
     visitor->trace(m_sizes);
@@ -752,7 +752,7 @@ void LinkStyle::ownerRemoved()
         removePendingSheet();
 }
 
-void LinkStyle::trace(Visitor* visitor)
+DEFINE_TRACE(LinkStyle)
 {
     visitor->trace(m_sheet);
     LinkResource::trace(visitor);

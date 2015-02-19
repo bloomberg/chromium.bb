@@ -51,7 +51,7 @@ public:
         const String& string() const { ASSERT(m_type == StringType); return m_string; }
         File* file() const { ASSERT(m_type == FileType); return m_file; }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         const Type m_type;
@@ -71,7 +71,7 @@ public:
         Blob* blob() const { return m_blob.get(); }
         const String& filename() const { return m_filename; }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         WTF::CString m_data;
@@ -122,7 +122,7 @@ public:
     PassRefPtr<FormData> createFormData(FormData::EncodingType = FormData::FormURLEncoded);
     PassRefPtr<FormData> createMultiPartFormData();
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit FormDataList(const WTF::TextEncoding&);

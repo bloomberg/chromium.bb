@@ -66,7 +66,7 @@ public:
     virtual void process() override;
     virtual void ownerRemoved() override;
     virtual bool hasLoaded() const override { return m_loadedSheet; }
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void startLoadingDynamicSheet();
     void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
@@ -164,7 +164,7 @@ public:
     // visible for testing purpose.
     static void parseSizesAttribute(const AtomicString& value, Vector<IntSize>& iconSizes);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;

@@ -66,7 +66,7 @@ public:
 
         ElementRecord* next() const { return m_next.get(); }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
     private:
         friend class HTMLElementStack;
 
@@ -163,7 +163,7 @@ public:
 
     ContainerNode* rootNode() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 #ifndef NDEBUG
     void show();

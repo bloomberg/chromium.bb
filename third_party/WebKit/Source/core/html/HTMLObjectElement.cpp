@@ -69,7 +69,7 @@ PassRefPtrWillBeRawPtr<HTMLObjectElement> HTMLObjectElement::create(Document& do
     return element.release();
 }
 
-void HTMLObjectElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLObjectElement)
 {
     FormAssociatedElement::trace(visitor);
     HTMLPlugInElement::trace(visitor);

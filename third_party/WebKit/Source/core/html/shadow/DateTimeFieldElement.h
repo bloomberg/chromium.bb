@@ -77,7 +77,7 @@ public:
     virtual void stepUp() = 0;
     virtual String value() const = 0;
     virtual String visibleValue() const = 0;
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     DateTimeFieldElement(Document&, FieldOwner&);

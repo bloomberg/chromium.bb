@@ -55,7 +55,7 @@ namespace blink {
 
         bool isEquivalentRGBA(RGBA32 rgba) const { return m_type == ColorRGBA && m_rgba == rgba; }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         enum Type { ColorRGBA, Gradient, ImagePattern };

@@ -62,7 +62,7 @@ public:
         {
         }
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         bool enabled;
         RefPtrWillBeMember<WebGLBuffer> bufferBinding;
@@ -89,7 +89,7 @@ public:
     void unbindBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer>);
     void setVertexAttribDivisor(GLuint index, GLuint divisor);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);

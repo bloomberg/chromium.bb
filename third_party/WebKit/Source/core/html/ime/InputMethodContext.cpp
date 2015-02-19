@@ -186,7 +186,7 @@ void InputMethodContext::dispatchCandidateWindowHideEvent()
     dispatchEvent(Event::create(EventTypeNames::candidatewindowhide));
 }
 
-void InputMethodContext::trace(Visitor* visitor)
+DEFINE_TRACE(InputMethodContext)
 {
     visitor->trace(m_element);
     EventTargetWithInlineData::trace(visitor);

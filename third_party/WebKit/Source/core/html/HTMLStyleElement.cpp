@@ -160,7 +160,7 @@ void HTMLStyleElement::setDisabled(bool setDisabled)
         styleSheet->setDisabled(setDisabled);
 }
 
-void HTMLStyleElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLStyleElement)
 {
     StyleElement::trace(visitor);
     HTMLElement::trace(visitor);

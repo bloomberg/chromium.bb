@@ -20,7 +20,7 @@ public:
     }
 
     virtual ~AudioTrack();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool enabled() const { return m_enabled; }
     void setEnabled(bool);

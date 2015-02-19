@@ -159,7 +159,7 @@ public:
     GLboolean isVertexArray(WebGLVertexArrayObjectOES*);
     void bindVertexArray(WebGLVertexArrayObjectOES*);
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     WebGL2RenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);

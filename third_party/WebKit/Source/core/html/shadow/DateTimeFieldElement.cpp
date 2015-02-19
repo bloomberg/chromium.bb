@@ -53,7 +53,7 @@ DateTimeFieldElement::DateTimeFieldElement(Document& document, FieldOwner& field
 {
 }
 
-void DateTimeFieldElement::trace(Visitor* visitor)
+DEFINE_TRACE(DateTimeFieldElement)
 {
     visitor->trace(m_fieldOwner);
     HTMLSpanElement::trace(visitor);

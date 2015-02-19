@@ -54,7 +54,7 @@ public:
 
     bool mediaQueryMatches() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit HTMLSourceElement(Document&);

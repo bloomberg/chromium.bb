@@ -73,7 +73,7 @@ bool VTTRegionList::remove(VTTRegion* region)
     return true;
 }
 
-void VTTRegionList::trace(Visitor* visitor)
+DEFINE_TRACE(VTTRegionList)
 {
     visitor->trace(m_list);
 }

@@ -45,7 +45,7 @@ public:
     bool isLost() { return !m_context; }
     WebGLRenderingContextBase* context() const { return m_context.get(); }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RefPtrWillBeMember<WebGLRenderingContextBase> m_context;
@@ -67,7 +67,7 @@ public:
 
     bool isLost() { return !m_context; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     // For use by V8 bindings only.
     HTMLCanvasElement* canvas() const

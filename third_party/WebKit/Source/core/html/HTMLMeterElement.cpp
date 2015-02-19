@@ -217,7 +217,7 @@ void HTMLMeterElement::willAddFirstAuthorShadowRoot()
     lazyReattachIfAttached();
 }
 
-void HTMLMeterElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLMeterElement)
 {
     visitor->trace(m_value);
     LabelableElement::trace(visitor);

@@ -99,7 +99,7 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
         object->setShouldDoFullPaintInvalidation();
 }
 
-void MediaControlElement::trace(Visitor* visitor)
+DEFINE_TRACE(MediaControlElement)
 {
     visitor->trace(m_element);
 }
@@ -112,7 +112,7 @@ MediaControlDivElement::MediaControlDivElement(MediaControls& mediaControls, Med
 {
 }
 
-void MediaControlDivElement::trace(Visitor* visitor)
+DEFINE_TRACE(MediaControlDivElement)
 {
     MediaControlElement::trace(visitor);
     HTMLDivElement::trace(visitor);
@@ -131,7 +131,7 @@ bool MediaControlInputElement::isMouseFocusable() const
     return false;
 }
 
-void MediaControlInputElement::trace(Visitor* visitor)
+DEFINE_TRACE(MediaControlInputElement)
 {
     MediaControlElement::trace(visitor);
     HTMLInputElement::trace(visitor);

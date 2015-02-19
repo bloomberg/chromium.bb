@@ -196,7 +196,7 @@ void CanvasRenderingContext2D::restoreContext()
     }
 }
 
-void CanvasRenderingContext2D::trace(Visitor* visitor)
+DEFINE_TRACE(CanvasRenderingContext2D)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_stateStack);
@@ -408,7 +408,7 @@ void CanvasRenderingContext2D::State::fontsNeedUpdate(CSSFontSelector* fontSelec
     m_font.update(fontSelector);
 }
 
-void CanvasRenderingContext2D::State::trace(Visitor* visitor)
+DEFINE_TRACE(CanvasRenderingContext2D::State)
 {
     visitor->trace(m_strokeStyle);
     visitor->trace(m_fillStyle);

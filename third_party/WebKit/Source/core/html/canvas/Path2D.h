@@ -64,7 +64,7 @@ public:
     }
 
     virtual ~Path2D() { }
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     Path2D() : CanvasPathMethods() { }

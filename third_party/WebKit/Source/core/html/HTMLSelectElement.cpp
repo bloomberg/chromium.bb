@@ -1746,7 +1746,7 @@ void HTMLSelectElement::updateListOnRenderer()
     setOptionsChangedOnRenderer();
 }
 
-void HTMLSelectElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLSelectElement)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_listItems);

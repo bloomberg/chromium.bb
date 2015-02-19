@@ -62,7 +62,7 @@ public:
     // True if this object belongs to the group or context.
     virtual bool validate(const WebGLContextGroup*, const WebGLRenderingContextBase*) const = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit WebGLObject(WebGLRenderingContextBase*);

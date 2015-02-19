@@ -38,7 +38,7 @@ WebGLExtensionScopedContext::~WebGLExtensionScopedContext()
 {
 }
 
-void WebGLExtensionScopedContext::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLExtensionScopedContext)
 {
     visitor->trace(m_context);
 }
@@ -53,7 +53,7 @@ WebGLExtension::~WebGLExtension()
 {
 }
 
-void WebGLExtension::trace(Visitor* visitor)
+DEFINE_TRACE(WebGLExtension)
 {
     visitor->trace(m_context);
 }

@@ -92,7 +92,7 @@ public:
 
     typedef WillBeHeapVector<RawPtrWillBeMember<FormAssociatedElement>> List;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     FormAssociatedElement();

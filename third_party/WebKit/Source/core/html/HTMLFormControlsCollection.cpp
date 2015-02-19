@@ -236,7 +236,7 @@ void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)
     }
 }
 
-void HTMLFormControlsCollection::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLFormControlsCollection)
 {
     visitor->trace(m_cachedElement);
     HTMLCollection::trace(visitor);

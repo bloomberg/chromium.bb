@@ -43,7 +43,7 @@ class HTMLTemplateElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLTemplateElement);
     virtual ~HTMLTemplateElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     DocumentFragment* content() const;
 

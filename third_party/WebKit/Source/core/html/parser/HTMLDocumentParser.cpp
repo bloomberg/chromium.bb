@@ -117,7 +117,7 @@ public:
             lifecycleContext()->loader()->acceptDataFromThreadedReceiver(data, dataLength, encodedDataLength);
     }
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         DocumentLifecycleObserver::trace(visitor);
     }
@@ -195,7 +195,7 @@ HTMLDocumentParser::~HTMLDocumentParser()
 #endif
 }
 
-void HTMLDocumentParser::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLDocumentParser)
 {
     visitor->trace(m_treeBuilder);
     visitor->trace(m_xssAuditorDelegate);

@@ -72,7 +72,7 @@ public:
 #if !ENABLE(OILPAN)
     void clearElement() { m_element = nullptr; }
 #endif
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_element);
         MediaQueryListListener::trace(visitor);
@@ -127,7 +127,7 @@ HTMLImageElement::~HTMLImageElement()
 #endif
 }
 
-void HTMLImageElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLImageElement)
 {
     visitor->trace(m_imageLoader);
     visitor->trace(m_listener);

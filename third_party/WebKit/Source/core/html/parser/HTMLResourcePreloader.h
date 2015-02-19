@@ -90,7 +90,7 @@ class HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLReso
     WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void takeAndPreload(PreloadRequestStream&);
 

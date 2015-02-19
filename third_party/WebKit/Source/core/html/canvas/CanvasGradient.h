@@ -54,7 +54,7 @@ public:
 
     void addColorStop(float value, const String& color, ExceptionState&);
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);

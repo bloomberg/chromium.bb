@@ -57,7 +57,7 @@ public:
     }
 
     void clearElement() { m_element = nullptr; }
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_element);
         MediaQueryListListener::trace(visitor);
@@ -190,7 +190,7 @@ void HTMLSourceElement::notifyMediaQueryChanged()
         toHTMLPictureElement(parent)->sourceOrMediaChanged();
 }
 
-void HTMLSourceElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLSourceElement)
 {
     visitor->trace(m_mediaQueryList);
     visitor->trace(m_listener);

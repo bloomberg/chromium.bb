@@ -98,7 +98,7 @@ public:
     void displayLastVTTCueBox();
     void willRemoveVTTCueBox(VTTCueBox*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     VTTRegion();

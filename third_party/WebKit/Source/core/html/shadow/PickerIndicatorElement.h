@@ -57,7 +57,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
     virtual ~PickerIndicatorElement();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void openPopup();
     void closePopup();

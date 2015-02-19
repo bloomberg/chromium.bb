@@ -77,7 +77,7 @@ class DocumentState final : public RefCountedWillBeGarbageCollected<DocumentStat
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState);
 public:
     static PassRefPtrWillBeRawPtr<DocumentState> create();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void addControl(HTMLFormControlElementWithState*);
     void removeControl(HTMLFormControlElementWithState*);
@@ -96,7 +96,7 @@ public:
         return adoptPtrWillBeNoop(new FormController);
     }
     ~FormController();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 

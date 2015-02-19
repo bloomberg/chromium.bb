@@ -274,7 +274,7 @@ void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
     document().removeFormAssociation(this);
 }
 
-void HTMLLabelElement::trace(Visitor* visitor)
+DEFINE_TRACE(HTMLLabelElement)
 {
     HTMLElement::trace(visitor);
     FormAssociatedElement::trace(visitor);

@@ -62,7 +62,7 @@ LocalFrame* LinkResource::loadingFrame() const
     return importsController->master()->frame();
 }
 
-void LinkResource::trace(Visitor* visitor)
+DEFINE_TRACE(LinkResource)
 {
     visitor->trace(m_owner);
 }
