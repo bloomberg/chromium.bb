@@ -443,7 +443,6 @@ weston_view_create(struct weston_surface *surface)
 	wl_list_init(&view->layer_link.link);
 
 	pixman_region32_init(&view->clip);
-	pixman_region32_init(&view->transform.masked_boundingbox);
 
 	view->alpha = 1.0;
 	pixman_region32_init(&view->transform.opaque);
@@ -964,7 +963,7 @@ weston_view_damage_below(struct weston_view *view)
 	pixman_region32_t damage;
 
 	pixman_region32_init(&damage);
-	pixman_region32_subtract(&damage, &view->transform.masked_boundingbox,
+	pixman_region32_subtract(&damage, &view->transform.boundingbox,
 				 &view->clip);
 	if (view->plane)
 		pixman_region32_union(&view->plane->damage,
@@ -1234,8 +1233,8 @@ weston_view_update_transform(struct weston_view *view)
 	layer = get_view_layer(view);
 	if (layer) {
 		pixman_region32_init_with_extents(&mask, &layer->mask);
-		pixman_region32_intersect(&view->transform.masked_boundingbox,
-					&view->transform.boundingbox, &mask);
+		pixman_region32_intersect(&view->transform.boundingbox,
+					  &view->transform.boundingbox, &mask);
 		pixman_region32_intersect(&view->transform.opaque,
 					  &view->transform.opaque, &mask);
 		pixman_region32_fini(&mask);
@@ -1538,8 +1537,7 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 	wl_list_for_each(view, &compositor->view_list, link) {
 		weston_view_from_global_fixed(view, x, y, vx, vy);
 		if (pixman_region32_contains_point(
-			&view->transform.masked_boundingbox,
-						   ix, iy, NULL) &&
+			&view->transform.boundingbox, ix, iy, NULL) &&
 		    pixman_region32_contains_point(&view->surface->input,
 						   wl_fixed_to_int(*vx),
 						   wl_fixed_to_int(*vy),
@@ -1632,7 +1630,6 @@ weston_view_destroy(struct weston_view *view)
 
 	pixman_region32_fini(&view->clip);
 	pixman_region32_fini(&view->transform.boundingbox);
-	pixman_region32_fini(&view->transform.masked_boundingbox);
 	pixman_region32_fini(&view->transform.opaque);
 
 	weston_view_set_transform_parent(view, NULL);
