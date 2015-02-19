@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -38,6 +39,10 @@ class SearchResultListViewTest : public views::ViewsTestBase,
  protected:
   SearchResultListView* view() { return view_.get(); }
 
+  SearchResultView* GetResultViewAt(int index) {
+    return view_->GetResultViewAt(index);
+  }
+
   AppListModel::SearchResults* GetResults() {
     return view_delegate_.GetModel()->results();
   }
@@ -56,6 +61,9 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     for (int i = 0; i < kDefaultSearchItems; ++i) {
       TestSearchResult* result = new TestSearchResult();
       result->set_display_type(SearchResult::DISPLAY_LIST);
+      result->set_title(base::UTF8ToUTF16(base::StringPrintf("Result %d", i)));
+      if (i < 2)
+        result->set_details(base::ASCIIToUTF16("Detail"));
       results->Add(result);
     }
 
@@ -103,12 +111,12 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
     AppListModel::SearchResults* results = GetResults();
     for (size_t i = 0; i < results->item_count(); ++i) {
-      EXPECT_EQ(results->GetItemAt(i), view_->GetResultViewAt(i)->result());
+      EXPECT_EQ(results->GetItemAt(i), GetResultViewAt(i)->result());
     }
   }
 
   ProgressBarView* GetProgressBarAt(size_t index) {
-    return view()->GetResultViewAt(index)->progress_bar_;
+    return GetResultViewAt(index)->progress_bar_;
   }
 
  private:
@@ -192,6 +200,19 @@ TEST_F(SearchResultListViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   view()->SetVisible(true);
   EXPECT_TRUE(IsAutoLaunching());
+}
+
+TEST_F(SearchResultListViewTest, SpokenFeedback) {
+  SetUpSearchResults();
+
+  // Result 0 has a detail text. Expect that the detail is appended to the
+  // accessibility name.
+  EXPECT_EQ(base::ASCIIToUTF16("Result 0, Detail"),
+            GetResultViewAt(0)->ComputeAccessibleName());
+
+  // Result 2 has no detail text.
+  EXPECT_EQ(base::ASCIIToUTF16("Result 2"),
+            GetResultViewAt(2)->ComputeAccessibleName());
 }
 
 TEST_F(SearchResultListViewTest, ModelObservers) {

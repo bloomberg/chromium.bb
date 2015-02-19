@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_result.h"
@@ -120,12 +121,12 @@ void SearchResultView::ClearSelectedAction() {
 void SearchResultView::UpdateTitleText() {
   if (!result_ || result_->title().empty()) {
     title_text_.reset();
-    SetAccessibleName(base::string16());
   } else {
     title_text_.reset(CreateRenderText(result_->title(),
                                        result_->title_tags()));
-    SetAccessibleName(result_->title());
   }
+
+  UpdateAccessibleName();
 }
 
 void SearchResultView::UpdateDetailsText() {
@@ -135,6 +136,24 @@ void SearchResultView::UpdateDetailsText() {
     details_text_.reset(CreateRenderText(result_->details(),
                                          result_->details_tags()));
   }
+
+  UpdateAccessibleName();
+}
+
+base::string16 SearchResultView::ComputeAccessibleName() const {
+  if (!result_)
+    return base::string16();
+
+  base::string16 accessible_name = result_->title();
+  if (!result_->title().empty() && !result_->details().empty())
+    accessible_name += base::ASCIIToUTF16(", ");
+  accessible_name += result_->details();
+
+  return accessible_name;
+}
+
+void SearchResultView::UpdateAccessibleName() {
+  SetAccessibleName(ComputeAccessibleName());
 }
 
 const char* SearchResultView::GetClassName() const {

@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "ui/app_list/search_result_observer.h"
 #include "ui/app_list/views/search_result_actions_view_delegate.h"
 #include "ui/views/context_menu_controller.h"
@@ -37,11 +39,12 @@ class SearchResultViewDelegate;
 class SearchResultActionsView;
 
 // SearchResultView displays a SearchResult.
-class SearchResultView : public views::CustomButton,
-                         public views::ButtonListener,
-                         public views::ContextMenuController,
-                         public SearchResultObserver,
-                         public SearchResultActionsViewDelegate {
+class APP_LIST_EXPORT SearchResultView
+    : public views::CustomButton,
+      public views::ButtonListener,
+      public views::ContextMenuController,
+      public SearchResultObserver,
+      NON_EXPORTED_BASE(public SearchResultActionsViewDelegate) {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -59,6 +62,9 @@ class SearchResultView : public views::CustomButton,
   // Clears the selected action.
   void ClearSelectedAction();
 
+  // Computes the button's spoken feedback name.
+  base::string16 ComputeAccessibleName() const;
+
   void set_is_last_result(bool is_last) { is_last_result_ = is_last; }
 
  private:
@@ -66,6 +72,7 @@ class SearchResultView : public views::CustomButton,
 
   void UpdateTitleText();
   void UpdateDetailsText();
+  void UpdateAccessibleName();
 
   // views::View overrides:
   const char* GetClassName() const override;
