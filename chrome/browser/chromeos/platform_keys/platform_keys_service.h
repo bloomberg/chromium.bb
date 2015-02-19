@@ -39,6 +39,36 @@ namespace chromeos {
 
 class PlatformKeysService : public KeyedService {
  public:
+  struct KeyEntry;
+  using KeyEntries = std::vector<KeyEntry>;
+
+  // The SelectDelegate is used to select a single certificate from all
+  // certificates matching a request (see SelectClientCertificates). E.g. this
+  // can happen by exposing UI to let the user select.
+  class SelectDelegate {
+   public:
+    // TODO(pneubeck): Handle if the selection was aborted, e.g. by the user.
+    using CertificateSelectedCallback =
+        base::Callback<void(scoped_refptr<net::X509Certificate> selection)>;
+
+    SelectDelegate();
+    virtual ~SelectDelegate();
+
+    // Called on an interactive SelectClientCertificates call with the list of
+    // matching certificates, |certs|.
+    // The certificate passed to |callback| will be forwarded to the
+    // calling extension and the extension will get unlimited sign permission
+    // for this cert. By passing null to |callback|, no cert will be selected.
+    // Must eventually call |callback| or be destructed. |callback| must not be
+    // called after this delegate is destructed.
+    virtual void Select(const std::string& extension_id,
+                        const net::CertificateList& certs,
+                        const CertificateSelectedCallback& callback) = 0;
+
+   private:
+    DISALLOW_ASSIGN(SelectDelegate);
+  };
+
   // Stores registration information in |state_store|, i.e. for each extension
   // the list of public keys that are valid to be used for signing. Each key can
   // be used for signing at most once.
@@ -50,18 +80,22 @@ class PlatformKeysService : public KeyedService {
                                extensions::StateStore* state_store);
   ~PlatformKeysService() override;
 
-  // Disables the checks whether an extension is allowed to read client
-  // certificates or allowed to use the signing function of a key.
-  // TODO(pneubeck): Remove this once a permissions are implemented.
-  void DisablePermissionCheckForTesting();
+  // Sets the delegate which will be used for interactive
+  // SelectClientCertificates calls.
+  void SetSelectDelegate(scoped_ptr<SelectDelegate> delegate);
+
+  // Grants unlimited sign permission for |cert| to the extension with the ID
+  // |extension_id|.
+  void GrantUnlimitedSignPermission(const std::string& extension_id,
+                                    scoped_refptr<net::X509Certificate> cert);
 
   // If the generation was successful, |public_key_spki_der| will contain the
   // DER encoding of the SubjectPublicKeyInfo of the generated key and
   // |error_message| will be empty. If it failed, |public_key_spki_der| will be
   // empty and |error_message| contain an error message.
-  typedef base::Callback<void(const std::string& public_key_spki_der,
-                              const std::string& error_message)>
-      GenerateKeyCallback;
+  using GenerateKeyCallback =
+      base::Callback<void(const std::string& public_key_spki_der,
+                          const std::string& error_message)>;
 
   // Generates an RSA key pair with |modulus_length_bits| and registers the key
   // to allow a single sign operation by the given extension. |token_id| is
@@ -77,8 +111,8 @@ class PlatformKeysService : public KeyedService {
   // If signing was successful, |signature| will be contain the signature and
   // |error_message| will be empty. If it failed, |signature| will be empty and
   // |error_message| contain an error message.
-  typedef base::Callback<void(const std::string& signature,
-                              const std::string& error_message)> SignCallback;
+  using SignCallback = base::Callback<void(const std::string& signature,
+                                           const std::string& error_message)>;
 
   // Digests |data|, applies PKCS1 padding and afterwards signs the data with
   // the private key matching |params.public_key|. If a non empty token id is
@@ -118,27 +152,35 @@ class PlatformKeysService : public KeyedService {
   // contain the list of matching certificates (maybe empty) and |error_message|
   // will be empty. If an error occurred, |matches| will be null and
   // |error_message| contain an error message.
-  typedef base::Callback<void(scoped_ptr<net::CertificateList> matches,
-                              const std::string& error_message)>
-      SelectCertificatesCallback;
+  using SelectCertificatesCallback =
+      base::Callback<void(scoped_ptr<net::CertificateList> matches,
+                          const std::string& error_message)>;
 
-  // Returns the list of all certificates that match |request|. |callback| will
-  // be invoked with these matches or an error message.
+  // Returns a list of certificates matching |request|.
+  // 1) all certificates that match the request (like being rooted in one of the
+  // give CAs) are determined. 2) if |interactive| is true, the currently set
+  // SelectDelegate is used to select a single certificate from these matches
+  // which will the extension will also be granted access to. 3) only
+  // certificates, that the extension has unlimited sign permission for, will be
+  // returned.
+  // |callback| will be invoked with these certificates or an error message.
   // Will only call back during the lifetime of this object.
-  // TODO(pneubeck): Add the interactive option and integrate the select
-  // certificate dialog.
   void SelectClientCertificates(
       const platform_keys::ClientCertificateRequest& request,
+      bool interactive,
       const std::string& extension_id,
       const SelectCertificatesCallback& callback);
 
  private:
   using GetPlatformKeysCallback =
-      base::Callback<void(scoped_ptr<base::ListValue> platform_keys)>;
+      base::Callback<void(scoped_ptr<KeyEntries> platform_keys)>;
 
-  class Task;
-  class SignTask;
+  enum SignPermission { ONCE, UNLIMITED };
+
   class PermissionUpdateTask;
+  class SelectTask;
+  class SignTask;
+  class Task;
 
   // Starts |task| eventually. To ensure that at most one |Task| is running at a
   // time, it queues |task| for later execution if necessary.
@@ -159,7 +201,7 @@ class PlatformKeysService : public KeyedService {
   // Writes |platform_keys| to the state store of the extension with id
   // |extension_id|.
   void SetPlatformKeysOfExtension(const std::string& extension_id,
-                                  scoped_ptr<base::ListValue> platform_keys);
+                                  const KeyEntries& platform_keys);
 
   // Callback used by |GenerateRSAKey|.
   // If the key generation was successful, registers the generated public key
@@ -179,17 +221,6 @@ class PlatformKeysService : public KeyedService {
                               const std::string& public_key_spki_der,
                               Task* task);
 
-  // Calback used by |SelectClientCertificates|.
-  // If the certificate request could be processed successfully, |matches| will
-  // contain the list of matching certificates (maybe empty) and |error_message|
-  // will be empty. If an error occurred, |matches| will be null and
-  // |error_message| contain an error message.
-  void SelectClientCertificatesCallback(
-      const std::string& extension_id,
-      const SelectCertificatesCallback& callback,
-      scoped_ptr<net::CertificateList> matches,
-      const std::string& error_message);
-
   // Callback used by |GetPlatformKeysOfExtension|.
   // Is called with |value| set to the PlatformKeys value read from the
   // StateStore, which it forwards to |callback|. On error, calls |callback|
@@ -200,7 +231,7 @@ class PlatformKeysService : public KeyedService {
 
   content::BrowserContext* browser_context_;
   extensions::StateStore* state_store_;
-  bool permission_check_enabled_ = true;
+  scoped_ptr<SelectDelegate> select_delegate_;
   std::queue<linked_ptr<Task>> tasks_;
   base::WeakPtrFactory<PlatformKeysService> weak_factory_;
 

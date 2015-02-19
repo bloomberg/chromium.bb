@@ -113,16 +113,19 @@ void SelectClientCertificates(const ClientCertificateRequest& request,
 
 }  // namespace subtle
 
+// Returns the DER encoding of the X.509 Subject Public Key Info of the public
+// key in |certificate|.
+std::string GetSubjectPublicKeyInfo(
+    const scoped_refptr<net::X509Certificate>& certificate);
+
 // Obtains information about the public key in |certificate|.
 // If |certificate| contains an RSA key, sets |key_size_bits| to the modulus
-// length, |public_key_spki_der| to the DER encoding of the X.509 Subject Public
-// Key Info, and |key_type| to type RSA and returns true.
+// length, and |key_type| to type RSA and returns true.
 // If |certificate| contains any other key type, or if the public exponent of
 // the RSA key in |certificate| is not F4, returns false and does not update any
 // of the output parameters.
 // All pointer arguments must not be null.
 bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
-                  std::string* public_key_spki_der,
                   net::X509Certificate::PublicKeyType* key_type,
                   size_t* key_size_bits);
 

@@ -4,11 +4,13 @@
 
 'use strict';
 
-var systemTokenEnabled = (location.href.indexOf("systemTokenEnabled") != -1);
+var systemTokenEnabled = (location.search.indexOf("systemTokenEnabled") != -1);
+var selectedTestSuite = location.hash.slice(1);
+console.log('[SELECTED TEST SUITE] ' + selectedTestSuite +
+            ', systemTokenEnable ' + systemTokenEnabled);
 
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
-var assertThrows = chrome.test.assertThrows;
 var fail = chrome.test.fail;
 var succeed = chrome.test.succeed;
 var callbackPass = chrome.test.callbackPass;
@@ -112,10 +114,9 @@ function sortCerts(certs) {
   return certs.sort(compareArrays);
 }
 
-function assertCertsSelected(request, expectedCerts, callback) {
+function assertCertsSelected(details, expectedCerts, callback) {
   chrome.platformKeys.selectClientCertificates(
-      {interactive: false, request: request},
-      callbackPass(function(actualMatches) {
+      details, callbackPass(function(actualMatches) {
         assertEq(expectedCerts.length, actualMatches.length,
                  'Number of stored certs not as expected');
         if (expectedCerts.length == actualMatches.length) {
@@ -190,32 +191,54 @@ function testHasSubtleCryptoMethods(token) {
   succeed();
 }
 
-function testSelectAllCerts() {
-  var requestAll = {
+var requestAll = {
+  certificateTypes: [],
+  certificateAuthorities: []
+};
+
+// Depends on |data|, thus it cannot be created immediately.
+function requestCA1() {
+  return {
     certificateTypes: [],
-    certificateAuthorities: []
+    certificateAuthorities: [data.client_1_issuer_dn.buffer]
   };
+}
+
+function testSelectAllCerts() {
   var expectedCerts = [data.client_1];
   if (systemTokenEnabled)
     expectedCerts.push(data.client_2);
-  assertCertsSelected(requestAll, expectedCerts);
+  assertCertsSelected({interactive: false, request: requestAll}, expectedCerts);
 }
 
 function testSelectCA1Certs() {
-  var requestCA1 = {
-    certificateTypes: [],
-    certificateAuthorities: [data.client_1_issuer_dn.buffer]
-  };
-  assertCertsSelected(requestCA1, [data.client_1]);
+  assertCertsSelected({interactive: false, request: requestCA1()},
+                      [data.client_1]);
+}
+
+function testSelectAllReturnsNoCerts() {
+  assertCertsSelected({interactive: false, request: requestAll},
+                      [] /* no certs selected */);
+}
+
+function testSelectAllReturnsClient1() {
+  assertCertsSelected({interactive: false, request: requestAll},
+                      [data.client_1]);
+}
+
+function testInteractiveSelectNoCerts() {
+  assertCertsSelected({interactive: true, request: requestAll},
+                      [] /* no certs selected */);
+}
+
+function testInteractiveSelectClient1() {
+  assertCertsSelected({interactive: true, request: requestAll},
+                      [data.client_1]);
 }
 
 function testMatchResult() {
-  var requestCA1 = {
-    certificateTypes: [],
-    certificateAuthorities: [data.client_1_issuer_dn.buffer]
-  };
   chrome.platformKeys.selectClientCertificates(
-      {interactive: false, request: requestCA1},
+      {interactive: false, request: requestCA1()},
       callbackPass(function(matches) {
         var expectedAlgorithm = {
           modulusLength: 2048,
@@ -282,7 +305,7 @@ function testSignNoHash() {
       }));
 }
 
-function testSignSha1() {
+function testSignSha1Client1() {
   var keyParams = {
     // Algorithm names are case-insensitive.
     hash: {name: 'Sha-1'}
@@ -305,18 +328,86 @@ function testSignSha1() {
       }));
 }
 
-function runTests() {
-  var tests = [
-    testStaticMethods,
-    testSelectAllCerts,
-    testSelectCA1Certs,
-    testMatchResult,
-    testGetKeyPair,
-    testSignNoHash,
-    testSignSha1
-  ];
-
-  chrome.test.runTests(tests);
+// TODO(pneubeck): Test this by verifying that no private key is returned, once
+// that's implemented.
+function testSignFails(cert) {
+  var keyParams = {
+    hash: {name: 'SHA-1'}
+  };
+  var signParams = {
+    name: 'RSASSA-PKCS1-v1_5'
+  };
+  chrome.platformKeys.getKeyPair(
+      cert.buffer, keyParams, callbackPass(function(publicKey, privateKey) {
+        chrome.platformKeys.subtleCrypto()
+            .sign(signParams, privateKey, data.raw_data)
+            .then(function(signature) { fail('sign was expected to fail.'); },
+                  callbackPass(function(error) {
+                    assertTrue(error instanceof Error);
+                    assertEq(
+                        'The operation failed for an operation-specific reason',
+                        error.message);
+                  }));
+      }));
 }
 
-setUp(runTests);
+function testSignClient1Fails() {
+  testSignFails(data.client_1);
+}
+
+function testSignClient2Fails() {
+  testSignFails(data.client_2);
+}
+
+var testSuites = {
+  // These tests assume already granted permissions for client_1 and client_2.
+  // On interactive selectClientCertificates calls, the simulated user does not
+  // select any cert.
+  basicTests: function() {
+    var tests = [
+      testStaticMethods,
+      testSelectAllCerts,
+      testSelectCA1Certs,
+      testInteractiveSelectNoCerts,
+      testMatchResult,
+      testGetKeyPair,
+      testSignNoHash,
+      testSignSha1Client1,
+    ];
+
+    chrome.test.runTests(tests);
+  },
+
+  // This test suite starts without any granted permissions.
+  // On interactive selectClientCertificates calls, the simulated user selects
+  // client_1, if matching.
+  permissionTests: function() {
+    var tests = [
+      // Without permissions both sign attempts fail.
+      testSignClient1Fails,
+      testSignClient2Fails,
+
+      // Without permissions, non-interactive select calls return no certs.
+      testSelectAllReturnsNoCerts,
+
+      testInteractiveSelectClient1,
+      // Now that the permission for client_1 is granted.
+
+      // Verify that signing with client_1 is possible and with client_2 still
+      // fails.
+      testSignSha1Client1,
+      testSignClient2Fails,
+
+      // Verify that client_1 can still be selected interactively.
+      testInteractiveSelectClient1,
+
+      // Verify that client_1 but not client_2 is selected in non-interactive
+      // calls.
+      testSelectAllReturnsClient1,
+    ];
+
+    chrome.test.runTests(tests);
+  }
+};
+
+setUp(testSuites[selectedTestSuite]);

@@ -100,8 +100,8 @@ class PlatformKeysTest : public ExtensionApiTest,
       loop.Run();
     }
 
-    chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
-        browser()->profile())->DisablePermissionCheckForTesting();
+    base::FilePath extension_path = test_data_dir_.AppendASCII("platform_keys");
+    extension_ = LoadExtension(extension_path);
   }
 
   void TearDownOnMainThread() override {
@@ -115,22 +115,47 @@ class PlatformKeysTest : public ExtensionApiTest,
     loop.Run();
   }
 
+  chromeos::PlatformKeysService* GetPlatformKeysService() {
+    return chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+        browser()->profile());
+  }
+
+  bool RunExtensionTest(const std::string& test_suite_name) {
+    // By default, the system token is not available.
+    std::string system_token_availability;
+
+    // Only if the current user is of the same domain as the device is enrolled
+    // to, the system token is available to the extension.
+    if (GetParam().device_status_ == DEVICE_STATUS_ENROLLED &&
+        GetParam().user_affiliation_ == USER_AFFILIATION_ENROLLED_DOMAIN) {
+      system_token_availability = "systemTokenEnabled";
+    }
+
+    GURL url = extension_->GetResourceURL(base::StringPrintf(
+        "basic.html?%s#%s", system_token_availability.c_str(),
+        test_suite_name.c_str()));
+    return RunExtensionSubtest("platform_keys", url.spec());
+  }
+
+ protected:
+  scoped_refptr<net::X509Certificate> client_cert1_;
+  scoped_refptr<net::X509Certificate> client_cert2_;
+  const extensions::Extension* extension_;
+
  private:
   void SetupTestCerts(const base::Closure& done_callback,
                       net::NSSCertDatabase* cert_db) {
-    scoped_refptr<net::X509Certificate> client_cert1 =
-        net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
-                                            "client_1.pem", "client_1.pk8",
-                                            cert_db->GetPrivateSlot().get());
-    ASSERT_TRUE(client_cert1.get());
+    client_cert1_ = net::ImportClientCertAndKeyFromFile(
+        net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8",
+        cert_db->GetPrivateSlot().get());
+    ASSERT_TRUE(client_cert1_.get());
 
     // Import a second client cert signed by another CA than client_1 into the
     // system wide key slot.
-    scoped_refptr<net::X509Certificate> client_cert2 =
-        net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
-                                            "client_2.pem", "client_2.pk8",
-                                            test_system_slot_->slot());
-    ASSERT_TRUE(client_cert2.get());
+    client_cert2_ = net::ImportClientCertAndKeyFromFile(
+        net::GetTestCertsDirectory(), "client_2.pem", "client_2.pk8",
+        test_system_slot_->slot());
+    ASSERT_TRUE(client_cert2_.get());
 
     done_callback.Run();
   }
@@ -157,22 +182,58 @@ class PlatformKeysTest : public ExtensionApiTest,
   scoped_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
 };
 
-}  // namespace
+class TestSelectDelegate
+    : public chromeos::PlatformKeysService::SelectDelegate {
+ public:
+  explicit TestSelectDelegate(
+      scoped_refptr<net::X509Certificate> cert_to_select)
+      : cert_to_select_(cert_to_select) {}
+  ~TestSelectDelegate() override {}
 
-IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Basic) {
-  // By default, the system token is not available.
-  std::string system_token_availability;
-
-  // Only if the current user is of the same domain as the device is enrolled
-  // to, the system token is available to the extension.
-  if (GetParam().device_status_ == DEVICE_STATUS_ENROLLED &&
-      GetParam().user_affiliation_ == USER_AFFILIATION_ENROLLED_DOMAIN) {
-    system_token_availability = "systemTokenEnabled";
+  void Select(const std::string& extension_id,
+              const net::CertificateList& certs,
+              const CertificateSelectedCallback& callback) override {
+    if (!cert_to_select_) {
+      callback.Run(nullptr /* no cert */);
+      return;
+    }
+    scoped_refptr<net::X509Certificate> selection;
+    for (scoped_refptr<net::X509Certificate> cert : certs) {
+      if (cert->Equals(cert_to_select_.get())) {
+        selection = cert;
+        break;
+      }
+    }
+    callback.Run(selection);
   }
 
-  ASSERT_TRUE(RunExtensionSubtest("platform_keys",
-                                  "basic.html?" + system_token_availability))
-      << message_;
+ private:
+  scoped_refptr<net::X509Certificate> cert_to_select_;
+};
+
+}  // namespace
+
+// Basic tests that start with already granted permissions for both client_cert1
+// and client_cert2.
+// On interactive calls, the simulated user does not select any cert.
+IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Basic) {
+  GetPlatformKeysService()->SetSelectDelegate(
+      make_scoped_ptr(new TestSelectDelegate(nullptr /* select no cert */)));
+  GetPlatformKeysService()->GrantUnlimitedSignPermission(extension_->id(),
+                                                         client_cert1_);
+  GetPlatformKeysService()->GrantUnlimitedSignPermission(extension_->id(),
+                                                         client_cert2_);
+
+  ASSERT_TRUE(RunExtensionTest("basicTests")) << message_;
+}
+
+// This permission test starts without any granted permissions.
+// On interactive calls, the simulated user selects client_1, if matching.
+IN_PROC_BROWSER_TEST_P(PlatformKeysTest, Permissions) {
+  GetPlatformKeysService()->SetSelectDelegate(
+      make_scoped_ptr(new TestSelectDelegate(client_cert1_)));
+
+  ASSERT_TRUE(RunExtensionTest("permissionTests")) << message_;
 }
 
 INSTANTIATE_TEST_CASE_P(

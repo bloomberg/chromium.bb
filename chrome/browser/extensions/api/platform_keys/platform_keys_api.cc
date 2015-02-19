@@ -114,9 +114,10 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
     return RespondNow(Error(kErrorInvalidX509Cert));
 
   PublicKeyInfo key_info;
-  if (!chromeos::platform_keys::GetPublicKey(
-          cert_x509, &key_info.public_key_spki_der, &key_info.key_type,
-          &key_info.key_size_bits) ||
+  key_info.public_key_spki_der =
+      chromeos::platform_keys::GetSubjectPublicKeyInfo(cert_x509);
+  if (!chromeos::platform_keys::GetPublicKey(cert_x509, &key_info.key_type,
+                                             &key_info.key_size_bits) ||
       key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA) {
     return RespondNow(Error(kErrorAlgorithmNotSupported));
   }
@@ -154,7 +155,7 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
   }
 
   service->SelectClientCertificates(
-      request, extension_id(),
+      request, params->details.interactive, extension_id(),
       base::Bind(&PlatformKeysInternalSelectClientCertificatesFunction::
                      OnSelectedCertificates,
                  this));
@@ -173,9 +174,10 @@ void PlatformKeysInternalSelectClientCertificatesFunction::
   std::vector<linked_ptr<api_pk::Match>> result_matches;
   for (const scoped_refptr<net::X509Certificate>& match : *matches) {
     PublicKeyInfo key_info;
-    if (!chromeos::platform_keys::GetPublicKey(
-            match, &key_info.public_key_spki_der, &key_info.key_type,
-            &key_info.key_size_bits)) {
+    key_info.public_key_spki_der =
+        chromeos::platform_keys::GetSubjectPublicKeyInfo(match);
+    if (!chromeos::platform_keys::GetPublicKey(match, &key_info.key_type,
+                                               &key_info.key_size_bits)) {
       LOG(ERROR) << "Could not retrieve public key info.";
       continue;
     }

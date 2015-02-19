@@ -777,12 +777,15 @@ void SelectClientCertificates(const ClientCertificateRequest& request,
 
 }  // namespace subtle
 
+std::string GetSubjectPublicKeyInfo(
+    const scoped_refptr<net::X509Certificate>& certificate) {
+  const SECItem& spki_der = certificate->os_cert_handle()->derPublicKey;
+  return std::string(spki_der.data, spki_der.data + spki_der.len);
+}
+
 bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
-                  std::string* public_key_spki_der,
                   net::X509Certificate::PublicKeyType* key_type,
                   size_t* key_size_bits) {
-  const SECItem& spki_der = certificate->os_cert_handle()->derPublicKey;
-
   net::X509Certificate::PublicKeyType key_type_tmp =
       net::X509Certificate::kPublicKeyTypeUnknown;
   size_t key_size_bits_tmp = 0;
@@ -810,10 +813,8 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
     return false;
   }
 
-  public_key_spki_der->assign(spki_der.data, spki_der.data + spki_der.len);
   *key_type = key_type_tmp;
   *key_size_bits = key_size_bits_tmp;
-
   return true;
 }
 
