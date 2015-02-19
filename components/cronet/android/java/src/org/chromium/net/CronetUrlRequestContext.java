@@ -14,6 +14,7 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.NativeClassQualifiedName;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -112,7 +113,7 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
             if (!haveRequestContextAdapter()) {
                 return;
             }
-            nativeDestroyRequestContextAdapter(mUrlRequestContextAdapter);
+            nativeDestroy(mUrlRequestContextAdapter);
             mUrlRequestContextAdapter = 0;
         }
     }
@@ -194,19 +195,21 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
     }
 
     // Native methods are implemented in cronet_url_request_context.cc.
-    private native long nativeCreateRequestContextAdapter(Context context,
-            String config);
+    private static native long nativeCreateRequestContextAdapter(
+            Context context, String config);
 
-    private native void nativeDestroyRequestContextAdapter(
-            long urlRequestContextAdapter);
+    private static native int nativeSetMinLogLevel(int loggingLevel);
 
-    private native void nativeStartNetLogToFile(
-            long urlRequestContextAdapter, String fileName);
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeDestroy(long nativePtr);
 
-    private native void nativeStopNetLog(long urlRequestContextAdapter);
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeStartNetLogToFile(long nativePtr,
+            String fileName);
 
-    private native int nativeSetMinLogLevel(int loggingLevel);
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeStopNetLog(long nativePtr);
 
-    private native void nativeInitRequestContextOnMainThread(
-            long urlRequestContextAdapter);
+    @NativeClassQualifiedName("CronetURLRequestContextAdapter")
+    private native void nativeInitRequestContextOnMainThread(long nativePtr);
 }

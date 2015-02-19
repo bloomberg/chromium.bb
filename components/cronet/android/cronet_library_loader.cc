@@ -16,7 +16,7 @@
 #include "components/cronet/android/chromium_url_request_context.h"
 #include "components/cronet/android/cronet_histogram_manager.h"
 #include "components/cronet/android/cronet_url_request.h"
-#include "components/cronet/android/cronet_url_request_context.h"
+#include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "jni/CronetLibraryLoader_jni.h"
 #include "net/android/net_jni_registrar.h"
 #include "net/android/network_change_notifier_factory_android.h"
@@ -38,7 +38,8 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"CronetHistogramManager", CronetHistogramManagerRegisterJni},
     {"CronetLibraryLoader", RegisterNativesImpl},
     {"CronetUrlRequest", CronetUrlRequestRegisterJni},
-    {"CronetUrlRequestContext", CronetUrlRequestContextRegisterJni},
+    {"CronetUrlRequestContextAdapter",
+     CronetUrlRequestContextAdapterRegisterJni},
     {"NetAndroid", net::android::RegisterJni},
     {"UrlAndroid", url::android::RegisterJni},
 };

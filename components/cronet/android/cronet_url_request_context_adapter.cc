@@ -4,26 +4,24 @@
 
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/values.h"
 #include "components/cronet/url_request_context_config.h"
+#include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log_logger.h"
 #include "net/base/network_delegate_impl.h"
-#include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
-#include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 
 namespace {
 
@@ -108,6 +106,11 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
 
 namespace cronet {
 
+// Explicitly register static JNI functions.
+bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
 CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
     scoped_ptr<URLRequestContextConfig> context_config)
     : network_thread_(new base::Thread("network")),
@@ -125,20 +128,23 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
 }
 
 void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
-    const base::Closure& java_init_network_thread) {
+    JNIEnv* env,
+    jobject jcaller) {
+  base::android::ScopedJavaGlobalRef<jobject> jcaller_ref;
+  jcaller_ref.Reset(env, jcaller);
   proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
       GetNetworkTaskRunner(), nullptr));
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::InitializeOnNetworkThread,
-                 base::Unretained(this),
-                 Passed(&context_config_),
-                 java_init_network_thread));
+                 base::Unretained(this), Passed(&context_config_),
+                 jcaller_ref));
 }
 
 void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     scoped_ptr<URLRequestContextConfig> config,
-    const base::Closure& java_init_network_thread) {
+    const base::android::ScopedJavaGlobalRef<jobject>&
+        jcronet_url_request_context) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   DCHECK(!is_context_initialized_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
@@ -199,7 +205,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     }
   }
 
-  java_init_network_thread.Run();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_CronetUrlRequestContext_initNetworkThread(
+      env, jcronet_url_request_context.obj());
 
   is_context_initialized_ = true;
   while (!tasks_waiting_for_context_.empty()) {
@@ -208,7 +216,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 }
 
-void CronetURLRequestContextAdapter::Destroy() {
+void CronetURLRequestContextAdapter::Destroy(JNIEnv* env, jobject jcaller) {
   DCHECK(!GetNetworkTaskRunner()->BelongsToCurrentThread());
   // Stick network_thread_ in a local, as |this| may be destroyed from the
   // network thread before delete network_thread is called.
@@ -254,17 +262,18 @@ CronetURLRequestContextAdapter::GetNetworkTaskRunner() const {
   return network_thread_->task_runner();
 }
 
-void CronetURLRequestContextAdapter::StartNetLogToFile(
-    const std::string& file_name) {
+void CronetURLRequestContextAdapter::StartNetLogToFile(JNIEnv* env,
+                                                       jobject jcaller,
+                                                       jstring jfile_name) {
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
           &CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread,
           base::Unretained(this),
-          file_name));
+          base::android::ConvertJavaStringToUTF8(env, jfile_name)));
 }
 
-void CronetURLRequestContextAdapter::StopNetLog() {
+void CronetURLRequestContextAdapter::StopNetLog(JNIEnv* env, jobject jcaller) {
   GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&CronetURLRequestContextAdapter::StopNetLogOnNetworkThread,
@@ -294,6 +303,31 @@ void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
     net_log_logger_->StopObserving();
     net_log_logger_.reset();
   }
+}
+
+// Creates RequestContextAdater if config is valid URLRequestContextConfig,
+// returns 0 otherwise.
+static jlong CreateRequestContextAdapter(JNIEnv* env,
+                                         jclass jcaller,
+                                         jobject japp_context,
+                                         jstring jconfig) {
+  std::string config_string =
+      base::android::ConvertJavaStringToUTF8(env, jconfig);
+  scoped_ptr<URLRequestContextConfig> context_config(
+      new URLRequestContextConfig());
+  if (!context_config->LoadFromJSON(config_string))
+    return 0;
+
+  CronetURLRequestContextAdapter* context_adapter =
+      new CronetURLRequestContextAdapter(context_config.Pass());
+  return reinterpret_cast<jlong>(context_adapter);
+}
+
+static jint SetMinLogLevel(JNIEnv* env, jclass jcaller, jint jlog_level) {
+  jint old_log_level = static_cast<jint>(logging::GetMinLogLevel());
+  // MinLogLevel is global, shared by all URLRequestContexts.
+  logging::SetMinLogLevel(static_cast<int>(jlog_level));
+  return old_log_level;
 }
 
 }  // namespace cronet

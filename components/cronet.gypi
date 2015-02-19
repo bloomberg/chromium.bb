@@ -128,8 +128,6 @@
             'cronet/android/cronet_url_request.h',
             'cronet/android/cronet_url_request_adapter.cc',
             'cronet/android/cronet_url_request_adapter.h',
-            'cronet/android/cronet_url_request_context.cc',
-            'cronet/android/cronet_url_request_context.h',
             'cronet/android/cronet_url_request_context_adapter.cc',
             'cronet/android/cronet_url_request_context_adapter.h',
             'cronet/android/url_request_adapter.cc',

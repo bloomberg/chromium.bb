@@ -5,16 +5,17 @@
 #ifndef COMPONENTS_CRONET_ANDROID_CRONET_URL_REQUEST_CONTEXT_ADAPTER_H_
 #define COMPONENTS_CRONET_ANDROID_CRONET_URL_REQUEST_CONTEXT_ADAPTER_H_
 
+#include <jni.h>
+
 #include <queue>
 #include <string>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "net/base/net_log.h"
-#include "net/base/network_change_notifier.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -30,6 +31,8 @@ namespace cronet {
 
 struct URLRequestContextConfig;
 
+bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env);
+
 // Adapter between Java CronetUrlRequestContext and net::URLRequestContext.
 class CronetURLRequestContextAdapter {
  public:
@@ -39,12 +42,11 @@ class CronetURLRequestContextAdapter {
   ~CronetURLRequestContextAdapter();
 
   // Called on main Java thread to initialize URLRequestContext.
-  void InitRequestContextOnMainThread(
-      const base::Closure& java_init_network_thread);
+  void InitRequestContextOnMainThread(JNIEnv* env, jobject jcaller);
 
   // Releases all resources for the request context and deletes the object.
   // Blocks until network thread is destroyed after running all pending tasks.
-  void Destroy();
+  void Destroy(JNIEnv* env, jobject jcaller);
 
   // Posts a task that might depend on the context being initialized
   // to the network thread.
@@ -55,9 +57,9 @@ class CronetURLRequestContextAdapter {
 
   net::URLRequestContext* GetURLRequestContext();
 
-  void StartNetLogToFile(const std::string& file_name);
+  void StartNetLogToFile(JNIEnv* env, jobject jcaller, jstring jfile_name);
 
-  void StopNetLog();
+  void StopNetLog(JNIEnv* env, jobject jcaller);
 
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const { return default_load_flags_; }
@@ -67,9 +69,9 @@ class CronetURLRequestContextAdapter {
 
  private:
   // Initializes |context_| on the Network thread.
-  void InitializeOnNetworkThread(
-      scoped_ptr<URLRequestContextConfig> config,
-      const base::Closure& java_init_network_thread);
+  void InitializeOnNetworkThread(scoped_ptr<URLRequestContextConfig> config,
+                                 const base::android::ScopedJavaGlobalRef<
+                                     jobject>& jcronet_url_request_context);
 
   // Runs a task that might depend on the context being initialized.
   // This method should only be run on the network thread.
