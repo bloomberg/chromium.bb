@@ -161,18 +161,19 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #if defined(OS_ANDROID)
 ChildThreadImpl* g_child_thread = NULL;
+bool g_child_thread_initialized = false;
 
 // A lock protects g_child_thread.
-base::LazyInstance<base::Lock> g_lazy_child_thread_lock =
+base::LazyInstance<base::Lock>::Leaky g_lazy_child_thread_lock =
     LAZY_INSTANCE_INITIALIZER;
 
 // base::ConditionVariable has an explicit constructor that takes
 // a base::Lock pointer as parameter. The base::DefaultLazyInstanceTraits
 // doesn't handle the case. Thus, we need our own class here.
 struct CondVarLazyInstanceTraits {
-  static const bool kRegisterOnExit = true;
+  static const bool kRegisterOnExit = false;
 #ifndef NDEBUG
-  static const bool kAllowedToAccessOnNonjoinableThread = false;
+  static const bool kAllowedToAccessOnNonjoinableThread = true;
 #endif
 
   static base::ConditionVariable* New(void* instance) {
@@ -373,6 +374,7 @@ void ChildThreadImpl::Init(const Options& options) {
   {
     base::AutoLock lock(g_lazy_child_thread_lock.Get());
     g_child_thread = this;
+    g_child_thread_initialized = true;
   }
   // Signalling without locking is fine here because only
   // one thread can wait on the condition variable.
@@ -396,6 +398,13 @@ void ChildThreadImpl::Init(const Options& options) {
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
+#if defined(OS_ANDROID)
+  {
+    base::AutoLock lock(g_lazy_child_thread_lock.Get());
+    g_child_thread = nullptr;
+  }
+#endif
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
@@ -599,12 +608,18 @@ void ChildThreadImpl::ShutdownThread() {
       "this method should NOT be called from child thread itself";
   {
     base::AutoLock lock(g_lazy_child_thread_lock.Get());
-    while (!g_child_thread)
+    while (!g_child_thread_initialized)
       g_lazy_child_thread_cv.Get().Wait();
+
+    // g_child_thread may already have been destructed while we didn't hold the
+    // lock.
+    if (!g_child_thread)
+      return;
+
+    DCHECK_NE(base::MessageLoop::current(), g_child_thread->message_loop());
+    g_child_thread->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&QuitMainThreadMessageLoop));
   }
-  DCHECK_NE(base::MessageLoop::current(), g_child_thread->message_loop());
-  g_child_thread->message_loop()->PostTask(
-      FROM_HERE, base::Bind(&QuitMainThreadMessageLoop));
 }
 #endif
 
