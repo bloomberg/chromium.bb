@@ -58,9 +58,8 @@ bool RegisterTestDefaultBrowser() {
                           base::LaunchOptions());
   if (register_process.IsValid()) {
     int ret = 0;
-    if (base::WaitForExitCodeWithTimeout(
-            register_process.Handle(), &ret,
-            base::TimeDelta::FromSeconds(kRegistrationTimeoutSeconds))) {
+    if (register_process.WaitForExitWithTimeout(
+            base::TimeDelta::FromSeconds(kRegistrationTimeoutSeconds), &ret)) {
       if (ret == 0) {
         return true;
       } else {

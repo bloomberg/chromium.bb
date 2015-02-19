@@ -147,9 +147,8 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
   // Wait for the update to complete and report the results.
   if (process.IsValid()) {
     int exit_code = 0;
-    if (!base::WaitForExitCodeWithTimeout(
-            process.Handle(), &exit_code,
-            base::TimeDelta::FromMilliseconds(INFINITE))) {
+    if (!process.WaitForExitWithTimeout(
+             base::TimeDelta::FromMilliseconds(INFINITE), &exit_code)) {
       AtlTrace("%hs. Failed to get result when finalizing update.\n",
                __FUNCTION__);
     } else if (exit_code != installer::RENAME_SUCCESSFUL) {
