@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.Se
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkMatch;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -38,8 +39,9 @@ public class EnhancedBookmarksModel {
         /**
          * Callback being triggered immediately before bookmarks are deleted.
          * @param titles All titles of the bookmarks to be deleted.
+         * @param isUndoable Whether the deletion is undoable.
          */
-        void onDeleteBookmarks(String[] titles);
+        void onDeleteBookmarks(String[] titles, boolean isUndoable);
     }
 
     private final BookmarksBridge mBookmarksBridge;
@@ -130,8 +132,10 @@ public class EnhancedBookmarksModel {
         assert bookmarks != null && bookmarks.length > 0;
         // Store all titles of bookmarks.
         String[] titles = new String[bookmarks.length];
+        boolean isUndoable = true;
         for (int i = 0; i < bookmarks.length; i++) {
             titles[i] = getBookmarkTitle(bookmarks[i]);
+            isUndoable &= (bookmarks[i].getType() == BookmarkType.NORMAL);
         }
 
         if (bookmarks.length == 1) {
@@ -145,7 +149,7 @@ public class EnhancedBookmarksModel {
         }
 
         for (EnhancedBookmarkDeleteObserver observer : mDeleteObservers) {
-            observer.onDeleteBookmarks(titles);
+            observer.onDeleteBookmarks(titles, isUndoable);
         }
     }
 
