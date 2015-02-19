@@ -2361,6 +2361,22 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return The ID of the bookmark associated with the current URL (or -1 if no such bookmark
+     *         exists).
+     */
+    public long getBookmarkId() {
+        return isFrozen() ? -1 : nativeGetBookmarkId(mNativeTabAndroid, false);
+    }
+
+    /**
+     * Same as getBookmarkId() but never returns ids for managed bookmarks, or any other bookmarks
+     * that can't be edited by the user.
+     */
+    public long getUserBookmarkId() {
+        return isFrozen() ? -1 : nativeGetBookmarkId(mNativeTabAndroid, true);
+    }
+
+    /**
      * Request that this tab receive focus. Currently, this function requests focus for the main
      * View (usually a ContentView).
      */
@@ -2482,6 +2498,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeUpdateTopControlsState(
             long nativeTabAndroid, int constraints, int current, boolean animate);
     private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
+    private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
             InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,

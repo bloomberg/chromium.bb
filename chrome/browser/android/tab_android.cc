@@ -13,6 +13,9 @@
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/uma_utils.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
+#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -46,6 +49,10 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
@@ -728,6 +735,32 @@ void TabAndroid::SearchByImageInNewTabAsync(JNIEnv* env, jobject obj) {
           kImageSearchThumbnailMinSize,
           gfx::Size(kImageSearchThumbnailMaxWidth,
                     kImageSearchThumbnailMaxHeight)));
+}
+
+jlong TabAndroid::GetBookmarkId(JNIEnv* env,
+                               jobject obj,
+                               jboolean only_editable) {
+  const GURL& url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+      web_contents()->GetURL());
+  Profile* profile = GetProfile();
+
+  // Get all the nodes for |url| and sort them by date added.
+  std::vector<const bookmarks::BookmarkNode*> nodes;
+  ChromeBookmarkClient* client =
+      ChromeBookmarkClientFactory::GetForProfile(profile);
+  bookmarks::BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(profile);
+  model->GetNodesByURL(url, &nodes);
+  std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
+
+  // Return the first node matching the search criteria.
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    if (only_editable && !client->CanBeEditedByUser(nodes[i]))
+      continue;
+    return nodes[i]->id();
+  }
+
+  return -1;
 }
 
 namespace {

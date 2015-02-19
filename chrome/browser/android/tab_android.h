@@ -190,6 +190,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   void SearchByImageInNewTabAsync(JNIEnv* env, jobject obj);
 
+  jlong GetBookmarkId(JNIEnv* env, jobject obj, jboolean only_editable);
+
   void SetInterceptNavigationDelegate(JNIEnv* env,
                                       jobject obj,
                                       jobject delegate);
