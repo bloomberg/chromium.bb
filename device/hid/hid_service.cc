@@ -41,7 +41,7 @@ HidService* HidService::GetInstance(
 #elif defined(OS_MACOSX)
     g_service = new HidServiceMac(file_task_runner);
 #elif defined(OS_WIN)
-    g_service = new HidServiceWin();
+    g_service = new HidServiceWin(file_task_runner);
 #endif
     if (g_service != nullptr) {
       base::AtExitManager::RegisterTask(base::Bind(

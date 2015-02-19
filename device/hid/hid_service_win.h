@@ -14,6 +14,7 @@ extern "C" {
 }
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/win/scoped_handle.h"
 #include "device/core/device_monitor_win.h"
@@ -30,7 +31,7 @@ namespace device {
 
 class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
  public:
-  HidServiceWin();
+  HidServiceWin(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
   virtual void Connect(const HidDeviceId& device_id,
                        const ConnectCallback& callback) override;
@@ -38,7 +39,9 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
  private:
   virtual ~HidServiceWin();
 
-  void DoInitialEnumeration();
+  static void EnumerateOnFileThread(
+      base::WeakPtr<HidServiceWin> service,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   static void CollectInfoFromButtonCaps(PHIDP_PREPARSED_DATA preparsed_data,
                                         HIDP_REPORT_TYPE report_type,
                                         USHORT button_caps_length,
@@ -47,16 +50,22 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
                                        HIDP_REPORT_TYPE report_type,
                                        USHORT value_caps_length,
                                        HidCollectionInfo* collection_info);
+  static void AddDeviceOnFileThread(
+      base::WeakPtr<HidServiceWin> service,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const std::string& device_path);
 
   // DeviceMonitorWin::Observer implementation:
   void OnDeviceAdded(const std::string& device_path) override;
   void OnDeviceRemoved(const std::string& device_path) override;
 
   // Tries to open the device read-write and falls back to read-only.
-  base::win::ScopedHandle OpenDevice(const std::string& device_path);
+  static base::win::ScopedHandle OpenDevice(const std::string& device_path);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
+  base::WeakPtrFactory<HidServiceWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceWin);
 };

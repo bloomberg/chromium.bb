@@ -28,7 +28,18 @@
 
 namespace device {
 
-HidServiceWin::HidServiceWin() : device_observer_(this) {
+namespace {
+
+void Noop() {
+  // This function does nothing.
+}
+}
+
+HidServiceWin::HidServiceWin(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    : device_observer_(this),
+      file_task_runner_(file_task_runner),
+      weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());
   DeviceMonitorWin* device_monitor =
@@ -36,7 +47,9 @@ HidServiceWin::HidServiceWin() : device_observer_(this) {
   if (device_monitor) {
     device_observer_.Add(device_monitor);
   }
-  DoInitialEnumeration();
+  file_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&HidServiceWin::EnumerateOnFileThread,
+                            weak_factory_.GetWeakPtr(), task_runner_));
 }
 
 void HidServiceWin::Connect(const HidDeviceId& device_id,
@@ -64,7 +77,10 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
 HidServiceWin::~HidServiceWin() {
 }
 
-void HidServiceWin::DoInitialEnumeration() {
+// static
+void HidServiceWin::EnumerateOnFileThread(
+    base::WeakPtr<HidServiceWin> service,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   HDEVINFO device_info_set =
       SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, NULL, NULL,
                           DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
@@ -103,11 +119,13 @@ void HidServiceWin::DoInitialEnumeration() {
       std::string device_path(
           base::SysWideToUTF8(device_interface_detail_data->DevicePath));
       DCHECK(base::IsStringASCII(device_path));
-      OnDeviceAdded(base::StringToLowerASCII(device_path));
+      AddDeviceOnFileThread(service, task_runner,
+                            base::StringToLowerASCII(device_path));
     }
   }
 
-  FirstEnumerationComplete();
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&HidServiceWin::FirstEnumerationComplete, service));
 }
 
 // static
@@ -155,7 +173,11 @@ void HidServiceWin::CollectInfoFromValueCaps(
   }
 }
 
-void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
+// static
+void HidServiceWin::AddDeviceOnFileThread(
+    base::WeakPtr<HidServiceWin> service,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const std::string& device_path) {
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
     return;
@@ -220,25 +242,53 @@ void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
                            capabilities.NumberFeatureValueCaps,
                            &collection_info);
 
+  // 1023 characters plus NULL terminator is more than enough for a USB string
+  // descriptor which is limited to 126 characters.
+  wchar_t buffer[1024];
+  std::string product_name;
+  if (HidD_GetProductString(device_handle.Get(), &buffer[0], sizeof(buffer))) {
+    // NULL termination guaranteed by the API.
+    product_name = base::SysWideToUTF8(buffer);
+  }
+  std::string serial_number;
+  if (HidD_GetSerialNumberString(device_handle.Get(), &buffer[0],
+                                 sizeof(buffer))) {
+    // NULL termination guaranteed by the API.
+    serial_number = base::SysWideToUTF8(buffer);
+  }
+
   // This populates the HidDeviceInfo instance without a raw report descriptor.
   // The descriptor is unavailable on Windows because HID devices are exposed to
   // user-space as individual top-level collections.
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-      device_path, attrib.VendorID, attrib.ProductID,
-      "",              // TODO(reillyg): Get product name from Windows.
-      "",              // TODO(reillyg): Get serial number from Windows.
+      device_path, attrib.VendorID, attrib.ProductID, product_name,
+      serial_number,
       kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
       collection_info, max_input_report_size, max_output_report_size,
       max_feature_report_size));
 
   HidD_FreePreparsedData(preparsed_data);
-  AddDevice(device_info);
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&HidServiceWin::AddDevice, service, device_info));
+}
+
+void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&HidServiceWin::AddDeviceOnFileThread,
+                 weak_factory_.GetWeakPtr(), task_runner_, device_path));
 }
 
 void HidServiceWin::OnDeviceRemoved(const std::string& device_path) {
-  RemoveDevice(device_path);
+  // Execute a no-op closure on the file task runner to synchronize with any
+  // devices that are still being enumerated.
+  file_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&Noop),
+      base::Bind(&HidServiceWin::RemoveDevice, weak_factory_.GetWeakPtr(),
+                 device_path));
 }
 
+// static
 base::win::ScopedHandle HidServiceWin::OpenDevice(
     const std::string& device_path) {
   base::win::ScopedHandle file(
