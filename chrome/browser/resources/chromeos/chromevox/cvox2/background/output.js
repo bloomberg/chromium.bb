@@ -94,9 +94,9 @@ Output.RULES = {
       speak: '$name $earcon(BUTTON, @tag_button)'
     },
     checkBox: {
-      speak: '$or($checked, @describe_checkbox_checked($name), ' +
+      speak: '$if($checked, @describe_checkbox_checked($name), ' +
           '@describe_checkbox_unchecked($name)) ' +
-          '$or($checked, ' +
+          '$if($checked, ' +
               '$earcon(CHECK_ON, @input_type_checkbox), ' +
               '$earcon(CHECK_OFF, @input_type_checkbox))'
     },
@@ -122,7 +122,7 @@ Output.RULES = {
       enter: '$role'
     },
     menuItem: {
-      speak: '$or($haspopup, @describe_menu_item_with_submenu($name), ' +
+      speak: '$if($haspopup, @describe_menu_item_with_submenu($name), ' +
           '@describe_menu_item($name)) ' +
           '@describe_index($indexInParent, $parentChildCount)'
     },
@@ -135,12 +135,12 @@ Output.RULES = {
     },
     popUpButton: {
       speak: '$value $name @tag_button @aria_has_popup $earcon(LISTBOX) ' +
-          '$or($collapsed, @aria_expanded_false, @aria_expanded_true)'
+          '$if($collapsed, @aria_expanded_false, @aria_expanded_true)'
     },
     radioButton: {
-      speak: '$or($checked, @describe_radio_selected($name), ' +
+      speak: '$if($checked, @describe_radio_selected($name), ' +
           '@describe_radio_unselected($name)) ' +
-          '$or($checked, ' +
+          '$if($checked, ' +
               '$earcon(CHECK_ON, @input_type_radio), ' +
               '$earcon(CHECK_OFF, @input_type_radio))'
     },
@@ -509,7 +509,7 @@ Output.prototype = {
           this.addToSpannable_(buff, token, options);
         } else if (tree.firstChild) {
           // Custom functions.
-          if (token == 'or') {
+          if (token == 'if') {
             var cond = tree.firstChild;
             var attrib = cond.value.slice(1);
             if (node.attributes[attrib] || node.state[attrib])
