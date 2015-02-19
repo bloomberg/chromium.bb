@@ -48,6 +48,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     isLocal_: false,
 
     /**
+     * Whether MinuteMaid flow is active.
+     * @type {boolean}
+     */
+    isMinuteMaid: false,
+
+    /**
      * Email of the user, which is logging in using offline mode.
      * @type {string}
      */
@@ -137,6 +143,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
         e.preventDefault();
       });
+
+      $('close-button-item').addEventListener('click', function(e) {
+        this.cancel();
+        e.preventDefault();
+      }.bind(this));
 
       this.updateLocalizedContent();
     },
@@ -300,10 +311,19 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (data.localizedStrings)
         params.localizedStrings = data.localizedStrings;
 
-      if (data.gaiaEndpoint) {
+      if (data.useMinuteMaid) {
+        this.isMinuteMaid = true;
+        $('inner-container').classList.add('minute-maid');
+        $('progress-dots').hidden = true;
         data.useEmbedded = false;
-        params.gaiaPath = data.gaiaEndpoint;
+        $('login-header-bar').showGuestButton = true;
       }
+
+      if (data.gaiaEndpoint)
+        params.gaiaPath = data.gaiaEndpoint;
+
+      $('login-header-bar').minuteMaid = this.isMinuteMaid;
+
 
       if (data.useEmbedded)
         params.gaiaPath = 'EmbeddedSignIn';
@@ -346,16 +366,21 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         reasonLabel.hidden = true;
       }
 
-      $('createAccount').hidden = !data.createAccount;
-      $('guestSignin').hidden = !data.guestSignin;
-      $('createSupervisedUserPane').hidden = !data.supervisedUsersEnabled;
+      if (this.isMinuteMaid) {
+        $('login-header-bar').showCreateSupervisedButton =
+            data.supervisedUsersCanCreate;
+      } else {
+        $('createAccount').hidden = !data.createAccount;
+        $('guestSignin').hidden = !data.guestSignin;
+        $('createSupervisedUserPane').hidden = !data.supervisedUsersEnabled;
 
-      $('createSupervisedUserLinkPlaceholder').hidden =
-          !data.supervisedUsersCanCreate;
-      $('createSupervisedUserNoManagerText').hidden =
-          data.supervisedUsersCanCreate;
-      $('createSupervisedUserNoManagerText').textContent =
-          data.supervisedUsersRestrictionReason;
+        $('createSupervisedUserLinkPlaceholder').hidden =
+            !data.supervisedUsersCanCreate;
+        $('createSupervisedUserNoManagerText').hidden =
+            data.supervisedUsersCanCreate;
+        $('createSupervisedUserNoManagerText').textContent =
+            data.supervisedUsersRestrictionReason;
+      }
 
       var isEnrollingConsumerManagement = data.isEnrollingConsumerManagement;
       $('consumerManagementEnrollment').hidden = !isEnrollingConsumerManagement;
@@ -384,6 +409,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateCancelButtonState: function() {
       this.cancelAllowed_ = this.isShowUsers_ && $('pod-row').pods.length;
       $('login-header-bar').allowCancel = this.cancelAllowed_;
+      $('close-button-item').hidden = !this.cancelAllowed_;
     },
 
     switchToFullTab: function() {
@@ -419,6 +445,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
         $('login-header-bar').allowCancel = isSAML || this.cancelAllowed_;
+        $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
       }
     },
 

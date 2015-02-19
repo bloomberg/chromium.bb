@@ -392,6 +392,7 @@
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="cros/icon_add_user_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_MORE_VERT_WHITE" file="cros/icon_more_vert_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_GUEST_WHITE" file="cros/icon_guest_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER_WHITE" file="cros/icon_power_white.png" />
       </if>

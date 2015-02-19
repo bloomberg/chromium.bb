@@ -65,6 +65,22 @@ html[screen=oobe] .login-header-bar-animate-slow {
   height: 34px;
 }
 
+.add-supervised-user-menu {
+  display: none;
+}
+
+#more-settings-header-bar-item.active .add-supervised-user-menu {
+  background-color: white;
+  border: 1px solid lightgray;
+  border-radius: 2px;
+  bottom: 15px;
+  display: block;
+  font-size: 13px;
+  left: 15px;
+  position: absolute;
+  width: 220px;
+}
+
 html[dir=rtl] .header-bar-item {
   background-position: right center;
 }
@@ -73,6 +89,7 @@ html[dir=rtl] .header-bar-item {
 #login-header-bar #restart-button,
 #login-header-bar #add-user-button,
 #login-header-bar #guest-user-button,
+#login-header-bar #more-settings-button,
 #login-header-bar #cancel-multiple-sign-in-button {
   -webkit-padding-start: 24px;
   background-position: left center;
@@ -83,9 +100,14 @@ html[dir=rtl] .header-bar-item {
 html[dir=rtl] #login-header-bar #shutdown-button,
 html[dir=rtl] #login-header-bar #restart-button,
 html[dir=rtl] #login-header-bar #add-user-button,
+html[dir=rtl] #login-header-bar #more-settings-button,
 html[dir=rtl] #login-header-bar #guest-user-button,
 html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
   background-position: right center;
+}
+
+#login-header-bar #more-settings-header-bar-item {
+  position: relative;
 }
 
 #login-header-bar #shutdown-button {
@@ -98,6 +120,10 @@ html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button {
 
 #login-header-bar #add-user-button {
   background-image: url(chrome://theme/IDR_ICON_ADD_USER_WHITE);
+}
+
+#login-header-bar #more-settings-button {
+  background-image: url(chrome://theme/IDR_ICON_MORE_VERT_WHITE);
 }
 
 #login-header-bar #guest-user-button {

@@ -21,6 +21,9 @@ cr.define('login', function() {
     // Whether guest button should be shown when header bar is in normal mode.
     showGuest_: false,
 
+    // Whehter MinuteMaid flow is active.
+    isMinuteMaid_: false,
+
     // Whether the reboot button should be shown the when header bar is in
     // normal mode.
     showReboot_: false,
@@ -28,6 +31,10 @@ cr.define('login', function() {
     // Whether the shutdown button should be shown when the header bar is in
     // normal mode.
     showShutdown_: true,
+
+    // Whether the create supervised user button should be shown when the header
+    // bar is in normal mode. It will be shown in "More settings" menu.
+    showCreateSupervised_: false,
 
     // Current UI state of the sign-in screen.
     signinUIState_: SIGNIN_UI_STATE.HIDDEN,
@@ -37,6 +44,7 @@ cr.define('login', function() {
 
     /** @override */
     decorate: function() {
+      document.addEventListener('click', this.handleClick_.bind(this));
       $('shutdown-header-bar-item').addEventListener('click',
           this.handleShutdownClick_);
       $('shutdown-button').addEventListener('click',
@@ -47,6 +55,8 @@ cr.define('login', function() {
           this.handleShutdownClick_);
       $('add-user-button').addEventListener('click',
           this.handleAddUserClick_);
+      $('more-settings-button').addEventListener('click',
+          this.handleMoreSettingsClick_.bind(this));
       $('cancel-add-user-button').addEventListener('click',
           this.handleCancelAddUserClick_);
       $('guest-user-header-bar-item').addEventListener('click',
@@ -60,6 +70,8 @@ cr.define('login', function() {
       $('cancel-consumer-management-enrollment-button').addEventListener(
           'click',
           this.handleCancelConsumerManagementEnrollmentClick_);
+      this.addSupervisedUserMenu.addEventListener('click',
+          this.handleAddSupervisedUserClick_.bind(this));
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)
@@ -94,6 +106,32 @@ cr.define('login', function() {
           button.disabled = value;
     },
 
+    get getMoreSettingsMenu() {
+      return $('more-settings-header-bar-item');
+    },
+
+    get addSupervisedUserMenu() {
+      return this.querySelector('.add-supervised-user-menu');
+    },
+
+    /**
+     * Whether action box button is in active state.
+     * @type {boolean}
+     */
+    get isMoreSettingsActive() {
+      return this.getMoreSettingsMenu.classList.contains('active');
+    },
+    set isMoreSettingsActive(active) {
+      if (active == this.isMoreSettingsActive)
+        return;
+      if (active) {
+        this.getMoreSettingsMenu.classList.add('active');
+      } else {
+        this.getMoreSettingsMenu.classList.remove('active');
+      }
+    },
+
+
     /**
      * Add user button click handler.
      *
@@ -107,6 +145,19 @@ cr.define('login', function() {
       e.stopPropagation();
     },
 
+    handleMoreSettingsClick_: function(e) {
+      this.isMoreSettingsActive = !this.isMoreSettingsActive;
+      e.stopPropagation();
+    },
+
+    handleClick_: function(e) {
+      this.isMoreSettingsActive = false;
+    },
+
+    handleAddSupervisedUserClick_: function(e) {
+      chrome.send('showSupervisedUserCreationScreen');
+      e.preventDefault();
+    },
     /**
      * Cancel add user button click handler.
      *
@@ -185,6 +236,16 @@ cr.define('login', function() {
      */
     set showGuestButton(value) {
       this.showGuest_ = value;
+      this.updateUI_();
+    },
+
+    set minuteMaid(value) {
+      this.isMinuteMaid_ = value;
+      this.updateUI_();
+    },
+
+    set showCreateSupervisedButton(value) {
+      this.showCreateSupervised_ = value;
       this.updateUI_();
     },
 
@@ -267,11 +328,17 @@ cr.define('login', function() {
 
       $('add-user-button').hidden =
           !accountPickerIsActive || isMultiProfilesUI || isLockScreen;
-      $('cancel-add-user-button').hidden = accountPickerIsActive ||
+      $('more-settings-header-bar-item').hidden = !this.isMinuteMaid_ ||
+          !gaiaIsActive ||
+          !this.showCreateSupervised_;
+      $('cancel-add-user-button').hidden =
+          (gaiaIsActive && this.isMinuteMaid_) ||
+          accountPickerIsActive ||
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive ||
           isMultiProfilesUI;
-      $('guest-user-header-bar-item').hidden = gaiaIsActive ||
+      $('guest-user-header-bar-item').hidden =
+          (gaiaIsActive && !this.isMinuteMaid_) ||
           supervisedUserCreationDialogIsActive ||
           !this.showGuest_ ||
           wrongHWIDWarningIsActive ||

@@ -53,6 +53,9 @@ const char kAuthIframeParentName[] = "signin-frame";
 const char kAuthIframeParentOrigin[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
+// TODO(rsorokin): Move this to the proper file.
+const char kMinuteMaidPath[] = "ChromeOsEmbeddedSetup";
+
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
                       bool is_enrolling_consumer_management) {
@@ -219,6 +222,14 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    params.SetBoolean("useMinuteMaid", true);
+    if (!command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
+      command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
+                                      kMinuteMaidPath);
+    }
+  }
 
   const GURL gaia_url =
       command_line->HasSwitch(::switches::kGaiaUrl)
@@ -711,6 +722,10 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 }
 
 void GaiaScreenHandler::MaybePreloadAuthExtension() {
+  // TODO(rsorokin): Revert that when issue with hidden webview load will be
+  // fixed.
+  if (StartupUtils::IsWebviewSigninEnabled())
+    return;
   VLOG(1) << "MaybePreloadAuthExtension() call.";
 
   // If cookies clearing was initiated or |dns_clear_task_running_| then auth
