@@ -295,6 +295,8 @@ bool IsForceGpuRasterizationEnabled() {
 bool IsThreadedGpuRasterizationEnabled() {
   if (!IsImplSidePaintingEnabled())
     return false;
+  if (!IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled())
+    return false;
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
