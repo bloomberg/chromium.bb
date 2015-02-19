@@ -150,6 +150,8 @@ RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the
   // parent node.
+  // We return nullptr if this is not the case, which can happen in a race if an
+  // old RFH sends a CreateChildFrame message as we're swapping to a new RFH.
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
     return nullptr;
 

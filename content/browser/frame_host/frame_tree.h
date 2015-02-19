@@ -70,6 +70,10 @@ class CONTENT_EXPORT FrameTree {
   void ForEach(const base::Callback<bool(FrameTreeNode*)>& on_node) const;
 
   // Frame tree manipulation routines.
+  // |process_id| is required to disambiguate |new_routing_id|, and it must
+  // match the process of the |parent| node.  Otherwise this method returns
+  // nullptr.  Passing MSG_ROUTING_NONE for |new_routing_id| will allocate a new
+  // routing ID for the new frame.
   RenderFrameHostImpl* AddFrame(FrameTreeNode* parent,
                                 int process_id,
                                 int new_routing_id,
