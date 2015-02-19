@@ -356,6 +356,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
 
     // Shouldn't be available before End() call
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
+    g_fakeCPUTime = expect_end_time;
     EXPECT_FALSE(trace->IsAvailable());
 
     trace->End(true);
@@ -474,7 +475,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
       gl_fake_queries_.SetCurrentGLTime(
           end_timestamp +
           (i * base::Time::kNanosecondsPerMicrosecond));
-      g_fakeCPUTime = expect_start_time + i;
+      g_fakeCPUTime = expect_end_time + i;
 
       // Each trace name should be different to differentiate.
       const char num_char = static_cast<char>('0' + i);
