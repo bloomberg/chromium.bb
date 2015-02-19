@@ -904,7 +904,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   }
 
   if (proxy_info_.is_quic() && using_quic_ &&
-      result == ERR_QUIC_PROTOCOL_ERROR) {
+      (result == ERR_QUIC_PROTOCOL_ERROR ||
+       result == ERR_QUIC_HANDSHAKE_FAILED)) {
     using_quic_ = false;
     return ReconsiderProxyAfterError(result);
   }
@@ -1320,6 +1321,7 @@ int HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError(int error) {
     // This can happen when trying to talk SSL to a non-SSL server (Like a
     // captive portal).
     case ERR_QUIC_PROTOCOL_ERROR:
+    case ERR_QUIC_HANDSHAKE_FAILED:
     case ERR_SSL_PROTOCOL_ERROR:
       break;
     case ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
