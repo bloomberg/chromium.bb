@@ -35,6 +35,7 @@
 namespace blink {
 
 class FontPlatformData;
+class GlyphPage;
 class SimpleFontData;
 
 class PLATFORM_EXPORT OpenTypeVerticalData : public RefCounted<OpenTypeVerticalData> {
@@ -52,12 +53,14 @@ public:
     void setInFontCache(bool inFontCache) { m_inFontCache = inFontCache; }
 
     void getVerticalTranslationsForGlyphs(const SimpleFontData*, const Glyph*, size_t, float* outXYArray) const;
+    void substituteWithVerticalGlyphs(const SimpleFontData*, GlyphPage*, unsigned offset, unsigned length) const;
 
 private:
 
     explicit OpenTypeVerticalData(const FontPlatformData&);
 
     void loadMetrics(const FontPlatformData&);
+    void loadVerticalGlyphSubstitutions(const FontPlatformData&);
     bool hasVORG() const { return !m_vertOriginY.isEmpty(); }
 
     HashMap<Glyph, Glyph> m_verticalGlyphMap;
