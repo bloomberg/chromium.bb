@@ -71,7 +71,9 @@
     {
       # Sample AppRemoting app.
       'target_name': 'ar_sample_app',
+      'app_key': 'Sample_App',
       'app_id': 'ljacajndfccfgnfohlgkdphmbnpkjflk',
+      'app_client_id': 'sample_client_id',
       'app_name': 'App Remoting Client',
       'app_description': 'App Remoting client',
       'app_capabilities': ['GOOGLE_DRIVE'],
