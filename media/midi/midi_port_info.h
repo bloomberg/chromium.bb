@@ -13,12 +13,20 @@
 
 namespace media {
 
+enum MidiPortState {
+  MIDI_PORT_DISCONNECTED,
+  MIDI_PORT_CONNECTED,
+  MIDI_PORT_OPENED,
+  MIDI_PORT_STATE_LAST = MIDI_PORT_OPENED,
+};
+
 struct MEDIA_EXPORT MidiPortInfo {
   MidiPortInfo();
   MidiPortInfo(const std::string& in_id,
                const std::string& in_manufacturer,
                const std::string& in_name,
-               const std::string& in_version);
+               const std::string& in_version,
+               MidiPortState in_state);
 
   MidiPortInfo(const MidiPortInfo& info);
   ~MidiPortInfo();
@@ -27,6 +35,7 @@ struct MEDIA_EXPORT MidiPortInfo {
   std::string manufacturer;
   std::string name;
   std::string version;
+  MidiPortState state;
 };
 
 typedef std::vector<MidiPortInfo> MidiPortInfoList;

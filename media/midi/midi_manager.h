@@ -35,10 +35,10 @@ class MEDIA_EXPORT MidiManagerClient {
   virtual void AddInputPort(const MidiPortInfo& info) = 0;
   virtual void AddOutputPort(const MidiPortInfo& info) = 0;
 
-  // TODO(toyoshim): DisableInputPort(const MidiPortInfo& info) and
-  // DisableOutputPort(const MidiPortInfo& info) should be added.
-  // On DisableInputPort(), internal states, e.g. received_messages_queues in
-  // MidiHost, should be reset.
+  // SetInputPortState() and SetOutputPortState() are called to notify a known
+  // device gets disconnected, or connected again.
+  virtual void SetInputPortState(uint32 port_index, MidiPortState state) = 0;
+  virtual void SetOutputPortState(uint32 port_index, MidiPortState state) = 0;
 
   // CompleteStartSession() is called when platform dependent preparation is
   // finished.
@@ -122,6 +122,8 @@ class MEDIA_EXPORT MidiManager {
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
+  void SetInputPortState(uint32 port_index, MidiPortState state);
+  void SetOutputPortState(uint32 port_index, MidiPortState state);
 
   // Dispatches to all clients.
   // TODO(toyoshim): Fix the mac implementation to use

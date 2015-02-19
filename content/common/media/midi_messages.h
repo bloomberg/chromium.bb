@@ -17,11 +17,15 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MidiMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::MidiPortState,
+                          media::MIDI_PORT_STATE_LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(media::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(manufacturer)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(version)
+  IPC_STRUCT_TRAITS_MEMBER(state)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MidiResult, media::MIDI_RESULT_LAST)
@@ -45,6 +49,14 @@ IPC_MESSAGE_CONTROL1(MidiMsg_AddInputPort,
 
 IPC_MESSAGE_CONTROL1(MidiMsg_AddOutputPort,
                      media::MidiPortInfo /* output port */)
+
+IPC_MESSAGE_CONTROL2(MidiMsg_SetInputPortState,
+                     uint32 /* port */,
+                     media::MidiPortState /* state */)
+
+IPC_MESSAGE_CONTROL2(MidiMsg_SetOutputPortState,
+                     uint32 /* port */,
+                     media::MidiPortState /* state */)
 
 IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted,
                      media::MidiResult /* result */)

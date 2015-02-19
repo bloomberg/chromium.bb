@@ -515,7 +515,8 @@ void MidiManagerWin::StartInitialization() {
         base::IntToString(static_cast<int>(device_id)),
         "",
         base::WideToUTF8(caps.szPname),
-        base::IntToString(static_cast<int>(caps.vDriverVersion)));
+        base::IntToString(static_cast<int>(caps.vDriverVersion)),
+        MIDI_PORT_OPENED);
     AddInputPort(info);
     in_device->set_port_index(inport_index++);
     in_devices_.push_back(in_device.release());
@@ -538,7 +539,8 @@ void MidiManagerWin::StartInitialization() {
         base::IntToString(static_cast<int>(device_id)),
         "",
         base::WideToUTF8(caps.szPname),
-        base::IntToString(static_cast<int>(caps.vDriverVersion)));
+        base::IntToString(static_cast<int>(caps.vDriverVersion)),
+        MIDI_PORT_OPENED);
     AddOutputPort(info);
     out_devices_.push_back(out_port.release());
   }

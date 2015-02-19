@@ -106,6 +106,7 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
         // setting is sufficiently unique although there is no user-friendly
         // meaning.
         MidiPortInfo port;
+        port.state = MIDI_PORT_OPENED;
         port.id = base::StringPrintf("port-%ld-%ld",
                                      static_cast<long>(i),
                                      static_cast<long>(j));
@@ -115,6 +116,7 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
         input_jacks.push_back(jacks[j]);
         // TODO(yhirano): Set appropriate properties.
         MidiPortInfo port;
+        port.state = MIDI_PORT_OPENED;
         port.id = base::StringPrintf("port-%ld-%ld",
                                      static_cast<long>(i),
                                      static_cast<long>(j));

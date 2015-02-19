@@ -252,7 +252,8 @@ void MidiManagerAlsa::StartInitialization() {
             VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
           } else {
             source_map_[AddrToInt(sender)] = current_input++;
-            AddInputPort(MidiPortInfo(id, manufacturer, name, version));
+            AddInputPort(MidiPortInfo(
+                id, manufacturer, name, version, MIDI_PORT_OPENED));
           }
         }
         if ((caps & kRequiredOutputPortCaps) == kRequiredOutputPortCaps) {
@@ -286,7 +287,8 @@ void MidiManagerAlsa::StartInitialization() {
             snd_midi_event_new(kSendBufferSize, &encoder);
             encoders_.push_back(encoder);
             out_ports_.push_back(out_port);
-            AddOutputPort(MidiPortInfo(id, manufacturer, name, version));
+            AddOutputPort(MidiPortInfo(
+                id, manufacturer, name, version, MIDI_PORT_OPENED));
           }
         }
       }

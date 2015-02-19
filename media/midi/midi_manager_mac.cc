@@ -4,6 +4,7 @@
 
 #include "media/midi/midi_manager_mac.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -25,8 +26,7 @@ namespace media {
 
 namespace {
 
-MidiPortInfo GetPortInfoFromEndpoint(
-    MIDIEndpointRef endpoint) {
+MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   SInt32 id_number = 0;
   MIDIObjectGetIntegerProperty(endpoint, kMIDIPropertyUniqueID, &id_number);
   string id = IntToString(id_number);
@@ -65,7 +65,8 @@ MidiPortInfo GetPortInfoFromEndpoint(
                   << result;
   }
 
-  return MidiPortInfo(id, manufacturer, name, version);
+  const MidiPortState state = MIDI_PORT_OPENED;
+  return MidiPortInfo(id, manufacturer, name, version, state);
 }
 
 double MIDITimeStampToSeconds(MIDITimeStamp timestamp) {
@@ -140,7 +141,8 @@ void MidiManagerMac::InitializeCoreMIDI() {
   // TODO(toyoshim): Set MIDINotifyProc to receive CoreMIDI event notifications.
   midi_client_ = 0;
   OSStatus result =
-      MIDIClientCreate(CFSTR("Chrome"), NULL, NULL, &midi_client_);
+      MIDIClientCreate(CFSTR("Chrome"), ReceiveMidiNotifyDispatch, this,
+                       &midi_client_);
 
   if (result != noErr)
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
@@ -197,6 +199,61 @@ void MidiManagerMac::InitializeCoreMIDI() {
   midi_packet_ = MIDIPacketListInit(packet_list_);
 
   CompleteInitialization(MIDI_OK);
+}
+
+// static
+void MidiManagerMac::ReceiveMidiNotifyDispatch(const MIDINotification* message,
+                                               void* refcon) {
+  MidiManagerMac* manager = static_cast<MidiManagerMac*>(refcon);
+  manager->ReceiveMidiNotify(message);
+}
+
+void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
+  DCHECK(client_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  if (kMIDIMsgObjectAdded == message->messageID) {
+    const MIDIObjectAddRemoveNotification* notification =
+        reinterpret_cast<const MIDIObjectAddRemoveNotification*>(message);
+    MIDIEndpointRef endpoint =
+        static_cast<MIDIEndpointRef>(notification->child);
+    if (notification->childType == kMIDIObjectType_Source) {
+      SourceMap::iterator it = source_map_.find(endpoint);
+      if (it == source_map_.end()) {
+        uint32 index = source_map_.size();
+        source_map_[endpoint] = index;
+        MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
+        AddInputPort(info);
+      } else {
+        uint32 index = it->second;
+        SetInputPortState(index, MIDI_PORT_OPENED);
+      }
+    } else if (notification->childType == kMIDIObjectType_Destination) {
+      auto i = std::find(destinations_.begin(), destinations_.end(), endpoint);
+      if (i != destinations_.end()) {
+        SetOutputPortState(i - destinations_.begin(), MIDI_PORT_OPENED);
+      } else {
+        destinations_.push_back(endpoint);
+        MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
+        AddOutputPort(info);
+      }
+    }
+  } else if (kMIDIMsgObjectRemoved == message->messageID) {
+    const MIDIObjectAddRemoveNotification* notification =
+        reinterpret_cast<const MIDIObjectAddRemoveNotification*>(message);
+    MIDIEndpointRef endpoint =
+        static_cast<MIDIEndpointRef>(notification->child);
+    if (notification->childType == kMIDIObjectType_Source) {
+      SourceMap::iterator it = source_map_.find(endpoint);
+      if (it != source_map_.end()) {
+        uint32 index = it->second;
+        SetInputPortState(index, MIDI_PORT_DISCONNECTED);
+      }
+    } else if (notification->childType == kMIDIObjectType_Destination) {
+      auto i = std::find(destinations_.begin(), destinations_.end(), endpoint);
+      if (i != destinations_.end())
+        SetOutputPortState(i - destinations_.begin(), MIDI_PORT_DISCONNECTED);
+    }
+  }
 }
 
 // static

@@ -86,6 +86,10 @@ class FakeMidiManagerClient : public MidiManagerClient {
     output_ports_.push_back(info);
   }
 
+  void SetInputPortState(uint32 port_index, MidiPortState state) override {}
+
+  void SetOutputPortState(uint32 port_index, MidiPortState state) override {}
+
   void CompleteStartSession(MidiResult result) override {
     complete_start_session_ = true;
     result_ = result;

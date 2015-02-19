@@ -145,6 +145,14 @@ void MidiHost::AddOutputPort(const media::MidiPortInfo& info) {
   Send(new MidiMsg_AddOutputPort(info));
 }
 
+void MidiHost::SetInputPortState(uint32 port, media::MidiPortState state) {
+  Send(new MidiMsg_SetInputPortState(port, state));
+}
+
+void MidiHost::SetOutputPortState(uint32 port, media::MidiPortState state) {
+  Send(new MidiMsg_SetOutputPortState(port, state));
+}
+
 void MidiHost::ReceiveMidiData(
     uint32 port,
     const uint8* data,

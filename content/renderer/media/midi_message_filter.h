@@ -77,6 +77,12 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   void OnAddInputPort(media::MidiPortInfo info);
   void OnAddOutputPort(media::MidiPortInfo info);
 
+  // These functions are called to notify the recipient that a device that is
+  // notified via OnAddInputPort() or OnAddOutputPort() gets disconnected, or
+  // connected again.
+  void OnSetInputPortState(uint32 port, media::MidiPortState state);
+  void OnSetOutputPortState(uint32 port, media::MidiPortState state);
+
   // Called when the browser process has sent MIDI data containing one or
   // more messages.
   void OnDataReceived(uint32 port,
@@ -93,6 +99,8 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   void HandleAddInputPort(media::MidiPortInfo info);
   void HandleAddOutputPort(media::MidiPortInfo info);
+  void HandleSetInputPortState(uint32 port, media::MidiPortState state);
+  void HandleSetOutputPortState(uint32 port, media::MidiPortState state);
 
   void HandleDataReceived(uint32 port,
                           const std::vector<uint8>& data,

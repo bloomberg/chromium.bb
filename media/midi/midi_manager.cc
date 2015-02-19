@@ -130,6 +130,22 @@ void MidiManager::AddOutputPort(const MidiPortInfo& info) {
     client->AddOutputPort(info);
 }
 
+void MidiManager::SetInputPortState(uint32 port_index, MidiPortState state) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK_LT(port_index, input_ports_.size());
+  input_ports_[port_index].state = state;
+  for (auto client : clients_)
+    client->SetInputPortState(port_index, state);
+}
+
+void MidiManager::SetOutputPortState(uint32 port_index, MidiPortState state) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK_LT(port_index, output_ports_.size());
+  output_ports_[port_index].state = state;
+  for (auto client : clients_)
+    client->SetOutputPortState(port_index, state);
+}
+
 void MidiManager::ReceiveMidiData(
     uint32 port_index,
     const uint8* data,

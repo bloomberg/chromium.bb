@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/midi/midi_manager.h"
+#include "media/midi/midi_port_info.h"
 
 namespace media {
 class MidiManager;
@@ -39,6 +40,8 @@ class CONTENT_EXPORT MidiHost
   void CompleteStartSession(media::MidiResult result) override;
   void AddInputPort(const media::MidiPortInfo& info) override;
   void AddOutputPort(const media::MidiPortInfo& info) override;
+  void SetInputPortState(uint32 port, media::MidiPortState state) override;
+  void SetOutputPortState(uint32 port, media::MidiPortState state) override;
   void ReceiveMidiData(uint32 port,
                        const uint8* data,
                        size_t length,
