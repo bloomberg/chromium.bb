@@ -488,13 +488,6 @@ IntPoint LayerScrollableArea::lastKnownMousePosition() const
     return box().frame() ? box().frame()->eventHandler().lastKnownMousePosition() : IntPoint();
 }
 
-bool LayerScrollableArea::scrollAnimatorEnabled() const
-{
-    if (Settings* settings = box().frame()->settings())
-        return settings->scrollAnimatorEnabled();
-    return false;
-}
-
 bool LayerScrollableArea::shouldSuspendScrollAnimations() const
 {
     RenderView* view = box().view();

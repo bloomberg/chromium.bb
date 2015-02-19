@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<style>
+
+#container {
+  width: 200px;
+  height: 200px;
+  overflow: scroll;
+}
+
+#content {
+  width: 7500px;
+  height: 7500px;
+  background-color: blue;
+}
+
+</style>
+<script src="../../resources/js-test.js"></script>
+<div id="container">
+  <div id="content"></div>
+</div>
+<div id="console"></div>
+<script>
+
+jsTestIsAsync = true;
+element = document.getElementById("container");
+
+function runTest() {
+    element.addEventListener("scroll", function() {
+        shouldBe("element.scrollTop", "80");
+        finishJSTest();
+    });
+
+    eventSender.mouseMoveTo(100, 100);
+    eventSender.mouseScrollBy(0, -2, /* paged */ false,
+        /* has_precise_scrolling_deltas */ true);
+}
+
+description("Tests that a WebMouseWheelEvent with hasPreciseScrollingDeltas " +
+            "does not produce an animated scroll");
+
+if (window.eventSender)
+    runTest();
+else
+    debug("FAIL: This test requires window.eventSender.");
+
+</script>
