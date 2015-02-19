@@ -156,12 +156,18 @@ in <a class="reference internal" href="#id1">Memory Model and Atomics</a>.</p>
 restrictions beyond C&#8217;s.</p>
 <h2 id="c-exception-handling"><span id="exception-handling"></span>C++ Exception Handling</h2>
 <p>PNaCl currently supports C++ exception handling through <code>setjmp()</code> and
-<code>longjmp()</code>, which can be enabled with the <code>--pnacl-exceptions=sjlj</code>
-linker flag. Exceptions are disabled by default so that faster and
-smaller code is generated, and <code>throw</code> statements are replaced with
-calls to <code>abort()</code>. The usual <code>-fno-exceptions</code> flag is also
-supported. PNaCl will support full zero-cost exception handling in the
-future.</p>
+<code>longjmp()</code>, which can be enabled with the <code>--pnacl-exceptions=sjlj</code> linker
+flag (set with <code>LDFLAGS</code> when using Make). Exceptions are disabled by default
+so that faster and smaller code is generated, and <code>throw</code> statements are
+replaced with calls to <code>abort()</code>. The usual <code>-fno-exceptions</code> flag is also
+supported, though the default is <code>-fexceptions</code>. PNaCl will support full
+zero-cost exception handling in the future.</p>
+<aside>
+When using <a class="reference external" href="https://code.google.com/p/naclports">naclports</a> or other prebuilt static libraries, you don&#8217;t
+need to recompile because the exception handling support is
+implemented at link time (when all the static libraries are put
+together with your application).
+</aside>
 <p>NaCl supports full zero-cost C++ exception handling.</p>
 <h2 id="inline-assembly">Inline Assembly</h2>
 <p>Inline assembly isn&#8217;t supported by PNaCl because it isn&#8217;t portable. The
