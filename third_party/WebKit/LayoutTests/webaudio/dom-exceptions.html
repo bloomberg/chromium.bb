@@ -244,6 +244,15 @@ function runTest() {
     node.connect(context.destination);
     shouldThrow("node.gain.exponentialRampToValueAtTime(-1, 0.1)");
     shouldThrow("node.gain.exponentialRampToValueAtTime(0, 0.1)");
+    // See crbug.com/459391.
+    // Math.pow(2, -149) = 1.401298464324817e-45 is the double-float value of the
+    // least positive single float number. We do it this way to make sure no round-off or conversion
+    // errors happen when reading 1.401298464324817e-45.
+    shouldNotThrow("node.gain.exponentialRampToValueAtTime(Math.pow(2, -149), 0.1)");
+    // Math.pow(2, -150) = 7.006492321624085d-46 is the largest double float value such that
+    // conversion to a float produces 0.  Any larger value would produce a non-zero value when
+    // converted to a single float.
+    shouldThrow("node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1)");
 
     // Convolver buffer rate must match context rate. Create on offline context so we
     // specify the context rate exactly, in case the test is run on platforms with different

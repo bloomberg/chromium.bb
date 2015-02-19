@@ -43,9 +43,18 @@ static bool isPositiveAudioParamValue(float value, ExceptionState& exceptionStat
     if (value > 0)
         return true;
 
+    // Use denorm_min() in error message to make it clear what the mininum positive value is. The
+    // Javascript API uses doubles, which gets converted to floats, sometimes causing an underflow.
+    // This is confusing if the user specified a small non-zero (double) value that underflowed to
+    // 0.
     exceptionState.throwDOMException(
         InvalidAccessError,
-        "Target value must be a finite positive number: " + String::number(value));
+        ExceptionMessages::indexOutsideRange("float target value",
+            value,
+            std::numeric_limits<float>::denorm_min(),
+            ExceptionMessages::InclusiveBound,
+            std::numeric_limits<float>::infinity(),
+            ExceptionMessages::ExclusiveBound));
     return false;
 }
 
