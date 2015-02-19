@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/test.gni")
 
 if (enable_webrtc || !is_android) {
   jingle_includes = exec_script("//build/gypi_to_gn.py",
@@ -110,9 +111,7 @@ if (enable_webrtc || !is_android) {
   }
 
   # GYP version: jingle/jingle.gyp:jingle_unittests
-  # TODO(GYP): Convert to executable when its dependencies are linkable.
-  source_set("jingle_unittests") {
-    testonly = true
+  test("jingle_unittests") {
     sources = [
       "glue/channel_socket_adapter_unittest.cc",
       "glue/chrome_async_socket_unittest.cc",
