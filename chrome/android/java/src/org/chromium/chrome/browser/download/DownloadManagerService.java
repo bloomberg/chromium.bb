@@ -200,8 +200,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     Log.w(TAG, "Download failed: Cleared download id:" + id);
                 }
             }
-            mSharedPrefs.edit().remove(DOWNLOAD_NOTIFICATION_IDS);
-            mSharedPrefs.edit().apply();
+            mSharedPrefs.edit().remove(DOWNLOAD_NOTIFICATION_IDS).apply();
         }
         if (mSharedPrefs.contains(PENDING_OMA_DOWNLOADS)) {
             Set<String> omaDownloads = getStoredDownloadInfo(PENDING_OMA_DOWNLOADS);
