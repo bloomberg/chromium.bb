@@ -298,24 +298,11 @@ bool MediaDrmBridge::IsAvailable() {
   return true;
 }
 
+// TODO(ddorwin): This is specific to Widevine. http://crbug.com/459400
 // static
 bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
   DCHECK(IsAvailable());
   return SECURITY_LEVEL_1 == security_level;
-}
-
-// static
-bool MediaDrmBridge::IsSecurityLevelSupported(const std::string& key_system,
-                                              SecurityLevel security_level) {
-  if (!IsAvailable())
-    return false;
-
-  scoped_ptr<MediaDrmBridge> media_drm_bridge =
-      MediaDrmBridge::CreateWithoutSessionSupport(key_system);
-  if (!media_drm_bridge)
-    return false;
-
-  return media_drm_bridge->SetSecurityLevel(security_level);
 }
 
 // static
@@ -404,6 +391,13 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
 }
 
 bool MediaDrmBridge::SetSecurityLevel(SecurityLevel security_level) {
+  if (security_level != SECURITY_LEVEL_NONE &&
+      !std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid)) {
+    NOTREACHED() << "Widevine security level " << security_level
+                 << "used with another key system";
+    return false;
+  }
+
   JNIEnv* env = AttachCurrentThread();
 
   std::string security_level_str = GetSecurityLevelString(security_level);
@@ -636,7 +630,12 @@ MediaDrmBridge::SecurityLevel MediaDrmBridge::GetSecurityLevel() {
 }
 
 bool MediaDrmBridge::IsProtectedSurfaceRequired() {
-  return IsSecureDecoderRequired(GetSecurityLevel());
+  // For Widevine, this depends on the security level.
+  if (std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid))
+    return IsSecureDecoderRequired(GetSecurityLevel());
+
+  // For other key systems, assume true.
+  return true;
 }
 
 void MediaDrmBridge::ResetDeviceCredentials(

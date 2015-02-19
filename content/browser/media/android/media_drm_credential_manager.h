@@ -22,6 +22,10 @@ class MediaDrmCredentialManager {
   typedef base::Callback<void(bool)> ResetCredentialsCB;
 
   // Called to reset the DRM credentials. (for Java)
+  // Only clears credentials for Widevine.
+  // TODO(ddorwin): This should accept a key system parameter so that this is
+  // clear to the caller, which can call it repeatedly as necessary.
+  // http://crbug.com/459400
   static void ResetCredentials(JNIEnv* env, jclass clazz, jobject callback);
 
   // Called to reset the DRM credentials. The result is returned in the

@@ -27,6 +27,7 @@ class MediaPlayerManager;
 // This class provides DRM services for android EME implementation.
 class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
  public:
+  // TODO(ddorwin): These are specific to Widevine. http://crbug.com/459400
   enum SecurityLevel {
     SECURITY_LEVEL_NONE = 0,
     SECURITY_LEVEL_1 = 1,
@@ -42,9 +43,6 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // to check IsAvailable() explicitly before calling them.
   static bool IsAvailable();
 
-  static bool IsSecurityLevelSupported(const std::string& key_system,
-                                       SecurityLevel security_level);
-
   // Checks whether |key_system| is supported.
   static bool IsKeySystemSupported(const std::string& key_system);
 
@@ -57,8 +55,6 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   static bool IsKeySystemSupportedWithType(
       const std::string& key_system,
       const std::string& container_mime_type);
-
-  static bool IsSecureDecoderRequired(SecurityLevel security_level);
 
   static bool RegisterMediaDrmBridge(JNIEnv* env);
 
@@ -190,6 +186,8 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
                  const SessionClosedCB& session_closed_cb,
                  const SessionErrorCB& session_error_cb,
                  const SessionKeysChangeCB& session_keys_change_cb);
+
+  static bool IsSecureDecoderRequired(SecurityLevel security_level);
 
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();

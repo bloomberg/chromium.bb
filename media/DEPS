@@ -12,5 +12,6 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/ozone",
+  "+third_party/widevine/cdm/widevine_cdm_common.h",
   "-media/blink",
 ]

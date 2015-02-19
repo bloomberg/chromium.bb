@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/media_switches.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace media {
 
@@ -33,15 +34,26 @@ scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
   }
 
   // TODO(xhwang/ddorwin): Pass the security level from key system.
-  MediaDrmBridge::SecurityLevel security_level =
-      MediaDrmBridge::SECURITY_LEVEL_3;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMediaDrmEnableNonCompositing)) {
-    security_level = MediaDrmBridge::SECURITY_LEVEL_1;
-  }
-  if (!cdm->SetSecurityLevel(security_level)) {
-    DVLOG(1) << "failed to set security level " << security_level;
-    return scoped_ptr<BrowserCdm>();
+  // http://crbug.com/459400
+  if (key_system == kWidevineKeySystem) {
+    MediaDrmBridge::SecurityLevel security_level =
+        MediaDrmBridge::SECURITY_LEVEL_3;
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kMediaDrmEnableNonCompositing)) {
+      security_level = MediaDrmBridge::SECURITY_LEVEL_1;
+    }
+    if (!cdm->SetSecurityLevel(security_level)) {
+      DVLOG(1) << "failed to set security level " << security_level;
+      return scoped_ptr<BrowserCdm>();
+    }
+  } else {
+    // Assume other key systems do not support full compositing.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kMediaDrmEnableNonCompositing)) {
+      NOTREACHED() << key_system << " may require "
+                   << switches::kMediaDrmEnableNonCompositing;
+      return scoped_ptr<BrowserCdm>();
+    }
   }
 
   return cdm.Pass();
