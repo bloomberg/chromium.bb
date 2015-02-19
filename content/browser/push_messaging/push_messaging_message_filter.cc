@@ -24,6 +24,7 @@
 
 namespace content {
 
+const char kPushSenderIdServiceWorkerKey[] = "push_sender_id";
 const char kPushRegistrationIdServiceWorkerKey[] = "push_registration_id";
 
 namespace {
@@ -37,8 +38,6 @@ void RecordRegistrationStatus(PushRegistrationStatus status) {
                             status,
                             PUSH_REGISTRATION_STATUS_LAST + 1);
 }
-
-const char kSenderIdServiceWorkerKey[] = "push_sender_id";
 
 }  // namespace
 
@@ -71,7 +70,8 @@ class PushMessagingMessageFilter::Core {
   // Called via PostTask from IO thread.
   void UnregisterFromService(int request_id,
                              int64 service_worker_registration_id,
-                             const GURL& requesting_origin);
+                             const GURL& requesting_origin,
+                             const std::string& sender_id);
 
   // Public GetPermission methods on UI thread ---------------------------------
 
@@ -212,7 +212,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   service_worker_context_->context()->storage()->StoreUserData(
       service_worker_registration_id,
       data.requesting_origin,
-      kSenderIdServiceWorkerKey,
+      kPushSenderIdServiceWorkerKey,
       sender_id,
       base::Bind(&PushMessagingMessageFilter::DidPersistSenderId,
                  weak_factory_io_to_io_.GetWeakPtr(),
@@ -286,7 +286,7 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
   } else {
     service_worker_context_->context()->storage()->GetUserData(
         data.service_worker_registration_id,
-        kSenderIdServiceWorkerKey,
+        kPushSenderIdServiceWorkerKey,
         base::Bind(&PushMessagingMessageFilter::DidGetSenderIdFromStorage,
                    weak_factory_io_to_io_.GetWeakPtr(), data));
   }
@@ -436,18 +436,46 @@ void PushMessagingMessageFilter::OnUnregister(
   service_worker_context_->context()->storage()->GetUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
-      base::Bind(&PushMessagingMessageFilter::DoUnregister,
-                 weak_factory_io_to_io_.GetWeakPtr(),
-                 request_id,
-                 service_worker_registration_id,
-                 service_worker_registration->pattern().GetOrigin()));
+      base::Bind(
+          &PushMessagingMessageFilter::UnregisterHavingGottenPushRegistrationId,
+          weak_factory_io_to_io_.GetWeakPtr(), request_id,
+          service_worker_registration_id,
+          service_worker_registration->pattern().GetOrigin()));
 }
 
-void PushMessagingMessageFilter::DoUnregister(
+void PushMessagingMessageFilter::UnregisterHavingGottenPushRegistrationId(
     int request_id,
     int64 service_worker_registration_id,
     const GURL& requesting_origin,
-    const std::string& push_registration_id,
+    const std::string& push_registration_id,  // Unused, we just want the status
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (service_worker_status == SERVICE_WORKER_OK) {
+    service_worker_context_->context()->storage()->GetUserData(
+        service_worker_registration_id,
+        kPushSenderIdServiceWorkerKey,
+        base::Bind(
+            &PushMessagingMessageFilter::UnregisterHavingGottenSenderId,
+            weak_factory_io_to_io_.GetWeakPtr(),
+            request_id,
+            service_worker_registration_id,
+            requesting_origin));
+  } else {
+    // Errors are handled the same, whether we were trying to get the
+    // push_registration_id or the sender_id.
+    UnregisterHavingGottenSenderId(request_id, service_worker_registration_id,
+                                   requesting_origin,
+                                   std::string() /* sender_id */,
+                                   service_worker_status);
+  }
+}
+
+void PushMessagingMessageFilter::UnregisterHavingGottenSenderId(
+    int request_id,
+    int64 service_worker_registration_id,
+    const GURL& requesting_origin,
+    const std::string& sender_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -457,7 +485,8 @@ void PushMessagingMessageFilter::DoUnregister(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&Core::UnregisterFromService,
                      base::Unretained(ui_core_.get()), request_id,
-                     service_worker_registration_id, requesting_origin));
+                     service_worker_registration_id, requesting_origin,
+                     sender_id));
       return;
     case SERVICE_WORKER_ERROR_NOT_FOUND:
       // We did not find a registration, stop here and notify the renderer that
@@ -490,7 +519,8 @@ void PushMessagingMessageFilter::DoUnregister(
 void PushMessagingMessageFilter::Core::UnregisterFromService(
     int request_id,
     int64 service_worker_registration_id,
-    const GURL& requesting_origin) {
+    const GURL& requesting_origin,
+    const std::string& sender_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service = service();
   if (!push_service) {
@@ -502,7 +532,7 @@ void PushMessagingMessageFilter::Core::UnregisterFromService(
   }
 
   push_service->Unregister(
-      requesting_origin, service_worker_registration_id,
+      requesting_origin, service_worker_registration_id, sender_id,
       false /* retry_on_failure */,
       base::Bind(&Core::DidUnregisterFromService,
                  weak_factory_ui_to_ui_.GetWeakPtr(),

@@ -69,6 +69,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void Unregister(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
+      const std::string& sender_id,
       bool retry_on_failure,
       const content::PushMessagingService::UnregisterCallback&) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
@@ -87,6 +88,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // A registration is pending until it has succeeded or failed.
   void IncreasePushRegistrationCount(int add, bool is_pending);
   void DecreasePushRegistrationCount(int subtract, bool was_pending);
+
+  // OnMessage methods ---------------------------------------------------------
 
   void DeliverMessageCallback(const std::string& app_id_guid,
                               const GURL& requesting_origin,
@@ -109,6 +112,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       bool success,
       bool not_found);
 
+  // Register methods ----------------------------------------------------------
+
   void RegisterEnd(
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
@@ -126,7 +131,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       bool allow);
 
+  // Unregister methods --------------------------------------------------------
+
   void Unregister(const std::string& app_id_guid,
+                  const std::string& sender_id,
                   bool retry_on_failure,
                   const content::PushMessagingService::UnregisterCallback&);
 
@@ -135,7 +143,15 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                      const content::PushMessagingService::UnregisterCallback&,
                      GCMClient::Result result);
 
-  // Helper method that checks if a given origin is allowed to use Push.
+  // OnContentSettingChanged methods -------------------------------------------
+
+  void UnregisterBecausePermissionRevoked(const PushMessagingApplicationId& id,
+                                          const std::string& sender_id,
+                                          bool success, bool not_found);
+
+  // Helper methods ------------------------------------------------------------
+
+  // Checks if a given origin is allowed to use Push.
   bool HasPermission(const GURL& origin);
 
   GCMProfileService* gcm_profile_service_;  // It owns us.

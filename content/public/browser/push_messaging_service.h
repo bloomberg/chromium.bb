@@ -22,16 +22,16 @@ class ServiceWorkerContext;
 // push messaging services like GCM. Must only be used on the UI thread.
 class CONTENT_EXPORT PushMessagingService {
  public:
-  using GetNotificationsShownCallback =
-      base::Callback<void(const std::string& notifications_shown,
-                          bool success, bool not_found)>;
-
-  using ResultCallback = base::Callback<void(bool success)>;
-
   using RegisterCallback =
       base::Callback<void(const std::string& /* registration_id */,
                           PushRegistrationStatus /* status */)>;
   using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
+
+  using StringCallback = base::Callback<void(const std::string& data,
+                                             bool success,
+                                             bool not_found)>;
+
+  using ResultCallback = base::Callback<void(bool success)>;
 
   virtual ~PushMessagingService() {}
 
@@ -63,6 +63,7 @@ class CONTENT_EXPORT PushMessagingService {
   // the push service.
   virtual void Unregister(const GURL& requesting_origin,
                           int64 service_worker_registration_id,
+                          const std::string& sender_id,
                           bool retry_on_failure,
                           const UnregisterCallback& callback) = 0;
 
@@ -81,13 +82,18 @@ class CONTENT_EXPORT PushMessagingService {
   static void GetNotificationsShownByLastFewPushes(
       ServiceWorkerContext* service_worker_context,
       int64 service_worker_registration_id,
-      const GetNotificationsShownCallback& callback);
+      const StringCallback& callback);
   static void SetNotificationsShownByLastFewPushes(
       ServiceWorkerContext* service_worker_context,
       int64 service_worker_registration_id,
       const GURL& origin,
       const std::string& notifications_shown,
       const ResultCallback& callback);
+
+  static void GetSenderId(BrowserContext* browser_context,
+                          const GURL& origin,
+                          int64 service_worker_registration_id,
+                          const StringCallback& callback);
 
   // Clear the push registration id stored in the service worker with the given
   // |service_worker_registration_id| for the given |origin|.

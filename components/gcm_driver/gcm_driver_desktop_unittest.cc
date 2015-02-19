@@ -295,8 +295,8 @@ void GCMDriverTest::Unregister(const std::string& app_id,
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
   driver_->Unregister(app_id,
-                       base::Bind(&GCMDriverTest::UnregisterCompleted,
-                                  base::Unretained(this)));
+                      base::Bind(&GCMDriverTest::UnregisterCompleted,
+                                 base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }

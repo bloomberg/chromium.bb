@@ -89,15 +89,20 @@ class InfoBarResponder : public infobars::InfoBarManager::Observer {
 // FakeGCMProfileService::UnregisterCallback.
 class UnregistrationCallback {
  public:
-  UnregistrationCallback() : done_(false) {}
+  UnregistrationCallback() : done_(false), waiting_(false) {}
 
   void Run(const std::string& app_id) {
     app_id_ = app_id;
     done_ = true;
-    base::MessageLoop::current()->Quit();
+    if (waiting_)
+      base::MessageLoop::current()->Quit();
   }
 
   void WaitUntilSatisfied() {
+    if (done_)
+      return;
+
+    waiting_ = true;
     while (!done_)
       content::RunMessageLoop();
   }
@@ -108,6 +113,7 @@ class UnregistrationCallback {
 
  private:
   bool done_;
+  bool waiting_;
   std::string app_id_;
 };
 
@@ -458,6 +464,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_EQ("true - is controlled", script_result);
 
   GCMClient::IncomingMessage message;
+  message.sender_id = "1234567890";
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.app_id_guid(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
@@ -495,48 +502,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
                                                   base::Unretained(&callback)));
 
   GCMClient::IncomingMessage message;
-  message.data["data"] = "testdata";
-  push_service()->OnMessage(app_id.app_id_guid(), message);
-
-  callback.WaitUntilSatisfied();
-  EXPECT_EQ(app_id.app_id_guid(), callback.app_id());
-
-  // No push data should have been received.
-  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
-  EXPECT_EQ("null", script_result);
-}
-
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
-  if (!IsPushSupported())
-    return;
-
-  std::string script_result;
-
-  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
-
-  PushMessagingApplicationId app_id = GetServiceWorkerAppId(0LL);
-  EXPECT_EQ(app_id.app_id_guid(), gcm_service()->last_registered_app_id());
-  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
-
-  ASSERT_TRUE(RunScript("isControlled()", &script_result));
-  ASSERT_EQ("false - is not controlled", script_result);
-
-  LoadTestPage();  // Reload to become controlled.
-
-  ASSERT_TRUE(RunScript("isControlled()", &script_result));
-  ASSERT_EQ("true - is controlled", script_result);
-
-  // Revoke Push permission.
-  browser()->profile()->GetHostContentSettingsMap()->
-      ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
-
-  // When the push service will receive its next message, given that there is no
-  // SW available, it should unregister |app_id|.
-  UnregistrationCallback callback;
-  gcm_service()->SetUnregisterCallback(base::Bind(&UnregistrationCallback::Run,
-                                                  base::Unretained(&callback)));
-
-  GCMClient::IncomingMessage message;
+  message.sender_id = "1234567890";
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_id.app_id_guid(), message);
 
@@ -581,6 +547,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
   GCMClient::IncomingMessage message;
+  message.sender_id = "1234567890";
   for (int n = 0; n < 2; n++) {
     message.data["data"] = "testdata";
     push_service()->OnMessage(app_id.app_id_guid(), message);
@@ -671,6 +638,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       base::Bind(&NotificationAddedCallback::Run, base::Unretained(&callback)));
 
   GCMClient::IncomingMessage message;
+  message.sender_id = "1234567890";
   message.data["data"] = "shownotification-without-waituntil";
   push_service()->OnMessage(app_id.app_id_guid(), message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));

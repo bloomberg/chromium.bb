@@ -71,6 +71,8 @@ class GCMDriverAndroid : public GCMDriver {
   void RegisterImpl(const std::string& app_id,
                     const std::vector<std::string>& sender_ids) override;
   void UnregisterImpl(const std::string& app_id) override;
+  void UnregisterWithSenderIdImpl(const std::string& app_id,
+                                  const std::string& sender_id) override;
   void SendImpl(const std::string& app_id,
                 const std::string& receiver_id,
                 const GCMClient::OutgoingMessage& message) override;

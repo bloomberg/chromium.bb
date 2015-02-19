@@ -179,6 +179,8 @@ void PushMessagingServiceImpl::ShutdownHandler() {
   // TODO(johnme): Do any necessary cleanup.
 }
 
+// OnMessage methods -----------------------------------------------------------
+
 void PushMessagingServiceImpl::OnMessage(
     const std::string& app_id,
     const GCMClient::IncomingMessage& message) {
@@ -234,42 +236,6 @@ void PushMessagingServiceImpl::OnMessage(
                  application_id.service_worker_registration_id(), message));
 }
 
-void PushMessagingServiceImpl::OnContentSettingChanged(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type,
-    std::string resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_PUSH_MESSAGING &&
-      content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    return;
-  }
-
-  for (const auto& id : PushMessagingApplicationId::GetAll(profile_)) {
-    // If |primary_pattern| is not valid, we should always check for a
-    // permission change because it can happen for example when the entire
-    // Push or Notifications permissions are cleared.
-    // Otherwise, the permission should be checked if the pattern matches the
-    // origin.
-    if (primary_pattern.IsValid() && !primary_pattern.Matches(id.origin()))
-      continue;
-
-    if (HasPermission(id.origin()))
-      continue;
-
-    // Unregister the PushMessagingApplicationId with the push service.
-    Unregister(id.app_id_guid(), true /* retry */, UnregisterCallback());
-
-    // Clear the associated service worker push registration id.
-    PushMessagingService::ClearPushRegistrationID(
-        profile_, id.origin(), id.service_worker_registration_id());
-  }
-}
-
-void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {
-  profile_ = profile;
-  profile_->GetHostContentSettingsMap()->AddObserver(this);
-}
-
 void PushMessagingServiceImpl::DeliverMessageCallback(
     const std::string& app_id_guid,
     const GURL& requesting_origin,
@@ -294,7 +260,8 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:
     case content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED:
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
-      Unregister(app_id_guid, true /*retry_on_failure*/, UnregisterCallback());
+      Unregister(app_id_guid, message.sender_id, true /* retry_on_failure */,
+                 UnregisterCallback());
       break;
   }
 }
@@ -451,6 +418,8 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
   }
 }
 
+// Other GCMAppHandler methods -------------------------------------------------
+
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {
   // TODO(mvanouwerkerk): Fire push error event on the Service Worker
   // corresponding to app_id.
@@ -468,9 +437,13 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
   NOTREACHED() << "The Push API shouldn't have sent messages upstream";
 }
 
+// GetPushEndpoint method ------------------------------------------------------
+
 GURL PushMessagingServiceImpl::GetPushEndpoint() {
   return GURL(std::string(kPushMessagingEndpoint));
 }
+
+// Register and GetPermissionStatus methods ------------------------------------
 
 void PushMessagingServiceImpl::RegisterFromDocument(
     const GURL& requesting_origin,
@@ -636,9 +609,12 @@ void PushMessagingServiceImpl::DidRequestPermission(
                  application_id, register_callback));
 }
 
+// Unregister methods ----------------------------------------------------------
+
 void PushMessagingServiceImpl::Unregister(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
+    const std::string& sender_id,
     bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback) {
   DCHECK(gcm_profile_service_->driver());
@@ -653,11 +629,13 @@ void PushMessagingServiceImpl::Unregister(
     return;
   }
 
-  Unregister(application_id.app_id_guid(), retry_on_failure, callback);
+  Unregister(application_id.app_id_guid(), sender_id, retry_on_failure,
+             callback);
 }
 
 void PushMessagingServiceImpl::Unregister(
     const std::string& app_id_guid,
+    const std::string& sender_id,
     bool retry_on_failure,
     const content::PushMessagingService::UnregisterCallback& callback) {
   DCHECK(gcm_profile_service_->driver());
@@ -673,11 +651,17 @@ void PushMessagingServiceImpl::Unregister(
       application_id.DeleteFromDisk(profile_);
   }
 
-  gcm_profile_service_->driver()->Unregister(
-      app_id_guid,
+  const auto& unregister_callback =
       base::Bind(&PushMessagingServiceImpl::DidUnregister,
                  weak_factory_.GetWeakPtr(),
-                 app_id_guid, retry_on_failure, callback));
+                 app_id_guid, retry_on_failure, callback);
+#if defined(OS_ANDROID)
+  // On Android the backend is different, and requires the original sender_id.
+  gcm_profile_service_->driver()->UnregisterWithSenderId(app_id_guid, sender_id,
+                                                         unregister_callback);
+#else
+  gcm_profile_service_->driver()->Unregister(app_id_guid, unregister_callback);
+#endif
 }
 
 void PushMessagingServiceImpl::DidUnregister(
@@ -729,6 +713,52 @@ void PushMessagingServiceImpl::DidUnregister(
   }
 }
 
+// OnContentSettingChanged methods ---------------------------------------------
+
+void PushMessagingServiceImpl::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  if (content_type != CONTENT_SETTINGS_TYPE_PUSH_MESSAGING &&
+      content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return;
+  }
+
+  for (const auto& id : PushMessagingApplicationId::GetAll(profile_)) {
+    // If |primary_pattern| is not valid, we should always check for a
+    // permission change because it can happen for example when the entire
+    // Push or Notifications permissions are cleared.
+    // Otherwise, the permission should be checked if the pattern matches the
+    // origin.
+    if (primary_pattern.IsValid() && !primary_pattern.Matches(id.origin()))
+      continue;
+
+    if (HasPermission(id.origin()))
+      continue;
+
+    PushMessagingService::GetSenderId(
+        profile_, id.origin(), id.service_worker_registration_id(),
+        base::Bind(
+            &PushMessagingServiceImpl::UnregisterBecausePermissionRevoked,
+            weak_factory_.GetWeakPtr(), id));
+  }
+}
+
+void PushMessagingServiceImpl::UnregisterBecausePermissionRevoked(
+    const PushMessagingApplicationId& id,
+    const std::string& sender_id, bool success, bool not_found) {
+  // Unregister the PushMessagingApplicationId with the push service.
+  Unregister(id.app_id_guid(), sender_id, true /* retry_on_failure */,
+             UnregisterCallback());
+
+  // Clear the associated service worker push registration id.
+  PushMessagingService::ClearPushRegistrationID(
+      profile_, id.origin(), id.service_worker_registration_id());
+}
+
+// Helper methods --------------------------------------------------------------
+
 bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
   gcm::PushMessagingPermissionContext* permission_context =
       gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
@@ -736,6 +766,11 @@ bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
 
   return permission_context->GetPermissionStatus(origin, origin) ==
       CONTENT_SETTING_ALLOW;
+}
+
+void PushMessagingServiceImpl::SetProfileForTesting(Profile* profile) {
+  profile_ = profile;
+  profile_->GetHostContentSettingsMap()->AddObserver(this);
 }
 
 }  // namespace gcm

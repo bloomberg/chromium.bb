@@ -7,6 +7,9 @@ package org.chromium.components.gcm_driver;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -19,29 +22,25 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Temporary code for sending subtypes when (un)registering with GCM.
+ * Temporary code for sending subtypes when (un)subscribing with GCM.
  * Subtypes are experimental and may change without notice!
  * TODO(johnme): Remove this file, once we switch to the GMS client library.
  */
 public class GoogleCloudMessagingV2 {
 
-    // Inlined com.google.android.gms.common.GooglePlayServicesUtil.GOOGLE_PLAY_SERVICES_PACKAGE
-    // since this class mustn't depend on the GMS client library.
     private static final String GOOGLE_PLAY_SERVICES_PACKAGE = "com.google.android.gms";
     private static final long REGISTER_TIMEOUT = 5000;
-    private static final String ACTION_C2DM_REGISTER =
-            "com.google.android.c2dm.intent.REGISTER";
-    private static final String ACTION_C2DM_UNREGISTER =
-            "com.google.android.c2dm.intent.UNREGISTER";
+    private static final String ACTION_C2DM_REGISTER = "com.google.android.c2dm.intent.REGISTER";
     private static final String C2DM_EXTRA_ERROR = "error";
     private static final String INTENT_PARAM_APP = "app";
     private static final String ERROR_MAIN_THREAD = "MAIN_THREAD";
     private static final String ERROR_SERVICE_NOT_AVAILABLE = "SERVICE_NOT_AVAILABLE";
+    private static final String EXTRA_DELETE = "delete";
     private static final String EXTRA_REGISTRATION_ID = "registration_id";
-    private static final String EXTRA_UNREGISTERED = "unregistered";
     private static final String EXTRA_SENDER = "sender";
     private static final String EXTRA_MESSENGER = "google.messenger";
     private static final String EXTRA_SUBTYPE = "subtype";
+    private static final String EXTRA_SUBSCRIPTION = "subscription";
 
     private Context mContext;
     private PendingIntent mAppPendingIntent = null;
@@ -51,80 +50,132 @@ public class GoogleCloudMessagingV2 {
         mContext = context;
     }
 
+    public String subscribe(String source, String subtype, Bundle data) throws IOException {
+        if (data == null) {
+            data = new Bundle();
+        }
+        data.putString(EXTRA_SUBTYPE, subtype);
+        Bundle result = subscribe(source, data);
+        return result.getString(EXTRA_REGISTRATION_ID);
+    }
+
+    public void unsubscribe(String source, String subtype, Bundle data) throws IOException {
+        if (data == null) {
+            data = new Bundle();
+        }
+        data.putString(EXTRA_SUBTYPE, subtype);
+        unsubscribe(source, data);
+        return;
+    }
+
     /**
-     * Register the application for GCM and return the registration ID. You must call this once,
-     * when your application is installed, and send the returned registration ID to the server.
+     * Subscribe to receive GCM messages from a specific source.
      * <p>
-     * This is a blocking call&mdash;you shouldn't call it from the UI thread.
-     * <p>
-     * Repeated calls to this method will return the original registration ID.
-     * <p>
-     * If you want to modify the list of senders, you must call {@code unregister()} first.
-     * <p>
-     * Most applications use a single sender ID. You may use multiple senders if different
-     * servers may send messages to the app or for testing.
+     * Source Types:
+     * <ul>
+     * <li>Sender ID - if you have multiple senders you can call this method
+     * for each additional sender. Each sender can use the corresponding
+     * {@link #REGISTRATION_ID} returned in the bundle to send messages
+     * from the server.</li>
+     * <li>Cloud Pub/Sub topic - You can subscribe to a topic and receive
+     * notifications from the owner of that topic, when something changes.
+     * For more information see
+     * <a href="https://cloud.google.com/pubsub">Cloud Pub/Sub</a>.</li>
+     * </ul>
+     * This function is blocking and should not be called on the main thread.
      *
-     * @param senderIds list of project numbers or Google accounts identifying who is allowed to
-     *   send messages to this application.
-     * @return registration id
+     * @param source of the desired notifications.
+     * @param data (optional) additional information.
+     * @return Bundle containing subscription information including {@link #REGISTRATION_ID}
+     * @throws IOException if the request fails.
      */
-    public String register(String subtype, String... senderIds) throws IOException {
+    public Bundle subscribe(String source, Bundle data) throws IOException {
+        if (data == null) {
+            data = new Bundle();
+        }
+        // Expected by older versions of GMS and servlet
+        data.putString(EXTRA_SENDER, source);
+        // New name of the sender parameter
+        data.putString(EXTRA_SUBSCRIPTION, source);
+        // DB buster for older versions of GCM.
+        if (data.getString(EXTRA_SUBTYPE) == null) {
+            data.putString(EXTRA_SUBTYPE, source);
+        }
+
+        Intent resultIntent = registerRpc(data);
+        getExtraOrThrow(resultIntent, EXTRA_REGISTRATION_ID);
+        return resultIntent.getExtras();
+    }
+
+    /**
+     * Unsubscribe from a source to stop receiving messages from it.
+     * <p>
+     * This function is blocking and should not be called on the main thread.
+     *
+     * @param source to unsubscribe
+     * @param data (optional) additional information.
+     * @throws IOException if the request fails.
+     */
+    public void unsubscribe(String source, Bundle data) throws IOException {
+        if (data == null) {
+            data = new Bundle();
+        }
+        // Use the register servlet, with 'delete=true'.
+        // Registration service returns a registration_id on success - or an error code.
+        data.putString(EXTRA_DELETE, "1");
+        subscribe(source, data);
+    }
+
+    private Intent registerRpc(Bundle data) throws IOException {
         if (Looper.getMainLooper() == Looper.myLooper()) {
             throw new IOException(ERROR_MAIN_THREAD);
         }
+        if (getGcmVersion() < 0) {
+            throw new IOException("Google Play Services missing");
+        }
+        if (data == null) {
+            data = new Bundle();
+        }
 
-        final BlockingQueue<Intent> registerResult = new LinkedBlockingQueue<Intent>();
-        Handler registrationHandler = new Handler(Looper.getMainLooper()) {
+        final BlockingQueue<Intent> responseResult = new LinkedBlockingQueue<Intent>();
+        Handler responseHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 Intent res = (Intent) msg.obj;
-                registerResult.add(res);
+                responseResult.add(res);
             }
         };
-        Messenger messenger = new Messenger(registrationHandler);
+        Messenger responseMessenger = new Messenger(responseHandler);
 
-        internalRegister(messenger, subtype, senderIds);
-
+        Intent intent = new Intent(ACTION_C2DM_REGISTER);
+        intent.setPackage(GOOGLE_PLAY_SERVICES_PACKAGE);
+        setPackageNameExtra(intent);
+        intent.putExtras(data);
+        intent.putExtra(EXTRA_MESSENGER, responseMessenger);
+        mContext.startService(intent);
         try {
-            Intent regIntent = registerResult.poll(REGISTER_TIMEOUT, TimeUnit.MILLISECONDS);
-            if (regIntent == null) {
-                throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            }
-            String registrationId = regIntent.getStringExtra(EXTRA_REGISTRATION_ID);
-            // registration succeeded
-            if (registrationId != null) {
-                return registrationId;
-            }
-            String err = regIntent.getStringExtra(C2DM_EXTRA_ERROR);
-            if (err != null) {
-                throw new IOException(err);
-            } else {
-                throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            }
+            return responseResult.poll(REGISTER_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new IOException(e.getMessage());
         }
     }
 
-    private void internalRegister(Messenger messenger, String subtype, String... senderIds) {
-        Intent intent = new Intent(ACTION_C2DM_REGISTER);
-        intent.setPackage(GOOGLE_PLAY_SERVICES_PACKAGE);
-        if (subtype != null) intent.putExtra("subtype", subtype);
-        intent.putExtra(EXTRA_MESSENGER, messenger);
-        setPackageNameExtra(intent);
-        intent.putExtra(EXTRA_SENDER, getFlatSenderIds(senderIds));
-        mContext.startService(intent);
-    }
+    private String getExtraOrThrow(Intent intent, String extraKey) throws IOException {
+        if (intent == null) {
+            throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
+        }
 
-    private String getFlatSenderIds(String... senderIds) {
-        if (senderIds == null || senderIds.length == 0) {
-            throw new IllegalArgumentException("No senderIds");
+        String extraValue = intent.getStringExtra(extraKey);
+        if (extraValue != null) {
+            return extraValue;
         }
-        StringBuilder builder = new StringBuilder(senderIds[0]);
-        for (int i = 1; i < senderIds.length; i++) {
-            builder.append(',').append(senderIds[i]);
+
+        String err = intent.getStringExtra(C2DM_EXTRA_ERROR);
+        if (err != null) {
+            throw new IOException(err);
+        } else {
+            throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
         }
-        return builder.toString();
     }
 
     private void setPackageNameExtra(Intent intent) {
@@ -140,63 +191,14 @@ public class GoogleCloudMessagingV2 {
         intent.putExtra(INTENT_PARAM_APP, mAppPendingIntent);
     }
 
-    /**
-     * Unregister the application. Calling {@code unregister()} stops any
-     * messages from the server.
-     * <p>
-     * This is a blocking call&mdash;you shouldn't call it from the UI thread.
-     * <p>
-     * You should rarely (if ever) need to call this method. Not only is it
-     * expensive in terms of resources, but it invalidates your registration ID,
-     * which you should never change unnecessarily. A better approach is to simply
-     * have your server stop sending messages. Only use unregister if you want
-     * to change your sender ID.
-     *
-     * @throws IOException if we can't connect to server to unregister.
-     */
-    public void unregister(String subtype) throws IOException {
-        if (Looper.getMainLooper() == Looper.myLooper()) {
-            throw new IOException(ERROR_MAIN_THREAD);
-        }
-        final BlockingQueue<Intent> registerResult = new LinkedBlockingQueue<Intent>();
-        Handler registrationHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message msg) {
-                Intent res = (Intent) msg.obj;
-                registerResult.add(res);
-            }
-        };
-        Messenger messenger = new Messenger(registrationHandler);
-        internalUnregister(messenger, subtype);
+    private int getGcmVersion() {
+        PackageManager pm = mContext.getPackageManager();
         try {
-            Intent regIntent = registerResult.poll(REGISTER_TIMEOUT, TimeUnit.MILLISECONDS);
-            if (regIntent == null) {
-                throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            }
-            String unregistered = regIntent.getStringExtra(EXTRA_UNREGISTERED);
-            if (unregistered != null) {
-                // All done
-                return;
-            }
-            String err = regIntent.getStringExtra(C2DM_EXTRA_ERROR);
-            if (err != null) {
-                throw new IOException(err);
-            } else {
-                throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException(e.getMessage());
+            PackageInfo packageInfo = pm.getPackageInfo(GOOGLE_PLAY_SERVICES_PACKAGE, 0);
+            return packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            // No problem
         }
-    }
-
-    private void internalUnregister(Messenger messenger, String subtype) {
-        Intent intent = new Intent(ACTION_C2DM_UNREGISTER);
-        intent.setPackage(GOOGLE_PLAY_SERVICES_PACKAGE);
-        if (subtype != null) {
-            intent.putExtra("subtype", subtype);
-        }
-        intent.putExtra(EXTRA_MESSENGER, messenger);
-        setPackageNameExtra(intent);
-        mContext.startService(intent);
+        return -1;
     }
 }

@@ -70,6 +70,20 @@ void GCMDriver::Register(const std::string& app_id,
 
 void GCMDriver::Unregister(const std::string& app_id,
                            const UnregisterCallback& callback) {
+  UnregisterInternal(app_id, nullptr /* sender_id */, callback);
+}
+
+void GCMDriver::UnregisterWithSenderId(
+    const std::string& app_id,
+    const std::string& sender_id,
+    const UnregisterCallback& callback) {
+  DCHECK(!sender_id.empty());
+  UnregisterInternal(app_id, &sender_id, callback);
+}
+
+void GCMDriver::UnregisterInternal(const std::string& app_id,
+                                   const std::string* sender_id,
+                                   const UnregisterCallback& callback) {
   DCHECK(!app_id.empty());
   DCHECK(!callback.is_null());
 
@@ -88,7 +102,10 @@ void GCMDriver::Unregister(const std::string& app_id,
 
   unregister_callbacks_[app_id] = callback;
 
-  UnregisterImpl(app_id);
+  if (sender_id)
+    UnregisterWithSenderIdImpl(app_id, *sender_id);
+  else
+    UnregisterImpl(app_id);
 }
 
 void GCMDriver::Send(const std::string& app_id,
@@ -115,6 +132,11 @@ void GCMDriver::Send(const std::string& app_id,
   send_callbacks_[key] = callback;
 
   SendImpl(app_id, receiver_id, message);
+}
+
+void GCMDriver::UnregisterWithSenderIdImpl(const std::string& app_id,
+                                           const std::string& sender_id) {
+  NOTREACHED();
 }
 
 void GCMDriver::RegisterFinished(const std::string& app_id,

@@ -17,8 +17,8 @@ namespace {
 const char kNotificationsShownServiceWorkerKey[] =
     "notifications_shown_by_last_few_pushes";
 
-void CallGetNotificationsShownCallbackFromIO(
-    const PushMessagingService::GetNotificationsShownCallback& callback,
+void CallStringCallbackFromIO(
+    const PushMessagingService::StringCallback& callback,
     const std::string& data,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -37,14 +37,15 @@ void CallResultCallbackFromIO(
                           base::Bind(callback, success));
 }
 
-void GetNotificationsShownOnIO(
+void GetUserDataOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_wrapper,
     int64 service_worker_registration_id,
-    const PushMessagingService::GetNotificationsShownCallback& callback) {
+    const std::string& key,
+    const PushMessagingService::StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_wrapper->context()->storage()->GetUserData(
-      service_worker_registration_id, kNotificationsShownServiceWorkerKey,
-      base::Bind(&CallGetNotificationsShownCallbackFromIO, callback));
+      service_worker_registration_id, key,
+      base::Bind(&CallStringCallbackFromIO, callback));
 }
 
 void SetNotificationsShownOnIO(
@@ -73,20 +74,30 @@ void ClearPushRegistrationIDOnIO(
       base::Bind(&OnClearPushRegistrationServiceWorkerKey));
 }
 
+scoped_refptr<ServiceWorkerContextWrapper> GetServiceWorkerContext(
+    BrowserContext* browser_context, const GURL& origin) {
+  StoragePartition* partition =
+      BrowserContext::GetStoragePartitionForSite(browser_context, origin);
+  return make_scoped_refptr(
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext()));
+}
+
 }  // anonymous namespace
 
 // static
 void PushMessagingService::GetNotificationsShownByLastFewPushes(
     ServiceWorkerContext* service_worker_context,
     int64 service_worker_registration_id,
-    const GetNotificationsShownCallback& callback) {
+    const StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<ServiceWorkerContextWrapper> wrapper =
       static_cast<ServiceWorkerContextWrapper*>(service_worker_context);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&GetNotificationsShownOnIO,
+                          base::Bind(&GetUserDataOnIO,
                                      wrapper,
                                      service_worker_registration_id,
+                                     kNotificationsShownServiceWorkerKey,
                                      callback));
 }
 
@@ -110,22 +121,32 @@ void PushMessagingService::SetNotificationsShownByLastFewPushes(
 }
 
 // static
+void PushMessagingService::GetSenderId(BrowserContext* browser_context,
+                                       const GURL& origin,
+                                       int64 service_worker_registration_id,
+                                       const StringCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GetUserDataOnIO,
+                 GetServiceWorkerContext(browser_context, origin),
+                 service_worker_registration_id,
+                 kPushSenderIdServiceWorkerKey,
+                 callback));
+}
+
+// static
 void PushMessagingService::ClearPushRegistrationID(
     BrowserContext* browser_context,
     const GURL& origin,
     int64 service_worker_registration_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  StoragePartition* partition =
-      BrowserContext::GetStoragePartitionForSite(browser_context, origin);
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
-      static_cast<ServiceWorkerContextWrapper*>(
-          partition->GetServiceWorkerContext());
-
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&ClearPushRegistrationIDOnIO,
-                 service_worker_context,
+                 GetServiceWorkerContext(browser_context, origin),
                  service_worker_registration_id));
 }
 

@@ -37,10 +37,12 @@ public class GCMDriver {
 
     private long mNativeGCMDriverAndroid;
     private final Context mContext;
+    private final GoogleCloudMessagingV2 mGcm;
 
     private GCMDriver(long nativeGCMDriverAndroid, Context context) {
         mNativeGCMDriverAndroid = nativeGCMDriverAndroid;
         mContext = context;
+        mGcm = new GoogleCloudMessagingV2(context);
     }
 
     /**
@@ -72,18 +74,16 @@ public class GCMDriver {
     }
 
     @CalledByNative
-    private void register(final String appId, final String[] senderIds) {
+    private void register(final String appId, final String senderId) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
-                // TODO(johnme): Should check if GMS is installed on the device first. Ditto below.
                 try {
                     String subtype = appId;
-                    GoogleCloudMessagingV2 gcm = new GoogleCloudMessagingV2(mContext);
-                    String registrationId = gcm.register(subtype, senderIds);
+                    String registrationId = mGcm.subscribe(senderId, subtype, null);
                     return registrationId;
                 } catch (IOException ex) {
-                    Log.w(TAG, "GCMv2 registration failed for " + appId, ex);
+                    Log.w(TAG, "GCM subscription failed for " + appId + ", " + senderId, ex);
                     return "";
                 }
             }
@@ -96,17 +96,16 @@ public class GCMDriver {
     }
 
     @CalledByNative
-    private void unregister(final String appId) {
+    private void unregister(final String appId, final String senderId) {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 try {
                     String subtype = appId;
-                    GoogleCloudMessagingV2 gcm = new GoogleCloudMessagingV2(mContext);
-                    gcm.unregister(subtype);
+                    mGcm.unsubscribe(senderId, subtype, null);
                     return true;
                 } catch (IOException ex) {
-                    Log.w(TAG, "GCMv2 unregistration failed for " + appId, ex);
+                    Log.w(TAG, "GCM unsubscription failed for " + appId + ", " + senderId, ex);
                     return false;
                 }
             }

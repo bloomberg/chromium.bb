@@ -22,6 +22,7 @@ namespace content {
 class PushMessagingService;
 class ServiceWorkerContextWrapper;
 
+extern const char kPushSenderIdServiceWorkerKey[];
 extern const char kPushRegistrationIdServiceWorkerKey[];
 
 class PushMessagingMessageFilter : public BrowserMessageFilter {
@@ -95,11 +96,19 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void OnUnregister(int request_id, int64 service_worker_registration_id);
 
-  void DoUnregister(int request_id,
-                    int64 service_worker_registration_id,
-                    const GURL& requesting_origin,
-                    const std::string& push_registration_id,
-                    ServiceWorkerStatusCode service_worker_status);
+  void UnregisterHavingGottenPushRegistrationId(
+      int request_id,
+      int64 service_worker_registration_id,
+      const GURL& requesting_origin,
+      const std::string& push_registration_id,
+      ServiceWorkerStatusCode service_worker_status);
+
+  void UnregisterHavingGottenSenderId(
+      int request_id,
+      int64 service_worker_registration_id,
+      const GURL& requesting_origin,
+      const std::string& sender_id,
+      ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
   void ClearRegistrationData(int request_id,
