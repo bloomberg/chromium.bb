@@ -578,12 +578,18 @@ body.selecting #search-box {
 }
 
 #search-box paper-input-decorator /deep/ .focused-underline {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: white;
+  height: 1px;
+}
+
+#search-box.has-cursor,
+#search-box.has-text {
+  -webkit-margin-end: 12px;
 }
 
 #search-box.has-cursor input,
 #search-box.has-text input {
-  width: 176px;
+  width: 218px;
 }
 
 #search-box .clear {
@@ -1605,34 +1611,35 @@ body[drive='error'] #unmounted-panel > .error,
 }
 
 list.autocomplete-suggestions {
-  -webkit-margin-start: -38px;
-  background-color: rgb(250, 250, 250);
+  -webkit-margin-start: -36px;
+  background-color: white;
   border-radius: 3px;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
   box-sizing: border-box;  /* To match the width with the search box's. */
-  color: rgb(34, 34, 34);
+  color: rgb(90, 90, 90);
   flex: none;
   margin-top: 10px;
   overflow: hidden;
-  padding: 5px 0;
+  padding: 0;
   position: fixed;
-  width: 300px !important; /* This overrides the value specified by script. */
+  width: 260px !important; /* This overrides the value specified by script. */
   z-index: 550;
 }
 
 list.autocomplete-suggestions > li {
   align-items: center;
   display: flex;
-  padding: 3px 0;
+  height: 40px;
 }
 
 list.autocomplete-suggestions > li > div.detail-icon {
-  -webkit-margin-end: 6px;
-  -webkit-margin-start: 6px;
+  margin: 0 3px;
+  flex: none;
 }
 
 list.autocomplete-suggestions > li > div.detail-text {
   flex: auto;
+  margin: 0 4px;
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
@@ -1644,26 +1651,13 @@ list.autocomplete-suggestions > li > div.detail-text em {
 
 list.autocomplete-suggestions > li > div[search-icon] {
   background: -webkit-image-set(
-      url(../images/files/ui/search_icon_active.png) 1x,
-      url(../images/files/ui/2x/search_icon_active.png) 2x) center no-repeat;
-}
-
-list.autocomplete-suggestions > li[selected] > div[search-icon],
-list.autocomplete-suggestions > li[lead] > div[search-icon] {
-  background: -webkit-image-set(
-      url(../images/files/ui/search_icon_white.png) 1x,
-      url(../images/files/ui/2x/search_icon_white.png) 2x) center no-repeat;
+      url(../images/files/ui/search.png) 1x,
+      url(../images/files/ui/2x/search.png) 2x) center no-repeat;
 }
 
 list.autocomplete-suggestions > [selected],
 list.autocomplete-suggestions > [lead] {
-  background-color: rgb(66, 129, 244);
-  color: white;
-}
-
-list.autocomplete-suggestions > [selected] > div.detail-text em,
-list.autocomplete-suggestions > [lead] > div.detail-text em {
-  color: white;
+  background-color: rgb(222, 243, 254);
 }
 
 #gear-menu {
