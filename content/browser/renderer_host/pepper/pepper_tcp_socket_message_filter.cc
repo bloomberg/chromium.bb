@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -58,7 +57,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
       render_frame_id_(0),
-      ppapi_host_(host->GetPpapiHost()),
+      host_(host),
       factory_(factory),
       instance_(instance),
       state_(TCPSocketState::INITIAL),
@@ -70,9 +69,12 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       address_index_(0),
       socket_(new net::TCPSocket(NULL, net::NetLog::Source())),
       ssl_context_helper_(host->ssl_context_helper()),
-      pending_accept_(false) {
+      pending_accept_(false),
+      pending_read_on_unthrottle_(false),
+      pending_read_net_result_(0) {
   DCHECK(host);
   ++g_num_instances;
+  host_->AddInstanceObserver(instance_, this);
   if (!host->GetRenderFrameIDsForInstance(
           instance, &render_process_id_, &render_frame_id_)) {
     NOTREACHED();
@@ -88,7 +90,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       external_plugin_(host->external_plugin()),
       render_process_id_(0),
       render_frame_id_(0),
-      ppapi_host_(host->GetPpapiHost()),
+      host_(host),
       factory_(NULL),
       instance_(instance),
       state_(TCPSocketState::CONNECTED),
@@ -100,11 +102,14 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       address_index_(0),
       socket_(socket.Pass()),
       ssl_context_helper_(host->ssl_context_helper()),
-      pending_accept_(false) {
+      pending_accept_(false),
+      pending_read_on_unthrottle_(false),
+      pending_read_net_result_(0) {
   DCHECK(host);
   DCHECK_NE(version, ppapi::TCP_SOCKET_VERSION_1_0);
 
   ++g_num_instances;
+  host_->AddInstanceObserver(instance_, this);
   if (!host->GetRenderFrameIDsForInstance(
           instance, &render_process_id_, &render_frame_id_)) {
     NOTREACHED();
@@ -112,6 +117,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
 }
 
 PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
+  host_->RemoveInstanceObserver(instance_, this);
   if (socket_)
     socket_->Close();
   if (ssl_socket_)
@@ -168,6 +174,16 @@ int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
                                       OnMsgSetOption)
   PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
+}
+
+void PepperTCPSocketMessageFilter::OnThrottleStateChanged(bool is_throttled) {
+  if (pending_read_on_unthrottle_ && !is_throttled) {
+    DCHECK(read_buffer_);
+    OnReadCompleted(pending_read_reply_message_context_,
+                    pending_read_net_result_);
+    DCHECK(!read_buffer_);
+    pending_read_on_unthrottle_ = false;
+  }
 }
 
 int32_t PepperTCPSocketMessageFilter::OnMsgBind(
@@ -857,6 +873,13 @@ void PepperTCPSocketMessageFilter::OnReadCompleted(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(read_buffer_.get());
 
+  if (host_->IsThrottled(instance_)) {
+    pending_read_on_unthrottle_ = true;
+    pending_read_reply_message_context_ = context;
+    pending_read_net_result_ = net_result;
+    return;
+  }
+
   if (net_result > 0) {
     SendReadReply(
         context, PP_OK, std::string(read_buffer_->data(), net_result));
@@ -942,7 +965,8 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
     SendAcceptError(context, PP_ERROR_NOSPACE);
     return;
   }
-  int pending_host_id = ppapi_host_->AddPendingResourceHost(host.Pass());
+  int pending_host_id =
+      host_->GetPpapiHost()->AddPendingResourceHost(host.Pass());
   if (pending_host_id)
     SendAcceptReply(context, PP_OK, pending_host_id, local_addr, remote_addr);
   else

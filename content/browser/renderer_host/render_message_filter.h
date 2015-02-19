@@ -205,6 +205,9 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                                              bool is_external);
   void OnOpenChannelToPpapiBroker(int routing_id,
                                   const base::FilePath& path);
+  void OnPluginInstanceThrottleStateChange(int plugin_child_id,
+                                           int32 pp_instance,
+                                           bool is_throttled);
 #endif  // defined(ENABLE_PLUGINS)
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(int render_view_id,

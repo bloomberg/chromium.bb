@@ -395,6 +395,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnDidDeleteOutOfProcessPepperInstance)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
                         OnOpenChannelToPpapiBroker)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PluginInstanceThrottleStateChange,
+                        OnPluginInstanceThrottleStateChange)
 #endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
@@ -816,6 +818,15 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(
       render_process_id_,
       path,
       new OpenChannelToPpapiBrokerCallback(this, routing_id));
+}
+
+void RenderMessageFilter::OnPluginInstanceThrottleStateChange(
+    int plugin_child_id,
+    int32 pp_instance,
+    bool is_throttled) {
+  // Feature is only implemented for non-external Plugins.
+  PpapiPluginProcessHost::OnPluginInstanceThrottleStateChange(
+      plugin_child_id, pp_instance, is_throttled);
 }
 #endif  // defined(ENABLE_PLUGINS)
 

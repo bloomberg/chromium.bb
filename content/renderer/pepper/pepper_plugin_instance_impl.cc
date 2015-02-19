@@ -22,6 +22,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_input_event_traits.h"
+#include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -2048,6 +2049,10 @@ void PepperPluginInstanceImpl::OnDestruct() { render_frame_ = NULL; }
 
 void PepperPluginInstanceImpl::OnThrottleStateChange() {
   SendDidChangeView();
+
+  bool is_throttled = throttler_->IsThrottled();
+  render_frame()->Send(new ViewHostMsg_PluginInstanceThrottleStateChange(
+      module_->GetPluginChildId(), pp_instance_, is_throttled));
 }
 
 void PepperPluginInstanceImpl::OnHiddenForPlaceholder(bool hidden) {

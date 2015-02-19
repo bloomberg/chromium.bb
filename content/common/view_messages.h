@@ -1357,6 +1357,13 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
                     int /* routing_id */,
                     GURL /* document_url */,
                     base::FilePath /* plugin_path */)
+
+// A renderer sends this to the browser process when it throttles or unthrottles
+// a plugin instance for the Plugin Power Saver feature.
+IPC_MESSAGE_CONTROL3(ViewHostMsg_PluginInstanceThrottleStateChange,
+                     int /* plugin_child_id */,
+                     int32 /* pp_instance */,
+                     bool /* is_throttled */)
 #endif  // defined(ENABLE_PLUGINS)
 
 // Send the tooltip text for the current mouse position to the browser.

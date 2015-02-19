@@ -10,9 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/ssl_context_helper.h"
@@ -31,6 +33,13 @@ namespace content {
 
 class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
  public:
+  class InstanceObserver {
+   public:
+    // Called when the plugin instance is throttled or unthrottled because of
+    // the Plugin Power Saver feature. Invoked on the IO thread.
+    virtual void OnThrottleStateChanged(bool is_throttled) = 0;
+  };
+
   // The creator is responsible for calling set_plugin_process as soon as it is
   // known (we start the process asynchronously so it won't be known when this
    // object is created).
@@ -70,8 +79,14 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   // or destroyed. They allow us to maintain a mapping of PP_Instance to data
   // associated with the instance including view IDs in the browser process.
   void AddInstance(PP_Instance instance,
-                   const PepperRendererInstanceData& instance_data);
+                   const PepperRendererInstanceData& renderer_instance_data);
   void DeleteInstance(PP_Instance instance);
+
+  void AddInstanceObserver(PP_Instance instance, InstanceObserver* observer);
+  void RemoveInstanceObserver(PP_Instance instance, InstanceObserver* observer);
+
+  void OnThrottleStateChanged(PP_Instance instance, bool is_throttled);
+  bool IsThrottled(PP_Instance instance) const;
 
   scoped_refptr<IPC::MessageFilter> message_filter() {
     return message_filter_;
@@ -108,6 +123,16 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     BrowserPpapiHostImpl* browser_ppapi_host_impl_;
   };
 
+  struct InstanceData {
+    InstanceData(const PepperRendererInstanceData& renderer_data);
+    ~InstanceData();
+
+    PepperRendererInstanceData renderer_data;
+    bool is_throttled;
+
+    ObserverList<InstanceObserver> observer_list;
+  };
+
   // Reports plugin activity to the callback set with SetOnKeepaliveCallback.
   void OnKeepalive();
 
@@ -126,10 +151,8 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
 
   scoped_refptr<SSLContextHelper> ssl_context_helper_;
 
-  // Tracks all PP_Instances in this plugin and associated renderer-related
-  // data.
-  typedef std::map<PP_Instance, PepperRendererInstanceData> InstanceMap;
-  InstanceMap instance_map_;
+  // Tracks all PP_Instances in this plugin and associated data.
+  base::ScopedPtrHashMap<PP_Instance, InstanceData> instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
 
