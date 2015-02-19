@@ -303,10 +303,14 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void EnableChunkedUpload();
 
   // Appends the given bytes to the request's upload data to be sent
-  // immediately via chunked transfer encoding. When all data has been sent,
-  // call MarkEndOfChunks() to indicate the end of upload data.
+  // immediately via chunked transfer encoding. When all data has been added,
+  // set |is_last_chunk| to true to indicate the end of upload data.  All chunks
+  // but the last must have |bytes_len| > 0.
   //
   // This method may be called only after calling EnableChunkedUpload().
+  //
+  // Despite the name of this method, over-the-wire chunk boundaries will most
+  // likely not match the "chunks" appended with this function.
   void AppendChunkToUpload(const char* bytes,
                            int bytes_len,
                            bool is_last_chunk);

@@ -209,7 +209,6 @@ void URLRequest::AppendChunkToUpload(const char* bytes,
                                      bool is_last_chunk) {
   DCHECK(upload_data_stream_);
   DCHECK(upload_data_stream_->is_chunked());
-  DCHECK_GT(bytes_len, 0);
   upload_chunked_data_stream_->AppendData(bytes, bytes_len, is_last_chunk);
 }
 
