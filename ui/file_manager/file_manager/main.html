@@ -319,7 +319,8 @@
     <div class="dialog-header">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="cancel-selection-button-wrapper">
-        <paper-button id="cancel-selection-button" tabindex="-1">
+        <paper-button id="cancel-selection-button" tabindex="-1"
+              i18n-values="aria-label:CANCEL_SELECTION_BUTTON_LABEL">
           <span class="icon-arrow-back"></span>
           <span i18n-content="CANCEL_SELECTION_BUTTON_LABEL"></span>
         </paper-button>
@@ -327,15 +328,18 @@
       <div id="files-selected-label"></div>
       <div class="spacer"></div>
       <button id="tasks" class="combobutton" menu="#tasks-menu"
-              tabindex="7">
+              tabindex="7"
+              i18n-values="aria-label:TASKS_BUTTON_LABEL">
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="search-button" class="icon-button" tabindex="8">
+      <button id="search-button" class="icon-button" tabindex="8"
+              i18n-values="aria-label:SEARCH_TEXT_LABEL">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <div id="search-box">
         <paper-input-decorator i18n-values="label:SEARCH_TEXT_LABEL">
-          <input is="core-input" type="search" tabindex="-1" i18n-values="aria-label:SEARCH_TEXT_LABEL">
+          <input is="core-input" type="search" tabindex="-1"
+                 i18n-values="aria-label:SEARCH_TEXT_LABEL">
         </paper-input-decorator>
         <button class="clear" tabindex="-1"></button>
       </div>
@@ -365,7 +369,8 @@
         <core-icon icon="arrow-drop-down"></core-icon>
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
-      <button id="view-button" class="icon-button" tabindex="13">
+      <button id="view-button" class="icon-button" tabindex="13"
+              i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="gear-button" class="icon-button" tabindex="14" menu="#gear-menu"

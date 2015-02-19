@@ -445,8 +445,17 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item label, showing dialog to share the selected file.">
     Share
   </message>
+  <message name="IDS_FILE_BROWSER_TASKS_BUTTON_LABEL" desc="Label for button that selects a task to open the current file.">
+    Tasks
+  </message>
   <message name="IDS_FILE_BROWSER_CANCEL_SELECTION_BUTTON_LABEL" desc="Label for button that unselects all selected items.">
     Cancel selection
+  </message>
+  <message name="IDS_FILE_BROWSER_CHANGE_TO_LISTVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'list view' mode.">
+    List view
+  </message>
+  <message name="IDS_FILE_BROWSER_CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'thumbnail view' mode.">
+    Thumbnail view
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TITLE" desc="Title of the cloud import feature.">
     Cloud backup

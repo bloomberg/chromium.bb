@@ -535,6 +535,7 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
     ejectButton.addEventListener(
         'mousedown', function(event) { event.stopPropagation() });
     ejectButton.className = 'root-eject';
+    ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.addEventListener('click', function(event) {
       event.stopPropagation();
       var unmountCommand = cr.doc.querySelector('command#unmount');

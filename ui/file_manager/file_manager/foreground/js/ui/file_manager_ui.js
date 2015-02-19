@@ -369,8 +369,12 @@ FileManagerUI.prototype.relayout = function() {
 FileManagerUI.prototype.setCurrentListType = function(listType) {
   this.listContainer.setCurrentListType(listType);
 
-  this.toggleViewButton.classList.toggle(
-      'thumbnail', listType === ListContainer.ListType.DETAIL);
+  var isListView = (listType === ListContainer.ListType.DETAIL);
+  this.toggleViewButton.classList.toggle('thumbnail', isListView);
+
+  var label = isListView ? str('CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL') :
+                           str('CHANGE_TO_LISTVIEW_BUTTON_LABEL');
+  this.toggleViewButton.setAttribute('aria-label', label);
   this.relayout();
 };
 
