@@ -209,7 +209,7 @@ void InputInjectorWin::Core::Stop() {
     return;
   }
 
-  clipboard_->Stop();
+  clipboard_.reset();
 }
 
 InputInjectorWin::Core::~Core() {}

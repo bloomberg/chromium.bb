@@ -33,7 +33,6 @@ class ClipboardMac : public Clipboard {
   // Must be called on the UI thread.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
-  void Stop() override;
 
  private:
   void CheckClipboardForChanges();
@@ -88,11 +87,6 @@ void ClipboardMac::InjectClipboardEvent(const protocol::ClipboardEvent& event) {
   // Update local change-count to prevent this change from being picked up by
   // CheckClipboardForChanges.
   current_change_count_ = [[NSPasteboard generalPasteboard] changeCount];
-}
-
-void ClipboardMac::Stop() {
-  clipboard_polling_timer_.reset();
-  client_clipboard_.reset();
 }
 
 void ClipboardMac::CheckClipboardForChanges() {

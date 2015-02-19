@@ -58,13 +58,6 @@ void ClipboardAura::InjectClipboardEvent(
   current_change_count_++;
 }
 
-void ClipboardAura::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  clipboard_polling_timer_.Stop();
-  client_clipboard_.reset();
-};
-
 void ClipboardAura::SetPollingIntervalForTesting(
     base::TimeDelta polling_interval) {
   DCHECK(thread_checker_.CalledOnValidThread());

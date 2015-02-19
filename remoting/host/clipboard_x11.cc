@@ -25,7 +25,6 @@ class ClipboardX11 : public Clipboard,
   // Clipboard interface.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
-  void Stop() override;
 
   // MessageLoopForIO::Watcher interface.
   void OnFileCanReadWithoutBlocking(int fd) override;
@@ -56,7 +55,8 @@ ClipboardX11::ClipboardX11()
 }
 
 ClipboardX11::~ClipboardX11() {
-  Stop();
+  if (display_)
+    XCloseDisplay(display_);
 }
 
 void ClipboardX11::Start(
@@ -85,16 +85,6 @@ void ClipboardX11::Start(
 void ClipboardX11::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   x_server_clipboard_.SetClipboard(event.mime_type(), event.data());
-}
-
-void ClipboardX11::Stop() {
-  client_clipboard_.reset();
-  x_connection_watcher_.StopWatchingFileDescriptor();
-
-  if (display_) {
-    XCloseDisplay(display_);
-    display_ = nullptr;
-  }
 }
 
 void ClipboardX11::OnFileCanReadWithoutBlocking(int fd) {

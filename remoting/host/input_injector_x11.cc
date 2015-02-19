@@ -618,7 +618,7 @@ void InputInjectorX11::Core::Stop() {
     return;
   }
 
-  clipboard_->Stop();
+  clipboard_.reset();
 }
 
 }  // namespace

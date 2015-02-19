@@ -34,7 +34,6 @@ class ClipboardAura : public Clipboard {
   // Clipboard interface.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
-  void Stop() override;
 
   // Overrides the clipboard polling interval for unit test.
   void SetPollingIntervalForTesting(base::TimeDelta polling_interval);

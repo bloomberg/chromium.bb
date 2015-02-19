@@ -327,7 +327,7 @@ void InputInjectorMac::Core::Stop() {
     return;
   }
 
-  clipboard_->Stop();
+  clipboard_.reset();
 }
 
 InputInjectorMac::Core::~Core() {}

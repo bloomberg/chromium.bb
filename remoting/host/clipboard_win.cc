@@ -107,12 +107,12 @@ namespace remoting {
 class ClipboardWin : public Clipboard {
  public:
   ClipboardWin();
+  ~ClipboardWin() override;
 
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
   virtual void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) override;
-  virtual void Stop() override;
 
  private:
   void OnClipboardUpdate();
@@ -136,6 +136,11 @@ class ClipboardWin : public Clipboard {
 ClipboardWin::ClipboardWin()
     : add_clipboard_format_listener_(nullptr),
       remove_clipboard_format_listener_(nullptr) {
+}
+
+ClipboardWin::~ClipboardWin() {
+  if (window_ && remove_clipboard_format_listener_)
+    (*remove_clipboard_format_listener_)(window_->hwnd());
 }
 
 void ClipboardWin::Start(
@@ -177,15 +182,6 @@ void ClipboardWin::Start(
       LOG(WARNING) << "AddClipboardFormatListener() failed: " << GetLastError();
     }
   }
-}
-
-void ClipboardWin::Stop() {
-  client_clipboard_.reset();
-
-  if (window_ && remove_clipboard_format_listener_)
-    (*remove_clipboard_format_listener_)(window_->hwnd());
-
-  window_.reset();
 }
 
 void ClipboardWin::InjectClipboardEvent(

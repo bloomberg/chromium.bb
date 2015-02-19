@@ -25,9 +25,6 @@ class Clipboard {
   // Initialises any objects needed to read from or write to the clipboard.
   virtual void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;
 
-  // Destroys any objects initialised by Start().
-  virtual void Stop() = 0;
-
   // Writes an item to the clipboard. It must be called after Start().
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event) = 0;
 

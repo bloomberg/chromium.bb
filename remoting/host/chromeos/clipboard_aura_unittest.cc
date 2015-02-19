@@ -84,7 +84,6 @@ void ClipboardAuraTest::TearDown() {
 }
 
 void ClipboardAuraTest::StopAndResetClipboard() {
-  clipboard_->Stop();
   clipboard_.reset();
 }
 
