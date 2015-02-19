@@ -13,13 +13,15 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/histogram_tester.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -77,8 +79,7 @@ const std::string kErrorBody = "bad";
 class DataReductionProxyUsageStatsTest : public testing::Test {
  public:
   DataReductionProxyUsageStatsTest()
-      : loop_proxy_(base::MessageLoopProxy::current().get()),
-        context_(true) {
+      : context_(true) {
     context_.Init();
 
     // The |test_job_factory_| takes ownership of the interceptor.
@@ -88,11 +89,17 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
 
     context_.set_job_factory(&test_job_factory_);
 
+    test_context_.reset(
+        new DataReductionProxyTestContext(
+            DataReductionProxyParams::kAllowed |
+                DataReductionProxyParams::kFallbackAllowed |
+                DataReductionProxyParams::kPromoAllowed,
+            TestDataReductionProxyParams::HAS_EVERYTHING &
+                ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+            DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
     mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
                                                NULL);
-    settings_.reset(new DataReductionProxySettings(
-        scoped_ptr<DataReductionProxyParamsMock>(
-            new DataReductionProxyParamsMock()).Pass()));
   }
 
   scoped_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
@@ -111,19 +118,15 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
     // Configure the interceptor to use the test job to handle the next request.
     test_job_interceptor_->set_main_intercept_job(test_job.get());
     fake_request->Start();
-    base::MessageLoop::current()->RunUntilIdle();
+    test_context_->RunUntilIdle();
 
     EXPECT_TRUE(fake_request->response_headers() != NULL);
     return fake_request.Pass();
   }
 
   bool IsUnreachable() const {
-    return settings_->IsDataReductionProxyUnreachable();
+    return test_context_->settings()->IsDataReductionProxyUnreachable();
   }
-
-  // Required for base::MessageLoopProxy::current().
-  base::MessageLoopForUI loop_;
-  base::MessageLoopProxy* loop_proxy_;
 
  protected:
   net::TestURLRequestContext context_;
@@ -133,7 +136,7 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
   // |test_job_interceptor_| is owned by |test_job_factory_|.
   net::TestJobInterceptor* test_job_interceptor_;
   net::URLRequestJobFactoryImpl test_job_factory_;
-  scoped_ptr<DataReductionProxySettings> settings_;
+  scoped_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
@@ -178,13 +181,14 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
         .WillRepeatedly(testing::Return(test_case.was_proxy_used));
 
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-        new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
-                                         loop_proxy_));
+        new DataReductionProxyUsageStats(
+            &mock_params_, test_context_->settings(),
+            test_context_->task_runner()));
 
     usage_stats->OnProxyFallback(fallback_proxy_server,
                                  net::ERR_PROXY_CONNECTION_FAILED);
     usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
-    base::MessageLoop::current()->RunUntilIdle();
+    test_context_->RunUntilIdle();
 
     EXPECT_EQ(test_case.is_unreachable, IsUnreachable());
   }
@@ -194,8 +198,9 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyUnreachableThenReachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
   scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-      new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
-                                       loop_proxy_));
+      new DataReductionProxyUsageStats(
+          &mock_params_, test_context_->settings(),
+          test_context_->task_runner()));
   EXPECT_CALL(mock_params_, IsDataReductionProxy(testing::_, testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(mock_params_,
@@ -205,12 +210,12 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyUnreachableThenReachable) {
   // proxy falls back
   usage_stats->OnProxyFallback(fallback_proxy_server,
                                net::ERR_PROXY_CONNECTION_FAILED);
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
   EXPECT_TRUE(IsUnreachable());
 
   // proxy succeeds
   usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
   EXPECT_FALSE(IsUnreachable());
 }
 
@@ -218,8 +223,9 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
   scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-      new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
-                                       loop_proxy_));
+      new DataReductionProxyUsageStats(
+          &mock_params_, test_context_->settings(),
+          test_context_->task_runner()));
   EXPECT_CALL(mock_params_,
               WasDataReductionProxyUsed(mock_url_request_.get(), testing::_))
       .WillOnce(testing::Return(true));
@@ -228,7 +234,7 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
 
   // Proxy succeeds.
   usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
   EXPECT_FALSE(IsUnreachable());
 
   // Then proxy falls back indefinitely.
@@ -240,7 +246,7 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
                                net::ERR_PROXY_CONNECTION_FAILED);
   usage_stats->OnProxyFallback(fallback_proxy_server,
                                net::ERR_PROXY_CONNECTION_FAILED);
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
   EXPECT_TRUE(IsUnreachable());
 }
 
@@ -423,8 +429,9 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-        new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
-                                         loop_proxy_));
+        new DataReductionProxyUsageStats(
+            &mock_params_, test_context_->settings(),
+            test_context_->task_runner()));
 
     std::string raw_headers(test_cases[i].headers);
     HeadersToRaw(&raw_headers);
@@ -492,8 +499,9 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
-        new DataReductionProxyUsageStats(&mock_params_, settings_.get(),
-                                         loop_proxy_));
+        new DataReductionProxyUsageStats(
+            &mock_params_, test_context_->settings(),
+            test_context_->task_runner()));
 
     std::string raw_headers("HTTP/1.1 200 OK\n"
                             "Via: 1.1 Chrome-Compression-Proxy\n");
@@ -562,8 +570,8 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
       : context_(true) {}
 
   ~DataReductionProxyUsageStatsEndToEndTest() override {
-    io_data_->ShutdownOnUIThread();
-    base::MessageLoop::current()->RunUntilIdle();
+    test_context_->io_data()->ShutdownOnUIThread();
+    test_context_->RunUntilIdle();
   }
 
   void SetUp() override {
@@ -571,34 +579,27 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     // test bypassed bytes due to proxy fallbacks. This way, a test just needs
     // to cause one proxy fallback in order for the data reduction proxy to be
     // fully bypassed.
-    settings_.reset(new DataReductionProxySettings(
-        scoped_ptr<DataReductionProxyParams>(new TestDataReductionProxyParams(
-            TestDataReductionProxyParams::kAllowed,
-            TestDataReductionProxyParams::HAS_ORIGIN))));
-    RegisterSimpleProfilePrefs(simple_prefs_.registry());
+    test_context_.reset(new DataReductionProxyTestContext(
+        DataReductionProxyParams::kAllowed,
+        TestDataReductionProxyParams::HAS_ORIGIN,
+        DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION));
+    TestingPrefServiceSimple* simple_prefs = test_context_->pref_service();
+    RegisterSimpleProfilePrefs(simple_prefs->registry());
 
     BooleanPrefMember enabled;
-    enabled.Init(prefs::kDataReductionProxyEnabled, &simple_prefs_);
+    enabled.Init(prefs::kDataReductionProxyEnabled, simple_prefs);
     enabled.SetValue(true);
     enabled.Destroy();
 
-    scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs(
-        new DataReductionProxyStatisticsPrefs(
-            &simple_prefs_, loop_.message_loop_proxy(), base::TimeDelta()));
-    io_data_.reset(new DataReductionProxyIOData(
-        Client::UNKNOWN, statistics_prefs.Pass(), settings_.get(), &net_log_,
-        loop_.message_loop_proxy(), loop_.message_loop_proxy()));
+    settings()->SetProxyConfigurator(test_context_->configurator());
+    settings()->InitDataReductionProxySettings(
+        test_context_->pref_service(), test_context_->CreateStatisticsPrefs(),
+        test_context_->request_context(), test_context_->net_log(),
+        test_context_->event_store());
+    test_context_->io_data()->SetDataReductionProxyStatisticsPrefs(
+        settings()->statistics_prefs());
 
-    settings_->SetProxyConfigurator(io_data_->configurator());
-    context_getter_ = new net::TrivialURLRequestContextGetter(
-        &context_, loop_.message_loop_proxy());
-    settings_->InitDataReductionProxySettings(
-        &simple_prefs_, io_data_->PassStatisticsPrefs(), context_getter_.get(),
-        &net_log_, io_data_->event_store());
-    io_data_->SetDataReductionProxyStatisticsPrefs(
-        settings_->statistics_prefs());
-
-    network_delegate_ = io_data_->CreateNetworkDelegate(
+    network_delegate_ = test_context_->io_data()->CreateNetworkDelegate(
         scoped_ptr<net::NetworkDelegate>(new net::TestNetworkDelegate()), true);
     context_.set_network_delegate(network_delegate_.get());
 
@@ -607,14 +608,14 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(
         scoped_ptr<net::URLRequestJobFactory>(
             new net::URLRequestJobFactoryImpl()),
-        io_data_->CreateInterceptor().Pass()));
+        test_context_->io_data()->CreateInterceptor().Pass()));
     context_.set_job_factory(job_factory_.get());
 
-    io_data_->InitOnUIThread(&simple_prefs_);
-    io_data_->configurator()->Enable(false, true,
-                                     settings_->params()->origin().ToURI(),
-                                     std::string(), std::string());
-    base::MessageLoop::current()->RunUntilIdle();
+    test_context_->io_data()->InitOnUIThread(simple_prefs);
+    test_context_->configurator()->Enable(false, true,
+                                          params()->origin().ToURI(),
+                                          std::string(), std::string());
+    test_context_->RunUntilIdle();
   }
 
   // Create and execute a fake request using the data reduction proxy stack.
@@ -662,7 +663,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     request->set_method("GET");
     request->SetLoadFlags(net::LOAD_NORMAL);
     request->Start();
-    base::MessageLoop::current()->RunUntilIdle();
+    test_context_->RunUntilIdle();
   }
 
   void set_proxy_service(net::ProxyService* proxy_service) {
@@ -673,8 +674,12 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     context_.set_host_resolver(host_resolver);
   }
 
-  const DataReductionProxySettings* settings() const {
-    return settings_.get();
+  DataReductionProxySettings* settings() const {
+    return test_context_->settings();
+  }
+
+  const DataReductionProxyParams* params() const {
+    return test_context_->config()->test_params();
   }
 
   void ClearBadProxies() {
@@ -739,17 +744,12 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO loop_;
   net::TestDelegate delegate_;
-  net::NetLog net_log_;
-  TestingPrefServiceSimple simple_prefs_;
   net::MockClientSocketFactory mock_socket_factory_;
-  scoped_ptr<DataReductionProxyIOData> io_data_;
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
-  scoped_ptr<DataReductionProxySettings> settings_;
   net::TestURLRequestContext context_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  scoped_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 TEST_F(DataReductionProxyUsageStatsEndToEndTest, BypassedBytesNoRetry) {

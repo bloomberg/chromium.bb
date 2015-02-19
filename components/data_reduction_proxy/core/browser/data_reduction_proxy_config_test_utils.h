@@ -16,9 +16,50 @@ class URLFetcher;
 
 namespace data_reduction_proxy {
 
-class MockDataReductionProxyConfig : public DataReductionProxyConfig {
+class TestDataReductionProxyParams;
+
+// Test version of |DataReductionProxyConfig|, which uses an underlying
+// |TestDataReductionProxyParams| to permit overriding of default values
+// returning from |DataReductionProxyParams|, as well as exposing methods to
+// change the underlying state.
+class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
-  MockDataReductionProxyConfig();
+  // Creates a default |TestDataReductionProxyConfig| which uses the following
+  // |DataReductionProxyParams| flags:
+  // kAllowed | kFallbackAllowed | kPromoAllowed
+  TestDataReductionProxyConfig();
+  // Creates a |TestDataReductionProxyConfig| with the provided |flags|.
+  TestDataReductionProxyConfig(int flags);
+  ~TestDataReductionProxyConfig() override;
+
+  void GetNetworkList(net::NetworkInterfaceList* interfaces,
+                      int policy) override;
+
+  // Allows tests to reset the params being used for configuration.
+  void ResetParamFlagsForTest(int flags);
+
+  // Retrieves the test params being used for the configuration.
+  TestDataReductionProxyParams* test_params();
+
+  // Allows tests to set the internal state.
+  void SetStateForTest(bool enabled_by_user,
+                       bool alternative_enabled_by_user,
+                       bool restricted_by_carrier,
+                       bool at_startup);
+
+  net::NetworkInterfaceList* interfaces() {
+    return network_interfaces_.get();
+  }
+
+ private:
+  scoped_ptr<net::NetworkInterfaceList> network_interfaces_;
+};
+
+// A |TestDataReductionProxyConfig| which permits mocking of methods for
+// testing.
+class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
+ public:
+  // Creates a |MockDataReductionProxyConfig| with the provided |flags|.
   MockDataReductionProxyConfig(int flags);
   ~MockDataReductionProxyConfig() override;
 
@@ -28,20 +69,10 @@ class MockDataReductionProxyConfig : public DataReductionProxyConfig {
                void(bool enabled, bool restricted, bool at_startup));
 
   // SetProxyConfigs should always call LogProxyState exactly once.
-  virtual void SetProxyConfigs(bool enabled,
-                               bool alternative_enabled,
-                               bool restricted,
-                               bool at_startup) override;
-
-  virtual void GetNetworkList(net::NetworkInterfaceList* interfaces,
-                              int policy) override;
-
-  net::NetworkInterfaceList* interfaces() {
-    return network_interfaces_.get();
-  }
-
- private:
-  scoped_ptr<net::NetworkInterfaceList> network_interfaces_;
+  void SetProxyConfigs(bool enabled,
+                       bool alternative_enabled,
+                       bool restricted,
+                       bool at_startup) override;
 };
 
 }  // namespace data_reduction_proxy

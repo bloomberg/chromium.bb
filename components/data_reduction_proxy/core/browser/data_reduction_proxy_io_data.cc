@@ -56,6 +56,9 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     statistics_prefs_ = temporary_statistics_prefs_->GetWeakPtr();
 }
 
+DataReductionProxyIOData::DataReductionProxyIOData() : shutdown_on_ui_(false) {
+}
+
 DataReductionProxyIOData::~DataReductionProxyIOData() {
   DCHECK(shutdown_on_ui_);
 }

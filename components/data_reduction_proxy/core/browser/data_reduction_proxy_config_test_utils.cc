@@ -12,13 +12,13 @@
 
 namespace data_reduction_proxy {
 
-MockDataReductionProxyConfig::MockDataReductionProxyConfig()
-    : MockDataReductionProxyConfig(DataReductionProxyParams::kAllowed |
+TestDataReductionProxyConfig::TestDataReductionProxyConfig()
+    : TestDataReductionProxyConfig(DataReductionProxyParams::kAllowed |
                                    DataReductionProxyParams::kFallbackAllowed |
                                    DataReductionProxyParams::kPromoAllowed) {
 }
 
-MockDataReductionProxyConfig::MockDataReductionProxyConfig(int flags)
+TestDataReductionProxyConfig::TestDataReductionProxyConfig(int flags)
     : DataReductionProxyConfig(
           scoped_ptr<TestDataReductionProxyParams>(
               new TestDataReductionProxyParams(
@@ -28,6 +28,46 @@ MockDataReductionProxyConfig::MockDataReductionProxyConfig(int flags)
                       ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
               .Pass()) {
   network_interfaces_.reset(new net::NetworkInterfaceList());
+}
+
+TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
+}
+
+void TestDataReductionProxyConfig::GetNetworkList(
+    net::NetworkInterfaceList* interfaces,
+    int policy) {
+  for (size_t i = 0; i < network_interfaces_->size(); ++i)
+    interfaces->push_back(network_interfaces_->at(i));
+}
+
+void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
+  params_ = make_scoped_ptr(
+                new TestDataReductionProxyParams(
+                    flags,
+                    TestDataReductionProxyParams::HAS_EVERYTHING &
+                        ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+                        ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN))
+                .Pass();
+}
+
+TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {
+  return static_cast<TestDataReductionProxyParams*>(params_.get());
+}
+
+void TestDataReductionProxyConfig::SetStateForTest(
+    bool enabled_by_user,
+    bool alternative_enabled_by_user,
+    bool restricted_by_carrier,
+    bool at_startup) {
+  enabled_by_user_ = enabled_by_user;
+  alternative_enabled_by_user_ = alternative_enabled_by_user;
+  restricted_by_carrier_ = restricted_by_carrier;
+  SetProxyConfigs(enabled_by_user_, alternative_enabled_by_user_,
+                  restricted_by_carrier_, at_startup);
+}
+
+MockDataReductionProxyConfig::MockDataReductionProxyConfig(int flags)
+    : TestDataReductionProxyConfig(flags) {
 }
 
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
@@ -40,15 +80,6 @@ void MockDataReductionProxyConfig::SetProxyConfigs(bool enabled,
   EXPECT_CALL(*this, LogProxyState(enabled, restricted, at_startup)).Times(1);
   DataReductionProxyConfig::SetProxyConfigs(enabled, alternative_enabled,
                                             restricted, at_startup);
-}
-
-void MockDataReductionProxyConfig::GetNetworkList(
-    net::NetworkInterfaceList* interfaces,
-    int policy) {
-  if (!network_interfaces_.get())
-    return;
-  for (size_t i = 0; i < network_interfaces_->size(); ++i)
-    interfaces->push_back(network_interfaces_->at(i));
 }
 
 }  // namespace data_reduction_proxy

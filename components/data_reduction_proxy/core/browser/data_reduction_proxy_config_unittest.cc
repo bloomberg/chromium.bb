@@ -5,10 +5,9 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/test_simple_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -38,11 +37,15 @@ class DataReductionProxyConfigTest : public testing::Test {
   ~DataReductionProxyConfigTest() override {}
 
   void SetUp() override {
-    task_runner_ = new base::TestSimpleTaskRunner();
-    request_context_ = new net::TestURLRequestContextGetter(task_runner_.get());
-    event_store_.reset(new DataReductionProxyEventStore(task_runner_.get()));
-    configurator_.reset(new TestDataReductionProxyConfigurator(
-        task_runner_.get(), &net_log_, event_store_.get()));
+    test_context_.reset(new DataReductionProxyTestContext(
+        DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed,
+        TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+        DataReductionProxyTestContext::USE_MOCK_CONFIG |
+            DataReductionProxyTestContext::USE_TEST_CONFIGURATOR));
 
     ResetSettings(true, true, false, true, false);
 
@@ -71,14 +74,9 @@ class DataReductionProxyConfigTest : public testing::Test {
       flags |= DataReductionProxyParams::kPromoAllowed;
     if (holdback)
       flags |= DataReductionProxyParams::kHoldback;
-    config_.reset(new MockDataReductionProxyConfig(flags));
-    MockDataReductionProxyConfig* config =
-        static_cast<MockDataReductionProxyConfig*>(config_.get());
-    EXPECT_CALL(*config, GetURLFetcherForProbe()).Times(0);
-    EXPECT_CALL(*config, LogProxyState(_, _, _)).Times(0);
-    config_->InitDataReductionProxyConfig(
-        task_runner_.get(), &net_log_, request_context_.get(),
-        configurator_.get(), event_store_.get());
+    config()->ResetParamFlagsForTest(flags);
+    EXPECT_CALL(*config(), GetURLFetcherForProbe()).Times(0);
+    EXPECT_CALL(*config(), LogProxyState(_, _, _)).Times(0);
   }
 
   void SetProbeResult(const std::string& test_url,
@@ -116,11 +114,11 @@ class DataReductionProxyConfigTest : public testing::Test {
                             bool expected_restricted,
                             bool expected_fallback_restricted) {
     SetProbeResult(probe_url, response,
-                   FetchResult(!config_->restricted_by_carrier_,
+                   FetchResult(!config()->restricted_by_carrier_,
                                request_succeeded && (response == "OK")),
                    request_succeeded, 1);
-    config_->OnIPAddressChanged();
-    base::MessageLoop::current()->RunUntilIdle();
+    config()->OnIPAddressChanged();
+    test_context_->RunUntilIdle();
     CheckProxyConfigs(true, expected_restricted, expected_fallback_restricted);
   }
 
@@ -135,31 +133,23 @@ class DataReductionProxyConfigTest : public testing::Test {
     return FAILED_PROXY_ALREADY_DISABLED;
   }
 
-  void CheckInitDataReductionProxy(bool enabled_at_startup) {
-    config_->InitDataReductionProxyConfig(
-        task_runner_.get(), &net_log_, request_context_.get(),
-        configurator_.get(), event_store_.get());
-
-    base::MessageLoop::current()->RunUntilIdle();
+  void RunUntilIdle() {
+    test_context_->RunUntilIdle();
   }
 
-  MockDataReductionProxyConfig* config() { return config_.get(); }
+  MockDataReductionProxyConfig* config() {
+    return test_context_->mock_config();
+  }
 
   TestDataReductionProxyConfigurator* configurator() {
-    return configurator_.get();
+    return test_context_->test_configurator();
   }
 
   TestDataReductionProxyParams* params() { return expected_params_.get(); }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  scoped_ptr<TestDataReductionProxyConfigurator> configurator_;
-  scoped_ptr<MockDataReductionProxyConfig> config_;
+  scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
-  base::Time last_update_time_;
-  net::CapturingNetLog net_log_;
-  scoped_ptr<DataReductionProxyEventStore> event_store_;
 };
 
 TEST_F(DataReductionProxyConfigTest, TestGetDataReductionProxyOrigin) {
@@ -251,7 +241,6 @@ TEST_F(DataReductionProxyConfigTest, TestSetProxyConfigsHoldback) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
-  base::MessageLoopForUI loop;
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->restricted_by_carrier_ = false;
@@ -277,7 +266,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
       net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
       ));
   config()->OnIPAddressChanged();
-  base::MessageLoop::current()->RunUntilIdle();
+  RunUntilIdle();
   CheckProxyConfigs(false, false, false);
 
   // Check that the proxy is re-enabled if a non-VPN connection is later used.

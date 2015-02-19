@@ -118,6 +118,11 @@ class DataReductionProxyIOData {
   }
 
  private:
+  friend class TestDataReductionProxyIOData;
+
+  // Used for testing.
+  DataReductionProxyIOData();
+
   // The type of Data Reduction Proxy client.
   Client client_;
 

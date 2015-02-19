@@ -224,6 +224,7 @@ class DataReductionProxySettings
  private:
   friend class DataReductionProxySettingsTestBase;
   friend class DataReductionProxySettingsTest;
+  friend class DataReductionProxyTestContext;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestAuthenticationInit);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,

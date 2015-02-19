@@ -116,6 +116,7 @@ class DataReductionProxyConfig
 
  private:
   friend class DataReductionProxyConfigTest;
+  friend class TestDataReductionProxyConfig;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestOnIPAddressChanged);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, TestSetProxyConfigs);
