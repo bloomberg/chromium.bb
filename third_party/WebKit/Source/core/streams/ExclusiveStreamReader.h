@@ -43,7 +43,7 @@ public:
     bool hasPendingActivity() const override;
     void stop() override;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     using ReleasedPromise = ScriptPromiseProperty<Member<ExclusiveStreamReader>, ToV8UndefinedGenerator, ToV8UndefinedGenerator>;

@@ -22,7 +22,7 @@ public:
         return (new PromiseRaceFulfillHandler(resolver))->bindToV8Function();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_resolver);
         ScriptFunction::trace(visitor);
@@ -48,7 +48,7 @@ public:
         return (new PromiseRaceRejectHandler(resolver))->bindToV8Function();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_resolver);
         ScriptFunction::trace(visitor);
@@ -186,7 +186,7 @@ void ExclusiveStreamReader::stop()
     ActiveDOMObject::stop();
 }
 
-void ExclusiveStreamReader::trace(Visitor* visitor)
+DEFINE_TRACE(ExclusiveStreamReader)
 {
     visitor->trace(m_stream);
     visitor->trace(m_released);

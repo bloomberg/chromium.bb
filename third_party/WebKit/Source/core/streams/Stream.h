@@ -85,7 +85,7 @@ public:
     virtual void resume() override;
     virtual void stop() override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     Stream(ExecutionContext*, const String& mediaType);

@@ -61,7 +61,7 @@ class MockUnderlyingSource : public GarbageCollectedFinalized<MockUnderlyingSour
     USING_GARBAGE_COLLECTED_MIXIN(MockUnderlyingSource);
 public:
     ~MockUnderlyingSource() override { }
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         UnderlyingSource::trace(visitor);
     }

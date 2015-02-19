@@ -73,7 +73,7 @@ public:
 
     bool hasPendingActivity() const override;
     void stop() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Returns the string representation of the given State.
     static String stateToString(State);

@@ -90,7 +90,7 @@ void Stream::stop()
     abort();
 }
 
-void Stream::trace(Visitor* visitor)
+DEFINE_TRACE(Stream)
 {
     ActiveDOMObject::trace(visitor);
 }

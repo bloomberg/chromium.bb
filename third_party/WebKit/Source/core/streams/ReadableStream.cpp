@@ -41,7 +41,7 @@ public:
         return (new ResolveWithReady(scriptState, stream))->bindToV8Function();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_stream);
         ScriptFunction::trace(visitor);
@@ -296,7 +296,7 @@ void ReadableStream::stop()
     ActiveDOMObject::stop();
 }
 
-void ReadableStream::trace(Visitor* visitor)
+DEFINE_TRACE(ReadableStream)
 {
     visitor->trace(m_source);
     visitor->trace(m_ready);

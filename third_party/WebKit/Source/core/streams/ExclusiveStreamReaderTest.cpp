@@ -56,7 +56,7 @@ public:
 
     void pullSource() override { }
     ScriptPromise cancelSource(ScriptState* scriptState, ScriptValue reason) { return ScriptPromise::cast(scriptState, reason); }
-    void trace(Visitor* visitor) override { UnderlyingSource::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { UnderlyingSource::trace(visitor); }
 };
 
 class PermissiveStrategy final : public StringStream::Strategy {

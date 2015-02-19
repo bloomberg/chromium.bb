@@ -64,7 +64,7 @@ public:
         virtual size_t size(const typename ChunkTypeTraits::PassType& chunk, ReadableStream*) { return ChunkTypeTraits::size(chunk); }
         virtual bool shouldApplyBackpressure(size_t totalQueueSize, ReadableStream*) = 0;
 
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
     class DefaultStrategy : public Strategy {
@@ -93,7 +93,7 @@ public:
     // as if multiple read-one-buffer calls were made).
     void readInternal(Deque<std::pair<typename ChunkTypeTraits::HoldType, size_t>>& queue);
 
-    void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_strategy);
         ReadableStream::trace(visitor);
