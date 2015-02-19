@@ -470,12 +470,17 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
     if (!fn || !Config::IsTraceMethod(fn, nullptr))
       return false;
 
-    // Currently, a manually dispatched class cannot have mixin bases (having
-    // one would add a vtable which we explicitly check against). This means
-    // that we can only make calls to a trace method of the same name. Revisit
-    // this if our mixin/vtable assumption changes.
-    if (fn->getName() != trace_->getName())
-      return false;
+    if (trace_->getName() == kTraceImplName) {
+      if (fn->getName() != kTraceName)
+        return false;
+    } else {
+      // Currently, a manually dispatched class cannot have mixin bases (having
+      // one would add a vtable which we explicitly check against). This means
+      // that we can only make calls to a trace method of the same name. Revisit
+      // this if our mixin/vtable assumption changes.
+      if (fn->getName() != trace_->getName())
+        return false;
+    }
 
     CXXRecordDecl* decl = 0;
     if (callee && callee->hasQualifier()) {
