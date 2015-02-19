@@ -558,7 +558,9 @@ importer.RuntimeCommandWidget.prototype.setDetailsVisible_ = function(visible) {
   } else {
     this.detailsPanel_.className = 'hidden';
     // transition duration is 200ms. Let's wait for 400ms.
-    ensureTransitionEndEvent(this.detailsPanel_, 400);
+    ensureTransitionEndEvent(
+        /** @type {!HTMLElement} */ (this.detailsPanel_),
+        400);
   }
 };
 
