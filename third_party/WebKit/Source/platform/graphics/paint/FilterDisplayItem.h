@@ -32,6 +32,7 @@ public:
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    virtual bool drawsContent() const override;
 
 private:
     BeginFilterDisplayItem(DisplayItemClient, PassRefPtr<ImageFilter>, const LayoutRect& bounds);

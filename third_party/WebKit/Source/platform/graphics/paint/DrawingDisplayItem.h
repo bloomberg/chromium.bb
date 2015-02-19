@@ -22,6 +22,7 @@ public:
 
     virtual void replay(GraphicsContext*);
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    virtual bool drawsContent() const override;
 
     PassRefPtr<const SkPicture> picture() const { return m_picture; }
 

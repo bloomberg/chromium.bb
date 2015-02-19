@@ -40,6 +40,12 @@ void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list
     list->appendFilterItem(*m_webFilterOperations, FloatRect(m_bounds));
 }
 
+bool BeginFilterDisplayItem::drawsContent() const
+{
+    // A filter with no inputs must produce its own content.
+    return m_imageFilter->countInputs() == 0;
+}
+
 #ifndef NDEBUG
 void BeginFilterDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {

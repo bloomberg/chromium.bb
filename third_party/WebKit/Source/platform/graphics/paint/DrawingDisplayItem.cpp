@@ -20,6 +20,11 @@ void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) co
     list->appendDrawingItem(m_picture.get());
 }
 
+bool DrawingDisplayItem::drawsContent() const
+{
+    return m_picture->approximateOpCount() > 0;
+}
+
 #ifndef NDEBUG
 void DrawingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {

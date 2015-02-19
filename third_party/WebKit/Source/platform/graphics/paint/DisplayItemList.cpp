@@ -28,7 +28,7 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 
     if (displayItem->isEnd()) {
         ASSERT(!m_newPaints.isEmpty());
-        if (m_newPaints.last()->isBegin()) {
+        if (m_newPaints.last()->isBegin() && !m_newPaints.last()->drawsContent()) {
             ASSERT(displayItem->isEndAndPairedWith(*m_newPaints.last()));
             // Remove the beginning display item of this empty pair.
             m_newPaints.removeLast();

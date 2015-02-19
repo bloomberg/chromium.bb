@@ -234,6 +234,8 @@ public:
     virtual bool isEndAndPairedWith(const DisplayItem& other) const { return false; }
 #endif
 
+    virtual bool drawsContent() const { return false; }
+
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
 
