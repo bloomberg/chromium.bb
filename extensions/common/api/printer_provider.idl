@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This API exposes events used by print manager to query printers controlled
-// by extensions, to query capabilities of them and to submit print jobs to
-// these printers.
+// The <code>chrome.printerProvider</code> API exposes events used by print
+// manager to query printers controlled by extensions, to query their
+// capabilities and to submit print jobs to these printers.
 namespace printerProvider {
-  // Error codes used by providing extensions in response to requests.
+  // Error codes returned in response to $(ref:onPrintRequested) event.
   enum PrintError {
     // Operation completed successfully.
     OK,
@@ -20,59 +20,68 @@ namespace printerProvider {
     INVALID_TICKET,
 
     // Document is invalid. For example, data may be corrupted or the format is
-    // incompatible with the Extension.
+    // incompatible with the extension.
     INVALID_DATA
   };
 
   // Printer description for $(ref:onGetPrintersRequested) event.
   dictionary PrinterInfo {
-    // Unique ID of printer.
+    // Unique printer ID.
     DOMString id;
 
-    // Human readable display name of printer.
+    // Printer's human readable name.
     DOMString name;
 
-    // Human readable description of printer.
+    // Printer's human readable description.
     DOMString? description;
   };
 
-  // Parameters of $(ref:onPrintRequested).
+  // Printing request parameters. Passed to $(ref:onPrintRequested) event.
   dictionary PrintJob {
-    // ID of the printer to submit the job.
+    // ID of the printer which should handle the job.
     DOMString printerId;
 
-    // print ticket in CJT format described at
-    // https://developers.google.com/cloud-print/docs/cdd#cjt
+    // Print ticket in
+    // <a href="https://developers.google.com/cloud-print/docs/cdd#cjt">
+    // CJT format</a>.
     object ticket;
 
-    // Content type of the document. Supported formats are "application/pdf" and
-    // "image/pwg-raster".
+    // The document content type. Supported formats are
+    // <code>"application/pdf"</code> and <code>"image/pwg-raster"</code>.
     DOMString contentType;
 
-    // Buffer with document to printer. Format must match |contentType|.
+    // Buffer containing the document to print. Format must match |contentType|.
     ArrayBuffer document;
   };
 
   callback PrintersCallback = void(PrinterInfo[] printerInfo);
+
+  // |capabilities|: Device capabilities in
+  // <a href="https://developers.google.com/cloud-print/docs/cdd#cdd">CDD
+  // format</a>.
   callback CapabilitiesCallback = void(object capabilities);
+
   callback PrintCallback = void(PrintError result);
 
   interface Events {
-    // Event fired when print manager requests printers provided by extension.
-    // |resultCallback| : callback to return printer list. Every listener must
+    // Event fired when print manager requests printers provided by extensions.
+    // |resultCallback|: Callback to return printer list. Every listener must
     // call callback exactly once.
     static void onGetPrintersRequested(PrintersCallback resultCallback);
 
     // Event fired when print manager requests printer capabilities.
-    // |printerId| : unique ID of the printer.
-    // |resultCallback| : callback to return device capabilities in CDD format
-    // as described at https://developers.google.com/cloud-print/docs/cdd#cdd.
+    // |printerId|: Unique ID of the printer whose capabilities are requested.
+    // |resultCallback|: Callback to return device capabilities in
+    // <a href="https://developers.google.com/cloud-print/docs/cdd#cdd">CDD
+    // format</a>.
     // The receiving listener must call callback exectly once.
     static void onGetCapabilityRequested(DOMString printerId,
                                          CapabilitiesCallback resultCallback);
 
     // Event fired when print manager requests printing.
-    // |printJob| : parameters of printing request.
+    // |printJob|: The printing request parameters.
+    // |resultCallback|: Callback that should be called when the printing
+    // request is completed.
     static void onPrintRequested(PrintJob printJob,
                                  PrintCallback resultCallback);
   };
