@@ -29,6 +29,7 @@ struct WebMediaKeySystemConfiguration {
     WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
     Requirement distinctiveIdentifier;
     Requirement persistentState;
+    WebVector<WebString> sessionTypes;
 };
 
 } // namespace blink
