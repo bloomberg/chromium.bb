@@ -113,7 +113,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptStat
     }
 
     m_offlineResolver = ScriptPromiseResolver::create(scriptState);
-    destination()->startRendering();
+    startRendering();
     return m_offlineResolver->promise();
 }
 

@@ -1,0 +1,14 @@
+Test statechange event is properly signaled
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS contextState is "running"
+PASS context finished rendering
+PASS contextState is "closed"
+PASS stateChangeCount is 2
+PASS context.state is "closed"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
