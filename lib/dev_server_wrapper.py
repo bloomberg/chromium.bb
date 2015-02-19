@@ -107,8 +107,8 @@ def GetXbuddyPath(path):
 
 
 # pylint: disable=import-error
-def GetImagePathWithXbuddy(path, board, static_dir=DEFAULT_STATIC_DIR,
-                           device='<DEVICE>'):
+def GetImagePathWithXbuddy(path, board, version=None,
+                           static_dir=DEFAULT_STATIC_DIR, device='<DEVICE>'):
   """Gets image path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -117,6 +117,7 @@ def GetImagePathWithXbuddy(path, board, static_dir=DEFAULT_STATIC_DIR,
   Args:
     path: The xbuddy path.
     board: The default board to use if board is not specified in |path|.
+    version: The default version to use if one is not specified in |path|.
     static_dir: Static directory to stage the image in.
     device: The device specified by the user.
 
@@ -130,7 +131,7 @@ def GetImagePathWithXbuddy(path, board, static_dir=DEFAULT_STATIC_DIR,
   sys.path.append(DEVSERVER_PKG_DIR)
   import xbuddy
 
-  xb = xbuddy.XBuddy(static_dir=static_dir, board=board,
+  xb = xbuddy.XBuddy(static_dir=static_dir, board=board, version=version,
                      log_screen=False)
   path_list = GetXbuddyPath(path).rsplit(os.path.sep)
 
