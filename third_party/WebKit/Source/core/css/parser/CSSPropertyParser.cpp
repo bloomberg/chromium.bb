@@ -5552,7 +5552,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserVal
                 return nullptr;
 
             // Blur radius must be non-negative.
-            if (context.allowBlur && !validUnit(val, FLength | FNonNeg, HTMLStandardMode))
+            if (context.allowBlur && (m_parsedCalculation ? m_parsedCalculation->isNegative() : !validUnit(val, FLength | FNonNeg, HTMLStandardMode)))
                 return nullptr;
 
             // A length is allowed here.  Construct the value and add it.
