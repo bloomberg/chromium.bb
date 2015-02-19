@@ -26,6 +26,7 @@ function testGetColumnCount() {
   assertEquals(0, columns);
 
   g.dataModel_ = new cr.ui.ArrayDataModel([0, 1, 2]);
+  g.horizontalPadding_ = 0;
   g.clientWidthWithoutScrollbar_ = 8;
   columns = g.getColumnCount_();
   // Client width is smaller than item width.
@@ -65,6 +66,18 @@ function testGetColumnCount() {
   g.measured_.marginRight = 1;
   columns = g.getColumnCount_();
   // Can not fit two columns due to margin on left and right side.
+  assertEquals(1, columns);
+
+  g.measured_.marginRight = 0;
+  g.horizontalPadding_ = 2;
+  g.clientWidthWithoutScrollbar_ = 22;
+  columns = g.getColumnCount_();
+  // Can fit two columns as (22-2=)20px width is avaiable for grid items.
+  assertEquals(2, columns);
+
+  g.horizontalPadding_ = 3;
+  columns = g.getColumnCount_();
+  // Can not fit two columns due to bigger horizontal padding.
   assertEquals(1, columns);
 }
 
