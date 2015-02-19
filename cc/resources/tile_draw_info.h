@@ -17,7 +17,7 @@ namespace cc {
 // This class holds all the state relevant to drawing a tile.
 class CC_EXPORT TileDrawInfo {
  public:
-  enum Mode { RESOURCE_MODE, SOLID_COLOR_MODE, PICTURE_PILE_MODE };
+  enum Mode { RESOURCE_MODE, SOLID_COLOR_MODE, OOM_MODE };
 
   TileDrawInfo();
   ~TileDrawInfo();
@@ -49,7 +49,7 @@ class CC_EXPORT TileDrawInfo {
   }
 
   bool requires_resource() const {
-    return mode_ == RESOURCE_MODE || mode_ == PICTURE_PILE_MODE;
+    return mode_ == RESOURCE_MODE || mode_ == OOM_MODE;
   }
 
   inline bool has_resource() const { return !!resource_; }
@@ -72,7 +72,7 @@ class CC_EXPORT TileDrawInfo {
     solid_color_ = color;
   }
 
-  void set_rasterize_on_demand() { mode_ = PICTURE_PILE_MODE; }
+  void set_oom() { mode_ = OOM_MODE; }
 
   Mode mode_;
   SkColor solid_color_;

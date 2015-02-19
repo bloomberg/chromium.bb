@@ -21,7 +21,7 @@ bool TileDrawInfo::IsReadyToDraw() const {
     case RESOURCE_MODE:
       return !!resource_;
     case SOLID_COLOR_MODE:
-    case PICTURE_PILE_MODE:
+    case OOM_MODE:
       return true;
   }
   NOTREACHED();

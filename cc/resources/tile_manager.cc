@@ -439,11 +439,11 @@ void TileManager::SynchronouslyRasterizeTiles(
       global_state_.tree_priority,
       RasterTilePriorityQueue::Type::REQUIRED_FOR_DRAW);
 
-  // Use on-demand raster for any tiles that have not been been assigned
-  // memory. This ensures that we draw even when OOM.
+  // Change to OOM mode for any tiles that have not been been assigned memory.
+  // This ensures that we draw even when OOM.
   for (; !required_for_draw_queue->IsEmpty(); required_for_draw_queue->Pop()) {
     Tile* tile = required_for_draw_queue->Top();
-    tile->draw_info().set_rasterize_on_demand();
+    tile->draw_info().set_oom();
     client_->NotifyTileStateChanged(tile);
   }
 
@@ -604,8 +604,8 @@ void TileManager::AssignGpuMemoryToTiles(
     TileDrawInfo& draw_info = tile->draw_info();
     tile->scheduled_priority_ = schedule_priority++;
 
-    DCHECK(draw_info.mode() == TileDrawInfo::PICTURE_PILE_MODE ||
-           !draw_info.IsReadyToDraw());
+    DCHECK_IMPLIES(draw_info.mode() != TileDrawInfo::OOM_MODE,
+                   !draw_info.IsReadyToDraw());
 
     // If the tile already has a raster_task, then the memory used by it is
     // already accounted for in memory_usage. Otherwise, we'll have to acquire
@@ -973,31 +973,30 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // Likewise if we don't allow any tiles (as is the case when we're
   // invisible), if we have tiles that aren't ready, then we shouldn't
   // activate as activation can cause checkerboards.
-  bool allow_rasterize_on_demand =
-      global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
-      global_state_.memory_limit_policy != ALLOW_NOTHING;
+  bool wait_for_all_required_tiles =
+      global_state_.tree_priority == SMOOTHNESS_TAKES_PRIORITY ||
+      global_state_.memory_limit_policy == ALLOW_NOTHING;
 
-  // Use on-demand raster for any required-for-activation tiles that have
-  // not been been assigned memory after reaching a steady memory state. This
-  // ensures that we activate even when OOM. Note that we can't reuse the queue
-  // we used for AssignGpuMemoryToTiles, since the AssignGpuMemoryToTiles call
-  // could have evicted some tiles that would not be picked up by the old raster
-  // queue.
+  // Mark any required-for-activation tiles that have not been been assigned
+  // memory after reaching a steady memory state as OOM. This ensures that we
+  // activate even when OOM. Note that we can't reuse the queue we used for
+  // AssignGpuMemoryToTiles, since the AssignGpuMemoryToTiles call could have
+  // evicted some tiles that would not be picked up by the old raster queue.
   scoped_ptr<RasterTilePriorityQueue> required_for_activation_queue(
       client_->BuildRasterQueue(
           global_state_.tree_priority,
           RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION));
 
-  // If we have tiles to mark as rasterize on demand, but we don't allow
-  // rasterize on demand, then skip activation and return early.
-  if (!required_for_activation_queue->IsEmpty() && !allow_rasterize_on_demand)
+  // If we have tiles left to raster for activation, and we don't allow
+  // activating without them, then skip activation and return early.
+  if (!required_for_activation_queue->IsEmpty() && wait_for_all_required_tiles)
     return;
 
-  // Mark required tiles as rasterize on demand.
+  // Mark required tiles as OOM so that we can activate without them.
   for (; !required_for_activation_queue->IsEmpty();
        required_for_activation_queue->Pop()) {
     Tile* tile = required_for_activation_queue->Top();
-    tile->draw_info().set_rasterize_on_demand();
+    tile->draw_info().set_oom();
     client_->NotifyTileStateChanged(tile);
   }
 

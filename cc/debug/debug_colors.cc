@@ -114,9 +114,9 @@ int DebugColors::ExtraLowResTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(2, tree_impl);
 }
 
-// Missing tile borders are red.
+// Missing tile borders are dark grey.
 SkColor DebugColors::MissingTileBorderColor() {
-  return SkColorSetARGB(100, 255, 0, 0);
+  return SkColorSetARGB(64, 64, 64, 0);
 }
 int DebugColors::MissingTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
@@ -130,11 +130,11 @@ int DebugColors::SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 
-// Picture tile borders are dark grey.
-SkColor DebugColors::PictureTileBorderColor() {
-  return SkColorSetARGB(64, 64, 64, 0);
+// OOM tile borders are red.
+SkColor DebugColors::OOMTileBorderColor() {
+  return SkColorSetARGB(100, 255, 0, 0);
 }
-int DebugColors::PictureTileBorderWidth(const LayerTreeImpl* tree_impl) {
+int DebugColors::OOMTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 

@@ -56,8 +56,8 @@ class DebugColors {
   static SkColor SolidColorTileBorderColor();
   static int SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl);
 
-  static SkColor PictureTileBorderColor();
-  static int PictureTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static SkColor OOMTileBorderColor();
+  static int OOMTileBorderWidth(const LayerTreeImpl* tree_impl);
 
   static SkColor DirectPictureBorderColor();
   static int DirectPictureBorderWidth(const LayerTreeImpl* tree_impl);

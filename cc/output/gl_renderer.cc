@@ -514,7 +514,8 @@ void GLRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
       DrawIOSurfaceQuad(frame, IOSurfaceDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::PICTURE_CONTENT:
-      DrawPictureQuad(frame, PictureDrawQuad::MaterialCast(quad));
+      // PictureDrawQuad should only be used for resourceless software draws.
+      NOTREACHED();
       break;
     case DrawQuad::RENDER_PASS:
       DrawRenderPassQuad(frame, RenderPassDrawQuad::MaterialCast(quad));
@@ -1976,54 +1977,6 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                    quad->quadTransform(),
                    quad->rect,
                    program->vertex_shader().matrix_location());
-}
-
-void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
-                                 const PictureDrawQuad* quad) {
-  if (on_demand_tile_raster_bitmap_.width() != quad->texture_size.width() ||
-      on_demand_tile_raster_bitmap_.height() != quad->texture_size.height()) {
-    on_demand_tile_raster_bitmap_.allocN32Pixels(quad->texture_size.width(),
-                                                 quad->texture_size.height());
-
-    if (on_demand_tile_raster_resource_id_)
-      resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
-
-    on_demand_tile_raster_resource_id_ = resource_provider_->CreateGLTexture(
-        quad->texture_size,
-        GL_TEXTURE_2D,
-        GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-        GL_CLAMP_TO_EDGE,
-        ResourceProvider::TextureHintImmutable,
-        quad->texture_format);
-  }
-
-  SkCanvas canvas(on_demand_tile_raster_bitmap_);
-  quad->raster_source->PlaybackToCanvas(&canvas, quad->content_rect,
-                                        quad->contents_scale);
-
-  uint8_t* bitmap_pixels = NULL;
-  SkBitmap on_demand_tile_raster_bitmap_dest;
-  SkColorType colorType = ResourceFormatToSkColorType(quad->texture_format);
-  if (on_demand_tile_raster_bitmap_.colorType() != colorType) {
-    on_demand_tile_raster_bitmap_.copyTo(&on_demand_tile_raster_bitmap_dest,
-                                         colorType);
-    // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-    // bitmap data. This check will be removed once crbug.com/293728 is fixed.
-    CHECK_EQ(0u, on_demand_tile_raster_bitmap_dest.rowBytes() % 4);
-    bitmap_pixels = reinterpret_cast<uint8_t*>(
-        on_demand_tile_raster_bitmap_dest.getPixels());
-  } else {
-    bitmap_pixels =
-        reinterpret_cast<uint8_t*>(on_demand_tile_raster_bitmap_.getPixels());
-  }
-
-  resource_provider_->SetPixels(on_demand_tile_raster_resource_id_,
-                                bitmap_pixels,
-                                gfx::Rect(quad->texture_size),
-                                gfx::Rect(quad->texture_size),
-                                gfx::Vector2d());
-
-  DrawContentQuad(frame, quad, on_demand_tile_raster_resource_id_);
 }
 
 struct TextureProgramBinding {

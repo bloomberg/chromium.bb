@@ -88,7 +88,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   bool HasResource() const { return draw_info_.has_resource(); }
   bool NeedsRaster() const {
-    return draw_info_.mode() == TileDrawInfo::PICTURE_PILE_MODE ||
+    return draw_info_.mode() == TileDrawInfo::OOM_MODE ||
            !draw_info_.IsReadyToDraw();
   }
 

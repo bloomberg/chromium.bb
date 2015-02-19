@@ -163,6 +163,13 @@ typedef ::testing::Types<GLRenderer,
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
 
 template <typename RendererType>
+class SoftwareRendererPixelTest : public RendererPixelTest<RendererType> {};
+
+typedef ::testing::Types<SoftwareRenderer, SoftwareRendererWithExpandedViewport>
+    SoftwareRendererTypes;
+TYPED_TEST_CASE(SoftwareRendererPixelTest, SoftwareRendererTypes);
+
+template <typename RendererType>
 class FuzzyForSoftwareOnlyPixelComparator : public PixelComparator {
  public:
   explicit FuzzyForSoftwareOnlyPixelComparator(bool discard_alpha)
@@ -1827,7 +1834,7 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
+TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
@@ -1907,7 +1914,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
 }
 
 // Not WithSkiaGPUBackend since that path currently requires tiles for opacity.
-TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
+TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
@@ -1984,7 +1991,7 @@ bool IsSoftwareRenderer<SoftwareRendererWithExpandedViewport>() {
 
 // If we disable image filtering, then a 2x2 bitmap should appear as four
 // huge sharp squares.
-TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
+TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   // We only care about this in software mode since bilinear filtering is
   // cheap in hardware.
   if (!IsSoftwareRenderer<TypeParam>())
@@ -2041,7 +2048,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 }
 
 // This disables filtering by setting |nearest_neighbor| on the PictureDrawQuad.
-TYPED_TEST(RendererPixelTest, PictureDrawQuadNearestNeighbor) {
+TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
@@ -2148,7 +2155,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
       ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
+TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Size pile_tile_size(1000, 1000);
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
@@ -2447,45 +2454,6 @@ TEST_F(GLRendererPixelTest, CheckReadbackSubset) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")),
       ExactPixelComparator(true),
       &capture_rect));
-}
-
-TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
-  gfx::Size pile_tile_size(1000, 1000);
-  gfx::Rect viewport(this->device_viewport_size_);
-  ResourceFormat texture_format = RGBA_4444;
-  bool nearest_neighbor = false;
-
-  RenderPassId id(1, 1);
-  gfx::Transform transform_to_root;
-  scoped_ptr<RenderPass> pass =
-      CreateTestRenderPass(id, viewport, transform_to_root);
-
-  // One viewport-filling blue quad
-  scoped_ptr<FakePicturePile> blue_recording =
-      FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
-  SkPaint blue_paint;
-  blue_paint.setColor(SK_ColorBLUE);
-  blue_recording->add_draw_rect_with_paint(viewport, blue_paint);
-  blue_recording->RerecordPile();
-  scoped_refptr<FakePicturePileImpl> blue_pile =
-      FakePicturePileImpl::CreateFromPile(blue_recording.get(), nullptr);
-
-  gfx::Transform blue_content_to_target_transform;
-  SharedQuadState* blue_shared_state = CreateTestSharedQuadState(
-      blue_content_to_target_transform, viewport, pass.get());
-
-  PictureDrawQuad* blue_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  blue_quad->SetNew(blue_shared_state, viewport, gfx::Rect(), viewport,
-                    gfx::RectF(0.f, 0.f, 1.f, 1.f), viewport.size(),
-                    nearest_neighbor, texture_format, viewport, 1.f,
-                    blue_pile.get());
-
-  RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
-
-  EXPECT_TRUE(this->RunPixelTest(&pass_list,
-                                 base::FilePath(FILE_PATH_LITERAL("blue.png")),
-                                 ExactPixelComparator(true)));
 }
 
 TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
