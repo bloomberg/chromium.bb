@@ -6,5 +6,5 @@ console-resource-errors-iframe.html:3 GET http://127.0.0.1:8000/inspector/missin
 console-resource-errors-iframe.html:4 GET http://127.0.0.1:8000/inspector/non-existent-script.js 404 (Not Found) console-message console-error-level
 console-resource-errors-iframe.html:8 GET http://127.0.0.1:8000/inspector/non-existent-iframe.html 404 (Not Found) console-message console-error-level
 console-resource-errors.html:17 Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/. console-message console-warning-level
-console-resource-errors.html:18 GET http://127.0.0.1:8000/inspector/non-existent-xhr 404 (Not Found)loadXHR @ console-resource-errors.html:18performActions @ console-resource-errors.html:10(anonymous function) @ VM:1InjectedScript._evaluateOn @ VM:888InjectedScript._evaluateAndWrap @ VM:821InjectedScript.evaluate @ VM:687 console-message console-error-level
+console-resource-errors.html:18 GET http://127.0.0.1:8000/inspector/non-existent-xhr 404 (Not Found)loadXHR @ console-resource-errors.html:18performActions @ console-resource-errors.html:10(anonymous function) @ VM:1 console-message console-error-level
 

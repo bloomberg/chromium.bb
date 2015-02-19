@@ -16,7 +16,7 @@ beforeFilter
 >console-filter-level-test.html:11 sample log
 >console-filter-level-test.html:12 sample warning
 >console-filter-level-test.html:13 sample debug
->console-filter-level-test.html:14 sample error
+>console-filter-level-test.html:14 sample erroronload @ console-filter-level-test.html:14
 >console-filter-level-test.html:16 abc info
 >console-filter-level-test.html:17 def info
 >console-filter-level-test.html:19 abc warn
@@ -38,7 +38,7 @@ Running: onlyLog
 
 Running: onlyErrorDebug
 >console-filter-level-test.html:13 sample debug
->console-filter-level-test.html:14 sample error
+>console-filter-level-test.html:14 sample erroronload @ console-filter-level-test.html:14
 >'Should be always visible'
 >"Should be always visible"
 

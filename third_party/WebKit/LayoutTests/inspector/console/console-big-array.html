@@ -89,7 +89,7 @@ function test()
     {
         for (var i = 0; i < sections.length; ++i) {
             for (var j = 0; j < sections[i].propertiesTreeOutline.children.length; ++j) {
-                for (var treeElement = sections[i].propertiesTreeOutline.children[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false)) {
+                for (var treeElement = sections[i].propertiesTreeOutline.children[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(true, null, true)) {
                     if (treeElement.listItemElement.textContent.indexOf("__proto__") === -1)
                         treeElement.expand();
                 }

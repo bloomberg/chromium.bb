@@ -25,7 +25,7 @@ console-tests.html:9 log console-message console-log-level
 console-tests.html:10 debug console-message console-debug-level
 console-tests.html:11 info console-message console-info-level
 console-tests.html:12 warn console-message console-warning-level
-console-tests.html:13 error console-message console-error-level
+console-tests.html:13 erroronload @ console-tests.html:13 console-message console-error-level
 5console-tests.html:15 repeated console-message console-log-level repeated-message
 console-tests.html:17 count: 1 console-message console-debug-level
 console-tests.html:17 count: 2 console-message console-debug-level

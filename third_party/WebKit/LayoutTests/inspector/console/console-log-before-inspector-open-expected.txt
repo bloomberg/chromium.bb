@@ -9,5 +9,5 @@ console-log-before-inspector-open.html:7 log
 console-log-before-inspector-open.html:8 debug
 console-log-before-inspector-open.html:9 info
 console-log-before-inspector-open.html:10 warn
-console-log-before-inspector-open.html:11 error
+console-log-before-inspector-open.html:11 error(anonymous function) @ console-log-before-inspector-open.html:11
 

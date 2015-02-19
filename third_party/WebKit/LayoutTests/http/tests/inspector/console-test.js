@@ -32,7 +32,7 @@ InspectorTest.evaluateInConsoleAndDump = function(code, callback)
 
     function mycallback(text)
     {
-        InspectorTest.addResult(code + " = " + text.replace(/\bVM\d+/g, "VM"));
+        InspectorTest.addResult(code + " = " + text.replace(/\bVM\d+/g, "VM").replace(/InjectedScript\.\w+ @ VM:\d+/g, ""));
         callback(text);
     }
     InspectorTest.evaluateInConsole(code, mycallback);
@@ -44,7 +44,7 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     // Replace scriptIds with generic scriptId string to avoid flakiness.
     messageText = messageText.replace(/VM\d+/g, "VM");
     // Strip out InjectedScript line numbers from stack traces to avoid rebaselining each time InjectedScriptSource is edited.
-    messageText = messageText.replace(/VM:\d+ InjectedScript\./g, " InjectedScript.");
+    messageText = messageText.replace(/InjectedScript\.\w+ @ VM:\d+/g, "");
     // Strip out InjectedScript line numbers from console message anchor.
     var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace[0] && consoleMessage.stackTrace[0].functionName || "";
     if (functionName.indexOf("InjectedScript") !== -1)
@@ -213,7 +213,7 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
                     continue;
                 var treeElements = node._section.propertiesTreeOutline.children;
                 for (var j = 0; j < treeElements.length; ++j) {
-                    for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false)) {
+                    for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(true, null, true)) {
                         if (deepFilter(treeElement))
                             treeElement.expand();
                     }

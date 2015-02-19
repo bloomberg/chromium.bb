@@ -9,5 +9,5 @@ Tests exception message from eval on worker context in console contains stack tr
                 foo();
             }
             boo();
-VM:4 Uncaught Object {a: 239}foo @ VM:4boo @ VM:8(anonymous function) @ VM:10InjectedScript._evaluateOn @ VM:888InjectedScript._evaluateAndWrap @ VM:821InjectedScript.evaluate @ VM:687
+VM:4 Uncaught Object {a: 239}foo @ VM:4boo @ VM:8(anonymous function) @ VM:10
 
