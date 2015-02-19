@@ -507,7 +507,10 @@ public:
             // to jpeg_start_compress().
             // FIXME: note that some output color spaces do not need the samples
             // buffer. Remove this allocation for those color spaces.
-            m_samples = (*m_info.mem->alloc_sarray)(reinterpret_cast<j_common_ptr>(&m_info), JPOOL_IMAGE, m_info.output_width * 4, m_info.out_color_space == JCS_YCbCr ? 2 : 1);
+            {
+                int samplesWidth = (m_info.out_color_space == JCS_YCbCr) ? computeYUVSize(&m_info, 0, ImageDecoder::SizeForMemoryAllocation).width() : m_info.output_width;
+                m_samples = (*m_info.mem->alloc_sarray)(reinterpret_cast<j_common_ptr>(&m_info), JPOOL_IMAGE, samplesWidth * 4, 1);
+            }
 
             // Start decompressor.
             if (!jpeg_start_decompress(&m_info))
@@ -868,9 +871,9 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
 
     int yScanlinesToRead = DCTSIZE * v;
     JSAMPROW yLastRow = *samples;
-    JSAMPROW uLastRow = yLastRow + 2 * yWidth;
-    JSAMPROW vLastRow = uLastRow + 2 * yWidth;
-    JSAMPROW dummyRow = vLastRow + 2 * yWidth;
+    JSAMPROW uLastRow = yLastRow + rowBytesY;
+    JSAMPROW vLastRow = uLastRow + rowBytesY;
+    JSAMPROW dummyRow = vLastRow + rowBytesY;
 
     while (info->output_scanline < info->output_height) {
         // Request 8 or 16 scanlines: returns 0 or more scanlines.
