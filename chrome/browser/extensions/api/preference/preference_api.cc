@@ -112,6 +112,10 @@ PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"translationServiceEnabled", prefs::kEnableTranslate,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
+#if defined(ENABLE_WEBRTC)
+    {"webRTCMultipleRoutesEnabled", prefs::kWebRTCMultipleRoutesEnabled,
+     APIPermission::kPrivacy, APIPermission::kPrivacy},
+#endif
     // accessibilityFeatures.animationPolicy is available for
     // all platforms but the others from accessibilityFeatures
     // is only available for OS_CHROMEOS.

@@ -16,6 +16,11 @@
             "$ref": "types.ChromeSetting",
             "value": ["networkPredictionEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome attempts to speed up your web browsing experience by pre-resolving DNS entries, prerendering sites (<code>&lt;link rel='prefetch' ...&gt;</code>), and preemptively opening TCP and SSL connections to servers.  This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "webRTCMultipleRoutesEnabled": {
+            "$ref": "types.ChromeSetting",
+            "value": ["webRTCMultipleRoutesEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome will explore all possible routing options when using WebRTC to find the most performant path, possibly exposing user's private IP address. Otherwise, WebRTC traffic will be routed the same way as regular HTTP. This preference's value is a boolean, defaulting to <code>true</code>."
           }
         }
       },
