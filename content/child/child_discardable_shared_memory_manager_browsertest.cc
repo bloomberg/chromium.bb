@@ -50,8 +50,14 @@ class ChildDiscardableSharedMemoryManagerBrowserTest
   }
 };
 
+#if defined(OS_WIN)
+#define MAYBE_LockMemory DISABLED_LockMemory
+#else
+#define MAYBE_LockMemory LockMemory
+#endif
+
 IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
-                       LockMemory) {
+                       MAYBE_LockMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
