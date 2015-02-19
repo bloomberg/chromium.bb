@@ -25,6 +25,10 @@ class VIEWS_EXPORT Tooltip {
  public:
   virtual ~Tooltip() {}
 
+  // Returns the max width of the tooltip when shown at the specified location.
+  virtual int GetMaxWidth(const gfx::Point& location,
+                          aura::Window* context) const = 0;
+
   // Updates the text on the tooltip and resizes to fit.
   virtual void SetText(aura::Window* window,
                        const base::string16& tooltip_text,

@@ -90,7 +90,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
 #if defined(OS_CHROMEOS)
     controller_.reset(new TooltipController(
           scoped_ptr<views::corewm::Tooltip>(
-              new views::corewm::TooltipAura(gfx::SCREEN_TYPE_ALTERNATE))));
+              new views::corewm::TooltipAura)));
     root_window()->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window(), controller_.get());
 #endif
@@ -532,6 +532,10 @@ class TestTooltip : public Tooltip {
   const base::string16& tooltip_text() const { return tooltip_text_; }
 
   // Tooltip:
+  int GetMaxWidth(const gfx::Point& location,
+                  aura::Window* context) const override {
+    return 100;
+  }
   void SetText(aura::Window* window,
                const base::string16& tooltip_text,
                const gfx::Point& location) override {

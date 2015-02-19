@@ -690,11 +690,10 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
     const GURL& url,
     const base::string16& title,
     Profile* profile) {
-  int max_width = views::TooltipManager::GetMaxWidth(
-      screen_loc.x(),
-      screen_loc.y(),
-      widget->GetNativeView());
-  const gfx::FontList tt_fonts = widget->GetTooltipManager()->GetFontList();
+  const views::TooltipManager* tooltip_manager = widget->GetTooltipManager();
+  int max_width = tooltip_manager->GetMaxWidth(screen_loc,
+                                               widget->GetNativeView());
+  const gfx::FontList tt_fonts = tooltip_manager->GetFontList();
   base::string16 result;
 
   // First the title.

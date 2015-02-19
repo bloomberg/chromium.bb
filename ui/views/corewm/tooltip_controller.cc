@@ -17,6 +17,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/wm/public/drag_drop_client.h"
@@ -27,6 +28,7 @@ namespace {
 
 const int kTooltipTimeoutMs = 500;
 const int kDefaultTooltipShownTimeoutMs = 10000;
+const size_t kMaxTooltipLength = 1024;
 
 // Returns true if |target| is a valid window to get the tooltip from.
 // |event_target| is the original target from the event and |target| the window
@@ -127,6 +129,11 @@ TooltipController::TooltipController(scoped_ptr<Tooltip> tooltip)
 TooltipController::~TooltipController() {
   if (tooltip_window_)
     tooltip_window_->RemoveObserver(this);
+}
+
+int TooltipController::GetMaxWidth(const gfx::Point& location,
+                                   gfx::NativeView context) const {
+  return tooltip_->GetMaxWidth(location, context);
 }
 
 void TooltipController::UpdateTooltip(aura::Window* target) {
@@ -298,8 +305,8 @@ void TooltipController::UpdateIfRequired() {
   if (tooltip_text_ != tooltip_text || !tooltip_->IsVisible() || ids_differ) {
     tooltip_shown_timer_.Stop();
     tooltip_text_ = tooltip_text;
-    base::string16 trimmed_text(tooltip_text_);
-    views::TooltipManager::TrimTooltipText(&trimmed_text);
+    base::string16 trimmed_text =
+        gfx::TruncateString(tooltip_text_, kMaxTooltipLength, gfx::WORD_BREAK);
     // If the string consists entirely of whitespace, then don't both showing it
     // (an empty tooltip is useless).
     base::string16 whitespace_removed_text;

@@ -23,7 +23,7 @@ namespace corewm {
 // Implementation of Tooltip that shows the tooltip using a Widget and Label.
 class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
  public:
-  explicit TooltipAura(gfx::ScreenType screen_type);
+  TooltipAura();
   ~TooltipAura() override;
 
   // Trims the tooltip to fit in the width |max_width|, setting |text| to the
@@ -37,9 +37,6 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
                                int* line_count);
 
  private:
-  // Returns the max width of the tooltip when shown at the specified location.
-  int GetMaxWidth(const gfx::Point& location) const;
-
   // Adjusts the bounds given by the arguments to fit inside the desktop
   // and applies the adjusted bounds to the label_.
   void SetTooltipBounds(const gfx::Point& mouse_pos,
@@ -49,6 +46,8 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   void DestroyWidget();
 
   // Tooltip:
+  int GetMaxWidth(const gfx::Point& location,
+                  aura::Window* context) const override;
   void SetText(aura::Window* window,
                const base::string16& tooltip_text,
                const gfx::Point& location) override;
@@ -58,8 +57,6 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
 
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override;
-
-  const gfx::ScreenType screen_type_;
 
   // The label showing the tooltip.
   Label label_;

@@ -22,7 +22,7 @@ namespace corewm {
 class VIEWS_EXPORT TooltipWin : public Tooltip {
  public:
   explicit TooltipWin(HWND parent);
-  virtual ~TooltipWin();
+  ~TooltipWin() override;
 
   // HandleNotify() is forwarded from DesktopWindowTreeHostWin to keep the
   // native tooltip in sync.
@@ -37,12 +37,14 @@ class VIEWS_EXPORT TooltipWin : public Tooltip {
   void PositionTooltip();
 
   // Tooltip:
-  virtual void SetText(aura::Window* window,
-                       const base::string16& tooltip_text,
-                       const gfx::Point& location) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual bool IsVisible() override;
+  int GetMaxWidth(const gfx::Point& location,
+                  aura::Window* context) const override;
+  void SetText(aura::Window* window,
+               const base::string16& tooltip_text,
+               const gfx::Point& location) override;
+  void Show() override;
+  void Hide() override;
+  bool IsVisible() override;
 
   // The window |tooltip_hwnd_| is parented to.
   HWND parent_hwnd_;

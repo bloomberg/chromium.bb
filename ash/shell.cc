@@ -990,10 +990,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   window_selector_controller_.reset(new WindowSelectorController());
   window_cycle_controller_.reset(new WindowCycleController());
 
-  tooltip_controller_.reset(
-      new views::corewm::TooltipController(
-          scoped_ptr<views::corewm::Tooltip>(
-              new views::corewm::TooltipAura(gfx::SCREEN_TYPE_ALTERNATE))));
+  tooltip_controller_.reset(new views::corewm::TooltipController(
+      scoped_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
   AddPreTargetHandler(tooltip_controller_.get());
 
   event_client_.reset(new EventClientImpl);

@@ -289,7 +289,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
 }
 
 scoped_ptr<corewm::Tooltip> DesktopWindowTreeHostX11::CreateTooltip() {
-  return make_scoped_ptr(new corewm::TooltipAura(gfx::SCREEN_TYPE_NATIVE));
+  return make_scoped_ptr(new corewm::TooltipAura);
 }
 
 scoped_ptr<aura::client::DragDropClient>

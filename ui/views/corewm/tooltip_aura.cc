@@ -47,9 +47,8 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
 namespace views {
 namespace corewm {
 
-TooltipAura::TooltipAura(gfx::ScreenType screen_type)
-    : screen_type_(screen_type),
-      widget_(NULL),
+TooltipAura::TooltipAura()
+    : widget_(NULL),
       tooltip_window_(NULL) {
   label_.set_owned_by_client();
   label_.SetMultiLine(true);
@@ -142,19 +141,11 @@ void TooltipAura::TrimTooltipToFit(const gfx::FontList& font_list,
   *text = result;
 }
 
-int TooltipAura::GetMaxWidth(const gfx::Point& location) const {
-  // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
-  // out a way to merge.
-  gfx::Screen* screen = gfx::Screen::GetScreenByType(screen_type_);
-  gfx::Rect display_bounds(screen->GetDisplayNearestPoint(location).bounds());
-  return (display_bounds.width() + 1) / 2;
-}
-
 void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
                                    const gfx::Size& tooltip_size) {
   gfx::Rect tooltip_rect(mouse_pos, tooltip_size);
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
-  gfx::Screen* screen = gfx::Screen::GetScreenByType(screen_type_);
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(tooltip_window_);
   gfx::Rect display_bounds(screen->GetDisplayNearestPoint(mouse_pos).bounds());
 
   // If tooltip is out of bounds on the x axis, we simply shift it
@@ -181,6 +172,13 @@ void TooltipAura::DestroyWidget() {
   }
 }
 
+int TooltipAura::GetMaxWidth(const gfx::Point& location,
+                             aura::Window* context) const {
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(context);
+  gfx::Rect display_bounds(screen->GetDisplayNearestPoint(location).bounds());
+  return std::min(kTooltipMaxWidthPixels, (display_bounds.width() + 1) / 2);
+}
+
 void TooltipAura::SetText(aura::Window* window,
                           const base::string16& tooltip_text,
                           const gfx::Point& location) {
@@ -188,8 +186,8 @@ void TooltipAura::SetText(aura::Window* window,
   int max_width = 0;
   int line_count = 0;
   base::string16 trimmed_text(tooltip_text);
-  TrimTooltipToFit(label_.font_list(), GetMaxWidth(location), &trimmed_text,
-                   &max_width, &line_count);
+  TrimTooltipToFit(label_.font_list(), GetMaxWidth(location, window),
+                   &trimmed_text, &max_width, &line_count);
   label_.SetText(trimmed_text);
 
   if (!widget_) {

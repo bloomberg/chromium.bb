@@ -15,6 +15,7 @@
 namespace gfx {
 class Display;
 class FontList;
+class Point;
 }  // namespace gfx
 
 namespace views {
@@ -38,17 +39,11 @@ class VIEWS_EXPORT TooltipManager {
   TooltipManager() {}
   virtual ~TooltipManager() {}
 
-  // Returns the maximum width of the tooltip. |x| and |y| give the location
+  // Returns the maximum width of the tooltip. |point| gives the location
   // the tooltip is to be displayed on in screen coordinates. |context| is
   // used to determine which gfx::Screen should be used.
-  static int GetMaxWidth(int x, int y, gfx::NativeView context);
-
-  // Same as GetMaxWidth(), but takes a Display.
-  static int GetMaxWidth(const gfx::Display& display);
-
-  // If necessary trims the text of a tooltip to ensure we don't try to display
-  // a mega-tooltip.
-  static void TrimTooltipText(base::string16* text);
+  virtual int GetMaxWidth(const gfx::Point& location,
+                          gfx::NativeView context) const = 0;
 
   // Returns the font list used for tooltips.
   virtual const gfx::FontList& GetFontList() const = 0;
