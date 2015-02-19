@@ -1021,8 +1021,10 @@ void RenderTextHarfBuzz::DrawVisualTextInternal(
                                     background_is_transparent());
       Range glyphs_range = run.CharRangeToGlyphRange(segment.char_range);
       scoped_ptr<SkPoint[]> positions(new SkPoint[glyphs_range.length()]);
-      SkScalar offset_x =
-          preceding_segment_widths - run.positions[glyphs_range.start()].x();
+      SkScalar offset_x = preceding_segment_widths -
+                          ((glyphs_range.GetMin() != 0)
+                               ? run.positions[glyphs_range.GetMin()].x()
+                               : 0);
       for (size_t j = 0; j < glyphs_range.length(); ++j) {
         positions[j] = run.positions[(glyphs_range.is_reversed()) ?
                                      (glyphs_range.start() - j) :
