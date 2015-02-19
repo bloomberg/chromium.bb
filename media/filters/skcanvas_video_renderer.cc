@@ -186,19 +186,18 @@ class VideoImageGenerator : public SkImageGenerator {
     return true;
   }
 
-  bool onGetPixels(const SkImageInfo& info,
+  // TODO (scroggo): Rename to onGetPixels once Skia is updated.
+  Result onGetPixelsEnum(const SkImageInfo& info,
                    void* pixels,
                    size_t row_bytes,
                    SkPMColor ctable[],
                    int* ctable_count) override {
     if (!frame_.get())
-      return false;
-    if (!pixels)
-      return false;
+      return kInvalidInput;
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
     SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
         frame_, pixels, row_bytes);
-    return true;
+    return kSuccess;
   }
 
   bool onGetYUV8Planes(SkISize sizes[3],
