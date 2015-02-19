@@ -54,8 +54,9 @@ InjectedScript::InjectedScript()
 {
 }
 
-InjectedScript::InjectedScript(ScriptValue injectedScriptObject, InspectedStateAccessCheck accessCheck)
+InjectedScript::InjectedScript(ScriptValue injectedScriptObject, InspectedStateAccessCheck accessCheck, PassRefPtr<InjectedScriptNative> injectedScriptNative)
     : InjectedScriptBase("InjectedScript", injectedScriptObject, accessCheck)
+    , m_native(injectedScriptNative)
 {
 }
 

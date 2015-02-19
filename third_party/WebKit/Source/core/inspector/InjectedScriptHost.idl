@@ -59,4 +59,9 @@
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
     [NotEnumerable, Unforgeable, Custom] any setFunctionVariableValue(Function functionObject, long scopeIndex, DOMString variableName, any newValue);
+
+    // Accessors to InjectedScriptNative
+    [NotEnumerable, Unforgeable, Custom] long bind(any value);
+    [NotEnumerable, Unforgeable, Custom] void unbind(long id);
+    [NotEnumerable, Unforgeable, Custom] any objectForId(long id);
 };

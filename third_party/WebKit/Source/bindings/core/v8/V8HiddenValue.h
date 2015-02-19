@@ -39,6 +39,7 @@ class ScriptWrappable;
     V(stringData) \
     V(thenableHiddenPromise) \
     V(toStringString) \
+    V(injectedScriptNative) \
     SCRIPT_PROMISE_PROPERTIES(V, Promise)  \
     SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 

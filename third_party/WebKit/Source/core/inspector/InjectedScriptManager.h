@@ -40,6 +40,7 @@ namespace blink {
 
 class InjectedScript;
 class InjectedScriptHost;
+class InjectedScriptNative;
 class ScriptValue;
 
 class InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
@@ -81,7 +82,7 @@ private:
     explicit InjectedScriptManager(InspectedStateAccessCheck);
 
     String injectedScriptSource();
-    ScriptValue createInjectedScript(const String& source, ScriptState*, int id);
+    ScriptValue createInjectedScript(const String& source, ScriptState*, int id, InjectedScriptNative*);
 
     static bool canAccessInspectedWindow(ScriptState*);
     static bool canAccessInspectedWorkerGlobalScope(ScriptState*);

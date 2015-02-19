@@ -204,10 +204,6 @@ function isSymbol(obj)
  */
 var InjectedScript = function()
 {
-    /** @type {number} */
-    this._lastBoundObjectId = 1;
-    /** @type {!Object.<number, (!Object|symbol)>} */
-    this._idToWrappedObject = { __proto__: null };
     /** @type {!Object.<number, string>} */
     this._idToObjectGroupName = { __proto__: null };
     /** @type {!Object.<string, !Array.<number>>} */
@@ -345,8 +341,7 @@ InjectedScript.prototype = {
      */
     _bind: function(object, objectGroupName)
     {
-        var id = this._lastBoundObjectId++;
-        this._idToWrappedObject[id] = object;
+        var id = InjectedScriptHost.bind(object);
         var objectId = "{\"injectedScriptId\":" + injectedScriptId + ",\"id\":" + id + "}";
         if (objectGroupName) {
             var group = this._objectGroups[objectGroupName];
@@ -554,7 +549,7 @@ InjectedScript.prototype = {
      */
     _releaseObject: function(id)
     {
-        delete this._idToWrappedObject[id];
+        InjectedScriptHost.unbind(id);
         delete this._idToObjectGroupName[id];
     },
 
@@ -1047,7 +1042,7 @@ InjectedScript.prototype = {
      */
     _objectForId: function(objectId)
     {
-        return objectId.injectedScriptId === injectedScriptId ? this._idToWrappedObject[objectId.id] : void 0;
+        return objectId.injectedScriptId === injectedScriptId ? InjectedScriptHost.objectForId(objectId.id) : void 0;
     },
 
     /**

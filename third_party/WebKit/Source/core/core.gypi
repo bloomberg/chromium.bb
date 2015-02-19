@@ -1566,6 +1566,8 @@
             'inspector/IdentifiersFactory.h',
             'inspector/InjectedScript.cpp',
             'inspector/InjectedScript.h',
+            'inspector/InjectedScriptNative.cpp',
+            'inspector/InjectedScriptNative.h',
             'inspector/InjectedScriptBase.cpp',
             'inspector/InjectedScriptBase.h',
             'inspector/InjectedScriptCanvasModule.cpp',

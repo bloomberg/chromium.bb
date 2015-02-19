@@ -42,6 +42,7 @@
 #include "bindings/core/v8/V8Window.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InjectedScriptNative.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -81,7 +82,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeR
     return wrapper;
 }
 
-ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id)
+ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id, InjectedScriptNative* injectedScriptNative)
 {
     v8::Isolate* isolate = inspectedScriptState->isolate();
     ScriptState::Scope scope(inspectedScriptState);
@@ -93,6 +94,8 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
     v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(m_injectedScriptHost, this, inspectedScriptState->context()->Global(), inspectedScriptState->isolate());
     if (scriptHostWrapper.IsEmpty())
         return ScriptValue();
+
+    injectedScriptNative->setOnInjectedScriptHost(scriptHostWrapper);
 
     // Inject javascript into the context. The compiled script is supposed to evaluate into
     // a single anonymous function(it's anonymous to avoid cluttering the global object with

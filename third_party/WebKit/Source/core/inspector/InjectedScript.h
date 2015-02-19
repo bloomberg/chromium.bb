@@ -35,6 +35,7 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InjectedScriptNative.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -107,11 +108,12 @@ public:
 private:
     friend class InjectedScriptModule;
     friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
-    InjectedScript(ScriptValue, InspectedStateAccessCheck);
+    InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>);
 
     ScriptValue nodeAsScriptValue(Node*);
-};
 
+    RefPtr<InjectedScriptNative> m_native;
+};
 
 } // namespace blink
 

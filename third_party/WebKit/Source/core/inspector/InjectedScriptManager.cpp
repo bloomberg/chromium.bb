@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
+#include "core/inspector/InjectedScriptNative.h"
 #include "core/inspector/JSONParser.h"
 #include "platform/JSONValues.h"
 #include "public/platform/Platform.h"
@@ -175,8 +176,9 @@ InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedSc
         return InjectedScript();
 
     int id = injectedScriptIdFor(inspectedScriptState);
-    ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), inspectedScriptState, id);
-    InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck);
+    RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(inspectedScriptState->isolate()));
+    ScriptValue injectedScriptValue = createInjectedScript(injectedScriptSource(), inspectedScriptState, id, injectedScriptNative.get());
+    InjectedScript result(injectedScriptValue, m_inspectedStateAccessCheck, injectedScriptNative.release());
     if (m_customObjectFormatterEnabled)
         result.setCustomObjectFormatterEnabled(m_customObjectFormatterEnabled);
     m_idToInjectedScript.set(id, result);

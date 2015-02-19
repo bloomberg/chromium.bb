@@ -537,4 +537,39 @@ void V8InjectedScriptHost::setNonEnumPropertyMethodCustom(const v8::FunctionCall
     object->ForceSet(info[1], info[2], v8::DontEnum);
 }
 
+void V8InjectedScriptHost::bindMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
+    if (!injectedScriptNative)
+        return;
+    int id = injectedScriptNative->bind(info[0]);
+    info.GetReturnValue().Set(id);
+}
+
+void V8InjectedScriptHost::unbindMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1 || !info[0]->IsInt32())
+        return;
+    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
+    if (!injectedScriptNative)
+        return;
+    int id = info[0]->ToInt32(info.GetIsolate())->Value();
+    injectedScriptNative->unbind(id);
+}
+
+void V8InjectedScriptHost::objectForIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
+    if (!injectedScriptNative)
+        return;
+    int id = info[0]->ToInt32(info.GetIsolate())->Value();
+    v8::Local<v8::Value> value = injectedScriptNative->objectForId(id);
+    if (!value.IsEmpty())
+        info.GetReturnValue().Set(value);
+}
+
 } // namespace blink
