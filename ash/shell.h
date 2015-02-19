@@ -380,6 +380,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return display_controller_.get();
   }
 #if defined(OS_CHROMEOS)
+  PowerEventObserver* power_event_observer() {
+    return power_event_observer_.get();
+  }
   TouchTransformerController* touch_transformer_controller() {
     return touch_transformer_controller_.get();
   }

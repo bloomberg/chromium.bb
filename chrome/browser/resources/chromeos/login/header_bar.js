@@ -316,11 +316,13 @@ cr.define('login', function() {
     },
 
     /**
-     * Animates Header bar to slowly appear on the screen.
+     * Animates Header bar to appear on the screen.
      *
+     * @param {boolean} fast Whether the animation should complete quickly or
+     *     slowly.
      * @param {function()} callback will be called once animation is finished.
      */
-    animateIn: function(callback) {
+    animateIn: function(fast, callback) {
       if (callback) {
         var launcher = this;
         launcher.addEventListener(
@@ -332,7 +334,7 @@ cr.define('login', function() {
         ensureTransitionEndEvent(launcher, 2250);
       }
 
-      if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
+      if (fast) {
         this.classList.remove('login-header-bar-animate-slow');
         this.classList.add('login-header-bar-animate-fast');
       } else {
@@ -354,8 +356,8 @@ cr.define('login', function() {
   /**
    * Convenience wrapper of animateIn.
    */
-  HeaderBar.animateIn = function(callback) {
-    $('login-header-bar').animateIn(callback);
+  HeaderBar.animateIn = function(fast, callback) {
+    $('login-header-bar').animateIn(fast, callback);
   };
 
   return {

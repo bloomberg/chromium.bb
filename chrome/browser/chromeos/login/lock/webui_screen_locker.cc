@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
+#include "ash/shell.h"
+#include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/command_line.h"
@@ -201,6 +203,12 @@ void WebUIScreenLocker::OnLockWebUIReady() {
 void WebUIScreenLocker::OnLockBackgroundDisplayed() {
   UMA_HISTOGRAM_TIMES("LockScreen.BackgroundReady",
                       base::TimeTicks::Now() - lock_time_);
+}
+
+void WebUIScreenLocker::OnHeaderBarVisible() {
+  DCHECK(ash::Shell::HasInstance());
+
+  ash::Shell::GetInstance()->power_event_observer()->OnLockAnimationsComplete();
 }
 
 OobeUI* WebUIScreenLocker::GetOobeUI() {

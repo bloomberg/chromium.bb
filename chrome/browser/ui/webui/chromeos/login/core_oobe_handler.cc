@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -418,6 +419,8 @@ void CoreOobeHandler::HandleHeaderBarVisible() {
   LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
   if (login_display_host)
     login_display_host->SetStatusAreaVisible(true);
+  if (ScreenLocker::default_screen_locker())
+    ScreenLocker::default_screen_locker()->delegate()->OnHeaderBarVisible();
 }
 
 void CoreOobeHandler::HandleSwitchToNewOobe() {

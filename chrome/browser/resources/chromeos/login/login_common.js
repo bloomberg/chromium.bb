@@ -95,7 +95,7 @@ cr.define('cr.ui', function() {
 
       // Callback to animate the header bar in.
       var showHeaderBar = function() {
-        login.HeaderBar.animateIn(function() {
+        login.HeaderBar.animateIn(false, function() {
           chrome.send('headerBarVisible');
         });
       };
@@ -106,7 +106,7 @@ cr.define('cr.ui', function() {
       Oobe.getInstance().prepareForLoginDisplay_();
       // Ensure header bar is visible when switching to Login UI from oobe.
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
-        login.HeaderBar.animateIn();
+        login.HeaderBar.animateIn(true);
     }
 
     Oobe.getInstance().headerHidden = false;
@@ -211,7 +211,9 @@ cr.define('cr.ui', function() {
    * Displays animations that have to happen once login UI is fully displayed.
    */
   Oobe.animateOnceFullyDisplayed = function() {
-    login.HeaderBar.animateIn();
+    login.HeaderBar.animateIn(true, function() {
+      chrome.send('headerBarVisible');
+    });
   };
 
   /**

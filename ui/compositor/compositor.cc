@@ -224,6 +224,10 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsCommit();
 }
 
+void Compositor::FinishAllRendering() {
+  host_->FinishAllRendering();
+}
+
 void Compositor::DisableSwapUntilResize() {
   host_->FinishAllRendering();
   context_factory_->ResizeDisplay(this, gfx::Size());
@@ -258,6 +262,10 @@ void Compositor::SetBackgroundColor(SkColor color) {
 
 void Compositor::SetVisible(bool visible) {
   host_->SetVisible(visible);
+}
+
+bool Compositor::IsVisible() {
+  return host_->visible();
 }
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {

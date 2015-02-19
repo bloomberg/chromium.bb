@@ -72,6 +72,9 @@ class ScreenLockerDelegate {
   // Called when webui lock screen wallpaper is loaded and displayed.
   virtual void OnLockBackgroundDisplayed() = 0;
 
+  // Called when the webui header bar becomes visible.
+  virtual void OnHeaderBarVisible() = 0;
+
   // Returns screen locker associated with delegate.
   ScreenLocker* screen_locker() { return screen_locker_; }
 

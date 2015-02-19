@@ -4,11 +4,15 @@
 
 #include "ash/system/chromeos/power/power_event_observer.h"
 
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
 
 namespace ash {
 
@@ -29,6 +33,16 @@ class PowerEventObserverTest : public test::AshTestBase {
   }
 
  protected:
+  int GetNumVisibleCompositors() {
+    int result = 0;
+    for (const auto& window : Shell::GetAllRootWindows()) {
+      if (window->GetHost()->compositor()->IsVisible())
+        ++result;
+    }
+
+    return result;
+  }
+
   scoped_ptr<PowerEventObserver> observer_;
 
  private:
@@ -47,15 +61,17 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
   observer_->SuspendImminent();
   EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
 
-  // It should run the callback when it hears that the screen is locked.
+  // It should run the callback when it hears that the screen is locked and the
+  // lock screen animations have completed.
   observer_->ScreenIsLocked();
-  RunAllPendingInMessageLoop();
+  observer_->OnLockAnimationsComplete();
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   // If the system is already locked, no callback should be requested.
   observer_->SuspendDone(base::TimeDelta());
   observer_->ScreenIsUnlocked();
   observer_->ScreenIsLocked();
+  observer_->OnLockAnimationsComplete();
   observer_->SuspendImminent();
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
@@ -65,6 +81,81 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
   SetShouldLockScreenBeforeSuspending(false);
   observer_->SuspendImminent();
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
+}
+
+TEST_F(PowerEventObserverTest, SetInvisibleBeforeSuspend) {
+  // Tests that all the Compositors are marked invisible before a suspend
+  // request when the screen is not supposed to be locked before a suspend.
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  observer_->SuspendImminent();
+  EXPECT_EQ(0, GetNumVisibleCompositors());
+  observer_->SuspendDone(base::TimeDelta());
+
+  // Tests that all the Compositors are marked invisible _after_ the screen lock
+  // animations have completed.
+  SetCanLockScreen(true);
+  SetShouldLockScreenBeforeSuspending(true);
+
+  observer_->SuspendImminent();
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  observer_->ScreenIsLocked();
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  observer_->OnLockAnimationsComplete();
+  EXPECT_EQ(0, GetNumVisibleCompositors());
+
+  observer_->SuspendDone(base::TimeDelta());
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+}
+
+TEST_F(PowerEventObserverTest, CanceledSuspend) {
+  // Tests that the Compositors are not marked invisible if a suspend is
+  // canceled or the system resumes before the lock screen is ready.
+  SetCanLockScreen(true);
+  SetShouldLockScreenBeforeSuspending(true);
+  observer_->SuspendImminent();
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+
+  observer_->SuspendDone(base::TimeDelta());
+  observer_->ScreenIsLocked();
+  observer_->OnLockAnimationsComplete();
+  EXPECT_EQ(1, GetNumVisibleCompositors());
+}
+
+TEST_F(PowerEventObserverTest, DelayResuspendForLockAnimations) {
+  // Tests that the following order of events is handled correctly:
+  //
+  // - A suspend request is started.
+  // - The screen is locked.
+  // - The suspend request is canceled.
+  // - Another suspend request is started.
+  // - The screen lock animations complete.
+  //
+  // In this case, the observer should block the second suspend request until
+  // the animations have completed.
+  SetCanLockScreen(true);
+  SetShouldLockScreenBeforeSuspending(true);
+
+  chromeos::PowerManagerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  observer_->SuspendImminent();
+  EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
+
+  observer_->ScreenIsLocked();
+  observer_->SuspendDone(base::TimeDelta());
+  observer_->SuspendImminent();
+
+  // The expected number of suspend readiness callbacks is 2 because the
+  // observer has not run the callback that it got from the first suspend
+  // request.  The real PowerManagerClient would reset its internal counter in
+  // this situation but the stub client is not that smart.
+  EXPECT_EQ(2, client->GetNumPendingSuspendReadinessCallbacks());
+
+  observer_->OnLockAnimationsComplete();
+  EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0, GetNumVisibleCompositors());
 }
 
 }  // namespace ash

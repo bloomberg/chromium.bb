@@ -71,6 +71,7 @@ class WebUIScreenLocker : public WebUILoginView,
   content::WebUI* GetAssociatedWebUI() override;
   void OnLockWebUIReady() override;
   void OnLockBackgroundDisplayed() override;
+  void OnHeaderBarVisible() override;
 
   // LoginDisplay::Delegate:
   void CancelPasswordChangedFlow() override;

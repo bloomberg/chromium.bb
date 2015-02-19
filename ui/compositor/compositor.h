@@ -182,6 +182,9 @@ class COMPOSITOR_EXPORT Compositor
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
+  // Finishes all outstanding rendering and disables swapping on this surface.
+  void FinishAllRendering();
+
   // Finishes all outstanding rendering and disables swapping on this surface
   // until it is resized.
   void DisableSwapUntilResize();
@@ -198,8 +201,11 @@ class COMPOSITOR_EXPORT Compositor
   // the |root_layer|.
   void SetBackgroundColor(SkColor color);
 
-  // Set the visibility of the underlying compositor.
+  // Sets the visibility of the underlying compositor.
   void SetVisible(bool visible);
+
+  // Gets the visibility of the underlying compositor.
+  bool IsVisible();
 
   // Returns the widget for this compositor.
   gfx::AcceleratedWidget widget() const { return widget_; }
