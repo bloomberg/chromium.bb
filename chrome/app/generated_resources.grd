@@ -14574,7 +14574,13 @@ Do you accept?
           Click to start voice search
         </message>
         <message name="IDS_APP_LIST_HOTWORD_LISTENING" desc="Tooltip text for the mic button when it waits for the hotword.">
-          Click or say "Ok, Google" to start voice search
+          Click, or say "Ok Google" to start voice search
+        </message>
+        <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
+          Search or type URL
+        </message>
+        <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
+          Search, or say "Ok Google"
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
@@ -14592,12 +14598,6 @@ Do you accept?
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
             Uninstall...
-          </message>
-          <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-            Search or type URL
-          </message>
-          <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
-            Search, or say "Ok Google"
           </message>
           <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
             Sign in
@@ -14637,12 +14637,6 @@ Do you accept?
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
             Uninstall...
-          </message>
-          <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
-            Search
-          </message>
-          <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
-            Search or say "Ok, Google"
           </message>
           <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
             Sign in
