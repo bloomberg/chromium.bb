@@ -123,14 +123,15 @@ cr.define('options', function() {
       var seenIds = [];
 
       // Iterate over the extension data and add each item to the list.
-      this.data_.extensions.forEach(function(extension) {
+      this.data_.extensions.forEach(function(extension, i) {
+        var nextExt = this.data_.extensions[i + 1];
         var node = $(extension.id);
         seenIds.push(extension.id);
 
         if (node)
           this.updateNode_(extension, node);
         else
-          this.createNode_(extension);
+          this.createNode_(extension, nextExt ? $(nextExt.id) : null);
       }, this);
 
       // Remove extensions that are no longer installed.
@@ -173,9 +174,11 @@ cr.define('options', function() {
      * Synthesizes and initializes an HTML element for the extension metadata
      * given in |extension|.
      * @param {ExtensionData} extension A dictionary of extension metadata.
+     * @param {?Element} nextNode |node| should be inserted before |nextNode|.
+     *     |node| will be appended to the end if |nextNode| is null.
      * @private
      */
-    createNode_: function(extension) {
+    createNode_: function(extension, nextNode) {
       var template = $('template-collection').querySelector(
           '.extension-list-item-wrapper');
       var node = template.cloneNode(true);
@@ -296,7 +299,9 @@ cr.define('options', function() {
         e.preventDefault();
       });
 
-      this.appendChild(node);
+      // Maintain the order that nodes should be in when creating as well as
+      // when adding only one new node.
+      this.insertBefore(node, nextNode);
       this.updateNode_(extension, node);
     },
 
