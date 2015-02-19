@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/url_constants.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
@@ -80,24 +76,6 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
       contents,
       scoped_ptr<pdf::PDFWebContentsHelperClient>(
           new ChromePDFWebContentsHelperClient()));
-
-  // Currently, autofill is only enabled for the Chrome sign in page.
-  // TODO(fsamuel): If this changes in the future, revisit the use of autofill
-  // in <webview>.
-  if (web_view_guest_->GetOwnerSiteURL().GetOrigin().spec() !=
-      chrome::kChromeUIChromeSigninURL) {
-    return;
-  }
-
-  autofill::ChromeAutofillClient::CreateForWebContents(contents);
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      contents,
-      autofill::ChromeAutofillClient::FromWebContents(contents));
-  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
-      contents,
-      autofill::ChromeAutofillClient::FromWebContents(contents),
-      g_browser_process->GetApplicationLocale(),
-      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 
 void ChromeWebViewGuestDelegate::OnDidCommitProvisionalLoadForFrame(
