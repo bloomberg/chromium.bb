@@ -28,8 +28,6 @@ config("wtf_config") {
       # Don't complain about calling specific versions of templatized
       # functions (e.g. in RefPtrHashMap.h).
       "/wd4344",
-      # Conversion from 'size_t' to 'type'.
-      "/wd4267",
       # dtoa, icu, etc. like doing assignment within conditional.
       "/wd4706",
     ]
@@ -56,6 +54,8 @@ component("wtf") {
 
   public_configs = [
     ":wtf_config",
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:features",
   ]
 
@@ -102,11 +102,11 @@ test("wtf_unittests") {
 
   sources += [ "testing/RunAllTests.cpp" ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (is_win) {
-    cflags = [
-      "/wd4068",  # Unknown pragma.
-      "/wd4267",  # Conversion from 'size_t' to 'type',
-    ]
+    cflags = [ "/wd4068" ]  # Unknown pragma.
   }
 
   configs += [ "//third_party/WebKit/Source:config", ]
@@ -129,6 +129,8 @@ component("test_support") {
 
   configs += [
     ":wtf_config",
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
   ]

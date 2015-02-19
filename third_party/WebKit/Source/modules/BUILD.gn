@@ -34,6 +34,8 @@ source_set("modules") {
   }
 
   configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:inside_blink",
   ]
@@ -47,7 +49,6 @@ source_set("modules") {
 
   if (is_win) {
     cflags = [
-      "/wd4267",  # Size to int truncations.
       "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
     ]
   }

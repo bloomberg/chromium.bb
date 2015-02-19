@@ -176,6 +176,8 @@ component("platform") {
     get_target_outputs(":color_data")
 
   configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
   ]
@@ -263,7 +265,6 @@ component("platform") {
       "text/LocaleICU.h",
     ]
     cflags = [
-      "/wd4267",  # Conversion from 'size_t' to 'type', possible loss of data.
       "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
       "/wd4724",  # Modulo by 0.
     ]

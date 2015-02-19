@@ -164,11 +164,10 @@ source_set("dom") {
   sources = rebase_path(webcore_dom_files, ".", "//")
 
   configs -= core_config_remove
-  configs += core_config_add
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
+  configs += core_config_add + [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   deps = [
     ":prerequisites",
@@ -223,7 +222,10 @@ source_set("remaining") {
   sources += rebase_path(webcore_rendering_files, ".", "//")
 
   configs -= core_config_remove
-  configs += core_config_add
+  configs += core_config_add + [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   cflags = []
   libs = []
@@ -234,7 +236,6 @@ source_set("remaining") {
 
   if (is_win) {
     cflags += [
-      "/wd4267",
       "/wd4334",
     ]
   } else {  # !is_win
@@ -464,7 +465,11 @@ source_set("core_generated") {
     "//v8",
   ]
 
-  configs += [ ":core_include_dirs" ]
+  configs += [
+    ":core_include_dirs",
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
   include_dirs = [
     "$root_gen_dir/blink",
   ]
@@ -479,11 +484,9 @@ source_set("core_generated") {
   if (is_win) {
     cflags += [
       # In generated bindings code: "switch contains default but no case".
-      # Disable c4267 warnings until we fix size_t to int truncations.
       # 4701 and 4702 are disabled because of issues in Bison-generated
       # XPathGrammar.cpp and CSSGrammar.cpp.
       "/wd4065",
-      "/wd4267",
       "/wd4701",
       "/wd4702",
     ]

@@ -26,7 +26,10 @@ source_set("heap") {
     "INSIDE_BLINK",
   ]
 
-  configs += [ "//third_party/WebKit/Source:config" ]
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   deps = [
     "//third_party/WebKit/Source/platform/heap/asm",
