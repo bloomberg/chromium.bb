@@ -37,7 +37,8 @@ enum {
 };
 
 // NOTE: the SSL version enum constants must be between 0 and
-// SSL_CONNECTION_VERSION_MASK, inclusive.
+// SSL_CONNECTION_VERSION_MASK, inclusive. These values are persisted to disk
+// and used in UMA, so they must remain stable.
 enum {
   SSL_CONNECTION_VERSION_UNKNOWN = 0,  // Unknown SSL version.
   SSL_CONNECTION_VERSION_SSL2 = 1,

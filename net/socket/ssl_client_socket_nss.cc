@@ -3537,15 +3537,6 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
   // purposes.  See https://bugzilla.mozilla.org/show_bug.cgi?id=508081 and
   // http://crbug.com/15630 for more info.
 
-  // TODO(hclam): Skip logging if server cert was expected to be bad because
-  // |server_cert_verify_result_| doesn't contain all the information about
-  // the cert.
-  if (result == OK) {
-    int ssl_version =
-        SSLConnectionStatusToVersion(core_->state().ssl_connection_status);
-    RecordConnectionTypeMetrics(ssl_version);
-  }
-
   const CertStatus cert_status = server_cert_verify_result_.cert_status;
   if (transport_security_state_ &&
       (result == OK ||

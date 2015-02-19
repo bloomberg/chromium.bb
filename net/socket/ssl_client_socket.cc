@@ -176,28 +176,6 @@ void SSLClientSocket::RecordChannelIDSupport(
 }
 
 // static
-void SSLClientSocket::RecordConnectionTypeMetrics(int ssl_version) {
-  UpdateConnectionTypeHistograms(CONNECTION_SSL);
-  switch (ssl_version) {
-    case SSL_CONNECTION_VERSION_SSL2:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_SSL2);
-      break;
-    case SSL_CONNECTION_VERSION_SSL3:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_SSL3);
-      break;
-    case SSL_CONNECTION_VERSION_TLS1:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_TLS1);
-      break;
-    case SSL_CONNECTION_VERSION_TLS1_1:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_TLS1_1);
-      break;
-    case SSL_CONNECTION_VERSION_TLS1_2:
-      UpdateConnectionTypeHistograms(CONNECTION_SSL_TLS1_2);
-      break;
-  }
-}
-
-// static
 bool SSLClientSocket::IsChannelIDEnabled(
     const SSLConfig& ssl_config,
     ChannelIDService* channel_id_service) {

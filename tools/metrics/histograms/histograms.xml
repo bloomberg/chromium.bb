@@ -16429,7 +16429,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.ConnectionTypeCount3" enum="ConnectionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>davidben@chromium.org</owner>
   <summary>
     Each bucket is the number of successful connections of a particular type
     that the user has had during the session.
@@ -17424,7 +17424,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.HadConnectionType3" enum="ConnectionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>davidben@chromium.org</owner>
   <summary>
     Each bucket is a boolean (0 or 1) indicating whether the user has had a
     successful connection of that type during the session.
@@ -19788,7 +19788,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Net.SSL_CipherSuite" enum="SSLCipherSuite">
   <owner>agl@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
-  <summary>The SSL/TLS cipher suite that was negotiated.</summary>
+  <summary>
+    The SSL/TLS cipher suite that was negotiated. Recorded for each SSL/TLS
+    connection in the socket pool where Connect() succeeds.
+  </summary>
 </histogram>
 
 <histogram name="Net.SSL_Connection_Error" enum="NetErrorCodes">
@@ -19975,6 +19978,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Net.SSLVerificationMergedMsSaved" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time saved by a speculative certificate vertification.</summary>
+</histogram>
+
+<histogram name="Net.SSLVersion" enum="SSLOrQUICVersion">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    The SSL/TLS version that was negotiated. Recorded for each SSL/TLS
+    connection in the socket pool where Connect() succeeds.
+  </summary>
 </histogram>
 
 <histogram name="Net.TCP_Connection_Idle_Sockets">
@@ -58832,6 +58843,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="EXPIRED_AND_DO_NOT_PROCEED"/>
   <int value="2" label="NOT_EXPIRED_AND_PROCEED"/>
   <int value="3" label="NOT_EXPIRED_AND_DO_NOT_PROCEED"/>
+</enum>
+
+<enum name="SSLOrQUICVersion" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="SSL 2.0"/>
+  <int value="2" label="SSL 3.0"/>
+  <int value="3" label="TLS 1.0"/>
+  <int value="4" label="TLS 1.1"/>
+  <int value="5" label="TLS 1.2"/>
+  <int value="7" label="QUIC"/>
 </enum>
 
 <enum name="SSLProtocolNegotiation" type="int">

@@ -1211,8 +1211,6 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
   }
 
   if (result == OK) {
-    RecordConnectionTypeMetrics(GetNetSSLVersion(ssl_));
-
     if (SSL_session_reused(ssl_)) {
       // Record whether or not the server tried to resume a session for a
       // different version. See https://crbug.com/441456.

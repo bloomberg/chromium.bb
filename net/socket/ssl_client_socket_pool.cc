@@ -501,6 +501,10 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     SSLInfo ssl_info;
     ssl_socket_->GetSSLInfo(&ssl_info);
 
+    UMA_HISTOGRAM_ENUMERATION("Net.SSLVersion", SSLConnectionStatusToVersion(
+                                                    ssl_info.connection_status),
+                              SSL_CONNECTION_VERSION_MAX);
+
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSL_CipherSuite",
                                 SSLConnectionStatusToCipherSuite(
                                     ssl_info.connection_status));
