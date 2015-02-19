@@ -1357,6 +1357,16 @@ weston_view_schedule_repaint(struct weston_view *view)
 			weston_output_schedule_repaint(output);
 }
 
+/**
+ * XXX: This function does it the wrong way.
+ * surface->damage is the damage from the client, and causes
+ * surface_flush_damage() to copy pixels. No window management action can
+ * cause damage to the client-provided content, warranting re-upload!
+ *
+ * Instead of surface->damage, this function should record the damage
+ * with all the views for this surface to avoid extraneous texture
+ * uploads.
+ */
 WL_EXPORT void
 weston_surface_damage(struct weston_surface *surface)
 {

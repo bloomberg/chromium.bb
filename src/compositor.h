@@ -871,7 +871,10 @@ struct weston_surface {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
 	struct weston_compositor *compositor;
+
+	/** Damage in local coordinates from the client, for tex upload. */
 	pixman_region32_t damage;
+
 	pixman_region32_t opaque;        /* part of geometry, see below */
 	pixman_region32_t input;
 	int32_t width, height;
