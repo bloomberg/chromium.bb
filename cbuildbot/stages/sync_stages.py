@@ -38,6 +38,7 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
 
@@ -641,13 +642,69 @@ class ManifestVersionedSyncStage(SyncStage):
                  os.path.basename(sdk_manifest_path))
     logging.info('%s', osutils.ReadFile(manifest))
 
+  def _GetMasterVersion(self, master_id, timeout=5 * 60):
+    """Get the platform version associated with the master_build_id.
+
+    Args:
+      master_id: Our master build id.
+      timeout: How long to wait for the platform version to show up
+        in the database. This is needed because the slave builders are
+        triggered slightly before the platform version is written. Default
+        is 5 minutes.
+    """
+    # TODO(davidjames): Remove the wait loop here once we've updated slave
+    # builders to only get triggered after the platform version is written.
+    def _PrintRemainingTime(remaining):
+      logging.info('%s until timeout...', remaining)
+
+    def _GetPlatformVersion():
+      return db.GetBuildStatus(master_id)['platform_version']
+
+    # Retry until non-None version is returned.
+    def _ShouldRetry(x):
+      return not x
+
+    _, db = self._run.GetCIDBHandle()
+    return timeout_util.WaitForSuccess(_ShouldRetry,
+                                       _GetPlatformVersion,
+                                       timeout,
+                                       period=constants.SLEEP_TIMEOUT,
+                                       side_effect_func=_PrintRemainingTime)
+
+  def _VerifyMasterId(self, master_id):
+    """Verify that our master id is current and valid.
+
+    Args:
+      master_id: Our master build id.
+    """
+    _, db = self._run.GetCIDBHandle()
+    if db and master_id:
+      assert not self._run.options.force_version
+      master_build_status = db.GetBuildStatus(master_id)
+      latest = db.GetBuildHistory(master_build_status['build_config'], 1)
+      if latest and latest[0]['id'] != master_id:
+        raise failures_lib.MasterSlaveVersionMismatchFailure(
+            'This slave\'s master (id=%s) has been supplanted by a newer '
+            'master (id=%s). Aborting.' % (master_id, latest[0]['id']))
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
-    if self._run.options.force_version:
-      next_manifest = self.ForceVersion(self._run.options.force_version)
+
+    self._VerifyMasterId(self._run.options.master_build_id)
+    version = self._run.options.force_version
+    if self._run.options.master_build_id:
+      version = self._GetMasterVersion(self._run.options.master_build_id)
+
+    next_manifest = None
+    if version:
+      next_manifest = self.ForceVersion(version)
     else:
-      next_manifest = self.GetNextManifest()
+      self.skip_sync = True
+      try:
+        next_manifest = self.GetNextManifest()
+      except validation_pool.TreeIsClosedException as e:
+        cros_build_lib.Warning(str(e))
 
     if not next_manifest:
       logging.info('Found no work to do.')
@@ -705,9 +762,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   candidates and their states.
   """
 
-  # Timeout for waiting on the latest candidate manifest.
-  LATEST_CANDIDATE_TIMEOUT_SECONDS = 20 * 60
-
   # TODO(mtennant): Turn this into self._run.attrs.sub_manager or similar.
   # An instance of lkgm_manager.LKGMManager for slave builds.
   sub_manager = None
@@ -716,7 +770,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     super(MasterSlaveLKGMSyncStage, self).__init__(builder_run, **kwargs)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
-    self.skip_sync = True
     self._chrome_version = None
 
   def _GetInitializedManager(self, internal):
@@ -757,24 +810,30 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
 
     return manifest
 
+  def _VerifyMasterId(self, master_id):
+    """Verify that our master id is current and valid."""
+    super(MasterSlaveLKGMSyncStage, self)._VerifyMasterId(master_id)
+    if not self._run.config.master and not master_id:
+      raise failures_lib.StepFailure(
+          'Cannot start build without a master_build_id. Did you hit force '
+          'build on a slave? Please hit force build on the master instead.')
+
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
     assert self.manifest_manager, \
         'Must run Initialize before we can get a manifest.'
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
+    assert self._run.config.master
 
-    if self._run.config.master:
-      build_id = self._run.attrs.metadata.GetDict().get('build_id')
-      manifest = self.manifest_manager.CreateNewCandidate(
-          chrome_version=self._chrome_version,
-          build_id=build_id)
-      if MasterSlaveLKGMSyncStage.sub_manager:
-        MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(manifest)
-      return manifest
-    else:
-      return self.manifest_manager.GetLatestCandidate(
-          timeout=self.LATEST_CANDIDATE_TIMEOUT_SECONDS)
+    build_id = self._run.attrs.metadata.GetDict().get('build_id')
+    manifest = self.manifest_manager.CreateNewCandidate(
+        chrome_version=self._chrome_version,
+        build_id=build_id)
+    if MasterSlaveLKGMSyncStage.sub_manager:
+      MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(manifest)
+
+    return manifest
 
   def GetLatestChromeVersion(self):
     """Returns the version of Chrome to uprev."""
@@ -859,9 +918,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
   def _SetPoolFromManifest(self, manifest):
     """Sets validation pool based on manifest path passed in."""
-    # Note that GetNextManifest() calls GetLatestCandidate() in this case,
-    # so the repo will already be sync'd appropriately. This means that
-    # AcquirePoolFromManifest does not need to sync.
+    # Note that this function is only called after the repo is already
+    # sync'd, so AcquirePoolFromManifest does not need to sync.
     self.pool = validation_pool.ValidationPool.AcquirePoolFromManifest(
         manifest, self._run.config.overlays, self.repo,
         self._run.buildnumber, self._run.GetBuilderName(),
@@ -883,69 +941,77 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         'Must run Initialize before we can get a manifest.'
     assert isinstance(self.manifest_manager, lkgm_manager.LKGMManager), \
         'Manifest manager instantiated with wrong class.'
+    assert self._run.config.master
 
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
 
-    if self._run.config.master:
-      try:
-        # In order to acquire a pool, we need an initialized buildroot.
-        if not git.FindRepoDir(self.repo.directory):
-          self.repo.Initialize()
+    try:
+      # In order to acquire a pool, we need an initialized buildroot.
+      if not git.FindRepoDir(self.repo.directory):
+        self.repo.Initialize()
 
-        query = constants.CQ_READY_QUERY
-        if self._run.options.cq_gerrit_override:
-          query = (self._run.options.cq_gerrit_override, None)
+      query = constants.CQ_READY_QUERY
+      if self._run.options.cq_gerrit_override:
+        query = (self._run.options.cq_gerrit_override, None)
 
-        self.pool = pool = validation_pool.ValidationPool.AcquirePool(
-            self._run.config.overlays, self.repo,
-            self._run.buildnumber, self._run.GetBuilderName(),
-            query,
-            dryrun=self._run.options.debug,
-            check_tree_open=(not self._run.options.debug or
-                             self._run.options.mock_tree_status),
-            change_filter=self._ChangeFilter, builder_run=self._run)
-      except validation_pool.TreeIsClosedException as e:
-        logging.warning(str(e))
-        return None
+      self.pool = pool = validation_pool.ValidationPool.AcquirePool(
+          self._run.config.overlays, self.repo,
+          self._run.buildnumber, self._run.GetBuilderName(),
+          query,
+          dryrun=self._run.options.debug,
+          check_tree_open=(not self._run.options.debug or
+                           self._run.options.mock_tree_status),
+          change_filter=self._ChangeFilter, builder_run=self._run)
+    except validation_pool.TreeIsClosedException as e:
+      logging.warning(str(e))
+      return None
 
-      # We must extend the builder deadline before publishing a new manifest to
-      # ensure that slaves have enough time to complete the builds about to
-      # start.
-      build_id, db = self._run.GetCIDBHandle()
-      if db:
-        timeout = constants.MASTER_BUILD_TIMEOUT_SECONDS.get(
-            self._run.config.build_type,
-            constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
-        db.ExtendDeadline(build_id, timeout)
+    # We must extend the builder deadline before publishing a new manifest to
+    # ensure that slaves have enough time to complete the builds about to
+    # start.
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      timeout = constants.MASTER_BUILD_TIMEOUT_SECONDS.get(
+          self._run.config.build_type,
+          constants.MASTER_BUILD_TIMEOUT_DEFAULT_SECONDS)
+      db.ExtendDeadline(build_id, timeout)
 
-      manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
-                                                          build_id=build_id)
-      if MasterSlaveLKGMSyncStage.sub_manager:
-        MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
-            manifest, build_id=build_id)
+    manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool,
+                                                        build_id=build_id)
+    if MasterSlaveLKGMSyncStage.sub_manager:
+      MasterSlaveLKGMSyncStage.sub_manager.CreateFromManifest(
+          manifest, build_id=build_id)
 
-    else:
-      manifest = self.manifest_manager.GetLatestCandidate()
-      if manifest:
-        if self._run.config.build_before_patching:
-          pre_build_passed = self.RunPrePatchBuild()
-          cros_build_lib.PrintBuildbotStepName(
-              'CommitQueueSync : Apply Patches')
-          if not pre_build_passed:
-            cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
+    return manifest
 
-        self._SetPoolFromManifest(manifest)
-        self.pool.ApplyPoolIntoRepo()
+  def ManifestCheckout(self, next_manifest):
+    """Checks out the repository to the given manifest."""
+    if self._run.config.build_before_patching:
+      assert not self._run.config.master
+      pre_build_passed = self.RunPrePatchBuild()
+      cros_build_lib.PrintBuildbotStepName(
+          'CommitQueueSync : Apply Patches')
+      if not pre_build_passed:
+        cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
 
     # Make sure the chroot version is valid.
-    lkgm_version = self._GetLGKMVersionFromManifest(manifest)
+    lkgm_version = self._GetLGKMVersionFromManifest(next_manifest)
     chroot_manager = chroot_lib.ChrootManager(self._build_root)
     chroot_manager.EnsureChrootAtVersion(lkgm_version)
 
     # Clear the chroot version as we are in the middle of building it.
     chroot_manager.ClearChrootVersion()
 
-    return manifest
+    # Sync to the provided manifest on slaves. On the master, we're
+    # already synced to this manifest, so self.skip_sync is set and
+    # this is a no-op.
+    super(CommitQueueSyncStage, self).ManifestCheckout(next_manifest)
+
+    # On slaves, initialize our pool and apply patches. On the master,
+    # we've already done that in GetNextManifest, so this is a no-op.
+    if not self._run.config.master:
+      self._SetPoolFromManifest(next_manifest)
+      self.pool.ApplyPoolIntoRepo()
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

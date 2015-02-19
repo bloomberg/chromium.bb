@@ -862,14 +862,16 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Returns:
       A list of dictionary with keys (id, build_config, start_time,
-      finish_time, status, waterfall, build_number, builder_name, full_version),
-      or None if no build with this id was found.
+      finish_time, status, waterfall, build_number, builder_name,
+      platform_version, full_version), or None if no build with this
+      id was found.
     """
     return self._SelectWhere(
         'buildTable',
         'id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
         ['id', 'build_config', 'start_time', 'finish_time', 'status',
-         'waterfall', 'build_number', 'builder_name', 'full_version'])
+         'waterfall', 'build_number', 'builder_name', 'platform_version',
+         'full_version'])
 
   @minimum_schema(2)
   def GetSlaveStatuses(self, master_build_id):
@@ -968,14 +970,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           master for which data should be retrieved.
 
     Returns:
-      A sorted list of dicts containining up to |number| dictionaries for
+      A sorted list of dicts containing up to |number| dictionaries for
       build statuses in descending order. Valid keys in the dictionary are
       [id, build_config, buildbot_generation, waterfall, build_number,
-      start_time, finish_time, full_version, status].
+      start_time, finish_time, platform_version, full_version, status].
     """
     columns = ['id', 'build_config', 'buildbot_generation', 'waterfall',
-               'build_number', 'start_time', 'finish_time', 'full_version',
-               'status']
+               'build_number', 'start_time', 'finish_time', 'platform_version',
+               'full_version', 'status']
 
     where_clauses = ['build_config = "%s"' % build_config]
     if start_date is not None:

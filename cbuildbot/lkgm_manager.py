@@ -16,7 +16,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
-from chromite.lib import timeout_util
 
 
 # Paladin constants for manifest names.
@@ -372,60 +371,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         last_error = err_msg
 
     raise manifest_version.GenerateBuildSpecException(last_error)
-
-  def GetLatestCandidate(self, timeout=10 * 60):
-    """Gets and syncs to the next candiate manifest.
-
-    Args:
-      timeout: The timeout in seconds.
-
-    Returns:
-      Local path to manifest to build or None in case of no need to build.
-
-    Raises:
-      GenerateBuildSpecException in case of failure to generate a buildspec
-    """
-    def _AttemptToGetLatestCandidate():
-      """Attempts to acquire latest candidate using manifest repo."""
-      self.RefreshManifestCheckout()
-      self.InitializeManifestVariables(self.GetCurrentVersionInfo())
-      if self.latest_unprocessed:
-        return self.latest_unprocessed
-      elif self.dry_run and self.latest:
-        return self.latest
-
-    def _PrintRemainingTime(remaining):
-      logging.info('Found nothing new to build, will keep trying for %s',
-                   remaining)
-      logging.info('If this is a PFQ, then you should have forced the master'
-                   ', which runs cbuildbot_master')
-
-    # TODO(sosa):  We only really need the overlay for the version info but we
-    # do a full checkout here because we have no way of refining it currently.
-    self.CheckoutSourceCode()
-    try:
-      version_to_build = timeout_util.WaitForSuccess(
-          lambda x: x is None,
-          _AttemptToGetLatestCandidate,
-          timeout,
-          period=self.SLEEP_TIMEOUT,
-          fallback_timeout=max(10, timeout),
-          side_effect_func=_PrintRemainingTime)
-    except timeout_util.TimeoutError:
-      _PrintRemainingTime(0)
-      version_to_build = _AttemptToGetLatestCandidate()
-
-    if version_to_build:
-      logging.info('Starting build spec: %s', version_to_build)
-      self.current_version = version_to_build
-
-      # Actually perform the sync.
-      manifest = self.GetLocalManifest(version_to_build)
-      self.cros_source.Sync(manifest)
-      self._GenerateBlameListSinceLKGM()
-      return manifest
-    else:
-      return None
 
   def PromoteCandidate(self, retries=manifest_version.NUM_RETRIES):
     """Promotes the current LKGM candidate to be a real versioned LKGM."""
