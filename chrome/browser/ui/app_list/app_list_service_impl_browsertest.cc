@@ -60,7 +60,9 @@ class AppListServiceImplBrowserTest : public InProcessBrowserTest {
 // Test that showing a loaded profile for the first time is lazy and
 // synchronous. Then tests that showing a second loaded profile without
 // dismissing correctly switches profiles.
-IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowLoadedProfiles) {
+// crbug.com/459649
+IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
+                       DISABLED_ShowLoadedProfiles) {
   PrefService* local_state = g_browser_process->local_state();
   EXPECT_FALSE(local_state->HasPrefPath(prefs::kAppListProfile));
 
