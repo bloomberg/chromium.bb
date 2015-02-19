@@ -737,7 +737,9 @@ FileManager.prototype = /** @struct */ {
     FileManagerDialogBase.setFileManager(this);
 
     var table = queryRequiredElement(dom, '.detail-table');
-    table.importEnabled = this.importEnabled_;
+    // TODO(kenobi): See crbug/460135.  The import status column in table view
+    // is disabled until it works properly.
+    table.importEnabled = false;
     FileTable.decorate(
         table,
         this.fileSystemMetadata_,
