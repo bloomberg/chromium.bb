@@ -975,7 +975,6 @@ body[type='full-page'] .detail-name .detail-icon {
   cursor: auto;
   display: flex;
   flex-direction: row;
-  justify-content: center;
   left: 0;
   padding: 0 10px;
   position: absolute;
@@ -1192,17 +1191,16 @@ input.rename {
 }
 
 li[renaming=''] .filename-label,
-li[renaming=''] .detail-icon,
 li[renaming=''] .badge {
   display: none;
 }
 
 /* Text box used for renaming in the thumbnail list. */
 .thumbnail-grid input.rename {
-  -webkit-margin-start: -1px;
+  -webkit-margin-start: 10px;
   box-sizing: border-box;
   height: 20px;
-  width: 156px;
+  width: 100%;
 }
 
 /* The cr.ui.Table representing the detailed file list. */
