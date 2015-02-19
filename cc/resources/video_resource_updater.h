@@ -131,6 +131,7 @@ class CC_EXPORT VideoResourceUpdater
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
+  std::vector<uint8_t> upload_pixels_;
 
   // Recycle resources so that we can reduce the number of allocations and
   // data transfers.

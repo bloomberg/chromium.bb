@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/util.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -317,14 +318,41 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     if (!PlaneResourceMatchesUniqueID(plane_resource, video_frame.get(), i)) {
       // We need to transfer data from |video_frame| to the plane resource.
-      const uint8_t* input_plane_pixels = video_frame->data(i);
+      // TODO(reveman): Can use GpuMemoryBuffers here to improve performance.
 
-      gfx::Rect image_rect(0, 0, video_frame->stride(i),
-                           plane_resource.resource_size.height());
-      gfx::Rect source_rect(plane_resource.resource_size);
-      resource_provider_->SetPixels(plane_resource.resource_id,
-                                    input_plane_pixels, image_rect, source_rect,
-                                    gfx::Vector2d());
+      // The |resource_size_pixels| is the size of the resource we want to
+      // upload to.
+      gfx::Size resource_size_pixels = plane_resource.resource_size;
+      // The |video_stride_pixels| is the width of the video frame we are
+      // uploading (including non-frame data to fill in the stride).
+      size_t video_stride_pixels = video_frame->stride(i);
+
+      size_t bytes_per_pixel = BitsPerPixel(plane_resource.resource_format) / 8;
+      // Use 4-byte row alignment (OpenGL default) for upload performance.
+      // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
+      size_t upload_image_stride =
+          RoundUp<size_t>(bytes_per_pixel * resource_size_pixels.width(), 4u);
+
+      const uint8_t* pixels;
+      if (upload_image_stride == video_stride_pixels * bytes_per_pixel) {
+        pixels = video_frame->data(i);
+      } else {
+        // Avoid malloc for each frame/plane if possible.
+        size_t needed_size =
+            upload_image_stride * resource_size_pixels.height();
+        if (upload_pixels_.size() < needed_size)
+          upload_pixels_.resize(needed_size);
+        for (int row = 0; row < resource_size_pixels.height(); ++row) {
+          uint8_t* dst = &upload_pixels_[upload_image_stride * row];
+          const uint8_t* src = video_frame->data(i) +
+                               bytes_per_pixel * video_stride_pixels * row;
+          memcpy(dst, src, resource_size_pixels.width() * bytes_per_pixel);
+        }
+        pixels = &upload_pixels_[0];
+      }
+
+      resource_provider_->CopyToResource(plane_resource.resource_id, pixels,
+                                         resource_size_pixels);
       SetPlaneResourceUniqueId(video_frame.get(), i, &plane_resource);
     }
 
