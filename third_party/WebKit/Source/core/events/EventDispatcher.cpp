@@ -44,7 +44,7 @@ namespace blink {
 
 bool EventDispatcher::dispatchEvent(Node& node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
-    TRACE_EVENT0("blink", "EventDispatcher::dispatchEvent");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatchEvent");
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     EventDispatcher dispatcher(node, &mediator->event());
     return mediator->dispatchEvent(dispatcher);
@@ -104,7 +104,7 @@ void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent,
 
 bool EventDispatcher::dispatch()
 {
-    TRACE_EVENT0("blink", "EventDispatcher::dispatch");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatch");
 
 #if ENABLE(ASSERT)
     ASSERT(!m_eventDispatched);
