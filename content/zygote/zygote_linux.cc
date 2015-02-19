@@ -106,7 +106,7 @@ bool Zygote::ProcessRequests() {
   action.sa_handler = &SIGCHLDHandler;
   CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
 
-  if (UsingSUIDSandbox()) {
+  if (UsingSUIDSandbox() || UsingNSSandbox()) {
     // Let the ZygoteHost know we are ready to go.
     // The receiving code is in content/browser/zygote_host_linux.cc.
     bool r = UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
@@ -145,6 +145,10 @@ bool Zygote::GetProcessInfo(base::ProcessHandle pid,
 
 bool Zygote::UsingSUIDSandbox() const {
   return sandbox_flags_ & kSandboxLinuxSUID;
+}
+
+bool Zygote::UsingNSSandbox() const {
+  return sandbox_flags_ & kSandboxLinuxUserNS;
 }
 
 bool Zygote::HandleRequestFromBrowser(int fd) {

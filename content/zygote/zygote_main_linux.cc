@@ -533,10 +533,14 @@ bool ZygoteMain(const MainFunctionParams& params,
       linux_sandbox->setuid_sandbox_client()->IsSuidSandboxChild();
   const bool using_namespace_sandbox =
       sandbox::NamespaceSandbox::InNewUserNamespace();
+  const bool using_layer1_sandbox =
+      using_setuid_sandbox || using_namespace_sandbox;
 
   if (using_setuid_sandbox) {
     linux_sandbox->setuid_sandbox_client()->CloseDummyFile();
+  }
 
+  if (using_layer1_sandbox) {
     // Let the ZygoteHost know we're booting up.
     CHECK(UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
                                     kZygoteBootMessage,
@@ -546,8 +550,6 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   VLOG(1) << "ZygoteMain: initializing " << fork_delegates.size()
           << " fork delegates";
-  const bool using_layer1_sandbox =
-      using_setuid_sandbox || using_namespace_sandbox;
   for (ZygoteForkDelegate* fork_delegate : fork_delegates) {
     fork_delegate->Init(GetSandboxFD(), using_layer1_sandbox);
   }

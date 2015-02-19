@@ -182,7 +182,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   dummy_fd.reset();
 
-  if (using_suid_sandbox) {
+  if (using_suid_sandbox || using_namespace_sandbox) {
     // The SUID sandbox will execute the zygote in a new PID namespace, and
     // the main zygote process will then fork from there.  Watch now our
     // elaborate dance to find and validate the zygote's PID.

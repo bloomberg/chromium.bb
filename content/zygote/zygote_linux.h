@@ -53,6 +53,8 @@ class Zygote {
 
   // Returns true if the SUID sandbox is active.
   bool UsingSUIDSandbox() const;
+  // Returns true if the NS sandbox is active.
+  bool UsingNSSandbox() const;
 
   // ---------------------------------------------------------------------------
   // Requests from the browser...
