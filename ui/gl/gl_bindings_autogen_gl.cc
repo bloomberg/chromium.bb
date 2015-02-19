@@ -232,6 +232,7 @@ void DriverGL::InitializeStaticBindings() {
       GetGLProcAddress("glGetShaderSource"));
   fn.glGetStringFn =
       reinterpret_cast<glGetStringProc>(GetGLProcAddress("glGetString"));
+  fn.glGetStringiFn = 0;
   fn.glGetSyncivFn = 0;
   fn.glGetTexLevelParameterfvFn = 0;
   fn.glGetTexLevelParameterivFn = 0;
@@ -1385,6 +1386,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         reinterpret_cast<glGetShaderPrecisionFormatProc>(
             GetGLProcAddress("glGetShaderPrecisionFormat"));
     DCHECK(fn.glGetShaderPrecisionFormatFn);
+  }
+
+  debug_fn.glGetStringiFn = 0;
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+    fn.glGetStringiFn =
+        reinterpret_cast<glGetStringiProc>(GetGLProcAddress("glGetStringi"));
+    DCHECK(fn.glGetStringiFn);
   }
 
   debug_fn.glGetSyncivFn = 0;
@@ -3391,6 +3399,16 @@ static const GLubyte* GL_BINDING_CALL Debug_glGetString(GLenum name) {
   return result;
 }
 
+static const GLubyte* GL_BINDING_CALL
+Debug_glGetStringi(GLenum name, GLuint index) {
+  GL_SERVICE_LOG("glGetStringi"
+                 << "(" << GLEnums::GetStringEnum(name) << ", " << index
+                 << ")");
+  const GLubyte* result = g_driver_gl.debug_fn.glGetStringiFn(name, index);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 static void GL_BINDING_CALL Debug_glGetSynciv(GLsync sync,
                                               GLenum pname,
                                               GLsizei bufSize,
@@ -5309,6 +5327,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetStringFn = fn.glGetStringFn;
     fn.glGetStringFn = Debug_glGetString;
   }
+  if (!debug_fn.glGetStringiFn) {
+    debug_fn.glGetStringiFn = fn.glGetStringiFn;
+    fn.glGetStringiFn = Debug_glGetStringi;
+  }
   if (!debug_fn.glGetSyncivFn) {
     debug_fn.glGetSyncivFn = fn.glGetSyncivFn;
     fn.glGetSyncivFn = Debug_glGetSynciv;
@@ -6738,6 +6760,10 @@ void GLApiBase::glGetShaderSourceFn(GLuint shader,
 
 const GLubyte* GLApiBase::glGetStringFn(GLenum name) {
   return driver_->fn.glGetStringFn(name);
+}
+
+const GLubyte* GLApiBase::glGetStringiFn(GLenum name, GLuint index) {
+  return driver_->fn.glGetStringiFn(name, index);
 }
 
 void GLApiBase::glGetSyncivFn(GLsync sync,
@@ -8557,6 +8583,11 @@ void TraceGLApi::glGetShaderSourceFn(GLuint shader,
 const GLubyte* TraceGLApi::glGetStringFn(GLenum name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetString")
   return gl_api_->glGetStringFn(name);
+}
+
+const GLubyte* TraceGLApi::glGetStringiFn(GLenum name, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetStringi")
+  return gl_api_->glGetStringiFn(name, index);
 }
 
 void TraceGLApi::glGetSyncivFn(GLsync sync,
@@ -10673,6 +10704,12 @@ void NoContextGLApi::glGetShaderSourceFn(GLuint shader,
 const GLubyte* NoContextGLApi::glGetStringFn(GLenum name) {
   NOTREACHED() << "Trying to call glGetString() without current GL context";
   LOG(ERROR) << "Trying to call glGetString() without current GL context";
+  return NULL;
+}
+
+const GLubyte* NoContextGLApi::glGetStringiFn(GLenum name, GLuint index) {
+  NOTREACHED() << "Trying to call glGetStringi() without current GL context";
+  LOG(ERROR) << "Trying to call glGetStringi() without current GL context";
   return NULL;
 }
 

@@ -1398,6 +1398,12 @@ const GLubyte* GL_BINDING_CALL MockGLInterface::Mock_glGetString(GLenum name) {
   return interface_->GetString(name);
 }
 
+const GLubyte* GL_BINDING_CALL
+MockGLInterface::Mock_glGetStringi(GLenum name, GLuint index) {
+  MakeFunctionUnique("glGetStringi");
+  return interface_->GetStringi(name, index);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glGetSynciv(GLsync sync,
                                                        GLenum pname,
                                                        GLsizei bufSize,
@@ -2906,6 +2912,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetShaderiv);
   if (strcmp(name, "glGetString") == 0)
     return reinterpret_cast<void*>(Mock_glGetString);
+  if (strcmp(name, "glGetStringi") == 0)
+    return reinterpret_cast<void*>(Mock_glGetStringi);
   if (strcmp(name, "glGetSynciv") == 0)
     return reinterpret_cast<void*>(Mock_glGetSynciv);
   if (strcmp(name, "glGetTexLevelParameterfv") == 0)

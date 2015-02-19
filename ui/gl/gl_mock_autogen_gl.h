@@ -376,6 +376,7 @@ MOCK_METHOD4(
     GetShaderSource,
     void(GLuint shader, GLsizei bufsize, GLsizei* length, char* source));
 MOCK_METHOD1(GetString, const GLubyte*(GLenum name));
+MOCK_METHOD2(GetStringi, const GLubyte*(GLenum name, GLuint index));
 MOCK_METHOD5(GetSynciv,
              void(GLsync sync,
                   GLenum pname,

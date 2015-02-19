@@ -376,6 +376,7 @@ void glGetShaderSourceFn(GLuint shader,
                          GLsizei* length,
                          char* source) override;
 const GLubyte* glGetStringFn(GLenum name) override;
+const GLubyte* glGetStringiFn(GLenum name, GLuint index) override;
 void glGetSyncivFn(GLsync sync,
                    GLenum pname,
                    GLsizei bufSize,
