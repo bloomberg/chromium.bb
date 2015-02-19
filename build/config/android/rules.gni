@@ -38,7 +38,7 @@ template("generate_jni") {
     script = "//base/android/jni_generator/jni_generator.py"
     depfile = "$target_gen_dir/$target_name.{{source_name_part}}.d"
     sources = invoker.sources
-    source_prereqs = [ jni_generator_include ]
+    inputs = [ jni_generator_include ]
     outputs = [
       depfile,
       "${jni_output_dir}/{{source_name_part}}_jni.h"
