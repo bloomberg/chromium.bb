@@ -265,6 +265,10 @@ public class Website implements Serializable {
         }
     }
 
+    public CookieInfo getCookieInfo() {
+        return mCookieInfo;
+    }
+
     /**
      * Gets the permission that governs cookie preferences.
      */
@@ -290,6 +294,10 @@ public class Website implements Serializable {
         if (embedder != null) {
             mSummary = embedder.getTitle();
         }
+    }
+
+    public GeolocationInfo getGeolocationInfo() {
+        return mGeolocationInfo;
     }
 
     /**
@@ -319,6 +327,10 @@ public class Website implements Serializable {
         }
     }
 
+    public MidiInfo getMidiInfo() {
+        return mMidiInfo;
+    }
+
     /**
      * Returns what permission governs MIDI usage access.
      */
@@ -340,6 +352,10 @@ public class Website implements Serializable {
      */
     public void setPopupExceptionInfo(PopupExceptionInfo info) {
         mPopupExceptionInfo = info;
+    }
+
+    public PopupExceptionInfo getPopupExceptionInfo() {
+        return mPopupExceptionInfo;
     }
 
     /**
@@ -370,6 +386,10 @@ public class Website implements Serializable {
         }
     }
 
+    public ProtectedMediaIdentifierInfo getProtectedMediaIdentifierInfo() {
+        return mProtectedMediaIdentifierInfo;
+    }
+
     /**
      * Returns what permission governs Protected Media Identifier access.
      */
@@ -392,6 +412,10 @@ public class Website implements Serializable {
      */
     public void setPushNotificationInfo(PushNotificationInfo info) {
         mPushNotificationInfo = info;
+    }
+
+    public PushNotificationInfo getPushNotificationInfo() {
+        return mPushNotificationInfo;
     }
 
     /**
@@ -419,6 +443,10 @@ public class Website implements Serializable {
         if (embedder != null) {
             mSummary = embedder.getTitle();
         }
+    }
+
+    public VoiceAndVideoCaptureInfo getVoiceAndVideoCaptureInfo() {
+        return mVoiceAndVideoCaptureInfo;
     }
 
     /**
@@ -492,8 +520,16 @@ public class Website implements Serializable {
         mLocalStorageInfo = info;
     }
 
+    public LocalStorageInfo getLocalStorageInfo() {
+        return mLocalStorageInfo;
+    }
+
     public void addStorageInfo(StorageInfo info) {
         mStorageInfo.add(info);
+    }
+
+    public List<StorageInfo> getStorageInfo() {
+        return new ArrayList<StorageInfo>(mStorageInfo);
     }
 
     public void clearAllStoredData(final StoredDataClearedCallback callback) {

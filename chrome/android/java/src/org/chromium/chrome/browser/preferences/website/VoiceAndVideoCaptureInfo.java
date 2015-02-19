@@ -42,7 +42,7 @@ public class VoiceAndVideoCaptureInfo implements Serializable {
     /**
      * @return Embedding frame origin for this permission. It it's null, returns origin.
      */
-    private String getEmbedderSafe() {
+    public String getEmbedderSafe() {
         return mEmbedder != null ? mEmbedder : mOrigin;
     }
 

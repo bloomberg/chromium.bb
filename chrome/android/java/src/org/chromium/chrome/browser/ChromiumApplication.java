@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.preferences.ProtectedContentPreferences;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
+import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 
@@ -66,6 +67,20 @@ public abstract class ChromiumApplication extends ContentApplication {
     protected void showPasswordSettings() {
         PreferencesLauncher.launchSettingsPage(this,
                 ManageSavedPasswordsPreferences.class.getName());
+    }
+
+    /**
+     * Opens the single origin settings page for the given URL.
+     *
+     * @param url The URL to show the single origin settings for. This is a complete url
+     *            including scheme, domain, port, path, etc.
+     */
+    protected void showSingleOriginSettings(String url) {
+        Bundle fragmentArgs = SingleWebsitePreferences.createFragmentArgsForSite(url);
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                this, SingleWebsitePreferences.class.getName());
+        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+        startActivity(intent);
     }
 
     /**

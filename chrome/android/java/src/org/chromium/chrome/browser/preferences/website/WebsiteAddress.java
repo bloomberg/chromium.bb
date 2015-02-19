@@ -10,6 +10,8 @@ import org.chromium.chrome.browser.UrlUtilities;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
+
 /**
  * WebsiteAddress is a robust class for storing website address, which can be a
  * fully specified origin, or just a host, or a website name pattern.
@@ -24,25 +26,43 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
     private static final String SCHEME_SUFFIX = "://";
     private static final String ANY_SUBDOMAIN_PATTERN = "[*.]";
 
+    /**
+     * Creates a new WebsiteAddress from |originOrHostOrPattern|.
+     *
+     * @return A new WebsiteAddress, or null if |originOrHostOrPattern| was null or empty.
+     */
+    @Nullable
     public static WebsiteAddress create(String originOrHostOrPattern) {
+        // TODO(mvanouwerkerk): Define the behavior of this method if a url with path, query, or
+        // fragment is passed in.
+
         if (originOrHostOrPattern == null || originOrHostOrPattern.isEmpty()) {
             return null;
-        } else if (originOrHostOrPattern.startsWith(ANY_SUBDOMAIN_PATTERN)) {
-            // Pattern
-            return new WebsiteAddress(null, null,
-                    originOrHostOrPattern.substring(ANY_SUBDOMAIN_PATTERN.length()), true);
-        } else if (originOrHostOrPattern.indexOf(SCHEME_SUFFIX) != -1) {
-            // Origin
-            Uri uri = Uri.parse(originOrHostOrPattern);
-            return new WebsiteAddress(trimTrailingBackslash(originOrHostOrPattern),
-                    uri.getScheme(),
-                    uri.getHost(),
-                    HTTP_SCHEME.equals(uri.getScheme())
-                            && (uri.getPort() == -1 || uri.getPort() == 80));
-        } else {
-            // Host
-            return new WebsiteAddress(null, null, originOrHostOrPattern, true);
         }
+
+        // Pattern
+        if (originOrHostOrPattern.startsWith(ANY_SUBDOMAIN_PATTERN)) {
+            String origin = null;
+            String scheme = null;
+            String host = originOrHostOrPattern.substring(ANY_SUBDOMAIN_PATTERN.length());
+            boolean omitProtocolAndPort = true;
+            return new WebsiteAddress(origin, scheme, host, omitProtocolAndPort);
+        }
+
+        // Origin
+        if (originOrHostOrPattern.indexOf(SCHEME_SUFFIX) != -1) {
+            Uri uri = Uri.parse(originOrHostOrPattern);
+            String origin = trimTrailingBackslash(originOrHostOrPattern);
+            boolean omitProtocolAndPort = HTTP_SCHEME.equals(uri.getScheme())
+                    && (uri.getPort() == -1 || uri.getPort() == 80);
+            return new WebsiteAddress(origin, uri.getScheme(), uri.getHost(), omitProtocolAndPort);
+        }
+
+        // Host
+        String origin = null;
+        String scheme = null;
+        boolean omitProtocolAndPort = true;
+        return new WebsiteAddress(origin, scheme, originOrHostOrPattern, omitProtocolAndPort);
     }
 
     private WebsiteAddress(String origin, String scheme, String host, boolean omitProtocolAndPort) {

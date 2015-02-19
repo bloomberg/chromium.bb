@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
@@ -24,6 +25,7 @@
 #include "jni/WebsitePreferenceBridge_jni.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "url/url_constants.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -58,7 +60,32 @@ static void GetOrigins(JNIEnv* env,
     }
     const std::string origin = settings_it.primary_pattern.ToString();
     const std::string embedder = settings_it.secondary_pattern.ToString();
-    ScopedJavaLocalRef<jstring> jorigin = ConvertUTF8ToJavaString(env, origin);
+
+    // The string |jorigin| is used to group permissions together in the Site
+    // Settings list. In order to group sites with the same origin, remove any
+    // standard port from the end of the URL if it's present (i.e. remove :443
+    // for HTTPS sites and :80 for HTTP sites).
+    // TODO(sashab,lgarron): Find out which settings are being saved with the
+    // port and omit it if it's the standard port.
+    // TODO(mvanouwerkerk): Remove all this logic and take two passes through
+    // HostContentSettingsMap: once to get all the 'interesting' hosts, and once
+    // (on SingleWebsitePreferences) to find permission patterns which match
+    // each of these hosts.
+    const char* kHttpPortSuffix = ":80";
+    const char* kHttpsPortSuffix = ":443";
+    ScopedJavaLocalRef<jstring> jorigin;
+    if (StartsWithASCII(origin, url::kHttpsScheme, false) &&
+        EndsWith(origin, kHttpsPortSuffix, false)) {
+      jorigin = ConvertUTF8ToJavaString(
+          env, origin.substr(0, origin.size() - strlen(kHttpsPortSuffix)));
+    } else if (StartsWithASCII(origin, url::kHttpScheme, false) &&
+               EndsWith(origin, kHttpPortSuffix, false)) {
+      jorigin = ConvertUTF8ToJavaString(
+          env, origin.substr(0, origin.size() - strlen(kHttpPortSuffix)));
+    } else {
+      jorigin = ConvertUTF8ToJavaString(env, origin);
+    }
+
     ScopedJavaLocalRef<jstring> jembedder;
     if (embedder != origin)
       jembedder = ConvertUTF8ToJavaString(env, embedder);

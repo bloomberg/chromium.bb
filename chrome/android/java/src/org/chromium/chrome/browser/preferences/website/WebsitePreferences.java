@@ -37,9 +37,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,13 +53,6 @@ public class WebsitePreferences extends PreferenceFragment
     // e.g. Location/Popups/All sites (if blank).
     public static final String EXTRA_CATEGORY = "category";
     public static final String EXTRA_TITLE = "title";
-
-    // This is a 0..1 <--> 1..N mapping between origin and Website.
-    private final Map<String, Set<Website>> mSitesByOrigin =
-            new HashMap<String, Set<Website>>();
-    // This is a 1 <--> 1..N mapping between host and Website.
-    private final Map<String, Set<Website>> mSitesByHost =
-            new HashMap<String, Set<Website>>();
 
     // The view to show when the list is empty.
     private TextView mEmptyView;
@@ -92,198 +83,9 @@ public class WebsitePreferences extends PreferenceFragment
     private static final String ALLOWED_GROUP = "allowed_group";
     private static final String BLOCKED_GROUP = "blocked_group";
 
-    // It is required that features fetching is serialized, as we need to have
-    // all origins in place prior to populating hosts.
-    private interface Task {
-        void run(TaskQueue queue);
-    }
-
-    private static class TaskQueue extends LinkedList<Task> {
-        void next() {
-            if (!isEmpty()) removeFirst().run(this);
-        }
-    }
-
     private void getInfoForOrigins() {
-        mSitesByOrigin.clear();
-        mSitesByHost.clear();
-        // Populate features from more specific to less specific.
-        // Geolocation lookup permission is per-origin and per-embedder.
-        TaskQueue queue = new TaskQueue();
-        if (mFilter.showAllSites(mCategoryFilter)) {
-            queue.add(new GeolocationInfoFetcher());
-            // Midi sysex access permission is per-origin and per-embedder.
-            queue.add(new MidiInfoFetcher());
-            // Cookies are stored per-origin.
-            queue.add(new CookieInfoFetcher());
-            // Local storage info is per-origin.
-            queue.add(new LocalStorageInfoFetcher());
-            // Website storage is per-host.
-            queue.add(new WebStorageInfoFetcher());
-            // Popup exceptions are host-based patterns (unless we start
-            // synchronizing popup exceptions with desktop Chrome.)
-            queue.add(new PopupExceptionInfoFetcher());
-            // Protected media identifier permission is per-origin and per-embedder.
-            queue.add(new ProtectedMediaIdentifierInfoFetcher());
-            if (ContentPreferences.pushNotificationsSupported()) {
-                // Push notification permission is per-origin and per-embedder.
-                queue.add(new PushNotificationInfoFetcher());
-            }
-            // Voice and Video capture permission is per-origin and per-embedder.
-            queue.add(new VoiceAndVideoCaptureInfoFetcher());
-        } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
-            queue.add(new GeolocationInfoFetcher());
-        } else if (mFilter.showCookiesSites(mCategoryFilter)) {
-            queue.add(new CookieInfoFetcher());
-        } else if (mFilter.showStorageSites(mCategoryFilter)) {
-            queue.add(new LocalStorageInfoFetcher());
-        } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
-            queue.add(new VoiceAndVideoCaptureInfoFetcher());
-        } else if (mFilter.showPopupSites(mCategoryFilter)) {
-            queue.add(new PopupExceptionInfoFetcher());
-        } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
-            queue.add(new PushNotificationInfoFetcher());
-        }
-        queue.add(new ResultsPopulator());
-        queue.next();
-    }
-
-    private class GeolocationInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (GeolocationInfo info : WebsitePreferenceBridge.getGeolocationInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOrigin(address).setGeolocationInfo(info);
-            }
-            queue.next();
-        }
-    }
-
-    private class MidiInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (MidiInfo info : WebsitePreferenceBridge.getMidiInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOrigin(address).setMidiInfo(info);
-            }
-            queue.next();
-        }
-    }
-
-    private class PopupExceptionInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (PopupExceptionInfo info : WebsitePreferenceBridge.getPopupExceptionInfo()) {
-                // The pattern "*" represents the default setting, not a specific website.
-                if (info.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(info.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setPopupExceptionInfo(info);
-                }
-            }
-            queue.next();
-        }
-    }
-
-    private class CookieInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (CookieInfo info : WebsitePreferenceBridge.getCookieInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOrigin(address).setCookieInfo(info);
-            }
-            queue.next();
-        }
-    }
-
-    private class LocalStorageInfoFetcher implements Task {
-        @Override
-        public void run(final TaskQueue queue) {
-            WebsitePreferenceBridge.fetchLocalStorageInfo(
-                    new WebsitePreferenceBridge.LocalStorageInfoReadyCallback() {
-                        @SuppressWarnings("unchecked")
-                        @Override
-                        public void onLocalStorageInfoReady(HashMap map) {
-                            for (Object o : map.entrySet()) {
-                                Map.Entry<String, LocalStorageInfo> entry =
-                                        (Map.Entry<String, LocalStorageInfo>) o;
-                                WebsiteAddress address = WebsiteAddress.create(entry.getKey());
-                                if (address == null) continue;
-                                Set<Website> sites = findOrCreateSitesByOrigin(address);
-                                for (Website site : sites) {
-                                    site.setLocalStorageInfo(entry.getValue());
-                                }
-                            }
-                            queue.next();
-                        }
-                    });
-        }
-    }
-
-    private class WebStorageInfoFetcher implements Task {
-        @Override
-        public void run(final TaskQueue queue) {
-            WebsitePreferenceBridge.fetchStorageInfo(
-                    new WebsitePreferenceBridge.StorageInfoReadyCallback() {
-                        @SuppressWarnings("unchecked")
-                        @Override
-                        public void onStorageInfoReady(ArrayList array) {
-                            ArrayList<StorageInfo> infoArray = array;
-                            for (StorageInfo info : infoArray) {
-                                WebsiteAddress address = WebsiteAddress.create(info.getHost());
-                                if (address == null) continue;
-                                Set<Website> sites = findOrCreateSitesByHost(address);
-                                for (Website site : sites) {
-                                    site.addStorageInfo(info);
-                                }
-                            }
-                            queue.next();
-                        }
-                    });
-        }
-    }
-
-    private class ProtectedMediaIdentifierInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (ProtectedMediaIdentifierInfo info :
-                         WebsitePreferenceBridge.getProtectedMediaIdentifierInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOrigin(address).setProtectedMediaIdentifierInfo(info);
-            }
-            queue.next();
-        }
-    }
-
-    private class PushNotificationInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (PushNotificationInfo info : WebsitePreferenceBridge.getPushNotificationInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOrigin(address).setPushNotificationInfo(info);
-            }
-            queue.next();
-        }
-    }
-
-    private class VoiceAndVideoCaptureInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (VoiceAndVideoCaptureInfo info :
-                    WebsitePreferenceBridge.getVoiceAndVideoCaptureInfo()) {
-                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
-                if (address == null) continue;
-                createSiteByOrigin(address).setVoiceAndVideoCaptureInfo(info);
-            }
-            queue.next();
-        }
+        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(new ResultsPopulator());
+        fetcher.fetchPreferencesWithFilter(mCategoryFilter);
     }
 
     private void displayEmptyScreenMessage() {
@@ -292,21 +94,18 @@ public class WebsitePreferences extends PreferenceFragment
         }
     }
 
-    private class ResultsPopulator implements Task {
+    private class ResultsPopulator implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
         @Override
-        public void run(TaskQueue queue) {
-            // Although a preferences fragment should normally be bound to an
-            // activity, crash reports suggest that this isn't always true.
-            // Preferences can't be instantiated without a context, so we are
-            // bailing out.
-            if (getActivity() == null) {
-                queue.next();
-                return;
-            }
+        public void onWebsitePermissionsAvailable(
+                Map<String, Set<Website>> sitesByOrigin, Map<String, Set<Website>> sitesByHost) {
+            // This method may be called after the activity has been destroyed.
+            // In that case, bail out.
+            if (getActivity() == null) return;
+
             // First we scan origins to get settings from there.
-            List<WebsitePreference> websites = new ArrayList<WebsitePreference>();
-            Set<Website> displayedSites = new HashSet<Website>();
-            for (Map.Entry<String, Set<Website>> element : mSitesByOrigin.entrySet()) {
+            List<WebsitePreference> websites = new ArrayList<>();
+            Set<Website> displayedSites = new HashSet<>();
+            for (Map.Entry<String, Set<Website>> element : sitesByOrigin.entrySet()) {
                 for (Website site : element.getValue()) {
                     if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
                         websites.add(new WebsitePreference(getActivity(), site, mCategoryFilter));
@@ -315,7 +114,7 @@ public class WebsitePreferences extends PreferenceFragment
                 }
             }
             // Next we add sites that are only accessible by host name.
-            for (Map.Entry<String, Set<Website>> element : mSitesByHost.entrySet()) {
+            for (Map.Entry<String, Set<Website>> element : sitesByHost.entrySet()) {
                 for (Website site : element.getValue()) {
                     if (!displayedSites.contains(site)) {
                         if (mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
@@ -390,8 +189,6 @@ public class WebsitePreferences extends PreferenceFragment
                 updateBlockedHeader(0);
                 updateAllowedHeader(0, true);
             }
-
-            queue.next();
         }
     }
 
@@ -457,37 +254,6 @@ public class WebsitePreferences extends PreferenceFragment
         TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
                 mBlockListExpanded ? R.drawable.ic_expand : R.drawable.ic_collapse);
         blockedGroup.setIcon(icon);
-    }
-
-    private Website createSiteByOrigin(WebsiteAddress address) {
-        String origin = address.getOrigin();
-        String host = address.getHost();
-        Website site = new Website(address);
-        if (!mSitesByOrigin.containsKey(origin)) {
-            mSitesByOrigin.put(origin, new HashSet<Website>());
-        }
-        mSitesByOrigin.get(origin).add(site);
-        if (!mSitesByHost.containsKey(host)) {
-            mSitesByHost.put(host, new HashSet<Website>());
-        }
-        mSitesByHost.get(host).add(site);
-        return site;
-    }
-
-    private Set<Website> findOrCreateSitesByOrigin(WebsiteAddress address) {
-        String origin = address.getOrigin();
-        if (!mSitesByOrigin.containsKey(origin))
-            createSiteByOrigin(address);
-        return mSitesByOrigin.get(origin);
-    }
-
-    private Set<Website> findOrCreateSitesByHost(WebsiteAddress address) {
-        String host = address.getHost();
-        if (!mSitesByHost.containsKey(host)) {
-            mSitesByHost.put(host, new HashSet<Website>());
-            mSitesByHost.get(host).add(new Website(address));
-        }
-        return mSitesByHost.get(host);
     }
 
     @Override

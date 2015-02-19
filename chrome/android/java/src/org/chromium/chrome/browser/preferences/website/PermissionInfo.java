@@ -26,7 +26,7 @@ public abstract class PermissionInfo implements Serializable {
         return mEmbedder;
     }
 
-    private String getEmbedderSafe() {
+    public String getEmbedderSafe() {
         return mEmbedder != null ? mEmbedder : mOrigin;
     }
 

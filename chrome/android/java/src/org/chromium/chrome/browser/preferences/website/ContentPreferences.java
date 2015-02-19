@@ -11,8 +11,6 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
-import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -53,10 +51,6 @@ public class ContentPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(findPreference(PROTECTED_CONTENT_KEY));
         }
 
-        if (!pushNotificationsSupported()) {
-            getPreferenceScreen().removePreference(findPreference(PUSH_NOTIFICATIONS_KEY));
-        }
-
         // Set up the checkbox preferences.
         List<String> checkBoxPreferences = new ArrayList<String>();
         checkBoxPreferences.add(JAVASCRIPT_KEY);
@@ -88,14 +82,6 @@ public class ContentPreferences extends PreferenceFragment
         return -1;
     }
 
-    /**
-     * Returns whether Push Notifications (Push Messaging) is supported.
-     */
-    public static boolean pushNotificationsSupported() {
-        return CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.EXPERIMENTAL_WEB_PLAFTORM_FEATURES);
-    }
-
     private void updatePreferenceStates() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
 
@@ -119,9 +105,7 @@ public class ContentPreferences extends PreferenceFragment
         }
         websitePrefs.add(COOKIES_KEY);
         websitePrefs.add(CAMERA_AND_MIC_KEY);
-        if (pushNotificationsSupported()) {
-            websitePrefs.add(PUSH_NOTIFICATIONS_KEY);
-        }
+        websitePrefs.add(PUSH_NOTIFICATIONS_KEY);
         websitePrefs.add(POPUPS_KEY);
         // Initialize the summary and icon for all preferences that have an
         // associated content settings entry.

@@ -19,6 +19,13 @@ import android.widget.ListAdapter;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.UrlUtilities;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Shows a list of HTML5 settings for a single website.
@@ -26,7 +33,13 @@ import org.chromium.chrome.browser.ContentSettingsType;
 public class SingleWebsitePreferences extends PreferenceFragment
         implements DialogInterface.OnClickListener, OnPreferenceChangeListener,
                 OnPreferenceClickListener {
+    // SingleWebsitePreferences expects either EXTRA_SITE (a Website) or
+    // EXTRA_ADDRESS (a WebsiteAddress) to be present (but not both). If
+    // EXTRA_SITE is present, the fragment will display the permissions in that
+    // Website object. If EXTRA_ADDRESS is present, the fragment will find all
+    // permissions for that website address and display those.
     public static final String EXTRA_SITE = "org.chromium.chrome.preferences.site";
+    public static final String EXTRA_ADDRESS = "org.chromium.chrome.preferences.address";
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
@@ -51,13 +64,145 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     // The website this page is displaying details about.
     private Website mSite;
+
+    // The address of the site we want to display. Used only if EXTRA_ADDRESS is provided.
+    private WebsiteAddress mSiteAddress;
+
     // A list of possible options for each list preference summary.
     private String[] mListPreferenceSummaries;
+
+    private class SingleWebsitePermissionsPopulator
+            implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
+        @Override
+        public void onWebsitePermissionsAvailable(
+                Map<String, Set<Website>> sitesByOrigin, Map<String, Set<Website>> sitesByHost) {
+            // This method may be called after the activity has been destroyed.
+            // In that case, bail out.
+            if (getActivity() == null) return;
+
+            // TODO(mvanouwerkerk): Do this merge at data retrieval time in C++, instead of now.
+            List<Set<Website>> allSites = new ArrayList<>();
+            allSites.addAll(sitesByOrigin.values());
+            allSites.addAll(sitesByHost.values());
+            // TODO(mvanouwerkerk): Avoid modifying the outer class from this inner class.
+            mSite = mergePermissionInfoForTopLevelOrigin(mSiteAddress, allSites);
+            displaySitePermissions();
+        }
+    }
+
+    /**
+     * Creates a Bundle with the correct arguments for opening this fragment for
+     * the website with the given url.
+     *
+     * @param url The URL to open the fragment with. This is a complete url including scheme,
+     *            domain, port,  path, etc.
+     * @return The bundle to attach to the preferences intent.
+     */
+    public static Bundle createFragmentArgsForSite(String url) {
+        Bundle fragmentArgs = new Bundle();
+        // TODO(mvanouwerkerk): Define a pure getOrigin method in UrlUtilities that is the
+        // equivalent of the call below, because this is perfectly fine for non-display purposes.
+        String origin = UrlUtilities.getOriginForDisplay(URI.create(url), true /*  schowScheme */);
+        fragmentArgs.putSerializable(
+                SingleWebsitePreferences.EXTRA_ADDRESS, WebsiteAddress.create(origin));
+        return fragmentArgs;
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         getActivity().setTitle(R.string.prefs_content_settings);
-        mSite = (Website) getArguments().getSerializable(EXTRA_SITE);
+        Object extraSite = getArguments().getSerializable(EXTRA_SITE);
+        Object extraAddress = getArguments().getSerializable(EXTRA_ADDRESS);
+
+        if (extraSite != null && extraAddress == null) {
+            mSite = (Website) extraSite;
+            displaySitePermissions();
+        } else if (extraAddress != null && extraSite == null) {
+            mSiteAddress = (WebsiteAddress) extraAddress;
+            WebsitePermissionsFetcher fetcher =
+                    new WebsitePermissionsFetcher(new SingleWebsitePermissionsPopulator());
+            fetcher.fetchAllPreferences();
+        } else {
+            assert false : "Exactly one of EXTRA_SITE or EXTRA_SITE_ADDRESS must be provided.";
+        }
+
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    /**
+     * Given an address and a list of sets of websites, returns a new site with the same origin
+     * as |address| which has merged into it the permissions of the matching input sites. If a
+     * permission is found more than once, the one found first is used and the latter are ignored.
+     * This should not drop any relevant data as this method already aggressively filters on an
+     * exact match of origin and embedder.
+     *
+     * @param address The address to search for.
+     * @param websiteSets The websites to search in.
+     * @return The merged website.
+     */
+    private static Website mergePermissionInfoForTopLevelOrigin(
+            WebsiteAddress address, List<Set<Website>> websiteSets) {
+        String origin = address.getOrigin();
+        Website merged = new Website(address);
+        // This nested loop looks expensive, but the amount of data is likely to be relatively
+        // small because most sites have very few permissions.
+        for (Set<Website> websiteSet : websiteSets) {
+            for (Website other : websiteSet) {
+                if (merged.getCookieInfo() == null && other.getCookieInfo() != null
+                        && permissionInfoIsForTopLevelOrigin(other.getCookieInfo(), origin)) {
+                    merged.setCookieInfo(other.getCookieInfo());
+                }
+                if (merged.getGeolocationInfo() == null && other.getGeolocationInfo() != null
+                        && permissionInfoIsForTopLevelOrigin(other.getGeolocationInfo(), origin)) {
+                    merged.setGeolocationInfo(other.getGeolocationInfo());
+                }
+                if (merged.getMidiInfo() == null && other.getMidiInfo() != null
+                        && permissionInfoIsForTopLevelOrigin(other.getMidiInfo(), origin)) {
+                    merged.setMidiInfo(other.getMidiInfo());
+                }
+                if (merged.getProtectedMediaIdentifierInfo() == null
+                        && other.getProtectedMediaIdentifierInfo() != null
+                        && permissionInfoIsForTopLevelOrigin(
+                                   other.getProtectedMediaIdentifierInfo(), origin)) {
+                    merged.setProtectedMediaIdentifierInfo(other.getProtectedMediaIdentifierInfo());
+                }
+                if (merged.getPushNotificationInfo() == null
+                        && other.getPushNotificationInfo() != null
+                        && permissionInfoIsForTopLevelOrigin(
+                                   other.getPushNotificationInfo(), origin)) {
+                    merged.setPushNotificationInfo(other.getPushNotificationInfo());
+                }
+                if (merged.getVoiceAndVideoCaptureInfo() == null
+                        && other.getVoiceAndVideoCaptureInfo() != null) {
+                    if (origin.equals(other.getVoiceAndVideoCaptureInfo().getOrigin())
+                            && (origin.equals(other.getVoiceAndVideoCaptureInfo().getEmbedderSafe())
+                                       || "*".equals(other.getVoiceAndVideoCaptureInfo()
+                                                             .getEmbedderSafe()))) {
+                        merged.setVoiceAndVideoCaptureInfo(other.getVoiceAndVideoCaptureInfo());
+                    }
+                }
+                // TODO(mvanouwerkerk): Can VoiceAndVideoCaptureInfo share a base type with the
+                // others?
+                // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It is not a PermissionInfo.
+                // TODO(mvanouwerkerk): Merge in LocalStorageInfo? It is not a PermissionInfo.
+                // TODO(mvanouwerkerk): Merge in all instances of StorageInfo? It is not a
+                // PermissionInfo.
+            }
+        }
+        return merged;
+    }
+
+    private static boolean permissionInfoIsForTopLevelOrigin(PermissionInfo info, String origin) {
+        // TODO(mvanouwerkerk): Find a more generic place for this method.
+        return origin.equals(info.getOrigin())
+                && (origin.equals(info.getEmbedderSafe()) || "*".equals(info.getEmbedderSafe()));
+    }
+
+    /**
+     * Updates the permissions displayed in the UI by fetching them from mSite.
+     * Must only be called once mSite is set.
+     */
+    private void displaySitePermissions() {
         addPreferencesFromResource(R.xml.single_website_preferences);
         mListPreferenceSummaries = getActivity().getResources().getStringArray(
                 R.array.website_settings_permission_options);
@@ -91,11 +236,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
             } else if (PREF_PUSH_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
-                if (ContentPreferences.pushNotificationsSupported()) {
-                    setUpListPreference(preference, mSite.getPushNotificationPermission());
-                } else {
-                    getPreferenceScreen().removePreference(preference);
-                }
+                setUpListPreference(preference, mSite.getPushNotificationPermission());
             } else if (PREF_VOICE_AND_VIDEO_CAPTURE_PERMISSION.equals(preference.getKey())) {
                 configureVoiceAndVideoPreference(preference);
             }
@@ -111,8 +252,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
             Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
             preferenceScreen.removePreference(heading);
         }
-
-        super.onActivityCreated(savedInstanceState);
     }
 
     private boolean hasUsagePreferences() {
