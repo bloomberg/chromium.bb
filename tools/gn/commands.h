@@ -6,15 +6,21 @@
 #define TOOLS_GN_COMMANDS_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "tools/gn/target.h"
+#include "tools/gn/unique_vector.h"
 
 class BuildSettings;
+class Config;
 class LabelPattern;
 class Setup;
+class SourceFile;
 class Target;
+class Toolchain;
 
 // Each "Run" command returns the value we should return from main().
 
@@ -93,18 +99,20 @@ const Target* ResolveTargetFromCommandLineString(
     Setup* setup,
     const std::string& label_string);
 
-// Like above but the input string can be a pattern that matches multiple
-// targets. If the input does not parse as a pattern, prints and error and
-// returns false. If the pattern is valid, fills the vector (which might be
-// empty if there are no matches) and returns true.
+// Resolves a vector of command line inputs and figures out the full set of
+// things they resolve to.
 //
-// If all_tolchains is false, a pattern with an unspecified toolchain will
-// match the default toolchain only. If true, all toolchains will be matched.
-bool ResolveTargetsFromCommandLinePattern(
+// Patterns with wildcards will only match targets. The file_matches aren't
+// validated that they are real files or referenced by any targets. They're just
+// the set of things that didn't match anything else.
+bool ResolveFromCommandLineInput(
     Setup* setup,
-    const std::string& label_pattern,
+    const std::vector<std::string>& input,
     bool all_toolchains,
-    std::vector<const Target*>* matches);
+    UniqueVector<const Target*>* target_matches,
+    UniqueVector<const Config*>* config_matches,
+    UniqueVector<const Toolchain*>* toolchain_matches,
+    UniqueVector<SourceFile>* file_matches);
 
 // Runs the header checker. All targets in the build should be given in
 // all_targets, and the specific targets to check should be in to_check.
@@ -119,13 +127,50 @@ bool CheckPublicHeaders(const BuildSettings* build_settings,
                         const std::vector<const Target*>& to_check,
                         bool force_check);
 
-// Filters the given list of targets by the given pattern list. This is a
-// helper function for setting up a call to CheckPublicHeaders based on a check
-// filter.
+// Filters the given list of targets by the given pattern list.
 void FilterTargetsByPatterns(const std::vector<const Target*>& input,
                              const std::vector<LabelPattern>& filter,
                              std::vector<const Target*>* output);
+void FilterTargetsByPatterns(const std::vector<const Target*>& input,
+                             const std::vector<LabelPattern>& filter,
+                             UniqueVector<const Target*>* output);
+
+// These are the documentation strings for the command-line flags used by
+// FilterAndPrintTargets. Commands that call that function should incorporate
+// these into their help.
+#define TARGET_PRINTING_MODE_COMMAND_LINE_HELP \
+    "  --as=(buildfile|label|output)\n"\
+    "      How to print targets.\n"\
+    "\n"\
+    "      buildfile\n"\
+    "          Prints the build files where the given target was declared as\n"\
+    "          file names.\n"\
+    "      label  (default)\n"\
+    "          Prints the label of the target.\n"\
+    "      output\n"\
+    "          Prints the first output file for the target relative to the\n"\
+    "          current directory.\n"
+#define TARGET_TYPE_FILTER_COMMAND_LINE_HELP \
+    "  --type=(action|copy|executable|group|shared_library|source_set|\n"\
+    "          static_library)\n"\
+    "      Restrict outputs to targets matching the given type. If\n"\
+    "      unspecified, no filtering will be performed.\n"
+#define TARGET_TESTONLY_FILTER_COMMAND_LINE_HELP \
+    "  --testonly=(true|false)\n"\
+    "      Restrict outputs to targets with the testonly flag set\n"\
+    "      accordingly. When unspecified, the target's testonly flags are\n"\
+    "      ignored.\n"
+
+// Applies any testonly and type filters specified on the command line,
+// and prints the targets as specified by the --as command line flag.
+//
+// If indent is true, the results will be indented two spaces.
+//
+// The vector will be modified so that only the printed targets will remain.
+void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets);
+void FilterAndPrintTargetSet(bool indent,
+                             const std::set<const Target*>& targets);
 
 }  // namespace commands
 
-#endif  // TOOLS_GN_COMMANDS_H_
+#endif  // TOOLS_GN_COMMANDS_H

@@ -39,6 +39,9 @@ class LabelPattern {
                                  const Value& value,
                                  Err* err);
 
+  // Returns true if the given input string might match more than one thing.
+  static bool HasWildcard(const std::string& str);
+
   // Returns true if this pattern matches the given label.
   bool Matches(const Label& label) const;
 

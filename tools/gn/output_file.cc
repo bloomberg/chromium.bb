@@ -27,7 +27,11 @@ OutputFile::~OutputFile() {
 SourceFile OutputFile::AsSourceFile(const BuildSettings* build_settings) const {
   DCHECK(!value_.empty());
   DCHECK(value_[value_.size() - 1] != '/');
-  return SourceFile(build_settings->build_dir().value() + value_);
+
+  std::string path = build_settings->build_dir().value();
+  path.append(value_);
+  NormalizePath(&path);
+  return SourceFile(path);
 }
 
 SourceDir OutputFile::AsSourceDir(const BuildSettings* build_settings) const {
@@ -36,5 +40,8 @@ SourceDir OutputFile::AsSourceDir(const BuildSettings* build_settings) const {
     // slash.
     DCHECK(value_[value_.size() - 1] == '/');
   }
-  return SourceDir(build_settings->build_dir().value() + value_);
+  std::string path = build_settings->build_dir().value();
+  path.append(value_);
+  NormalizePath(&path);
+  return SourceDir(path);
 }

@@ -216,6 +216,12 @@ LabelPattern LabelPattern::GetPattern(const SourceDir& current_dir,
   return LabelPattern(type, dir, base::StringPiece(), toolchain_label);
 }
 
+bool LabelPattern::HasWildcard(const std::string& str) {
+  // Just look for a star. In the future, we may want to handle escaping or
+  // other types of patterns.
+  return str.find('*') != std::string::npos;
+}
+
 bool LabelPattern::Matches(const Label& label) const {
   if (!toolchain_.is_null()) {
     // Toolchain must match exactly.

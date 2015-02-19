@@ -70,15 +70,24 @@ int RunCheck(const std::vector<std::string>& args) {
 
   bool filtered_by_build_config = false;
   std::vector<const Target*> targets_to_check;
-  if (args.size() == 2) {
-    // Compute the target to check.
-    if (!ResolveTargetsFromCommandLinePattern(setup, args[1], false,
-                                              &targets_to_check))
+  if (args.size() > 1) {
+    // Compute the targets to check.
+    std::vector<std::string> inputs(args.begin() + 1, args.end());
+    UniqueVector<const Target*> target_matches;
+    UniqueVector<const Config*> config_matches;
+    UniqueVector<const Toolchain*> toolchain_matches;
+    UniqueVector<SourceFile> file_matches;
+    if (!ResolveFromCommandLineInput(setup, inputs, false,
+                                     &target_matches, &config_matches,
+                                     &toolchain_matches, &file_matches))
       return 1;
-    if (targets_to_check.size() == 0) {
+
+    if (target_matches.size() == 0) {
       OutputString("No matching targets.\n");
       return 1;
     }
+    targets_to_check.insert(targets_to_check.begin(),
+                            target_matches.begin(), target_matches.end());
   } else {
     // No argument means to check everything allowed by the filter in
     // the build config file.
@@ -130,19 +139,6 @@ bool CheckPublicHeaders(const BuildSettings* build_settings,
     header_errors[i].PrintToStdout();
   }
   return header_errors.empty();
-}
-
-void FilterTargetsByPatterns(const std::vector<const Target*>& input,
-                             const std::vector<LabelPattern>& filter,
-                             std::vector<const Target*>* output) {
-  for (const auto& target : input) {
-    for (const auto& pattern : filter) {
-      if (pattern.Matches(target->label())) {
-        output->push_back(target);
-        break;
-      }
-    }
-  }
 }
 
 }  // namespace commands

@@ -40,17 +40,20 @@ std::string FormatSourceDir(const SourceDir& dir) {
   return dir.value();
 }
 
-void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result);
+void RecursiveCollectChildDeps(const Target* target,
+                               std::set<const Target*>* result);
 
-void RecursiveCollectDeps(const Target* target, std::set<Label>* result) {
-  if (result->find(target->label()) != result->end())
+void RecursiveCollectDeps(const Target* target,
+                          std::set<const Target*>* result) {
+  if (result->find(target) != result->end())
     return;  // Already did this target.
-  result->insert(target->label());
+  result->insert(target);
 
   RecursiveCollectChildDeps(target, result);
 }
 
-void RecursiveCollectChildDeps(const Target* target, std::set<Label>* result) {
+void RecursiveCollectChildDeps(const Target* target,
+                               std::set<const Target*>* result) {
   for (const auto& pair : target->GetDeps(Target::DEPS_ALL))
     RecursiveCollectDeps(pair.ptr, result);
 }
@@ -122,17 +125,16 @@ void PrintDeps(const Target* target, bool display_header) {
   }
 
   // Collect the deps to display.
-  std::vector<Label> deps;
   if (cmdline->HasSwitch("all")) {
     // Show all dependencies.
     if (display_header)
       OutputString("\nAll recursive dependencies:\n");
 
-    std::set<Label> all_deps;
+    std::set<const Target*> all_deps;
     RecursiveCollectChildDeps(target, &all_deps);
-    for (const auto& dep : all_deps)
-      deps.push_back(dep);
+    FilterAndPrintTargetSet(display_header, all_deps);
   } else {
+    std::vector<const Target*> deps;
     // Show direct dependencies only.
     if (display_header) {
       OutputString(
@@ -140,12 +142,10 @@ void PrintDeps(const Target* target, bool display_header) {
           "(try also \"--all\", \"--tree\", or even \"--all --tree\"):\n");
     }
     for (const auto& pair : target->GetDeps(Target::DEPS_ALL))
-      deps.push_back(pair.label);
+      deps.push_back(pair.ptr);
+    std::sort(deps.begin(), deps.end());
+    FilterAndPrintTargets(display_header, &deps);
   }
-
-  std::sort(deps.begin(), deps.end());
-  for (const auto& dep : deps)
-    OutputString("  " + dep.GetUserVisibleName(toolchain_label) + "\n");
 }
 
 void PrintForwardDependentConfigsFrom(const Target* target,
@@ -449,14 +449,13 @@ const char kDesc[] = "desc";
 const char kDesc_HelpShort[] =
     "desc: Show lots of insightful information about a target.";
 const char kDesc_Help[] =
-    "gn desc <out_dir> <target label> [<what to show>]\n"
-    "        [--blame] [--all | --tree]\n"
+    "gn desc <out_dir> <target label> [<what to show>] [--blame]\n"
     "\n"
     "  Displays information about a given labeled target for the given build.\n"
     "  The build parameters will be taken for the build in the given\n"
     "  <out_dir>.\n"
     "\n"
-    "Possibilities for <what to show>:\n"
+    "Possibilities for <what to show>\n"
     "  (If unspecified an overall summary will be displayed.)\n"
     "\n"
     "  sources\n"
@@ -487,13 +486,9 @@ const char kDesc_Help[] =
     "      via dependencies specifying \"all\" or \"direct\" dependent\n"
     "      configs.\n"
     "\n"
-    "  deps [--all | --tree]\n"
-    "      Show immediate (or, when \"--all\" or \"--tree\" is specified,\n"
-    "      recursive) dependencies of the given target. \"--tree\" shows them\n"
-    "      in a tree format with duplicates elided (noted by \"...\").\n"
-    "      \"--all\" shows them sorted alphabetically. Using both flags will\n"
-    "      print a tree with no omissions. The \"deps\", \"public_deps\", and\n"
-    "      \"data_deps\" will all be included.\n"
+    "  deps\n"
+    "      Show immediate or recursive dependencies. See below for flags that\n"
+    "      control deps printing.\n"
     "\n"
     "  public_configs\n"
     "  all_dependent_configs\n"
@@ -529,14 +524,39 @@ const char kDesc_Help[] =
     "      for libs and lib_dirs because those are inherited and are more\n"
     "      complicated to figure out the blame (patches welcome).\n"
     "\n"
-    "Note:\n"
+    "Flags that control how deps are printed\n"
+    "\n"
+    "  --all\n"
+    "      Collects all recursive dependencies and prints a sorted flat list.\n"
+    "      Also usable with --tree (see below).\n"
+    "\n"
+    TARGET_PRINTING_MODE_COMMAND_LINE_HELP
+    "\n"
+    TARGET_TESTONLY_FILTER_COMMAND_LINE_HELP
+    "\n"
+    "  --tree\n"
+    "      Print a dependency tree. By default, duplicates will be elided\n"
+    "      with \"...\" but when --all and -tree are used together, no\n"
+    "      eliding will be performed.\n"
+    "\n"
+    "      The \"deps\", \"public_deps\", and \"data_deps\" will all be\n"
+    "      included in the tree.\n"
+    "\n"
+    "      Tree output can not be used with the filtering or output flags:\n"
+    "      --as, --type, --testonly.\n"
+    "\n"
+    TARGET_TYPE_FILTER_COMMAND_LINE_HELP
+    "\n"
+    "Note\n"
+    "\n"
     "  This command will show the full name of directories and source files,\n"
     "  but when directories and source paths are written to the build file,\n"
     "  they will be adjusted to be relative to the build directory. So the\n"
     "  values for paths displayed by this command won't match (but should\n"
     "  mean the same thing).\n"
     "\n"
-    "Examples:\n"
+    "Examples\n"
+    "\n"
     "  gn desc out/Debug //base:base\n"
     "      Summarizes the given target.\n"
     "\n"

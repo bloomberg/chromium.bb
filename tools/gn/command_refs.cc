@@ -33,47 +33,7 @@ void FillDepMap(Setup* setup, DepMap* dep_map) {
   }
 }
 
-// Returns the file path generating this item.
-base::FilePath FilePathForItem(const Item* item) {
-  return item->defined_from()->GetRange().begin().file()->physical_name();
-}
-
-// Prints the targets which are the result of a query. This list is sorted
-// and, if as_files is set, the unique filenames matching those targets will
-// be used.
-void OutputResultSet(const TargetSet& results, bool as_files) {
-  if (results.empty())
-    return;
-
-  if (as_files) {
-    // Output the set of unique source files.
-    std::set<std::string> unique_files;
-    for (const auto& cur : results)
-      unique_files.insert(FilePathToUTF8(FilePathForItem(cur)));
-
-    for (const auto& cur : unique_files)
-      OutputString(cur + "\n");
-  } else {
-    // Output sorted and uniquified list of labels. The set will sort the
-    // labels.
-    std::set<Label> unique_labels;
-    for (const auto& cur : results)
-      unique_labels.insert(cur->label());
-
-    // Grab the label of the default toolchain from a random target.
-    Label default_tc_label =
-        (*results.begin())->settings()->default_toolchain_label();
-
-    for (const auto& cur : unique_labels) {
-      // Print toolchain only for ones not in the default toolchain.
-      OutputString(cur.GetUserVisibleName(
-          cur.GetToolchainLabel() != default_tc_label));
-      OutputString("\n");
-    }
-  }
-}
-
-// Forward declatation for function below.
+// Forward declaration for function below.
 void RecursivePrintTargetDeps(const DepMap& dep_map,
                               const Target* target,
                               TargetSet* seen_targets,
@@ -174,19 +134,11 @@ bool TargetContainsFile(const Target* target, const SourceFile& file) {
 }
 
 void GetTargetsContainingFile(Setup* setup,
-                              const std::string& input,
+                              const std::vector<const Target*>& all_targets,
+                              const SourceFile& file,
                               bool all_toolchains,
-                              std::vector<const Target*>* matches) {
-  SourceDir cur_dir =
-      SourceDirForCurrentDirectory(setup->build_settings().root_path());
-  SourceFile file = cur_dir.ResolveRelativeFile(
-      input, setup->build_settings().root_path_utf8());
-
+                              UniqueVector<const Target*>* matches) {
   Label default_toolchain = setup->loader()->default_toolchain_label();
-
-  std::vector<const Target*> all_targets =
-      setup->builder()->GetAllResolvedTargets();
-
   for (const auto& target : all_targets) {
     if (!all_toolchains) {
       // Only check targets in the default toolchain.
@@ -198,59 +150,169 @@ void GetTargetsContainingFile(Setup* setup,
   }
 }
 
+bool TargetReferencesConfig(const Target* target, const Config* config) {
+  for (const LabelConfigPair& cur : target->configs()) {
+    if (cur.ptr == config)
+      return true;
+  }
+  for (const LabelConfigPair& cur : target->public_configs()) {
+    if (cur.ptr == config)
+      return true;
+  }
+  return false;
+}
+
+void GetTargetsReferencingConfig(Setup* setup,
+                                 const std::vector<const Target*>& all_targets,
+                                 const Config* config,
+                                 bool all_toolchains,
+                                 UniqueVector<const Target*>* matches) {
+  Label default_toolchain = setup->loader()->default_toolchain_label();
+  for (const auto& target : all_targets) {
+    if (!all_toolchains) {
+      // Only check targets in the default toolchain.
+      if (target->label().GetToolchainLabel() != default_toolchain)
+        continue;
+    }
+    if (TargetReferencesConfig(target, config))
+      matches->push_back(target);
+  }
+}
+
+void DoTreeOutput(const DepMap& dep_map,
+                  const UniqueVector<const Target*>& implicit_target_matches,
+                  const UniqueVector<const Target*>& explicit_target_matches,
+                  bool all) {
+  TargetSet seen_targets;
+
+  // Implicit targets don't get printed themselves.
+  for (const Target* target : implicit_target_matches) {
+    if (all)
+      RecursivePrintTargetDeps(dep_map, target, nullptr, 0);
+    else
+      RecursivePrintTargetDeps(dep_map, target, &seen_targets, 0);
+  }
+
+  // Explicit targets appear in the output.
+  for (const Target* target : implicit_target_matches) {
+    if (all)
+      RecursivePrintTarget(dep_map, target, nullptr, 0);
+    else
+      RecursivePrintTarget(dep_map, target, &seen_targets, 0);
+  }
+}
+
+void DoAllListOutput(
+    const DepMap& dep_map,
+    const UniqueVector<const Target*>& implicit_target_matches,
+    const UniqueVector<const Target*>& explicit_target_matches) {
+  // Output recursive dependencies, uniquified and flattened.
+  TargetSet results;
+
+  for (const Target* target : implicit_target_matches)
+    RecursiveCollectChildRefs(dep_map, target, &results);
+  for (const Target* target : explicit_target_matches) {
+    // Explicit targets also get added to the output themselves.
+    results.insert(target);
+    RecursiveCollectChildRefs(dep_map, target, &results);
+  }
+
+  FilterAndPrintTargetSet(false, results);
+}
+
+void DoDirectListOutput(
+    const DepMap& dep_map,
+    const UniqueVector<const Target*>& implicit_target_matches,
+    const UniqueVector<const Target*>& explicit_target_matches) {
+  TargetSet results;
+
+  // Output everything that refers to the implicit ones.
+  for (const Target* target : implicit_target_matches) {
+    DepMap::const_iterator dep_begin = dep_map.lower_bound(target);
+    DepMap::const_iterator dep_end = dep_map.upper_bound(target);
+    for (DepMap::const_iterator cur_dep = dep_begin;
+         cur_dep != dep_end; cur_dep++)
+      results.insert(cur_dep->second);
+  }
+
+  // And just output the explicit ones directly (these are the target matches
+  // when referring to what references a file or config).
+  for (const Target* target : explicit_target_matches)
+    results.insert(target);
+
+  FilterAndPrintTargetSet(false, results);
+}
+
 }  // namespace
 
 const char kRefs[] = "refs";
 const char kRefs_HelpShort[] =
     "refs: Find stuff referencing a target or file.";
 const char kRefs_Help[] =
-    "gn refs <out_dir> (<label_pattern>|<file>) [--files] [--tree] [--all]\n"
-    "        [--all-toolchains]\n"
+    "gn refs <out_dir> (<label_pattern>|<label>|<file>)* [--all]\n"
+    "        [--all-toolchains] [--as=...] [--testonly=...] [--type=...]\n"
     "\n"
     "  Finds reverse dependencies (which targets reference something). The\n"
-    "  input is either a target label, a target label pattern, or a file\n"
-    "  name.\n"
+    "  input is a list containing:\n"
     "\n"
-    "  The <label_pattern> can take exact labels or patterns that match more\n"
-    "  than one (although not general regular expressions).\n"
-    "  See \"gn help label_pattern\" for details.\n"
+    "   - Target label: The result will be which targets depend on it.\n"
     "\n"
-    "  If the input is a file name, the output will be the target(s)\n"
-    "  referencing that file (potentially recursively if used with --tree\n"
-    "  or --all). By default, only targets from the default toolchain that\n"
-    "  reference the file will be listed.\n"
+    "   - Config label: The result will be which targets list the given\n"
+    "     config in its \"configs\" or \"public_configs\" list.\n"
+    "\n"
+    "   - Label pattern: The result will be which targets depend on any\n"
+    "     target matching the given pattern. Patterns will not match\n"
+    "     configs. These are not general regular expressions, see\n"
+    "     \"gn help label_pattern\" for details.\n"
+    "\n"
+    "   - File name: The result will be which targets list the given file in\n"
+    "     its \"inputs\", \"sources\", \"public\", or \"data\". Any input\n"
+    "     that does not contain wildcards and does not match a target or a\n"
+    "     config will be treated as a file.\n"
+    "\n"
+    "Options\n"
     "\n"
     "  --all\n"
     "      When used without --tree, will recurse and display all unique\n"
-    "      dependencies of the given targets. When used with --tree, turns\n"
-    "      off eliding to show a complete tree.\n"
+    "      dependencies of the given targets. For example, if the input is\n"
+    "      a target, this will output all targets that depend directly or\n"
+    "      indirectly on the input. If the input is a file, this will output\n"
+    "      all targets that depend directly or indirectly on that file.\n"
+    "\n"
+    "      When used with --tree, turns off eliding to show a complete tree.\n"
     "\n"
     "  --all-toolchains\n"
-    "      For target patterns, make the label pattern match all toolchains.\n"
-    "      If the label pattern does not specify an explicit toolchain,\n"
-    "      labels from all toolchains will be matched (normally only the\n"
-    "      default toolchain is matched when no toolchain is specified).\n"
+    "      Normally only inputs in the default toolchain will be included.\n"
+    "      This switch will turn on matching all toolchains.\n"
     "\n"
-    "      For filename inputs, lists targets from all toolchains that\n"
-    "      include the file.\n"
+    "      For example, a file is in a target might be compiled twice:\n"
+    "      once in the default toolchain and once in a secondary one. Without\n"
+    "      this flag, only the default toolchain one will be matched and\n"
+    "      printed (potentially with its recursive dependencies, depending on\n"
+    "      the other options). With this flag, both will be printed\n"
+    "      (potentially with both of their recursive dependencies).\n"
     "\n"
-    "  --files\n"
-    "      Output unique filenames referencing a matched target or config.\n"
-    "      These will be relative to the source root directory such that they\n"
-    "      are suitable for piping to other commands.\n"
+    TARGET_PRINTING_MODE_COMMAND_LINE_HELP
+    "\n"
+    TARGET_TESTONLY_FILTER_COMMAND_LINE_HELP
     "\n"
     "  --tree\n"
     "      Outputs a reverse dependency tree from the given target.\n"
     "      Duplicates will be elided. Combine with --all to see a full\n"
     "      dependency tree.\n"
     "\n"
+    "      Tree output can not be used with the filtering or output flags:\n"
+    "      --as, --type, --testonly.\n"
+    "\n"
+    TARGET_TYPE_FILTER_COMMAND_LINE_HELP
+    "\n"
     "Examples (target input)\n"
     "\n"
     "  gn refs out/Debug //tools/gn:gn\n"
     "      Find all targets depending on the given exact target name.\n"
     "\n"
-    "  gn refs out/Debug //base:i18n --files | xargs gvim\n"
-    "      Edit all files containing references to //base:i18n\n"
+    "  gn refs out/Debug //base:i18n --as=buildfiles | xargs gvim\n"
+    "      Edit all .gn files containing references to //base:i18n\n"
     "\n"
     "  gn refs out/Debug //base --all\n"
     "      List all targets depending directly or indirectly on //base:base.\n"
@@ -269,15 +331,20 @@ const char kRefs_Help[] =
     "Examples (file input)\n"
     "\n"
     "  gn refs out/Debug //base/macros.h\n"
-    "      Print targets listing //base/macros.h as a source.\n"
+    "      Print target(s) listing //base/macros.h as a source.\n"
     "\n"
     "  gn refs out/Debug //base/macros.h --tree\n"
     "      Display a reverse dependency tree to get to the given file. This\n"
     "      will show how dependencies will reference that file.\n"
     "\n"
-    "  gn refs out/Debug //base/macros.h --all\n"
+    "  gn refs out/Debug //base/macros.h //base/basictypes.h --all\n"
     "      Display all unique targets with some dependency path to a target\n"
-    "      containing the given file as a source.\n";
+    "      containing either of the given files as a source.\n"
+    "\n"
+    "  gn refs out/Debug //base/macros.h --testonly=true --type=executable\n"
+    "          --all --as=output\n"
+    "      Display the executable file names of all test executables\n"
+    "      potentially affected by a change to the given file.\n";
 
 int RunRefs(const std::vector<std::string>& args) {
   if (args.size() != 2) {
@@ -291,95 +358,52 @@ int RunRefs(const std::vector<std::string>& args) {
   bool tree = cmdline->HasSwitch("tree");
   bool all = cmdline->HasSwitch("all");
   bool all_toolchains = cmdline->HasSwitch("all-toolchains");
-  bool files = cmdline->HasSwitch("files");
 
   Setup* setup = new Setup;
   setup->set_check_for_bad_items(false);
   if (!setup->DoSetup(args[0], false) || !setup->Run())
     return 1;
 
-  // Figure out the target or targets that the user is querying.
-  bool is_file_input = false;
-  std::vector<const Target*> query;
-  if (!ResolveTargetsFromCommandLinePattern(setup, args[1], all_toolchains,
-                                            &query))
+  // The inputs are everything but the first arg (which is the build dir).
+  std::vector<std::string> inputs(args.begin() + 1, args.end());
+
+  // Get the matches for the command-line input.
+  UniqueVector<const Target*> target_matches;
+  UniqueVector<const Config*> config_matches;
+  UniqueVector<const Toolchain*> toolchain_matches;
+  UniqueVector<SourceFile> file_matches;
+  if (!ResolveFromCommandLineInput(setup, inputs, all_toolchains,
+                                   &target_matches, &config_matches,
+                                   &toolchain_matches, &file_matches))
     return 1;
-  if (query.empty()) {
-    // If it doesn't match any targets, assume input is file.
-    GetTargetsContainingFile(setup, args[1], all_toolchains, &query);
-    if (query.empty()) {
-      OutputString("\"" + args[1] + "\" matches no targets.\n");
-      return 0;
-    }
-    is_file_input = true;
+
+  // When you give a file or config as an input, you want the targets that are
+  // associated with it. We don't want to just append this to the
+  // target_matches, however, since these targets should actually be listed in
+  // the output, while for normal targets you don't want to see the inputs,
+  // only what refers to them.
+  std::vector<const Target*> all_targets =
+      setup->builder()->GetAllResolvedTargets();
+  UniqueVector<const Target*> explicit_target_matches;
+  for (const auto& file : file_matches) {
+    GetTargetsContainingFile(setup, all_targets, file, all_toolchains,
+                             &explicit_target_matches);
+  }
+  for (const auto& config : config_matches) {
+    GetTargetsReferencingConfig(setup, all_targets, config, all_toolchains,
+                                &explicit_target_matches);
   }
 
   // Construct the reverse dependency tree.
   DepMap dep_map;
   FillDepMap(setup, &dep_map);
 
-  // When the input is a file, we want to print the targets in |query|, which
-  // are the things that directly reference the file, but when the input is a
-  // target, we skip that since the user is asking for what reference those.
-  if (tree) {
-    // Output dependency tree.
-    if (files) {
-      Err(nullptr, "--files option can't be used with --tree option.")
-          .PrintToStdout();
-      return 1;
-    }
-    if (query.size() != 1) {
-      Err(nullptr, "Query matches more than one target.",
-          "--tree only supports a single target as input.").PrintToStdout();
-      return 1;
-    }
-    if (all) {
-      // Recursively print all targets.
-      for (const auto& cur_query : query) {
-        if (is_file_input)
-          RecursivePrintTarget(dep_map, cur_query, nullptr, 0);
-        else
-          RecursivePrintTargetDeps(dep_map, cur_query, nullptr, 0);
-      }
-    } else {
-      // Recursively print unique targets.
-      TargetSet seen_targets;
-      for (const auto& cur_query : query) {
-        if (is_file_input)
-          RecursivePrintTarget(dep_map, cur_query, &seen_targets, 0);
-        else
-          RecursivePrintTargetDeps(dep_map, cur_query, &seen_targets, 0);
-      }
-    }
-  } else if (all) {
-    // Output recursive dependencies, uniquified and flattened.
-    TargetSet results;
-    for (const auto& cur_query : query) {
-      // File inputs also include the top level targets we found.
-      if (is_file_input)
-        results.insert(cur_query);
-      RecursiveCollectChildRefs(dep_map, cur_query, &results);
-    }
-    OutputResultSet(results, files);
-  } else {
-    TargetSet results;
-    for (const auto& cur_query : query) {
-      if (is_file_input) {
-        // When querying for a file, output the resolved list of targets only
-        // (don't need to track back any target dependencies).
-        results.insert(cur_query);
-      } else {
-        // When querying for a target, output direct references of everything
-        // in the query.
-        DepMap::const_iterator dep_begin = dep_map.lower_bound(cur_query);
-        DepMap::const_iterator dep_end = dep_map.upper_bound(cur_query);
-        for (DepMap::const_iterator cur_dep = dep_begin;
-             cur_dep != dep_end; cur_dep++)
-          results.insert(cur_dep->second);
-      }
-    }
-    OutputResultSet(results, files);
-  }
+  if (tree)
+    DoTreeOutput(dep_map, target_matches, explicit_target_matches, all);
+  else if (all)
+    DoAllListOutput(dep_map, target_matches, explicit_target_matches);
+  else
+    DoDirectListOutput(dep_map, target_matches, explicit_target_matches);
 
   return 0;
 }
