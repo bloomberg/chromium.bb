@@ -53,7 +53,6 @@ if (!is_linux || is_chromeos) {
 
       cflags = [
         "/wd4018",  # size/unsigned mismatch
-        "/wd4267",  # size_t -> ExifLong truncation on amd64
       ]
 
       # TODO(GYP): Handle /analyze switch, when it will be used in GN.

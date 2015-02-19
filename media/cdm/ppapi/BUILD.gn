@@ -21,6 +21,9 @@ shared_library("clearkeycdm") {
     "external_clear_key/clear_key_cdm_common.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "CDM_IMPLEMENTATION" ]
 
   deps = [
@@ -39,11 +42,6 @@ shared_library("clearkeycdm") {
     ]
     defines += [ "CLEAR_KEY_CDM_USE_FFMPEG_DECODER" ]
     deps += [ "//third_party/ffmpeg" ]
-  }
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 
   # TODO(GYP) on Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',

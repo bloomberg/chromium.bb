@@ -27,9 +27,4 @@ source_set("cityhash") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  if (is_win) {
-    # TODO(jschuh): http://code.google.com/p/smhasher/issues/detail?id=19
-    cflags = [ "/wd4267" ]
-  }
 }

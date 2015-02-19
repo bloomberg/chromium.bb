@@ -252,7 +252,12 @@ component("media") {
     "video/video_encode_accelerator.h",
   ]
 
-  configs += [ ":media_config" ]
+  configs += [
+    ":media_config",
+    # TODO(wolenetz): Fix size_t to int trunctaion in win64.
+    # See http://crbug.com/171009
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
   all_dependent_configs = [ ":media_dependent_config" ]
 
   cflags = []
@@ -394,8 +399,6 @@ component("media") {
       "mfreadwrite.lib",
       "mfuuid.lib",
     ]
-    cflags += [ "/wd4267" ]  # TODO(wolenetz): Fix size_t to int trunctaion in win64. See
-                             # http://crbug.com/171009
   }
 
   if (proprietary_codecs) {
@@ -579,6 +582,10 @@ test("media_unittests") {
     "video/h264_poc_unittest.cc",
   ]
 
+  # TODO(wolenetz): Fix size_t to int trunctaion in win64.
+  # See http://crbug.com/171009
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":media",
     ":test_support",
@@ -647,11 +654,6 @@ test("media_unittests") {
       "formats/mpeg/adts_stream_parser_unittest.cc",
       "formats/mpeg/mpeg1_audio_stream_parser_unittest.cc",
     ]
-  }
-
-  if (is_win && cpu_arch == "x64") {
-    cflags = [ "/wd4267" ]  # TODO(wolenetz): Fix size_t to int trunctaion in win64. See
-                            # http://crbug.com/171009
   }
 
   if (is_mac || is_ios) {

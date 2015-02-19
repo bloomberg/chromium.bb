@@ -30,6 +30,9 @@ source_set("browser") {
     "//third_party/re2",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (enable_extensions) {
     # Includes all API implementations and the ExtensionsApiClient
     # interface. Moving an API from src/chrome to src/extensions implies
@@ -96,9 +99,5 @@ source_set("browser") {
         }
       }
     }
-  }
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 }

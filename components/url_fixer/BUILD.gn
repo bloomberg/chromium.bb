@@ -8,13 +8,11 @@ static_library("url_fixer") {
     "url_fixer.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//base",
     "//net",
   ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
 }

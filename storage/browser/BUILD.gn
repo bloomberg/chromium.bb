@@ -170,10 +170,11 @@ component("browser") {
   ]
 
   defines = [ "STORAGE_BROWSER_IMPLEMENTATION" ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): fix size_t to int truncations.
-  }
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   deps = [
     "//base",

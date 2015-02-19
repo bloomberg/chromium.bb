@@ -175,6 +175,7 @@ static_library("browser") {
     "//url",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":autofill_browser_config" ]
 
   if (autofill_enable_sync) {
@@ -188,11 +189,6 @@ static_library("browser") {
       "webdata/autofill_wallet_syncable_service.cc",
       "webdata/autofill_wallet_syncable_service.h",
     ]
-  }
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 }
 

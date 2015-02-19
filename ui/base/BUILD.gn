@@ -294,6 +294,9 @@ component("base") {
     sources += [ "touch/touch_device.cc" ]
   }
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "UI_BASE_IMPLEMENTATION" ]
 
   public_deps = [
@@ -414,7 +417,6 @@ component("base") {
     ]
     deps += [ "//third_party/wtl" ]
     cflags = [
-      "/wd4267",  # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int.
       "/wd4324",  # Structure was padded due to __declspec(align()), which is
                   # uninteresting.
     ]
@@ -701,6 +703,9 @@ test("ui_base_unittests") {
     }
   }
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//base",
     "//base/allocator",
@@ -746,9 +751,6 @@ test("ui_base_unittests") {
       "imm32.lib",
       "oleacc.lib",
     ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 
   if (!is_win || !use_aura) {

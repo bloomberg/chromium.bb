@@ -10,16 +10,13 @@ static_library("packed_ct_ev_whitelist") {
     "packed_ct_ev_whitelist.h",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//base",
     "//content",
     "//net",
   ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
 }
 
 source_set("unit_tests") {

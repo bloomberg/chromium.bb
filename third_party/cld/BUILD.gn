@@ -102,7 +102,6 @@ source_set("cld") {
       "/wd4005",  # Macro defined twice.
       "/wd4006",  # #undef expected an identifier.
       "/wd4309",  # Truncation of constant value.
-      "/wd4267",  # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int
     ]
   } else {
     defines = [ "COMPILER_GCC" ]

@@ -26,10 +26,10 @@ component("common") {
     "quota/quota_types.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "STORAGE_COMMON_IMPLEMENTATION" ]
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): fix size_t to int truncations.
-  }
 
   deps = [
     "//base",

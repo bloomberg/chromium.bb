@@ -93,6 +93,9 @@ component("crypto") {
     "third_party/nss/sha512.cc",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":platform",
     "//base",
@@ -124,11 +127,6 @@ component("crypto") {
 
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
-  }
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 
   if (use_openssl) {

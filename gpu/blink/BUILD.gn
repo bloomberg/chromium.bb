@@ -14,6 +14,9 @@ component("blink") {
     "webgraphicscontext3d_in_process_command_buffer_impl.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "GPU_BLINK_IMPLEMENTATION" ]
 
   deps = [
@@ -33,9 +36,4 @@ component("blink") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
 }

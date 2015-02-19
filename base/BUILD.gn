@@ -869,7 +869,7 @@ component("base") {
     ]
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
     libs = [
       "cfgmgr32.lib",
@@ -1028,10 +1028,8 @@ component("i18n") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 source_set("prefs") {
@@ -1439,10 +1437,8 @@ test("base_unittests") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 if (is_android) {

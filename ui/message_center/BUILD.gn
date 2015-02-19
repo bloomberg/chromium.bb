@@ -23,6 +23,9 @@ component("message_center") {
     "//url",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
   if (enable_notifications && !is_android) {
@@ -74,8 +77,6 @@ component("message_center") {
     ]
 
     if (is_win) {
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      cflags = [ "/wd4267" ]
       deps += [ "//ui/aura" ]
     }
 

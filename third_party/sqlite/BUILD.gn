@@ -65,9 +65,7 @@ source_set("sqlite") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  if (is_win) {
-    cflags += [ "/wd4267" ]  # Conversion from size_t to "type".
-  } else if (is_linux) {
+  if (is_linux) {
     cflags += [
       # SQLite doesn"t believe in compiler warnings,
       # preferring testing.

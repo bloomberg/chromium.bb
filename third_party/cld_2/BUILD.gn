@@ -48,10 +48,6 @@ source_set("cld2_data") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int conversion.
-  }
 }
 
 # As in the corresponding gyp file, this just builds the core interfaces for
@@ -66,10 +62,6 @@ source_set("cld_2") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int conversion.
-  }
 }
 
 source_set("cld2_platform_impl") {
@@ -94,10 +86,6 @@ static_library("cld2_static") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int conversion.
-  }
 }
 
 config("cld2_dynamic_mode_config") {
@@ -114,13 +102,9 @@ static_library("cld2_dynamic") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
-    "//build/config/compiler:no_chromium_code",
     ":cld2_dynamic_mode_config",
+    "//build/config/compiler:no_chromium_code",
   ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int conversion.
-  }
 }
 
 # Does not build on Windows.
@@ -144,12 +128,8 @@ if (!is_win) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
-      "//build/config/compiler:no_chromium_code",
       ":cld2_dynamic_mode_config",
+      "//build/config/compiler:no_chromium_code",
     ]
-
-    if (is_win) {
-      cflags = [ "/wd4267" ]  # size_t -> int conversion.
-    }
   }
 }

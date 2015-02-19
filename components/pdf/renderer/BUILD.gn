@@ -14,6 +14,9 @@ static_library("renderer") {
     "ppb_pdf_impl.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//base",
     "//components/pdf/common",
@@ -26,8 +29,4 @@ static_library("renderer") {
     "//v8",
     "//third_party/WebKit/public:blink_minimal",
   ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  }
 }

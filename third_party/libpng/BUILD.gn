@@ -52,12 +52,8 @@ source_set("libpng_sources") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): http://crbug.com/167187
-
-    if (component_mode == "shared_library") {
-      defines = [ "PNG_BUILD_DLL" ]
-    }
+  if (is_win && is_component_build) {
+    defines = [ "PNG_BUILD_DLL" ]
   }
 
   public_configs = [ ":libpng_config" ]

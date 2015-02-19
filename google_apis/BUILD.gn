@@ -122,11 +122,10 @@ source_set("google_apis") {
     "google_api_keys.h",
   ]
 
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int
-  }
-
-  configs += [ ":key_defines" ]
+  configs += [
+    ":key_defines",
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   deps = [
     "//base",

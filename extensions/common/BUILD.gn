@@ -13,10 +13,8 @@ source_set("common_constants") {
       rebase_path(extensions_gypi_values.extensions_common_constants_sources,
                   ".",
                   "//extensions")
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 if (enable_extensions) {
@@ -31,6 +29,8 @@ if (enable_extensions) {
     sources = rebase_path(extensions_gypi_values.extensions_common_sources,
                           ".",
                           "//extensions")
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
     deps = [
       ":common_constants",
@@ -80,10 +80,6 @@ if (enable_extensions) {
                       ".",
                       "//extensions")
       sources += nacl_sources
-    }
-
-    if (is_win) {
-      cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     }
   }
 }  # enable_extensions

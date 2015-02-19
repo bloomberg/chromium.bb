@@ -67,10 +67,7 @@ static_library("re2") {
 
   if (is_win) {
     include_dirs = [ "mswin" ]
-    cflags = [
-      "/wd4267",  # Conversion from size_t.
-      "/wd4722",  # Destructor never terminates.
-    ]
+    cflags = [ "/wd4722" ]  # Destructor never terminates.
   } else {
     sources -= [ "mswin/stdint.h" ]
   }

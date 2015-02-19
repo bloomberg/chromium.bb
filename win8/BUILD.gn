@@ -29,6 +29,10 @@ source_set("test_support_win8") {
     "//base",
     ":test_registrar_constants",
   ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   sources = [
     "test/metro_registration_helper.cc",
     "test/metro_registration_helper.h",
@@ -39,9 +43,6 @@ source_set("test_support_win8") {
     "test/ui_automation_client.cc",
     "test/ui_automation_client.h",
   ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  cflags = [ "/wd4267" ]
 }
 
 source_set("test_registrar_constants") {

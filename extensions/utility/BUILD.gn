@@ -13,13 +13,12 @@ source_set("utility") {
                         ".",
                         "//extensions")
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//content/public/utility",
     "//extensions/common",
     "//skia",
   ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  }
 }

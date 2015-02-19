@@ -36,9 +36,4 @@ static_library("snappy") {
     # https://code.google.com/p/snappy/issues/detail?id=70
     configs -= [ "//build/config/clang:extra_warnings" ]
   }
-
-  if (is_win) {
-    # https://code.google.com/p/snappy/issues/detail?id=75
-    cflags = [ "/wd4267" ]  # Conversion from size_t to 'type'.
-  }
 }

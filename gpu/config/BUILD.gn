@@ -45,6 +45,9 @@ source_set("config") {
     "software_rendering_list_json.cc",
   ]
 
+  # TODO(jschuh): size_t to int.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "GPU_IMPLEMENTATION" ]
 
   deps = [
@@ -69,9 +72,6 @@ source_set("config") {
         "//third_party/amd/amd_videocard_info_win.cc",
       ]
     }
-
-    # TODO(jschuh): size_t to int.
-    cflags = [ "/wd4267" ]
   }
   if (use_libpci) {
     defines += [ "USE_LIBPCI=1" ]

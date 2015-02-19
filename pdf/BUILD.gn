@@ -45,6 +45,9 @@ static_library("pdf") {
     "thumbnail_control.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (pdf_engine == 0) {
     sources += [
       "pdfium/pdfium_api_string_buffer_adapter.cc",
@@ -61,10 +64,6 @@ static_library("pdf") {
       "pdfium/pdfium_range.cc",
       "pdfium/pdfium_range.h",
     ]
-  }
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh) size_t to int truncations.
   }
 
   deps = [

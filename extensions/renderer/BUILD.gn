@@ -13,6 +13,9 @@ source_set("renderer") {
                         ".",
                         "//extensions")
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//chrome:resources",
     "//content:resources",
@@ -22,8 +25,4 @@ source_set("renderer") {
     "//third_party/WebKit/public:blink",
     "//third_party/mojo/src/mojo/edk/js",
   ]
-
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  }
 }

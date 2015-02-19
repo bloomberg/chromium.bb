@@ -43,6 +43,8 @@ static_library("browser") {
     "webdata/token_web_data.h",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     "//base",
     "//crypto",
@@ -66,11 +68,6 @@ static_library("browser") {
 
   if (is_chromeos) {
     sources -= [ "signin_manager.cc" ]
-  }
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 }
 

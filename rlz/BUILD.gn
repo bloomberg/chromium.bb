@@ -55,6 +55,9 @@ source_set("rlz_lib") {
     "win/lib/rlz_value_store_registry.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   public_configs = [ ":rlz_config" ]
 
   deps = [
@@ -73,9 +76,6 @@ source_set("rlz_lib") {
       "mac/lib/rlz_value_store_mac.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
-  } else if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 }
 
@@ -106,6 +106,9 @@ test("rlz_unittests") {
     "win/lib/machine_deal_test.cc",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":rlz_lib",
     ":test_support",
@@ -116,11 +119,6 @@ test("rlz_unittests") {
     "//testing/gtest",
     "//third_party/zlib",
   ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
-  }
 }
 
 executable("rlz_id") {

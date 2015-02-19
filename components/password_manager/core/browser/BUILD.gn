@@ -99,11 +99,10 @@ static_library("browser") {
     # TODO(blundell): Provide the iOS login DB implementation and then
     # also exclude the POSIX one from iOS. http://crbug.com/341429
     sources -= [ "login_database_posix.cc" ]
-  } else if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":password_manager_config" ]
 
   # Sync (not supported in Android WebView).

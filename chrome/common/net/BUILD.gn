@@ -57,7 +57,5 @@ static_library("net") {
     deps += [ "//third_party/boringssl" ]
   }
 
-  if (is_win) {
-    cflags = [ "/wd4267" ]
-  }
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }

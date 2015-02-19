@@ -14,6 +14,9 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 component("views") {
   sources = gypi_values.views_sources
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
@@ -67,7 +70,6 @@ component("views") {
 
   if (is_win) {
     sources += gypi_values.views_win_sources
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     libs = [
       "imm32.lib",
       "oleacc.lib",

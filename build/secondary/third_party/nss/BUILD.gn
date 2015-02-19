@@ -217,7 +217,10 @@ if (is_linux) {
         "//build/config/win:lean_and_mean",  # Won"t compile with lean and mean.
       ]
     }
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      "//build/config/compiler:no_size_t_to_int_warning",
+    ]
 
     cflags = []
     defines = [
@@ -230,7 +233,6 @@ if (is_linux) {
     if (is_win) {
       cflags = [
         "/wd4554",  # Check precidence.
-        "/wd4267",  # Conversion from size_t to "type".
       ]
       defines += [
         "XP_PC",
@@ -882,7 +884,10 @@ if (is_linux) {
     if (is_win) {
       configs -= [ "//build/config/win:unicode" ]  # Requires 8-bit mode.
     }
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      "//build/config/compiler:no_size_t_to_int_warning",
+    ]
     public_configs = [ ":nss_static_config" ]
 
     cflags = []
@@ -903,7 +908,6 @@ if (is_linux) {
     if (is_win) {
       cflags += [
         "/wd4101",  # Unreferenced local variable.
-        "/wd4267",  # Conversion from size_t to "type".
       ]
     }
 

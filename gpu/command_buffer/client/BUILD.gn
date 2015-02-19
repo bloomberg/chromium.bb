@@ -19,10 +19,8 @@ source_set("client") {
 
   defines = [ "GPU_IMPLEMENTATION" ]
 
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 
@@ -56,10 +54,8 @@ source_set("gles2_cmd_helper_sources") {
 
   defines = [ "GPU_IMPLEMENTATION" ]
 
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":client",
@@ -129,13 +125,11 @@ source_set("gpu_memory_buffer_manager") {
 component("gles2_implementation") {
   sources = gles2_implementation_source_files
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
-
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
 
   deps = [
     ":gles2_cmd_helper",
@@ -171,10 +165,8 @@ component("gles2_c_lib") {
   sources = gles2_c_lib_source_files
   defines = [ "GLES2_C_LIB_IMPLEMENTATION" ]
 
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # size_t to int truncation.
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":client",

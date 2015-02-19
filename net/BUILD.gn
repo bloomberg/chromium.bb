@@ -61,14 +61,6 @@ config("net_config") {
   }
 }
 
-# Disables Windows warning about size to int truncations.
-# TODO(jschuh): crbug.com/167187 fix this and delete this config.
-config("net_win_size_truncation") {
-  if (is_win) {
-    cflags = [ "/wd4267" ]
-  }
-}
-
 component("net") {
   sources =
       gypi_values.net_nacl_common_sources + gypi_values.net_non_nacl_sources
@@ -83,7 +75,8 @@ component("net") {
     "DLOPEN_KERBEROS",
     "NET_IMPLEMENTATION",
   ]
-  configs += [ ":net_win_size_truncation" ]
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":net_config" ]
   include_dirs = []
 
@@ -568,8 +561,8 @@ static_library("http_server") {
     "server/web_socket_encoder.h",
   ]
   configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
-    ":net_win_size_truncation",
   ]
   deps = [
     ":net",
@@ -593,7 +586,8 @@ executable("dump_cache") {
     "tools/dump_cache/url_utilities.h",
   ]
 
-  configs += [ ":net_win_size_truncation" ]
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     "//base",
@@ -691,7 +685,8 @@ source_set("test_support") {
     "url_request/url_request_test_util.h",
   ]
 
-  configs += [ ":net_win_size_truncation" ]
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   public_deps = [
     "//base",
@@ -774,7 +769,7 @@ if (use_v8_in_net) {
 
     defines = [ "NET_IMPLEMENTATION" ]
     configs += [
-      ":net_win_size_truncation",
+      "//build/config/compiler:no_size_t_to_int_warning",
       "//build/config/compiler:wexit_time_destructors",
     ]
 
@@ -825,7 +820,8 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/crash_cache/crash_cache.cc",
     ]
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       ":test_support",
@@ -838,7 +834,8 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/crl_set_dump/crl_set_dump.cc",
     ]
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -850,7 +847,8 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/dns_fuzz_stub/dns_fuzz_stub.cc",
     ]
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -874,7 +872,8 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/get_server_time/get_server_time.cc",
     ]
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -925,7 +924,8 @@ if (!is_ios && !is_android) {
     sources = [
       "disk_cache/blockfile/stress_cache.cc",
     ]
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       ":test_support",
@@ -937,7 +937,8 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/tld_cleanup/tld_cleanup.cc",
     ]
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       "//base",
       "//base:i18n",
@@ -1161,7 +1162,8 @@ if (!is_android && !is_win && !is_mac) {
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
-    configs += [ ":net_win_size_truncation" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     defines = []
 
     deps = [

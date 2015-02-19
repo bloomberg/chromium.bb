@@ -21,11 +21,10 @@ component("sql") {
     "transaction.h",
   ]
 
-  defines = [ "SQL_IMPLEMENTATION" ]
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t to int.
-  }
+  defines = [ "SQL_IMPLEMENTATION" ]
 
   deps = [
     "//base",
@@ -68,9 +67,8 @@ test("sql_unittests") {
     "transaction_unittest.cc",
   ]
 
-  if (is_win) {
-    cflags = [ "/wd4267" ]  # size_t -> int
-  }
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":sql",

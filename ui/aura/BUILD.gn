@@ -176,6 +176,9 @@ source_set("test_support") {
     "test/window_test_api.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   public_deps = [
     ":aura",
   ]
@@ -194,8 +197,6 @@ source_set("test_support") {
 
   if (is_win) {
     sources += [ "test/ui_controls_factory_aurawin.cc" ]
-
-    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 
   if (use_x11) {

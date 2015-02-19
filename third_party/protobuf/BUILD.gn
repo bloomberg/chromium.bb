@@ -17,11 +17,6 @@ config("protobuf_config") {
     "GOOGLE_PROTOBUF_NO_RTTI",
     "GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
   ]
-
-  if (is_win) {
-    # TODO(jschuh): http://crbug.com/167187 size_t -> int.
-    cflags = [ "/wd4267" ]
-  }
 }
 
 if (component_mode == "shared_library") {
@@ -98,7 +93,11 @@ component("protobuf_lite") {
   if (is_win) {
     configs -= [ "//build/config/win:lean_and_mean" ]
   }
-  public_configs = [ ":protobuf_config" ]
+  public_configs = [
+    ":protobuf_config",
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   cflags = protobuf_lite_cflags
 
@@ -177,7 +176,11 @@ source_set("protobuf_full") {
   if (is_win) {
     configs -= [ "//build/config/win:lean_and_mean" ]
   }
-  public_configs = [ ":protobuf_config" ]
+  public_configs = [
+    ":protobuf_config",
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 
   cflags = protobuf_lite_cflags
 }

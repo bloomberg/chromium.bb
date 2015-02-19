@@ -61,6 +61,9 @@ component("views_examples_lib") {
     "widget_example.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "VIEWS_EXAMPLES_IMPLEMENTATION" ]
 
   deps = [
@@ -78,9 +81,6 @@ component("views_examples_lib") {
 
   if (is_win) {
     deps += [ "//third_party/wtl" ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 
   if (use_aura) {

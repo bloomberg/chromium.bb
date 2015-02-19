@@ -70,8 +70,6 @@ component("libssl") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   if (is_win) {
-    cflags += [ "/wd4267" ]  # Disable warning: Conversion from size_t to 'type'.
-
     sources -= [
       "unix_err.c",
       "unix_err.h",

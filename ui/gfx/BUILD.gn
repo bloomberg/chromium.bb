@@ -224,6 +224,9 @@ component("gfx") {
     "win/window_impl.h",
   ]
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   defines = [ "GFX_IMPLEMENTATION" ]
 
   deps = [
@@ -307,7 +310,6 @@ component("gfx") {
   # Windows.
   if (is_win) {
     cflags = [
-      "/wd4267",  # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int.
       "/wd4324",  # Structure was padded due to __declspec(align()), which is
                   # uninteresting.
     ]
@@ -452,6 +454,9 @@ test("gfx_unittests") {
     ]
   }
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":gfx",
     ":test_support",
@@ -511,9 +516,6 @@ test("gfx_unittests") {
       "imm32.lib",
       "oleacc.lib",
     ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]
   }
 }
 

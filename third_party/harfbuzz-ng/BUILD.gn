@@ -162,7 +162,6 @@ if (use_system_harfbuzz) {
     }
     if (is_win) {
       cflags += [
-        "/wd4267",  # size_t to 'type' converion.
         "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
       ]
     }
