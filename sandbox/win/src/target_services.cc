@@ -46,13 +46,6 @@ bool FlushCachedRegHandles() {
 
 // Checks if we have handle entries pending and runs the closer.
 bool CloseOpenHandles() {
-  // Windows 10 has FLG_ENABLE_HANDLE_EXCEPTIONS enabled by default so causes
-  // exceptions to be raised if target process attempts to close a handle that
-  // has already been closed by HandleCloser.  Therefore, do not close any
-  // handles on Windows 10 until this flag is removed by MS.
-  // See crbug.com/452613.
-  if (base::win::GetVersion() == base::win::VERSION_WIN10)
-    return true;
   if (sandbox::HandleCloserAgent::NeedsHandlesClosed()) {
     sandbox::HandleCloserAgent handle_closer;
 
