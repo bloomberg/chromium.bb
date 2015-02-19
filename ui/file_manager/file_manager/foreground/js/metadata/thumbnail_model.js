@@ -4,24 +4,15 @@
 
 /**
  * @param {!FileSystemMetadata} fileSystemMetadata
- * @param {!ContentMetadataProvider} contentMetadataProvider
  * @struct
  * @constructor
  */
-function ThumbnailModel(
-    fileSystemMetadata,
-    contentMetadataProvider) {
+function ThumbnailModel(fileSystemMetadata) {
   /**
    * @private {!FileSystemMetadata}
    * @const
    */
   this.fileSystemMetadata_ = fileSystemMetadata;
-
-  /**
-   * @private {!ContentMetadataProvider}
-   * @const
-   */
-  this.contentMetadataProvider_ = contentMetadataProvider;
 }
 
 /**
@@ -62,7 +53,7 @@ ThumbnailModel.prototype.get = function(entries) {
             contentRequestEntries.push(entries[i]);
         }
         if (contentRequestEntries.length) {
-          return this.contentMetadataProvider_.get(
+          return this.fileSystemMetadata_.get(
               contentRequestEntries,
               [
                 'contentThumbnailUrl',

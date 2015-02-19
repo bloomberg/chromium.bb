@@ -12,26 +12,30 @@ var nonImageEntry = {
   toURL: function() { return 'filesystem://B'; }
 };
 
-var fileSystemMetadata;
+var metadata;
 var contentMetadata;
 var thumbnailModel;
 
 function setUp() {
-  fileSystemMetadata = {
-    modificationTime: new Date(2015, 0, 1),
-    present: true,
-    dirty: false,
-    thumbnailUrl: 'EXTERNAL_THUMBNAIL_URL',
-    customIconUrl: 'CUSTOM_ICON_URL'
-  };
-  contentMetadata = {
-    contentThumbnailUrl: 'CONTENT_THUMBNAIL_URL',
-    contentThumbnailTransform: 'CONTENT_THUMBNAIL_TRANSFORM',
-    contentImageTransform: 'CONTENT_IMAGE_TRANSFORM'
-  };
-  thumbnailModel = new ThumbnailModel(
-      {get: function() { return Promise.resolve([fileSystemMetadata]); }},
-      {get: function() { return Promise.resolve([contentMetadata]); }});
+  metadata = new MetadataItem();
+  metadata.modificationTime = new Date(2015, 0, 1);
+  metadata.present = true;
+  metadata.dirty = false;
+  metadata.thumbnailUrl = 'EXTERNAL_THUMBNAIL_URL';
+  metadata.customIconUrl = 'CUSTOM_ICON_URL';
+  metadata.contentThumbnailUrl = 'CONTENT_THUMBNAIL_URL';
+  metadata.contentThumbnailTransform = 'CONTENT_THUMBNAIL_TRANSFORM';
+  metadata.contentImageTransform = 'CONTENT_IMAGE_TRANSFORM';
+
+  thumbnailModel = new ThumbnailModel({
+      get: function(entries, names) {
+        var result = new MetadataItem();
+        for (var i = 0; i < names.length; i++) {
+          var name = names[i];
+          result[name] = metadata[name];
+        }
+        return Promise.resolve([result]);
+      }});
 }
 
 function testThumbnailModelGetBasic(callback) {
@@ -50,7 +54,7 @@ function testThumbnailModelGetBasic(callback) {
 }
 
 function testThumbnailModelGetNotPresent(callback) {
-  fileSystemMetadata.present = false;
+  metadata.present = false;
   reportPromise(thumbnailModel.get([imageEntry]).then(function(results) {
     assertEquals(1, results.length);
     assertEquals(

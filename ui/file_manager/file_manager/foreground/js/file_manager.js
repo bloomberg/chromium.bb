@@ -695,14 +695,10 @@ FileManager.prototype = /** @struct */ {
 
     // Create the metadata cache.
     assert(this.volumeManager_);
-    this.fileSystemMetadata_ = new FileSystemMetadata(
+    this.fileSystemMetadata_ = FileSystemMetadata.create(
         this.metadataProviderCache_,
-        new FileSystemMetadataProvider(this.metadataProviderCache_),
-        new ExternalMetadataProvider(this.metadataProviderCache_),
         this.volumeManager_);
-    this.thumbnailModel_ = new ThumbnailModel(
-        this.fileSystemMetadata_,
-        new ContentMetadataProvider(this.metadataProviderCache_));
+    this.thumbnailModel_ = new ThumbnailModel(this.fileSystemMetadata_);
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);

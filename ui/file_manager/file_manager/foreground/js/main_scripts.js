@@ -89,7 +89,6 @@
 //<include src="ui/file_manager_dialog_base.js">
 //<include src="metadata/metadata_cache_set.js">
 //<include src="metadata/new_metadata_provider.js">
-//<include src="metadata/thumbnail_model.js">
 //
 //<include src="app_installer.js">
 //<include src="app_state_controller.js">
@@ -115,6 +114,7 @@
 //<include src="metadata/metadata_cache.js">
 //<include src="metadata/metadata_cache_item.js">
 //<include src="metadata/metadata_item.js">
+//<include src="metadata/thumbnail_model.js">
 //<include src="metadata_update_controller.js">
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">

@@ -6,6 +6,7 @@
  * @param {!MetadataProviderCache} cache
  * @param {!FileSystemMetadataProvider} fileSystemMetadataProvider
  * @param {!ExternalMetadataProvider} externalMetadataProvider
+ * @param {!ContentMetadataProvider} contentMetadataProvider
  * @param {!VolumeManagerWrapper} volumeManager
  * @constructor
  * @struct
@@ -14,6 +15,7 @@ function FileSystemMetadata(
     cache,
     fileSystemMetadataProvider,
     externalMetadataProvider,
+    contentMetadataProvider,
     volumeManager) {
   /**
    * @private {!MetadataProviderCache}
@@ -34,11 +36,31 @@ function FileSystemMetadata(
   this.externalMetadataProvider_ = externalMetadataProvider;
 
   /**
+   * @private {!ContentMetadataProvider}
+   * @const
+   */
+  this.contentMetadataProvider_ = contentMetadataProvider;
+
+  /**
    * @private {!VolumeManagerWrapper}
    * @const
    */
   this.volumeManager_ = volumeManager;
 }
+
+/**
+ * @param {!MetadataProviderCache} cache
+ * @param {!VolumeManagerWrapper} volumeManager
+ * @return {!FileSystemMetadata}
+ */
+FileSystemMetadata.create = function(cache, volumeManager) {
+  return new FileSystemMetadata(
+      cache,
+      new FileSystemMetadataProvider(cache),
+      new ExternalMetadataProvider(cache),
+      new ContentMetadataProvider(cache),
+      volumeManager);
+};
 
 /**
  * Obtains metadata for entries.
@@ -48,41 +70,57 @@ function FileSystemMetadata(
  */
 FileSystemMetadata.prototype.get = function(entries, names) {
   var localEntries = [];
-  var localEntryIndexes = [];
   var externalEntries = [];
-  var externalEntryIndexes = [];
   for (var i = 0; i < entries.length; i++) {
     var volumeInfo = this.volumeManager_.getVolumeInfo(entries[i]);
     if (volumeInfo &&
         (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE ||
          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED)) {
       externalEntries.push(entries[i]);
-      externalEntryIndexes.push(i);
     } else {
       localEntries.push(entries[i]);
-      localEntryIndexes.push(i);
     }
   }
 
-  // Correct property names that are valid for fileSystemMetadataProvider.
-  var fileSystemPropertyNames = names.filter(function(name) {
-    return FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(name) !== -1;
-  });
-
+  var fileSystemPropertyNames = [];
+  var externalPropertyNames = [];
+  var contentPropertyNames = [];
+  for (var i = 0; i < names.length; i++) {
+    var validName = false;
+    if (FileSystemMetadataProvider.PROPERTY_NAMES.indexOf(names[i]) !== -1) {
+      fileSystemPropertyNames.push(names[i]);
+      validName = true;
+    }
+    if (ExternalMetadataProvider.PROPERTY_NAMES.indexOf(names[i]) !== -1) {
+      externalPropertyNames.push(names[i]);
+      validName = true;
+    }
+    if (ContentMetadataProvider.PROPERTY_NAMES.indexOf(names[i]) !== -1) {
+      assert(!validName);
+      contentPropertyNames.push(names[i]);
+      validName = true;
+    }
+    assert(validName);
+  }
   return Promise.all([
     this.fileSystemMetadataProvider_.get(localEntries, fileSystemPropertyNames),
-    this.externalMetadataProvider_.get(externalEntries, names)
+    this.externalMetadataProvider_.get(externalEntries, externalPropertyNames),
+    this.contentMetadataProvider_.get(entries, contentPropertyNames)
   ]).then(function(results) {
-    var integratedResults = [];
-    var localResults = results[0];
-    for (var i = 0; i < localResults.length; i++) {
-      integratedResults[localEntryIndexes[i]] = localResults[i];
+    var integratedResults = {};
+    for (var i = 0; i < 3; i++) {
+      var entryList = [localEntries, externalEntries, entries][i];
+      for (var j = 0; j < entryList.length; j++) {
+        var url = entryList[j].toURL();
+        integratedResults[url] = integratedResults[url] || new MetadataItem();
+        for (var name in results[i][j]) {
+          integratedResults[url][name] = results[i][j][name];
+        }
+      }
     }
-    var externalResults = results[1];
-    for (var i = 0; i < externalResults.length; i++) {
-      integratedResults[externalEntryIndexes[i]] = externalResults[i];
-    }
-    return integratedResults;
+    return entries.map(function(entry) {
+      return integratedResults[entry.toURL()];
+    });
   });
 };
 
