@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Build;
@@ -17,18 +18,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
-import java.text.NumberFormat;
 import java.util.Calendar;
 
 /**
@@ -38,10 +36,12 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     private final CardUnmaskPromptDelegate mDelegate;
     private final AlertDialog mDialog;
     private final boolean mShouldRequestExpirationDate;
+    private final int mThisYear;
 
     private final EditText mCardUnmaskInput;
-    private final Spinner mMonthSpinner;
-    private final Spinner mYearSpinner;
+    private final EditText mMonthInput;
+    private final EditText mYearInput;
+    private final View mExpirationContainer;
     private final TextView mErrorMessage;
     private final CheckBox mStoreLocallyCheckbox;
     private final View mMainContents;
@@ -84,8 +84,9 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         ((TextView) v.findViewById(R.id.instructions)).setText(instructions);
 
         mCardUnmaskInput = (EditText) v.findViewById(R.id.card_unmask_input);
-        mMonthSpinner = (Spinner) v.findViewById(R.id.expiration_month);
-        mYearSpinner = (Spinner) v.findViewById(R.id.expiration_year);
+        mMonthInput = (EditText) v.findViewById(R.id.expiration_month);
+        mYearInput = (EditText) v.findViewById(R.id.expiration_year);
+        mExpirationContainer = v.findViewById(R.id.expiration_container);
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(defaultToStoringLocally);
@@ -104,12 +105,13 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
                           .create();
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
+        mThisYear = Calendar.getInstance().get(Calendar.YEAR);
     }
 
     public void show() {
         mDialog.show();
 
-        if (mShouldRequestExpirationDate) initializeExpirationDateSpinners();
+        if (mShouldRequestExpirationDate) mExpirationContainer.setVisibility(View.VISIBLE);
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
@@ -119,24 +121,23 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
             @Override
             public void onClick(View view) {
                 mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
-                        (String) mMonthSpinner.getSelectedItem(),
-                        (String) mYearSpinner.getSelectedItem(),
+                        mMonthInput.getText().toString(),
+                        mYearInput.getText().toString(),
                         mStoreLocallyCheckbox.isChecked());
             }
         });
 
-        final EditText input = mCardUnmaskInput;
-        input.addTextChangedListener(this);
-        input.post(new Runnable() {
+        mCardUnmaskInput.addTextChangedListener(this);
+        mCardUnmaskInput.post(new Runnable() {
             @Override
             public void run() {
                 setInitialFocus();
             }
         });
-
-        // Calling this from here clobbers the input's background shadow, which is otherwise
-        // highly resistant to styling.
-        setInputError(null);
+        if (mShouldRequestExpirationDate) {
+            mMonthInput.addTextChangedListener(this);
+            mYearInput.addTextChangedListener(this);
+        }
     }
 
     public void dismiss() {
@@ -155,6 +156,10 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         if (!success) {
             setInputsEnabled(true);
             setInputError("Credit card could not be verified. Try again.");
+            // TODO(estade): depending on the type of error, we may not want to disable the
+            // verify button. But for the common case, where unmasking failed due to a bad
+            // value, verify should be disabled until the user makes some change.
+            mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
             setInitialFocus();
             // TODO(estade): UI decision - should we clear the input?
         } else {
@@ -186,48 +191,25 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
-    private void initializeExpirationDateSpinners() {
-        ArrayAdapter<CharSequence> monthAdapter = new ArrayAdapter<CharSequence>(
-                mDialog.getContext(), android.R.layout.simple_spinner_item);
-
-        // TODO(estade): i18n, or remove this entry, or something.
-        monthAdapter.add("MM");
-        NumberFormat nf = NumberFormat.getInstance();
-        nf.setMinimumIntegerDigits(2);
-        for (int month = 1; month <= 12; month++) {
-            monthAdapter.add(nf.format(month));
-        }
-        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mMonthSpinner.setAdapter(monthAdapter);
-
-        ArrayAdapter<CharSequence> yearAdapter = new ArrayAdapter<CharSequence>(
-                mDialog.getContext(), android.R.layout.simple_spinner_item);
-        yearAdapter.add("YYYY");
-        Calendar calendar = Calendar.getInstance();
-        int initialYear = calendar.get(Calendar.YEAR);
-        for (int year = initialYear; year < initialYear + 10; year++) {
-            yearAdapter.add(Integer.toString(year));
-        }
-        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mYearSpinner.setAdapter(yearAdapter);
-
-        mMonthSpinner.setVisibility(View.VISIBLE);
-        mYearSpinner.setVisibility(View.VISIBLE);
-    }
-
     private void setInitialFocus() {
-        if (mShouldRequestExpirationDate) return;
-
         InputMethodManager imm = (InputMethodManager) mDialog.getContext().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(mCardUnmaskInput, InputMethodManager.SHOW_IMPLICIT);
+        imm.showSoftInput(mShouldRequestExpirationDate ? mMonthInput : mCardUnmaskInput,
+                InputMethodManager.SHOW_IMPLICIT);
     }
 
     private boolean areInputsValid() {
-        if (mShouldRequestExpirationDate
-                && (mMonthSpinner.getSelectedItemPosition() == 0
-                        || mYearSpinner.getSelectedItemPosition() == 0)) {
-            return false;
+        if (mShouldRequestExpirationDate) {
+            try {
+                int month = Integer.parseInt(mMonthInput.getText().toString());
+                if (month < 1 || month > 12) return false;
+
+                // TODO(estade): allow 4 digit year input?
+                int year = Integer.parseInt(mYearInput.getText().toString());
+                if (year < mThisYear % 100 || year > (mThisYear + 10) % 100) return false;
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
     }
@@ -239,9 +221,8 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
      */
     private void setInputsEnabled(boolean enabled) {
         mCardUnmaskInput.setEnabled(enabled);
-        mMonthSpinner.setEnabled(enabled);
-        mYearSpinner.setEnabled(enabled);
-        mStoreLocallyCheckbox.setEnabled(enabled);
+        mMonthInput.setEnabled(enabled);
+        mYearInput.setEnabled(enabled);
         mMainContents.setAlpha(enabled ? 1.0f : 0.15f);
         mMainContents.setImportantForAccessibility(
                 enabled ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
@@ -266,13 +247,25 @@ public class CardUnmaskPrompt implements DialogInterface.OnDismissListener, Text
         // draw the TextInput.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        // The input is always active or in an error state. Simply clearing the color
-        // filter resets the color to input_underline_color, even when it's active.
-        int strokeColor = mDialog.getContext().getResources().getColor(
-                message == null ? R.color.light_active_color
-                                : R.color.input_underline_error_color);
+        ColorFilter filter = null;
+        if (message != null) {
+            filter = new PorterDuffColorFilter(mDialog.getContext().getResources().getColor(
+                    R.color.input_underline_error_color), PorterDuff.Mode.SRC_IN);
+        }
 
-        mCardUnmaskInput.getBackground().mutate().setColorFilter(
-                new PorterDuffColorFilter(strokeColor, PorterDuff.Mode.SRC_IN));
+        // TODO(estade): it would be nicer if the error were specific enough to tell us which input
+        // was invalid.
+        updateColorForInput(mCardUnmaskInput, filter);
+        updateColorForInput(mMonthInput, filter);
+        updateColorForInput(mYearInput, filter);
+    }
+
+    /**
+     * Sets the stroke color for the given input.
+     * @param input The input to modify.
+     * @param filter The color filter to apply to the background.
+     */
+    private void updateColorForInput(EditText input, ColorFilter filter) {
+        input.getBackground().mutate().setColorFilter(filter);
     }
 }

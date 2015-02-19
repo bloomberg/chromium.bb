@@ -32,19 +32,38 @@
             android:orientation="horizontal">
 
             <!-- TODO(estade): add accessibility content descriptions. -->
-            <Spinner
-                android:id="@+id/expiration_month"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:visibility="gone" />
 
-            <Spinner
-                android:id="@+id/expiration_year"
+            <LinearLayout
+                android:id="@+id/expiration_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:visibility="gone" />
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+              <EditText
+                  android:id="@+id/expiration_month"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="16dp"
+                  android:ems="2"
+                  android:gravity="center_horizontal"
+                  android:inputType="number" />
+
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginStart="8dp"
+                  android:layout_marginEnd="8dp"
+                  android:text="/" />
+
+              <EditText
+                  android:id="@+id/expiration_year"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:ems="2"
+                  android:gravity="center_horizontal"
+                  android:inputType="number" />
+            </LinearLayout>
 
             <EditText
                 android:id="@+id/card_unmask_input"
