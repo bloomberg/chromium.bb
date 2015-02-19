@@ -654,7 +654,6 @@ def HostTools(host, options):
                   options) +
               [command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
-                  'NACL_SANDBOX=0',
                   'PNACL_BROWSER_TRANSLATOR=0',
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
                   'all']),

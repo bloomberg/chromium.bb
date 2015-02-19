@@ -358,7 +358,7 @@ llvm-sb-make() {
       env -i PATH="/usr/bin:/bin:${HOST_CLANG_PATH}" \
       LD_LIBRARY_PATH="${HOST_LIBCXX}/lib" \
       ONLY_TOOLS="${tools_to_build}" \
-      NACL_SANDBOX=1 \
+      PNACL_BROWSER_TRANSLATOR=1 \
       KEEP_SYMBOLS=1 \
       NO_DEAD_STRIP=1 \
       VERBOSE=1 \

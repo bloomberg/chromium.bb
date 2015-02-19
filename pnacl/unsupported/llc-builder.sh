@@ -80,7 +80,7 @@ llc-make() {
 
   env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
-           NACL_SANDBOX=0 \
+           PNACL_BROWSER_TRANSLATOR=0 \
            NACL_SB_JIT=0 \
            CC="${CC}" \
            CXX="${CXX}" \
