@@ -6,17 +6,23 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
+import android.os.Bundle;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.LocationSettings;
+import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.ProtectedContentPreferences;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 
@@ -25,6 +31,8 @@ import org.chromium.content.browser.BrowserStartupController;
  * chrome layer.
  */
 public abstract class ChromiumApplication extends ContentApplication {
+
+    private static final String TAG = "ChromiumApplication";
 
     /**
      * Returns whether the Activity is being shown in multi-window mode.
@@ -96,14 +104,29 @@ public abstract class ChromiumApplication extends ContentApplication {
      * @param tab The tab that triggered the request.
      */
     @CalledByNative
-    protected void openClearBrowsingData(Tab tab) {}
+    protected void openClearBrowsingData(Tab tab) {
+        Activity activity = tab.getWindowAndroid().getActivity().get();
+        if (activity == null) {
+            Log.e(TAG,
+                    "Attempting to open clear browsing data for a tab without a valid activity");
+            return;
+        }
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(activity,
+                PrivacyPreferences.class.getName());
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(PrivacyPreferences.SHOW_CLEAR_BROWSING_DATA_EXTRA, true);
+        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, arguments);
+        activity.startActivity(intent);
+    }
 
     /**
      * @return Whether parental controls are enabled.  Returning true will disable
      *         incognito mode.
      */
     @CalledByNative
-    protected abstract boolean areParentalControlsEnabled();
+    protected boolean areParentalControlsEnabled() {
+        return PartnerBrowserCustomizations.isIncognitoDisabled();
+    }
 
     // TODO(yfriedman): This is too widely available. Plumb this through ChromeNetworkDelegate
     // instead.

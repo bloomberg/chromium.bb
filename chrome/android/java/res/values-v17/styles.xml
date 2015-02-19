@@ -85,6 +85,7 @@
         <item name="colorAccent">@color/pref_accent_color</item>
     </style>
 
+    <!-- Alert dialogs -->
     <style name="AlertDialogContent">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -100,6 +101,13 @@
         <item name="android:singleLine">true</item>
         <item name="android:paddingTop">10dp</item>
     </style>
+    <style name="AlertDialogSummaryViewItem" parent="@android:style/TextAppearance.Small">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:paddingTop">10dp</item>
+    </style>
+
     <style name="BoldTextFieldLabel" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

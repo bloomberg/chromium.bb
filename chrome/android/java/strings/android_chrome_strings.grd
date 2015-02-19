@@ -247,6 +247,114 @@
         Default
       </message>
 
+      <!-- Privacy preferences -->
+      <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
+        Privacy
+      </message>
+      <message name="IDS_NAVIGATION_ERROR_TITLE" desc="Title for checkbox to enable or disable navigation error suggestions.">
+        Navigation error suggestions
+      </message>
+      <message name="IDS_NAVIGATION_ERROR_SUMMARY" desc="Summary for navigation error suggestions.">
+        Show suggestions when a web address does not resolve or a connection cannot be made
+      </message>
+      <message name="IDS_SEARCH_SUGGESTIONS_TITLE" desc="Title for search and url suggestions.">
+        Search and URL suggestions
+      </message>
+      <message name="IDS_SEARCH_SUGGESTIONS_SUMMARY" desc="Summary for search and url suggestions.">
+        Use a prediction service to show related queries and popular websites as you type in the address bar
+      </message>
+      <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title for Prefetch page resources.">
+        Prefetch page resources
+      </message>
+      <message name="IDS_NETWORK_PREDICTIONS_SUMMARY" desc="Summary for Prefetch page resources.">
+        Improve page load performance
+      </message>
+      <message name="IDS_NETWORK_PREDICTION_ALWAYS_VALUE" desc="Internal value for prefetch page resources preference" translateable="false">
+        network_prediction_always
+      </message>
+      <message name="IDS_NETWORK_PREDICTION_WIFI_ONLY_VALUE" desc="Internal value for prefetch page resources preference" translateable="false">
+        network_prediction_wifi_only
+      </message>
+      <message name="IDS_NETWORK_PREDICTION_NEVER_VALUE" desc="Internal value for prefetch page resources preference" translateable="false">
+        network_prediction_never
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
+        Touch to Search
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for Contextual Search preference">
+        Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
+
+To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_LEARN_MORE_URL" desc="URL for learning more about Contextual Search preference" translateable="false">
+        https://support.google.com/chrome/answer/95440#android
+      </message>
+      <message name="IDS_CRASH_DUMP_UPLOAD_TITLE" desc="Title for crash upload upload preference">
+        Usage and crash reports
+      </message>
+      <message name="IDS_CRASH_DUMP_NEVER_UPLOAD" desc="Settings option never to upload crash reports [CHAR-LIMIT=32]">
+        Never send
+      </message>
+      <message name="IDS_CRASH_DUMP_ALWAYS_UPLOAD" desc="Settings option to upload crash reports only anytime (when on Wi-Fi or mobile data) [CHAR-LIMIT=32]">
+        Always send
+      </message>
+      <message name="IDS_CRASH_DUMP_ONLY_WITH_WIFI" desc="Settings option to upload crash reports only over Wi-Fi [CHAR-LIMIT=32]">
+        Only send on Wi-Fi
+      </message>
+      <message name="IDS_CRASH_DUMP_NEVER_UPLOAD_VALUE" desc="Internal value for crash uploading preference." translateable="false">
+        crash_dump_never_upload
+      </message>
+      <message name="IDS_CRASH_DUMP_ALWAYS_UPLOAD_VALUE" desc="Internal value for crash uploading preference." translateable="false">
+        crash_dump_always_upload
+      </message>
+      <message name="IDS_CRASH_DUMP_ONLY_WITH_WIFI_VALUE" desc="Internal value for crash uploading preference." translateable="false">
+        crash_dump_only_with_wifi
+      </message>
+      <message name="IDS_DO_NOT_TRACK_TITLE" desc="Title for 'Do Not Track' preference">
+        ‘Do Not Track’
+      </message>
+      <message name="IDS_DO_NOT_TRACK_DESCRIPTION" desc="Description for 'Do Not Track' preference">
+        Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
+
+For example, some websites may respond to this request by showing you ads that aren’t based on other websites you’ve visited. Many websites will still collect and use your browsing data - for example to improve security, to provide content, ads and recommendations on their websites, and to generate reporting statistics.
+      </message>
+      <message name="IDS_DO_NOT_TRACK_LEARN_MORE_URL" desc="URL for learning more about 'Do Not Track' preference" translateable="false">
+      https://support.google.com/chrome/?p=settings_do_not_track
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Button to Clear Browsing Data [CHAR-LIMIT=24]">
+        Clear browsing data
+      </message>
+      <message name="IDS_CLEAR_CACHE_TITLE" desc="Title for Clear Cache in Clear Browsing Data dialog">
+        Clear the cache
+      </message>
+      <message name="IDS_CLEAR_HISTORY_TITLE" desc="Title for Clear History in Clear Browsing Data dialog">
+        Clear browsing history
+      </message>
+      <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies and site data in Clear Browsing Data dialog">
+        Clear cookies, site data
+      </message>
+      <message name="IDS_CLEAR_COOKIES_NO_SIGN_OUT_SUMMARY" desc="Text at the bottom of the Clear Browsing Data dialog informing that clearing cookies wouldn't sign the user out of Google Accounts. Dialog also contains a link which opens the Account Management screen.">
+        You won't be signed out of your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Accounts<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_CLEAR_PASSWORDS_TITLE" desc="Title for Clear Passwords in Clear Browsing Data preference">
+        Clear saved passwords
+      </message>
+      <message name="IDS_CLEAR_FORMDATA_TITLE" desc="Title for Clear Form Data in Clear Browsing Data preference">
+        Clear autofill data
+      </message>
+      <message name="IDS_CLEAR_BOOKMARKS_TITLE" desc="Title for Clear Bookmarks data in Clear Synced Data dialog">
+        Clear bookmarks
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_TITLE" desc='Title for the progress dialog used when waiting for "clear browsing data" to complete.'>
+        Clearing browsing data
+      </message>
+      <message name="IDS_CLEAR_DATA_DELETE" desc="Button that allows the user to clear their browsing data. [CHAR-LIMIT=20]">
+        Clear
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_MESSAGE" desc='Message on the progress dialog used when waiting for "clear browsing data" to complete.'>
+        Please wait…
+      </message>
+
       <!-- Accessibility preferences -->
       <message name="IDS_PREFS_ACCESSIBILITY" desc="Title of Accessibility settings, which allows the user to change webpage font sizes. [CHAR-LIMIT=32]">
         Accessibility
