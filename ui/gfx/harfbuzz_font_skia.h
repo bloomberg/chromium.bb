@@ -16,7 +16,7 @@ namespace gfx {
 hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
                               SkScalar text_size,
                               const FontRenderParams& params,
-                              bool background_is_transparent);
+                              bool subpixel_rendering_suppressed);
 
 }  // namespace gfx
 

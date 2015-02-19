@@ -258,7 +258,7 @@ class HarfBuzzFace {
 hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
                               SkScalar text_size,
                               const FontRenderParams& params,
-                              bool background_is_transparent) {
+                              bool subpixel_rendering_suppressed) {
   // TODO(ckocagil): This shouldn't grow indefinitely. Maybe use base::MRUCache?
   static std::map<SkFontID, FaceCache> face_caches;
 
@@ -273,7 +273,7 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
   hb_font_data->paint_.setTypeface(skia_face);
   hb_font_data->paint_.setTextSize(text_size);
   // TODO(ckocagil): Do we need to update these params later?
-  internal::ApplyRenderParams(params, background_is_transparent,
+  internal::ApplyRenderParams(params, subpixel_rendering_suppressed,
                               &hb_font_data->paint_);
   hb_font_set_funcs(harfbuzz_font, g_font_funcs.Get().get(), hb_font_data,
                     DeleteByType<FontData>);

@@ -1648,7 +1648,11 @@ void Textfield::AccessibilitySetValue(const base::string16& new_value) {
 void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
   set_background(Background::CreateSolidBackground(color));
-  GetRenderText()->set_background_is_transparent(SkColorGetA(color) != 0xFF);
+  // Disable subpixel rendering when the background color is transparent
+  // because it draws incorrect colors around the glyphs in that case.
+  // See crbug.com/115198
+  GetRenderText()->set_subpixel_rendering_suppressed(
+      SkColorGetA(color) != 0xFF);
   SchedulePaint();
 }
 

@@ -52,7 +52,7 @@ class GFX_EXPORT SkiaTextRenderer {
 
   void SetDrawLooper(SkDrawLooper* draw_looper);
   void SetFontRenderParams(const FontRenderParams& params,
-                           bool background_is_transparent);
+                           bool subpixel_rendering_suppressed);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(SkScalar size);
   void SetFontFamilyWithStyle(const std::string& family, int font_style);
@@ -181,7 +181,7 @@ skia::RefPtr<SkTypeface> CreateSkiaTypeface(const std::string& family,
 
 // Applies the given FontRenderParams to a Skia |paint|.
 void ApplyRenderParams(const FontRenderParams& params,
-                       bool background_is_transparent,
+                       bool subpixel_rendering_suppressed,
                        SkPaint* paint);
 
 }  // namespace internal
@@ -273,9 +273,11 @@ class GFX_EXPORT RenderText {
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
 
-  bool background_is_transparent() const { return background_is_transparent_; }
-  void set_background_is_transparent(bool transparent) {
-    background_is_transparent_ = transparent;
+  bool subpixel_rendering_suppressed() const {
+    return subpixel_rendering_suppressed_;
+  }
+  void set_subpixel_rendering_suppressed(bool suppressed) {
+    subpixel_rendering_suppressed_ = suppressed;
   }
 
   const SelectionModel& selection_model() const { return selection_model_; }
@@ -732,8 +734,9 @@ class GFX_EXPORT RenderText {
   // |display_rect_| as the width cap.
   bool multiline_;
 
-  // Is the background transparent (either partially or fully)?
-  bool background_is_transparent_;
+  // Set to true to suppress subpixel rendering due to non-font reasons (eg.
+  // if the background is transparent). The default value is false.
+  bool subpixel_rendering_suppressed_;
 
   // The local display area for rendering the text.
   Rect display_rect_;

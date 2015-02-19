@@ -142,8 +142,8 @@ void UpdateRenderText(const Rect& rect,
   else
     render_text->SetHorizontalAlignment(ALIGN_LEFT);
 
-  if (flags & Canvas::NO_SUBPIXEL_RENDERING)
-    render_text->set_background_is_transparent(true);
+  render_text->set_subpixel_rendering_suppressed(
+      (flags & Canvas::NO_SUBPIXEL_RENDERING) != 0);
 
   render_text->SetColor(color);
   const int font_style = font_list.GetFontStyle();

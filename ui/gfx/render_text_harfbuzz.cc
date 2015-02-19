@@ -1018,7 +1018,7 @@ void RenderTextHarfBuzz::DrawVisualTextInternal(
       renderer->SetTypeface(run.skia_face.get());
       renderer->SetTextSize(SkIntToScalar(run.font_size));
       renderer->SetFontRenderParams(run.render_params,
-                                    background_is_transparent());
+                                    subpixel_rendering_suppressed());
       Range glyphs_range = run.CharRangeToGlyphRange(segment.char_range);
       scoped_ptr<SkPoint[]> positions(new SkPoint[glyphs_range.length()]);
       SkScalar offset_x = preceding_segment_widths -
@@ -1308,7 +1308,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
 
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(
       run->skia_face.get(), SkIntToScalar(run->font_size), run->render_params,
-      background_is_transparent());
+      subpixel_rendering_suppressed());
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(

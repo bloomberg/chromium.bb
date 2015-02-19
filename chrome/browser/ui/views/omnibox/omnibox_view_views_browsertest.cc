@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BackgroundIsOpaque) {
   OmniboxViewViews* view = BrowserView::GetBrowserViewForBrowser(browser())->
       toolbar()->location_bar()->omnibox_view();
   ASSERT_TRUE(view);
-  EXPECT_FALSE(view->GetRenderText()->background_is_transparent());
+  EXPECT_FALSE(view->GetRenderText()->subpixel_rendering_suppressed());
 }
 
 // Tests if executing a command hides touch editing handles.

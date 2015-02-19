@@ -205,8 +205,8 @@ void SkiaTextRenderer::SetDrawLooper(SkDrawLooper* draw_looper) {
 }
 
 void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
-                                           bool background_is_transparent) {
-  ApplyRenderParams(params, background_is_transparent, &paint_);
+                                           bool subpixel_rendering_suppressed) {
+  ApplyRenderParams(params, subpixel_rendering_suppressed, &paint_);
 }
 
 void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
@@ -388,10 +388,10 @@ skia::RefPtr<SkTypeface> CreateSkiaTypeface(const std::string& family,
 }
 
 void ApplyRenderParams(const FontRenderParams& params,
-                       bool background_is_transparent,
+                       bool subpixel_rendering_suppressed,
                        SkPaint* paint) {
   paint->setAntiAlias(params.antialiasing);
-  paint->setLCDRenderText(!background_is_transparent &&
+  paint->setLCDRenderText(!subpixel_rendering_suppressed &&
       params.subpixel_rendering != FontRenderParams::SUBPIXEL_RENDERING_NONE);
   paint->setSubpixelText(params.subpixel_positioning);
   paint->setAutohinted(params.autohinter);
@@ -920,7 +920,7 @@ RenderText::RenderText()
       text_elided_(false),
       min_line_height_(0),
       multiline_(false),
-      background_is_transparent_(false),
+      subpixel_rendering_suppressed_(false),
       clip_to_display_rect_(true),
       baseline_(kInvalidBaseline),
       cached_bounds_and_offset_valid_(false) {
