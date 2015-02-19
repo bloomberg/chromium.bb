@@ -9,17 +9,19 @@
 #include "base/basictypes.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
+#include "courgette/third_party/bsdiff.h"
 
 class VersioningTest : public BaseTest {
  public:
-  void TestApplyingOldPatch(const char* src_file,
-                            const char* patch_file,
-                            const char* expected_file) const;
+  void TestApplyingOldBsDiffPatch(const char* src_file,
+                                  const char* patch_file,
+                                  const char* expected_file) const;
 };
 
-void VersioningTest::TestApplyingOldPatch(const char* src_file,
-                                          const char* patch_file,
-                                          const char* expected_file) const {
+void VersioningTest::TestApplyingOldBsDiffPatch(
+    const char* src_file,
+    const char* patch_file,
+    const char* expected_file) const {
   std::string old_buffer = FileContents(src_file);
   std::string new_buffer = FileContents(patch_file);
   std::string expected_buffer = FileContents(expected_file);
@@ -31,12 +33,10 @@ void VersioningTest::TestApplyingOldPatch(const char* src_file,
 
   courgette::SinkStream generated_stream;
 
-  courgette::Status status =
-      courgette::ApplyEnsemblePatch(&old_stream,
-                                    &patch_stream,
-                                    &generated_stream);
+  courgette::BSDiffStatus status = courgette::ApplyBinaryPatch(
+      &old_stream, &patch_stream, &generated_stream);
 
-  EXPECT_EQ(status, courgette::C_OK);
+  EXPECT_EQ(status, courgette::OK);
 
   size_t expected_length = expected_buffer.size();
   size_t generated_length = generated_stream.Length();
@@ -47,11 +47,11 @@ void VersioningTest::TestApplyingOldPatch(const char* src_file,
                       expected_length));
 }
 
-
-TEST_F(VersioningTest, All) {
-  TestApplyingOldPatch("setup1.exe", "setup1-setup2.v1.patch", "setup2.exe");
-  TestApplyingOldPatch("chrome64_1.exe", "chrome64-1-2.v1.patch",
-                       "chrome64_2.exe");
+TEST_F(VersioningTest, BsDiff) {
+  TestApplyingOldBsDiffPatch("setup1.exe", "setup1-setup2.v1.bsdiff",
+                             "setup2.exe");
+  TestApplyingOldBsDiffPatch("chrome64_1.exe", "chrome64-1-2.v1.bsdiff",
+                             "chrome64_2.exe");
 
   // We also need a way to test that newly generated patches are appropriately
   // applicable by older clients... not sure of the best way to do that.
