@@ -4,7 +4,9 @@
 
 // Non-standard.
 
-dictionary WebKitAnimationEventInit : EventInit {
+[
+    TypeChecking=Unrestricted,
+] dictionary WebKitAnimationEventInit : EventInit {
     DOMString animationName;
     double elapsedTime;
 };

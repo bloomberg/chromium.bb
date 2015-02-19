@@ -214,18 +214,6 @@ TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeMax)
     EXPECT_EQ(std::numeric_limits<double>::max(), player->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeUnrestrictedDouble)
-{
-    simulateFrame(10);
-    player->setCurrentTime(nullValue());
-    EXPECT_EQ(10, player->currentTimeInternal());
-    player->setCurrentTime(std::numeric_limits<double>::infinity());
-    EXPECT_EQ(10, player->currentTimeInternal());
-    player->setCurrentTime(-std::numeric_limits<double>::infinity());
-    EXPECT_EQ(10, player->currentTimeInternal());
-}
-
-
 TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeSetsStartTime)
 {
     EXPECT_EQ(0, player->startTime());

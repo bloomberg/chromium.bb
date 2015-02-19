@@ -47,12 +47,12 @@ double AnimationNodeTiming::iterations()
     return m_parent->specifiedTiming().iterationCount;
 }
 
-void AnimationNodeTiming::duration(DoubleOrString& returnValue)
+void AnimationNodeTiming::duration(UnrestrictedDoubleOrString& returnValue)
 {
     if (std::isnan(m_parent->specifiedTiming().iterationDuration))
         returnValue.setString("auto");
     else
-        returnValue.setDouble(m_parent->specifiedTiming().iterationDuration * 1000);
+        returnValue.setUnrestrictedDouble(m_parent->specifiedTiming().iterationDuration * 1000);
 }
 
 double AnimationNodeTiming::playbackRate()
@@ -105,10 +105,10 @@ void AnimationNodeTiming::setIterations(double iterations)
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationNodeTiming::setDuration(const DoubleOrString& durationOrAuto)
+void AnimationNodeTiming::setDuration(const UnrestrictedDoubleOrString& durationOrAuto)
 {
     // Any strings other than "auto" are coerced to "auto".
-    double duration = durationOrAuto.isString() ? std::numeric_limits<double>::quiet_NaN() : durationOrAuto.getAsDouble();
+    double duration = durationOrAuto.isString() ? std::numeric_limits<double>::quiet_NaN() : durationOrAuto.getAsUnrestrictedDouble();
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setIterationDuration(timing, duration);
     m_parent->updateSpecifiedTiming(timing);

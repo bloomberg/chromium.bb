@@ -63,4 +63,12 @@ test(function() {
   assert_equals(animation.computedTiming.duration, 0);
 }, 'TimedItem duration is calculated when no duration is specified');
 
+test(function() {
+  var timing = new Animation(element, keyframes).timing;
+  for (var attr of ['delay', 'endDelay', 'iterationStart', 'playbackRate']) {
+    assert_throws(new TypeError, function() { timing[attr] = NaN; }, attr);
+    assert_throws(new TypeError, function() { timing[attr] = Infinity; }, attr);
+  }
+}, 'Restricted double attributes on the Timing interface throws for non-finite values.');
+
 </script>

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // FIXME: Should extend AnimationTimingProperties
-dictionary ComputedTimingProperties {
+[
+    TypeChecking=Unrestricted,
+] dictionary ComputedTimingProperties {
     double              startTime;
     unrestricted double endTime;
     unrestricted double activeDuration;

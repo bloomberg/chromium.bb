@@ -123,8 +123,6 @@ bool AnimationPlayer::limited(double currentTime) const
 void AnimationPlayer::setCurrentTime(double newCurrentTime)
 {
     UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetCurrentTime);
-    if (!std::isfinite(newCurrentTime))
-        return;
 
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
@@ -371,8 +369,6 @@ void AnimationPlayer::setStartTime(double startTime)
 
     UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetStartTime);
     if (m_paused || playStateInternal() == Idle)
-        return;
-    if (!std::isfinite(startTime))
         return;
     if (startTime == m_startTime)
         return;
@@ -626,8 +622,6 @@ double AnimationPlayer::playbackRate() const
 void AnimationPlayer::setPlaybackRate(double playbackRate)
 {
     UseCounter::count(executionContext(), UseCounter::AnimationPlayerSetPlaybackRate);
-    if (!std::isfinite(playbackRate))
-        return;
     if (playbackRate == m_playbackRate)
         return;
 

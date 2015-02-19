@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
     ImplementedAs=AnimationNodeTiming,
+    RuntimeEnabled=WebAnimationsAPI,
+    TypeChecking=Unrestricted,
     WillBeGarbageCollected,
 ] interface Timing {
     attribute double delay;
     attribute double endDelay;
     attribute DOMString fill;
     attribute double iterationStart;
-    attribute double iterations;
-    attribute (double or DOMString) duration;
+    attribute unrestricted double iterations;
+    attribute (unrestricted double or DOMString) duration;
     attribute double playbackRate;
     attribute DOMString direction;
     attribute DOMString easing;

@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class DoubleOrString;
+class UnrestrictedDoubleOrString;
 
 class AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -23,7 +23,7 @@ public:
     String fill();
     double iterationStart();
     double iterations();
-    void duration(DoubleOrString&);
+    void duration(UnrestrictedDoubleOrString&);
     double playbackRate();
     String direction();
     String easing();
@@ -33,7 +33,7 @@ public:
     void setFill(String);
     void setIterationStart(double);
     void setIterations(double);
-    void setDuration(const DoubleOrString&);
+    void setDuration(const UnrestrictedDoubleOrString&);
     void setPlaybackRate(double);
     void setDirection(String);
     void setEasing(String);

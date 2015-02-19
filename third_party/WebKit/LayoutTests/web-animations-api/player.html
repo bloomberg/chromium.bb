@@ -42,4 +42,12 @@ test(function() {
     var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], {iterations: Infinity, duration: 10});
     assert_throws('INVALID_STATE_ERR', function() { player.finish(); });
 }, 'Player.finish() raises exception if source content end is infinity');
+
+test(function() {
+    var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], 10000);
+    for (var attr of ['startTime', 'currentTime', 'playbackRate']) {
+        assert_throws(new TypeError, function() { player[attr] = NaN; }, attr);
+        assert_throws(new TypeError, function() { player[attr] = Infinity; }, attr);
+    }
+}, 'Player.startTime/currentTime/playbackRate throw if passed non-finite numbers.');
 </script>

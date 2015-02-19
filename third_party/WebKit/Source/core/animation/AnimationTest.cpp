@@ -254,10 +254,10 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
     RefPtrWillBeRawPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedWithDuration = animationWithDuration->timing();
-    DoubleOrString duration;
+    UnrestrictedDoubleOrString duration;
     specifiedWithDuration->duration(duration);
-    EXPECT_TRUE(duration.isDouble());
-    EXPECT_EQ(2.5, duration.getAsDouble());
+    EXPECT_TRUE(duration.isUnrestrictedDouble());
+    EXPECT_EQ(2.5, duration.getAsUnrestrictedDouble());
     EXPECT_FALSE(duration.isString());
 
 
@@ -267,9 +267,9 @@ TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
     RefPtrWillBeRawPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedNoDuration = animationNoDuration->timing();
-    DoubleOrString duration2;
+    UnrestrictedDoubleOrString duration2;
     specifiedNoDuration->duration(duration2);
-    EXPECT_FALSE(duration2.isDouble());
+    EXPECT_FALSE(duration2.isUnrestrictedDouble());
     EXPECT_TRUE(duration2.isString());
     EXPECT_EQ("auto", duration2.getAsString());
 }
@@ -325,19 +325,19 @@ TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
 
     RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
 
-    DoubleOrString duration;
+    UnrestrictedDoubleOrString duration;
     specified->duration(duration);
-    EXPECT_FALSE(duration.isDouble());
+    EXPECT_FALSE(duration.isUnrestrictedDouble());
     EXPECT_TRUE(duration.isString());
     EXPECT_EQ("auto", duration.getAsString());
 
-    DoubleOrString inDuration;
-    inDuration.setDouble(2.5);
+    UnrestrictedDoubleOrString inDuration;
+    inDuration.setUnrestrictedDouble(2.5);
     specified->setDuration(inDuration);
-    DoubleOrString duration2;
+    UnrestrictedDoubleOrString duration2;
     specified->duration(duration2);
-    EXPECT_TRUE(duration2.isDouble());
-    EXPECT_EQ(2.5, duration2.getAsDouble());
+    EXPECT_TRUE(duration2.isUnrestrictedDouble());
+    EXPECT_EQ(2.5, duration2.getAsUnrestrictedDouble());
     EXPECT_FALSE(duration2.isString());
 }
 

@@ -46,9 +46,9 @@ shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: 0 }).elapsedTime"
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: 123.45 }).elapsedTime", "123.45");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: -123.45 }).elapsedTime", "-123.45");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: 18446744073709551615 }).elapsedTime", "18446744073709551615");
-shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: NaN }).elapsedTime", "NaN");
-shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: Infinity }).elapsedTime", "Infinity");
-shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: -Infinity }).elapsedTime", "-Infinity");
+shouldThrow("new WebKitAnimationEvent('eventType', { elapsedTime: NaN }).elapsedTime");
+shouldThrow("new WebKitAnimationEvent('eventType', { elapsedTime: Infinity }).elapsedTime");
+shouldThrow("new WebKitAnimationEvent('eventType', { elapsedTime: -Infinity }).elapsedTime");
 
 // Non-numeric values.
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: undefined }).elapsedTime", "0");
@@ -56,11 +56,11 @@ shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: null }).elapsedTi
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: true }).elapsedTime", "1");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: '' }).elapsedTime", "0");
-shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: 'doremi' }).elapsedTime", "NaN");
+shouldThrow("new WebKitAnimationEvent('eventType', { elapsedTime: 'doremi' }).elapsedTime");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: [] }).elapsedTime", "0");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: [123.45] }).elapsedTime", "123.45");
-shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: [123.45, 678.90] }).elapsedTime", "NaN");
-shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: {doremi: 123.45} }).elapsedTime", "NaN");
+shouldThrow("new WebKitAnimationEvent('eventType', { elapsedTime: [123.45, 678.90] }).elapsedTime");
+shouldThrow("new WebKitAnimationEvent('eventType', { elapsedTime: {doremi: 123.45} }).elapsedTime");
 shouldBe("new WebKitAnimationEvent('eventType', { elapsedTime: {valueOf: function () { return 123.45 } } }).elapsedTime", "123.45");
 
 // All initializers are passed.

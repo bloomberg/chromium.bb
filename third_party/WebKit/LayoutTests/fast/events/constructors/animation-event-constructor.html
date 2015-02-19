@@ -46,9 +46,9 @@ shouldBe("new AnimationEvent('eventType', { elapsedTime: 0 }).elapsedTime", "0")
 shouldBe("new AnimationEvent('eventType', { elapsedTime: 123.45 }).elapsedTime", "123.45");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: -123.45 }).elapsedTime", "-123.45");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: 18446744073709551615 }).elapsedTime", "18446744073709551615");
-shouldBe("new AnimationEvent('eventType', { elapsedTime: NaN }).elapsedTime", "NaN");
-shouldBe("new AnimationEvent('eventType', { elapsedTime: Infinity }).elapsedTime", "Infinity");
-shouldBe("new AnimationEvent('eventType', { elapsedTime: -Infinity }).elapsedTime", "-Infinity");
+shouldThrow("new AnimationEvent('eventType', { elapsedTime: NaN }).elapsedTime");
+shouldThrow("new AnimationEvent('eventType', { elapsedTime: Infinity }).elapsedTime");
+shouldThrow("new AnimationEvent('eventType', { elapsedTime: -Infinity }).elapsedTime");
 
 // Non-numeric values.
 shouldBe("new AnimationEvent('eventType', { elapsedTime: undefined }).elapsedTime", "0");
@@ -56,11 +56,11 @@ shouldBe("new AnimationEvent('eventType', { elapsedTime: null }).elapsedTime", "
 shouldBe("new AnimationEvent('eventType', { elapsedTime: false }).elapsedTime", "0");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: true }).elapsedTime", "1");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: '' }).elapsedTime", "0");
-shouldBe("new AnimationEvent('eventType', { elapsedTime: 'doremi' }).elapsedTime", "NaN");
+shouldThrow("new AnimationEvent('eventType', { elapsedTime: 'doremi' }).elapsedTime");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: [] }).elapsedTime", "0");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: [123.45] }).elapsedTime", "123.45");
-shouldBe("new AnimationEvent('eventType', { elapsedTime: [123.45, 678.90] }).elapsedTime", "NaN");
-shouldBe("new AnimationEvent('eventType', { elapsedTime: {doremi: 123.45} }).elapsedTime", "NaN");
+shouldThrow("new AnimationEvent('eventType', { elapsedTime: [123.45, 678.90] }).elapsedTime");
+shouldThrow("new AnimationEvent('eventType', { elapsedTime: {doremi: 123.45} }).elapsedTime");
 shouldBe("new AnimationEvent('eventType', { elapsedTime: {valueOf: function () { return 123.45 } } }).elapsedTime", "123.45");
 
 // All initializers are passed.

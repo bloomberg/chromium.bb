@@ -31,8 +31,9 @@
 enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
 
 [
-    NoInterfaceObject,
     ActiveDOMObject,
+    NoInterfaceObject,
+    TypeChecking=Unrestricted,
 ] interface AnimationPlayer : EventTarget {
     [RuntimeEnabled=WebAnimationsAPI] attribute AnimationNode? source;
     attribute double?    startTime;
