@@ -36,6 +36,7 @@
 #include <dlfcn.h>
 #include <limits.h>
 #include <assert.h>
+#include <linux/input.h>
 
 #include "ivi-shell.h"
 #include "ivi-application-server-protocol.h"
@@ -355,6 +356,15 @@ shell_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
+terminate_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+		  void *data)
+{
+	struct weston_compositor *compositor = data;
+
+	wl_display_terminate(compositor->wl_display);
+}
+
+static void
 init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
 	       const struct ivi_shell_setting *setting)
 {
@@ -364,8 +374,14 @@ init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
 
 	weston_layer_init(&shell->input_panel_layer, NULL);
 
-	if (setting->developermode)
+	if (setting->developermode) {
 		weston_install_debug_key_binding(compositor, MODIFIER_SUPER);
+
+		weston_compositor_add_key_binding(compositor, KEY_BACKSPACE,
+						  MODIFIER_CTRL | MODIFIER_ALT,
+						  terminate_binding,
+						  compositor);
+	}
 }
 
 static int
