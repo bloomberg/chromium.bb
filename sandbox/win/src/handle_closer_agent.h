@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/handle_closer.h"
 #include "sandbox/win/src/sandbox_types.h"
 
@@ -15,7 +16,7 @@ namespace sandbox {
 // Target process code to close the handle list copied over from the broker.
 class HandleCloserAgent {
  public:
-  HandleCloserAgent() {}
+  HandleCloserAgent();
 
   // Reads the serialized list from the broker and creates the lookup map.
   void InitializeHandlesToClose();
@@ -23,11 +24,16 @@ class HandleCloserAgent {
   // Closes any handles matching those in the lookup map.
   bool CloseHandles();
 
-  // True if we have handles waiting to be closed
+  // True if we have handles waiting to be closed.
   static bool NeedsHandlesClosed();
 
  private:
+  // Attempt to stuff a closed handle with a dummy Event.
+  bool AttemptToStuffHandleSlot(HANDLE closed_handle,
+                                const base::string16& type);
+
   HandleMap handles_to_close_;
+  base::win::ScopedHandle dummy_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleCloserAgent);
 };
