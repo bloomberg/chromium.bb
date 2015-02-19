@@ -11,14 +11,9 @@
 function GalleryWindow() {}
 
 /**
- * @param {!BackgroundComponents} backgroundComponents Background components.
+ * @type {Promise}
  */
-window.initialize = function(backgroundComponents) {};
-
-/**
- * @param {!Array.<!Entry>} entries Array of entries.
- */
-window.loadEntries = function(entries) {};
+window.initializePromise;
 
 /**
  * This definition is required by

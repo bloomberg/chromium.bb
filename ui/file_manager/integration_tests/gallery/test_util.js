@@ -119,10 +119,13 @@ function launchWithTestEntries(
         selectedEntries.map(function(entry) { return entry.nameText; }));
   });
 
-  return launch(entriesPromise).then(function() {
-    var launchedPromise = Promise.all([appWindowPromise, entriesPromise]);
-    return launchedPromise.then(function(results) {
-      return {appWindow: results[0], entries: results[1]};
+  return entriesPromise.then(function(entries) {
+    return window.initializePromise.then(function() {
+      var urls = util.entriesToURLs(entries);
+      var launchedPromise = openGalleryWindow(urls, false);
+      return launchedPromise.then(function(appWindow) {
+        return {appWindow: appWindow, entries: entries};
+      });
     });
   });
 }

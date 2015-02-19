@@ -52,10 +52,12 @@
         // util.js and async_util.js should be included before volume_manager.js.
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/async_util.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_common.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/error_util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_common.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/app_window_wrapper.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/background_base.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util_base.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
         "js/background.js"
       ]
     },

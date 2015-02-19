@@ -20,6 +20,8 @@
           '../../file_manager/common/js/volume_manager_common.js',
           '../../file_manager/common/js/error_util.js',
           '../../file_manager/common/js/file_type.js',
+          '../../file_manager/background/js/app_window_wrapper.js',
+          '../../file_manager/background/js/background_base.js',
           '../../file_manager/background/js/volume_manager.js',
         ],
         'externs': [
@@ -55,6 +57,7 @@
           '../../../webui/resources/js/cr/ui/list_selection_controller.js',
           '../../../webui/resources/js/cr/ui/list.js',
           '../../../webui/resources/js/cr/ui/grid.js',
+          '../../../webui/resources/js/i18n_template_no_process.js',
           '../../file_manager/common/js/volume_manager_common.js',
           '../../file_manager/common/js/lru_cache.js',
           '../../file_manager/common/js/async_util.js',

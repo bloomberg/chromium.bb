@@ -283,7 +283,7 @@ Gallery.prototype.initToolbarButton_ = function(className, title) {
 /**
  * Loads the content.
  *
- * @param {!Array.<Entry>} selectedEntries Array of selected entries.
+ * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
  */
 Gallery.prototype.load = function(selectedEntries) {
   GalleryUtil.createEntrySet(selectedEntries).then(function(allEntries) {
@@ -294,8 +294,8 @@ Gallery.prototype.load = function(selectedEntries) {
 /**
  * Loads the content.
  *
- * @param {!Array.<Entry>} entries Array of entries.
- * @param {!Array.<Entry>} selectedEntries Array of selected entries.
+ * @param {!Array.<!Entry>} entries Array of entries.
+ * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
  * @private
  */
 Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
@@ -908,25 +908,56 @@ Gallery.prototype.debugMe = function() {
 var gallery = null;
 
 /**
- * Initialize the window.
- * @param {!BackgroundComponents} backgroundComponents Background components.
+ * Promise to initialize the load time data.
+ * @type {!Promise}
  */
-window.initialize = function(backgroundComponents) {
-  window.loadTimeData.data = backgroundComponents.stringData;
-  gallery = new Gallery(backgroundComponents.volumeManager);
-};
+var loadTimeDataPromise = new Promise(function(fulfill, reject) {
+  chrome.fileManagerPrivate.getStrings(function(strings) {
+    window.loadTimeData.data = strings;
+    i18nTemplate.process(document, loadTimeData);
+    fulfill(true);
+  });
+});
 
 /**
- * Loads entries.
- * @param {!Array.<Entry>} selectedEntries Array of selected entries.
+ * Promise to initialize volume manager.
+ * @type {!Promise}
  */
-window.loadEntries = function(selectedEntries) {
-  gallery.load(selectedEntries);
-};
+var volumeManagerPromise = new Promise(function(fulfill, reject) {
+  var volumeManager = new VolumeManagerWrapper(
+      VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
+  volumeManager.ensureInitialized(fulfill.bind(null, volumeManager));
+});
+
+/**
+ * Promise to initialize both the volume manager and the load time data.
+ * @type {!Promise}
+ */
+var initializePromise =
+    Promise.all([loadTimeDataPromise, volumeManagerPromise]).
+    then(function(args) {
+      var volumeManager = args[1];
+      var gallery = new Gallery(volumeManager);
+      return gallery;
+    });
+
+// Loads entries.
+initializePromise.then(
+    /**
+     * Loads entries.
+     * @param {!Gallery} gallery The gallery instance.
+     */
+    function(gallery) {
+      util.URLsToEntries(window.appState.urls, function(entries) {
+        gallery.load(entries);
+      });
+    });
 
 /**
  * Enteres the debug mode.
  */
 window.debugMe = function() {
-  gallery.debugMe();
+  initializePromise.then(function(gallery) {
+    gallery.debugMe();
+  });
 };

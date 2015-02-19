@@ -775,7 +775,7 @@ util.entriesToURLs = function(entries) {
  * Converts array of URLs to an array of corresponding Entries.
  *
  * @param {Array.<string>} urls Input array of URLs.
- * @param {function(Array.<Entry>, Array.<URL>)=} opt_callback Completion
+ * @param {function(!Array.<!Entry>, !Array.<!URL>)=} opt_callback Completion
  *     callback with array of success Entries and failure URLs.
  * @return {Promise} Promise fulfilled with the object that has entries property
  *     and failureUrls property. The promise is never rejected.
