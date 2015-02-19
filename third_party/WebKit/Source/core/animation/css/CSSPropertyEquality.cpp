@@ -306,8 +306,6 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
         return a.svgStyle().y() == b.svgStyle().y();
     case CSSPropertyZIndex:
         return a.zIndex() == b.zIndex();
-    case CSSPropertyZoom:
-        return a.zoom() == b.zoom();
     default:
         ASSERT_NOT_REACHED();
         return true;

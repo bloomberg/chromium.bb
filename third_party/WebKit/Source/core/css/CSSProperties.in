@@ -96,7 +96,7 @@ font-weight animatable, inherited, font, type_name=FontWeight, name_for_methods=
 -webkit-text-orientation inherited, custom_value
 -webkit-writing-mode inherited, custom_value
 text-rendering inherited, font, type_name=TextRenderingMode
-zoom animatable, custom_all
+zoom custom_all
 
 align-content custom_all
 align-items custom_all

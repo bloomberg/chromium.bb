@@ -46,9 +46,6 @@ PassRefPtrWillBeRawPtr<CSSValue> DoubleStyleInterpolation::interpolableValueToDo
     case RangeFloor:
         doubleValue = floor(doubleValue);
         break;
-    case RangePositive:
-        doubleValue = clampTo<double>(doubleValue, nextafterf(0, 1));
-        break;
     case RangeRound:
         doubleValue = round(doubleValue);
         break;

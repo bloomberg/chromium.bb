@@ -17,7 +17,6 @@ enum InterpolationRange {
     RangeFloor,
     RangeGreaterThanOrEqualToOne,
     RangeNonNegative,
-    RangePositive,
     RangeRound,
     RangeRoundGreaterThanOrEqualToOne,
     RangeOpacityFIXME,

@@ -109,8 +109,6 @@ InterpolationRange setRange(CSSPropertyID id)
         return RangeOpacityFIXME;
     case CSSPropertyStrokeMiterlimit:
         return RangeGreaterThanOrEqualToOne;
-    case CSSPropertyZoom:
-        return RangePositive;
     default:
         ASSERT_NOT_REACHED();
         return RangeAll;
@@ -221,7 +219,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyStopOpacity:
     case CSSPropertyStrokeOpacity:
     case CSSPropertyStrokeMiterlimit:
-    case CSSPropertyZoom:
         if (DoubleStyleInterpolation::canCreateFrom(*fromCSSValue) && DoubleStyleInterpolation::canCreateFrom(*toCSSValue)) {
             if (property == CSSPropertyOpacity)
                 StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValueCaches(property, end, element, *fromCSSValue, *toCSSValue);
