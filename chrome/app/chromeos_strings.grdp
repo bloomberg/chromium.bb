@@ -509,6 +509,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_DONE" desc="Cloud import backup is complete tooltip.">
     <ph name="FILE_COUNT">$1<ex>5</ex></ph> photos backed up
   </message>
+  <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ITEMS_REMAINING" desc="File Manager status message.">
+    Importing <ph name="FILE_COUNT">$1<ex>5</ex></ph> files...
+  </message>
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
     Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
