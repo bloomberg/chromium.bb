@@ -3441,6 +3441,20 @@ TEST_F(GLES2FormatTest, Viewport) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, WaitSync) {
+  cmds::WaitSync& cmd = *GetBufferAs<cmds::WaitSync>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLbitfield>(12),
+              static_cast<GLuint>(13), static_cast<GLuint>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::WaitSync::kCmdId), cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.sync);
+  EXPECT_EQ(static_cast<GLbitfield>(12), cmd.flags);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.timeout_0);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.timeout_1);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, BlitFramebufferCHROMIUM) {
   cmds::BlitFramebufferCHROMIUM& cmd =
       *GetBufferAs<cmds::BlitFramebufferCHROMIUM>();

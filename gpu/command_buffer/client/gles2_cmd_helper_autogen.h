@@ -1995,6 +1995,16 @@ void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   }
 }
 
+void WaitSync(GLuint sync,
+              GLbitfield flags,
+              GLuint timeout_0,
+              GLuint timeout_1) {
+  gles2::cmds::WaitSync* c = GetCmdSpace<gles2::cmds::WaitSync>();
+  if (c) {
+    c->Init(sync, flags, timeout_0, timeout_1);
+  }
+}
+
 void BlitFramebufferCHROMIUM(GLint srcX0,
                              GLint srcY0,
                              GLint srcX1,

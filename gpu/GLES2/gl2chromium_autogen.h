@@ -223,6 +223,7 @@
 #define glVertexAttribIPointer GLES2_GET_FUN(VertexAttribIPointer)
 #define glVertexAttribPointer GLES2_GET_FUN(VertexAttribPointer)
 #define glViewport GLES2_GET_FUN(Viewport)
+#define glWaitSync GLES2_GET_FUN(WaitSync)
 #define glBlitFramebufferCHROMIUM GLES2_GET_FUN(BlitFramebufferCHROMIUM)
 #define glRenderbufferStorageMultisampleCHROMIUM \
   GLES2_GET_FUN(RenderbufferStorageMultisampleCHROMIUM)

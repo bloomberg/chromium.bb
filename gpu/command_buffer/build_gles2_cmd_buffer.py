@@ -2928,6 +2928,14 @@ _FUNCTION_INFO = {
                 'GLsizei stride, GLuint offset',
     'client_test': False,
   },
+  'WaitSync': {
+    'type': 'Custom',
+    'cmd_args': 'GLuint sync, GLbitfieldSyncFlushFlags flags, '
+                'GLuint timeout_0, GLuint timeout_1',
+    'impl_func': False,
+    'client_test': False,
+    'unsafe': True,
+  },
   'Scissor': {
     'type': 'StateSet',
     'state': 'Scissor',

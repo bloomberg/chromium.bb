@@ -932,6 +932,9 @@ void GLES2VertexAttribPointer(GLuint indx,
 void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Viewport(x, y, width, height);
 }
+void GLES2WaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout) {
+  gles2::GetGLContext()->WaitSync(sync, flags, timeout);
+}
 void GLES2BlitFramebufferCHROMIUM(GLint srcX0,
                                   GLint srcY0,
                                   GLint srcX1,
@@ -2151,6 +2154,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glViewport",
      reinterpret_cast<GLES2FunctionPointer>(glViewport),
+    },
+    {
+     "glWaitSync",
+     reinterpret_cast<GLES2FunctionPointer>(glWaitSync),
     },
     {
      "glBlitFramebufferCHROMIUM",

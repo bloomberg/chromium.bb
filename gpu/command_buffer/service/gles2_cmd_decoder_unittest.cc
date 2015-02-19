@@ -356,6 +356,24 @@ TEST_P(GLES2DecoderTest, ClientWaitSyncBadSharedMemoryFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_P(GLES2DecoderTest, WaitSyncValidArgs) {
+  const GLuint64 kTimeout = GL_TIMEOUT_IGNORED;
+  EXPECT_CALL(*gl_, WaitSync(reinterpret_cast<GLsync>(kServiceSyncId),
+                             0, kTimeout))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
+  cmds::WaitSync cmd;
+  cmd.Init(client_sync_id_, 0, v32_0, v32_1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   InitState init;
   InitDecoder(init);

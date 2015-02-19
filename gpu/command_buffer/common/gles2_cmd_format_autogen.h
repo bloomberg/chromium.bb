@@ -9854,6 +9854,57 @@ static_assert(offsetof(Viewport, width) == 12,
 static_assert(offsetof(Viewport, height) == 16,
               "offset of Viewport height should be 16");
 
+struct WaitSync {
+  typedef WaitSync ValueType;
+  static const CommandId kCmdId = kWaitSync;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _sync,
+            GLbitfield _flags,
+            GLuint _timeout_0,
+            GLuint _timeout_1) {
+    SetHeader();
+    sync = _sync;
+    flags = _flags;
+    timeout_0 = _timeout_0;
+    timeout_1 = _timeout_1;
+  }
+
+  void* Set(void* cmd,
+            GLuint _sync,
+            GLbitfield _flags,
+            GLuint _timeout_0,
+            GLuint _timeout_1) {
+    static_cast<ValueType*>(cmd)->Init(_sync, _flags, _timeout_0, _timeout_1);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sync;
+  uint32_t flags;
+  uint32_t timeout_0;
+  uint32_t timeout_1;
+};
+
+static_assert(sizeof(WaitSync) == 20, "size of WaitSync should be 20");
+static_assert(offsetof(WaitSync, header) == 0,
+              "offset of WaitSync header should be 0");
+static_assert(offsetof(WaitSync, sync) == 4,
+              "offset of WaitSync sync should be 4");
+static_assert(offsetof(WaitSync, flags) == 8,
+              "offset of WaitSync flags should be 8");
+static_assert(offsetof(WaitSync, timeout_0) == 12,
+              "offset of WaitSync timeout_0 should be 12");
+static_assert(offsetof(WaitSync, timeout_1) == 16,
+              "offset of WaitSync timeout_1 should be 16");
+
 struct BlitFramebufferCHROMIUM {
   typedef BlitFramebufferCHROMIUM ValueType;
   static const CommandId kCmdId = kBlitFramebufferCHROMIUM;

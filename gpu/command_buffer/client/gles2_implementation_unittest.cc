@@ -3617,6 +3617,21 @@ TEST_F(GLES2ImplementationTest, ClientWaitSync) {
   EXPECT_EQ(static_cast<GLenum>(GL_CONDITION_SATISFIED), result);
 }
 
+TEST_F(GLES2ImplementationTest, WaitSync) {
+  const GLuint kClientSyncId = 36;
+  struct Cmds {
+    cmds::WaitSync cmd;
+  };
+  Cmds expected;
+  const GLuint64 kTimeout = GL_TIMEOUT_IGNORED;
+  uint32_t v32_0 = 0, v32_1 = 0;
+  GLES2Util::MapUint64ToTwoUint32(kTimeout, &v32_0, &v32_1);
+  expected.cmd.Init(kClientSyncId, 0, v32_0, v32_1);
+
+  gl_->WaitSync(reinterpret_cast<GLsync>(kClientSyncId), 0, kTimeout);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {
   ContextInitOptions init_options;
   init_options.lose_context_when_out_of_memory = true;

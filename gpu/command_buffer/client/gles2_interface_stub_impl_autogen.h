@@ -869,6 +869,10 @@ void GLES2InterfaceStub::Viewport(GLint /* x */,
                                   GLsizei /* width */,
                                   GLsizei /* height */) {
 }
+void GLES2InterfaceStub::WaitSync(GLsync /* sync */,
+                                  GLbitfield /* flags */,
+                                  GLuint64 /* timeout */) {
+}
 void GLES2InterfaceStub::BlitFramebufferCHROMIUM(GLint /* srcX0 */,
                                                  GLint /* srcY0 */,
                                                  GLint /* srcX1 */,

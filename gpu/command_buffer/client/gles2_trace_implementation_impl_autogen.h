@@ -1474,6 +1474,13 @@ void GLES2TraceImplementation::Viewport(GLint x,
   gl_->Viewport(x, y, width, height);
 }
 
+void GLES2TraceImplementation::WaitSync(GLsync sync,
+                                        GLbitfield flags,
+                                        GLuint64 timeout) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WaitSync");
+  gl_->WaitSync(sync, flags, timeout);
+}
+
 void GLES2TraceImplementation::BlitFramebufferCHROMIUM(GLint srcX0,
                                                        GLint srcY0,
                                                        GLint srcX1,

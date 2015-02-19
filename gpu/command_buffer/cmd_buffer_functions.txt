@@ -213,6 +213,7 @@ GL_APICALL void         GL_APIENTRY glVertexAttribI4uiv (GLuint indx, const GLui
 GL_APICALL void         GL_APIENTRY glVertexAttribIPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribType type, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribType type, GLboolean normalized, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glWaitSync (GLsync sync, GLbitfieldSyncFlushFlags flags, GLuint64 timeout);
 GL_APICALL void         GL_APIENTRY glBlitFramebufferCHROMIUM (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenumBlitFilter filter);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleCHROMIUM (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
