@@ -229,8 +229,8 @@ void HostDiscardableSharedMemoryManager::ReduceMemoryUsageUntilWithinLimit(
 
 void HostDiscardableSharedMemoryManager::BytesAllocatedChanged(
     size_t new_bytes_allocated) const {
-  TRACE_COUNTER_ID1(
-      "base", "TotalDiscardableMemoryUsage", this, new_bytes_allocated);
+  TRACE_COUNTER_ID1("renderer_host", "TotalDiscardableMemoryUsage", this,
+                    new_bytes_allocated);
 
   static const char kTotalDiscardableMemoryUsageKey[] = "total-dm-usage";
   base::debug::SetCrashKeyValue(kTotalDiscardableMemoryUsageKey,
