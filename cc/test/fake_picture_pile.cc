@@ -49,7 +49,8 @@ scoped_ptr<FakePicturePile> FakePicturePile::CreateEmptyPile(
   return CreatePile(tile_size, layer_bounds, is_filled);
 }
 
-scoped_refptr<RasterSource> FakePicturePile::CreateRasterSource() const {
+scoped_refptr<RasterSource> FakePicturePile::CreateRasterSource(
+    bool can_use_lcd_text) const {
   return FakePicturePileImpl::CreateFromPile(this, playback_allowed_event_);
 }
 

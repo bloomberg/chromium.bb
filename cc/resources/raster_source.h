@@ -99,6 +99,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Return true if LCD anti-aliasing may be used when rastering text.
   virtual bool CanUseLCDText() const = 0;
 
+  virtual scoped_refptr<RasterSource> CreateCloneWithoutLCDText() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;
 

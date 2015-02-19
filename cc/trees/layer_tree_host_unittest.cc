@@ -2325,40 +2325,10 @@ SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
 
 class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
  public:
-  class PaintClient : public FakeContentLayerClient {
-   public:
-    PaintClient() : paint_count_(0) {}
-
-    int paint_count() const { return paint_count_; }
-
-    void PaintContents(SkCanvas* canvas,
-                       const gfx::Rect& clip,
-                       PaintingControlSetting picture_control) override {
-      FakeContentLayerClient::PaintContents(canvas, clip, picture_control);
-      ++paint_count_;
-    }
-
-    scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
-        const gfx::Rect& clip,
-        PaintingControlSetting picture_control) override {
-      NOTIMPLEMENTED();
-      return DisplayItemList::Create();
-    }
-
-    bool FillsBoundsCompletely() const override { return false; }
-
-   private:
-    int paint_count_;
-  };
-
   void SetupTree() override {
     num_tiles_rastered_ = 0;
 
-    scoped_refptr<Layer> root_layer;
-    if (layer_tree_host()->settings().impl_side_painting)
-      root_layer = PictureLayer::Create(&client_);
-    else
-      root_layer = ContentLayer::Create(&client_);
+    scoped_refptr<Layer> root_layer = PictureLayer::Create(&client_);
     client_.set_fill_with_nonsolid_color(true);
     root_layer->SetIsDrawable(true);
     root_layer->SetBounds(gfx::Size(10, 10));
@@ -2366,10 +2336,9 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
 
     layer_tree_host()->SetRootLayer(root_layer);
 
-    // The expecations are based on the assumption that the default
+    // The expectations are based on the assumption that the default
     // LCD settings are:
     EXPECT_TRUE(layer_tree_host()->settings().can_use_lcd_text);
-    EXPECT_FALSE(root_layer->can_use_lcd_text());
 
     LayerTreeHostTest::SetupTree();
   }
@@ -2379,33 +2348,17 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        // The first update consists of a paint of the whole layer.
-        EXPECT_EQ(1, client_.paint_count());
-        // LCD text must have been enabled on the layer.
-        EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        // Since nothing changed on layer, there should be no paint.
-        EXPECT_EQ(1, client_.paint_count());
-        // LCD text must not have changed.
-        EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
         // Change layer opacity that should trigger lcd change.
         layer_tree_host()->root_layer()->SetOpacity(.5f);
         break;
       case 3:
-        // LCD text doesn't require re-recording, so no painting should occur.
-        EXPECT_EQ(1, client_.paint_count());
-        // LCD text must have been disabled on the layer due to opacity.
-        EXPECT_FALSE(layer_tree_host()->root_layer()->can_use_lcd_text());
         // Change layer opacity that should not trigger lcd change.
         layer_tree_host()->root_layer()->SetOpacity(1.f);
         break;
       case 4:
-        // LCD text doesn't require re-recording, so no painting should occur.
-        EXPECT_EQ(1, client_.paint_count());
-        // Even though LCD text could be allowed.
-        EXPECT_TRUE(layer_tree_host()->root_layer()->can_use_lcd_text());
         EndTest();
         break;
     }
@@ -2417,22 +2370,34 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    PictureLayerImpl* root_layer =
+        static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
+    bool can_use_lcd_text =
+        host_impl->active_tree()->root_layer()->can_use_lcd_text();
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // The first draw.
         EXPECT_EQ(1, num_tiles_rastered_);
+        EXPECT_TRUE(can_use_lcd_text);
+        EXPECT_TRUE(root_layer->RasterSourceUsesLCDText());
         break;
       case 1:
         // Nothing changed on the layer.
         EXPECT_EQ(1, num_tiles_rastered_);
+        EXPECT_TRUE(can_use_lcd_text);
+        EXPECT_TRUE(root_layer->RasterSourceUsesLCDText());
         break;
       case 2:
-        // LCD text was disabled, it should be re-rastered with LCD text off.
+        // LCD text was disabled; it should be re-rastered with LCD text off.
         EXPECT_EQ(2, num_tiles_rastered_);
+        EXPECT_FALSE(can_use_lcd_text);
+        EXPECT_FALSE(root_layer->RasterSourceUsesLCDText());
         break;
       case 3:
-        // LCD text was enabled but it's sticky and stays off.
+        // LCD text was enabled, but it's sticky and stays off.
         EXPECT_EQ(2, num_tiles_rastered_);
+        EXPECT_TRUE(can_use_lcd_text);
+        EXPECT_FALSE(root_layer->RasterSourceUsesLCDText());
         break;
     }
   }
@@ -2440,7 +2405,7 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   void AfterTest() override {}
 
  private:
-  PaintClient client_;
+  FakeContentLayerClient client_;
   int num_tiles_rastered_;
 };
 

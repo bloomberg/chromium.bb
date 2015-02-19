@@ -355,7 +355,8 @@ class TileManagerPerfTest : public testing::Test {
       ++next_id;
     }
 
-    host_impl_.pending_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
     for (FakePictureLayerImpl* layer : layers)
       layer->CreateAllTiles();
 

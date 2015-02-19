@@ -23,7 +23,6 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
     : client_(client),
       instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
-      can_use_lcd_text_for_update_(true),
       is_mask_(false),
       nearest_neighbor_(false) {
 }
@@ -69,8 +68,10 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
 
+  // Preserve lcd text settings from the current raster source.
+  bool can_use_lcd_text = layer_impl->RasterSourceUsesLCDText();
   scoped_refptr<RasterSource> raster_source =
-      recording_source_->CreateRasterSource();
+      recording_source_->CreateRasterSource(can_use_lcd_text);
   layer_impl->UpdateRasterSource(raster_source, &recording_invalidation_,
                                  nullptr);
   DCHECK(recording_invalidation_.IsEmpty());
@@ -107,14 +108,12 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue, occlusion);
 
-  bool can_use_lcd_text_changed = UpdateCanUseLCDText();
-
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect(), 1.f / contents_scale_x());
   gfx::Size layer_size = paint_properties().bounds;
 
   if (last_updated_visible_content_rect_ == visible_content_rect() &&
-      recording_source_->GetSize() == layer_size && !can_use_lcd_text_changed &&
+      recording_source_->GetSize() == layer_size &&
       pending_invalidation_.IsEmpty()) {
     // Only early out if the visible content rect of this layer hasn't changed.
     return updated;
@@ -147,9 +146,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   // for them.
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      client_, &recording_invalidation_, can_use_lcd_text_for_update_,
-      layer_size, visible_layer_rect, update_source_frame_number_,
-      RecordingSource::RECORD_NORMALLY);
+      client_, &recording_invalidation_, layer_size, visible_layer_rect,
+      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
   last_updated_visible_content_rect_ = visible_content_rect();
 
   if (updated) {
@@ -165,20 +163,6 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
 
 void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
-}
-
-bool PictureLayer::SupportsLCDText() const {
-  return true;
-}
-
-bool PictureLayer::UpdateCanUseLCDText() {
-  if (!can_use_lcd_text_for_update_)
-    return false;  // Don't allow the LCD text state to change once disabled.
-  if (can_use_lcd_text_for_update_ == can_use_lcd_text())
-    return false;
-
-  can_use_lcd_text_for_update_ = can_use_lcd_text();
-  return true;
 }
 
 skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {

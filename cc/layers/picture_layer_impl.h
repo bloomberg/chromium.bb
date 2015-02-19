@@ -79,6 +79,8 @@ class CC_EXPORT PictureLayerImpl
                           Region* new_invalidation,
                           const PictureLayerTilingSet* pending_set);
   bool UpdateTiles(bool resourceless_software_draw);
+  void UpdateCanUseLCDTextAfterCommit();
+  bool RasterSourceUsesLCDText() const;
 
   // Mask-related functions.
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,

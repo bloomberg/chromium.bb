@@ -543,6 +543,36 @@ void PictureLayerImpl::UpdateRasterSource(
       MaximumContentsScale());
 }
 
+void PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
+  // This function is only allowed to be called after commit, due to it not
+  // being smart about sharing tiles and because otherwise it would cause
+  // flashes by switching out tiles in place that may be currently on screen.
+  DCHECK(layer_tree_impl()->IsSyncTree());
+
+  // Don't allow the LCD text state to change once disabled.
+  if (!RasterSourceUsesLCDText())
+    return;
+  if (can_use_lcd_text() == RasterSourceUsesLCDText())
+    return;
+
+  // Raster sources are considered const, so in order to update the state
+  // a new one must be created and all tiles recreated.
+  scoped_refptr<RasterSource> new_raster_source =
+      raster_source_->CreateCloneWithoutLCDText();
+  // Synthetically invalidate everything.
+  gfx::Rect bounds_rect(bounds());
+  Region invalidation(bounds_rect);
+  UpdateRasterSource(new_raster_source, &invalidation, nullptr);
+  SetUpdateRect(bounds_rect);
+
+  DCHECK(!RasterSourceUsesLCDText());
+}
+
+bool PictureLayerImpl::RasterSourceUsesLCDText() const {
+  return raster_source_ ? raster_source_->CanUseLCDText()
+                        : layer_tree_impl()->settings().can_use_lcd_text;
+}
+
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
   if (layer_tree_impl()->IsActiveTree()) {
     gfx::RectF layer_damage_rect =

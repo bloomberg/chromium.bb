@@ -328,6 +328,8 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   // Returns the tree LTH synchronizes with.
   LayerTreeImpl* sync_tree() {
+    // TODO(enne): This is bogus.  It should return based on the value of
+    // Proxy::CommitToActiveTree and not whether the pending tree exists.
     return pending_tree_ ? pending_tree_.get() : active_tree_.get();
   }
   virtual void CreatePendingTree();

@@ -307,8 +307,11 @@ void LayerTreeHostImpl::CommitComplete() {
   if (settings_.impl_side_painting) {
     // Impl-side painting needs an update immediately post-commit to have the
     // opportunity to create tilings.  Other paths can call UpdateDrawProperties
-    // more lazily when needed prior to drawing.
-    sync_tree()->UpdateDrawProperties();
+    // more lazily when needed prior to drawing.  Because invalidations may
+    // be coming from the main thread, it's safe to do an update for lcd text
+    // at this point and see if lcd text needs to be disabled on any layers.
+    bool update_lcd_text = true;
+    sync_tree()->UpdateDrawProperties(update_lcd_text);
     // Start working on newly created tiles immediately if needed.
     if (tile_manager_ && tile_priorities_dirty_)
       PrepareTiles();
@@ -1046,7 +1049,8 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Compositing.NumActiveLayers", active_tree_->NumLayers(), 1, 400, 20);
 
-  bool ok = active_tree_->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  bool ok = active_tree_->UpdateDrawProperties(update_lcd_text);
   DCHECK(ok) << "UpdateDrawProperties failed during draw";
 
   // This will cause NotifyTileStateChanged() to be called for any visible tiles

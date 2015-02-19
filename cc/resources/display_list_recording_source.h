@@ -20,12 +20,12 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   // RecordingSource overrides.
   bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
                                    Region* invalidation,
-                                   bool can_use_lcd_text,
                                    const gfx::Size& layer_size,
                                    const gfx::Rect& visible_layer_rect,
                                    int frame_number,
                                    RecordingMode recording_mode) override;
-  scoped_refptr<RasterSource> CreateRasterSource() const override;
+  scoped_refptr<RasterSource> CreateRasterSource(
+      bool can_use_lcd_text) const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
   void SetSlowdownRasterScaleFactor(int factor) override;
@@ -41,7 +41,6 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   gfx::Rect recorded_viewport_;
   gfx::Size size_;
   int slow_down_raster_scale_factor_for_debug_;
-  bool can_use_lcd_text_;
   bool requires_clear_;
   bool is_solid_color_;
   SkColor solid_color_;

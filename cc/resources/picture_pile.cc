@@ -166,7 +166,6 @@ PicturePile::PicturePile(float min_contents_scale,
                          const gfx::Size& tile_grid_size)
     : min_contents_scale_(0),
       slow_down_raster_scale_factor_for_debug_(0),
-      can_use_lcd_text_(true),
       has_any_recordings_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       requires_clear_(true),
@@ -186,22 +185,17 @@ PicturePile::~PicturePile() {
 bool PicturePile::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
-    bool can_use_lcd_text,
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     RecordingSource::RecordingMode recording_mode) {
-  bool can_use_lcd_text_changed = can_use_lcd_text_ != can_use_lcd_text;
-  can_use_lcd_text_ = can_use_lcd_text;
-
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(-pixel_record_distance_, -pixel_record_distance_);
   recorded_viewport_ = interest_rect;
   recorded_viewport_.Intersect(gfx::Rect(layer_size));
 
-  bool updated =
-      ApplyInvalidationAndResize(interest_rect, invalidation, layer_size,
-                                 frame_number, can_use_lcd_text_changed);
+  bool updated = ApplyInvalidationAndResize(interest_rect, invalidation,
+                                            layer_size, frame_number);
   std::vector<gfx::Rect> invalid_tiles;
   GetInvalidTileRects(interest_rect, invalidation, visible_layer_rect,
                       frame_number, &invalid_tiles);
@@ -223,22 +217,13 @@ bool PicturePile::UpdateAndExpandInvalidation(
 bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
                                              Region* invalidation,
                                              const gfx::Size& layer_size,
-                                             int frame_number,
-                                             bool can_use_lcd_text_changed) {
+                                             int frame_number) {
   bool updated = false;
 
   Region synthetic_invalidation;
   gfx::Size old_tiling_size = GetSize();
   if (old_tiling_size != layer_size) {
     tiling_.SetTilingSize(layer_size);
-    updated = true;
-  }
-  if (can_use_lcd_text_changed) {
-    // When LCD text is enabled/disabled, we must drop any raster tiles for
-    // the pile, so they can be recreated in a manner consistent with the new
-    // setting. We do this with |synthetic_invalidation| since we don't need to
-    // do a new recording, just invalidate rastered content.
-    synthetic_invalidation.Union(gfx::Rect(GetSize()));
     updated = true;
   }
 
@@ -593,9 +578,10 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
   }
 }
 
-scoped_refptr<RasterSource> PicturePile::CreateRasterSource() const {
+scoped_refptr<RasterSource> PicturePile::CreateRasterSource(
+    bool can_use_lcd_text) const {
   return scoped_refptr<RasterSource>(
-      PicturePileImpl::CreateFromPicturePile(this));
+      PicturePileImpl::CreateFromPicturePile(this, can_use_lcd_text));
 }
 
 gfx::Size PicturePile::GetSize() const {

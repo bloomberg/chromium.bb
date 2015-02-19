@@ -534,7 +534,7 @@ void LayerTreeImpl::ClearViewportLayers() {
   outer_viewport_scroll_layer_ = NULL;
 }
 
-bool LayerTreeImpl::UpdateDrawProperties() {
+bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   if (!needs_update_draw_properties_)
     return true;
 
@@ -645,6 +645,25 @@ bool LayerTreeImpl::UpdateDrawProperties() {
 
     unoccluded_screen_space_region_ =
         occlusion_tracker.ComputeVisibleRegionInScreen();
+  }
+
+  // It'd be ideal if this could be done earlier, but when the raster source
+  // is updated from the main thread during push properties, update draw
+  // properties has not occurred yet and so it's not clear whether or not the
+  // layer can or cannot use lcd text.  So, this is the cleanup pass to
+  // determine if the raster source needs to be replaced with a non-lcd
+  // raster source due to draw properties.
+  if (update_lcd_text) {
+    // TODO(enne): Make LTHI::sync_tree return this value.
+    LayerTreeImpl* sync_tree =
+        layer_tree_host_impl_->proxy()->CommitToActiveTree()
+            ? layer_tree_host_impl_->active_tree()
+            : layer_tree_host_impl_->pending_tree();
+    // If this is not the sync tree, then it is not safe to update lcd text
+    // as it causes invalidations and the tiles may be in use.
+    DCHECK_EQ(this, sync_tree);
+    for (const auto& layer : picture_layers_)
+      layer->UpdateCanUseLCDTextAfterCommit();
   }
 
   {
@@ -857,6 +876,10 @@ bool LayerTreeImpl::IsPendingTree() const {
 
 bool LayerTreeImpl::IsRecycleTree() const {
   return layer_tree_host_impl_->recycle_tree() == this;
+}
+
+bool LayerTreeImpl::IsSyncTree() const {
+  return layer_tree_host_impl_->sync_tree() == this;
 }
 
 LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
@@ -1461,7 +1484,8 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   if (!root_layer())
     return NULL;
-  if (!UpdateDrawProperties())
+  bool update_lcd_text = false;
+  if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
   FindClosestMatchingLayer(screen_space_point,
@@ -1503,7 +1527,8 @@ LayerImpl* LayerTreeImpl::FindLayerWithWheelHandlerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   if (!root_layer())
     return NULL;
-  if (!UpdateDrawProperties())
+  bool update_lcd_text = false;
+  if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
   FindWheelEventLayerFunctor func;
   FindClosestMatchingLayerDataForRecursion data_for_recursion;
@@ -1523,7 +1548,8 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
     const gfx::PointF& screen_space_point) {
   if (!root_layer())
     return NULL;
-  if (!UpdateDrawProperties())
+  bool update_lcd_text = false;
+  if (!UpdateDrawProperties(update_lcd_text))
     return NULL;
   FindTouchEventLayerFunctor func = {screen_space_point};
   FindClosestMatchingLayerDataForRecursion data_for_recursion;

@@ -34,13 +34,13 @@ class CC_EXPORT RecordingSource {
   // Return true iff the pile was modified.
   virtual bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
                                            Region* invalidation,
-                                           bool can_use_lcd_text,
                                            const gfx::Size& layer_size,
                                            const gfx::Rect& visible_layer_rect,
                                            int frame_number,
                                            RecordingMode recording_mode) = 0;
 
-  virtual scoped_refptr<RasterSource> CreateRasterSource() const = 0;
+  virtual scoped_refptr<RasterSource> CreateRasterSource(
+      bool can_use_lcd_text) const = 0;
 
   virtual gfx::Size GetSize() const = 0;
   virtual void SetEmptyBounds() = 0;

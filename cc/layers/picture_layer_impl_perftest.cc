@@ -72,7 +72,8 @@ class PictureLayerImplPerfTest : public testing::Test {
                                              int num_tiles,
                                              const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
-    host_impl_.pending_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
     timer_.Reset();
     do {
@@ -96,7 +97,8 @@ class PictureLayerImplPerfTest : public testing::Test {
     host_impl_.SetViewportSize(viewport.size());
     pending_layer_->PushScrollOffsetFromMainThread(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
-    host_impl_.pending_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
     timer_.Reset();
     do {
@@ -114,7 +116,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       int num_tiles,
       const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
-    host_impl_.pending_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
                                  SMOOTHNESS_TAKES_PRIORITY,
@@ -145,7 +148,8 @@ class PictureLayerImplPerfTest : public testing::Test {
     host_impl_.SetViewportSize(viewport.size());
     pending_layer_->PushScrollOffsetFromMainThread(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
-    host_impl_.pending_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
                                  SMOOTHNESS_TAKES_PRIORITY,

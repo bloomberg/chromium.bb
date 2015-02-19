@@ -29703,6 +29703,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Renderer4.LCDText.PercentageOfAALayers" units="%">
+  <obsolete>
+    Deprecated as of 02/2015.  No longer generated.
+  </obsolete>
   <owner>wiltzius@chromium.org</owner>
   <summary>
     The ratio of LCDText CC Layers / candidate LCDText layers. Recorded in
@@ -29713,6 +29716,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Renderer4.LCDText.PercentageOfCandidateLayers" units="%">
+  <obsolete>
+    Deprecated as of 02/2015.  No longer generated.
+  </obsolete>
   <owner>wiltzius@chromium.org</owner>
   <summary>
     The ratio of CC Layers which are candidates for LCDText AA / total picture

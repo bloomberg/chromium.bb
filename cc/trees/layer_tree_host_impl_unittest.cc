@@ -6453,7 +6453,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   host_impl_->ActivateSyncTree();
 
-  host_impl_->active_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
   ASSERT_EQ(1u, host_impl_->active_tree()->RenderSurfaceLayerList().size());
 
   LayerTreeHostImpl::FrameData frame;

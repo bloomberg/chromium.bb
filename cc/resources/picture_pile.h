@@ -25,12 +25,12 @@ class CC_EXPORT PicturePile : public RecordingSource {
   // RecordingSource overrides.
   bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
                                    Region* invalidation,
-                                   bool can_use_lcd_text,
                                    const gfx::Size& layer_size,
                                    const gfx::Rect& visible_layer_rect,
                                    int frame_number,
                                    RecordingMode recording_mode) override;
-  scoped_refptr<RasterSource> CreateRasterSource() const override;
+  scoped_refptr<RasterSource> CreateRasterSource(
+      bool can_use_lcd_text) const override;
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
   void SetSlowdownRasterScaleFactor(int factor) override;
@@ -95,7 +95,6 @@ class CC_EXPORT PicturePile : public RecordingSource {
   float min_contents_scale_;
   gfx::Size tile_grid_size_;
   int slow_down_raster_scale_factor_for_debug_;
-  bool can_use_lcd_text_;
   // A hint about whether there are any recordings. This may be a false
   // positive.
   bool has_any_recordings_;
@@ -120,8 +119,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   bool ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
                                   Region* invalidation,
                                   const gfx::Size& layer_size,
-                                  int frame_number,
-                                  bool can_use_lcd_text_changed);
+                                  int frame_number);
   void DetermineIfSolidColor();
   void SetBufferPixels(int buffer_pixels);
 

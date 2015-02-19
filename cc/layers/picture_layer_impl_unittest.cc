@@ -128,7 +128,8 @@ class PictureLayerImplTest : public testing::Test {
     active_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.active_tree()->LayerById(id_));
 
-    host_impl_.active_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
   void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,
@@ -223,7 +224,8 @@ class PictureLayerImplTest : public testing::Test {
         host_impl_.pending_tree()->LayerById(id_));
 
     // Add tilings/tiles for the layer.
-    host_impl_.pending_tree()->UpdateDrawProperties();
+    bool update_lcd_text = false;
+    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
   void SetupDrawPropertiesAndUpdateTiles(FakePictureLayerImpl* layer,
@@ -431,7 +433,8 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
                                         viewport_rect_for_tile_priority,
                                         transform_for_tile_priority,
                                         resourceless_software_draw);
-  host_impl_.active_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   gfx::Rect viewport_rect_for_tile_priority_in_view_space =
       viewport_rect_for_tile_priority;
@@ -465,7 +468,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
                                         viewport_rect_for_tile_priority,
                                         transform_for_tile_priority,
                                         resourceless_software_draw);
-  host_impl_.active_tree()->UpdateDrawProperties();
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
   bool success = transform_for_tile_priority.GetInverse(&screen_to_view);
@@ -603,7 +606,8 @@ TEST_F(PictureLayerImplTest, ViewportRectForTilePriorityIsCached) {
   host_impl_.SetExternalDrawConstraints(
       transform, viewport, viewport, viewport_rect_for_tile_priority,
       transform_for_tile_priority, resourceless_software_draw);
-  host_impl_.active_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   EXPECT_EQ(viewport_rect_for_tile_priority,
             active_layer_->viewport_rect_for_tile_priority_in_content_space());
@@ -621,7 +625,7 @@ TEST_F(PictureLayerImplTest, ViewportRectForTilePriorityIsCached) {
   // should remain to be the previously cached value.
   EXPECT_EQ(viewport_rect_for_tile_priority,
             active_layer_->viewport_rect_for_tile_priority_in_content_space());
-  host_impl_.active_tree()->UpdateDrawProperties();
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   // Now the UpdateDrawProperties is called. The viewport rect for tile
   // priority should be the latest value.
@@ -1312,7 +1316,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   FakePictureLayerImpl* pending_mask =
       static_cast<FakePictureLayerImpl*>(pending_layer_->mask_layer());
@@ -1362,7 +1367,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   // The mask tiling gets scaled down.
   EXPECT_LT(pending_mask->HighResTiling()->contents_scale(), 1.f);
@@ -1418,7 +1423,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   EXPECT_EQ(0u, pending_mask->num_tilings());
 }
@@ -1450,7 +1455,8 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   FakePictureLayerImpl* pending_mask =
       static_cast<FakePictureLayerImpl*>(pending_layer_->mask_layer());
@@ -1771,7 +1777,8 @@ TEST_F(NoLowResPictureLayerImplTest,
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   // Set visible content rect that is different from
   // external_viewport_for_tile_priority.
@@ -1811,7 +1818,7 @@ TEST_F(NoLowResPictureLayerImplTest,
 
   // Activate and draw active layer.
   host_impl_.ActivateSyncTree();
-  host_impl_.active_tree()->UpdateDrawProperties();
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
   active_layer_->draw_properties().visible_content_rect = visible_content_rect;
 
   scoped_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -2415,7 +2422,8 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
   EXPECT_TRUE(pending_layer_->tilings()->FindTilingWithScale(1.f));
 
   ActivateTree();
@@ -2596,8 +2604,8 @@ class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
 // However, this is also a regression test for PictureLayerImpl in that
 // not having this update will cause a crash.
 TEST_F(DeferredInitPictureLayerImplTest, PreventUpdateTilesDuringLostContext) {
-  host_impl_.pending_tree()->UpdateDrawProperties();
-  host_impl_.active_tree()->UpdateDrawProperties();
+  host_impl_.pending_tree()->UpdateDrawProperties(true);
+  host_impl_.active_tree()->UpdateDrawProperties(false);
   EXPECT_FALSE(host_impl_.pending_tree()->needs_update_draw_properties());
   EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
 
@@ -2609,7 +2617,7 @@ TEST_F(DeferredInitPictureLayerImplTest, PreventUpdateTilesDuringLostContext) {
   // These will crash PictureLayerImpl if this is not true.
   ASSERT_TRUE(host_impl_.pending_tree()->needs_update_draw_properties());
   ASSERT_TRUE(host_impl_.active_tree()->needs_update_draw_properties());
-  host_impl_.active_tree()->UpdateDrawProperties();
+  host_impl_.active_tree()->UpdateDrawProperties(false);
 }
 
 TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
@@ -3855,7 +3863,8 @@ TEST_F(PictureLayerImplTestWithDelegatingRenderer,
   SetupPendingTree(pending_pile);
   pending_layer_->SetBounds(layer_bounds);
   ActivateTree();
-  host_impl_.active_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
   std::vector<Tile*> tiles =
       active_layer_->HighResTiling()->AllTilesForTesting();
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
@@ -4068,7 +4077,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   unoccluded_tile_count = 0;
   queue.reset(new TilingSetRasterQueueAll(
@@ -4092,7 +4102,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   unoccluded_tile_count = 0;
   queue.reset(new TilingSetRasterQueueAll(
@@ -4166,7 +4176,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
@@ -4206,7 +4217,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
@@ -4280,7 +4291,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   // UpdateDrawProperties with the occluding layer.
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   EXPECT_EQ(5u, pending_layer_->num_tilings());
 
@@ -4479,7 +4491,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   host_impl_.SetCurrentBeginFrameArgs(
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   // UpdateDrawProperties with the occluding layer.
-  host_impl_.pending_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
   // The expected number of occluded tiles on each of the 2 tilings for each of
   // the 3 tree priorities.
@@ -4670,11 +4683,11 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
 
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation, false, layer_bounds, layer_rect, frame_number++,
+      &client, &invalidation, layer_bounds, layer_rect, frame_number++,
       RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> pending_raster_source =
-      recording_source->CreateRasterSource();
+      recording_source->CreateRasterSource(true);
 
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
   ActivateTree();
@@ -4733,15 +4746,16 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   Region invalidation1(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation1, false, layer_bounds, layer_rect, frame_number++,
+      &client, &invalidation1, layer_bounds, layer_rect, frame_number++,
       RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source1 =
-      recording_source->CreateRasterSource();
+      recording_source->CreateRasterSource(true);
 
   SetupPendingTree(raster_source1);
   ActivateTree();
-  host_impl_.active_tree()->UpdateDrawProperties();
+  bool update_lcd_text = false;
+  host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
   // We've started with a solid layer that contains some tilings.
   ASSERT_TRUE(active_layer_->tilings());
@@ -4751,11 +4765,11 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
 
   Region invalidation2(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      &client, &invalidation2, false, layer_bounds, layer_rect, frame_number++,
+      &client, &invalidation2, layer_bounds, layer_rect, frame_number++,
       RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source2 =
-      recording_source->CreateRasterSource();
+      recording_source->CreateRasterSource(true);
 
   SetupPendingTree(raster_source2);
   ActivateTree();

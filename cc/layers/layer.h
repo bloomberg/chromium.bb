@@ -242,7 +242,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool screen_space_opacity_is_animating() const {
     return draw_properties_.screen_space_opacity_is_animating;
   }
-  bool can_use_lcd_text() const { return draw_properties_.can_use_lcd_text; }
   bool is_clipped() const { return draw_properties_.is_clipped; }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
   gfx::Rect drawable_content_rect() const {
@@ -456,8 +455,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void set_raster_scale(float scale) { raster_scale_ = scale; }
   float raster_scale() const { return raster_scale_; }
   bool raster_scale_is_unknown() const { return raster_scale_ == 0.f; }
-
-  virtual bool SupportsLCDText() const;
 
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }

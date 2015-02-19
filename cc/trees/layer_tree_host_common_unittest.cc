@@ -5677,56 +5677,60 @@ using LCDTextTestParam = std::tr1::tuple<bool, bool, bool>;
 class LCDTextTest
     : public LayerTreeHostCommonTestBase,
       public testing::TestWithParam<LCDTextTestParam> {
+ public:
+  LCDTextTest()
+      : host_impl_(&proxy_, &shared_bitmap_manager_),
+        root_(nullptr),
+        child_(nullptr),
+        grand_child_(nullptr) {}
+
  protected:
   void SetUp() override {
     can_use_lcd_text_ = std::tr1::get<0>(GetParam());
     layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
 
-    root_ = Layer::Create();
-    child_ = Layer::Create();
-    grand_child_ = Layer::Create();
-    child_->AddChild(grand_child_.get());
-    root_->AddChild(child_.get());
+    scoped_ptr<LayerImpl> root_ptr =
+        LayerImpl::Create(host_impl_.active_tree(), 1);
+    scoped_ptr<LayerImpl> child_ptr =
+        LayerImpl::Create(host_impl_.active_tree(), 2);
+    scoped_ptr<LayerImpl> grand_child_ptr =
+        LayerImpl::Create(host_impl_.active_tree(), 3);
+
+    // Stash raw pointers to look at later.
+    root_ = root_ptr.get();
+    child_ = child_ptr.get();
+    grand_child_ = grand_child_ptr.get();
+
+    child_->AddChild(grand_child_ptr.Pass());
+    root_->AddChild(child_ptr.Pass());
+    host_impl_.active_tree()->SetRootLayer(root_ptr.Pass());
 
     root_->SetContentsOpaque(true);
     child_->SetContentsOpaque(true);
     grand_child_->SetContentsOpaque(true);
 
     gfx::Transform identity_matrix;
-    SetLayerPropertiesForTesting(root_.get(),
-                                 identity_matrix,
-                                 gfx::Point3F(),
-                                 gfx::PointF(),
-                                 gfx::Size(1, 1),
-                                 true,
+    SetLayerPropertiesForTesting(root_, identity_matrix, gfx::Point3F(),
+                                 gfx::PointF(), gfx::Size(1, 1), true, false,
+                                 true);
+    SetLayerPropertiesForTesting(child_, identity_matrix, gfx::Point3F(),
+                                 gfx::PointF(), gfx::Size(1, 1), true, false,
+                                 std::tr1::get<2>(GetParam()));
+    SetLayerPropertiesForTesting(grand_child_, identity_matrix, gfx::Point3F(),
+                                 gfx::PointF(), gfx::Size(1, 1), true, false,
                                  false);
-    SetLayerPropertiesForTesting(child_.get(),
-                                 identity_matrix,
-                                 gfx::Point3F(),
-                                 gfx::PointF(),
-                                 gfx::Size(1, 1),
-                                 true,
-                                 false);
-    SetLayerPropertiesForTesting(grand_child_.get(),
-                                 identity_matrix,
-                                 gfx::Point3F(),
-                                 gfx::PointF(),
-                                 gfx::Size(1, 1),
-                                 true,
-                                 false);
-
-    child_->SetForceRenderSurface(std::tr1::get<2>(GetParam()));
-
-    host_ = CreateFakeLayerTreeHost();
-    host_->SetRootLayer(root_);
   }
 
   bool can_use_lcd_text_;
   bool layers_always_allowed_lcd_text_;
-  scoped_ptr<FakeLayerTreeHost> host_;
-  scoped_refptr<Layer> root_;
-  scoped_refptr<Layer> child_;
-  scoped_refptr<Layer> grand_child_;
+
+  FakeImplProxy proxy_;
+  TestSharedBitmapManager shared_bitmap_manager_;
+  FakeLayerTreeHostImpl host_impl_;
+
+  LayerImpl* root_;
+  LayerImpl* child_;
+  LayerImpl* grand_child_;
 };
 
 TEST_P(LCDTextTest, CanUseLCDText) {
@@ -5735,7 +5739,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
 
   // Case 1: Identity transform.
   gfx::Transform identity_matrix;
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
@@ -5745,7 +5749,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform integral_translation;
   integral_translation.Translate(1.0, 2.0);
   child_->SetTransform(integral_translation);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
@@ -5755,7 +5759,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform non_integral_translation;
   non_integral_translation.Translate(1.5, 2.5);
   child_->SetTransform(non_integral_translation);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
@@ -5765,7 +5769,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform rotation;
   rotation.Rotate(10.0);
   child_->SetTransform(rotation);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
@@ -5775,7 +5779,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform scale;
   scale.Scale(2.0, 2.0);
   child_->SetTransform(scale);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
@@ -5785,7 +5789,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   gfx::Transform skew;
   skew.SkewX(10.0);
   child_->SetTransform(skew);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
@@ -5794,7 +5798,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 7: Translucent.
   child_->SetTransform(identity_matrix);
   child_->SetOpacity(0.5f);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
@@ -5803,7 +5807,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 8: Sanity check: restore transform and opacity.
   child_->SetTransform(identity_matrix);
   child_->SetOpacity(1.f);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
@@ -5811,7 +5815,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
 
   // Case 9: Non-opaque content.
   child_->SetContentsOpaque(false);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_not_lcd_text, child_->can_use_lcd_text());
@@ -5819,7 +5823,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
 
   // Case 10: Sanity check: restore content opaqueness.
   child_->SetContentsOpaque(true);
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
@@ -5830,7 +5834,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   bool expect_lcd_text = can_use_lcd_text_ || layers_always_allowed_lcd_text_;
 
   // Sanity check: Make sure can_use_lcd_text_ is set on each node.
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
   EXPECT_EQ(expect_lcd_text, child_->can_use_lcd_text());
@@ -5841,7 +5845,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   AddOpacityTransitionToController(
       child_->layer_animation_controller(), 10.0, 0.9f, 0.1f, false);
 
-  ExecuteCalculateDrawProperties(root_.get(), 1.f, 1.f, NULL, can_use_lcd_text_,
+  ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   // Text AA should not be adjusted while animation is active.
   // Make sure LCD text AA setting remains unchanged.

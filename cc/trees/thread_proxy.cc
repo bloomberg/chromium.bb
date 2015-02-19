@@ -1033,8 +1033,11 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
   impl().timing_history.DidStartDrawing();
   base::AutoReset<bool> mark_inside(&impl().inside_draw, true);
 
-  if (impl().layer_tree_host_impl->pending_tree())
-    impl().layer_tree_host_impl->pending_tree()->UpdateDrawProperties();
+  if (impl().layer_tree_host_impl->pending_tree()) {
+    bool update_lcd_text = false;
+    impl().layer_tree_host_impl->pending_tree()->UpdateDrawProperties(
+        update_lcd_text);
+  }
 
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its

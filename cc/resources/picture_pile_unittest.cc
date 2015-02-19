@@ -42,9 +42,9 @@ class PicturePileTestBase {
                                    const gfx::Size& layer_size,
                                    const gfx::Rect& visible_layer_rect) {
     frame_number_++;
-    return pile_.UpdateAndExpandInvalidation(
-        &client_, invalidation, false, layer_size, visible_layer_rect,
-        frame_number_, RecordingSource::RECORD_NORMALLY);
+    return pile_.UpdateAndExpandInvalidation(&client_, invalidation, layer_size,
+                                             visible_layer_rect, frame_number_,
+                                             RecordingSource::RECORD_NORMALLY);
   }
 
   bool UpdateWholePile() {

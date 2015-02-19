@@ -28,7 +28,6 @@ namespace cc {
 
 DisplayListRecordingSource::DisplayListRecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
-      can_use_lcd_text_(true),
       requires_clear_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
@@ -43,7 +42,6 @@ DisplayListRecordingSource::~DisplayListRecordingSource() {
 bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
-    bool can_use_lcd_text,
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
@@ -52,12 +50,6 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
 
   if (size_ != layer_size) {
     size_ = layer_size;
-    updated = true;
-  }
-
-  if (can_use_lcd_text_ != can_use_lcd_text) {
-    can_use_lcd_text_ = can_use_lcd_text;
-    invalidation->Union(gfx::Rect(GetSize()));
     updated = true;
   }
 
@@ -152,10 +144,11 @@ bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   return is_suitable_for_gpu_rasterization_;
 }
 
-scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource()
-    const {
+scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
+    bool can_use_lcd_text) const {
   return scoped_refptr<RasterSource>(
-      DisplayListRasterSource::CreateFromDisplayListRecordingSource(this));
+      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+          this, can_use_lcd_text));
 }
 
 gfx::Size DisplayListRecordingSource::GetTileGridSizeForTesting() const {
