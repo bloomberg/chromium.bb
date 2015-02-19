@@ -787,7 +787,7 @@ For more information of cros build usage:
         help='Do not require that device be compatible with current '
         'project/board.')
     advanced.add_argument(
-        '--ignore-sdk-version', action='store_true',
+        '--ignore-device-sdk-version', action='store_true',
         help='Do not require that device SDK version be compatible with '
         'the environment.')
 
@@ -963,7 +963,7 @@ For more information of cros build usage:
                              device.board)
 
         # If this is an official SDK, check that the target is compatible.
-        if not self.options.ignore_sdk_version:
+        if not self.options.ignore_device_sdk_version:
           sdk_version = project_sdk.FindVersion()
           if sdk_version and device.sdk_version != sdk_version:
             cros_build_lib.Die('Device SDK version (%s) is incompatible with '
