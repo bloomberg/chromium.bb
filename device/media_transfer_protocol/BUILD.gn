@@ -29,10 +29,16 @@ static_library("media_transfer_protocol") {
     "media_transfer_protocol_manager.h",
   ]
 
-  configs += [ "//build/config/linux:dbus" ]
-
   public_deps = [
     ":mtp_file_entry_proto",
     ":mtp_storage_info_proto",
+    "//base",
   ]
+  deps = [
+    "//dbus",
+  ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }

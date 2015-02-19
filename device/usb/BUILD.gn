@@ -43,6 +43,9 @@ source_set("usb") {
   if (is_linux) {
     deps += [ "//device/udev_linux" ]
   }
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
 
 action("usb_device_ids") {
