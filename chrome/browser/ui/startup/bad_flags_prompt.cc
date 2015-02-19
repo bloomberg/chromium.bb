@@ -74,6 +74,12 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // http://crbug.com/327295
     switches::kEnableSpeechDispatcher,
 #endif
+
+    // These flags control Blink feature state, which is not supported and is
+    // intended only for use by Chromium developers.
+    switches::kDisableBlinkFeatures,
+    switches::kEnableBlinkFeatures,
+
     NULL
   };
 
