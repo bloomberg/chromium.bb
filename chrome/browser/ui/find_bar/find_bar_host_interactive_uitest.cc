@@ -60,7 +60,13 @@ bool FocusedOnPage(WebContents* web_contents, std::string* result) {
 // This tests the FindInPage end-state, in other words: what is focused when you
 // close the Find box (ie. if you find within a link the link should be
 // focused).
-IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, FindInPageEndState) {
+// Flaky on CrOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_FindInPageEndState DISABLED_FindInPageEndState
+#else
+#define MAYBE_FindInPageEndState FindInPageEndState
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, MAYBE_FindInPageEndState) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Make sure Chrome is in the foreground, otherwise sending input
