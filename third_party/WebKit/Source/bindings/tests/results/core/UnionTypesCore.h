@@ -35,14 +35,17 @@ public:
     bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
     PassRefPtr<TestArrayBuffer> getAsArrayBuffer() const;
     void setArrayBuffer(PassRefPtr<TestArrayBuffer>);
+    static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBuffer(PassRefPtr<TestArrayBuffer>);
 
     bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
     PassRefPtr<TestArrayBufferView> getAsArrayBufferView() const;
     void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
+    static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBufferView(PassRefPtr<TestArrayBufferView>);
 
     bool isDictionary() const { return m_type == SpecificTypeDictionary; }
     Dictionary getAsDictionary() const;
     void setDictionary(Dictionary);
+    static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
 
 private:
     enum SpecificTypes {
@@ -87,14 +90,17 @@ public:
     bool isBoolean() const { return m_type == SpecificTypeBoolean; }
     bool getAsBoolean() const;
     void setBoolean(bool);
+    static BooleanOrStringOrUnrestrictedDouble fromBoolean(bool);
 
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static BooleanOrStringOrUnrestrictedDouble fromString(String);
 
     bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
     double getAsUnrestrictedDouble() const;
     void setUnrestrictedDouble(double);
+    static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
 
 private:
     enum SpecificTypes {
@@ -139,10 +145,12 @@ public:
     bool isDouble() const { return m_type == SpecificTypeDouble; }
     double getAsDouble() const;
     void setDouble(double);
+    static DoubleOrString fromDouble(double);
 
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static DoubleOrString fromString(String);
 
 private:
     enum SpecificTypes {
@@ -185,10 +193,12 @@ public:
     bool isNode() const { return m_type == SpecificTypeNode; }
     PassRefPtrWillBeRawPtr<Node> getAsNode() const;
     void setNode(PassRefPtrWillBeRawPtr<Node>);
+    static NodeOrNodeList fromNode(PassRefPtrWillBeRawPtr<Node>);
 
     bool isNodeList() const { return m_type == SpecificTypeNodeList; }
     PassRefPtrWillBeRawPtr<NodeList> getAsNodeList() const;
     void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
+    static NodeOrNodeList fromNodeList(PassRefPtrWillBeRawPtr<NodeList>);
 
     void trace(Visitor*);
 
@@ -233,14 +243,17 @@ public:
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static StringOrArrayBufferOrArrayBufferView fromString(String);
 
     bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
     PassRefPtr<TestArrayBuffer> getAsArrayBuffer() const;
     void setArrayBuffer(PassRefPtr<TestArrayBuffer>);
+    static StringOrArrayBufferOrArrayBufferView fromArrayBuffer(PassRefPtr<TestArrayBuffer>);
 
     bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
     PassRefPtr<TestArrayBufferView> getAsArrayBufferView() const;
     void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
+    static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(PassRefPtr<TestArrayBufferView>);
 
 private:
     enum SpecificTypes {
@@ -285,10 +298,12 @@ public:
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static StringOrDouble fromString(String);
 
     bool isDouble() const { return m_type == SpecificTypeDouble; }
     double getAsDouble() const;
     void setDouble(double);
+    static StringOrDouble fromDouble(double);
 
 private:
     enum SpecificTypes {
@@ -331,10 +346,12 @@ public:
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static StringOrStringSequence fromString(String);
 
     bool isStringSequence() const { return m_type == SpecificTypeStringSequence; }
     const Vector<String>& getAsStringSequence() const;
     void setStringSequence(const Vector<String>&);
+    static StringOrStringSequence fromStringSequence(const Vector<String>&);
 
 private:
     enum SpecificTypes {
@@ -377,10 +394,12 @@ public:
     bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
     String getAsTestEnum() const;
     void setTestEnum(String);
+    static TestEnumOrDouble fromTestEnum(String);
 
     bool isDouble() const { return m_type == SpecificTypeDouble; }
     double getAsDouble() const;
     void setDouble(double);
+    static TestEnumOrDouble fromDouble(double);
 
 private:
     enum SpecificTypes {
@@ -423,10 +442,12 @@ public:
     bool isTestInterface2() const { return m_type == SpecificTypeTestInterface2; }
     PassRefPtr<TestInterface2> getAsTestInterface2() const;
     void setTestInterface2(PassRefPtr<TestInterface2>);
+    static TestInterface2OrUint8Array fromTestInterface2(PassRefPtr<TestInterface2>);
 
     bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
     PassRefPtr<DOMUint8Array> getAsUint8Array() const;
     void setUint8Array(PassRefPtr<DOMUint8Array>);
+    static TestInterface2OrUint8Array fromUint8Array(PassRefPtr<DOMUint8Array>);
 
 private:
     enum SpecificTypes {
@@ -469,10 +490,12 @@ public:
     bool isTestInterfaceGarbageCollected() const { return m_type == SpecificTypeTestInterfaceGarbageCollected; }
     TestInterfaceGarbageCollected* getAsTestInterfaceGarbageCollected() const;
     void setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
+    static TestInterfaceGarbageCollectedOrString fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
 
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static TestInterfaceGarbageCollectedOrString fromString(String);
 
     void trace(Visitor*);
 
@@ -517,10 +540,12 @@ public:
     bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
     PassRefPtr<TestInterfaceImplementation> getAsTestInterface() const;
     void setTestInterface(PassRefPtr<TestInterfaceImplementation>);
+    static TestInterfaceOrLong fromTestInterface(PassRefPtr<TestInterfaceImplementation>);
 
     bool isLong() const { return m_type == SpecificTypeLong; }
     int getAsLong() const;
     void setLong(int);
+    static TestInterfaceOrLong fromLong(int);
 
 private:
     enum SpecificTypes {
@@ -563,10 +588,12 @@ public:
     bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
     PassRefPtr<TestInterfaceImplementation> getAsTestInterface() const;
     void setTestInterface(PassRefPtr<TestInterfaceImplementation>);
+    static TestInterfaceOrTestInterfaceEmpty fromTestInterface(PassRefPtr<TestInterfaceImplementation>);
 
     bool isTestInterfaceEmpty() const { return m_type == SpecificTypeTestInterfaceEmpty; }
     PassRefPtr<TestInterfaceEmpty> getAsTestInterfaceEmpty() const;
     void setTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
+    static TestInterfaceOrTestInterfaceEmpty fromTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
 
 private:
     enum SpecificTypes {
@@ -609,10 +636,12 @@ public:
     bool isTestInterfaceWillBeGarbageCollected() const { return m_type == SpecificTypeTestInterfaceWillBeGarbageCollected; }
     PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> getAsTestInterfaceWillBeGarbageCollected() const;
     void setTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected>);
+    static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected>);
 
     bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
     TestDictionary getAsTestDictionary() const;
     void setTestDictionary(TestDictionary);
+    static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestDictionary(TestDictionary);
 
     void trace(Visitor*);
 
@@ -657,10 +686,12 @@ public:
     bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
     double getAsUnrestrictedDouble() const;
     void setUnrestrictedDouble(double);
+    static UnrestrictedDoubleOrString fromUnrestrictedDouble(double);
 
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static UnrestrictedDoubleOrString fromString(String);
 
 private:
     enum SpecificTypes {

@@ -28,6 +28,7 @@ public:
     bool is{{member.type_name}}() const { return m_type == {{member.specific_type_enum}}; }
     {{member.rvalue_cpp_type}} getAs{{member.type_name}}() const;
     void set{{member.type_name}}({{member.rvalue_cpp_type}});
+    static {{container.cpp_class}} from{{member.type_name}}({{member.rvalue_cpp_type}});
 
     {% endfor %}
     {% if container.needs_trace %}

@@ -25,10 +25,12 @@ public:
     bool isBoolean() const { return m_type == SpecificTypeBoolean; }
     bool getAsBoolean() const;
     void setBoolean(bool);
+    static BooleanOrString fromBoolean(bool);
 
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;
     void setString(String);
+    static BooleanOrString fromString(String);
 
 private:
     enum SpecificTypes {

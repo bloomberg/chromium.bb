@@ -206,6 +206,19 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         impl.setObjectOrNullMember(objectOrNullMember);
     }
 
+    v8::Local<v8::Value> otherDoubleOrStringMemberValue = v8Object->Get(v8String(isolate, "otherDoubleOrStringMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (otherDoubleOrStringMemberValue.IsEmpty() || otherDoubleOrStringMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        DoubleOrString otherDoubleOrStringMember;
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8DoubleOrString::toImpl(isolate, otherDoubleOrStringMemberValue, otherDoubleOrStringMember, exceptionState), exceptionState);
+        impl.setOtherDoubleOrStringMember(otherDoubleOrStringMember);
+    }
+
     v8::Local<v8::Value> restrictedDoubleMemberValue = v8Object->Get(v8String(isolate, "restrictedDoubleMember"));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
@@ -442,6 +455,8 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
     if (impl.hasDoubleOrStringMember()) {
         dictionary->Set(v8String(isolate, "doubleOrStringMember"), toV8(impl.doubleOrStringMember(), creationContext, isolate));
+    } else {
+        dictionary->Set(v8String(isolate, "doubleOrStringMember"), toV8(DoubleOrString::fromDouble(3.14), creationContext, isolate));
     }
 
     if (impl.hasElementOrNullMember()) {
@@ -476,6 +491,12 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (impl.hasObjectOrNullMember()) {
         ASSERT(impl.objectOrNullMember().isObject());
         dictionary->Set(v8String(isolate, "objectOrNullMember"), impl.objectOrNullMember().v8Value());
+    }
+
+    if (impl.hasOtherDoubleOrStringMember()) {
+        dictionary->Set(v8String(isolate, "otherDoubleOrStringMember"), toV8(impl.otherDoubleOrStringMember(), creationContext, isolate));
+    } else {
+        dictionary->Set(v8String(isolate, "otherDoubleOrStringMember"), toV8(DoubleOrString::fromString(String("default string value")), creationContext, isolate));
     }
 
     if (impl.hasRestrictedDoubleMember()) {

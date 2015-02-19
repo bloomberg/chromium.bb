@@ -89,7 +89,8 @@ def member_context(dictionary, member):
             return None, None
         if member.default_value.is_null:
             return None, 'v8::Null(isolate)'
-        cpp_default_value = str(member.default_value)
+        cpp_default_value = unwrapped_idl_type.literal_cpp_value(
+            member.default_value)
         v8_default_value = unwrapped_idl_type.cpp_value_to_v8_value(
             cpp_value=cpp_default_value, isolate='isolate',
             creation_context='creationContext')
@@ -186,7 +187,7 @@ def member_impl_context(member, interfaces_info, header_includes):
 
     cpp_default_value = None
     if member.default_value and not member.default_value.is_null:
-        cpp_default_value = str(member.default_value)
+        cpp_default_value = idl_type.literal_cpp_value(member.default_value)
 
     header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
     return {

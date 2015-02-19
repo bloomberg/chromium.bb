@@ -896,7 +896,24 @@ def literal_cpp_value(idl_type, idl_literal):
         return literal_value + 'u'
     return literal_value
 
+
+def union_literal_cpp_value(idl_type, idl_literal):
+    if idl_literal.is_null:
+        return idl_type.name + '()'
+    elif idl_literal.idl_type == 'DOMString':
+        member_type = idl_type.string_member_type
+    elif idl_literal.idl_type in ('integer', 'float'):
+        member_type = idl_type.numeric_member_type
+    elif idl_literal.idl_type == 'boolean':
+        member_type = idl_type.boolean_member_type
+    else:
+        raise ValueError('Unsupported literal type: ' + idl_literal.idl_type)
+
+    return '%s::from%s(%s)' % (idl_type.name, member_type.name,
+                               member_type.literal_cpp_value(idl_literal))
+
 IdlType.literal_cpp_value = literal_cpp_value
+IdlUnionType.literal_cpp_value = union_literal_cpp_value
 
 
 ################################################################################

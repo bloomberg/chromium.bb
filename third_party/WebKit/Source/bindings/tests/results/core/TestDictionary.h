@@ -76,6 +76,10 @@ public:
     void setObjectOrNullMember(ScriptValue value) { m_objectOrNullMember = value; }
     void setObjectOrNullMemberToNull() { m_objectOrNullMember = ScriptValue(); }
 
+    bool hasOtherDoubleOrStringMember() const { return !m_otherDoubleOrStringMember.isNull(); }
+    const DoubleOrString& otherDoubleOrStringMember() const { return m_otherDoubleOrStringMember; }
+    void setOtherDoubleOrStringMember(const DoubleOrString& value) { m_otherDoubleOrStringMember = value; }
+
     bool hasRestrictedDoubleMember() const { return !m_restrictedDoubleMember.isNull(); }
     double restrictedDoubleMember() const { return m_restrictedDoubleMember.get(); }
     void setRestrictedDoubleMember(double value) { m_restrictedDoubleMember = value; }
@@ -150,6 +154,7 @@ private:
     Nullable<int> m_longMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMember;
+    DoubleOrString m_otherDoubleOrStringMember;
     Nullable<double> m_restrictedDoubleMember;
     Nullable<Vector<String>> m_stringArrayMember;
     String m_stringMember;

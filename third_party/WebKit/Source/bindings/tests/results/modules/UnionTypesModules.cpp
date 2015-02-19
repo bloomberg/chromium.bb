@@ -28,6 +28,13 @@ void BooleanOrString::setBoolean(bool value)
     m_type = SpecificTypeBoolean;
 }
 
+BooleanOrString BooleanOrString::fromBoolean(bool value)
+{
+    BooleanOrString container;
+    container.setBoolean(value);
+    return container;
+}
+
 String BooleanOrString::getAsString() const
 {
     ASSERT(isString());
@@ -39,6 +46,13 @@ void BooleanOrString::setString(String value)
     ASSERT(isNull());
     m_string = value;
     m_type = SpecificTypeString;
+}
+
+BooleanOrString BooleanOrString::fromString(String value)
+{
+    BooleanOrString container;
+    container.setString(value);
+    return container;
 }
 
 void V8BooleanOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrString& impl, ExceptionState& exceptionState)

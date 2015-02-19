@@ -24,7 +24,8 @@ dictionary TestDictionary {
     object? objectOrNullMember;
     [ImplementedAs=createMember] boolean create;
     [DeprecateAs=CreateMember, ImplementedAs=createMember] boolean deprecatedCreateMember;
-    (double or DOMString) doubleOrStringMember;
+    (double or DOMString) doubleOrStringMember = 3.14;
+    (double or DOMString) otherDoubleOrStringMember = "default string value";
     (TestInterface2 or Uint8Array) testInterface2OrUint8ArrayMember;
     sequence<InternalDictionary> internalDictionarySequenceMember;
     Uint8Array uint8ArrayMember;

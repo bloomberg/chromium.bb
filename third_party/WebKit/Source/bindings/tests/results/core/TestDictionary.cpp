@@ -12,8 +12,10 @@ namespace blink {
 
 TestDictionary::TestDictionary()
 {
+    setDoubleOrStringMember(DoubleOrString::fromDouble(3.14));
     setEnumMember(String("foo"));
     setLongMember(1);
+    setOtherDoubleOrStringMember(DoubleOrString::fromString(String("default string value")));
     setRestrictedDoubleMember(3.14);
     setStringOrNullMember(String("default string value"));
     setUnrestrictedDoubleMember(3.14);

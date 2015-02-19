@@ -47,6 +47,13 @@ void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}}
     m_type = {{member.specific_type_enum}};
 }
 
+{{container.cpp_class}} {{container.cpp_class}}::from{{member.type_name}}({{member.rvalue_cpp_type}} value)
+{
+    {{container.cpp_class}} container;
+    container.set{{member.type_name}}(value);
+    return container;
+}
+
 {% endfor %}
 {% if container.needs_trace %}
 void {{container.cpp_class}}::trace(Visitor* visitor)

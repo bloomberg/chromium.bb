@@ -49,6 +49,13 @@ void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBuffer(PassRefPtr<TestArr
     m_type = SpecificTypeArrayBuffer;
 }
 
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBuffer(PassRefPtr<TestArrayBuffer> value)
+{
+    ArrayBufferOrArrayBufferViewOrDictionary container;
+    container.setArrayBuffer(value);
+    return container;
+}
+
 PassRefPtr<TestArrayBufferView> ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBufferView() const
 {
     ASSERT(isArrayBufferView());
@@ -62,6 +69,13 @@ void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBufferView(PassRefPtr<Tes
     m_type = SpecificTypeArrayBufferView;
 }
 
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBufferView(PassRefPtr<TestArrayBufferView> value)
+{
+    ArrayBufferOrArrayBufferViewOrDictionary container;
+    container.setArrayBufferView(value);
+    return container;
+}
+
 Dictionary ArrayBufferOrArrayBufferViewOrDictionary::getAsDictionary() const
 {
     ASSERT(isDictionary());
@@ -73,6 +87,13 @@ void ArrayBufferOrArrayBufferViewOrDictionary::setDictionary(Dictionary value)
     ASSERT(isNull());
     m_dictionary = value;
     m_type = SpecificTypeDictionary;
+}
+
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromDictionary(Dictionary value)
+{
+    ArrayBufferOrArrayBufferViewOrDictionary container;
+    container.setDictionary(value);
+    return container;
 }
 
 void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ArrayBufferOrArrayBufferViewOrDictionary& impl, ExceptionState& exceptionState)
@@ -143,6 +164,13 @@ void BooleanOrStringOrUnrestrictedDouble::setBoolean(bool value)
     m_type = SpecificTypeBoolean;
 }
 
+BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromBoolean(bool value)
+{
+    BooleanOrStringOrUnrestrictedDouble container;
+    container.setBoolean(value);
+    return container;
+}
+
 String BooleanOrStringOrUnrestrictedDouble::getAsString() const
 {
     ASSERT(isString());
@@ -156,6 +184,13 @@ void BooleanOrStringOrUnrestrictedDouble::setString(String value)
     m_type = SpecificTypeString;
 }
 
+BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromString(String value)
+{
+    BooleanOrStringOrUnrestrictedDouble container;
+    container.setString(value);
+    return container;
+}
+
 double BooleanOrStringOrUnrestrictedDouble::getAsUnrestrictedDouble() const
 {
     ASSERT(isUnrestrictedDouble());
@@ -167,6 +202,13 @@ void BooleanOrStringOrUnrestrictedDouble::setUnrestrictedDouble(double value)
     ASSERT(isNull());
     m_unrestrictedDouble = value;
     m_type = SpecificTypeUnrestrictedDouble;
+}
+
+BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromUnrestrictedDouble(double value)
+{
+    BooleanOrStringOrUnrestrictedDouble container;
+    container.setUnrestrictedDouble(value);
+    return container;
 }
 
 void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, ExceptionState& exceptionState)
@@ -235,6 +277,13 @@ void DoubleOrString::setDouble(double value)
     m_type = SpecificTypeDouble;
 }
 
+DoubleOrString DoubleOrString::fromDouble(double value)
+{
+    DoubleOrString container;
+    container.setDouble(value);
+    return container;
+}
+
 String DoubleOrString::getAsString() const
 {
     ASSERT(isString());
@@ -246,6 +295,13 @@ void DoubleOrString::setString(String value)
     ASSERT(isNull());
     m_string = value;
     m_type = SpecificTypeString;
+}
+
+DoubleOrString DoubleOrString::fromString(String value)
+{
+    DoubleOrString container;
+    container.setString(value);
+    return container;
 }
 
 void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)
@@ -307,6 +363,13 @@ void NodeOrNodeList::setNode(PassRefPtrWillBeRawPtr<Node> value)
     m_type = SpecificTypeNode;
 }
 
+NodeOrNodeList NodeOrNodeList::fromNode(PassRefPtrWillBeRawPtr<Node> value)
+{
+    NodeOrNodeList container;
+    container.setNode(value);
+    return container;
+}
+
 PassRefPtrWillBeRawPtr<NodeList> NodeOrNodeList::getAsNodeList() const
 {
     ASSERT(isNodeList());
@@ -318,6 +381,13 @@ void NodeOrNodeList::setNodeList(PassRefPtrWillBeRawPtr<NodeList> value)
     ASSERT(isNull());
     m_nodeList = value;
     m_type = SpecificTypeNodeList;
+}
+
+NodeOrNodeList NodeOrNodeList::fromNodeList(PassRefPtrWillBeRawPtr<NodeList> value)
+{
+    NodeOrNodeList container;
+    container.setNodeList(value);
+    return container;
 }
 
 void NodeOrNodeList::trace(Visitor* visitor)
@@ -386,6 +456,13 @@ void StringOrArrayBufferOrArrayBufferView::setString(String value)
     m_type = SpecificTypeString;
 }
 
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromString(String value)
+{
+    StringOrArrayBufferOrArrayBufferView container;
+    container.setString(value);
+    return container;
+}
+
 PassRefPtr<TestArrayBuffer> StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer() const
 {
     ASSERT(isArrayBuffer());
@@ -399,6 +476,13 @@ void StringOrArrayBufferOrArrayBufferView::setArrayBuffer(PassRefPtr<TestArrayBu
     m_type = SpecificTypeArrayBuffer;
 }
 
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(PassRefPtr<TestArrayBuffer> value)
+{
+    StringOrArrayBufferOrArrayBufferView container;
+    container.setArrayBuffer(value);
+    return container;
+}
+
 PassRefPtr<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::getAsArrayBufferView() const
 {
     ASSERT(isArrayBufferView());
@@ -410,6 +494,13 @@ void StringOrArrayBufferOrArrayBufferView::setArrayBufferView(PassRefPtr<TestArr
     ASSERT(isNull());
     m_arrayBufferView = value;
     m_type = SpecificTypeArrayBufferView;
+}
+
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBufferView(PassRefPtr<TestArrayBufferView> value)
+{
+    StringOrArrayBufferOrArrayBufferView container;
+    container.setArrayBufferView(value);
+    return container;
 }
 
 void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, ExceptionState& exceptionState)
@@ -479,6 +570,13 @@ void StringOrDouble::setString(String value)
     m_type = SpecificTypeString;
 }
 
+StringOrDouble StringOrDouble::fromString(String value)
+{
+    StringOrDouble container;
+    container.setString(value);
+    return container;
+}
+
 double StringOrDouble::getAsDouble() const
 {
     ASSERT(isDouble());
@@ -490,6 +588,13 @@ void StringOrDouble::setDouble(double value)
     ASSERT(isNull());
     m_double = value;
     m_type = SpecificTypeDouble;
+}
+
+StringOrDouble StringOrDouble::fromDouble(double value)
+{
+    StringOrDouble container;
+    container.setDouble(value);
+    return container;
 }
 
 void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrDouble& impl, ExceptionState& exceptionState)
@@ -551,6 +656,13 @@ void StringOrStringSequence::setString(String value)
     m_type = SpecificTypeString;
 }
 
+StringOrStringSequence StringOrStringSequence::fromString(String value)
+{
+    StringOrStringSequence container;
+    container.setString(value);
+    return container;
+}
+
 const Vector<String>& StringOrStringSequence::getAsStringSequence() const
 {
     ASSERT(isStringSequence());
@@ -562,6 +674,13 @@ void StringOrStringSequence::setStringSequence(const Vector<String>& value)
     ASSERT(isNull());
     m_stringSequence = value;
     m_type = SpecificTypeStringSequence;
+}
+
+StringOrStringSequence StringOrStringSequence::fromStringSequence(const Vector<String>& value)
+{
+    StringOrStringSequence container;
+    container.setStringSequence(value);
+    return container;
 }
 
 void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrStringSequence& impl, ExceptionState& exceptionState)
@@ -628,6 +747,13 @@ void TestEnumOrDouble::setTestEnum(String value)
     m_type = SpecificTypeTestEnum;
 }
 
+TestEnumOrDouble TestEnumOrDouble::fromTestEnum(String value)
+{
+    TestEnumOrDouble container;
+    container.setTestEnum(value);
+    return container;
+}
+
 double TestEnumOrDouble::getAsDouble() const
 {
     ASSERT(isDouble());
@@ -639,6 +765,13 @@ void TestEnumOrDouble::setDouble(double value)
     ASSERT(isNull());
     m_double = value;
     m_type = SpecificTypeDouble;
+}
+
+TestEnumOrDouble TestEnumOrDouble::fromDouble(double value)
+{
+    TestEnumOrDouble container;
+    container.setDouble(value);
+    return container;
 }
 
 void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, ExceptionState& exceptionState)
@@ -705,6 +838,13 @@ void TestInterface2OrUint8Array::setTestInterface2(PassRefPtr<TestInterface2> va
     m_type = SpecificTypeTestInterface2;
 }
 
+TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(PassRefPtr<TestInterface2> value)
+{
+    TestInterface2OrUint8Array container;
+    container.setTestInterface2(value);
+    return container;
+}
+
 PassRefPtr<DOMUint8Array> TestInterface2OrUint8Array::getAsUint8Array() const
 {
     ASSERT(isUint8Array());
@@ -716,6 +856,13 @@ void TestInterface2OrUint8Array::setUint8Array(PassRefPtr<DOMUint8Array> value)
     ASSERT(isNull());
     m_uint8Array = value;
     m_type = SpecificTypeUint8Array;
+}
+
+TestInterface2OrUint8Array TestInterface2OrUint8Array::fromUint8Array(PassRefPtr<DOMUint8Array> value)
+{
+    TestInterface2OrUint8Array container;
+    container.setUint8Array(value);
+    return container;
 }
 
 void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, ExceptionState& exceptionState)
@@ -778,6 +925,13 @@ void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(Tes
     m_type = SpecificTypeTestInterfaceGarbageCollected;
 }
 
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value)
+{
+    TestInterfaceGarbageCollectedOrString container;
+    container.setTestInterfaceGarbageCollected(value);
+    return container;
+}
+
 String TestInterfaceGarbageCollectedOrString::getAsString() const
 {
     ASSERT(isString());
@@ -789,6 +943,13 @@ void TestInterfaceGarbageCollectedOrString::setString(String value)
     ASSERT(isNull());
     m_string = value;
     m_type = SpecificTypeString;
+}
+
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromString(String value)
+{
+    TestInterfaceGarbageCollectedOrString container;
+    container.setString(value);
+    return container;
 }
 
 void TestInterfaceGarbageCollectedOrString::trace(Visitor* visitor)
@@ -855,6 +1016,13 @@ void TestInterfaceOrLong::setTestInterface(PassRefPtr<TestInterfaceImplementatio
     m_type = SpecificTypeTestInterface;
 }
 
+TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(PassRefPtr<TestInterfaceImplementation> value)
+{
+    TestInterfaceOrLong container;
+    container.setTestInterface(value);
+    return container;
+}
+
 int TestInterfaceOrLong::getAsLong() const
 {
     ASSERT(isLong());
@@ -866,6 +1034,13 @@ void TestInterfaceOrLong::setLong(int value)
     ASSERT(isNull());
     m_long = value;
     m_type = SpecificTypeLong;
+}
+
+TestInterfaceOrLong TestInterfaceOrLong::fromLong(int value)
+{
+    TestInterfaceOrLong container;
+    container.setLong(value);
+    return container;
 }
 
 void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, ExceptionState& exceptionState)
@@ -933,6 +1108,13 @@ void TestInterfaceOrTestInterfaceEmpty::setTestInterface(PassRefPtr<TestInterfac
     m_type = SpecificTypeTestInterface;
 }
 
+TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterface(PassRefPtr<TestInterfaceImplementation> value)
+{
+    TestInterfaceOrTestInterfaceEmpty container;
+    container.setTestInterface(value);
+    return container;
+}
+
 PassRefPtr<TestInterfaceEmpty> TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty() const
 {
     ASSERT(isTestInterfaceEmpty());
@@ -944,6 +1126,13 @@ void TestInterfaceOrTestInterfaceEmpty::setTestInterfaceEmpty(PassRefPtr<TestInt
     ASSERT(isNull());
     m_testInterfaceEmpty = value;
     m_type = SpecificTypeTestInterfaceEmpty;
+}
+
+TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty> value)
+{
+    TestInterfaceOrTestInterfaceEmpty container;
+    container.setTestInterfaceEmpty(value);
+    return container;
 }
 
 void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, ExceptionState& exceptionState)
@@ -1006,6 +1195,13 @@ void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestInterfaceWillBe
     m_type = SpecificTypeTestInterfaceWillBeGarbageCollected;
 }
 
+TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::fromTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> value)
+{
+    TestInterfaceWillBeGarbageCollectedOrTestDictionary container;
+    container.setTestInterfaceWillBeGarbageCollected(value);
+    return container;
+}
+
 TestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestDictionary() const
 {
     ASSERT(isTestDictionary());
@@ -1017,6 +1213,13 @@ void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestDictionary(Test
     ASSERT(isNull());
     m_testDictionary = value;
     m_type = SpecificTypeTestDictionary;
+}
+
+TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::fromTestDictionary(TestDictionary value)
+{
+    TestInterfaceWillBeGarbageCollectedOrTestDictionary container;
+    container.setTestDictionary(value);
+    return container;
 }
 
 void TestInterfaceWillBeGarbageCollectedOrTestDictionary::trace(Visitor* visitor)
@@ -1086,6 +1289,13 @@ void UnrestrictedDoubleOrString::setUnrestrictedDouble(double value)
     m_type = SpecificTypeUnrestrictedDouble;
 }
 
+UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromUnrestrictedDouble(double value)
+{
+    UnrestrictedDoubleOrString container;
+    container.setUnrestrictedDouble(value);
+    return container;
+}
+
 String UnrestrictedDoubleOrString::getAsString() const
 {
     ASSERT(isString());
@@ -1097,6 +1307,13 @@ void UnrestrictedDoubleOrString::setString(String value)
     ASSERT(isNull());
     m_string = value;
     m_type = SpecificTypeString;
+}
+
+UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromString(String value)
+{
+    UnrestrictedDoubleOrString container;
+    container.setString(value);
+    return container;
 }
 
 void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, ExceptionState& exceptionState)
