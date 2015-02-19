@@ -16,7 +16,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/android/manifest_icon_selector.h"
-#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -46,11 +45,10 @@ using content::Manifest;
 // http://developer.android.com/design/style/iconography.html
 const int ShortcutHelper::kPreferredIconSizeInDp = 48;
 
-jlong Initialize(JNIEnv* env, jobject obj, jlong tab_android_ptr) {
-  TabAndroid* tab = reinterpret_cast<TabAndroid*>(tab_android_ptr);
-
-  ShortcutHelper* shortcut_helper =
-      new ShortcutHelper(env, obj, tab->web_contents());
+jlong Initialize(JNIEnv* env, jobject obj, jobject java_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  ShortcutHelper* shortcut_helper = new ShortcutHelper(env, obj, web_contents);
   shortcut_helper->Initialize();
 
   return reinterpret_cast<intptr_t>(shortcut_helper);

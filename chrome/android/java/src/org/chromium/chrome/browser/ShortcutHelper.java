@@ -18,6 +18,7 @@ import android.widget.Toast;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ScreenOrientationConstants;
 
 import java.io.ByteArrayOutputStream;
@@ -70,7 +71,7 @@ public class ShortcutHelper {
      */
     public void initialize(OnInitialized callback) {
         mCallback = callback;
-        mNativeShortcutHelper = nativeInitialize(mTab.getNativePtr());
+        mNativeShortcutHelper = nativeInitialize(mTab.getWebContents());
     }
 
     /**
@@ -189,7 +190,7 @@ public class ShortcutHelper {
         }
     }
 
-    private native long nativeInitialize(long tabAndroidPtr);
+    private native long nativeInitialize(WebContents webContents);
     private native void nativeAddShortcut(long nativeShortcutHelper, String userRequestedTitle,
             int launcherLargeIconSize);
     private native void nativeTearDown(long nativeShortcutHelper);
