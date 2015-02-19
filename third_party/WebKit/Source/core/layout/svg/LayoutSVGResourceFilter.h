@@ -56,7 +56,7 @@ public:
         return adoptPtrWillBeNoop(new FilterData());
     }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     RefPtrWillBeMember<SVGFilter> filter;
     RefPtrWillBeMember<SVGFilterBuilder> builder;

@@ -74,7 +74,7 @@ FilterEffectRenderer::~FilterEffectRenderer()
 {
 }
 
-void FilterEffectRenderer::trace(Visitor* visitor)
+DEFINE_TRACE(FilterEffectRenderer)
 {
     visitor->trace(m_lastEffect);
     visitor->trace(m_referenceFilters);

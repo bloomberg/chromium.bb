@@ -109,7 +109,7 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     return *this;
 }
 
-void HitTestResult::trace(Visitor* visitor)
+DEFINE_TRACE(HitTestResult)
 {
     visitor->trace(m_innerNode);
     visitor->trace(m_innerPossiblyPseudoNode);

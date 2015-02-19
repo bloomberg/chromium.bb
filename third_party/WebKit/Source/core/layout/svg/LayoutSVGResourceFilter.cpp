@@ -34,7 +34,7 @@
 
 namespace blink {
 
-void FilterData::trace(Visitor* visitor)
+DEFINE_TRACE(FilterData)
 {
 #if ENABLE(OILPAN)
     visitor->trace(filter);

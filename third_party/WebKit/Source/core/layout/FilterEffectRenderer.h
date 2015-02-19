@@ -48,7 +48,7 @@ public:
     }
 
     virtual ~FilterEffectRenderer();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool build(LayoutObject* renderer, const FilterOperations&);
     void clearIntermediateResults();

@@ -65,7 +65,7 @@ public:
     void destroy(const RenderBlock*);
     void inflateListItem(RenderListItem*, RenderListMarker*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     class LayoutScope {
     public:

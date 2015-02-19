@@ -54,7 +54,7 @@ public:
         return !(*this == o);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_operations);
     }

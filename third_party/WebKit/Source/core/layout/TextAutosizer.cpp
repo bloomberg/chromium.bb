@@ -1175,7 +1175,7 @@ float TextAutosizer::computeAutosizedFontSize(float specifiedSize, float multipl
     return computedSize;
 }
 
-void TextAutosizer::trace(Visitor* visitor)
+DEFINE_TRACE(TextAutosizer)
 {
     visitor->trace(m_document);
 }
