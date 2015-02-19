@@ -16,7 +16,6 @@ from telemetry.page import page_test
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
-@benchmark.Disabled('mac')
 class _ScreenshotSyncValidator(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--force-gpu-rasterization')
@@ -43,7 +42,6 @@ class _ScreenshotSyncValidator(page_test.PageTest):
     for n in range(0, repetitions):
       CheckScreenshot()
 
-@benchmark.Disabled('mac')
 class ScreenshotSyncPage(page.Page):
   def __init__(self, page_set, base_dir):
     super(ScreenshotSyncPage, self).__init__(
@@ -57,7 +55,7 @@ class ScreenshotSyncPage(page.Page):
     super(ScreenshotSyncPage, self).RunNavigateSteps(action_runner)
 
 
-@benchmark.Disabled('mac')
+@benchmark.Disabled('linux', 'mac', 'win')
 class ScreenshotSyncProcess(benchmark.Benchmark):
   """Tests that screenhots are properly synchronized with the frame one which
   they were requested"""
