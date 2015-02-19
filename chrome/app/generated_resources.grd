@@ -6849,6 +6849,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WIFI_CREDENTIAL_SYNC_DESCRIPTION" desc="Decription for the flag to enable WiFi credential sync, a feature which enables synchronizing WiFi network settings across devices.">
         Enables synchronizing WiFi network settings across devices. When enabled, the WiFi credential datatype is registered with Chrome Sync, and WiFi credentials are synchronized subject to user preferences. (See also, chrome://settings/syncSetup.)
       </message>
+      <message name="IDS_FLAGS_SYNC_SANDBOX_NAME" desc="Name for the flag that causes Chrome to use the sandbox (testing) server for Sync.">
+        Use Chrome Sync sandbox
+      </message>
+      <message name="IDS_FLAGS_SYNC_SANDBOX_DESCRIPTION" desc="Description for the flag that causes Chrome to use the sandbox (testing) server for Sync.">
+        Connects to the testing server for Chrome Sync.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

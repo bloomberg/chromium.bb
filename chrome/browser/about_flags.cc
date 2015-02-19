@@ -2191,6 +2191,15 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)
   },
+  {
+    "use-sync-sandbox",
+    IDS_FLAGS_SYNC_SANDBOX_NAME,
+    IDS_FLAGS_SYNC_SANDBOX_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE_AND_VALUE(
+        switches::kSyncServiceURL,
+        "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
