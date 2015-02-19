@@ -65,7 +65,6 @@ crbug.com/148816 [ Mac Win Linux ] fast/dom/element-bounding-client-rect-relativ
 crbug.com/428980 fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
 crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
-crbug.com/428980 css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure ]
 crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
 
 # Failing due to r188554

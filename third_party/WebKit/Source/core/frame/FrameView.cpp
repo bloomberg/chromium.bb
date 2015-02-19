@@ -817,8 +817,6 @@ void FrameView::performPreLayoutTasks()
 
     bool wasResized = wasViewportResized();
     Document* document = m_frame->document();
-    if (wasResized)
-        document->notifyResizeForViewportUnits();
 
     // Viewport-dependent media queries may cause us to need completely different style information.
     if (!document->styleResolver() || (wasResized && document->styleResolver()->mediaQueryAffectedByViewportChange())) {
@@ -3061,6 +3059,12 @@ void FrameView::setLayoutSizeInternal(const IntSize& size)
         return;
 
     m_layoutSize = size;
+
+    if (Document* document = m_frame->document()) {
+        if (document->isActive())
+            document->notifyResizeForViewportUnits();
+    }
+
     contentsResized();
 }
 
