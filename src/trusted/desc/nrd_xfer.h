@@ -38,20 +38,14 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/public/imc_types.h"  /* NaClImcMsgIoVec */
+#include "native_client/src/public/nacl_desc_custom.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 EXTERN_C_BEGIN
 
 struct NaClDescEffector;
 struct NaClDescQuotaInterface;
-
-struct NaClImcTypedMsgHdr {
-  struct NaClImcMsgIoVec  *iov;
-  nacl_abi_size_t         iov_length;
-  struct NaClDesc         **ndescv;     /* ptr to array of ptrs */
-  nacl_abi_size_t         ndesc_length;
-  int32_t                 flags;
-};
+struct NaClImcTypedMsgHdr;
 
 
 /**

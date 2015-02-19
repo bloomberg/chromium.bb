@@ -7,6 +7,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 
 struct NaClDescCustom {
