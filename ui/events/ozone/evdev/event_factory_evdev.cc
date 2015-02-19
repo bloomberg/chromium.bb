@@ -154,7 +154,7 @@ void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
 void EventFactoryEvdev::DispatchMouseMoveEvent(
     const MouseMoveEventParams& params) {
   MouseEvent event(ui::ET_MOUSE_MOVED, params.location, params.location,
-                   EventTimeForNow(), modifiers_.GetModifierFlags(),
+                   params.timestamp, modifiers_.GetModifierFlags(),
                    /* changed_button_flags */ 0);
   event.set_source_device_id(params.device_id);
   DispatchUiEvent(&event);
@@ -186,7 +186,7 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   modifiers_.UpdateModifier(modifier, params.down);
 
   MouseEvent event(params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
-                   params.location, params.location, EventTimeForNow(),
+                   params.location, params.location, params.timestamp,
                    modifiers_.GetModifierFlags() | flag,
                    /* changed_button_flags */ flag);
   event.set_source_device_id(params.device_id);
@@ -196,7 +196,7 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
 void EventFactoryEvdev::DispatchMouseWheelEvent(
     const MouseWheelEventParams& params) {
   MouseWheelEvent event(params.delta, params.location, params.location,
-                        modifiers_.GetModifierFlags(),
+                        params.timestamp, modifiers_.GetModifierFlags(),
                         0 /* changed_button_flags */);
   event.set_source_device_id(params.device_id);
   DispatchUiEvent(&event);
@@ -303,7 +303,8 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
       FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseMoveEvent,
                             weak_ptr_factory_.GetWeakPtr(),
                             MouseMoveEventParams(-1 /* device_id */,
-                                                 cursor_->GetLocation())));
+                                                 cursor_->GetLocation(),
+                                                 EventTimeForNow())));
 }
 
 int EventFactoryEvdev::NextDeviceId() {

@@ -19,8 +19,9 @@ KeyEventParams::~KeyEventParams() {
 }
 
 MouseMoveEventParams::MouseMoveEventParams(int device_id,
-                                           const gfx::PointF& location)
-    : device_id(device_id), location(location) {
+                                           const gfx::PointF& location,
+                                           base::TimeDelta timestamp)
+    : device_id(device_id), location(location), timestamp(timestamp) {
 }
 
 MouseMoveEventParams::MouseMoveEventParams(const MouseMoveEventParams& other) =
@@ -33,12 +34,14 @@ MouseButtonEventParams::MouseButtonEventParams(int device_id,
                                                const gfx::PointF& location,
                                                unsigned int button,
                                                bool down,
-                                               bool allow_remap)
+                                               bool allow_remap,
+                                               base::TimeDelta timestamp)
     : device_id(device_id),
       location(location),
       button(button),
       down(down),
-      allow_remap(allow_remap) {
+      allow_remap(allow_remap),
+      timestamp(timestamp) {
 }
 
 MouseButtonEventParams::MouseButtonEventParams(
@@ -49,8 +52,12 @@ MouseButtonEventParams::~MouseButtonEventParams() {
 
 MouseWheelEventParams::MouseWheelEventParams(int device_id,
                                              const gfx::PointF& location,
-                                             const gfx::Vector2d& delta)
-    : device_id(device_id), location(location), delta(delta) {
+                                             const gfx::Vector2d& delta,
+                                             base::TimeDelta timestamp)
+    : device_id(device_id),
+      location(location),
+      delta(delta),
+      timestamp(timestamp) {
 }
 
 MouseWheelEventParams::MouseWheelEventParams(

@@ -34,12 +34,15 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
 };
 
 struct EVENTS_OZONE_EVDEV_EXPORT MouseMoveEventParams {
-  MouseMoveEventParams(int device_id, const gfx::PointF& location);
+  MouseMoveEventParams(int device_id,
+                       const gfx::PointF& location,
+                       base::TimeDelta timestamp);
   MouseMoveEventParams(const MouseMoveEventParams& other);
   ~MouseMoveEventParams();
 
   int device_id;
   gfx::PointF location;
+  base::TimeDelta timestamp;
 };
 
 struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
@@ -47,7 +50,8 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
                          const gfx::PointF& location,
                          unsigned int button,
                          bool down,
-                         bool allow_remap);
+                         bool allow_remap,
+                         base::TimeDelta timestamp);
   MouseButtonEventParams(const MouseButtonEventParams& other);
   ~MouseButtonEventParams();
 
@@ -56,18 +60,21 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
   unsigned int button;
   bool down;
   bool allow_remap;
+  base::TimeDelta timestamp;
 };
 
 struct EVENTS_OZONE_EVDEV_EXPORT MouseWheelEventParams {
   MouseWheelEventParams(int device_id,
                         const gfx::PointF& location,
-                        const gfx::Vector2d& delta);
+                        const gfx::Vector2d& delta,
+                        base::TimeDelta timestamp);
   MouseWheelEventParams(const MouseWheelEventParams& other);
   ~MouseWheelEventParams();
 
   int device_id;
   gfx::PointF location;
   gfx::Vector2d delta;
+  base::TimeDelta timestamp;
 };
 
 struct EVENTS_OZONE_EVDEV_EXPORT ScrollEventParams {

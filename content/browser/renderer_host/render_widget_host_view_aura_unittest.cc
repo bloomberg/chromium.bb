@@ -3147,9 +3147,8 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   sink_->ClearMessages();
 
   // Simulates the mouse wheel event with ctrl modifier applied.
-  ui::MouseWheelEvent event(gfx::Vector2d(1, 1),
-                             gfx::Point(), gfx::Point(),
-                             ui::EF_CONTROL_DOWN, 0);
+  ui::MouseWheelEvent event(gfx::Vector2d(1, 1), gfx::Point(), gfx::Point(),
+                            ui::EventTimeForNow(), ui::EF_CONTROL_DOWN, 0);
   view_->OnMouseEvent(&event);
 
   const WebInputEvent* input_event =
@@ -3167,7 +3166,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
 
   // Simulates the mouse wheel event with no modifier applied.
   event = ui::MouseWheelEvent(gfx::Vector2d(1, 1), gfx::Point(), gfx::Point(),
-      ui::EF_NONE, 0);
+                              ui::EventTimeForNow(), ui::EF_NONE, 0);
 
   view_->OnMouseEvent(&event);
 

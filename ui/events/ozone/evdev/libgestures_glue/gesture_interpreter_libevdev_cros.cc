@@ -274,9 +274,8 @@ void GestureInterpreterLibevdevCros::OnGestureMove(const Gesture* gesture,
 
   cursor_->MoveCursor(gfx::Vector2dF(move->dx, move->dy));
   // TODO(spang): Use move->ordinal_dx, move->ordinal_dy
-  // TODO(spang): Use move->start_time, move->end_time
-  dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(id_, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
+      id_, cursor_->GetLocation(), StimeToTimedelta(gesture->end_time)));
 }
 
 void GestureInterpreterLibevdevCros::OnGestureScroll(
@@ -290,10 +289,10 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
   if (!cursor_)
     return;  // No cursor!
 
-  // TODO(spang): Use scroll->start_time
   if (is_mouse_) {
     dispatcher_->DispatchMouseWheelEvent(MouseWheelEventParams(
-        id_, cursor_->GetLocation(), gfx::Vector2d(scroll->dx, scroll->dy)));
+        id_, cursor_->GetLocation(), gfx::Vector2d(scroll->dx, scroll->dy),
+        StimeToTimedelta(gesture->end_time)));
   } else {
     dispatcher_->DispatchScrollEvent(ScrollEventParams(
         id_, ET_SCROLL, cursor_->GetLocation(),
@@ -313,19 +312,18 @@ void GestureInterpreterLibevdevCros::OnGestureButtonsChange(
   if (!cursor_)
     return;  // No cursor!
 
-  // TODO(spang): Use buttons->start_time, buttons->end_time
   if (buttons->down & GESTURES_BUTTON_LEFT)
-    DispatchMouseButton(BTN_LEFT, true);
+    DispatchMouseButton(BTN_LEFT, true, gesture->end_time);
   if (buttons->down & GESTURES_BUTTON_MIDDLE)
-    DispatchMouseButton(BTN_MIDDLE, true);
+    DispatchMouseButton(BTN_MIDDLE, true, gesture->end_time);
   if (buttons->down & GESTURES_BUTTON_RIGHT)
-    DispatchMouseButton(BTN_RIGHT, true);
+    DispatchMouseButton(BTN_RIGHT, true, gesture->end_time);
   if (buttons->up & GESTURES_BUTTON_LEFT)
-    DispatchMouseButton(BTN_LEFT, false);
+    DispatchMouseButton(BTN_LEFT, false, gesture->end_time);
   if (buttons->up & GESTURES_BUTTON_MIDDLE)
-    DispatchMouseButton(BTN_MIDDLE, false);
+    DispatchMouseButton(BTN_MIDDLE, false, gesture->end_time);
   if (buttons->up & GESTURES_BUTTON_RIGHT)
-    DispatchMouseButton(BTN_RIGHT, false);
+    DispatchMouseButton(BTN_RIGHT, false, gesture->end_time);
 }
 
 void GestureInterpreterLibevdevCros::OnGestureContactInitiated(
@@ -415,10 +413,12 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
 }
 
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
-                                                         bool down) {
+                                                         bool down,
+                                                         stime_t time) {
   bool allow_remap = is_mouse_;
-  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
-      id_, cursor_->GetLocation(), button, down, allow_remap));
+  dispatcher_->DispatchMouseButtonEvent(
+      MouseButtonEventParams(id_, cursor_->GetLocation(), button, down,
+                             allow_remap, StimeToTimedelta(time)));
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,

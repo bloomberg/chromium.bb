@@ -484,12 +484,13 @@ MouseWheelEvent::MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event)
 MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
                                  const gfx::PointF& location,
                                  const gfx::PointF& root_location,
+                                 base::TimeDelta time_stamp,
                                  int flags,
                                  int changed_button_flags)
     : MouseEvent(ui::ET_MOUSEWHEEL,
                  location,
                  root_location,
-                 EventTimeForNow(),
+                 time_stamp,
                  flags,
                  changed_button_flags),
       offset_(offset) {

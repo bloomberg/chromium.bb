@@ -46,7 +46,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
 
   // Flush events delimited by EV_SYN. This is useful for handling
   // non-axis-aligned movement properly.
-  void FlushEvents();
+  void FlushEvents(const input_event& input);
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

@@ -68,7 +68,7 @@ void TabletEventConverterEvdev::ProcessEvents(const input_event* inputs,
         ConvertAbsEvent(input);
         break;
       case EV_SYN:
-        FlushEvents();
+        FlushEvents(input);
         break;
     }
   }
@@ -145,10 +145,11 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
   bool down = input.value;
 
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
-      id_, cursor_->GetLocation(), button, down, false /* allow_remap */));
+      id_, cursor_->GetLocation(), button, down, false /* allow_remap */,
+      TimeDeltaFromInputEvent(input)));
 }
 
-void TabletEventConverterEvdev::FlushEvents() {
+void TabletEventConverterEvdev::FlushEvents(const input_event& input) {
   if (!cursor_)
     return;
 
@@ -163,8 +164,8 @@ void TabletEventConverterEvdev::FlushEvents() {
 
   UpdateCursor();
 
-  dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(id_, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
+      id_, cursor_->GetLocation(), TimeDeltaFromInputEvent(input)));
 
   abs_value_dirty_ = false;
 }

@@ -55,7 +55,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
 
   // Flush events delimited by EV_SYN. This is useful for handling
   // non-axis-aligned movement properly.
-  void FlushEvents();
+  void FlushEvents(const input_event& input);
 
   // Input modalities for this device.
   bool has_keyboard_;

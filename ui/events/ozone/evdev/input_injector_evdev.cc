@@ -45,15 +45,15 @@ void InputInjectorEvdev::InjectMouseButton(EventFlags button, bool down) {
       return;
   }
 
-  dispatcher_->DispatchMouseButtonEvent(
-      MouseButtonEventParams(kDeviceIdForInjection, cursor_->GetLocation(),
-                             code, down, false /* allow_remap */));
+  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
+      kDeviceIdForInjection, cursor_->GetLocation(), code, down,
+      false /* allow_remap */, EventTimeForNow()));
 }
 
 void InputInjectorEvdev::InjectMouseWheel(int delta_x, int delta_y) {
-  dispatcher_->DispatchMouseWheelEvent(
-      MouseWheelEventParams(kDeviceIdForInjection, cursor_->GetLocation(),
-                            gfx::Vector2d(delta_x, delta_y)));
+  dispatcher_->DispatchMouseWheelEvent(MouseWheelEventParams(
+      kDeviceIdForInjection, cursor_->GetLocation(),
+      gfx::Vector2d(delta_x, delta_y), EventTimeForNow()));
 }
 
 void InputInjectorEvdev::MoveCursorTo(const gfx::PointF& location) {
@@ -62,8 +62,8 @@ void InputInjectorEvdev::MoveCursorTo(const gfx::PointF& location) {
 
   cursor_->MoveCursorTo(location);
 
-  dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(kDeviceIdForInjection, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
+      kDeviceIdForInjection, cursor_->GetLocation(), EventTimeForNow()));
 }
 
 void InputInjectorEvdev::InjectKeyPress(DomCode physical_key, bool down) {

@@ -98,7 +98,7 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
       case EV_SYN:
         if (input.code == SYN_DROPPED)
           LOG(WARNING) << "kernel dropped input events";
-        FlushEvents();
+        FlushEvents(input);
         break;
     }
   }
@@ -142,19 +142,19 @@ void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
   if (!cursor_)
     return;
 
-  dispatcher_->DispatchMouseButtonEvent(
-      MouseButtonEventParams(id_, cursor_->GetLocation(), input.code,
-                             input.value, /* allow_remap */ true));
+  dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
+      id_, cursor_->GetLocation(), input.code, input.value,
+      /* allow_remap */ true, TimeDeltaFromInputEvent(input)));
 }
 
-void EventConverterEvdevImpl::FlushEvents() {
+void EventConverterEvdevImpl::FlushEvents(const input_event& input) {
   if (!cursor_ || (x_offset_ == 0 && y_offset_ == 0))
     return;
 
   cursor_->MoveCursor(gfx::Vector2dF(x_offset_, y_offset_));
 
-  dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(id_, cursor_->GetLocation()));
+  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
+      id_, cursor_->GetLocation(), TimeDeltaFromInputEvent(input)));
 
   x_offset_ = 0;
   y_offset_ = 0;
