@@ -72,6 +72,10 @@ void ContextualSearchLayer::SetProperties(
   DCHECK(search_provider_icon_resource);
   DCHECK(search_icon_resource);
 
+  // Round values to avoid pixel gap between layers.
+  search_bar_height = floor(search_bar_height);
+  search_bar_margin_top = floor(search_bar_margin_top);
+
   // ---------------------------------------------------------------------------
   // Search Bar Background
   // ---------------------------------------------------------------------------
