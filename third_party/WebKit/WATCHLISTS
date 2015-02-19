@@ -117,6 +117,9 @@
                    '|LayoutTests/editing/spelling' \
                    '|public/web/WebSpellCheckClient.h',
     },
+    'style': {
+      'filepath': 'style/|Style',
+    },
     'workers': {
       'filepath': 'Source/core/workers',
     },
@@ -437,6 +440,7 @@
                          'cbiesinger@chromium.org',
                          'teravest@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
+    'style': [ 'blink-reviews-style@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org',
                             'mvanouwerkerk+watch@chromium.org',
                             'ch.dumez@samsung.com',
