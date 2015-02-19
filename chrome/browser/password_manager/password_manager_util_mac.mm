@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/mac/authorization_util.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "chrome/grit/chromium_strings.h"
@@ -18,8 +19,11 @@
 namespace password_manager_util {
 
 bool AuthenticateUser(gfx::NativeWindow window) {
+  NSString* identifier = [base::mac::MainBundle() bundleIdentifier];
+  AuthorizationString name =
+      [[identifier stringByAppendingString:@".show-passwords"] UTF8String];
   AuthorizationItem right_items[] = {
-    {"com.google.Chrome.show-passwords", 0, NULL, 0}
+    {name, 0, NULL, 0}
   };
   AuthorizationRights rights = {arraysize(right_items), right_items};
 
