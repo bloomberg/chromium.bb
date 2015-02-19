@@ -647,6 +647,8 @@
       'browser/frame_host/debug_urls.h',
       'browser/frame_host/frame_accessibility.cc',
       'browser/frame_host/frame_accessibility.h',
+      'browser/frame_host/frame_navigation_entry.cc',
+      'browser/frame_host/frame_navigation_entry.h',
       'browser/frame_host/frame_tree.cc',
       'browser/frame_host/frame_tree.h',
       'browser/frame_host/frame_tree_node.cc',

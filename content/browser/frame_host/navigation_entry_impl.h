@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
@@ -97,15 +98,15 @@ class CONTENT_EXPORT NavigationEntryImpl
     unique_id_ = unique_id;
   }
 
-  // The SiteInstance tells us how to share sub-processes. This is a reference
-  // counted pointer to a shared site instance.
+  // The SiteInstance represents which pages must share processes. This is a
+  // reference counted pointer to a shared SiteInstance.
   //
   // Note that the SiteInstance should usually not be changed after it is set,
   // but this may happen if the NavigationEntry was cloned and needs to use a
   // different SiteInstance.
   void set_site_instance(SiteInstanceImpl* site_instance);
   SiteInstanceImpl* site_instance() const {
-    return site_instance_.get();
+    return frame_entry_.site_instance();
   }
 
   // The |source_site_instance| is used to identify the SiteInstance of the
@@ -243,14 +244,15 @@ class CONTENT_EXPORT NavigationEntryImpl
   // state_serializer.cc appropriately.
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
+  // The FrameNavigationEntry for the main frame.
+  // TODO(creis): Make this a tree with nodes for each frame in the page.
+  FrameNavigationEntry frame_entry_;
+
   // See the accessors above for descriptions.
   int unique_id_;
-  scoped_refptr<SiteInstanceImpl> site_instance_;
   // TODO(creis): Persist bindings_. http://crbug.com/173672.
   int bindings_;
   PageType page_type_;
-  GURL url_;
-  Referrer referrer_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
   base::string16 title_;

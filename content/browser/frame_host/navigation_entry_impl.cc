@@ -48,12 +48,10 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          const base::string16& title,
                                          ui::PageTransition transition_type,
                                          bool is_renderer_initiated)
-    : unique_id_(GetUniqueIDInConstructor()),
-      site_instance_(instance),
+    : frame_entry_(instance, url, referrer),
+      unique_id_(GetUniqueIDInConstructor()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
-      url_(url),
-      referrer_(referrer),
       update_virtual_url_with_url_(false),
       title_(title),
       page_id_(page_id),
@@ -82,12 +80,12 @@ PageType NavigationEntryImpl::GetPageType() const {
 }
 
 void NavigationEntryImpl::SetURL(const GURL& url) {
-  url_ = url;
+  frame_entry_.set_url(url);
   cached_display_title_.clear();
 }
 
 const GURL& NavigationEntryImpl::GetURL() const {
-  return url_;
+  return frame_entry_.url();
 }
 
 void NavigationEntryImpl::SetBaseURLForDataURL(const GURL& url) {
@@ -99,20 +97,20 @@ const GURL& NavigationEntryImpl::GetBaseURLForDataURL() const {
 }
 
 void NavigationEntryImpl::SetReferrer(const Referrer& referrer) {
-  referrer_ = referrer;
+  frame_entry_.set_referrer(referrer);
 }
 
 const Referrer& NavigationEntryImpl::GetReferrer() const {
-  return referrer_;
+  return frame_entry_.referrer();
 }
 
 void NavigationEntryImpl::SetVirtualURL(const GURL& url) {
-  virtual_url_ = (url == url_) ? GURL() : url;
+  virtual_url_ = (url == GetURL()) ? GURL() : url;
   cached_display_title_.clear();
 }
 
 const GURL& NavigationEntryImpl::GetVirtualURL() const {
-  return virtual_url_.is_empty() ? url_ : virtual_url_;
+  return virtual_url_.is_empty() ? GetURL() : virtual_url_;
 }
 
 void NavigationEntryImpl::SetTitle(const base::string16& title) {
@@ -141,7 +139,7 @@ int32 NavigationEntryImpl::GetPageID() const {
 }
 
 void NavigationEntryImpl::set_site_instance(SiteInstanceImpl* site_instance) {
-  site_instance_ = site_instance;
+  frame_entry_.set_site_instance(site_instance);
 }
 
 void NavigationEntryImpl::set_source_site_instance(
@@ -172,12 +170,12 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay(
   base::string16 title;
   if (!virtual_url_.is_empty()) {
     title = net::FormatUrl(virtual_url_, languages);
-  } else if (!url_.is_empty()) {
-    title = net::FormatUrl(url_, languages);
+  } else if (!GetURL().is_empty()) {
+    title = net::FormatUrl(GetURL(), languages);
   }
 
   // For file:// URLs use the filename as the title, not the full path.
-  if (url_.SchemeIsFile()) {
+  if (GetURL().SchemeIsFile()) {
     base::string16::size_type slashpos = title.rfind('/');
     if (slashpos != base::string16::npos)
       title = title.substr(slashpos + 1);
