@@ -53,7 +53,7 @@
     <color name="password_generation_link_text_color">#5595e3</color>
 
     <!-- Preferences Colors -->
-    <color name="pref_accent_color">#03a9f4</color>
+    <color name="pref_accent_color">@color/light_active_color</color>
     <color name="expandable_group_dark_gray">#484848</color>
 
     <!-- Data Saver Colors -->
