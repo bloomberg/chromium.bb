@@ -37,7 +37,7 @@ upload.LOGGER.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 class Rietveld(object):
   """Accesses rietveld."""
-  def __init__(self, url, email, password, extra_headers=None):
+  def __init__(self, url, email, password, extra_headers=None, maxtries=None):
     self.url = url.rstrip('/')
     # Email and password are accessed by commit queue, keep them.
     self.email = email
@@ -63,6 +63,8 @@ class Rietveld(object):
 
     self._xsrf_token = None
     self._xsrf_token_time = None
+
+    self._maxtries = maxtries or 40
 
   def xsrf_token(self):
     if (not self._xsrf_token_time or
@@ -413,8 +415,7 @@ class Rietveld(object):
         old_error_exit(msg)
       upload.ErrorExit = trap_http_500
 
-      maxtries = 40
-      for retry in xrange(maxtries):
+      for retry in xrange(self._maxtries):
         try:
           logging.debug('%s' % request_path)
           result = self.rpc_server.Send(request_path, **kwargs)
@@ -422,7 +423,7 @@ class Rietveld(object):
           # How nice.
           return result
         except urllib2.HTTPError, e:
-          if retry >= (maxtries - 1):
+          if retry >= (self._maxtries - 1):
             raise
           flake_codes = [500, 502, 503]
           if retry_on_404:
@@ -430,14 +431,14 @@ class Rietveld(object):
           if e.code not in flake_codes:
             raise
         except urllib2.URLError, e:
-          if retry >= (maxtries - 1):
+          if retry >= (self._maxtries - 1):
             raise
           if (not 'Name or service not known' in e.reason and
               not 'EOF occurred in violation of protocol' in e.reason):
             # Usually internal GAE flakiness.
             raise
         except ssl.SSLError, e:
-          if retry >= (maxtries - 1):
+          if retry >= (self._maxtries - 1):
             raise
           if not 'timed out' in str(e):
             raise
@@ -575,7 +576,8 @@ class JwtOAuth2Rietveld(Rietveld):
                client_email,
                client_private_key_file,
                private_key_password=None,
-               extra_headers=None):
+               extra_headers=None,
+               maxtries=None):
 
     # These attributes are accessed by commit queue. Keep them.
     self.email = client_email
@@ -597,6 +599,8 @@ class JwtOAuth2Rietveld(Rietveld):
                                      extra_headers=extra_headers or {})
     self._xsrf_token = None
     self._xsrf_token_time = None
+
+    self._maxtries = 40 or maxtries
 
 
 class CachingRietveld(Rietveld):
