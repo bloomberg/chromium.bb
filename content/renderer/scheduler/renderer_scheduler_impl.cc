@@ -190,14 +190,25 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
     return false;
 
   MaybeUpdatePolicy();
-  // We only yield if we are in the touchstart/compositor priority and there
-  // is input/compositor work outstanding. Note: even though the control queue
-  // is higher priority we don't yield for it since these tasks are not
-  // user-provided work and they are only intended to run before the next task,
-  // not interrupt the tasks.
-  return (SchedulerPolicy() == COMPOSITOR_PRIORITY_POLICY ||
-          SchedulerPolicy() == TOUCHSTART_PRIORITY_POLICY) &&
-         !task_queue_manager_->IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
+  // We only yield if we are in the compositor priority and there is compositor
+  // work outstanding, or if we are in the touchstart response priority.
+  // Note: even though the control queue is higher priority we don't yield for
+  // it since these tasks are not user-provided work and they are only intended
+  // to run before the next task, not interrupt the tasks.
+  switch (SchedulerPolicy()) {
+    case NORMAL_PRIORITY_POLICY:
+      return false;
+
+    case COMPOSITOR_PRIORITY_POLICY:
+      return !task_queue_manager_->IsQueueEmpty(COMPOSITOR_TASK_QUEUE);
+
+    case TOUCHSTART_PRIORITY_POLICY:
+      return true;
+
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 void RendererSchedulerImpl::CurrentIdleTaskDeadlineCallback(

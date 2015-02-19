@@ -798,6 +798,14 @@ TEST_F(RendererSchedulerImplTest, TestShouldYield) {
   // We should be able to switch to compositor priority mid-task.
   EXPECT_FALSE(should_yield_before);
   EXPECT_TRUE(should_yield_after);
+
+  // Receiving a touchstart should immediately trigger yielding, even if
+  // there's no immediately pending work in the compositor queue.
+  EXPECT_FALSE(scheduler_->ShouldYieldForHighPriorityWork());
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  EXPECT_TRUE(scheduler_->ShouldYieldForHighPriorityWork());
+  RunUntilIdle();
 }
 
 }  // namespace content
