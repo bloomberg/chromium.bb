@@ -309,3 +309,9 @@ input:disabled:-webkit-any([type='password'],
 label > input:disabled:-webkit-any([type='checkbox'], [type='radio']) ~ span {
   color: #999;
 }
+
+extensionview {
+  display: inline-block;
+  height: 300px;
+  width: 300px;
+}
