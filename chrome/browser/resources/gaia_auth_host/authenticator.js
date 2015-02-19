@@ -360,7 +360,10 @@ cr.define('cr.login', function() {
     // Posts a message to IdP pages to initiate communication.
     var currentUrl = this.webview_.src;
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
-      this.webview_.contentWindow.postMessage({}, currentUrl);
+      var msg = {
+        'method': 'handshake'
+      };
+      this.webview_.contentWindow.postMessage(msg, currentUrl);
     }
   };
 
