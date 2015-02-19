@@ -182,6 +182,8 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOn
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
+crbug.com/310679 [ Mac ] virtual/slimmingpaint/fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
+crbug.com/310679 [ Mac ] virtual/slimmingpaint/fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
 # These failures need to be investigated.
 crbug.com/412088 virtual/slimmingpaint/svg/foreignObject/mask.html [ ImageOnlyFailure ]
@@ -303,6 +305,9 @@ crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-about-blank.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-navigation-allowed.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-plugins.html [ Skip ]
+crbug.com/318978 [ Linux ] virtual/slimmingpaint/fast/frames/sandboxed-iframe-about-blank.html [ Skip ]
+crbug.com/318978 [ Linux ] virtual/slimmingpaint/fast/frames/sandboxed-iframe-navigation-allowed.html [ Skip ]
+crbug.com/318978 [ Linux ] virtual/slimmingpaint/fast/frames/sandboxed-iframe-plugins.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/replaced/invalid-object-with-fallback.html [ Skip ]
 crbug.com/318978 [ Linux ] http/tests/plugins/cross-frame-object-access.html [ Skip ]
 crbug.com/318978 [ Linux ] http/tests/plugins/ [ Skip ]
@@ -792,6 +797,12 @@ crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
+crbug.com/458813 fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
+crbug.com/458813 fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
+crbug.com/458813 virtual/slimmingpaint/fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
+crbug.com/458813 virtual/slimmingpaint/fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
+crbug.com/458813 virtual/slimmingpaint/fast/frames/iframe-scaling-with-scroll.html [ NeedsRebaseline ]
+
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
@@ -807,6 +818,7 @@ crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOn
 
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
+crbug.com/321793 [ Win ] virtual/slimmingpaint/fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
@@ -1007,6 +1019,7 @@ crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
+crbug.com/361133 virtual/slimmingpaint/fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 
 crbug.com/393521 fast/workers/shared-worker-navigator.html  [ Pass Timeout ]
 crbug.com/393523 http/tests/misc/adopt-iframe-src-attr-after-remove.html  [ Pass Timeout ]

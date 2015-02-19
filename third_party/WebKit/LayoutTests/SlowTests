@@ -26,6 +26,8 @@ crbug.com/24182 fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
 crbug.com/24182 fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Slow ]
 crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
+crbug.com/24182 virtual/slimmingpaint/fast/frames/cached-frame-counter.html [ Slow ]
+crbug.com/24182 virtual/slimmingpaint/fast/frames/frame-limit.html [ Slow ]
 crbug.com/24182 fast/images/png-suite/test.html [ Slow ]
 crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
 crbug.com/24182 virtual/slimmingpaint/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]

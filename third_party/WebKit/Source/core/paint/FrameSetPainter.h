@@ -19,6 +19,8 @@ public:
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
+    void paintBorders(const PaintInfo&, const LayoutPoint& adjustedPaintOffset);
+    void paintChildren(const PaintInfo&, const LayoutPoint& adjustedPaintOffset);
     void paintRowBorder(const PaintInfo&, const IntRect&);
     void paintColumnBorder(const PaintInfo&, const IntRect&);
 

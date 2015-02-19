@@ -9,6 +9,7 @@
 #include "core/layout/LayoutFrameSet.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/RenderDrawingRecorder.h"
 
 namespace blink {
 
@@ -48,9 +49,6 @@ void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo, const IntRec
 
 void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo, const IntRect& borderRect)
 {
-    if (!paintInfo.rect.intersects(borderRect))
-        return;
-
     // FIXME: We should do something clever when borders from distinct framesets meet at a join.
 
     // Fill first.
@@ -65,28 +63,21 @@ void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo, const IntRect& 
     }
 }
 
-void FrameSetPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutFrameSet);
-
-    if (paintInfo.phase != PaintPhaseForeground)
+    LayoutRect adjustedFrameRect(adjustedPaintOffset, m_layoutFrameSet.size());
+    RenderDrawingRecorder recorder(paintInfo.context, m_layoutFrameSet, paintInfo.phase, adjustedFrameRect);
+    if (recorder.canUseCachedDrawing())
         return;
 
     LayoutObject* child = m_layoutFrameSet.firstChild();
-    if (!child)
-        return;
-
-    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutFrameSet.location();
-
     size_t rows = m_layoutFrameSet.rows().m_sizes.size();
     size_t cols = m_layoutFrameSet.columns().m_sizes.size();
     LayoutUnit borderThickness = m_layoutFrameSet.frameSet()->border();
-
     LayoutUnit yPos = 0;
     for (size_t r = 0; r < rows; r++) {
         LayoutUnit xPos = 0;
         for (size_t c = 0; c < cols; c++) {
-            child->paint(paintInfo, adjustedPaintOffset);
             xPos += m_layoutFrameSet.columns().m_sizes[c];
             if (borderThickness && m_layoutFrameSet.columns().m_allowBorder[c + 1]) {
                 paintColumnBorder(paintInfo, pixelSnappedIntRect(
@@ -104,6 +95,40 @@ void FrameSetPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
             yPos += borderThickness;
         }
     }
+}
+
+void FrameSetPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
+{
+    // Paint only those children that fit in the grid.
+    // Remaining frames are "hidden".
+    // See also LayoutFrameSet::positionFrames.
+    LayoutObject* child = m_layoutFrameSet.firstChild();
+    size_t rows = m_layoutFrameSet.rows().m_sizes.size();
+    size_t cols = m_layoutFrameSet.columns().m_sizes.size();
+    for (size_t r = 0; r < rows; r++) {
+        for (size_t c = 0; c < cols; c++) {
+            child->paint(paintInfo, adjustedPaintOffset);
+            child = child->nextSibling();
+            if (!child)
+                return;
+        }
+    }
+}
+
+void FrameSetPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutFrameSet);
+
+    if (paintInfo.phase != PaintPhaseForeground)
+        return;
+
+    LayoutObject* child = m_layoutFrameSet.firstChild();
+    if (!child)
+        return;
+
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutFrameSet.location();
+    paintChildren(paintInfo, adjustedPaintOffset);
+    paintBorders(paintInfo, adjustedPaintOffset);
 }
 
 } // namespace blink
