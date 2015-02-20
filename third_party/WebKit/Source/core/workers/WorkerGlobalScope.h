@@ -89,7 +89,7 @@ public:
 
     WorkerThread* thread() const { return m_thread; }
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>) override final; // Executes the task on context's thread asynchronously.
+    virtual void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override final; // Executes the task on context's thread asynchronously.
 
     // WorkerGlobalScope
     WorkerGlobalScope* self() { return this; }

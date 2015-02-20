@@ -30,7 +30,7 @@ NullExecutionContext::NullExecutionContext()
 {
 }
 
-void NullExecutionContext::postTask(PassOwnPtr<ExecutionContextTask>)
+void NullExecutionContext::postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>)
 {
 }
 

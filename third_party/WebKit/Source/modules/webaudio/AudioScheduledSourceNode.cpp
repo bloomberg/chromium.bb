@@ -205,7 +205,7 @@ void AudioScheduledSourceNode::finish()
     finishWithoutOnEnded();
 
     if (m_hasEndedListener && context()->executionContext()) {
-        context()->executionContext()->postTask(createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, this));
+        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, this));
     }
 }
 
