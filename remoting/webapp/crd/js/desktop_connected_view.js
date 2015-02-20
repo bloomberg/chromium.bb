@@ -114,6 +114,11 @@ remoting.DesktopConnectedView = function(session, container, hostDisplayName,
 
   /** @type {remoting.VideoFrameRecorder} @private */
   this.videoFrameRecorder_ = null;
+
+  /** @private {base.Disposables} */
+  this.eventHooks_ = null;
+
+  this.defineEvents(base.values(remoting.DesktopConnectedView.Events));
 };
 
 base.extend(remoting.DesktopConnectedView, base.EventSourceImpl);
@@ -204,9 +209,9 @@ remoting.DesktopConnectedView.prototype.setPluginSizeForBumpScrollTesting =
  */
 remoting.DesktopConnectedView.prototype.notifyClientResolution_ = function() {
   var clientArea = this.getClientArea_();
-  this.plugin_.notifyClientResolution(clientArea.width * this.desktopScale_,
-                                      clientArea.height * this.desktopScale_,
-                                      window.devicePixelRatio);
+  this.plugin_.hostDesktop().resize(clientArea.width * this.desktopScale_,
+                                    clientArea.height * this.desktopScale_,
+                                    window.devicePixelRatio);
 };
 
 /**
@@ -303,10 +308,16 @@ remoting.DesktopConnectedView.prototype.onPluginInitialized_ = function(
     this.plugin_.allowMouseLock();
   }
 
-  this.plugin_.setDesktopShapeUpdateHandler(
-      this.onDesktopShapeChanged_.bind(this));
-  this.plugin_.setDesktopSizeUpdateHandler(
-      this.onDesktopSizeChanged_.bind(this));
+  base.dispose(this.eventHooks_);
+  var hostDesktop = this.plugin_.hostDesktop();
+  this.eventHooks_ = new base.Disposables(
+      new base.EventHook(
+        hostDesktop, remoting.HostDesktop.Events.sizeChanged,
+        this.onDesktopSizeChanged_.bind(this)),
+      new base.EventHook(
+        hostDesktop, remoting.HostDesktop.Events.shapeChanged,
+        this.onDesktopShapeChanged_.bind(this)));
+
   this.plugin_.setMouseCursorHandler(this.updateMouseCursorImage_.bind(this));
 
   this.onInitialized_(remoting.Error.NONE, this.plugin_);
@@ -320,11 +331,12 @@ remoting.DesktopConnectedView.prototype.onPluginInitialized_ = function(
  * @private
  */
 remoting.DesktopConnectedView.prototype.onDesktopSizeChanged_ = function() {
+  var desktop = this.plugin_.hostDesktop().getDimensions();
   console.log('desktop size changed: ' +
-              this.plugin_.getDesktopWidth() + 'x' +
-              this.plugin_.getDesktopHeight() +' @ ' +
-              this.plugin_.getDesktopXDpi() + 'x' +
-              this.plugin_.getDesktopYDpi() + ' DPI');
+              desktop.width + 'x' +
+              desktop.height +' @ ' +
+              desktop.xDpi + 'x' +
+              desktop.yDpi + ' DPI');
   this.updateDimensions();
   this.updateScrollbarVisibility();
 };
@@ -370,11 +382,7 @@ remoting.DesktopConnectedView.prototype.onResize = function() {
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
   if (this.resizeToClient_) {
-    var kResizeRateLimitMs = 1000;
-    if (this.session_.hasCapability(
-        remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS)) {
-      kResizeRateLimitMs = 250;
-    }
+    var kResizeRateLimitMs = 250;
     var clientArea = this.getClientArea_();
     this.notifyClientResolutionTimer_ = window.setTimeout(
         this.notifyClientResolution_.bind(this),
@@ -411,6 +419,8 @@ remoting.DesktopConnectedView.prototype.onConnectionReady = function(ready) {
  */
 remoting.DesktopConnectedView.prototype.removePlugin = function() {
   if (this.plugin_) {
+    base.dispose(this.eventHooks_);
+    this.eventHooks_ = null;
     this.plugin_.element().removeEventListener(
         'focus', this.callPluginGotFocus_, false);
     this.plugin_.element().removeEventListener(
@@ -744,15 +754,15 @@ remoting.DesktopConnectedView.prototype.scroll_ = function(dx, dy) {
  * @return {void} Nothing.
  */
 remoting.DesktopConnectedView.prototype.updateDimensions = function() {
-  if (this.plugin_.getDesktopWidth() == 0 ||
-      this.plugin_.getDesktopHeight() == 0) {
+  var desktopSize = this.plugin_.hostDesktop().getDimensions();
+
+  if (desktopSize.width === 0 ||
+      desktopSize.height === 0) {
     return;
   }
 
-  var desktopSize = { width: this.plugin_.getDesktopWidth(),
-                      height: this.plugin_.getDesktopHeight() };
-  var desktopDpi = { x: this.plugin_.getDesktopXDpi(),
-                     y: this.plugin_.getDesktopYDpi() };
+  var desktopDpi = { x: desktopSize.xDpi,
+                     y: desktopSize.yDpi };
   var newSize = remoting.DesktopConnectedView.choosePluginSize(
       this.getClientArea_(), window.devicePixelRatio,
       desktopSize, desktopDpi, this.desktopScale_,
@@ -920,15 +930,16 @@ remoting.DesktopConnectedView.prototype.updateScrollbarVisibility = function() {
     // Determine whether or not horizontal or vertical scrollbars are
     // required, taking into account their width.
     var clientArea = this.getClientArea_();
-    needsVerticalScroll = clientArea.height < this.plugin_.getDesktopHeight();
-    needsHorizontalScroll = clientArea.width < this.plugin_.getDesktopWidth();
+    var desktopSize = this.plugin_.hostDesktop().getDimensions();
+    needsVerticalScroll = clientArea.height < desktopSize.height;
+    needsHorizontalScroll = clientArea.width < desktopSize.width;
     var kScrollBarWidth = 16;
     if (needsHorizontalScroll && !needsVerticalScroll) {
       needsVerticalScroll =
-          clientArea.height - kScrollBarWidth < this.plugin_.getDesktopHeight();
+          clientArea.height - kScrollBarWidth < desktopSize.height;
     } else if (!needsHorizontalScroll && needsVerticalScroll) {
       needsHorizontalScroll =
-          clientArea.width - kScrollBarWidth < this.plugin_.getDesktopWidth();
+          clientArea.width - kScrollBarWidth < desktopSize.width;
     }
   }
 

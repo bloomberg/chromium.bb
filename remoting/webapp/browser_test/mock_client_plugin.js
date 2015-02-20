@@ -22,11 +22,10 @@ remoting.MockClientPlugin = function(container) {
   this.container_ = container;
   this.element_ = document.createElement('div');
   this.element_.style.backgroundImage = 'linear-gradient(45deg, blue, red)';
-  this.width_ = 640;
-  this.height_ = 480;
   this.connectionStatusUpdateHandler_ = null;
   this.desktopSizeUpdateHandler_ = null;
   this.container_.appendChild(this.element_);
+  this.hostDesktop_ = new remoting.MockClientPlugin.HostDesktop();
 };
 
 remoting.MockClientPlugin.prototype.dispose = function() {
@@ -35,20 +34,8 @@ remoting.MockClientPlugin.prototype.dispose = function() {
   this.connectionStatusUpdateHandler_ = null;
 };
 
-remoting.MockClientPlugin.prototype.getDesktopWidth = function() {
-  return this.width_;
-};
-
-remoting.MockClientPlugin.prototype.getDesktopHeight = function() {
-  return this.height_;
-};
-
-remoting.MockClientPlugin.prototype.getDesktopXDpi = function() {
-  return 96;
-};
-
-remoting.MockClientPlugin.prototype.getDesktopYDpi = function() {
-  return 96;
+remoting.MockClientPlugin.prototype.hostDesktop = function() {
+  return this.hostDesktop_;
 };
 
 remoting.MockClientPlugin.prototype.element = function() {
@@ -78,15 +65,6 @@ remoting.MockClientPlugin.prototype.injectKeyEvent =
 remoting.MockClientPlugin.prototype.remapKey = function(from, to) {};
 
 remoting.MockClientPlugin.prototype.releaseAllKeys = function() {};
-
-remoting.MockClientPlugin.prototype.notifyClientResolution =
-    function(width, height, dpi) {
-  this.width_ = width;
-  this.height_ = height;
-  if (this.desktopSizeUpdateHandler_) {
-    window.setTimeout(this.desktopSizeUpdateHandler_, 0);
-  }
-};
 
 remoting.MockClientPlugin.prototype.onIncomingIq = function(iq) {};
 
@@ -152,11 +130,6 @@ remoting.MockClientPlugin.prototype.setRouteChangedHandler =
 remoting.MockClientPlugin.prototype.setConnectionReadyHandler =
     function(handler) {};
 
-remoting.MockClientPlugin.prototype.setDesktopSizeUpdateHandler =
-    function(handler) {
-  this.desktopSizeUpdateHandler_ = handler;
-};
-
 remoting.MockClientPlugin.prototype.setCapabilitiesHandler =
     function(handler) {};
 
@@ -175,6 +148,61 @@ remoting.MockClientPlugin.prototype.setFetchThirdPartyTokenHandler =
 remoting.MockClientPlugin.prototype.setFetchPinHandler =
     function(handler) {};
 
+/**
+ * @constructor
+ * @implements {remoting.HostDesktop}
+ * @extends {base.EventSourceImpl}
+ */
+remoting.MockClientPlugin.HostDesktop = function() {
+  /** @private */
+  this.width_ = 0;
+  /** @private */
+  this.height_ = 0;
+  /** @private */
+  this.xDpi_ = 96;
+  /** @private */
+  this.yDpi_ = 96;
+  /** @private */
+  this.resizable_ = true;
+  this.defineEvents(base.values(remoting.HostDesktop.Events));
+};
+base.extend(remoting.MockClientPlugin.HostDesktop, base.EventSourceImpl);
+
+/**
+ * @return {{width:number, height:number, xDpi:number, yDpi:number}}
+ * @override
+ */
+remoting.MockClientPlugin.HostDesktop.prototype.getDimensions = function() {
+  return {
+    width: this.width_,
+    height: this.height_,
+    xDpi: this.xDpi_,
+    yDpi: this.yDpi_
+  };
+};
+
+/**
+ * @return {boolean}
+ * @override
+ */
+remoting.MockClientPlugin.HostDesktop.prototype.isResizable = function() {
+  return this.resizable_;
+};
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @param {number} deviceScale
+ * @override
+ */
+remoting.MockClientPlugin.HostDesktop.prototype.resize =
+    function(width, height, deviceScale) {
+  this.width_ = width;
+  this.height_ = height;
+  this.xDpi_ = this.yDpi_ = Math.floor(deviceScale * 96);
+  this.raiseEvent(remoting.HostDesktop.Events.sizeChanged,
+                  this.getDimensions());
+};
 
 /**
  * @constructor

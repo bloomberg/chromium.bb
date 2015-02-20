@@ -19,24 +19,9 @@ var remoting = remoting || {};
 remoting.ClientPlugin = function() {};
 
 /**
- * @return {number} The width of the remote desktop, in pixels.
+ * @return {remoting.HostDesktop}
  */
-remoting.ClientPlugin.prototype.getDesktopWidth = function() {};
-
-/**
- * @return {number} The height of the remote desktop, in pixels.
- */
-remoting.ClientPlugin.prototype.getDesktopHeight = function() {};
-
-/**
- * @return {number} The x-DPI of the remote desktop.
- */
-remoting.ClientPlugin.prototype.getDesktopXDpi = function() {};
-
-/**
- * @return {number} The y-DPI of the remote desktop.
- */
-remoting.ClientPlugin.prototype.getDesktopYDpi = function() {};
+remoting.ClientPlugin.prototype.hostDesktop = function() {};
 
 /**
  * @return {HTMLElement} The DOM element representing the remote session.
@@ -88,14 +73,6 @@ remoting.ClientPlugin.prototype.remapKey = function(from, to) {};
 remoting.ClientPlugin.prototype.releaseAllKeys = function() {};
 
 /**
- * @param {number} width
- * @param {number} height
- * @param {number} dpi
- */
-remoting.ClientPlugin.prototype.notifyClientResolution =
-    function(width, height, dpi) {};
-
-/**
  * @param {string} iq
  */
 remoting.ClientPlugin.prototype.onIncomingIq = function(iq) {};
@@ -107,7 +84,7 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
 
 /**
  * @param {remoting.ClientPlugin.Feature} feature
- * @return {boolean} True if the plugin support the specified feature.
+ * @return {boolean} True if the plugin supports the specified feature.
  */
 remoting.ClientPlugin.prototype.hasFeature = function(feature) {};
 
@@ -213,20 +190,6 @@ remoting.ClientPlugin.prototype.setRouteChangedHandler = function(handler) {};
  *     notifications.
  */
 remoting.ClientPlugin.prototype.setConnectionReadyHandler =
-    function(handler) {};
-
-/**
- * @param {function():void} handler Callback for desktop size change
- *     notifications.
- */
-remoting.ClientPlugin.prototype.setDesktopSizeUpdateHandler =
-    function(handler) {};
-
-/**
- * @param {function(Array<Array<number>>):void} handler Callback for desktop
- *     shape change notifications.
- */
-remoting.ClientPlugin.prototype.setDesktopShapeUpdateHandler =
     function(handler) {};
 
 /**

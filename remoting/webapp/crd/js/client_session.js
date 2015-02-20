@@ -244,6 +244,8 @@ remoting.ClientSession.Capability = {
 
   // Let the host know that we're interested in knowing whether or not it
   // rate limits desktop-resize requests.
+  // TODO(kelvinp): This has been supported since M-29.  Currently we only have
+  // <1000 users on M-29 or below. Remove this and the capability on the host.
   RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests',
 
   // Indicates that host/client supports Google Drive integration, and that the

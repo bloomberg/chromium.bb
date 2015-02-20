@@ -48,15 +48,6 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
    */
   this.requiredCapabilities_ = requiredCapabilities;
 
-  /** @private */
-  this.desktopWidth_ = 0;
-  /** @private */
-  this.desktopHeight_ = 0;
-  /** @private */
-  this.desktopXDpi_ = 96;
-  /** @private */
-  this.desktopYDpi_ = 96;
-
   /**
    * @param {string} iq The Iq stanza received from the host.
    * @private
@@ -95,13 +86,6 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
    */
   this.fetchThirdPartyTokenHandler_ = function(
     tokenUrl, hostPublicKey, scope) {};
-  /** @private */
-  this.onDesktopSizeUpdateHandler_ = function () {};
-  /**
-   * @param {Array<Array<number>>} rects
-   * @private
-   */
-  this.onDesktopShapeUpdateHandler_ = function (rects) {};
   /**
    * @param {!Array<string>} capabilities The negotiated capabilities.
    * @private
@@ -180,6 +164,9 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
   if (remoting.settings.CLIENT_PLUGIN_TYPE == 'native') {
     window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
   }
+
+  this.hostDesktop_ = new remoting.ClientPlugin.HostDesktopImpl(
+      this, this.postMessage_.bind(this));
 };
 
 /**
@@ -262,22 +249,6 @@ remoting.ClientPluginImpl.prototype.setRouteChangedHandler = function(handler) {
 remoting.ClientPluginImpl.prototype.setConnectionReadyHandler =
     function(handler) {
   this.onConnectionReadyHandler_ = handler;
-};
-
-/**
- * @param {function():void} handler
- */
-remoting.ClientPluginImpl.prototype.setDesktopSizeUpdateHandler =
-    function(handler) {
-  this.onDesktopSizeUpdateHandler_ = handler;
-};
-
-/**
- * @param {function(Array<Array<number>>):void} handler
- */
-remoting.ClientPluginImpl.prototype.setDesktopShapeUpdateHandler =
-    function(handler) {
-  this.onDesktopShapeUpdateHandler_ = handler;
 };
 
 /**
@@ -374,14 +345,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
           tokenize(getStringAttr(message.data, 'apiFeatures'));
 
       // Negotiate capabilities.
-
-      /** @type {!Array<string>} */
-      var requestedCapabilities = [];
-      if ('requestedCapabilities' in message.data) {
-        requestedCapabilities =
-            tokenize(getStringAttr(message.data, 'requestedCapabilities'));
-      }
-
       /** @type {!Array<string>} */
       var supportedCapabilities = [];
       if ('supportedCapabilities' in message.data) {
@@ -425,23 +388,9 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     this.onRouteChangedHandler_(channel, connectionType);
 
   } else if (message.method == 'onDesktopSize') {
-    this.desktopWidth_ = getNumberAttr(message.data, 'width');
-    this.desktopHeight_ = getNumberAttr(message.data, 'height');
-    this.desktopXDpi_ = getNumberAttr(message.data, 'x_dpi', 96);
-    this.desktopYDpi_ = getNumberAttr(message.data, 'y_dpi', 96);
-    this.onDesktopSizeUpdateHandler_();
-
+    this.hostDesktop_.onSizeUpdated(message);
   } else if (message.method == 'onDesktopShape') {
-    var rects = getArrayAttr(message.data, 'rects');
-    for (var i = 0; i < rects.length; ++i) {
-      /** @type {Array<number>} */
-      var rect = rects[i];
-      if (typeof rect != 'object' || rect.length != 4) {
-        throw 'Received invalid onDesktopShape message';
-      }
-    }
-    this.onDesktopShapeUpdateHandler_(rects);
-
+    this.hostDesktop_.onShapeUpdated(message);
   } else if (message.method == 'onPerfStats') {
     // Return value is ignored. These calls will throw an error if the value
     // is not a number.
@@ -758,14 +707,7 @@ remoting.ClientPluginImpl.prototype.sendClipboardItem =
  */
 remoting.ClientPluginImpl.prototype.notifyClientResolution =
     function(width, height, device_scale) {
-  if (this.hasFeature(remoting.ClientPlugin.Feature.NOTIFY_CLIENT_RESOLUTION)) {
-    var dpi = Math.floor(device_scale * 96);
-    this.plugin_.postMessage(JSON.stringify(
-        { method: 'notifyClientResolution',
-          data: { width: Math.floor(width * device_scale),
-                  height: Math.floor(height * device_scale),
-                  x_dpi: dpi, y_dpi: dpi }}));
-  }
+  this.hostDesktop_.resize(width, height, device_scale);
 };
 
 /**
@@ -907,21 +849,9 @@ remoting.ClientPluginImpl.prototype.sendClientMessage =
 
 };
 
-remoting.ClientPluginImpl.prototype.getDesktopWidth = function() {
-  return this.desktopWidth_;
-}
-
-remoting.ClientPluginImpl.prototype.getDesktopHeight = function() {
-  return this.desktopHeight_;
-}
-
-remoting.ClientPluginImpl.prototype.getDesktopXDpi = function() {
-  return this.desktopXDpi_;
-}
-
-remoting.ClientPluginImpl.prototype.getDesktopYDpi = function() {
-  return this.desktopYDpi_;
-}
+remoting.ClientPluginImpl.prototype.hostDesktop = function() {
+  return this.hostDesktop_;
+};
 
 /**
  * If we haven't yet received a "hello" message from the plugin, change its
@@ -956,6 +886,17 @@ remoting.ClientPluginImpl.prototype.hidePluginForClickToPlay_ = function() {
   this.plugin_.style.position = '';
 };
 
+/**
+ * Callback passed to submodules to post a message to the plugin.
+ *
+ * @param {Object} message
+ * @private
+ */
+remoting.ClientPluginImpl.prototype.postMessage_ = function(message) {
+  if (this.plugin_ && this.plugin_.postMessage) {
+    this.plugin_.postMessage(JSON.stringify(message));
+  }
+};
 
 /**
  * @constructor
