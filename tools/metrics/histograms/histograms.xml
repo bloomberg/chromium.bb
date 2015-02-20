@@ -29091,12 +29091,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PushMessaging.DeliveryStatus" enum="PushDeliveryStatus">
+  <owner>johnme@google.com</owner>
+  <owner>mvanouwerkerk@google.com</owner>
+  <summary>
+    When a Service Worker receives a push message, this records whether it was
+    successful, or otherwise the type of error encountered.
+  </summary>
+</histogram>
+
+<histogram name="PushMessaging.GetRegistrationStatus"
+    enum="PushGetRegistrationStatus">
+  <owner>johnme@google.com</owner>
+  <owner>mvanouwerkerk@google.com</owner>
+  <summary>
+    When a webpage asks for details about its current push messaging
+    registration, this records whether the request is successful, or otherwise
+    the type of error encountered.
+  </summary>
+</histogram>
+
 <histogram name="PushMessaging.RegistrationStatus"
     enum="PushRegistrationStatus">
   <owner>johnme@google.com</owner>
   <owner>mvanouwerkerk@google.com</owner>
   <summary>
     When a webpage registers for push messaging, this records whether the
+    request is successful, or otherwise the type of error encountered.
+  </summary>
+</histogram>
+
+<histogram name="PushMessaging.UnregistrationStatus"
+    enum="PushUnregistrationStatus">
+  <owner>johnme@google.com</owner>
+  <owner>mvanouwerkerk@google.com</owner>
+  <summary>
+    When a webpage unregisters from push messaging, this records whether the
     request is successful, or otherwise the type of error encountered.
   </summary>
 </histogram>
@@ -56574,16 +56604,47 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="254" label="DOMAIN_SPIDEROAK_COM"/>
 </enum>
 
+<enum name="PushDeliveryStatus" type="int">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Message was invalid"/>
+  <int value="2" label="App id was unknown"/>
+  <int value="3" label="App no longer has permission"/>
+  <int value="4" label="Service Worker not found"/>
+  <int value="5" label="Service Worker error"/>
+  <int value="6" label="event.waitUntil promise rejected"/>
+</enum>
+
+<enum name="PushGetRegistrationStatus" type="int">
+  <int value="0" label="Successful"/>
+  <int value="1" label="No push service"/>
+  <int value="2" label="Storage error"/>
+  <int value="3" label="Registration not found"/>
+  <int value="4" label="Registration not found (no incognito push service)"/>
+</enum>
+
 <enum name="PushRegistrationStatus" type="int">
   <int value="0" label="Successful - from push service"/>
-  <int value="1" label="Page has no active Service Worker"/>
-  <int value="2" label="Push service not available"/>
+  <int value="1" label="Service Worker not found"/>
+  <int value="2" label="No push service"/>
   <int value="3" label="Registration limit reached"/>
   <int value="4" label="Permission denied"/>
   <int value="5" label="Push service error"/>
   <int value="6" label="No sender id provided"/>
   <int value="7" label="Storage error"/>
   <int value="8" label="Successful - from cache"/>
+  <int value="9" label="Network error"/>
+  <int value="10" label="Permission denied (no incognito push service)"/>
+</enum>
+
+<enum name="PushUnregistrationStatus" type="int">
+  <int value="0" label="Successful - from push service"/>
+  <int value="1" label="Successful - was not registered"/>
+  <int value="2" label="Pending - will retry network error"/>
+  <int value="3" label="Service Worker not found"/>
+  <int value="4" label="No push service"/>
+  <int value="5" label="Push service error"/>
+  <int value="6" label="Storage error"/>
+  <int value="7" label="Network error"/>
 </enum>
 
 <enum name="PushUserVisibleStatus" type="int">

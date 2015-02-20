@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 namespace content {
@@ -29,14 +30,28 @@ const char kPushRegistrationIdServiceWorkerKey[] = "push_registration_id";
 
 namespace {
 
+// These UMA methods are only called from IO thread, but it would be acceptable
+// (even though slightly racy) to call them from UI thread as well, see
+// https://groups.google.com/a/chromium.org/d/msg/chromium-dev/FNzZRJtN2aw/Aw0CWAXJJ1kJ
 void RecordRegistrationStatus(PushRegistrationStatus status) {
-  // Only called from IO thread, but would be acceptable (even though slightly
-  // racy) to call from UI thread as well, see
-  // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/FNzZRJtN2aw/Aw0CWAXJJ1kJ
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.RegistrationStatus",
                             status,
                             PUSH_REGISTRATION_STATUS_LAST + 1);
+}
+
+void RecordUnregistrationStatus(PushUnregistrationStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationStatus",
+                            status,
+                            PUSH_UNREGISTRATION_STATUS_LAST + 1);
+}
+
+void RecordGetRegistrationStatus(PushGetRegistrationStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.GetRegistrationStatus",
+                            status,
+                            PUSH_GETREGISTRATION_STATUS_LAST + 1);
 }
 
 }  // namespace
@@ -337,7 +352,8 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
             BrowserThread::IO, FROM_HERE,
             base::Bind(&PushMessagingMessageFilter::SendRegisterError,
                        io_parent_,
-                       data, PUSH_REGISTRATION_STATUS_PERMISSION_DENIED));
+                       data,
+                       PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
       }
       // Else leave the promise hanging forever, to simulate a user ignoring the
       // infobar. TODO(johnme): Simulate the user dismissing the infobar after a
@@ -456,7 +472,7 @@ void PushMessagingMessageFilter::OnUnregister(
       service_worker_context_->context()->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
-    DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
+    DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER);
     return;
   }
 
@@ -514,17 +530,17 @@ void PushMessagingMessageFilter::UnregisterHavingGottenSenderId(
                      base::Unretained(ui_core_.get()), request_id,
                      service_worker_registration_id, requesting_origin,
                      sender_id));
-      return;
+      break;
     case SERVICE_WORKER_ERROR_NOT_FOUND:
       // We did not find a registration, stop here and notify the renderer that
       // it was a success even though we did not unregister.
       DidUnregister(request_id,
                     PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
-      return;
+      break;
     case SERVICE_WORKER_ERROR_FAILED:
       DidUnregister(request_id,
-                    PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
-      return;
+                    PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR);
+      break;
     case SERVICE_WORKER_ERROR_ABORT:
     case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
@@ -538,8 +554,8 @@ void PushMessagingMessageFilter::UnregisterHavingGottenSenderId(
     case SERVICE_WORKER_ERROR_STATE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
-      DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
-      return;
+      DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR);
+      break;
   }
 }
 
@@ -557,7 +573,8 @@ void PushMessagingMessageFilter::Core::UnregisterFromService(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingMessageFilter::DidUnregister, io_parent_,
-                   request_id, PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR));
+                   request_id,
+                   PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
     return;
   }
 
@@ -576,26 +593,26 @@ void PushMessagingMessageFilter::Core::DidUnregisterFromService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   switch (unregistration_status) {
-    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
-      break;
-    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR:
-      NOTREACHED();
-      break;
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
+    case PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR:
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&PushMessagingMessageFilter::ClearRegistrationData,
+                     io_parent_, request_id, service_worker_registration_id,
+                     unregistration_status));
+      break;
+    case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
+    case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
+    case PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
-    case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&PushMessagingMessageFilter::DidUnregister, io_parent_,
                      request_id, unregistration_status));
-      return;
+      break;
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::ClearRegistrationData, io_parent_,
-                 request_id, service_worker_registration_id,
-                 unregistration_status));
 }
 
 void PushMessagingMessageFilter::ClearRegistrationData(
@@ -618,9 +635,12 @@ void PushMessagingMessageFilter::DidClearRegistrationData(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(service_worker_status == SERVICE_WORKER_OK)
-      << "Got unexpected error code: " << service_worker_status
-      << " " << ServiceWorkerStatusToString(service_worker_status);
+  if (service_worker_status != SERVICE_WORKER_OK &&
+      service_worker_status != SERVICE_WORKER_ERROR_NOT_FOUND) {
+    unregistration_status = PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR;
+    DLOG(WARNING) << "Got unexpected error code: " << service_worker_status
+                  << " " << ServiceWorkerStatusToString(service_worker_status);
+  }
 
   DidUnregister(request_id, unregistration_status);
 }
@@ -630,25 +650,32 @@ void PushMessagingMessageFilter::DidUnregister(
     PushUnregistrationStatus unregistration_status) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  RecordUnregistrationStatus(unregistration_status);
+  blink::WebPushError::ErrorType blinkError =
+      blink::WebPushError::ErrorTypeUnknown;
   switch (unregistration_status) {
-    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER:
-    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
       Send(new PushMessagingMsg_UnregisterSuccess(request_id, true));
       return;
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
       Send(new PushMessagingMsg_UnregisterSuccess(request_id, false));
       return;
+    case PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR:
+      NOTREACHED();
+      return;
+    case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
+    case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
+    case PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR:
+    case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
+      blinkError = blink::WebPushError::ErrorTypeAbort;
+      break;
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
-      Send(new PushMessagingMsg_UnregisterError(
-          request_id, blink::WebPushError::ErrorTypeNetwork,
-          "Failed to connect to the push server."));
-      return;
-    case PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR:
-      Send(new PushMessagingMsg_UnregisterError(
-          request_id, blink::WebPushError::ErrorTypeUnknown,
-          "Unexpected error while trying to unregister from the push server."));
-      return;
+      blinkError = blink::WebPushError::ErrorTypeNetwork;
+      break;
   }
+  Send(new PushMessagingMsg_UnregisterError(
+       request_id, blinkError,
+       PushUnregistrationStatusToString(unregistration_status)));
 }
 
 // GetRegistration methods on both IO and UI threads, merged in order of use
@@ -673,25 +700,27 @@ void PushMessagingMessageFilter::DidGetRegistration(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PushGetRegistrationStatus get_status =
-      PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+      PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
       if (push_endpoint_.is_empty()) {
         // Return not found in incognito mode, so websites can't detect it.
-        get_status = ui_core_->is_incognito()
-                     ? PUSH_GETREGISTRATION_STATUS_REGISTRATION_NOT_FOUND
-                     : PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+        get_status =
+            ui_core_->is_incognito()
+            ? PUSH_GETREGISTRATION_STATUS_INCOGNITO_REGISTRATION_NOT_FOUND
+            : PUSH_GETREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
         break;
       }
       Send(new PushMessagingMsg_GetRegistrationSuccess(request_id,
                                                        push_endpoint_,
                                                        push_registration_id));
+      RecordGetRegistrationStatus(PUSH_GETREGISTRATION_STATUS_SUCCESS);
       return;
     case SERVICE_WORKER_ERROR_NOT_FOUND:
       get_status = PUSH_GETREGISTRATION_STATUS_REGISTRATION_NOT_FOUND;
       break;
     case SERVICE_WORKER_ERROR_FAILED:
-      get_status = PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+      get_status = PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
       break;
     case SERVICE_WORKER_ERROR_ABORT:
     case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
@@ -706,11 +735,11 @@ void PushMessagingMessageFilter::DidGetRegistration(
     case SERVICE_WORKER_ERROR_STATE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
-      get_status = PUSH_GETREGISTRATION_STATUS_SERVICE_WORKER_ERROR;
+      get_status = PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
       break;
   }
   Send(new PushMessagingMsg_GetRegistrationError(request_id, get_status));
-  // TODO(johnme): RecordGetRegistrationStatus(status); ?
+  RecordGetRegistrationStatus(get_status);
 }
 
 // GetPermission methods on both IO and UI threads, merged in order of use from

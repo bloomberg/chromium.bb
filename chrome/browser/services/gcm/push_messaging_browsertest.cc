@@ -735,12 +735,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterNetworkError) {
   gcm_service()->AddExpectedUnregisterResponse(GCMClient::NETWORK_ERROR);
 
   ASSERT_TRUE(RunScript("unregister()", &script_result));
-  EXPECT_EQ("unregister error: "
-            "NetworkError: Failed to connect to the push server.",
+  EXPECT_EQ("unregister error: NetworkError: "
+            "Unregistration failed - could not connect to push server",
             script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterUnknownError) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterAbortError) {
   if (!IsPushSupported())
     return;
 
@@ -752,8 +752,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnregisterUnknownError) {
 
   ASSERT_TRUE(RunScript("unregister()", &script_result));
   EXPECT_EQ("unregister error: "
-            "UnknownError: Unexpected error while trying to unregister from the"
-            " push server.", script_result);
+            "AbortError: Unregistration failed - push service error",
+            script_result);
 }
 
 #if defined(OS_ANDROID)

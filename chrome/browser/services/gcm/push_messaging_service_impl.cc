@@ -58,6 +58,12 @@ namespace gcm {
 namespace {
 const int kMaxRegistrations = 1000000;
 
+void RecordDeliveryStatus(content::PushDeliveryStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus",
+                            status,
+                            content::PUSH_DELIVERY_STATUS_LAST + 1);
+}
+
 void RecordUserVisibleStatus(content::PushUserVisibleStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus",
                             status,
@@ -242,7 +248,6 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     int64 service_worker_registration_id,
     const GCMClient::IncomingMessage& message,
     content::PushDeliveryStatus status) {
-  // TODO(mvanouwerkerk): UMA logging.
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
   // TODO(mvanouwerkerk): Is there a way to recover from failure?
@@ -264,6 +269,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
                  UnregisterCallback());
       break;
   }
+  RecordDeliveryStatus(status);
 }
 
 void PushMessagingServiceImpl::RequireUserVisibleUX(
@@ -574,10 +580,23 @@ void PushMessagingServiceImpl::DidRegister(
     GCMClient::Result result) {
   content::PushRegistrationStatus status =
       content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
-  if (result == GCMClient::SUCCESS) {
-    status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
-    application_id.PersistToDisk(profile_);
-    IncreasePushRegistrationCount(1, false /* is_pending */);
+  switch (result) {
+    case GCMClient::SUCCESS:
+      status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
+      application_id.PersistToDisk(profile_);
+      IncreasePushRegistrationCount(1, false /* is_pending */);
+      break;
+    case GCMClient::INVALID_PARAMETER:
+    case GCMClient::GCM_DISABLED:
+    case GCMClient::ASYNC_OPERATION_PENDING:
+    case GCMClient::SERVER_ERROR:
+    case GCMClient::UNKNOWN_ERROR:
+      status = content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
+      break;
+    case GCMClient::NETWORK_ERROR:
+    case GCMClient::TTL_EXCEEDED:
+      status = content::PUSH_REGISTRATION_STATUS_NETWORK_ERROR;
+      break;
   }
   RegisterEnd(callback, registration_id, status);
   DecreasePushRegistrationCount(1, true /* was_pending */);
@@ -687,28 +706,24 @@ void PushMessagingServiceImpl::DidUnregister(
   // Internal calls pass a null callback.
   if (!callback.is_null()) {
     switch (result) {
-    case GCMClient::SUCCESS:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTER);
-      break;
-    case GCMClient::NETWORK_ERROR:
-    case GCMClient::TTL_EXCEEDED:
-    case GCMClient::ASYNC_OPERATION_PENDING:
-      callback.Run(
-          retry_on_failure
-          ? content::
-            PUSH_UNREGISTRATION_STATUS_SUCCESS_WILL_RETRY_NETWORK_ERROR
-          : content::PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR);
-      break;
-    case GCMClient::SERVER_ERROR:
-    case GCMClient::INVALID_PARAMETER:
-    case GCMClient::GCM_DISABLED:
-    case GCMClient::UNKNOWN_ERROR:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
-      break;
-    default:
-      NOTREACHED() << "Unexpected GCMClient::Result value.";
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_UNKNOWN_ERROR);
-      break;
+      case GCMClient::SUCCESS:
+        callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
+        break;
+      case GCMClient::INVALID_PARAMETER:
+      case GCMClient::GCM_DISABLED:
+      case GCMClient::ASYNC_OPERATION_PENDING:
+      case GCMClient::SERVER_ERROR:
+      case GCMClient::UNKNOWN_ERROR:
+        callback.Run(content::PUSH_UNREGISTRATION_STATUS_SERVICE_ERROR);
+        break;
+      case GCMClient::NETWORK_ERROR:
+      case GCMClient::TTL_EXCEEDED:
+        callback.Run(
+            retry_on_failure
+            ? content::
+              PUSH_UNREGISTRATION_STATUS_PENDING_WILL_RETRY_NETWORK_ERROR
+            : content::PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR);
+        break;
     }
   }
 }
