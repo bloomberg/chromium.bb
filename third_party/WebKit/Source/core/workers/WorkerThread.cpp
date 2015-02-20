@@ -289,7 +289,7 @@ void WorkerThread::start()
         return;
 
     m_thread = WebThreadSupportingGC::create("WebCore: Worker");
-    m_thread->postTask(new Task(WTF::bind(&WorkerThread::initialize, this)));
+    m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::initialize, this)));
 }
 
 void WorkerThread::interruptAndDispatchInspectorCommands()
@@ -398,7 +398,7 @@ public:
         workerGlobalScope->clearInspector();
         // It's not safe to call clearScript until all the cleanup tasks posted by functions initiated by WorkerThreadShutdownStartTask have completed.
         workerGlobalScope->clearScript();
-        workerGlobalScope->thread()->m_thread->postTask(new Task(WTF::bind(&WorkerThread::cleanup, workerGlobalScope->thread())));
+        workerGlobalScope->thread()->m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerGlobalScope->thread())));
     }
 
     virtual bool isCleanupTask() const { return true; }
@@ -524,12 +524,12 @@ void WorkerThread::idleHandler()
 
 void WorkerThread::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_thread->postTask(WorkerThreadTask::create(*this, task, true).leakPtr());
+    m_thread->postTask(FROM_HERE, WorkerThreadTask::create(*this, task, true).leakPtr());
 }
 
 void WorkerThread::postDelayedTask(PassOwnPtr<ExecutionContextTask> task, long long delayMs)
 {
-    m_thread->postDelayedTask(WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
+    m_thread->postDelayedTask(FROM_HERE, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
 }
 
 void WorkerThread::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)

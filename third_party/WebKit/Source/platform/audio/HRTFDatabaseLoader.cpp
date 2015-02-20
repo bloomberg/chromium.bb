@@ -35,6 +35,7 @@
 #include "platform/Task.h"
 #include "platform/TaskSynchronizer.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
@@ -99,7 +100,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
     if (!m_hrtfDatabase && !m_thread) {
         // Start the asynchronous database loading process.
         m_thread = WebThreadSupportingGC::create("HRTF database loader");
-        m_thread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::loadTask, this)));
+        m_thread->postTask(FROM_HERE, new Task(WTF::bind(&HRTFDatabaseLoader::loadTask, this)));
     }
 }
 
@@ -122,7 +123,7 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
         return;
 
     TaskSynchronizer sync;
-    m_thread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::cleanupTask, this, &sync)));
+    m_thread->postTask(FROM_HERE, new Task(WTF::bind(&HRTFDatabaseLoader::cleanupTask, this, &sync)));
     sync.waitForTaskCompletion();
     m_thread.clear();
 }
