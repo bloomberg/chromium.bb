@@ -35,6 +35,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !defined(USE_OPENSSL)
+#include <pk11pub.h>
+#include "crypto/nss_util.h"
+
+#if !defined(CKM_AES_GCM)
+#define CKM_AES_GCM 0x00001087
+#endif
+
+#if !defined(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)
+#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
+#endif
+#endif
+
 //-----------------------------------------------------------------------------
 
 using testing::_;
@@ -987,6 +1000,16 @@ static bool LogContainsSSLConnectEndEvent(
   return LogContainsEndEvent(log, i, NetLog::TYPE_SSL_CONNECT) ||
          LogContainsEvent(
              log, i, NetLog::TYPE_SOCKET_BYTES_SENT, NetLog::PHASE_NONE);
+}
+
+bool SupportsAESGCM() {
+#if defined(USE_OPENSSL)
+  return true;
+#else
+  crypto::EnsureNSSInit();
+  return PK11_TokenExists(CKM_AES_GCM) &&
+         PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256);
+#endif
 }
 
 }  // namespace
@@ -2904,10 +2927,17 @@ TEST_F(SSLClientSocketTest, HandshakeCallbackIsRun_WithDisabledSessionCache) {
 
 TEST_F(SSLClientSocketFalseStartTest,
        HandshakeCallbackIsRun_WithFalseStartFailure) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   // False Start requires NPN and a forward-secret cipher suite.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
@@ -2919,10 +2949,17 @@ TEST_F(SSLClientSocketFalseStartTest,
 
 TEST_F(SSLClientSocketFalseStartTest,
        HandshakeCallbackIsRun_WithFalseStartSuccess) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   // False Start requires NPN and a forward-secret cipher suite.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
@@ -2933,6 +2970,11 @@ TEST_F(SSLClientSocketFalseStartTest,
 #endif  // defined(USE_OPENSSL)
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   // False Start requires NPN/ALPN, perfect forward secrecy, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
@@ -2948,6 +2990,11 @@ TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
 
 // Test that False Start is disabled without NPN.
 TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
@@ -2961,6 +3008,11 @@ TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
 
 // Test that False Start is disabled without perfect forward secrecy.
 TEST_F(SSLClientSocketFalseStartTest, NoForwardSecrecy) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_RSA;
@@ -2988,10 +3040,17 @@ TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
 
 // Test that sessions are resumable after receiving the server Finished message.
 TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   // Start a server.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
   SSLConfig client_config;
   client_config.next_protos.push_back(kProtoHTTP11);
@@ -3019,10 +3078,17 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
 // Test that sessions are not resumable before receiving the server Finished
 // message.
 TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinish) {
+  if (!SupportsAESGCM()) {
+    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
+    return;
+  }
+
   // Start a server.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
       SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
+  server_options.bulk_ciphers =
+      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
   ASSERT_TRUE(StartTestServer(server_options));
 
