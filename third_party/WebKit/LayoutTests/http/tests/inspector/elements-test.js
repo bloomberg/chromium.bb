@@ -325,10 +325,8 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
         for (var i = 0; i < listenerTypes.length; ++i) {
             listenerTypes[i].expand();
             var listenerItems = listenerTypes[i].children;
-            for (var j = 0; j < listenerItems.length; ++j) {
-                var objectPropertiesSection = listenerItems[j].listItemElement.firstChild._section;
-                objectPropertiesSection.expand();
-            }
+            for (var j = 0; j < listenerItems.length; ++j)
+                listenerItems[j].expand();
         }
         InspectorTest.runAfterPendingDispatches(objectsExpanded);
     }
@@ -341,29 +339,22 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
             InspectorTest.addResult("");
             InspectorTest.addResult("======== " + eventType + " ========");
             var listenerItems = listenerTypes[i].children;
-            for (var j = 0; j < listenerItems.length; ++j) {
-                var objectPropertiesSection = listenerItems[j].listItemElement.firstChild._section;
-                InspectorTest.dumpObjectPropertySection(objectPropertiesSection, {});
-            }
+            for (var j = 0; j < listenerItems.length; ++j)
+                InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
         }
         callback();
     }
 }
 
-InspectorTest.dumpObjectPropertySection = function(section, formatters)
+InspectorTest.dumpObjectPropertyTreeElement = function(treeElement)
 {
-    var expandedSubstring = section.expanded ? "[expanded]" : "[collapsed]";
-    var titleElement = section.titleElement.firstElementChild ? section.titleElement.firstElementChild.shadowRoot.lastChild.textContent : section.titleElement.textContent;
-    InspectorTest.addResult(expandedSubstring + " " + titleElement + " " + section.subtitleAsTextForTest);
-    if (!section.propertiesForTest)
-        return;
+    var expandedSubstring = treeElement.expanded ? "[expanded]" : "[collapsed]";
+    InspectorTest.addResult(expandedSubstring + " " + treeElement.listItemElement.deepTextContent());
 
-    for (var i = 0; i < section.propertiesForTest.length; ++i) {
-        var property = section.propertiesForTest[i];
+    for (var i = 0; i < treeElement.children.length; ++i) {
+        var property = treeElement.children[i].property;
         var key = property.name;
         var value = property.value._description;
-        if (key in formatters)
-            value = formatters[key](value);
         InspectorTest.addResult("    " + key + ": " + value);
     }
 }
