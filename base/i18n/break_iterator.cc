@@ -74,7 +74,8 @@ bool BreakIterator::Init() {
                       static_cast<int32_t>(string_.size()),
                       &status);
     if (U_FAILURE(status)) {
-      NOTREACHED() << "ubrk_open failed";
+      NOTREACHED() << "ubrk_open failed for type " << break_type
+          << " with error " << status;
     }
   }
 

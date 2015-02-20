@@ -158,11 +158,11 @@ TEST(TimeFormattingTest, TimeFormatDateGB) {
 
   EXPECT_EQ(ASCIIToUTF16("30 Apr 2011"), TimeFormatShortDate(time));
   EXPECT_EQ(ASCIIToUTF16("30/04/2011"), TimeFormatShortDateNumeric(time));
-  EXPECT_EQ(ASCIIToUTF16("30/04/2011 15:42:07"),
+  EXPECT_EQ(ASCIIToUTF16("30/04/2011, 15:42:07"),
             TimeFormatShortDateAndTime(time));
-  EXPECT_EQ(ASCIIToUTF16("30/04/2011 15:42:07 ") + GetShortTimeZone(),
+  EXPECT_EQ(ASCIIToUTF16("30/04/2011, 15:42:07 ") + GetShortTimeZone(),
             TimeFormatShortDateAndTimeWithTimeZone(time));
-  EXPECT_EQ(ASCIIToUTF16("Saturday, 30 April 2011 15:42:07"),
+  EXPECT_EQ(ASCIIToUTF16("Saturday, 30 April 2011 at 15:42:07"),
             TimeFormatFriendlyDateAndTime(time));
   EXPECT_EQ(ASCIIToUTF16("Saturday, 30 April 2011"),
             TimeFormatFriendlyDate(time));

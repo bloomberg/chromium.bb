@@ -191,7 +191,7 @@ bool IsDuplicateName(const std::string& locale_name) {
   static const char* const kDuplicateNames[] = {
     "en",
     "en_001",
-    "pt",
+    "pt", // pt-BR and pt-PT are used.
     "zh",
     "zh_hans_cn",
     "zh_hant_hk",
@@ -200,11 +200,10 @@ bool IsDuplicateName(const std::string& locale_name) {
     "zh_hant_tw"
   };
 
-  // Skip all 'es_RR'. Currently, we use 'es' for es-ES (Spanish in Spain).
-  // 'es-419' (Spanish in Latin America) is not available in ICU so that it
-  // has to be added manually in GetAvailableLocales().
-  if (LowerCaseEqualsASCII(locale_name.substr(0, 3),  "es_"))
-    return true;
+  // Skip all the es_Foo other than es_419 for now.
+  if (StartsWithASCII(locale_name, "es_", false))
+    return !EndsWith(locale_name, "419", true);
+
   for (size_t i = 0; i < arraysize(kDuplicateNames); ++i) {
     if (base::strcasecmp(kDuplicateNames[i], locale_name.c_str()) == 0)
       return true;
@@ -297,8 +296,6 @@ struct AvailableLocalesTraits
       locales->push_back(locale_name);
     }
 
-    // Manually add 'es-419' to the list. See the comment in IsDuplicateName().
-    locales->push_back("es-419");
     return locales;
   }
 };
