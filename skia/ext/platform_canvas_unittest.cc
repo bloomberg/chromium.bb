@@ -418,7 +418,9 @@ TEST(PlatformBitmapTest, PlatformBitmap) {
   EXPECT_EQ(kN32_SkColorType,  // Same for all platforms.
             platform_bitmap->GetBitmap().colorType());
   EXPECT_TRUE(platform_bitmap->GetBitmap().lockPixelsAreWritable());
+#if defined(SK_DEBUG)
   EXPECT_TRUE(platform_bitmap->GetBitmap().pixelRef()->isLocked());
+#endif
   EXPECT_TRUE(platform_bitmap->GetBitmap().pixelRef()->unique());
 
   *(platform_bitmap->GetBitmap().getAddr32(10, 20)) = 0xDEED1020;
