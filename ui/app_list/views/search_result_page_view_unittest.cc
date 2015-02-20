@@ -4,7 +4,8 @@
 
 #include "ui/app_list/views/search_result_page_view.h"
 
-#include <map>
+#include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "ui/app_list/app_list_model.h"
@@ -51,13 +52,18 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
     return view_delegate_.GetModel()->results();
   }
 
-  void SetUpSearchResults(
-      const std::map<SearchResult::DisplayType, int> result_types) {
+  void SetUpSearchResults(const std::vector<
+      std::pair<SearchResult::DisplayType, int>> result_types) {
     AppListModel::SearchResults* results = GetResults();
+    double relevance = result_types.size();
     for (const auto& data : result_types) {
+      // Set the relevance of the results in each group in decreasing order (so
+      // the earlier groups have higher relevance, and therefore appear first).
+      relevance -= 1.0;
       for (int i = 0; i < data.second; ++i) {
         TestSearchResult* result = new TestSearchResult();
         result->set_display_type(data.first);
+        result->set_relevance(relevance);
         results->Add(result);
       }
     }
@@ -68,8 +74,13 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
 
   int GetSelectedIndex() { return view_->selected_index(); }
 
-  bool KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
+  bool KeyPress(ui::KeyboardCode key_code) { return KeyPress(key_code, false); }
+
+  bool KeyPress(ui::KeyboardCode key_code, bool shift_down) {
+    int flags = ui::EF_NONE;
+    if (shift_down)
+      flags |= ui::EF_SHIFT_DOWN;
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
     return view_->OnKeyPressed(event);
   }
 
@@ -86,47 +97,119 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
 };
 
-TEST_F(SearchResultPageViewTest, Basic) {
-  std::map<SearchResult::DisplayType, int> result_types;
+TEST_F(SearchResultPageViewTest, DirectionalMovement) {
+  std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+  // 3 tile results, followed by 2 list results.
+  const int kTileResults = 3;
   const int kListResults = 2;
-  const int kTileResults = 1;
   const int kNoneResults = 3;
-  result_types[SearchResult::DISPLAY_LIST] = kListResults;
-  result_types[SearchResult::DISPLAY_TILE] = kTileResults;
-  result_types[SearchResult::DISPLAY_NONE] = kNoneResults;
+  result_types.push_back(
+      std::make_pair(SearchResult::DISPLAY_TILE, kTileResults));
+  result_types.push_back(
+      std::make_pair(SearchResult::DISPLAY_LIST, kListResults));
+  result_types.push_back(
+      std::make_pair(SearchResult::DISPLAY_NONE, kNoneResults));
 
   SetUpSearchResults(result_types);
   EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+
+  // Navigate to the second tile in the tile group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the list group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
   EXPECT_EQ(0, list_view()->selected_index());
 
   // Navigate to the second result in the list view.
   EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(1, GetSelectedIndex());
   EXPECT_EQ(1, list_view()->selected_index());
 
-  // Navigate to the tile group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, list_view()->selected_index());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-
-  // Navigate off bottom of tile items.
+  // Attempt to navigate off bottom of list items.
   EXPECT_FALSE(KeyPress(ui::VKEY_DOWN));
   EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(1, list_view()->selected_index());
 
-  // Navigate back to the list group.
+  // Navigate back to the tile group (should select the first tile result).
+  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(0, list_view()->selected_index());
   EXPECT_TRUE(KeyPress(ui::VKEY_UP));
   EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
 
   // Navigate off top of list.
-  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(0, list_view()->selected_index());
   EXPECT_FALSE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(0, list_view()->selected_index());
   EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+}
+
+TEST_F(SearchResultPageViewTest, TabMovement) {
+  std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+  // 3 tile results, followed by 2 list results.
+  const int kTileResults = 3;
+  const int kListResults = 2;
+  const int kNoneResults = 3;
+  result_types.push_back(
+      std::make_pair(SearchResult::DISPLAY_TILE, kTileResults));
+  result_types.push_back(
+      std::make_pair(SearchResult::DISPLAY_LIST, kListResults));
+  result_types.push_back(
+      std::make_pair(SearchResult::DISPLAY_NONE, kNoneResults));
+
+  SetUpSearchResults(result_types);
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+
+  // Navigate to the second tile in the tile group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the list group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(2, tile_list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
+
+  // Navigate to the second result in the list view.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Attempt to navigate off bottom of list items.
+  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Navigate back to the tile group (should select the last tile result).
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(0, list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(2, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate off top of list.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(1, tile_list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
 }
 
 TEST_F(SearchResultPageViewTest, ResultsSorted) {

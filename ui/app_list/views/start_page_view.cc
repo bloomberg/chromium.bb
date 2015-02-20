@@ -85,7 +85,8 @@ class StartPageView::StartPageTilesContainer
   // Overridden from SearchResultContainerView:
   int Update() override;
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
-  void OnContainerSelected(bool from_bottom) override;
+  void OnContainerSelected(bool from_bottom,
+                           bool directional_movement) override;
 
  private:
   ContentsView* contents_view_;
@@ -174,7 +175,8 @@ void StartPageView::StartPageTilesContainer::UpdateSelectedIndex(
 }
 
 void StartPageView::StartPageTilesContainer::OnContainerSelected(
-    bool from_bottom) {
+    bool /*from_bottom*/,
+    bool /*directional_movement*/) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

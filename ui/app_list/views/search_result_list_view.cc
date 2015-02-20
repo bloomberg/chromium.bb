@@ -136,7 +136,8 @@ void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
   SearchResultContainerView::ListItemsRemoved(start, count);
 }
 
-void SearchResultListView::OnContainerSelected(bool from_bottom) {
+void SearchResultListView::OnContainerSelected(bool from_bottom,
+                                               bool /*directional_movement*/) {
   if (num_results() == 0)
     return;
 

@@ -26,7 +26,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
-  void OnContainerSelected(bool from_bottom) override;
+  void OnContainerSelected(bool from_bottom,
+                           bool directional_movement) override;
 
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;

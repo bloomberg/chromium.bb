@@ -41,7 +41,9 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
   void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
-  void SetSelectedIndex(int index);
+  // |directional_movement| is true if the navigation was caused by directional
+  // controls (eg, arrow keys), as opposed to linear controls (eg, Tab).
+  void SetSelectedIndex(int index, bool directional_movement);
   bool IsValidSelectionIndex(int index);
 
   // The SearchResultContainerViews that compose the search page. All owned by

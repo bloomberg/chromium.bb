@@ -53,7 +53,8 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   void ListItemsRemoved(size_t start, size_t count) override;
 
   // Overridden from SearchResultContainerView:
-  void OnContainerSelected(bool from_bottom) override;
+  void OnContainerSelected(bool from_bottom,
+                           bool directional_movement) override;
 
  private:
   friend class test::SearchResultListViewTest;

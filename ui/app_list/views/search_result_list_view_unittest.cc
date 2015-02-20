@@ -69,7 +69,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
     // Adding results will schedule Update().
     RunPendingMessages();
-    view_->OnContainerSelected(false);
+    view_->OnContainerSelected(false, false);
   }
 
   int GetOpenResultCountAndReset(int ranking) {

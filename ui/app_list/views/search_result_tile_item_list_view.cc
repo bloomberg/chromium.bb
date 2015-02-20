@@ -43,12 +43,17 @@ SearchResultTileItemListView::SearchResultTileItemListView(
 SearchResultTileItemListView::~SearchResultTileItemListView() {
 }
 
-void SearchResultTileItemListView::OnContainerSelected(bool from_bottom) {
+void SearchResultTileItemListView::OnContainerSelected(
+    bool from_bottom,
+    bool directional_movement) {
   if (num_results() == 0)
     return;
 
-  // TODO(calamity): come in from the back when tab navigating backwards.
-  SetSelectedIndex(0);
+  // If the user came from below using linear controls (eg, Tab, as opposed to
+  // directional controls such as Up), select the right-most result. Otherwise,
+  // select the left-most result even if coming from below.
+  bool select_last = from_bottom && !directional_movement;
+  SetSelectedIndex(select_last ? num_results() - 1 : 0);
 }
 
 int SearchResultTileItemListView::Update() {

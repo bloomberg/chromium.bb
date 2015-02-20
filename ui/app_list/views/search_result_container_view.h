@@ -55,8 +55,11 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   // Updates the container for being selected. |from_bottom| is true if the view
   // was entered into from a selected view below it; false if entered into from
-  // above.
-  virtual void OnContainerSelected(bool from_bottom) = 0;
+  // above. |directional_movement| is true if the navigation was caused by
+  // directional controls (eg, arrow keys), as opposed to linear controls (eg,
+  // Tab).
+  virtual void OnContainerSelected(bool from_bottom,
+                                   bool directional_movement) = 0;
 
  private:
   // Updates UI with model. Returns the number of visible results.

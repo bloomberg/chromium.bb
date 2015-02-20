@@ -70,7 +70,7 @@ SearchResultPageView::~SearchResultPageView() {
 
 void SearchResultPageView::SetSelection(bool select) {
   if (select)
-    SetSelectedIndex(0);
+    SetSelectedIndex(0, false);
   else
     result_container_views_[selected_index_]->ClearSelectedIndex();
 }
@@ -92,15 +92,18 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
 
   int dir = 0;
+  bool directional_movement = false;
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       dir = event.IsShiftDown() ? -1 : 1;
       break;
     case ui::VKEY_UP:
       dir = -1;
+      directional_movement = true;
       break;
     case ui::VKEY_DOWN:
       dir = 1;
+      directional_movement = true;
       break;
     default:
       return false;
@@ -114,21 +117,23 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
            result_container_views_[new_selected]->num_results() == 0);
 
   if (IsValidSelectionIndex(new_selected)) {
-    SetSelectedIndex(new_selected);
+    SetSelectedIndex(new_selected, directional_movement);
     return true;
   }
 
   return false;
 }
 
-void SearchResultPageView::SetSelectedIndex(int index) {
+void SearchResultPageView::SetSelectedIndex(int index,
+                                            bool directional_movement) {
   bool from_bottom = index < selected_index_;
 
   // Reset the old selected view's selection.
   result_container_views_[selected_index_]->ClearSelectedIndex();
   selected_index_ = index;
   // Set the new selected view's selection to its first result.
-  result_container_views_[selected_index_]->OnContainerSelected(from_bottom);
+  result_container_views_[selected_index_]->OnContainerSelected(
+      from_bottom, directional_movement);
 }
 
 bool SearchResultPageView::IsValidSelectionIndex(int index) {
@@ -153,7 +158,7 @@ void SearchResultPageView::ChildPreferredSizeChanged(views::View* child) {
   }
 
   Layout();
-  SetSelectedIndex(0);
+  SetSelectedIndex(0, false);
 }
 
 }  // namespace app_list
