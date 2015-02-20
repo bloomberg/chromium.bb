@@ -68,7 +68,7 @@ bool DecodingImageGenerator::onGetInfo(SkImageInfo* info)
     return true;
 }
 
-SkImageGenerator::Result DecodingImageGenerator::onGetPixelsEnum(const SkImageInfo& info,
+SkImageGenerator::Result DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
     void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount)
 {
     TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "index", static_cast<int>(m_frameIndex));
