@@ -10,6 +10,7 @@
 #include "crypto/ec_private_key.h"
 #include "net/base/connection_type_histograms.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_errors.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
@@ -101,7 +102,10 @@ NextProto SSLClientSocket::GetNegotiatedProtocol() const {
 }
 
 bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
-  return error == OK || (load_flags & LOAD_IGNORE_ALL_CERT_ERRORS);
+  if (error == OK)
+    return true;
+  return (load_flags & LOAD_IGNORE_ALL_CERT_ERRORS) &&
+         IsCertificateError(error);
 }
 
 bool SSLClientSocket::set_was_npn_negotiated(bool negotiated) {

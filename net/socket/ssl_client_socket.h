@@ -148,6 +148,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   static const char* NextProtoStatusToString(const NextProtoStatus status);
 
+  // Returns true if |error| is OK or |load_flags| ignores certificate errors
+  // and |error| is a certificate error.
   static bool IgnoreCertError(int error, int load_flags);
 
   // ClearSessionCache clears the SSL session cache, used to resume SSL

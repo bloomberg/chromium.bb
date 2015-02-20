@@ -499,7 +499,8 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                100);
 
     SSLInfo ssl_info;
-    ssl_socket_->GetSSLInfo(&ssl_info);
+    bool has_ssl_info = ssl_socket_->GetSSLInfo(&ssl_info);
+    DCHECK(has_ssl_info);
 
     UMA_HISTOGRAM_ENUMERATION("Net.SSLVersion", SSLConnectionStatusToVersion(
                                                     ssl_info.connection_status),
