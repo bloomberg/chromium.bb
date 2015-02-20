@@ -293,6 +293,9 @@ bool InputType::isInRange(const String& value) const
     if (!isSteppable())
         return false;
 
+    // This function should return true if both of validity.rangeUnderflow and
+    // validity.rangeOverflow are false.
+    // If the INPUT has no value, they are false.
     const Decimal numericValue = parseToNumberOrNaN(value);
     if (!numericValue.isFinite())
         return true;
@@ -306,9 +309,12 @@ bool InputType::isOutOfRange(const String& value) const
     if (!isSteppable())
         return false;
 
+    // This function should return true if either validity.rangeUnderflow or
+    // validity.rangeOverflow are true.
+    // If the INPUT has no value, they are false.
     const Decimal numericValue = parseToNumberOrNaN(value);
     if (!numericValue.isFinite())
-        return true;
+        return false;
 
     StepRange stepRange(createStepRange(RejectAny));
     return numericValue < stepRange.minimum() || numericValue > stepRange.maximum();
