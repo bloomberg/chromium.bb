@@ -22,6 +22,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
+from chromite.lib import graphite
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -136,6 +137,9 @@ class BuildStartStage(generic_stages.BuilderStage):
       logging.info('Already have build_id %s, not inserting an entry.',
                    d['build_id'])
       return
+
+    counter_name = '.'.join([self._run.config['name'], 'build_started'])
+    graphite.StatsFactory.GetInstance().Counter(counter_name).increment()
 
     # Note: In other build stages we use self._run.GetCIDBHandle to fetch
     # a cidb handle. However, since we don't yet have a build_id, we can't
