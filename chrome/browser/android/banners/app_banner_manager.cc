@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
 #include "chrome/browser/android/manifest_icon_selector.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -43,10 +44,30 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 
 namespace {
+
 const char kBannerTag[] = "google-play-id";
 base::TimeDelta gTimeDeltaForTesting;
 bool gDisableSecureCheckForTesting = false;
-}  // namespace
+const int kIconMinimumSize = 144;
+
+// The requirement for now is an image/png that is at least 144x144.
+bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
+  for (const auto& icon : manifest.icons) {
+    if (EqualsASCII(icon.type.string(), "image/png"))
+      continue;
+
+    for (const auto& size : icon.sizes) {
+      if (size.IsEmpty()) // "any"
+        return true;
+      if (size.width() >= kIconMinimumSize && size.height() >= kIconMinimumSize)
+        return true;
+    }
+  }
+
+  return false;
+}
+
+}  // anonymous namespace
 
 namespace banners {
 
@@ -150,7 +171,8 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
 
   if (manifest.IsEmpty()
       || !manifest.start_url.is_valid()
-      || (manifest.name.is_null() && manifest.short_name.is_null())) {
+      || (manifest.name.is_null() && manifest.short_name.is_null())
+      || !DoesManifestContainRequiredIcon(manifest)) {
     // No usable manifest, see if there is a play store meta tag.
     Send(new ChromeViewMsg_RetrieveMetaTagContent(routing_id(),
                                                   validated_url_,
