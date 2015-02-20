@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DEVICE_EVENT_LOG_H_
-#define CHROMEOS_DEVICE_EVENT_LOG_H_
+#ifndef COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_H_
+#define COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_H_
 
 #include <cstring>
 #include <sstream>
 
 #include "base/basictypes.h"
 #include "base/timer/elapsed_timer.h"
-#include "chromeos/chromeos_export.h"
+#include "components/device_event_log/device_event_log_export.h"
 
-namespace chromeos {
-
-// These macros can be used to log chromeos device related events.
+// These macros can be used to log device related events.
 // The following values should be used for |level| in these macros:
 //  ERROR Unexpected events, or device level failures. Use sparingly.
 //  USER  Events initiated directly by a user (or Chrome) action.
@@ -24,31 +22,31 @@ namespace chromeos {
 //  NET_LOG(EVENT) << "NetworkState Changed " << name << ": " << state;
 //  POWER_LOG(USER) << "Suspend requested";
 
-#define NET_LOG(level)                                       \
-  DEVICE_LOG(::chromeos::device_event_log::LOG_TYPE_NETWORK, \
-             ::chromeos::device_event_log::LOG_LEVEL_##level)
-#define POWER_LOG(level)                                   \
-  DEVICE_LOG(::chromeos::device_event_log::LOG_TYPE_POWER, \
-             ::chromeos::device_event_log::LOG_LEVEL_##level)
-#define LOGIN_LOG(level)                                   \
-  DEVICE_LOG(::chromeos::device_event_log::LOG_TYPE_LOGIN, \
-             ::chromeos::device_event_log::LOG_LEVEL_##level)
+#define NET_LOG(level)                             \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_NETWORK, \
+             ::device_event_log::LOG_LEVEL_##level)
+#define POWER_LOG(level)                         \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_POWER, \
+             ::device_event_log::LOG_LEVEL_##level)
+#define LOGIN_LOG(level)                         \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_LOGIN, \
+             ::device_event_log::LOG_LEVEL_##level)
 
 // Generally prefer the above macros unless |type| or  |level| is not constant.
 
-#define DEVICE_LOG(type, level)                                   \
-  ::chromeos::device_event_log::internal::DeviceEventLogInstance( \
-      __FILE__, __LINE__, type, level).stream()
+#define DEVICE_LOG(type, level)                                            \
+  ::device_event_log::internal::DeviceEventLogInstance(__FILE__, __LINE__, \
+                                                       type, level).stream()
 
 // Declare {Type_LOG_IF_SLOW() at the top of a method to log slow methods
 // where "slow" is defined by kSlowMethodThresholdMs in the .cc file.
 #define SCOPED_NET_LOG_IF_SLOW() \
-  SCOPED_DEVICE_LOG_IF_SLOW(::chromeos::device_event_log::LOG_TYPE_NETWORK)
+  SCOPED_DEVICE_LOG_IF_SLOW(::device_event_log::LOG_TYPE_NETWORK)
 
 // Generally prefer the above macros unless |type| is not constant.
 
-#define SCOPED_DEVICE_LOG_IF_SLOW(type)                         \
-  ::chromeos::device_event_log::internal::ScopedDeviceLogIfSlow \
+#define SCOPED_DEVICE_LOG_IF_SLOW(type)               \
+  ::device_event_log::internal::ScopedDeviceLogIfSlow \
       scoped_device_log_if_slow(type, __FILE__, __func__)
 
 namespace device_event_log {
@@ -82,26 +80,27 @@ enum StringOrder { OLDEST_FIRST, NEWEST_FIRST };
 
 // Initializes / shuts down device event logging. If |max_entries| = 0 the
 // default value will be used.
-CHROMEOS_EXPORT void Initialize(size_t max_entries);
-CHROMEOS_EXPORT void Shutdown();
+DEVICE_EVENT_LOG_EXPORT void Initialize(size_t max_entries);
+DEVICE_EVENT_LOG_EXPORT void Shutdown();
 
 // If the global instance is initialized, adds an entry to it. Regardless of
 // whether the global instance was intitialzed, this logs the event to
 // LOG(ERROR) if |type| = ERROR or VLOG(1) otherwise.
-CHROMEOS_EXPORT void AddEntry(const char* file,
-                              int line,
-                              LogType type,
-                              LogLevel level,
-                              const std::string& event);
+DEVICE_EVENT_LOG_EXPORT void AddEntry(const char* file,
+                                      int line,
+                                      LogType type,
+                                      LogLevel level,
+                                      const std::string& event);
 
 // For backwards compatibility with network_event_log. Combines |event| and
 // |description| and calls AddEntry().
-CHROMEOS_EXPORT void AddEntryWithDescription(const char* file,
-                                             int line,
-                                             LogType type,
-                                             LogLevel level,
-                                             const std::string& event,
-                                             const std::string& description);
+DEVICE_EVENT_LOG_EXPORT void AddEntryWithDescription(
+    const char* file,
+    int line,
+    LogType type,
+    LogLevel level,
+    const std::string& event,
+    const std::string& description);
 
 // Outputs the log to a formatted string.
 // |order| determines which order to output the events.
@@ -119,20 +118,20 @@ CHROMEOS_EXPORT void AddEntryWithDescription(const char* file,
 // |max_level| determines the maximum log level to be included in the output.
 // |max_events| limits how many events are output if > 0, otherwise all events
 //  are included.
-CHROMEOS_EXPORT std::string GetAsString(StringOrder order,
-                                        const std::string& format,
-                                        const std::string& types,
-                                        LogLevel max_level,
-                                        size_t max_events);
+DEVICE_EVENT_LOG_EXPORT std::string GetAsString(StringOrder order,
+                                                const std::string& format,
+                                                const std::string& types,
+                                                LogLevel max_level,
+                                                size_t max_events);
 
-CHROMEOS_EXPORT extern const LogLevel kDefaultLogLevel;
+DEVICE_EVENT_LOG_EXPORT extern const LogLevel kDefaultLogLevel;
 
 namespace internal {
 
 // Implementation class for DEVICE_LOG macros. Provides a stream for creating
 // a log string and adds the event using device_event_log::AddEntry on
 // destruction.
-class CHROMEOS_EXPORT DeviceEventLogInstance {
+class DEVICE_EVENT_LOG_EXPORT DeviceEventLogInstance {
  public:
   DeviceEventLogInstance(const char* file,
                          int line,
@@ -155,7 +154,7 @@ class CHROMEOS_EXPORT DeviceEventLogInstance {
 // Implementation class for SCOPED_LOG_IF_SLOW macros. Tests the elapsed time on
 // destruction and adds a Debug or Error log entry if it exceeds the
 // corresponding expected maximum elapsed time.
-class CHROMEOS_EXPORT ScopedDeviceLogIfSlow {
+class DEVICE_EVENT_LOG_EXPORT ScopedDeviceLogIfSlow {
  public:
   ScopedDeviceLogIfSlow(LogType type,
                         const char* file,
@@ -173,6 +172,4 @@ class CHROMEOS_EXPORT ScopedDeviceLogIfSlow {
 
 }  // namespace device_event_log
 
-}  // namespace chromeos
-
-#endif  // CHROMEOS_DEVICE_EVENT_LOG_H_
+#endif  // DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_H_

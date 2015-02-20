@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DEVICE_EVENT_LOG_IMPL_H_
-#define CHROMEOS_DEVICE_EVENT_LOG_IMPL_H_
+#ifndef COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_IMPL_H_
+#define COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_IMPL_H_
 
 #include <list>
 #include <string>
 
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/device_event_log.h"
-
-namespace chromeos {
+#include "components/device_event_log/device_event_log.h"
+#include "components/device_event_log/device_event_log_export.h"
 
 namespace device_event_log {
 
-class CHROMEOS_EXPORT DeviceEventLogImpl {
+class DEVICE_EVENT_LOG_EXPORT DeviceEventLogImpl {
  public:
   struct LogEntry {
     LogEntry(const char* filedesc,
@@ -78,6 +76,4 @@ class CHROMEOS_EXPORT DeviceEventLogImpl {
 
 }  // namespace device_event_log
 
-}  // namespace chromeos
-
-#endif  // CHROMEOS_DEVICE_EVENT_LOG_IMPL_H_
+#endif  // COMPONENTS_DEVICE_EVENT_LOG_DEVICE_EVENT_LOG_IMPL_H_

@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/device_event_log.h"
+#include "components/device_event_log/device_event_log.h"
 
 namespace base {
 class Value;
@@ -44,26 +44,26 @@ CHROMEOS_EXPORT std::string ValueAsString(const base::Value& value);
 
 // Errors
 #define NET_LOG_ERROR(event, desc) \
-  NET_LOG_LEVEL(::chromeos::device_event_log::LOG_LEVEL_ERROR, event, desc)
+  NET_LOG_LEVEL(::device_event_log::LOG_LEVEL_ERROR, event, desc)
 
 // Chrome initiated events, e.g. connection requests, scan requests,
 // configuration removal (either from the UI or from ONC policy application).
 #define NET_LOG_USER(event, desc) \
-  NET_LOG_LEVEL(::chromeos::device_event_log::LOG_LEVEL_USER, event, desc)
+  NET_LOG_LEVEL(::device_event_log::LOG_LEVEL_USER, event, desc)
 
 // Important events, e.g. state updates
 #define NET_LOG_EVENT(event, desc) \
-  NET_LOG_LEVEL(::chromeos::device_event_log::LOG_LEVEL_EVENT, event, desc)
+  NET_LOG_LEVEL(::device_event_log::LOG_LEVEL_EVENT, event, desc)
 
 // Non-essential debugging events
 #define NET_LOG_DEBUG(event, desc) \
-  NET_LOG_LEVEL(::chromeos::device_event_log::LOG_LEVEL_DEBUG, event, desc)
+  NET_LOG_LEVEL(::device_event_log::LOG_LEVEL_DEBUG, event, desc)
 
 // Macro to include file and line number info in the event log.
-#define NET_LOG_LEVEL(log_level, event, description)                      \
-  ::chromeos::device_event_log::AddEntryWithDescription(                  \
-      __FILE__, __LINE__, ::chromeos::device_event_log::LOG_TYPE_NETWORK, \
-      log_level, event, description)
+#define NET_LOG_LEVEL(log_level, event, description)                       \
+  ::device_event_log::AddEntryWithDescription(                             \
+      __FILE__, __LINE__, ::device_event_log::LOG_TYPE_NETWORK, log_level, \
+      event, description)
 
 }  // namespace network_event_log
 

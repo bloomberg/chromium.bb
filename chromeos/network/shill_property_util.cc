@@ -12,9 +12,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/values.h"
-#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

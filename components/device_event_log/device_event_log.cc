@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/device_event_log.h"
+#include "components/device_event_log/device_event_log.h"
 
 #include <string>
 
 #include "base/logging.h"
-#include "chromeos/device_event_log_impl.h"
-
-namespace chromeos {
+#include "components/device_event_log/device_event_log_impl.h"
 
 namespace device_event_log {
 
@@ -106,5 +104,3 @@ ScopedDeviceLogIfSlow::~ScopedDeviceLogIfSlow() {
 }  // namespace internal
 
 }  // namespace device_event_log
-
-}  // namespace chromeos

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/device_event_log.h"
+#include "components/device_event_log/device_event_log.h"
 
 namespace chromeos {
 

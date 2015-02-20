@@ -105,6 +105,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/metrics_service.h"
@@ -756,6 +757,9 @@ void ChromeBrowserMainParts::ToolkitInitialized() {
 
 void ChromeBrowserMainParts::PreMainMessageLoopStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopStart");
+
+  device_event_log::Initialize(0 /* default max entries */);
+
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreMainMessageLoopStart();
 }
@@ -1705,6 +1709,7 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   browser_shutdown::ShutdownPostThreadsStop(restart_last_session_);
   master_prefs_.reset();
   process_singleton_.reset();
+  device_event_log::Shutdown();
 
   // We need to do this check as late as possible, but due to modularity, this
   // may be the last point in Chrome.  This would be more effective if done at

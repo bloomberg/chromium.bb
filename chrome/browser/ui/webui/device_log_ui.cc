@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/device_log_ui.h"
+#include "chrome/browser/ui/webui/device_log_ui.h"
 
 #include <string>
 
@@ -10,8 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/device_event_log.h"
+#include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -31,15 +32,14 @@ class DeviceLogMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "DeviceLog.getLog",
-        base::Bind(&DeviceLogMessageHandler::GetLog,
-                   base::Unretained(this)));
+        base::Bind(&DeviceLogMessageHandler::GetLog, base::Unretained(this)));
   }
 
  private:
   void GetLog(const base::ListValue* value) const {
-    base::StringValue data(chromeos::device_event_log::GetAsString(
-        chromeos::device_event_log::NEWEST_FIRST, "json", "",
-        chromeos::device_event_log::LOG_LEVEL_DEBUG, 0));
+    base::StringValue data(device_event_log::GetAsString(
+        device_event_log::NEWEST_FIRST, "json", "",
+        device_event_log::LOG_LEVEL_DEBUG, 0));
     web_ui()->CallJavascriptFunction("DeviceLogUI.getLogCallback", data);
   }
 
@@ -78,8 +78,8 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
   html->AddResourcePath("device_log_ui.js", IDR_DEVICE_LOG_UI_JS);
   html->SetDefaultResource(IDR_DEVICE_LOG_UI_HTML);
 
-  content::WebUIDataSource::Add(
-      web_ui->GetWebContents()->GetBrowserContext(), html);
+  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
+                                html);
 }
 
 DeviceLogUI::~DeviceLogUI() {

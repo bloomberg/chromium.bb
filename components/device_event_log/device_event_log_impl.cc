@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/device_event_log_impl.h"
+#include "components/device_event_log/device_event_log_impl.h"
 
 #include <cmath>
 #include <list>
 #include <set>
 
-#include "base/files/file_path.h"
+#include "base/containers/adapters.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -19,8 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/escape.h"
-
-namespace chromeos {
 
 namespace device_event_log {
 
@@ -325,32 +323,30 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
       // determine the first entry to include.
       size_t shown_events = 0;
       size_t num_entries = 0;
-      for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
-           riter != entries_.rend(); ++riter) {
+      for (const LogEntry& entry : base::Reversed(entries_)) {
         ++num_entries;
-        if (!LogEntryMatchesTypes(*riter, include_types, exclude_types))
+        if (!LogEntryMatchesTypes(entry, include_types, exclude_types))
           continue;
-        if (riter->log_level > max_level)
+        if (entry.log_level > max_level)
           continue;
         if (++shown_events >= max_events)
           break;
       }
       offset = entries_.size() - num_entries;
     }
-    for (LogEntryList::const_iterator iter = entries_.begin();
-         iter != entries_.end(); ++iter) {
+    for (const LogEntry& entry : entries_) {
       if (offset > 0) {
         --offset;
         continue;
       }
-      if (!LogEntryMatchesTypes(*iter, include_types, exclude_types))
+      if (!LogEntryMatchesTypes(entry, include_types, exclude_types))
         continue;
-      if (iter->log_level > max_level)
+      if (entry.log_level > max_level)
         continue;
       if (format_json) {
-        log_entries.AppendString(LogEntryAsJSON(*iter));
+        log_entries.AppendString(LogEntryAsJSON(entry));
       } else {
-        result += LogEntryToString(*iter, show_time, show_file, show_type,
+        result += LogEntryToString(entry, show_time, show_file, show_type,
                                    show_level, format_html);
         result += "\n";
       }
@@ -358,16 +354,15 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
   } else {
     size_t nlines = 0;
     // Iterate backwards through the list to show the most recent entries first.
-    for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
-         riter != entries_.rend(); ++riter) {
-      if (!LogEntryMatchesTypes(*riter, include_types, exclude_types))
+    for (const LogEntry& entry : base::Reversed(entries_)) {
+      if (!LogEntryMatchesTypes(entry, include_types, exclude_types))
         continue;
-      if (riter->log_level > max_level)
+      if (entry.log_level > max_level)
         continue;
       if (format_json) {
-        log_entries.AppendString(LogEntryAsJSON(*riter));
+        log_entries.AppendString(LogEntryAsJSON(entry));
       } else {
-        result += LogEntryToString(*riter, show_time, show_file, show_type,
+        result += LogEntryToString(entry, show_time, show_file, show_type,
                                    show_level, format_html);
         result += "\n";
       }
@@ -394,10 +389,13 @@ DeviceEventLogImpl::LogEntry::LogEntry(const char* filedesc,
       event(event),
       time(base::Time::Now()),
       count(1) {
-  if (filedesc)
-    file = base::FilePath(std::string(filedesc)).BaseName().value();
+  if (filedesc) {
+    file = filedesc;
+    size_t last_slash_pos = file.find_last_of("\\/");
+    if (last_slash_pos != std::string::npos) {
+      file.erase(0, last_slash_pos + 1);
+    }
+  }
 }
 
 }  // namespace device_event_log
-
-}  // namespace chromeos

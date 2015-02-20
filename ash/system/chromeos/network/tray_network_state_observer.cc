@@ -9,7 +9,6 @@
 
 #include "ash/system/tray/system_tray.h"
 #include "base/location.h"
-#include "chromeos/device_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

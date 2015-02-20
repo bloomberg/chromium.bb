@@ -30,6 +30,7 @@ include_rules = [
   "+components/crx_file",
   "+components/data_reduction_proxy",
   "+components/network_hints",
+  "+components/device_event_log",
   "+components/dom_distiller",
   "+components/domain_reliability",
   "+components/enhanced_bookmarks",

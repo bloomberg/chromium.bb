@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chromeos/device_event_log.h"
+#include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace system_logs {
@@ -25,16 +25,12 @@ void DeviceEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
   const int kMaxDeviceEventsForAboutSystem = 400;
-  (*response)[kNetworkEventLogEntry] = chromeos::device_event_log::GetAsString(
-      chromeos::device_event_log::OLDEST_FIRST, "time,file,level",
-      "network",
-      chromeos::device_event_log::kDefaultLogLevel,
-      kMaxDeviceEventsForAboutSystem);
-  (*response)[kDeviceEventLogEntry] = chromeos::device_event_log::GetAsString(
-      chromeos::device_event_log::OLDEST_FIRST, "time,file,type,level",
-      "non-network",
-      chromeos::device_event_log::LOG_LEVEL_DEBUG,
-      kMaxDeviceEventsForAboutSystem);
+  (*response)[kNetworkEventLogEntry] = device_event_log::GetAsString(
+      device_event_log::OLDEST_FIRST, "time,file,level", "network",
+      device_event_log::kDefaultLogLevel, kMaxDeviceEventsForAboutSystem);
+  (*response)[kDeviceEventLogEntry] = device_event_log::GetAsString(
+      device_event_log::OLDEST_FIRST, "time,file,type,level", "non-network",
+      device_event_log::LOG_LEVEL_DEBUG, kMaxDeviceEventsForAboutSystem);
   callback.Run(response.get());
 }
 

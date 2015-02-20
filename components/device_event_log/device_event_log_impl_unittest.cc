@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/device_event_log_impl.h"
+#include "components/device_event_log/device_event_log_impl.h"
 
 #include <algorithm>
 
@@ -13,8 +13,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace chromeos {
 
 namespace device_event_log {
 
@@ -261,5 +259,3 @@ TEST_F(DeviceEventLogTest, TestType) {
 }
 
 }  // namespace device_event_log
-
-}  // namespace chromeos
