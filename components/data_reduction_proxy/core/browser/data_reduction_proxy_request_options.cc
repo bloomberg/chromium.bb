@@ -4,12 +4,11 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,12 +29,19 @@
 
 namespace data_reduction_proxy {
 
+namespace {
+std::string FormatOption(const std::string& name, const std::string& value) {
+  return name + "=" + value;
+}
+}  //namespace
+
 const char kSessionHeaderOption[] = "ps";
 const char kCredentialsHeaderOption[] = "sid";
 const char kBuildNumberHeaderOption[] = "b";
 const char kPatchNumberHeaderOption[] = "p";
 const char kClientHeaderOption[] = "c";
 const char kLoFiHeaderOption[] = "q";
+const char kExperimentsOption[] = "exp";
 
 // The empty version for the authentication protocol. Currently used by
 // Android webview.
@@ -67,9 +73,9 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     DataReductionProxyParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : client_(GetString(client)),
-      version_(ChromiumVersion()),
       data_reduction_proxy_params_(params),
       network_task_runner_(network_task_runner) {
+  GetChromiumBuildAndPatch(ChromiumVersion(), &build_, &patch_);
 }
 
 DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
@@ -78,9 +84,9 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     DataReductionProxyParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : client_(GetString(client)),
-      version_(version),
       data_reduction_proxy_params_(params),
       network_task_runner_(network_task_runner) {
+  GetChromiumBuildAndPatch(version, &build_, &patch_);
 }
 
 DataReductionProxyRequestOptions::~DataReductionProxyRequestOptions() {
@@ -91,6 +97,7 @@ void DataReductionProxyRequestOptions::Init() {
   UpdateCredentials();
   UpdateLoFi();
   UpdateVersion();
+  UpdateExperiments();
 }
 
 std::string DataReductionProxyRequestOptions::ChromiumVersion() const {
@@ -114,32 +121,38 @@ void DataReductionProxyRequestOptions::GetChromiumBuildAndPatch(
 }
 
 void DataReductionProxyRequestOptions::UpdateVersion() {
-  std::string build_number;
-  std::string patch_number;
-  GetChromiumBuildAndPatch(version_, &build_number, &patch_number);
-  if (!build_number.empty() && !patch_number.empty()) {
-    header_options_[kBuildNumberHeaderOption] = build_number;
-    header_options_[kPatchNumberHeaderOption] = patch_number;
-  }
-  if (!client_.empty())
-    header_options_[kClientHeaderOption] = client_;
+  GetChromiumBuildAndPatch(version_, &build_, &patch_);
   RegenerateRequestHeaderValue();
 }
 
 void DataReductionProxyRequestOptions::UpdateLoFi() {
   // LoFi was not enabled, but now is. Add the header option.
-  if (header_options_.find(kLoFiHeaderOption) == header_options_.end() &&
+  if (lofi_.empty() &&
       DataReductionProxyParams::IsLoFiEnabled()) {
-    header_options_[kLoFiHeaderOption] = "low";
+    lofi_ = "low";
     RegenerateRequestHeaderValue();
     return;
   }
   // LoFi was enabled, but no longer is. Remove the header option.
-  if (header_options_.find(kLoFiHeaderOption) != header_options_.end() &&
-      !DataReductionProxyParams::IsLoFiEnabled()) {
-    header_options_.erase(kLoFiHeaderOption);
+  if (!lofi_.empty() && !DataReductionProxyParams::IsLoFiEnabled()) {
+    lofi_ = std::string();
     RegenerateRequestHeaderValue();
   }
+}
+
+void DataReductionProxyRequestOptions::UpdateExperiments() {
+  std::string experiments =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyExperiment);
+  if (experiments.empty())
+    return;
+  base::StringTokenizer experiment_tokenizer(experiments, ", ");
+  experiment_tokenizer.set_quote_chars("\"");
+  while (experiment_tokenizer.GetNext()) {
+    if (!experiment_tokenizer.token().empty())
+      experiments_.push_back(experiment_tokenizer.token());
+  }
+  RegenerateRequestHeaderValue();
 }
 
 // static
@@ -228,9 +241,7 @@ void DataReductionProxyRequestOptions::UpdateCredentials() {
   std::string session;
   std::string credentials;
   last_credentials_update_time_ = Now();
-  ComputeCredentials(last_credentials_update_time_, &session, &credentials);
-  header_options_[kSessionHeaderOption] = session;
-  header_options_[kCredentialsHeaderOption] = credentials;
+  ComputeCredentials(last_credentials_update_time_, &session_, &credentials_);
   RegenerateRequestHeaderValue();
 }
 
@@ -277,12 +288,18 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
 }
 
 void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
-  std::vector <std::string> options;
-  for (std::map<std::string, std::string>::iterator
-       it = header_options_.begin(); it != header_options_.end(); ++it) {
-    options.push_back(it->first + "=" + it->second);
-  }
-  header_value_ = JoinString(options, ", ");
+  header_value_ = FormatOption(kSessionHeaderOption, session_)
+                + ", " + FormatOption(kCredentialsHeaderOption, credentials_)
+                + (client_.empty() ?
+                       "" : ", " + FormatOption(kClientHeaderOption, client_))
+                + (build_.empty() || patch_.empty() ?
+                       "" :
+                       ", " + FormatOption(kBuildNumberHeaderOption, build_)
+                       + ", " + FormatOption(kPatchNumberHeaderOption, patch_))
+                + (lofi_.empty() ?
+                       "" : ", " + FormatOption(kLoFiHeaderOption, lofi_));
+  for (const auto& experiment : experiments_)
+    header_value_ += ", " + FormatOption(kExperimentsOption, experiment);
 }
 
 }  // namespace data_reduction_proxy

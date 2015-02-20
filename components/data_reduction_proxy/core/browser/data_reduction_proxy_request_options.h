@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_AUTH_REQUEST_HANDLER_H_
 
-#include <map>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -33,6 +33,7 @@ extern const char kBuildNumberHeaderOption[];
 extern const char kPatchNumberHeaderOption[];
 extern const char kClientHeaderOption[];
 extern const char kLoFiHeaderOption[];
+extern const char kExperimentsOption[];
 
 #if defined(OS_ANDROID)
 extern const char kAndroidWebViewProtocolVersion[];
@@ -74,8 +75,8 @@ class DataReductionProxyRequestOptions {
   virtual ~DataReductionProxyRequestOptions();
 
   // Sets |key_| to the default key and initializes the credentials, version,
-  // client, and lo-fi header values in |header_options_|. Generates the
-  // |header_value_| string which is concatenated to the Chrome-proxy header.
+  // client, and lo-fi header values. Generates the |header_value_| string,
+  // which is concatenated to the Chrome-proxy header.
   void Init();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
@@ -127,17 +128,7 @@ class DataReductionProxyRequestOptions {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
-                           AuthorizationOnIOThread);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
-                           AuthorizationIgnoresEmptyKey);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
-                           AuthorizationBogusVersion);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthHashForSalt);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
-                           AuthorizationLoFi);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
-                           AuthorizationLoFiOffThenOn);
 
   // Returns the version of Chromium that is being used.
   std::string ChromiumVersion() const;
@@ -148,12 +139,15 @@ class DataReductionProxyRequestOptions {
                                 std::string* build,
                                 std::string* patch) const;
 
-  // Uses |version_| and |client_| to update values in |header_options_|.
+  // Updates client type, build, and patch.
   void UpdateVersion();
 
-  // Updates the value of LoFi in |header_options_| and regenerates the header
-  // if necessary.
+  // Updates the value of LoFi and regenerates the header if necessary.
   void UpdateLoFi();
+
+  // Update the value of the experiments to be run and regenerate the header if
+  // necessary.
+  void UpdateExperiments();
 
   // Generates a session ID and credentials suitable for authenticating with
   // the data reduction proxy.
@@ -161,7 +155,7 @@ class DataReductionProxyRequestOptions {
                           std::string* session,
                           std::string* credentials);
 
-  // Generates and updates the session ID and credentials in |header_options_|.
+  // Generates and updates the session ID and credentials.
   void UpdateCredentials();
 
   // Adds authentication headers only if |expects_ssl| is true and
@@ -176,8 +170,7 @@ class DataReductionProxyRequestOptions {
   // Chrome-proxy header.
   void RegenerateRequestHeaderValue();
 
-  // Map and string of the request options to be added to the header.
-  std::map<std::string, std::string> header_options_;
+  // The Chrome-Proxy header value.
   std::string header_value_;
 
   // Authentication state.
@@ -186,6 +179,12 @@ class DataReductionProxyRequestOptions {
   // Name of the client and version of the data reduction proxy protocol to use.
   std::string client_;
   std::string version_;
+  std::string session_;
+  std::string credentials_;
+  std::string build_;
+  std::string patch_;
+  std::string lofi_;
+  std::vector<std::string> experiments_;
 
   // The last time the session was updated. Used to ensure that a session is
   // never used for more than twenty-four hours.

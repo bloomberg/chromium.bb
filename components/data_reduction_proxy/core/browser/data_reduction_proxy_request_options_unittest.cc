@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
 #include "base/command_line.h"
@@ -89,7 +88,9 @@ class TestDataReductionProxyRequestOptions
       : DataReductionProxyRequestOptions(
             client, version, params, loop_proxy) {}
 
-  std::string GetDefaultKey() const override { return kTestKey; }
+  std::string GetDefaultKey() const override {
+    return kTestKey;
+  }
 
   base::Time Now() const override {
     return base::Time::UnixEpoch() + now_offset_;
@@ -111,256 +112,106 @@ class TestDataReductionProxyRequestOptions
   base::TimeDelta now_offset_;
 };
 
+void SetHeaderExpectations(const std::string& session,
+                           const std::string& credentials,
+                           const std::string& client,
+                           const std::string& build,
+                           const std::string& patch,
+                           const std::string& lofi,
+                           const std::vector<std::string> experiments,
+                           std::string* expected_header) {
+  std::vector<std::string> expected_options;
+  if (!session.empty()) {
+    expected_options.push_back(
+        std::string(kSessionHeaderOption) + "=" + session);
+  }
+  if (!credentials.empty()) {
+    expected_options.push_back(
+        std::string(kCredentialsHeaderOption) + "=" + credentials);
+  }
+  if (!client.empty()) {
+    expected_options.push_back(
+        std::string(kClientHeaderOption) + "=" + client);
+  }
+  if (!build.empty()) {
+    expected_options.push_back(
+        std::string(kBuildNumberHeaderOption) + "=" + build);
+  }
+  if (!patch.empty()) {
+    expected_options.push_back(
+        std::string(kPatchNumberHeaderOption) + "=" + patch);
+  }
+  if (!lofi.empty()) {
+    expected_options.push_back(
+        std::string(kLoFiHeaderOption) + "=" + lofi);
+  }
+  for (const auto& experiment : experiments) {
+    expected_options.push_back(
+        std::string(kExperimentsOption) + "=" + experiment);
+  }
+  if (!expected_options.empty())
+    *expected_header = JoinString(expected_options, ", ");
+}
+
 }  // namespace
 
 class DataReductionProxyRequestOptionsTest : public testing::Test {
  public:
-  DataReductionProxyRequestOptionsTest()
-      : loop_proxy_(base::MessageLoopProxy::current().get()) {
+  DataReductionProxyRequestOptionsTest() {
+    params_.reset(
+        new TestDataReductionProxyParams(
+            DataReductionProxyParams::kAllowed |
+            DataReductionProxyParams::kFallbackAllowed |
+            DataReductionProxyParams::kPromoAllowed,
+            TestDataReductionProxyParams::HAS_EVERYTHING &
+            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
   }
 
-  std::map<std::string, std::string> ParseHeader(std::string header) {
-    std::map<std::string, std::string> header_options;
-    size_t pos = 0;
-    std::string name;
-    std::string value;
-    std::string equals_delimiter = "=";
-    std::string comma_delimiter = ", ";
-    while ((pos = header.find(equals_delimiter)) != std::string::npos) {
-        name = header.substr(0, pos);
-        header.erase(0, pos + equals_delimiter.length());
-        pos = header.find(comma_delimiter);
-        if (pos != std::string::npos) {
-          value = header.substr(0, pos);
-          header.erase(0, pos + comma_delimiter.length());
-          header_options[name] = value;
-        }
+  void CreateRequestOptions(const std::string& version) {
+    request_options_.reset(
+        new TestDataReductionProxyRequestOptions(
+            kClient, version, params(), loop_proxy()));
+    request_options_->Init();
+  }
+
+  TestDataReductionProxyParams* params() {
+    return params_.get();
+  }
+
+  base::MessageLoopProxy* loop_proxy() {
+    return base::MessageLoopProxy::current().get();
+  }
+
+  TestDataReductionProxyRequestOptions* request_options() {
+    return request_options_.get();
+  }
+
+  void VerifyExpectedHeader(const std::string& proxy_uri,
+                            const std::string& expected_header) {
+    base::RunLoop().RunUntilIdle();
+    net::HttpRequestHeaders headers;
+    request_options_->MaybeAddRequestHeader(
+        NULL,
+        proxy_uri.empty() ? net::ProxyServer() :
+            net::ProxyServer::FromURI(proxy_uri, net::ProxyServer::SCHEME_HTTP),
+        &headers);
+    if (expected_header.empty()) {
+      EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
+      return;
     }
-
-    if (!header.empty())
-      header_options[name] = header;
-
-    return header_options;
+    EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+    std::string header_value;
+    headers.GetHeader(kChromeProxyHeader, &header_value);
+    EXPECT_EQ(expected_header, header_value);
   }
 
+ private:
   // Required for MessageLoopProxy::current().
   base::MessageLoopForUI loop_;
-  base::MessageLoopProxy* loop_proxy_;
+  scoped_ptr<TestDataReductionProxyParams> params_;
+  scoped_ptr<TestDataReductionProxyRequestOptions> request_options_;
 };
-
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
-  std::map<std::string, std::string> kExpectedHeader;
-  kExpectedHeader[kSessionHeaderOption] = kExpectedSession2;
-  kExpectedHeader[kCredentialsHeaderOption] = kExpectedCredentials2;
-  kExpectedHeader[kBuildNumberHeaderOption] = "2";
-  kExpectedHeader[kPatchNumberHeaderOption] =  "3";
-  kExpectedHeader[kClientHeaderOption] = kClientStr;
-
-  std::map<std::string, std::string> kExpectedHeader2;
-  kExpectedHeader2[kSessionHeaderOption] =
-      "86401-1633771873-1633771873-1633771873";
-  kExpectedHeader2[kCredentialsHeaderOption] =
-      "d7c1c34ef6b90303b01c48a6c1db6419";
-  kExpectedHeader2[kBuildNumberHeaderOption] = "2";
-  kExpectedHeader2[kPatchNumberHeaderOption] = "3";
-  kExpectedHeader2[kClientHeaderOption] = kClientStr;
-
-  scoped_ptr<TestDataReductionProxyParams> params;
-  params.reset(
-      new TestDataReductionProxyParams(
-          DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-          TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-  // loop_proxy_ is just the current message loop. This means loop_proxy_
-  // is the network thread used by DataReductionProxyRequestOptions.
-  TestDataReductionProxyRequestOptions request_options(kClient,
-                                                       kVersion,
-                                                       params.get(),
-                                                       loop_proxy_);
-  request_options.Init();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kExpectedBuild,
-            request_options.header_options_[kBuildNumberHeaderOption]);
-  EXPECT_EQ(kExpectedPatch,
-            request_options.header_options_[kPatchNumberHeaderOption]);
-  EXPECT_EQ(request_options.key_, kTestKey);
-  EXPECT_EQ(kExpectedCredentials,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession,
-            request_options.header_options_[kSessionHeaderOption]);
-  EXPECT_EQ(kClientStr, request_options.header_options_[kClientHeaderOption]);
-
-  // Now set a key.
-  request_options.SetKeyOnIO(kTestKey2);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kTestKey2, request_options.key_);
-  EXPECT_EQ(kExpectedCredentials2,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession2,
-            request_options.header_options_[kSessionHeaderOption]);
-
-  // Don't write headers if the proxy is invalid.
-  net::HttpRequestHeaders headers;
-  request_options.MaybeAddRequestHeader(NULL, net::ProxyServer(), &headers);
-  EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
-
-  // Don't write headers with a valid proxy, that's not a data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(kOtherProxy, net::ProxyServer::SCHEME_HTTP),
-      &headers);
-  EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
-
-  // Don't write headers with a valid data reduction ssl proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(params->DefaultSSLOrigin(),
-                                net::ProxyServer::SCHEME_HTTP),
-      &headers);
-  EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
-
-  // Write headers with a valid data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(params->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP),
-      &headers);
-  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
-  std::string header_value;
-  headers.GetHeader(kChromeProxyHeader, &header_value);
-  EXPECT_EQ(kExpectedHeader, ParseHeader(header_value));
-
-  // Write headers with a valid data reduction ssl proxy when one is expected.
-  net::HttpRequestHeaders ssl_headers;
-  request_options.MaybeAddProxyTunnelRequestHandler(
-      net::ProxyServer::FromURI(
-        params->DefaultSSLOrigin(),
-        net::ProxyServer::SCHEME_HTTP).host_port_pair(),
-      &ssl_headers);
-  EXPECT_TRUE(ssl_headers.HasHeader(kChromeProxyHeader));
-  std::string ssl_header_value;
-  ssl_headers.GetHeader(kChromeProxyHeader, &ssl_header_value);
-  EXPECT_EQ(kExpectedHeader, ParseHeader(ssl_header_value));
-
-  // Fast forward 24 hours. The header should be the same.
-  request_options.set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
-  net::HttpRequestHeaders headers2;
-  // Write headers with a valid data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(params->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP),
-      &headers2);
-  EXPECT_TRUE(headers2.HasHeader(kChromeProxyHeader));
-  std::string header_value2;
-  headers2.GetHeader(kChromeProxyHeader, &header_value2);
-  EXPECT_EQ(kExpectedHeader, ParseHeader(header_value2));
-
-  // Fast forward one more second. The header should be new.
-  request_options.set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
-  net::HttpRequestHeaders headers3;
-  // Write headers with a valid data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(params->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP),
-      &headers3);
-  EXPECT_TRUE(headers3.HasHeader(kChromeProxyHeader));
-  std::string header_value3;
-  headers3.GetHeader(kChromeProxyHeader, &header_value3);
-  EXPECT_EQ(kExpectedHeader2, ParseHeader(header_value3));
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
-scoped_ptr<TestDataReductionProxyParams> params;
-  params.reset(
-      new TestDataReductionProxyParams(
-          DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-          TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-  // loop_proxy_ is just the current message loop. This means loop_proxy_
-  // is the network thread used by DataReductionProxyRequestOptions.
-  TestDataReductionProxyRequestOptions request_options(kClient,
-                                                       kVersion,
-                                                       params.get(),
-                                                       loop_proxy_);
-  request_options.Init();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kExpectedBuild,
-            request_options.header_options_[kBuildNumberHeaderOption]);
-  EXPECT_EQ(kExpectedPatch,
-            request_options.header_options_[kPatchNumberHeaderOption]);
-  EXPECT_EQ(request_options.key_, kTestKey);
-  EXPECT_EQ(kExpectedCredentials,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession,
-            request_options.header_options_[kSessionHeaderOption]);
-  EXPECT_EQ(kClientStr, request_options.header_options_[kClientHeaderOption]);
-
-  // Now set an empty key. The auth handler should ignore that, and the key
-  // remains |kTestKey|.
-  request_options.SetKeyOnIO("");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(request_options.key_, kTestKey);
-  EXPECT_EQ(kExpectedCredentials,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession,
-            request_options.header_options_[kSessionHeaderOption]);
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
-  std::map<std::string, std::string> kExpectedHeader;
-  kExpectedHeader[kSessionHeaderOption] = kExpectedSession2;
-  kExpectedHeader[kCredentialsHeaderOption] = kExpectedCredentials2;
-  kExpectedHeader[kClientHeaderOption] = kClientStr;
-
-  scoped_ptr<TestDataReductionProxyParams> params;
-  params.reset(
-      new TestDataReductionProxyParams(
-          DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-          TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-  TestDataReductionProxyRequestOptions request_options(kClient,
-                                                       kBogusVersion,
-                                                       params.get(),
-                                                       loop_proxy_);
-  request_options.Init();
-  EXPECT_TRUE(request_options.header_options_.find(kBuildNumberHeaderOption) ==
-                  request_options.header_options_.end());
-  EXPECT_TRUE(request_options.header_options_.find(kPatchNumberHeaderOption) ==
-                  request_options.header_options_.end());
-
-  // Now set a key.
-  request_options.SetKeyOnIO(kTestKey2);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kTestKey2, request_options.key_);
-  EXPECT_EQ(kExpectedCredentials2,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession2,
-            request_options.header_options_[kSessionHeaderOption]);
-
-  net::HttpRequestHeaders headers;
-  // Write headers with a valid data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(
-          params->DefaultOrigin(),
-          net::ProxyServer::SCHEME_HTTP),
-      &headers);
-  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
-  std::string header_value;
-  headers.GetHeader(kChromeProxyHeader, &header_value);
-  EXPECT_EQ(kExpectedHeader, ParseHeader(header_value));
-}
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
   std::string salt = "8675309"; // Jenny's number to test the hash generator.
@@ -371,105 +222,125 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
                 8675309, kDataReductionProxyKey));
 }
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationLoFi) {
-  std::map<std::string, std::string> kExpectedHeader;
-  kExpectedHeader[kSessionHeaderOption] = kExpectedSession;
-  kExpectedHeader[kCredentialsHeaderOption] = kExpectedCredentials;
-  kExpectedHeader[kClientHeaderOption] = kClientStr;
-  kExpectedHeader[kLoFiHeaderOption] = "low";
+TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, kClientStr,
+                        kExpectedBuild, kExpectedPatch, std::string(),
+                        std::vector<std::string>(), &expected_header);
 
-  scoped_ptr<TestDataReductionProxyParams> params;
-  params.reset(
-      new TestDataReductionProxyParams(
-          DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-          TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
+  std::string expected_header2;
+  SetHeaderExpectations("86401-1633771873-1633771873-1633771873",
+                        "d7c1c34ef6b90303b01c48a6c1db6419", kClientStr,
+                        kExpectedBuild, kExpectedPatch, std::string(),
+                        std::vector<std::string>(), &expected_header2);
+
+  CreateRequestOptions(kVersion);
+  base::RunLoop().RunUntilIdle();
+
+  // Now set a key.
+  request_options()->SetKeyOnIO(kTestKey2);
+
+  // Don't write headers if the proxy is invalid.
+  VerifyExpectedHeader(std::string(), std::string());
+
+  // Don't write headers with a valid proxy, that's not a data reduction proxy.
+  VerifyExpectedHeader(kOtherProxy, std::string());
+
+  // Don't write headers with a valid data reduction ssl proxy.
+  VerifyExpectedHeader(params()->DefaultSSLOrigin(), std::string());
+
+  // Write headers with a valid data reduction proxy.
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+
+  // Write headers with a valid data reduction ssl proxy when one is expected.
+  net::HttpRequestHeaders ssl_headers;
+  request_options()->MaybeAddProxyTunnelRequestHandler(
+      net::ProxyServer::FromURI(
+        params()->DefaultSSLOrigin(),
+        net::ProxyServer::SCHEME_HTTP).host_port_pair(),
+      &ssl_headers);
+  EXPECT_TRUE(ssl_headers.HasHeader(kChromeProxyHeader));
+  std::string ssl_header_value;
+  ssl_headers.GetHeader(kChromeProxyHeader, &ssl_header_value);
+  EXPECT_EQ(expected_header, ssl_header_value);
+
+  // Fast forward 24 hours. The header should be the same.
+  request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+
+  // Fast forward one more second. The header should be new.
+  request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header2);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
+                        kExpectedBuild, kExpectedPatch, std::string(),
+                        std::vector<std::string>(), &expected_header);
+  CreateRequestOptions(kVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+
+  // Now set an empty key. The auth handler should ignore that, and the key
+  // remains |kTestKey|.
+  request_options()->SetKeyOnIO(std::string());
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession2, kExpectedCredentials2, kClientStr,
+                        std::string(), std::string(), std::string(),
+                        std::vector<std::string>(), &expected_header);
+
+  CreateRequestOptions(kBogusVersion);
+
+  // Now set a key.
+  request_options()->SetKeyOnIO(kTestKey2);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationLoFi) {
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
+                        std::string(), std::string(), "low",
+                        std::vector<std::string>(), &expected_header);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
 
-  TestDataReductionProxyRequestOptions request_options(kClient,
-                                                       kBogusVersion,
-                                                       params.get(),
-                                                       loop_proxy_);
-  request_options.Init();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kTestKey, request_options.key_);
-  EXPECT_EQ(kExpectedCredentials,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession,
-            request_options.header_options_[kSessionHeaderOption]);
-
-  net::HttpRequestHeaders headers;
-  // Write headers with a valid data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(params->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP),
-      &headers);
-  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
-  std::string header_value;
-  headers.GetHeader(kChromeProxyHeader, &header_value);
-  EXPECT_EQ(kExpectedHeader, ParseHeader(header_value));
+  CreateRequestOptions(kBogusVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationLoFiOffThenOn) {
-  std::map<std::string, std::string> kExpectedHeader;
-  kExpectedHeader[kSessionHeaderOption] = kExpectedSession;
-  kExpectedHeader[kCredentialsHeaderOption] = kExpectedCredentials;
-  kExpectedHeader[kClientHeaderOption] = kClientStr;
-
-  scoped_ptr<TestDataReductionProxyParams> params;
-  params.reset(
-      new TestDataReductionProxyParams(
-          DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed |
-          DataReductionProxyParams::kPromoAllowed,
-          TestDataReductionProxyParams::HAS_EVERYTHING &
-          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-
-  TestDataReductionProxyRequestOptions request_options(kClient,
-                                                       kBogusVersion,
-                                                       params.get(),
-                                                       loop_proxy_);
-  request_options.Init();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kTestKey, request_options.key_);
-  EXPECT_EQ(kExpectedCredentials,
-            request_options.header_options_[kCredentialsHeaderOption]);
-  EXPECT_EQ(kExpectedSession,
-            request_options.header_options_[kSessionHeaderOption]);
-
-  net::HttpRequestHeaders headers;
-  // Write headers with a valid data reduction proxy.
-  request_options.MaybeAddRequestHeader(
-      NULL,
-      net::ProxyServer::FromURI(params->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP),
-      &headers);
-  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
-  std::string header_value;
-  headers.GetHeader(kChromeProxyHeader, &header_value);
-  EXPECT_EQ(kExpectedHeader, ParseHeader(header_value));
-
+TEST_F(DataReductionProxyRequestOptionsTest, LoFiOn) {
   // Add the LoFi command line switch.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
-  kExpectedHeader[kLoFiHeaderOption] = "low";
 
-   // Write headers with a valid data reduction proxy.
-   request_options.MaybeAddRequestHeader(
-       NULL,
-       net::ProxyServer::FromURI(params->DefaultOrigin(),
-                                 net::ProxyServer::SCHEME_HTTP),
-       &headers);
-   EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
-   headers.GetHeader(kChromeProxyHeader, &header_value);
-   EXPECT_EQ(kExpectedHeader, ParseHeader(header_value));
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
+                        std::string(), std::string(), "low",
+                        std::vector<std::string>(), &expected_header);
+
+  CreateRequestOptions(kBogusVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      data_reduction_proxy::switches::kDataReductionProxyExperiment,
+      "staging,\"foo,bar\"");
+  std::vector<std::string> expected_experiments;
+  expected_experiments.push_back("staging");
+  expected_experiments.push_back("\"foo,bar\"");
+  std::string expected_header;
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, kClientStr,
+                        std::string(), std::string(), std::string(),
+                        expected_experiments, &expected_header);
+
+  CreateRequestOptions(kBogusVersion);
+  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
 
 }  // namespace data_reduction_proxy
