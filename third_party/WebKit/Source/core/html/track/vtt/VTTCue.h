@@ -111,8 +111,7 @@ public:
     virtual void updateDisplay(HTMLDivElement& container) override;
 
     virtual void updateDisplayTree(double movieTime) override;
-    virtual void removeDisplayTree() override;
-    virtual void notifyRegionWhenRemovingDisplayTree(bool notifyRegion) override;
+    virtual void removeDisplayTree(RemovalNotification) override;
 
     void markFutureAndPastNodes(ContainerNode*, double previousTimestamp, double movieTime);
 
@@ -189,7 +188,6 @@ private:
 
     bool m_snapToLines : 1;
     bool m_displayTreeShouldChange : 1;
-    bool m_notifyRegion : 1;
 };
 
 // VTTCue is currently the only TextTrackCue subclass.

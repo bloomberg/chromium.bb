@@ -229,7 +229,6 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_cueBackgroundBox(HTMLDivElement::create(document))
     , m_snapToLines(true)
     , m_displayTreeShouldChange(true)
-    , m_notifyRegion(true)
 {
     UseCounter::count(document, UseCounter::VTTCue);
 }
@@ -498,11 +497,6 @@ void VTTCue::setRegionId(const String& regionId)
     cueWillChange();
     m_regionId = regionId;
     cueDidChange();
-}
-
-void VTTCue::notifyRegionWhenRemovingDisplayTree(bool notifyRegion)
-{
-    m_notifyRegion = notifyRegion;
 }
 
 float VTTCue::calculateComputedLinePosition() const
@@ -849,9 +843,9 @@ PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
     return displayTree.release();
 }
 
-void VTTCue::removeDisplayTree()
+void VTTCue::removeDisplayTree(RemovalNotification removalNotification)
 {
-    if (m_notifyRegion && track()->regions()) {
+    if (removalNotification == NotifyRegion && track()->regions()) {
         // The region needs to be informed about the cue removal.
         VTTRegion* region = track()->regions()->getRegionById(m_regionId);
         if (region)

@@ -114,6 +114,8 @@ bool TextTrackCueList::remove(TextTrackCue* cue)
         return false;
 
     cue->setIsActive(false);
+    cue->removeDisplayTree();
+
     m_list.remove(index);
     return true;
 }

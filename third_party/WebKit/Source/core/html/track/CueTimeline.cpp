@@ -62,20 +62,16 @@ void CueTimeline::removeCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue> cue
     CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
     m_cueTree.remove(interval);
 
-    // Since the cue will be removed from the media element and likely the
-    // TextTrack might also be destructed, notifying the region of the cue
-    // removal shouldn't be done.
-    cue->notifyRegionWhenRemovingDisplayTree(false);
-
     size_t index = m_currentlyActiveCues.find(interval);
     if (index != kNotFound) {
         m_currentlyActiveCues.remove(index);
         cue->setIsActive(false);
+        // Since the cue will be removed from the media element and likely the
+        // TextTrack might also be destructed, notifying the region of the cue
+        // removal shouldn't be done.
+        cue->removeDisplayTree(TextTrackCue::DontNotifyRegion);
     }
-    cue->removeDisplayTree();
     updateActiveCues(mediaElement().currentTime());
-
-    cue->notifyRegionWhenRemovingDisplayTree(true);
 }
 
 static bool trackIndexCompare(TextTrack* a, TextTrack* b)
@@ -310,8 +306,11 @@ void CueTimeline::updateActiveCues(double movieTime)
         currentCues[i].data()->setIsActive(true);
 
     for (size_t i = 0; i < previousCuesSize; ++i) {
-        if (!currentCues.contains(previousCues[i]))
-            previousCues[i].data()->setIsActive(false);
+        if (!currentCues.contains(previousCues[i])) {
+            TextTrackCue* cue = previousCues[i].data();
+            cue->setIsActive(false);
+            cue->removeDisplayTree();
+        }
     }
 
     // Update the current active cues.
