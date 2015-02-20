@@ -81,7 +81,7 @@ importer.TaskQueue.prototype.setActiveCallback = function(callback) {
 
 /**
  * Sets a callback that is triggered each time the queue goes from an active to
- * an idle state.  Also see #onActive.
+ * an idle state.  Also see #setActiveCallback.
  * @param {function()} callback
  */
 importer.TaskQueue.prototype.setIdleCallback = function(callback) {

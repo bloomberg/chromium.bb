@@ -46,6 +46,14 @@ importer.MediaImportHandler =
   /** @private {!importer.TaskQueue} */
   this.queue_ = new importer.TaskQueue();
 
+  // Prevent the system from sleeping while imports are active.
+  this.queue_.setActiveCallback(function() {
+    chrome.power.requestKeepAwake('system');
+  });
+  this.queue_.setIdleCallback(function() {
+    chrome.power.releaseKeepAwake();
+  });
+
   /** @private {!importer.DuplicateFinder.Factory} */
   this.duplicateFinderFactory_ = duplicateFinderFactory;
 

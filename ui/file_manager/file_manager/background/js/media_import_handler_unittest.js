@@ -36,7 +36,24 @@ loadTimeData.data = {
   DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
 };
 
+var chrome;
+
 function setUp() {
+  // Set up mock chrome APIs.
+  chrome = {
+    power: {
+      requestKeepAwakeWasCalled: false,
+      requestKeepAwakeStatus: false,
+      requestKeepAwake: function() {
+        chrome.power.requestKeepAwakeWasCalled = true;
+        chrome.power.requestKeepAwakeStatus = true;
+      },
+      releaseKeepAwake: function() {
+        chrome.power.requestKeepAwakeStatus = false;
+      }
+    }
+  };
+
   importer.setupTestLogger();
 
   progressCenter = new MockProgressCenter();
@@ -159,6 +176,55 @@ function testImportMediaWithDuplicateFilenames(callback) {
   reportPromise(
       whenImportDone.then(
         function() {
+          var copiedEntries = destinationFileSystem.root.getAllChildren();
+          assertEquals(media.length, copiedEntries.length);
+        }),
+      callback);
+
+  scanResult.finalize();
+}
+
+function testKeepAwakeDuringImport(callback) {
+  var media = setupFileSystem([
+    '/DCIM/photos0/IMG00001.jpg',
+    '/DCIM/photos0/IMG00002.jpg',
+    '/DCIM/photos0/IMG00003.jpg',
+    '/DCIM/photos1/IMG00004.jpg',
+    '/DCIM/photos1/IMG00005.jpg',
+    '/DCIM/photos1/IMG00006.jpg'
+  ]);
+
+  var scanResult = new TestScanResult(media);
+  var importTask = mediaImporter.importFromScanResult(
+        scanResult,
+        importer.Destination.GOOGLE_DRIVE,
+        destinationFactory);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              // Assert that keepAwake is set while the task is active.
+              assertTrue(chrome.power.requestKeepAwakeStatus);
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.SUCCESS:
+                  resolve();
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
+
+  reportPromise(
+      whenImportDone.then(
+        function() {
+          assertTrue(chrome.power.requestKeepAwakeWasCalled);
+          assertFalse(chrome.power.requestKeepAwakeStatus);
           var copiedEntries = destinationFileSystem.root.getAllChildren();
           assertEquals(media.length, copiedEntries.length);
         }),
