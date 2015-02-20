@@ -21,6 +21,10 @@ class DialRegistry;
 // the DIAL registry. It takes care of creating the registry on the IO thread
 // and is an observer of the registry. It makes sure devices events are sent out
 // to extension listeners on the right thread.
+//
+// TODO(mfoltz): This should probably inherit from BrowserContextKeyedAPI
+// instead; ShutdownOnUIThread below is a no-op, which is the whole point of
+// RefcountedKeyedService.
 class DialAPI : public RefcountedKeyedService,
                 public EventRouter::Observer,
                 public DialRegistry::Observer {

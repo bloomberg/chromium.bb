@@ -42,7 +42,6 @@ DialRegistry::DialRegistry(Observer* dial_api,
 
 DialRegistry::~DialRegistry() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(0, num_listeners_);
   NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
