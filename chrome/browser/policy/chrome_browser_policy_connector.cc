@@ -25,6 +25,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 
@@ -89,7 +90,7 @@ void ChromeBrowserPolicyConnector::Init(
   BrowserPolicyConnector::Init(
       local_state, request_context, device_management_service.Pass());
 
-  AppendExtraFlagPerPolicy();
+  AppendExtraFlagsPerPolicy();
 }
 
 ConfigurationPolicyProvider*
@@ -123,7 +124,7 @@ ConfigurationPolicyProvider*
 #endif
 }
 
-void ChromeBrowserPolicyConnector::AppendExtraFlagPerPolicy() {
+void ChromeBrowserPolicyConnector::AppendExtraFlagsPerPolicy() {
   PolicyService* policy_service = GetPolicyService();
   PolicyNamespace chrome_ns = PolicyNamespace(POLICY_DOMAIN_CHROME, "");
   const PolicyMap& chrome_policy = policy_service->GetPolicies(chrome_ns);
@@ -138,6 +139,23 @@ void ChromeBrowserPolicyConnector::AppendExtraFlagPerPolicy() {
     // must also be specified.
     if (!command_line->HasSwitch(switches::kEnableIframeBasedSignin))
       command_line->AppendSwitch(switches::kEnableIframeBasedSignin);
+  }
+
+  if (command_line->HasSwitch(switches::kEnableNpapi))
+    return;
+
+  // The list of Plugin related policies that re-enable NPAPI. Remove once NPAPI
+  // is dead.
+  const std::string plugin_policies[] = { key::kEnabledPlugins,
+                                          key::kPluginsAllowedForUrls,
+                                          key::kPluginsBlockedForUrls,
+                                          key::kDisabledPluginsExceptions,
+                                          key::kDisabledPlugins };
+  for (auto policy : plugin_policies) {
+    if (chrome_policy.GetValue(policy)) {
+      command_line->AppendSwitch(switches::kEnableNpapi);
+      break;
+    }
   }
 }
 

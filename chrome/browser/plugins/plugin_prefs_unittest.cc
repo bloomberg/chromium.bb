@@ -208,7 +208,6 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
 
   PluginService::GetInstance()->Init();
   PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
-  PluginService::GetInstance()->EnableNpapiPluginsForTesting();
 
   base::string16 component_updated_plugin_name(
       ASCIIToUTF16("Component-updated Pepper Flash"));
@@ -226,6 +225,12 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
                                         GetBundledPepperFlashPath(),
                                         ASCIIToUTF16("11.3.31.229"),
                                         ASCIIToUTF16(""));
+  component_updated_plugin_1.type =
+      content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
+  component_updated_plugin_2.type =
+      content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
+  bundled_plugin.type =
+      content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
 
   PluginService::GetInstance()->RegisterInternalPlugin(
       component_updated_plugin_1, false);

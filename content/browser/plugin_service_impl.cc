@@ -190,15 +190,6 @@ void PluginServiceImpl::Init() {
 
   if (command_line->HasSwitch(switches::kDisablePluginsDiscovery))
     PluginList::Singleton()->DisablePluginsDiscovery();
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  npapi_plugins_enabled_ = command_line->HasSwitch(switches::kEnableNpapi);
-  NPAPIPluginStatus status =
-      npapi_plugins_enabled_ ? NPAPI_STATUS_ENABLED : NPAPI_STATUS_DISABLED;
-#else
-  NPAPIPluginStatus status = NPAPI_STATUS_UNSUPPORTED;
-#endif
-  UMA_HISTOGRAM_ENUMERATION("Plugin.NPAPIStatus", status,
-                            NPAPI_STATUS_ENUM_COUNT);
 }
 
 void PluginServiceImpl::StartWatchingPlugins() {
@@ -779,8 +770,9 @@ void PluginServiceImpl::AddExtraPluginDir(const base::FilePath& path) {
 void PluginServiceImpl::RegisterInternalPlugin(
     const WebPluginInfo& info,
     bool add_at_beginning) {
-  if (!NPAPIPluginsSupported() &&
-      info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+  // Internal plugins should never be NPAPI.
+  CHECK_NE(info.type, WebPluginInfo::PLUGIN_TYPE_NPAPI);
+  if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
     DVLOG(0) << "Don't register NPAPI plugins when they're not supported";
     return;
   }
@@ -797,6 +789,22 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
+  static bool command_line_checked = false;
+
+  if (!command_line_checked) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    npapi_plugins_enabled_ = command_line->HasSwitch(switches::kEnableNpapi);
+    NPAPIPluginStatus status =
+        npapi_plugins_enabled_ ? NPAPI_STATUS_ENABLED : NPAPI_STATUS_DISABLED;
+#else
+    NPAPIPluginStatus status = NPAPI_STATUS_UNSUPPORTED;
+#endif
+    UMA_HISTOGRAM_ENUMERATION("Plugin.NPAPIStatus", status,
+        NPAPI_STATUS_ENUM_COUNT);
+  }
+
   return npapi_plugins_enabled_;
 }
 
