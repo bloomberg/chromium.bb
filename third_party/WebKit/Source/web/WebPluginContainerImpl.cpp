@@ -739,7 +739,7 @@ void WebPluginContainerImpl::shouldDisposePlugin()
 }
 #endif
 
-void WebPluginContainerImpl::trace(Visitor* visitor)
+DEFINE_TRACE(WebPluginContainerImpl)
 {
     visitor->trace(m_element);
     FrameDestructionObserver::trace(visitor);

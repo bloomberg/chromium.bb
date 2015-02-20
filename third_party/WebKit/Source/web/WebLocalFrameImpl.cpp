@@ -1575,13 +1575,13 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
 }
 
 #if ENABLE(OILPAN)
-void WebLocalFrameImpl::trace(Visitor* visitor)
+DEFINE_TRACE(WebLocalFrameImpl)
 {
     visitor->trace(m_frame);
     visitor->trace(m_textFinder);
     visitor->trace(m_printContext);
     visitor->trace(m_geolocationClientProxy);
-    visitor->registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
+    visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
 }
 #endif

@@ -45,11 +45,11 @@ WebRemoteFrameImpl::~WebRemoteFrameImpl()
 }
 
 #if ENABLE(OILPAN)
-void WebRemoteFrameImpl::trace(Visitor* visitor)
+DEFINE_TRACE(WebRemoteFrameImpl)
 {
     visitor->trace(m_frame);
     visitor->trace(m_ownersForChildren);
-    visitor->registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
+    visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
 }
 #endif

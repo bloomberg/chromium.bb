@@ -52,7 +52,7 @@ public:
     virtual ~WorkerGlobalScopeProxyProviderImpl() { }
     virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) override;
 
-    virtual void trace(Visitor* visitor) override { WorkerGlobalScopeProxyProvider::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { WorkerGlobalScopeProxyProvider::trace(visitor); }
 
 private:
     WorkerGlobalScopeProxyProviderImpl() { }

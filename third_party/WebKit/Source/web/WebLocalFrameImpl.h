@@ -327,7 +327,7 @@ public:
     WebDevToolsFrontendImpl* devToolsFrontend() { return m_webDevToolsFrontend; }
 
 #if ENABLE(OILPAN)
-    void trace(Visitor*);
+    DECLARE_TRACE();
 #endif
 
 private:

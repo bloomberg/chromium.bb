@@ -108,7 +108,7 @@ PopupContainer::~PopupContainer()
 #endif
 }
 
-void PopupContainer::trace(Visitor* visitor)
+DEFINE_TRACE(PopupContainer)
 {
     visitor->trace(m_frameView);
     visitor->trace(m_listBox);

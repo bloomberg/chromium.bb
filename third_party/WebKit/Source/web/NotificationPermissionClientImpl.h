@@ -20,7 +20,7 @@ public:
     virtual void requestPermission(ExecutionContext*, NotificationPermissionCallback*) override;
 
     // NoBaseWillBeGarbageCollectedFinalized implementation.
-    virtual void trace(Visitor* visitor) override { NotificationPermissionClient::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { NotificationPermissionClient::trace(visitor); }
 
 private:
     NotificationPermissionClientImpl();

@@ -84,7 +84,7 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
     deref();
 }
 
-void SuspendableScriptExecutor::trace(Visitor* visitor)
+DEFINE_TRACE(SuspendableScriptExecutor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);

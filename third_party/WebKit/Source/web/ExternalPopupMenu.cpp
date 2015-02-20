@@ -63,7 +63,7 @@ ExternalPopupMenu::~ExternalPopupMenu()
 {
 }
 
-void ExternalPopupMenu::trace(Visitor* visitor)
+DEFINE_TRACE(ExternalPopupMenu)
 {
     visitor->trace(m_localFrame);
     PopupMenu::trace(visitor);

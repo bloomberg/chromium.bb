@@ -143,7 +143,7 @@ void ValidationMessageClientImpl::willBeDestroyed()
         hideValidationMessage(*m_currentAnchor);
 }
 
-void ValidationMessageClientImpl::trace(Visitor* visitor)
+DEFINE_TRACE(ValidationMessageClientImpl)
 {
     visitor->trace(m_currentAnchor);
     ValidationMessageClient::trace(visitor);

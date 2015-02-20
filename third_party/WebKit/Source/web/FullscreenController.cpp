@@ -177,7 +177,7 @@ void FullscreenController::updateSize()
         renderer->updateStyle();
 }
 
-void FullscreenController::trace(Visitor* visitor)
+DEFINE_TRACE(FullscreenController)
 {
     visitor->trace(m_provisionalFullScreenElement);
     visitor->trace(m_fullScreenFrame);

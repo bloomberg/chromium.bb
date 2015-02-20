@@ -63,7 +63,7 @@ public:
     static int toPopupMenuItemIndex(int index, PopupMenuClient&);
     static int toExternalPopupMenuItemIndex(int index, PopupMenuClient&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     // PopupMenu methods:

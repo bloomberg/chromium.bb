@@ -34,7 +34,7 @@ public:
     // only worked with fonts loaded when opening the popup.
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     PopupMenuCSSFontSelector(Document* document, CSSFontSelector* ownerFontSelector)
@@ -50,7 +50,7 @@ PassRefPtr<FontData> PopupMenuCSSFontSelector::getFontData(const FontDescription
     return m_ownerFontSelector->getFontData(description, name);
 }
 
-void PopupMenuCSSFontSelector::trace(Visitor* visitor)
+DEFINE_TRACE(PopupMenuCSSFontSelector)
 {
     visitor->trace(m_ownerFontSelector);
     CSSFontSelector::trace(visitor);

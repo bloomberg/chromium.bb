@@ -58,7 +58,7 @@ public:
 
     void updateSize();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 protected:
     explicit FullscreenController(WebViewImpl*);

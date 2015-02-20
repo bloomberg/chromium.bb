@@ -47,7 +47,7 @@ DatabaseClientImpl::~DatabaseClientImpl()
 {
 }
 
-void DatabaseClientImpl::trace(Visitor* visitor)
+DEFINE_TRACE(DatabaseClientImpl)
 {
     DatabaseClient::trace(visitor);
 }

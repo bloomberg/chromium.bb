@@ -23,7 +23,7 @@ PluginPlaceholderImpl::~PluginPlaceholderImpl()
 {
 }
 
-void PluginPlaceholderImpl::trace(Visitor* visitor)
+DEFINE_TRACE(PluginPlaceholderImpl)
 {
     visitor->trace(m_placeholderElement);
 }

@@ -93,7 +93,7 @@ public:
     public:
         FindMatch(PassRefPtrWillBeRawPtr<Range>, int ordinal);
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
         RefPtrWillBeMember<Range> m_range;
 
@@ -105,7 +105,7 @@ public:
         FloatRect m_rect;
     };
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     class DeferredScopeStringMatches;

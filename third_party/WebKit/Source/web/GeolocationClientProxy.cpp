@@ -88,7 +88,7 @@ void GeolocationClientProxy::cancelPermissionRequest(Geolocation* geolocation)
     m_client->cancelPermissionRequest(WebGeolocationPermissionRequest(geolocation));
 }
 
-void GeolocationClientProxy::trace(Visitor* visitor)
+DEFINE_TRACE(GeolocationClientProxy)
 {
     visitor->trace(m_lastPosition);
     GeolocationClient::trace(visitor);

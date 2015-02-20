@@ -52,7 +52,7 @@ public:
     virtual void requestPermission(Geolocation*) override;
     virtual void cancelPermissionRequest(Geolocation*) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit GeolocationClientProxy(WebGeolocationClient*);

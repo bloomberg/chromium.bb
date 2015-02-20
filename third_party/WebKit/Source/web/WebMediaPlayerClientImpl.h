@@ -118,7 +118,7 @@ private:
         // WebAudioSourceProviderClient
         virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
 
-        void trace(Visitor*);
+        DECLARE_TRACE();
 
     private:
         Member<AudioSourceProviderClient> m_client;

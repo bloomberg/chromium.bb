@@ -50,7 +50,7 @@ ColorChooserUIController::~ColorChooserUIController()
     endChooser();
 }
 
-void ColorChooserUIController::trace(Visitor* visitor)
+DEFINE_TRACE(ColorChooserUIController)
 {
     visitor->trace(m_frame);
     visitor->trace(m_client);

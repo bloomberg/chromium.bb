@@ -36,7 +36,7 @@ public:
     virtual ~PluginPlaceholderImpl() override;
 #endif
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     // PluginPlaceholder methods
     virtual void loadIntoContainer(ContainerNode&) override;

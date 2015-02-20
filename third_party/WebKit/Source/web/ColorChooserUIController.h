@@ -47,7 +47,7 @@ public:
     }
 
     virtual ~ColorChooserUIController();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void openUI();
 

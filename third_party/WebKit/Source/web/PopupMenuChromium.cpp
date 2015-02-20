@@ -63,7 +63,7 @@ void PopupMenuChromium::dispose()
     hide();
 }
 
-void PopupMenuChromium::trace(Visitor* visitor)
+DEFINE_TRACE(PopupMenuChromium)
 {
     visitor->trace(m_frameView);
     visitor->trace(m_popup);

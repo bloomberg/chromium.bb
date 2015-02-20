@@ -63,7 +63,7 @@ TextFinder::FindMatch::FindMatch(PassRefPtrWillBeRawPtr<Range> range, int ordina
 {
 }
 
-void TextFinder::FindMatch::trace(Visitor* visitor)
+DEFINE_TRACE(TextFinder::FindMatch)
 {
     visitor->trace(m_range);
 }
@@ -75,7 +75,7 @@ public:
         return adoptPtrWillBeNoop(new DeferredScopeStringMatches(textFinder, identifier, searchText, options, reset));
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_textFinder);
     }
@@ -786,7 +786,7 @@ int TextFinder::ordinalOfFirstMatch() const
     return ordinalOfFirstMatchForFrame(m_ownerFrame.get());
 }
 
-void TextFinder::trace(Visitor* visitor)
+DEFINE_TRACE(TextFinder)
 {
     visitor->trace(m_ownerFrame);
     visitor->trace(m_currentActiveMatchFrame);

@@ -43,7 +43,7 @@ public:
     static PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     virtual ~ValidationMessageClientImpl();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ValidationMessageClientImpl(WebViewImpl&);

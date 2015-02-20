@@ -97,7 +97,7 @@ PopupListBox::~PopupListBox()
 #endif
 }
 
-void PopupListBox::trace(Visitor* visitor)
+DEFINE_TRACE(PopupListBox)
 {
     visitor->trace(m_capturingScrollbar);
     visitor->trace(m_lastScrollbarUnderMouse);

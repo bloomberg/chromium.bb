@@ -70,7 +70,7 @@ public:
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) override;
     virtual void focus(int clientID, WebServiceWorkerClientCallbacks*) override;
 
-    virtual void trace(Visitor* visitor) override { ServiceWorkerGlobalScopeClient::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { ServiceWorkerGlobalScopeClient::trace(visitor); }
 
 private:
     explicit ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient&);

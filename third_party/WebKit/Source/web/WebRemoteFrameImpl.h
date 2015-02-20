@@ -193,7 +193,7 @@ public:
     void didStopLoading() override;
 
 #if ENABLE(OILPAN)
-    void trace(Visitor*);
+    DECLARE_TRACE();
 #endif
 
 private:

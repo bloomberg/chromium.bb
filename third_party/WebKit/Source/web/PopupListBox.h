@@ -176,7 +176,7 @@ public:
 
     static const int defaultMaxHeight;
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     DisplayItemClient displayItemClient() { return toDisplayItemClient(this); }
 

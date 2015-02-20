@@ -13,7 +13,7 @@ RemoteBridgeFrameOwner::RemoteBridgeFrameOwner(PassRefPtrWillBeRawPtr<WebLocalFr
 {
 }
 
-void RemoteBridgeFrameOwner::trace(Visitor* visitor)
+DEFINE_TRACE(RemoteBridgeFrameOwner)
 {
     visitor->trace(m_frame);
     FrameOwner::trace(visitor);

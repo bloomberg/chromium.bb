@@ -308,7 +308,7 @@ void WebMediaPlayerClientImpl::AudioClientImpl::setFormat(size_t numberOfChannel
         m_client->setFormat(numberOfChannels, sampleRate);
 }
 
-void WebMediaPlayerClientImpl::AudioClientImpl::trace(Visitor* visitor)
+DEFINE_TRACE(WebMediaPlayerClientImpl::AudioClientImpl)
 {
     visitor->trace(m_client);
 }

@@ -49,7 +49,7 @@ public:
 
     void willAddPrerender(Prerender*) override;
 
-    virtual void trace(Visitor* visitor) override { PrerendererClient::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { PrerendererClient::trace(visitor); }
 
 private:
     WebPrerendererClient* m_client;

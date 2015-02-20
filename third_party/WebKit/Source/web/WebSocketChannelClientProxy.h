@@ -59,7 +59,7 @@ public:
         impl->didClose(status, code, reason);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         WebSocketChannelClient::trace(visitor);
     }

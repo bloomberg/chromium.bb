@@ -43,7 +43,7 @@ class WebHitTestResultPrivate : public RefCountedWillBeGarbageCollectedFinalized
 public:
     static PassRefPtrWillBeRawPtr<WebHitTestResultPrivate> create(const HitTestResult&);
     static PassRefPtrWillBeRawPtr<WebHitTestResultPrivate> create(const WebHitTestResultPrivate&);
-    void trace(Visitor* visitor) { visitor->trace(m_result); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_result); }
     const HitTestResult& result() const { return m_result; }
 
 private:

@@ -52,7 +52,7 @@ public:
     static const char* supplementName();
     static WorkerPermissionClient* from(ExecutionContext&);
 
-    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<WorkerClients>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<WorkerClients>::trace(visitor); }
 
 private:
     explicit WorkerPermissionClient(PassOwnPtr<WebWorkerPermissionClientProxy>);

@@ -163,7 +163,7 @@ public:
 
     bool paintCustomOverhangArea(GraphicsContext*, const IntRect&, const IntRect&, const IntRect&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void dispose() override;
 
 #if ENABLE(OILPAN)
