@@ -75,11 +75,6 @@ public:
     virtual void exitRunLoop() = 0;
 
     virtual ~WebThread() { }
-
-    // FIXME: Remove these deprecated entry points once all the clients have
-    // been moved over (http://crbug.com/450977).
-    virtual void postTask(Task*);
-    virtual void postDelayedTask(Task*, long long delayMs);
 };
 
 } // namespace blink

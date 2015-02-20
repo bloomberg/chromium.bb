@@ -150,7 +150,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    Platform::current()->mainThread()->postTask(new MainThreadTaskRunner(function, context));
+    Platform::current()->mainThread()->postTask(FROM_HERE, new MainThreadTaskRunner(function, context));
 }
 
 void initializeWithoutV8(Platform* platform)
