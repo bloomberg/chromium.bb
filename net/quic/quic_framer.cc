@@ -1347,8 +1347,8 @@ bool QuicFramer::ProcessAckFrame(uint8 frame_type, QuicAckFrame* ack_frame) {
       set_detailed_error("Unable to read missing sequence number range.");
       return false;
     }
-    for (size_t i = 0; i <= range_length; ++i) {
-      ack_frame->missing_packets.insert(last_sequence_number - i);
+    for (size_t j = 0; j <= range_length; ++j) {
+      ack_frame->missing_packets.insert(last_sequence_number - j);
     }
     // Subtract an extra 1 to ensure ranges are represented efficiently and
     // can't overlap by 1 sequence number.  This allows a missing_delta of 0
@@ -2099,9 +2099,10 @@ bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
       return false;
     }
 
-    uint64 time_delta_us = it->second.Subtract(prev_time).ToMicroseconds();
+    uint64 frame_time_delta_us =
+        it->second.Subtract(prev_time).ToMicroseconds();
     prev_time = it->second;
-    if (!writer->WriteUFloat16(time_delta_us)) {
+    if (!writer->WriteUFloat16(frame_time_delta_us)) {
       return false;
     }
   }

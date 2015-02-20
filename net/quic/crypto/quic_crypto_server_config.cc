@@ -665,14 +665,15 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     client_hello_copy.Erase(kCETV);
     client_hello_copy.Erase(kPAD);
 
-    const QuicData& client_hello_serialized = client_hello_copy.GetSerialized();
+    const QuicData& client_hello_copy_serialized =
+        client_hello_copy.GetSerialized();
     string hkdf_input;
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
     hkdf_input.append(reinterpret_cast<char*>(&connection_id),
                       sizeof(connection_id));
-    hkdf_input.append(client_hello_serialized.data(),
-                      client_hello_serialized.length());
+    hkdf_input.append(client_hello_copy_serialized.data(),
+                      client_hello_copy_serialized.length());
     hkdf_input.append(requested_config->serialized);
 
     CrypterPair crypters;
@@ -1333,9 +1334,9 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
         return nullptr;
     }
 
-    for (vector<KeyExchange*>::const_iterator i = config->key_exchanges.begin();
-         i != config->key_exchanges.end(); ++i) {
-      if ((*i)->tag() == tag) {
+    for (vector<KeyExchange*>::const_iterator j = config->key_exchanges.begin();
+         j != config->key_exchanges.end(); ++j) {
+      if ((*j)->tag() == tag) {
         LOG(WARNING) << "Duplicate key exchange in config: " << tag;
         return nullptr;
       }
@@ -1478,11 +1479,12 @@ HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
   }
 
   if (!FLAGS_quic_use_multiple_address_in_source_tokens) {
-    SourceAddressToken token;
-    if (!token.ParseFromArray(plaintext.data(), plaintext.size())) {
+    SourceAddressToken source_address_token;
+    if (!source_address_token.ParseFromArray(plaintext.data(),
+                                             plaintext.size())) {
       return SOURCE_ADDRESS_TOKEN_PARSE_FAILURE;
     }
-    *(tokens->add_tokens()) = token;
+    *(tokens->add_tokens()) = source_address_token;
     return HANDSHAKE_OK;
   }
 
@@ -1490,11 +1492,12 @@ HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
     // Some clients might still be using the old source token format so
     // attempt to parse that format.
     // TODO(rch): remove this code once the new format is ubiquitous.
-    SourceAddressToken token;
-    if (!token.ParseFromArray(plaintext.data(), plaintext.size())) {
+    SourceAddressToken source_address_token;
+    if (!source_address_token.ParseFromArray(plaintext.data(),
+                                             plaintext.size())) {
       return SOURCE_ADDRESS_TOKEN_PARSE_FAILURE;
     }
-    *tokens->add_tokens() = token;
+    *tokens->add_tokens() = source_address_token;
   }
 
   return HANDSHAKE_OK;

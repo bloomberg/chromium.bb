@@ -495,14 +495,14 @@ void StrikeRegister::ValidateTree(
       CHECK_EQ(used_external_nodes->count(ext), 0u);
       used_external_nodes->insert(ext);
       const uint8* bytes = external_node(ext);
-      for (vector<pair<unsigned, bool> >::const_iterator i = bits.begin();
-           i != bits.end(); i++) {
-        unsigned byte = i->first / 8;
+      for (vector<pair<unsigned, bool>>::const_iterator j = bits.begin();
+           j != bits.end(); j++) {
+        unsigned byte = j->first / 8;
         DCHECK_LE(byte, 0xffu);
-        unsigned bit = i->first % 8;
+        bit = j->first % 8;
         static const uint8 kMasks[8] =
             {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
-        CHECK_EQ((bytes[byte] & kMasks[bit]) != 0, i->second);
+        CHECK_EQ((bytes[byte] & kMasks[bit]) != 0, j->second);
       }
     } else {
       uint32 inter = i->child(child);
