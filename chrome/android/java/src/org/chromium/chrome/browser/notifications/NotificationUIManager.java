@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -20,7 +19,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferences;
+import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
@@ -31,9 +30,6 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
  */
 public class NotificationUIManager {
     private static final String TAG = NotificationUIManager.class.getSimpleName();
-
-    // Category in the preferences for displaying Push Notification permissions.
-    private static final String CATEGORY_PUSH_NOTIFICATIONS = "push_notifications";
 
     private static final int NOTIFICATION_ICON_BG_COLOR = Color.rgb(150, 150, 150);
     private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
@@ -159,19 +155,11 @@ public class NotificationUIManager {
 
         Resources res = mAppContext.getResources();
 
-        // TODO(peter): The current implementation introduces a [Site settings] button for opening
-        // the "Notifications" panel in the site settings section, rather than the settings of an
-        // individual website, which it should do instead.
-
-        Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(mAppContext,
-                WebsitePreferences.class.getName());
-
-        Bundle arguments = new Bundle();
-        arguments.putString(WebsitePreferences.EXTRA_CATEGORY, CATEGORY_PUSH_NOTIFICATIONS);
-        arguments.putString(WebsitePreferences.EXTRA_TITLE,
-                res.getString(R.string.push_notifications_permission_title));
-
-        settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, arguments);
+        // Set up a pending intent for going to the settings screen for |origin|.
+        Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
+                mAppContext, SingleWebsitePreferences.class.getName());
+        settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
+                SingleWebsitePreferences.createFragmentArgsForSite(origin));
         PendingIntent pendingSettingsIntent = PendingIntent.getActivity(
                 mAppContext, 0, settingsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
