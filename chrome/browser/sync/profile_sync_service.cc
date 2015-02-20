@@ -49,6 +49,7 @@
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/sync_error_controller.h"
+#include "chrome/browser/sync/sync_stopped_reporter.h"
 #include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -93,6 +94,8 @@
 #include "sync/internal_api/public/util/sync_db_util.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/js/js_event_details.h"
+#include "sync/protocol/sync.pb.h"
+#include "sync/syncable/directory.h"
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -240,6 +243,11 @@ ProfileSyncService::ProfileSyncService(
       backup_finished_(false),
       clear_browsing_data_(base::Bind(&ClearBrowsingData)),
       browsing_data_remover_observer_(NULL),
+      sync_stopped_reporter_(
+          new browser_sync::SyncStoppedReporter(
+              sync_service_url_,
+              profile_->GetRequestContext(),
+              browser_sync::SyncStoppedReporter::ResultCallback())),
       weak_factory_(this),
       startup_controller_weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -820,6 +828,11 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
     return;
   }
 
+  if (reason == syncer::ShutdownReason::STOP_SYNC
+      || reason == syncer::ShutdownReason::DISABLE_SYNC) {
+    RemoveClientFromServer();
+  }
+
   non_blocking_data_type_manager_.DisconnectSyncBackend();
 
   // First, we spin down the backend to stop change processing as soon as
@@ -882,7 +895,6 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
   cached_passphrase_.clear();
-  access_token_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
@@ -2751,5 +2763,19 @@ base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {
     return backend_->GetSyncLoopForTesting();
   } else {
     return NULL;
+  }
+}
+
+void ProfileSyncService::RemoveClientFromServer() const {
+  if (!backend_initialized_) return;
+  const std::string cache_guid = local_device_->GetLocalSyncCacheGUID();
+  std::string birthday;
+  syncer::UserShare* user_share = GetUserShare();
+  if (user_share && user_share->directory.get()) {
+    birthday = user_share->directory->store_birthday();
+  }
+  if (!access_token_.empty() && !cache_guid.empty() && !birthday.empty()) {
+    sync_stopped_reporter_->ReportSyncStopped(
+        access_token_, cache_guid, birthday);
   }
 }

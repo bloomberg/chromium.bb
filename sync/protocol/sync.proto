@@ -976,3 +976,21 @@ message ClientToServerResponse {
   // sent with any subsequent ClientToServerMessages.
   optional ChipBag new_bag_of_chips = 14;
 };
+
+// A message to notify the server of certain sync events. Idempotent. Send these
+// to the /event endpoint.
+message EventRequest {
+  optional SyncDisabledEvent sync_disabled = 1;
+};
+
+message EventResponse {
+};
+
+// A message indicating that the sync engine has been disabled on a client.
+message SyncDisabledEvent {
+  // The GUID that identifies the sync client.
+  optional string cache_guid = 1;
+
+  // The store birthday that the client was using before disabling sync.
+  optional string store_birthday = 2;
+};

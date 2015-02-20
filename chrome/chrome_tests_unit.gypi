@@ -295,6 +295,7 @@
       'browser/sync/sessions/tab_node_pool_unittest.cc',
       'browser/sync/startup_controller_unittest.cc',
       'browser/sync/sync_startup_tracker_unittest.cc',
+      'browser/sync/sync_stopped_reporter_unittest.cc',
       'browser/sync/test/test_http_bridge_factory.cc',
       'browser/sync/test/test_http_bridge_factory.h',
       'browser/sync/test_profile_sync_service.cc',
