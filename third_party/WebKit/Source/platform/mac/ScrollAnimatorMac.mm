@@ -725,7 +725,7 @@ ScrollResultOneDimensional ScrollAnimatorMac::scroll(ScrollbarOrientation orient
     if (!scrollAnimationEnabledForSystem() || !m_scrollableArea->scrollAnimatorEnabled())
         return ScrollAnimator::scroll(orientation, granularity, step, delta);
 
-    if (granularity == ScrollByPixel)
+    if (granularity == ScrollByPixel || granularity == ScrollByPrecisePixel)
         return ScrollAnimator::scroll(orientation, granularity, step, delta);
 
     float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
