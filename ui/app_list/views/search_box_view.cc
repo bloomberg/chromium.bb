@@ -13,12 +13,15 @@
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_menu_views.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -81,6 +84,8 @@ class SearchBoxImageButton : public views::ImageButton {
 
     selected_ = selected;
     SchedulePaint();
+    if (selected)
+      NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
   }
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {
@@ -131,6 +136,9 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
         rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
     back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                     views::ImageButton::ALIGN_MIDDLE);
+    base::string16 back_title(l10n_util::GetStringUTF16(IDS_APP_LIST_BACK));
+    back_button_->SetAccessibleName(back_title);
+    back_button_->SetTooltipText(back_title);
     content_container_->AddChildView(back_button_);
 
     content_container_->set_background(new ExperimentalSearchBoxBackground());
@@ -260,10 +268,27 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
       DCHECK(false);
   }
 
-  if (back_button_ && focused_view_ == FOCUS_BACK_BUTTON)
-    back_button_->SetSelected(true);
-  if (speech_button_ && focused_view_ == FOCUS_MIC_BUTTON)
-    speech_button_->SetSelected(true);
+  switch (focused_view_) {
+    case FOCUS_BACK_BUTTON:
+      if (back_button_)
+        back_button_->SetSelected(true);
+      break;
+    case FOCUS_SEARCH_BOX:
+      // Set the ChromeVox focus to the search box. However, DO NOT do this if
+      // we are in the search results state (i.e., if the search box has text in
+      // it), because the focus is about to be shifted to the first search
+      // result and we do not want to read out the name of the search box as
+      // well.
+      if (search_box_->text().empty())
+        search_box_->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+      break;
+    case FOCUS_MIC_BUTTON:
+      if (speech_button_)
+        speech_button_->SetSelected(true);
+      break;
+    default:
+      break;
+  }
 
   if (focused_view_ < FOCUS_CONTENTS_VIEW)
     delegate_->SetSearchResultSelection(focused_view_ == FOCUS_SEARCH_BOX);
@@ -388,6 +413,7 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
       content_container_->AddChildView(speech_button_);
     }
 
+    speech_button_->SetAccessibleName(speech_button_prop->accessible_name);
     if (view_delegate_->GetSpeechUI()->state() ==
         SPEECH_RECOGNITION_HOTWORD_LISTENING) {
       speech_button_->SetImage(

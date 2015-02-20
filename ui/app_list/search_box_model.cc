@@ -13,11 +13,13 @@ SearchBoxModel::SpeechButtonProperty::SpeechButtonProperty(
     const gfx::ImageSkia& on_icon,
     const base::string16& on_tooltip,
     const gfx::ImageSkia& off_icon,
-    const base::string16& off_tooltip)
+    const base::string16& off_tooltip,
+    const base::string16& accessible_name)
     : on_icon(on_icon),
       on_tooltip(on_tooltip),
       off_icon(off_icon),
-      off_tooltip(off_tooltip) {
+      off_tooltip(off_tooltip),
+      accessible_name(accessible_name) {
 }
 
 SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() {

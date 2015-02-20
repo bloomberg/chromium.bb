@@ -28,7 +28,8 @@ class APP_LIST_EXPORT SearchBoxModel {
     SpeechButtonProperty(const gfx::ImageSkia& on_icon,
                          const base::string16& on_tooltip,
                          const gfx::ImageSkia& off_icon,
-                         const base::string16& off_tooltip);
+                         const base::string16& off_tooltip,
+                         const base::string16& accessible_name);
     ~SpeechButtonProperty();
 
     // The icon/tooltip when the hotword is on.
@@ -38,6 +39,9 @@ class APP_LIST_EXPORT SearchBoxModel {
     // The icon/tooltip when the hotword is off.
     gfx::ImageSkia off_icon;
     base::string16 off_tooltip;
+
+    // The accessibility name of the button.
+    base::string16 accessible_name;
   };
 
   SearchBoxModel();
