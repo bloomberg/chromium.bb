@@ -311,7 +311,8 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
       did_finish_load);
 }
 
-void TabAndroid::DefaultSearchProviderChanged() {
+void TabAndroid::DefaultSearchProviderChanged(
+    bool google_base_url_domain_changed) {
   // TODO(kmadhusu): Move this function definition to a common place and update
   // BrowserInstantController::DefaultSearchProviderChanged to use the same.
   if (!web_contents())

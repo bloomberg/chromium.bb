@@ -28,7 +28,7 @@
 
 class MockInstantServiceObserver : public InstantServiceObserver {
  public:
-  MOCK_METHOD0(DefaultSearchProviderChanged, void());
+  MOCK_METHOD1(DefaultSearchProviderChanged, void(bool));
   MOCK_METHOD1(OmniboxStartMarginChanged, void(int));
 };
 
@@ -67,29 +67,29 @@ class InstantServiceEnabledTest : public InstantServiceTest {
 };
 
 TEST_F(InstantServiceEnabledTest, DispatchDefaultSearchProviderChanged) {
-  EXPECT_CALL(*instant_service_observer_.get(), DefaultSearchProviderChanged())
-      .Times(1);
+  EXPECT_CALL(*instant_service_observer_.get(),
+              DefaultSearchProviderChanged(false)).Times(1);
 
   const std::string new_base_url = "https://bar.com/";
   SetUserSelectedDefaultSearchProvider(new_base_url);
 }
 
 TEST_F(InstantServiceTest, DontDispatchGoogleURLUpdatedForNonGoogleURLs) {
-  EXPECT_CALL(*instant_service_observer_.get(), DefaultSearchProviderChanged())
-      .Times(1);
+  EXPECT_CALL(*instant_service_observer_.get(),
+              DefaultSearchProviderChanged(false)).Times(1);
   const std::string new_dsp_url = "https://bar.com/";
   SetUserSelectedDefaultSearchProvider(new_dsp_url);
   testing::Mock::VerifyAndClearExpectations(instant_service_observer_.get());
 
-  EXPECT_CALL(*instant_service_observer_.get(), DefaultSearchProviderChanged())
-      .Times(0);
+  EXPECT_CALL(*instant_service_observer_.get(),
+              DefaultSearchProviderChanged(false)).Times(0);
   const std::string new_base_url = "https://www.google.es/";
   NotifyGoogleBaseURLUpdate(new_base_url);
 }
 
 TEST_F(InstantServiceTest, DispatchGoogleURLUpdated) {
-  EXPECT_CALL(*instant_service_observer_.get(), DefaultSearchProviderChanged())
-      .Times(1);
+  EXPECT_CALL(*instant_service_observer_.get(),
+              DefaultSearchProviderChanged(true)).Times(1);
 
   const std::string new_base_url = "https://www.google.es/";
   NotifyGoogleBaseURLUpdate(new_base_url);
@@ -123,8 +123,8 @@ TEST_F(InstantServiceTest, InstantSearchEnabled) {
 
 TEST_F(InstantServiceEnabledTest,
        ResetInstantSearchPrerenderer_DefaultProviderChanged) {
-  EXPECT_CALL(*instant_service_observer_.get(), DefaultSearchProviderChanged())
-      .Times(2);
+  EXPECT_CALL(*instant_service_observer_.get(),
+              DefaultSearchProviderChanged(false)).Times(2);
 
   // Set a default search provider that doesn't support Instant.
   TemplateURLData data;
@@ -146,8 +146,8 @@ TEST_F(InstantServiceEnabledTest,
 
 TEST_F(InstantServiceEnabledTest,
        ResetInstantSearchPrerenderer_GoogleBaseURLUpdated) {
-  EXPECT_CALL(*instant_service_observer_.get(), DefaultSearchProviderChanged())
-      .Times(1);
+  EXPECT_CALL(*instant_service_observer_.get(),
+              DefaultSearchProviderChanged(true)).Times(1);
 
   InstantSearchPrerenderer* old_prerenderer = GetInstantSearchPrerenderer();
   EXPECT_TRUE(old_prerenderer != NULL);

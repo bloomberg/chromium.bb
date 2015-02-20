@@ -11,7 +11,8 @@ void InstantServiceObserver::MostVisitedItemsChanged(
     const std::vector<InstantMostVisitedItem>&) {
 }
 
-void InstantServiceObserver::DefaultSearchProviderChanged() {
+void InstantServiceObserver::DefaultSearchProviderChanged(
+    bool google_base_url_domain_changed) {
 }
 
 void InstantServiceObserver::OmniboxStartMarginChanged(

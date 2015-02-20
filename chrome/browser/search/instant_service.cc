@@ -407,18 +407,20 @@ void InstantService::OnTemplateURLServiceChanged() {
   // changed, the effective URLs might change if they reference the Google base
   // URL. The TemplateURLService will notify us when the effective URL changes
   // in this way but it's up to us to do the work to check both.
+  bool google_base_url_domain_changed = false;
   GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
   if (google_base_url != previous_google_base_url_) {
     previous_google_base_url_ = google_base_url;
     if (template_url && template_url->HasGoogleBaseURLs(
             UIThreadSearchTermsData(profile_)))
-      default_search_provider_changed = true;
+      google_base_url_domain_changed = true;
   }
 
-  if (default_search_provider_changed) {
+  if (default_search_provider_changed || google_base_url_domain_changed) {
     ResetInstantSearchPrerenderer();
-    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                      DefaultSearchProviderChanged());
+    FOR_EACH_OBSERVER(
+        InstantServiceObserver, observers_,
+        DefaultSearchProviderChanged(google_base_url_domain_changed));
   }
 }
 

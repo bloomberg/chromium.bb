@@ -36,22 +36,39 @@ class BrowserInstantControllerTest : public InstantUnitTestBase {
   friend class FakeWebContentsObserver;
 };
 
-const struct TabReloadTestCase {
+struct TabReloadTestCase {
   const char* description;
   const char* start_url;
   bool start_in_instant_process;
   bool should_reload;
+  bool end_in_local_ntp;
   bool end_in_instant_process;
-} kTabReloadTestCases[] = {
-    {"Local Embedded NTP", chrome::kChromeSearchLocalNtpUrl,
-     true, true, true},
-    {"Remote Embedded NTP", "https://www.google.com/instant?strk",
-     true, true, false},
-    {"Remote Embedded SERP", "https://www.google.com/url?strk&bar=search+terms",
-     true, true, false},
-    {"Other NTP", "https://bar.com/instant?strk",
-     false, false, false}
 };
+
+// Test cases for when Google is the initial, but not final provider.
+const TabReloadTestCase kTabReloadTestCasesFinalProviderNotGoogle[] = {
+    {"Local Embedded NTP", chrome::kChromeSearchLocalNtpUrl,
+     true, true, true, true},
+    {"Remote Embedded NTP", "https://www.google.com/newtab",
+     true, true, false, false},
+    {"Remote Embedded SERP", "https://www.google.com/url?strk&bar=search+terms",
+     true, true, false, false},
+    {"Other NTP", "https://bar.com/newtab",
+     false, false, false, false}
+};
+
+// Test cases for when Google is both the initial and final provider.
+const TabReloadTestCase kTabReloadTestCasesFinalProviderGoogle[] = {
+    {"Local Embedded NTP", chrome::kChromeSearchLocalNtpUrl,
+     true, true, true, true},
+    {"Remote Embedded NTP", "https://www.google.com/newtab",
+     true, false, true, true},
+    {"Remote Embedded SERP", "https://www.google.com/url?strk&bar=search+terms",
+     true, true, false, false},
+    {"Other NTP", "https://bar.com/newtab",
+     false, false, false, false}
+};
+
 
 class FakeWebContentsObserver : public content::WebContentsObserver {
  public:
@@ -66,14 +83,23 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
       content::NavigationController::ReloadType reload_type) override {
     if (url_ == url)
       num_reloads_++;
+    current_url_ = url;
   }
 
   const GURL url() const {
     return url_;
   }
 
+  const GURL current_url() const {
+    return contents_->GetURL();
+  }
+
   int num_reloads() const {
     return num_reloads_;
+  }
+
+  bool can_go_back() const {
+    return contents_->GetController().CanGoBack();
   }
 
  protected:
@@ -86,14 +112,16 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
  private:
   content::WebContents* contents_;
   const GURL& url_;
+  GURL current_url_;
   int num_reloads_;
 };
 
 TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
-  size_t num_tests = arraysize(kTabReloadTestCases);
+  size_t num_tests = arraysize(kTabReloadTestCasesFinalProviderNotGoogle);
   ScopedVector<FakeWebContentsObserver> observers;
   for (size_t i = 0; i < num_tests; ++i) {
-    const TabReloadTestCase& test = kTabReloadTestCases[i];
+    const TabReloadTestCase& test =
+        kTabReloadTestCasesFinalProviderNotGoogle[i];
     AddTab(browser(), GURL(test.start_url));
     content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -112,27 +140,34 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
 
   for (size_t i = 0; i < num_tests; ++i) {
     FakeWebContentsObserver* observer = observers[i];
-    const TabReloadTestCase& test = kTabReloadTestCases[i];
+    const TabReloadTestCase& test =
+        kTabReloadTestCasesFinalProviderNotGoogle[i];
 
     if (test.should_reload) {
       // Validate final instant state.
       EXPECT_EQ(
           test.end_in_instant_process,
-          chrome::ShouldAssignURLToInstantRenderer(observer->url(), profile()))
+          chrome::ShouldAssignURLToInstantRenderer(
+              observer->current_url(), profile()))
         << test.description;
     }
 
     // Ensure only the expected tabs(contents) reloaded.
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
       << test.description;
+
+    if (test.end_in_local_ntp) {
+      EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), observer->current_url())
+          << test.description;
+    }
   }
 }
 
 TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
-  const size_t num_tests = arraysize(kTabReloadTestCases);
+  const size_t num_tests = arraysize(kTabReloadTestCasesFinalProviderGoogle);
   ScopedVector<FakeWebContentsObserver> observers;
   for (size_t i = 0; i < num_tests; ++i) {
-    const TabReloadTestCase& test = kTabReloadTestCases[i];
+    const TabReloadTestCase& test = kTabReloadTestCasesFinalProviderGoogle[i];
     AddTab(browser(), GURL(test.start_url));
     content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -150,20 +185,26 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
   NotifyGoogleBaseURLUpdate("https://www.google.es/");
 
   for (size_t i = 0; i < num_tests; ++i) {
-    const TabReloadTestCase& test = kTabReloadTestCases[i];
+    const TabReloadTestCase& test = kTabReloadTestCasesFinalProviderGoogle[i];
     FakeWebContentsObserver* observer = observers[i];
 
-    if (test.should_reload) {
-      // Validate final instant state.
-      EXPECT_EQ(
-          test.end_in_instant_process,
-          chrome::ShouldAssignURLToInstantRenderer(observer->url(), profile()))
-        << test.description;
-    }
+    // Validate final instant state.
+    EXPECT_EQ(
+        test.end_in_instant_process,
+        chrome::ShouldAssignURLToInstantRenderer(
+            observer->current_url(), profile()))
+      << test.description;
 
     // Ensure only the expected tabs(contents) reloaded.
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
       << test.description;
+
+    if (test.end_in_local_ntp) {
+      EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), observer->current_url())
+          << test.description;
+      // The navigation to Local NTP should be definitive i.e. can't go back.
+      EXPECT_FALSE(observer->can_go_back());
+    }
   }
 }
 

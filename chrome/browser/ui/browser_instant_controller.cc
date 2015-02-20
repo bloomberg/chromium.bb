@@ -21,10 +21,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-
+#include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
 
 // Helpers --------------------------------------------------------------------
 
@@ -140,7 +142,8 @@ void BrowserInstantController::ModelChanged(
     instant_.InstantSupportChanged(new_state.instant_support);
 }
 
-void BrowserInstantController::DefaultSearchProviderChanged() {
+void BrowserInstantController::DefaultSearchProviderChanged(
+    bool google_base_url_domain_changed) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile());
   if (!instant_service)
@@ -157,17 +160,28 @@ void BrowserInstantController::DefaultSearchProviderChanged() {
     content::RenderProcessHost* rph = contents->GetRenderProcessHost();
     instant_service->SendSearchURLsToRenderer(rph);
 
-    // Reload the contents to ensure that it gets assigned to a non-priviledged
-    // renderer.
     if (!instant_service->IsInstantProcess(rph->GetID()))
       continue;
 
-    contents->GetController().Reload(false);
+    if (google_base_url_domain_changed &&
+        SearchTabHelper::FromWebContents(contents)->model()->mode().is_ntp()) {
+      // Replace the server NTP with the local NTP.
+      content::NavigationController::LoadURLParams
+          params(chrome::GetLocalInstantURL(profile()));
+      params.should_replace_current_entry = true;
+      params.referrer = content::Referrer();
+      params.transition_type = ui::PAGE_TRANSITION_RELOAD;
+      contents->GetController().LoadURLWithParams(params);
+    } else {
+      // Reload the contents to ensure that it gets assigned to a
+      // non-priviledged renderer.
+      contents->GetController().Reload(false);
 
-    // As the reload was not triggered by the user we don't want to close any
-    // infobars. We have to tell the InfoBarService after the reload, otherwise
-    // it would ignore this call when
-    // WebContentsObserver::DidStartNavigationToPendingEntry is invoked.
-    InfoBarService::FromWebContents(contents)->set_ignore_next_reload();
+      // As the reload was not triggered by the user we don't want to close any
+      // infobars. We have to tell the InfoBarService after the reload,
+      // otherwise it would ignore this call when
+      // WebContentsObserver::DidStartNavigationToPendingEntry is invoked.
+      InfoBarService::FromWebContents(contents)->set_ignore_next_reload();
+    }
   }
 }

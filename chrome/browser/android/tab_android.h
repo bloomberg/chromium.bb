@@ -125,7 +125,8 @@ class TabAndroid : public CoreTabHelperDelegate,
                        bool did_finish_load) override;
 
   // Overridden from InstantServiceObserver:
-  void DefaultSearchProviderChanged() override;
+  void DefaultSearchProviderChanged(
+      bool google_base_url_domain_changed) override;
 
   // Overridden from SearchTabHelperDelegate:
   void OnWebContentsInstantSupportDisabled(

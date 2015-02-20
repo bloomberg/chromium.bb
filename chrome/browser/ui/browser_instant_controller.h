@@ -53,7 +53,8 @@ class BrowserInstantController : public SearchModelObserver,
                     const SearchModel::State& new_state) override;
 
   // InstantServiceObserver:
-  void DefaultSearchProviderChanged() override;
+  void DefaultSearchProviderChanged(
+      bool google_base_url_domain_changed) override;
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.
