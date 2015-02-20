@@ -83,10 +83,14 @@ class BatteryStatusObserver {
   }
 
   void Stop() {
-    if (power_handle_)
+    if (power_handle_) {
       UnregisterNotification(power_handle_);
-    if (battery_change_handle_)
+      power_handle_ = NULL;
+    }
+    if (battery_change_handle_) {
       UnregisterNotification(battery_change_handle_);
+      battery_change_handle_ = NULL;
+    }
     window_.reset();
   }
 
