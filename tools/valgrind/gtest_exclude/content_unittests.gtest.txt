@@ -10,3 +10,7 @@ WebDataConsumerHandleImplTest.*
 
 # https://crbug.com/449103
 WebInputEventAuraTest.TestMakeWebKeyboardEventWindowsKeyCode
+
+# Flaky: https://crbug.com/460578
+DesktopCaptureDeviceTest.InvertedFrame
+DesktopCaptureDeviceTest.UnpackedFrame
