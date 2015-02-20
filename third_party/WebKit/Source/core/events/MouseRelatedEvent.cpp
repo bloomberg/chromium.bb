@@ -224,7 +224,7 @@ int MouseRelatedEvent::y() const
     return m_clientLocation.y();
 }
 
-void MouseRelatedEvent::trace(Visitor* visitor)
+DEFINE_TRACE(MouseRelatedEvent)
 {
     UIEventWithKeyState::trace(visitor);
 }

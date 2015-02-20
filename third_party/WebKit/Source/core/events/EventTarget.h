@@ -142,7 +142,7 @@ public:
 
     bool fireEventListeners(Event*);
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool keepEventInNode(Event*) { return false; };
 
@@ -200,7 +200,7 @@ class RefCountedGarbageCollectedEventTargetWithInlineData : public EventTargetWi
 template <typename T>
 class RefCountedGarbageCollectedEventTargetWithInlineData : public RefCountedGarbageCollected<T>, public EventTargetWithInlineData {
 public:
-    virtual void trace(Visitor* visitor) override { EventTargetWithInlineData::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { EventTargetWithInlineData::trace(visitor); }
 };
 #endif
 

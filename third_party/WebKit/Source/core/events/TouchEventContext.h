@@ -46,7 +46,7 @@ public:
     TouchList& targetTouches() { return *m_targetTouches; }
     TouchList& changedTouches() { return *m_changedTouches; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     TouchEventContext();

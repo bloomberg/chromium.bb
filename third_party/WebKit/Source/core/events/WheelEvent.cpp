@@ -83,7 +83,7 @@ bool WheelEvent::isWheelEvent() const
     return true;
 }
 
-void WheelEvent::trace(Visitor* visitor)
+DEFINE_TRACE(WheelEvent)
 {
     MouseEvent::trace(visitor);
 }

@@ -43,7 +43,7 @@ RelatedEvent::RelatedEvent(const AtomicString& eventType, const RelatedEventInit
         m_relatedTarget = initializer.relatedTarget();
 }
 
-void RelatedEvent::trace(Visitor* visitor)
+DEFINE_TRACE(RelatedEvent)
 {
     visitor->trace(m_relatedTarget);
     Event::trace(visitor);

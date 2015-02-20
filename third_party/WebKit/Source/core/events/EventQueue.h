@@ -39,7 +39,7 @@ class Event;
 class EventQueue : public NoBaseWillBeGarbageCollectedFinalized<EventQueue> {
 public:
     virtual ~EventQueue() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) = 0;
     virtual bool cancelEvent(Event*) = 0;
     // The accumulated and all the future events will be discarded, no events will be dispatched anymore.

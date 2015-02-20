@@ -45,7 +45,7 @@ public:
 
     DataTransfer* clipboardData() const { return m_clipboardData.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ClipboardEvent();

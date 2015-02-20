@@ -177,7 +177,7 @@ void MessageEvent::entangleMessagePorts(ExecutionContext* context)
     m_ports = MessagePort::entanglePorts(*context, m_channels.release());
 }
 
-void MessageEvent::trace(Visitor* visitor)
+DEFINE_TRACE(MessageEvent)
 {
     visitor->trace(m_dataAsBlob);
     visitor->trace(m_source);

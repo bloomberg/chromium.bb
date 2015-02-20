@@ -70,7 +70,7 @@ public:
 
     virtual int which() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     UIEvent();

@@ -61,7 +61,7 @@ public:
         m_serializedDetail = detail;
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     CustomEvent();

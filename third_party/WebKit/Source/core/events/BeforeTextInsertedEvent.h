@@ -45,7 +45,7 @@ public:
     const String& text() const { return m_text; }
     void setText(const String& s) { m_text = s; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit BeforeTextInsertedEvent(const String&);

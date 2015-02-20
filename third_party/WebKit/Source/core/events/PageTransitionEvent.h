@@ -53,7 +53,7 @@ public:
 
     bool persisted() const { return m_persisted; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     PageTransitionEvent();

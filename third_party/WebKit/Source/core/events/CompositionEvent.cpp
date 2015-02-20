@@ -97,7 +97,7 @@ const AtomicString& CompositionEvent::interfaceName() const
     return EventNames::CompositionEvent;
 }
 
-void CompositionEvent::trace(Visitor* visitor)
+DEFINE_TRACE(CompositionEvent)
 {
     UIEvent::trace(visitor);
 }

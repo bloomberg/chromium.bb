@@ -78,7 +78,7 @@ const AtomicString& TransitionEvent::interfaceName() const
     return EventNames::TransitionEvent;
 }
 
-void TransitionEvent::trace(Visitor* visitor)
+DEFINE_TRACE(TransitionEvent)
 {
     Event::trace(visitor);
 }

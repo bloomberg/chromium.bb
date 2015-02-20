@@ -94,7 +94,7 @@ GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<Abst
     setUICreateTime(uiTimestamp);
 }
 
-void GestureEvent::trace(Visitor* visitor)
+DEFINE_TRACE(GestureEvent)
 {
     MouseRelatedEvent::trace(visitor);
 }

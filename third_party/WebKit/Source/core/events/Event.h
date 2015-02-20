@@ -186,7 +186,7 @@ public:
     double uiCreateTime() const { return m_uiCreateTime; }
     void setUICreateTime(double uiCreateTime) { m_uiCreateTime = uiCreateTime; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     Event();

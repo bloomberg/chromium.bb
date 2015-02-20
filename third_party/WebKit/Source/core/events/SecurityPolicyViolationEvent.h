@@ -56,7 +56,7 @@ public:
 
     virtual const AtomicString& interfaceName() const override { return EventNames::SecurityPolicyViolationEvent; }
 
-    virtual void trace(Visitor* visitor) override { Event::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
 private:
     SecurityPolicyViolationEvent() { }

@@ -69,7 +69,7 @@ const AtomicString& WebKitAnimationEvent::interfaceName() const
     return EventNames::WebKitAnimationEvent;
 }
 
-void WebKitAnimationEvent::trace(Visitor* visitor)
+DEFINE_TRACE(WebKitAnimationEvent)
 {
     Event::trace(visitor);
 }

@@ -49,7 +49,7 @@ GenericEventQueue::~GenericEventQueue()
 {
 }
 
-void GenericEventQueue::trace(Visitor* visitor)
+DEFINE_TRACE(GenericEventQueue)
 {
     visitor->trace(m_owner);
     visitor->trace(m_pendingEvents);

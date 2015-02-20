@@ -58,7 +58,7 @@ FocusEvent::FocusEvent(const AtomicString& type, const FocusEventInit& initializ
         m_relatedTarget = initializer.relatedTarget();
 }
 
-void FocusEvent::trace(Visitor* visitor)
+DEFINE_TRACE(FocusEvent)
 {
     visitor->trace(m_relatedTarget);
     UIEvent::trace(visitor);

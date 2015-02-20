@@ -56,7 +56,7 @@ public:
     virtual const AtomicString& interfaceName() const override;
     virtual bool isFocusEvent() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     FocusEvent();

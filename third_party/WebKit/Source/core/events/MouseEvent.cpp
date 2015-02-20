@@ -201,7 +201,7 @@ Node* MouseEvent::fromElement() const
     return target() ? target()->toNode() : 0;
 }
 
-void MouseEvent::trace(Visitor* visitor)
+DEFINE_TRACE(MouseEvent)
 {
     visitor->trace(m_relatedTarget);
     visitor->trace(m_dataTransfer);
@@ -236,7 +236,7 @@ SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefP
     }
 }
 
-void SimulatedMouseEvent::trace(Visitor* visitor)
+DEFINE_TRACE(SimulatedMouseEvent)
 {
     MouseEvent::trace(visitor);
 }

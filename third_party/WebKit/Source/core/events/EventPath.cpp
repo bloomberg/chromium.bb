@@ -331,7 +331,7 @@ void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList)
 }
 #endif
 
-void EventPath::trace(Visitor* visitor)
+DEFINE_TRACE(EventPath)
 {
     visitor->trace(m_nodeEventContexts);
     visitor->trace(m_node);

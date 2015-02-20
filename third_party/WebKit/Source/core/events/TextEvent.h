@@ -60,7 +60,7 @@ public:
     bool shouldMatchStyle() const { return m_shouldMatchStyle; }
     DocumentFragment* pastingFragment() const { return m_pastingFragment.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     TextEvent();

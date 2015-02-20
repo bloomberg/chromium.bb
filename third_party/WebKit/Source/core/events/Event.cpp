@@ -247,7 +247,7 @@ EventTarget* Event::currentTarget() const
     return m_currentTarget.get();
 }
 
-void Event::trace(Visitor* visitor)
+DEFINE_TRACE(Event)
 {
     visitor->trace(m_currentTarget);
     visitor->trace(m_target);

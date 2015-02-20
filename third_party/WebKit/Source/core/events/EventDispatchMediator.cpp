@@ -46,7 +46,7 @@ EventDispatchMediator::EventDispatchMediator(PassRefPtrWillBeRawPtr<Event> event
 {
 }
 
-void EventDispatchMediator::trace(Visitor* visitor)
+DEFINE_TRACE(EventDispatchMediator)
 {
     visitor->trace(m_event);
 }

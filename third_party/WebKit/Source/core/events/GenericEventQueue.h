@@ -42,7 +42,7 @@ public:
     virtual ~GenericEventQueue();
 
     // EventQueue
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
     virtual bool cancelEvent(Event*) override;
     virtual void close() override;

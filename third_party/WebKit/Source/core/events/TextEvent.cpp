@@ -103,7 +103,7 @@ const AtomicString& TextEvent::interfaceName() const
     return EventNames::TextEvent;
 }
 
-void TextEvent::trace(Visitor* visitor)
+DEFINE_TRACE(TextEvent)
 {
     visitor->trace(m_pastingFragment);
     UIEvent::trace(visitor);

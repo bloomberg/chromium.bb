@@ -48,7 +48,7 @@ bool ClipboardEvent::isClipboardEvent() const
     return true;
 }
 
-void ClipboardEvent::trace(Visitor* visitor)
+DEFINE_TRACE(ClipboardEvent)
 {
     visitor->trace(m_clipboardData);
     Event::trace(visitor);

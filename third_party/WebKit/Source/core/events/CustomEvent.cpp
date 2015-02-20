@@ -58,7 +58,7 @@ const AtomicString& CustomEvent::interfaceName() const
     return EventNames::CustomEvent;
 }
 
-void CustomEvent::trace(Visitor* visitor)
+DEFINE_TRACE(CustomEvent)
 {
     Event::trace(visitor);
 }

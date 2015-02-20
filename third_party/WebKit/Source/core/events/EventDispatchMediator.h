@@ -45,7 +45,7 @@ class EventDispatchMediator : public RefCountedWillBeGarbageCollectedFinalized<E
 public:
     static PassRefPtrWillBeRawPtr<EventDispatchMediator> create(PassRefPtrWillBeRawPtr<Event>);
     virtual ~EventDispatchMediator() { };
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
     virtual bool dispatchEvent(EventDispatcher&) const;
     Event& event() const { return *m_event; };
 

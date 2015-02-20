@@ -76,7 +76,7 @@ TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext)
 
-void TreeScopeEventContext::trace(Visitor* visitor)
+DEFINE_TRACE(TreeScopeEventContext)
 {
     visitor->trace(m_treeScope);
     visitor->trace(m_rootNode);

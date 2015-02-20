@@ -41,7 +41,7 @@ public:
     DOMWindowEventQueueTimer(DOMWindowEventQueue* eventQueue, ExecutionContext* context)
         : SuspendableTimer(context)
         , m_eventQueue(eventQueue) { }
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_eventQueue);
         SuspendableTimer::trace(visitor);
@@ -69,7 +69,7 @@ DOMWindowEventQueue::~DOMWindowEventQueue()
 {
 }
 
-void DOMWindowEventQueue::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowEventQueue)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingEventTimer);

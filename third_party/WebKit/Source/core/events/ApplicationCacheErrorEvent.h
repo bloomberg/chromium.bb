@@ -39,7 +39,7 @@ public:
 
     virtual const AtomicString& interfaceName() const override { return EventNames::ApplicationCacheErrorEvent; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ApplicationCacheErrorEvent();

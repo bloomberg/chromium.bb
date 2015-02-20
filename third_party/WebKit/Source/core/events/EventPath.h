@@ -63,7 +63,7 @@ public:
 
     static EventTarget* eventTargetRespectingTargetRules(Node&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void clear()
     {
         m_nodeEventContexts.clear();

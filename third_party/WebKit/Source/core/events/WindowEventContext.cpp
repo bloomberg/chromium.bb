@@ -58,7 +58,7 @@ bool WindowEventContext::handleLocalEvents(Event& event)
     return true;
 }
 
-void WindowEventContext::trace(Visitor* visitor)
+DEFINE_TRACE(WindowEventContext)
 {
     visitor->trace(m_window);
     visitor->trace(m_target);

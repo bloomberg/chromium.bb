@@ -44,7 +44,7 @@ NodeEventContext::NodeEventContext(PassRefPtrWillBeRawPtr<Node> node, PassRefPtr
     ASSERT(m_node);
 }
 
-void NodeEventContext::trace(Visitor* visitor)
+DEFINE_TRACE(NodeEventContext)
 {
     visitor->trace(m_node);
     visitor->trace(m_currentTarget);

@@ -24,7 +24,7 @@ public:
     virtual const AtomicString& interfaceName() const override { return EventNames::RelatedEvent; }
     virtual bool isRelatedEvent() const override { return true; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RelatedEvent();

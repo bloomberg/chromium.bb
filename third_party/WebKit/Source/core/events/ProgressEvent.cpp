@@ -62,7 +62,7 @@ const AtomicString& ProgressEvent::interfaceName() const
     return EventNames::ProgressEvent;
 }
 
-void ProgressEvent::trace(Visitor* visitor)
+DEFINE_TRACE(ProgressEvent)
 {
     Event::trace(visitor);
 }

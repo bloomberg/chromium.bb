@@ -45,7 +45,7 @@ public:
     float deltaX() const { return m_deltaX; }
     float deltaY() const { return m_deltaY; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     GestureEvent();

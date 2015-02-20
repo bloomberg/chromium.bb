@@ -88,7 +88,7 @@ const AtomicString& ErrorEvent::interfaceName() const
     return EventNames::ErrorEvent;
 }
 
-void ErrorEvent::trace(Visitor* visitor)
+DEFINE_TRACE(ErrorEvent)
 {
     Event::trace(visitor);
 }

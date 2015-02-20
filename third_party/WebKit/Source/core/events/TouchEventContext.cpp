@@ -56,7 +56,7 @@ void TouchEventContext::handleLocalEvents(Event& event) const
     touchEvent.setChangedTouches(m_changedTouches);
 }
 
-void TouchEventContext::trace(Visitor* visitor)
+DEFINE_TRACE(TouchEventContext)
 {
     visitor->trace(m_touches);
     visitor->trace(m_targetTouches);

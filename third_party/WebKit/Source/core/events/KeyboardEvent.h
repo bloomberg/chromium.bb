@@ -89,7 +89,7 @@ public:
     virtual bool isKeyboardEvent() const override;
     virtual int which() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     KeyboardEvent();

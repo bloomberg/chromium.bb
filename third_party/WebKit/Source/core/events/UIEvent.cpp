@@ -105,7 +105,7 @@ int UIEvent::which() const
     return 0;
 }
 
-void UIEvent::trace(Visitor* visitor)
+DEFINE_TRACE(UIEvent)
 {
     visitor->trace(m_view);
     Event::trace(visitor);

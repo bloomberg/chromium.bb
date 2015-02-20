@@ -46,7 +46,7 @@ public:
     EventTarget* target() const;
     bool handleLocalEvents(Event&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RefPtrWillBeMember<LocalDOMWindow> m_window;

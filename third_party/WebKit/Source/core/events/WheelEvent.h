@@ -80,7 +80,7 @@ public:
     virtual bool isMouseEvent() const override;
     virtual bool isWheelEvent() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     WheelEvent();

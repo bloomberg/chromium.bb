@@ -48,7 +48,7 @@ class TreeScopeEventContext final : public RefCountedWillBeGarbageCollected<Tree
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext);
 public:
     static PassRefPtrWillBeRawPtr<TreeScopeEventContext> create(TreeScope&);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     TreeScope& treeScope() const { return *m_treeScope; }
     Node& rootNode() const { return *m_rootNode; }

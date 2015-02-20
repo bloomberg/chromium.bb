@@ -41,7 +41,7 @@ bool BeforeUnloadEvent::isBeforeUnloadEvent() const
     return true;
 }
 
-void BeforeUnloadEvent::trace(Visitor* visitor)
+DEFINE_TRACE(BeforeUnloadEvent)
 {
     Event::trace(visitor);
 }

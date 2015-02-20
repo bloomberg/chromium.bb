@@ -43,7 +43,7 @@ const AtomicString& BeforeTextInsertedEvent::interfaceName() const
     return EventNames::Event;
 }
 
-void BeforeTextInsertedEvent::trace(Visitor* visitor)
+DEFINE_TRACE(BeforeTextInsertedEvent)
 {
     Event::trace(visitor);
 }

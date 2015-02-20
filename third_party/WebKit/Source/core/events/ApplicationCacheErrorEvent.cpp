@@ -71,7 +71,7 @@ ApplicationCacheErrorEvent::~ApplicationCacheErrorEvent()
 {
 }
 
-void ApplicationCacheErrorEvent::trace(Visitor* visitor)
+DEFINE_TRACE(ApplicationCacheErrorEvent)
 {
     Event::trace(visitor);
 }

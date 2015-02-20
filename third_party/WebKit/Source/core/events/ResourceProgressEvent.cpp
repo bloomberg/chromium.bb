@@ -49,7 +49,7 @@ const AtomicString& ResourceProgressEvent::interfaceName() const
     return EventNames::ResourceProgressEvent;
 }
 
-void ResourceProgressEvent::trace(Visitor* visitor)
+DEFINE_TRACE(ResourceProgressEvent)
 {
     ProgressEvent::trace(visitor);
 }

@@ -60,7 +60,7 @@ namespace blink {
         const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
         void setAbsoluteLocation(const LayoutPoint& p) { m_absoluteLocation = p; }
 
-        virtual void trace(Visitor*) override;
+        DECLARE_VIRTUAL_TRACE();
 
     protected:
         MouseRelatedEvent();

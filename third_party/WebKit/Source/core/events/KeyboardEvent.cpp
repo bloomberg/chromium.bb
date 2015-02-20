@@ -206,7 +206,7 @@ int KeyboardEvent::which() const
     return keyCode();
 }
 
-void KeyboardEvent::trace(Visitor* visitor)
+DEFINE_TRACE(KeyboardEvent)
 {
     UIEventWithKeyState::trace(visitor);
 }
