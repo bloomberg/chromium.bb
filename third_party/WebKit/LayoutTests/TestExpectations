@@ -1839,3 +1839,5 @@ crbug.com/457137 [ Linux ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
 
 crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]
+
+crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
