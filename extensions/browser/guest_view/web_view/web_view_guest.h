@@ -285,10 +285,12 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   static void RemoveWebViewStateFromIOThread(
       content::WebContents* web_contents);
 
+  // Loads the |url| provided. |force_navigation| indicates whether to reload
+  // the content if the provided |url| matches the current page of the guest.
   void LoadURLWithParams(const GURL& url,
                          const content::Referrer& referrer,
                          ui::PageTransition transition_type,
-                         content::WebContents* web_contents);
+                         bool force_navigation);
 
   void RequestNewWindowPermission(
       WindowOpenDisposition disposition,

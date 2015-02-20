@@ -21,6 +21,8 @@ class TestGuestViewManager : public GuestViewManager {
   void WaitForAllGuestsDeleted();
   content::WebContents* WaitForSingleGuestCreated();
 
+  content::WebContents* GetLastGuestCreated();
+
  private:
   // GuestViewManager override:
   void AddGuest(int guest_instance_id,
@@ -28,7 +30,6 @@ class TestGuestViewManager : public GuestViewManager {
   void RemoveGuest(int guest_instance_id) override;
 
   int GetNumGuests() const;
-  content::WebContents* GetLastGuestCreated();
   void WaitForGuestCreated();
 
   std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
