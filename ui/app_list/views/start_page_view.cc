@@ -324,7 +324,8 @@ bool StartPageView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool StartPageView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (event.y_offset() > 0) {
+  // Negative y_offset is a downward scroll.
+  if (event.y_offset() < 0) {
     MaybeOpenCustomLauncherPage();
     return true;
   }
@@ -344,7 +345,9 @@ void StartPageView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void StartPageView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (event->type() == ui::ET_SCROLL && event->y_offset() > 0)
+  // Negative y_offset is a downward scroll (or upward, if Australian Scrolling
+  // is enabled).
+  if (event->type() == ui::ET_SCROLL && event->y_offset() < 0)
     MaybeOpenCustomLauncherPage();
 }
 

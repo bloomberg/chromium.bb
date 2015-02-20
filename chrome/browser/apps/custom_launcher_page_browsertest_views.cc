@@ -196,11 +196,11 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
   // Scrolling left, right or up should do nothing.
   event_generator.MoveMouseWheel(-5, 0);
   event_generator.MoveMouseWheel(5, 0);
-  event_generator.MoveMouseWheel(0, -5);
+  event_generator.MoveMouseWheel(0, 5);
   EXPECT_TRUE(
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
   // Scroll down to open launcher page.
-  event_generator.MoveMouseWheel(0, 5);
+  event_generator.MoveMouseWheel(0, -5);
   EXPECT_TRUE(contents_view->IsStateActive(
       app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
 
@@ -240,12 +240,12 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
                                  num_steps, num_fingers);
   event_generator.ScrollSequence(point_in_clickzone, step_delay, 5, 0,
                                  num_steps, num_fingers);
-  event_generator.ScrollSequence(point_in_clickzone, step_delay, 0, -5,
+  event_generator.ScrollSequence(point_in_clickzone, step_delay, 0, 5,
                                  num_steps, num_fingers);
   EXPECT_TRUE(
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
   // Scroll up to open launcher page.
-  event_generator.ScrollSequence(point_in_clickzone, step_delay, 0, 5,
+  event_generator.ScrollSequence(point_in_clickzone, step_delay, 0, -5,
                                  num_steps, num_fingers);
   EXPECT_TRUE(contents_view->IsStateActive(
       app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
