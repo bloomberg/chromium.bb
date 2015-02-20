@@ -362,7 +362,8 @@ if ragel_involved:
     ('avx2_additions_proof.py', ('32', '64'),
      '20150113.remaining_avx2_promotions', '20150128.avx2_additions'),
   ]
-  for proof_file, bitnesses, old, new in trie_proofs:
+  # Run the 3 latest proofs by default.
+  for proof_file, bitnesses, old, new in trie_proofs[-3:]:
     for bitness in bitnesses:
       trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
       check_proof = env.AutoDepsCommand(
@@ -372,6 +373,8 @@ if ragel_involved:
          '--validator_dll', validator_dll,
          '--decoder_dll', decoder_dll,
          '--bitness', bitness,
+         '--gas', gas,
+         '--objdump', objdump,
          '--old', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + old,
          '--new', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + new])
       check_tries.append(check_proof)

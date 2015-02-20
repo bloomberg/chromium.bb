@@ -7,7 +7,11 @@
 import itertools
 import multiprocessing
 import optparse
+import os
+import subprocess
+import tempfile
 
+import objdump_parser
 import spec
 import trie
 import validator
@@ -309,27 +313,70 @@ def GetRRInfoFromTrie(trie_state, bitness):
   return input_rr, output_rr
 
 
-def Disassemble((bitness, (byte_tuple, accept_info1, accept_info2))):
-  """Disassembles byte sequence and returns it in old or new trie."""
-  global the_validator
+def Disassemble(options, byte_sequences_iter):
+  """Disassembles all byte sequences and returns it in old or new trie."""
+  asm_file = None
+  object_file = None
   old_trie_set = set()
   new_trie_set = set()
-  disassembly = the_validator.DisassembleChunk(
-      ''.join([chr(int(x)) for x in byte_tuple]),
-      bitness=bitness)
-  assert len(disassembly) == 1
-  prefixes, mnemonic, operands = (spec.ParseInstruction(disassembly[0]))
-  full_operands = tuple(prefixes + [mnemonic] + operands)
-  if accept_info1 is not None:
-    input_rr, output_rr = GetRRInfoFromTrie(accept_info1, bitness)
-    old_trie_set.add(Operands(disasms=full_operands,
-                              input_rr=input_rr,
-                              output_rr=output_rr))
-  if accept_info2 is not None:
-    input_rr, output_rr = GetRRInfoFromTrie(accept_info2, bitness)
-    new_trie_set.add(Operands(disasms=full_operands,
-                              input_rr=input_rr,
-                              output_rr=output_rr))
+  bitness = int(options.bitness)
+  try:
+    file_prefix = "proof_decodes"
+    asm_file = tempfile.NamedTemporaryFile(
+        mode='wt',
+        prefix=file_prefix,
+        suffix='.s',
+        delete=False)
+    asm_file.write('.text\n')
+
+    accepts = []
+    for entry in byte_sequences_iter:
+      byte_tuple, accept_info1, accept_info2 = entry
+      accepts += [(accept_info1, accept_info2)]
+      asm_file.write('  .byte %s\n' % ','.join(map(hex, map(int, byte_tuple))))
+    asm_file.close()
+
+    object_file = tempfile.NamedTemporaryFile(
+        prefix=file_prefix,
+        suffix='.o',
+        delete=False)
+    object_file.close()
+
+    subprocess.check_call([
+        options.gas,
+        '--%s' % bitness,
+        '--strip-local-absolute',
+        asm_file.name,
+        '-o', object_file.name])
+
+    objdump_proc = subprocess.Popen(
+        [options.objdump, '-d', '--insn-width=15', object_file.name],
+        stdout=subprocess.PIPE)
+
+    for line, (accept_info1, accept_info2) in itertools.izip(
+        objdump_parser.SkipHeader(objdump_proc.stdout),
+        iter(accepts)):
+      instruction = objdump_parser.ParseLine(line)
+      prefixes, mnemonic, operands = (spec.ParseInstruction(instruction))
+      full_operands = tuple(prefixes + [mnemonic] + operands)
+      if accept_info1 is not None:
+        input_rr, output_rr = GetRRInfoFromTrie(accept_info1, bitness)
+        old_trie_set.add(Operands(disasms=full_operands,
+                                  input_rr=input_rr,
+                                  output_rr=output_rr))
+      if accept_info2 is not None:
+        input_rr, output_rr = GetRRInfoFromTrie(accept_info2, bitness)
+        new_trie_set.add(Operands(disasms=full_operands,
+                                  input_rr=input_rr,
+                                  output_rr=output_rr))
+
+    return_code = objdump_proc.wait()
+    assert return_code == 0
+
+  finally:
+    os.remove(asm_file.name)
+    os.remove(object_file.name)
+
   return old_trie_set, new_trie_set
 
 
@@ -342,6 +389,8 @@ def ParseStandardOpts():
   parser.add_option('--bitness', choices=['32', '64'])
   parser.add_option('--validator_dll', help='Path of the validator library')
   parser.add_option('--decoder_dll', help='Path of the decoder library')
+  parser.add_option('--gas', help='Path of the gas binary')
+  parser.add_option('--objdump', help='Path of the objdump binary')
   options, _ = parser.parse_args()
   return options
 
@@ -356,25 +405,10 @@ def RunProof(standard_opts, proof_func):
   Returns:
     None
   """
-  # The validator itself must be passed to the other processes as a global
-  # as it is c object that must be passed via forking and not as an argument
-  # which means the validator must support being via pickled.
-  global the_validator
-  the_validator = validator.Validator(
-      validator_dll=standard_opts.validator_dll,
-      decoder_dll=standard_opts.decoder_dll)
-  bitness = int(standard_opts.bitness)
-  adds = set()
-  removes = set()
-  tasks = itertools.izip(itertools.repeat(bitness),
-                         trie.DiffTrieFiles(standard_opts.new,
-                                            standard_opts.old))
-  pool = multiprocessing.Pool()
-  results = pool.imap_unordered(Disassemble, tasks, chunksize=10000)
-  for new, old in results:
-    adds |= new
-    removes |= old
-  proof_func((adds, removes), bitness)
+  adds, removes = Disassemble(standard_opts,
+                              trie.DiffTrieFiles(standard_opts.new,
+                                                 standard_opts.old))
+  proof_func((adds, removes), int(standard_opts.bitness))
 
 
 def AssertDiffSetEquals((adds, removes),
