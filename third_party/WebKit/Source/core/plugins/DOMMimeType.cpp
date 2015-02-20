@@ -38,7 +38,7 @@ DOMMimeType::~DOMMimeType()
 {
 }
 
-void DOMMimeType::trace(Visitor* visitor)
+DEFINE_TRACE(DOMMimeType)
 {
     FrameDestructionObserver::trace(visitor);
 }

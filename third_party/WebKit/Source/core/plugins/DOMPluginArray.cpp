@@ -33,7 +33,7 @@ DOMPluginArray::DOMPluginArray(LocalFrame* frame)
 {
 }
 
-void DOMPluginArray::trace(Visitor* visitor)
+DEFINE_TRACE(DOMPluginArray)
 {
     DOMWindowProperty::trace(visitor);
 }

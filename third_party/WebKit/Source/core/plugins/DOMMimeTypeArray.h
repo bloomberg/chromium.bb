@@ -47,7 +47,7 @@ public:
     PassRefPtrWillBeRawPtr<DOMMimeType> item(unsigned index);
     PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit DOMMimeTypeArray(LocalFrame*);

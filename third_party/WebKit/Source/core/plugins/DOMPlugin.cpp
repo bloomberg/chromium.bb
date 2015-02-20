@@ -35,7 +35,7 @@ DOMPlugin::~DOMPlugin()
 {
 }
 
-void DOMPlugin::trace(Visitor* visitor)
+DEFINE_TRACE(DOMPlugin)
 {
     FrameDestructionObserver::trace(visitor);
 }

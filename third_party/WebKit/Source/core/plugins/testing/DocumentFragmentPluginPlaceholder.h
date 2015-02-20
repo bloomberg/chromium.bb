@@ -24,7 +24,7 @@ public:
 #if !ENABLE(OILPAN)
     virtual ~DocumentFragmentPluginPlaceholder() override { }
 #endif
-    virtual void trace(Visitor* visitor) { visitor->trace(m_fragment); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_fragment); }
 
     virtual void loadIntoContainer(ContainerNode& container) override
     {

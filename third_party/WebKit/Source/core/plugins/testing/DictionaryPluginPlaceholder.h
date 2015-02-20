@@ -32,7 +32,7 @@ public:
 #if !ENABLE(OILPAN)
     virtual ~DictionaryPluginPlaceholder() override { }
 #endif
-    virtual void trace(Visitor* visitor) { visitor->trace(m_pluginPlaceholderElement); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_pluginPlaceholderElement); }
 
     virtual void loadIntoContainer(ContainerNode& container) override
     {

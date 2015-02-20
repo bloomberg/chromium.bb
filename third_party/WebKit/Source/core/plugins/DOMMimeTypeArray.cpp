@@ -33,7 +33,7 @@ DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
 {
 }
 
-void DOMMimeTypeArray::trace(Visitor* visitor)
+DEFINE_TRACE(DOMMimeTypeArray)
 {
     DOMWindowProperty::trace(visitor);
 }
