@@ -34,20 +34,34 @@ cr.define('hotword', function() {
    */
   TrainingManager.onRequestFileSystemSuccess_ = function(fs) {
     fs.root.getFile(hotword.constants.SPEAKER_MODEL_FILE_NAME, {create: false},
-        function(fileEntry) {
-          if (fileEntry.isFile) {
-            hotword.debug('File found: ' + fileEntry.fullPath);
-            if (hotword.DEBUG || window.localStorage['hotword.DEBUG']) {
-              fileEntry.getMetadata(function(md) {
-                hotword.debug('Speaker model file size: ' + md.size);
-              });
-            }
-            fileEntry.remove(function() {
-                hotword.debug('File removed.');
-            }, TrainingManager.fileErrorHandler_);
-          }
-        }, TrainingManager.fileErrorHandler_);
-    };
+        TrainingManager.deleteFile_, TrainingManager.fileErrorHandler_);
+
+    for (var i = 0; i < hotword.constants.NUM_TRAINING_UTTERANCES; ++i) {
+      fs.root.getFile(hotword.constants.UTTERANCE_FILE_PREFIX + i +
+          hotword.constants.UTTERANCE_FILE_EXTENSION,
+          {create: false},
+          TrainingManager.deleteFile_, TrainingManager.fileErrorHandler_);
+    }
+  };
+
+  /**
+   * Deletes a file.
+   * @param {FileEntry} fileEntry The FileEntry object.
+   * @private
+   */
+  TrainingManager.deleteFile_ = function(fileEntry) {
+    if (fileEntry.isFile) {
+      hotword.debug('File found: ' + fileEntry.fullPath);
+      if (hotword.DEBUG || window.localStorage['hotword.DEBUG']) {
+        fileEntry.getMetadata(function(md) {
+          hotword.debug('File size: ' + md.size);
+        });
+      }
+      fileEntry.remove(function() {
+          hotword.debug('File removed: ' + fileEntry.fullPath);
+      }, TrainingManager.fileErrorHandler_);
+    }
+  };
 
   /**
    * Handles a failure event on mounting the file system event.
