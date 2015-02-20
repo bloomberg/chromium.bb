@@ -46,7 +46,7 @@
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/html/track/vtt/VTTScanner.h"
-#include "core/rendering/RenderVTTCue.h"
+#include "core/layout/LayoutVTTCue.h"
 #include "platform/FloatConversion.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/BidiResolver.h"
@@ -208,7 +208,7 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
 
 LayoutObject* VTTCueBox::createRenderer(const LayoutStyle&)
 {
-    return new RenderVTTCue(this);
+    return new LayoutVTTCue(this);
 }
 
 DEFINE_TRACE(VTTCueBox)

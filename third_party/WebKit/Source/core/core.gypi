@@ -688,6 +688,8 @@
             'layout/LayoutThemeChromiumWin.cpp',
             'layout/LayoutThemeChromiumWin.h',
             'layout/LayoutTreeAsText.cpp',
+            'layout/LayoutVTTCue.cpp',
+            'layout/LayoutVTTCue.h',
             'layout/LayoutVideo.cpp',
             'layout/LayoutVideo.h',
             'layout/LayoutWordBreak.cpp',
@@ -853,8 +855,6 @@
             'rendering/RenderText.cpp',
             'rendering/RenderTextFragment.cpp',
             'rendering/RenderTextFragment.h',
-            'rendering/RenderVTTCue.cpp',
-            'rendering/RenderVTTCue.h',
             'rendering/RenderView.cpp',
         ],
         'webcore_non_rendering_files': [

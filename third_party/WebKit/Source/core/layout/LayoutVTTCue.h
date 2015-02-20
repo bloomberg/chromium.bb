@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderVTTCue_h
-#define RenderVTTCue_h
+#ifndef LayoutVTTCue_h
+#define LayoutVTTCue_h
 
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/heap/Handle.h"
@@ -34,9 +34,9 @@ namespace blink {
 class VTTCue;
 class VTTCueBox;
 
-class RenderVTTCue final : public RenderBlockFlow {
+class LayoutVTTCue final : public RenderBlockFlow {
 public:
-    explicit RenderVTTCue(VTTCueBox*);
+    explicit LayoutVTTCue(VTTCueBox*);
 
 private:
     virtual void layout() override;
@@ -49,4 +49,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderVTTCue_h
+#endif // LayoutVTTCue_h

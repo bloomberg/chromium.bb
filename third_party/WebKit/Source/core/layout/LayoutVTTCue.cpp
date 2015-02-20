@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderVTTCue.h"
+#include "core/layout/LayoutVTTCue.h"
 
 #include "core/html/track/vtt/VTTCue.h"
 #include "core/layout/LayoutState.h"
@@ -32,7 +32,7 @@
 
 namespace blink {
 
-RenderVTTCue::RenderVTTCue(VTTCueBox* element)
+LayoutVTTCue::LayoutVTTCue(VTTCueBox* element)
     : RenderBlockFlow(element)
     , m_cue(element->getCue())
 {
@@ -41,7 +41,7 @@ RenderVTTCue::RenderVTTCue(VTTCueBox* element)
 class SnapToLinesLayouter {
     STACK_ALLOCATED();
 public:
-    SnapToLinesLayouter(RenderVTTCue& cueBox, float linePosition)
+    SnapToLinesLayouter(LayoutVTTCue& cueBox, float linePosition)
         : m_cueBox(cueBox)
         , m_linePosition(linePosition)
     {
@@ -63,7 +63,7 @@ private:
     InlineFlowBox* findFirstLineBox() const;
 
     LayoutPoint m_specifiedPosition;
-    RenderVTTCue& m_cueBox;
+    LayoutVTTCue& m_cueBox;
     float m_linePosition;
 };
 
@@ -234,7 +234,7 @@ void SnapToLinesLayouter::layout()
     }
 }
 
-void RenderVTTCue::repositionCueSnapToLinesNotSet()
+void LayoutVTTCue::repositionCueSnapToLinesNotSet()
 {
     // FIXME: Implement overlapping detection when snap-to-lines is not set. http://wkb.ug/84296
 
@@ -278,7 +278,7 @@ void RenderVTTCue::repositionCueSnapToLinesNotSet()
     // boxes will unfortunately overlap.)
 }
 
-void RenderVTTCue::adjustForTopAndBottomMarginBorderAndPadding()
+void LayoutVTTCue::adjustForTopAndBottomMarginBorderAndPadding()
 {
     // Accommodate extra top and bottom padding, border or margin.
     // Note: this is supported only for internal UA styling, not through the cue selector.
@@ -302,7 +302,7 @@ void RenderVTTCue::adjustForTopAndBottomMarginBorderAndPadding()
     setY(location().y() + adjustment);
 }
 
-void RenderVTTCue::layout()
+void LayoutVTTCue::layout()
 {
     RenderBlockFlow::layout();
 
