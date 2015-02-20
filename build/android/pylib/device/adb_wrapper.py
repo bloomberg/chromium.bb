@@ -335,7 +335,7 @@ class AdbWrapper(object):
       return self._IterRunDeviceAdbCmd(cmd, timeout)
     else:
       timeout = timeout if timeout is not None else _DEFAULT_TIMEOUT
-      return self._RunDeviceAdbCmd(cmd, timeout, retries)
+      return self._RunDeviceAdbCmd(cmd, timeout, retries).splitlines()
 
   def Forward(self, local, remote, timeout=_DEFAULT_TIMEOUT,
               retries=_DEFAULT_RETRIES):
