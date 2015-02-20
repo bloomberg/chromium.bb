@@ -527,7 +527,7 @@ class EBuild(object):
       subdirs = [''] * len(projects)
 
     # Calculate srcdir.
-    if self.category == 'chromeos-base':
+    if self.category in ('chromeos-base', 'brillo-base'):
       dir_ = '' # 'platform2'
     else:
       dir_ = 'third_party'
