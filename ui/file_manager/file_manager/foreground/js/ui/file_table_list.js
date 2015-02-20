@@ -29,9 +29,12 @@ FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
   // mergeItems operation is done. This prevents checkmarks on selected items
   // from being animated unintentinally by redraw.
   for (var i = beginIndex; i < endIndex; i++) {
+    var item = this.getListItemByIndex(i);
+    if (!item)
+      continue;
     var isSelected = this.selectionModel.getIndexSelected(i);
-    if (this.cachedItems_[i].selected != isSelected)
-      this.cachedItems_[i].selected = isSelected;
+    if (item.selected != isSelected)
+      item.selected = isSelected;
   }
 
   this.table.updateHighPriorityRange(beginIndex, endIndex);
