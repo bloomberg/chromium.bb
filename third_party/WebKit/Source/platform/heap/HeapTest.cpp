@@ -5453,7 +5453,8 @@ public:
     DEFINE_INLINE_TRACE()
     {
         int calls = ++sTraceCalls;
-        visitor->trace(m_next);
+        if (sTraceLazy <= 2)
+            visitor->trace(m_next);
         if (sTraceCalls == calls)
             sTraceLazy++;
     }
@@ -5471,7 +5472,7 @@ TEST(HeapTest, TraceDeepEagerly)
 {
 #if !ENABLE(ASSERT)
     DeepEagerly* obj = nullptr;
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 10000000; i++)
         obj = new DeepEagerly(obj);
 
     Persistent<DeepEagerly> persistent(obj);
