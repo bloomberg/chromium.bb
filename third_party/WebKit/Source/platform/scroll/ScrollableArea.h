@@ -90,9 +90,6 @@ public:
     void setHorizontalScrollElasticity(ScrollElasticity scrollElasticity) { m_horizontalScrollElasticity = scrollElasticity; }
     ScrollElasticity horizontalScrollElasticity() const { return static_cast<ScrollElasticity>(m_horizontalScrollElasticity); }
 
-    void setHasVisibleViewportConstrainedObjects(bool hasVisibleViewportConstrainedObjects) { m_hasVisibleViewportConstrainedObjects = hasVisibleViewportConstrainedObjects; }
-    bool hasVisibleViewportConstrainedObjects() const { return m_hasVisibleViewportConstrainedObjects; }
-
     bool inLiveResize() const { return m_inLiveResize; }
     void willStartLiveResize();
     void willEndLiveResize();
@@ -320,8 +317,6 @@ private:
     unsigned m_scrollbarOverlayStyle : 2; // ScrollbarOverlayStyle
 
     unsigned m_scrollOriginChanged : 1;
-
-    unsigned m_hasVisibleViewportConstrainedObjects : 1;
 
     // There are 8 possible combinations of writing mode and direction. Scroll origin will be non-zero in the x or y axis
     // if there is any reversed direction or writing-mode. The combinations are:

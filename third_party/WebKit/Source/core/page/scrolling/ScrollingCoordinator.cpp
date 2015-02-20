@@ -399,11 +399,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
             webLayer->setScrollPositionDouble(scrollPosition);
             // Blink can only use the integer part of the scroll offset to position elements.
             // Sends the fractional part of the scroll offset to CC as scroll adjustment for
-            // fixed-position layer (only when there is visible fixed-position layer).
-            if (scrollableArea->hasVisibleViewportConstrainedObjects())
-                webLayer->setScrollCompensationAdjustment(fractionalPart);
-            else
-                webLayer->setScrollCompensationAdjustment(DoublePoint());
+            // fixed-position layer.
+            webLayer->setScrollCompensationAdjustment(fractionalPart);
         }
 
         webLayer->setBounds(scrollableArea->contentsSize());
@@ -892,12 +889,6 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
     ASSERT(isMainThread());
     ASSERT(m_page);
 
-    bool visibleViewportConstrainedObjects = hasVisibleViewportConstrainedObjects(frameView);
-    if (visibleViewportConstrainedObjects != frameView->hasVisibleViewportConstrainedObjects()) {
-        frameView->setHasVisibleViewportConstrainedObjects(visibleViewportConstrainedObjects);
-        scrollableAreaScrollLayerDidChange(frameView);
-    }
-
     if (!coordinatesScrollingForFrameView(frameView))
         return;
 
@@ -960,19 +951,6 @@ void ScrollingCoordinator::handleWheelEventPhase(PlatformWheelEventPhase phase)
     frameView->scrollAnimator()->handleWheelEventPhase(phase);
 }
 #endif
-
-bool ScrollingCoordinator::hasVisibleViewportConstrainedObjects(FrameView* frameView) const
-{
-    const FrameView::ViewportConstrainedObjectSet* viewportConstrainedObjects = frameView->viewportConstrainedObjects();
-    if (!viewportConstrainedObjects)
-        return false;
-    for (const LayoutObject* renderer : *viewportConstrainedObjects) {
-        Layer* layer = toRenderBoxModelObject(renderer)->layer();
-        if (!layer->subtreeIsInvisible())
-            return true;
-    }
-    return false;
-}
 
 bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(FrameView* frameView) const
 {
