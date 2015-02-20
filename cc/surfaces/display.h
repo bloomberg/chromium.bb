@@ -5,6 +5,8 @@
 #ifndef CC_SURFACES_DISPLAY_H_
 #define CC_SURFACES_DISPLAY_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/renderer.h"
@@ -101,6 +103,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   scoped_ptr<DirectRenderer> renderer_;
   scoped_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
   scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
+  std::vector<ui::LatencyInfo> stored_latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

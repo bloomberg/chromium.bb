@@ -134,25 +134,46 @@ bool Display::Draw() {
   }
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
-  gfx::Size surface_size =
-      frame_data->render_pass_list.back()->output_rect.size();
+  frame->metadata.latency_info.insert(frame->metadata.latency_info.end(),
+                                      stored_latency_info_.begin(),
+                                      stored_latency_info_.end());
+  stored_latency_info_.clear();
+  bool have_copy_requests = false;
+  for (const auto* pass : frame_data->render_pass_list) {
+    have_copy_requests |= !pass->copy_requests.empty();
+  }
 
-  gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
-  gfx::Rect device_clip_rect = device_viewport_rect;
-  bool disable_picture_quad_image_filtering = false;
+  gfx::Size surface_size;
+  bool have_damage = false;
+  if (!frame_data->render_pass_list.empty()) {
+    surface_size = frame_data->render_pass_list.back()->output_rect.size();
+    have_damage =
+        !frame_data->render_pass_list.back()->damage_rect.size().IsEmpty();
+  }
+  bool avoid_swap = surface_size != current_surface_size_;
+  bool should_draw = !frame->metadata.latency_info.empty() ||
+                     have_copy_requests || (have_damage && !avoid_swap);
 
-  renderer_->DecideRenderPassAllocationsForFrame(frame_data->render_pass_list);
-  renderer_->DrawFrame(&frame_data->render_pass_list,
-                       device_scale_factor_,
-                       device_viewport_rect,
-                       device_clip_rect,
-                       disable_picture_quad_image_filtering);
+  if (should_draw) {
+    gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
+    gfx::Rect device_clip_rect = device_viewport_rect;
+    bool disable_picture_quad_image_filtering = false;
 
-  if (surface_size != current_surface_size_) {
+    renderer_->DecideRenderPassAllocationsForFrame(
+        frame_data->render_pass_list);
+    renderer_->DrawFrame(&frame_data->render_pass_list, device_scale_factor_,
+                         device_viewport_rect, device_clip_rect,
+                         disable_picture_quad_image_filtering);
+  }
+
+  if (should_draw && !avoid_swap) {
+    renderer_->SwapBuffers(frame->metadata);
+  } else {
+    stored_latency_info_.insert(stored_latency_info_.end(),
+                                frame->metadata.latency_info.begin(),
+                                frame->metadata.latency_info.end());
     DidSwapBuffers();
     DidSwapBuffersComplete();
-  } else {
-    renderer_->SwapBuffers(frame->metadata);
   }
 
   return true;
