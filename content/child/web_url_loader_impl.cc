@@ -373,8 +373,11 @@ WebURLLoaderImpl::Context::Context(
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
-  if (resource_dispatcher_)  // NULL in unittest.
+  if (resource_dispatcher_ && // NULL in unittest.
+      request_id_ != -1) {
     resource_dispatcher_->Cancel(request_id_);
+    request_id_ = -1;
+  }
 
   // Ensure that we do not notify the multipart delegate anymore as it has
   // its own pointer to the client.
@@ -390,7 +393,8 @@ void WebURLLoaderImpl::Context::Cancel() {
 }
 
 void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
-  resource_dispatcher_->SetDefersLoading(request_id_, value);
+  if (request_id_ != -1)
+    resource_dispatcher_->SetDefersLoading(request_id_, value);
   if (value && defers_loading_ == NOT_DEFERRING) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
@@ -404,22 +408,27 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
 
 void WebURLLoaderImpl::Context::DidChangePriority(
     WebURLRequest::Priority new_priority, int intra_priority_value) {
-  resource_dispatcher_->DidChangePriority(
-      request_id_,
-      ConvertWebKitPriorityToNetPriority(new_priority),
-      intra_priority_value);
+  if (request_id_ != -1) {
+    resource_dispatcher_->DidChangePriority(
+        request_id_,
+        ConvertWebKitPriorityToNetPriority(new_priority),
+        intra_priority_value);
+  }
 }
 
 bool WebURLLoaderImpl::Context::AttachThreadedDataReceiver(
     blink::WebThreadedDataReceiver* threaded_data_receiver) {
-  resource_dispatcher_->AttachThreadedDataReceiver(
-      request_id_, threaded_data_receiver);
+  if (request_id_ != -1) {
+    resource_dispatcher_->AttachThreadedDataReceiver(
+        request_id_, threaded_data_receiver);
+  }
 
   return false;
 }
 
 void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                       SyncLoadResponse* sync_load_response) {
+  DCHECK(request_id_ == -1);
   request_ = request;  // Save the request.
   if (request.extraData()) {
     RequestExtraData* extra_data =
