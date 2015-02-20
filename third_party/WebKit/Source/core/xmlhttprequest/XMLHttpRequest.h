@@ -295,6 +295,11 @@ private:
     // |m_responseTypeCode| is NOT ResponseTypeBlob.
     OwnPtrWillBeMember<BlobLoader> m_blobLoader;
 
+    // Positive if we are dispatching events.
+    // This is an integer specifying the recursion level rather than a boolean
+    // because in some cases we have recursive dispatching.
+    int m_eventDispatchRecursionLevel;
+
     bool m_async;
     bool m_includeCredentials;
     // Used to skip m_responseDocument creation if it's done previously. We need
