@@ -42,11 +42,11 @@ public final class CastCrashUploader {
     private final String mCrashDumpPath;
     private final String mCrashReportUploadUrl;
 
-    public CastCrashUploader(String crashDumpPath, boolean isDebugBuild) {
+    public CastCrashUploader(String crashDumpPath, boolean uploadCrashToStaging) {
         this.mCrashDumpPath = crashDumpPath;
-        mCrashReportUploadUrl = isDebugBuild ?
-                "http://clients2.google.com/cr/staging_report" :
-                "http://clients2.google.com/cr/report";
+        mCrashReportUploadUrl = uploadCrashToStaging
+                ? "http://clients2.google.com/cr/staging_report"
+                : "http://clients2.google.com/cr/report";
         mExecutorService = Executors.newFixedThreadPool(1);
     }
 

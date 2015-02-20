@@ -14,19 +14,19 @@ import org.chromium.base.JNINamespace;
 public final class CastCrashHandler {
 
     @CalledByNative
-    public static void removeCrashDumpsSync(String crashDumpPath, boolean isDebugBuild) {
-        new CastCrashUploader(crashDumpPath, isDebugBuild).removeCrashDumpsSync();
+    public static void removeCrashDumpsSync(String crashDumpPath, boolean uploadCrashToStaging) {
+        new CastCrashUploader(crashDumpPath, uploadCrashToStaging).removeCrashDumpsSync();
     }
 
     @CalledByNative
     public static void uploadCurrentProcessDumpSync(String crashDumpPath, String logFilePath,
-            boolean isDebugBuild) {
-        new CastCrashUploader(crashDumpPath, isDebugBuild)
+            boolean uploadCrashToStaging) {
+        new CastCrashUploader(crashDumpPath, uploadCrashToStaging)
                 .uploadCurrentProcessDumpSync(logFilePath);
     }
 
     @CalledByNative
-    public static void uploadCrashDumpsAsync(String crashDumpPath, boolean isDebugBuild) {
-        new CastCrashUploader(crashDumpPath, isDebugBuild).uploadRecentCrashesAsync();
+    public static void uploadCrashDumpsAsync(String crashDumpPath, boolean uploadCrashToStaging) {
+        new CastCrashUploader(crashDumpPath, uploadCrashToStaging).uploadRecentCrashesAsync();
     }
 }

@@ -5,12 +5,14 @@
 #include "chromecast/crash/android/crash_handler.h"
 
 #include <jni.h>
+#include <stdlib.h>
 #include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/handler/minidump_descriptor.h"
 #include "chromecast/common/version.h"
@@ -38,6 +40,19 @@ bool HandleCrash(const void* /* crash_context */,
 
   // Let the exception continue to propagate up to the system.
   return false;
+}
+
+// Debug builds: always to crash-staging
+// Release builds: only to crash-staging for local/invalid build numbers
+bool UploadCrashToStaging() {
+#if CAST_IS_DEBUG_BUILD
+  return true;
+#else
+  int build_number;
+  if (base::StringToInt(CAST_BUILD_REVISION, &build_number))
+    return build_number == 0;
+  return true;
+#endif
 }
 
 }  // namespace
@@ -119,7 +134,7 @@ void CrashHandler::AttemptUploadCrashDump() {
       env,
       crash_dump_path_java.obj(),
       log_file_path_java.obj(),
-      CAST_IS_DEBUG_BUILD);
+      UploadCrashToStaging());
 }
 
 void CrashHandler::UploadCrashDumpsAsync() {
@@ -129,7 +144,7 @@ void CrashHandler::UploadCrashDumpsAsync() {
                                              crash_dump_path_.value());
   Java_CastCrashHandler_uploadCrashDumpsAsync(env,
                                               crash_dump_path_java.obj(),
-                                              CAST_IS_DEBUG_BUILD);
+                                              UploadCrashToStaging());
 }
 
 void CrashHandler::RemoveCrashDumps() {
@@ -139,7 +154,7 @@ void CrashHandler::RemoveCrashDumps() {
       base::android::ConvertUTF8ToJavaString(env,
                                              crash_dump_path_.value());
   Java_CastCrashHandler_removeCrashDumpsSync(
-      env, crash_dump_path_java.obj(), CAST_IS_DEBUG_BUILD);
+      env, crash_dump_path_java.obj(), UploadCrashToStaging());
 }
 
 }  // namespace chromecast
