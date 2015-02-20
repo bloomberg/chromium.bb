@@ -919,18 +919,6 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
 
           var previousDirEntry =
               this.currentDirContents_.getDirectoryEntry();
-          var previousVolumeInfo =
-              previousDirEntry ?
-              this.volumeManager_.getVolumeInfo(previousDirEntry) : null;
-
-          // VolumeInfo for dirEntry.
-          var currentVolumeInfo = this.getCurrentVolumeInfo();
-          var event = new Event('directory-changed');
-          event.previousDirEntry = previousDirEntry;
-          event.newDirEntry = dirEntry;
-          event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
-          this.dispatchEvent(event);
-
           this.clearAndScan_(
               newDirectoryContents,
               function(result) {
@@ -946,6 +934,16 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           // For tests that open the dialog to empty directories, everything
           // is loaded at this point.
           util.testSendMessage('directory-change-complete');
+          var previousVolumeInfo =
+              previousDirEntry ?
+              this.volumeManager_.getVolumeInfo(previousDirEntry) : null;
+          // VolumeInfo for dirEntry.
+          var currentVolumeInfo = this.getCurrentVolumeInfo();
+          var event = new Event('directory-changed');
+          event.previousDirEntry = previousDirEntry;
+          event.newDirEntry = dirEntry;
+          event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
+          this.dispatchEvent(event);
         }.bind(this));
   }.bind(this, this.changeDirectorySequence_));
 };
