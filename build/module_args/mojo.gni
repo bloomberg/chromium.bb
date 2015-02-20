@@ -7,4 +7,8 @@ mojo_sdk_root = "//third_party/mojo/src"
 
 # Chromium builds the network service from source, as it is the
 # producer of the network service.
+build_network_service_from_source = true
+
+# TODO(blundell): Remove the below line once
+# https://codereview.chromium.org/939753003/ rolls into Chromium.
 use_prebuilt_network_service = false
