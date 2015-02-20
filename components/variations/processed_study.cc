@@ -14,10 +14,12 @@ namespace variations {
 
 namespace {
 
-// Validates the sanity of |study| and computes the total probability.
+// Validates the sanity of |study| and computes the total probability and
+// whether all assignments are to a single group.
 bool ValidateStudyAndComputeTotalProbability(
     const Study& study,
-    base::FieldTrial::Probability* total_probability) {
+    base::FieldTrial::Probability* total_probability,
+    bool* all_assignments_to_one_group) {
   // At the moment, a missing default_experiment_name makes the study invalid.
   if (study.default_experiment_name().empty()) {
     DVLOG(1) << study.name() << " has no default experiment defined.";
@@ -39,21 +41,27 @@ bool ValidateStudyAndComputeTotalProbability(
   const std::string& default_group_name = study.default_experiment_name();
   base::FieldTrial::Probability divisor = 0;
 
+  bool multiple_assigned_groups = false;
   bool found_default_group = false;
   std::set<std::string> experiment_names;
   for (int i = 0; i < study.experiment_size(); ++i) {
-    if (study.experiment(i).name().empty()) {
+    const Study_Experiment& experiment = study.experiment(i);
+    if (experiment.name().empty()) {
       DVLOG(1) << study.name() << " is missing experiment " << i << " name";
       return false;
     }
-    if (!experiment_names.insert(study.experiment(i).name()).second) {
+    if (!experiment_names.insert(experiment.name()).second) {
       DVLOG(1) << study.name() << " has a repeated experiment name "
                << study.experiment(i).name();
       return false;
     }
 
-    if (!study.experiment(i).has_forcing_flag())
-      divisor += study.experiment(i).probability_weight();
+    if (!experiment.has_forcing_flag() && experiment.probability_weight() > 0) {
+      // If |divisor| is not 0, there was at least one prior non-zero group.
+      if (divisor != 0)
+        multiple_assigned_groups = true;
+      divisor += experiment.probability_weight();
+    }
     if (study.experiment(i).name() == default_group_name)
       found_default_group = true;
   }
@@ -67,15 +75,18 @@ bool ValidateStudyAndComputeTotalProbability(
   }
 
   *total_probability = divisor;
+  *all_assignments_to_one_group = !multiple_assigned_groups;
   return true;
 }
 
 
 }  // namespace
 
-
 ProcessedStudy::ProcessedStudy()
-    : study_(NULL), total_probability_(0), is_expired_(false) {
+    : study_(NULL),
+      total_probability_(0),
+      all_assignments_to_one_group_(false),
+      is_expired_(false) {
 }
 
 ProcessedStudy::~ProcessedStudy() {
@@ -83,12 +94,16 @@ ProcessedStudy::~ProcessedStudy() {
 
 bool ProcessedStudy::Init(const Study* study, bool is_expired) {
   base::FieldTrial::Probability total_probability = 0;
-  if (!ValidateStudyAndComputeTotalProbability(*study, &total_probability))
+  bool all_assignments_to_one_group = false;
+  if (!ValidateStudyAndComputeTotalProbability(*study, &total_probability,
+                                               &all_assignments_to_one_group)) {
     return false;
+  }
 
   study_ = study;
   is_expired_ = is_expired;
   total_probability_ = total_probability;
+  all_assignments_to_one_group_ = all_assignments_to_one_group;
   return true;
 }
 

@@ -29,6 +29,10 @@ class ProcessedStudy {
     return total_probability_;
   }
 
+  bool all_assignments_to_one_group() const {
+    return all_assignments_to_one_group_;
+  }
+
   bool is_expired() const { return is_expired_; }
 
   // Gets the index of the experiment with the given |name|. Returns -1 if no
@@ -46,6 +50,9 @@ class ProcessedStudy {
 
   // Computed total group probability for the study.
   base::FieldTrial::Probability total_probability_;
+
+  // Whether all assignments are to a single group.
+  bool all_assignments_to_one_group_;
 
   // Whether the study is expired.
   bool is_expired_;

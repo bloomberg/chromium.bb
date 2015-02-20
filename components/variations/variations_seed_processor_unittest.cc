@@ -325,6 +325,7 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
   ProcessedStudy processed_study;
   EXPECT_TRUE(processed_study.Init(&study, false));
   EXPECT_EQ(300, processed_study.total_probability());
+  EXPECT_FALSE(processed_study.all_assignments_to_one_group());
 
   // Min version checks.
   study.mutable_filter()->set_min_version("1.2.3.*");
@@ -358,6 +359,36 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
   repeated_group->set_name("abc");
   repeated_group->set_probability_weight(1);
   EXPECT_FALSE(processed_study.Init(&study, false));
+}
+
+TEST_F(VariationsSeedProcessorTest, ProcessedStudyAllAssignmentsToOneGroup) {
+  Study study;
+  study.set_default_experiment_name("def");
+  AddExperiment("def", 100, &study);
+
+  ProcessedStudy processed_study;
+  EXPECT_TRUE(processed_study.Init(&study, false));
+  EXPECT_TRUE(processed_study.all_assignments_to_one_group());
+
+  AddExperiment("abc", 0, &study);
+  AddExperiment("flag", 0, &study)->set_forcing_flag(kForcingFlag1);
+  EXPECT_TRUE(processed_study.Init(&study, false));
+  EXPECT_TRUE(processed_study.all_assignments_to_one_group());
+
+  AddExperiment("xyz", 1, &study);
+  EXPECT_TRUE(processed_study.Init(&study, false));
+  EXPECT_FALSE(processed_study.all_assignments_to_one_group());
+
+  // Try with default group and first group being at 0.
+  Study study2;
+  study2.set_default_experiment_name("def");
+  AddExperiment("def", 0, &study2);
+  AddExperiment("xyz", 34, &study2);
+  EXPECT_TRUE(processed_study.Init(&study2, false));
+  EXPECT_TRUE(processed_study.all_assignments_to_one_group());
+  AddExperiment("abc", 12, &study2);
+  EXPECT_TRUE(processed_study.Init(&study2, false));
+  EXPECT_FALSE(processed_study.all_assignments_to_one_group());
 }
 
 TEST_F(VariationsSeedProcessorTest, VariationParams) {

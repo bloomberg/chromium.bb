@@ -144,7 +144,11 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   base::FieldTrial::RandomizationType randomization_type =
       base::FieldTrial::SESSION_RANDOMIZED;
   if (study.has_consistency() &&
-      study.consistency() == Study_Consistency_PERMANENT) {
+      study.consistency() == Study_Consistency_PERMANENT &&
+      // If all assignments are to a single group, no need to enable one time
+      // randomization (which is more expensive to compute), since the result
+      // will be the same.
+      !processed_study.all_assignments_to_one_group()) {
     randomization_type = base::FieldTrial::ONE_TIME_RANDOMIZED;
     if (study.has_randomization_seed())
       randomization_seed = study.randomization_seed();
