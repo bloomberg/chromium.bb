@@ -245,8 +245,9 @@ void HandleTouchscreenDevicesInWorker(
 
   std::set<int> no_match_touchscreen;
   for (const DeviceInfo& device_info : device_infos) {
-    if (!device_info.enabled || device_info.use != XIFloatingSlave)
-      continue;  // Assume all touchscreens are floating slaves
+    if (!device_info.enabled || (device_info.use != XIFloatingSlave
+        && device_info.use != XISlavePointer))
+      continue;
 
     double max_x = -1.0;
     double max_y = -1.0;
