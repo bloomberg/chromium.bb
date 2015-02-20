@@ -10,15 +10,14 @@ function test()
     function runTestWithDataAndCheck(input, expectedOutput)
     {
         var model = InspectorTest.tracingTimelineModel();
+        var timeline = WebInspector.panels.timeline;
 
         function createFileReader(file, delegate)
         {
-            return new InspectorTest.FakeFileReader(input, delegate, model.saveToFile.bind(model));
-        }
-
-        function createFileWriter()
-        {
-            return new InspectorTest.StringOutputStream(checkSaveData);
+            var stream = new InspectorTest.StringOutputStream(checkSaveData);
+            var saver = new WebInspector.TracingTimelineSaver(stream);
+            var storage = timeline._tracingModelBackingStorage;
+            return new InspectorTest.FakeFileReader(input, delegate, stream.open.bind(stream, "", storage.writeToStream.bind(storage, stream, saver)));
         }
 
         function checkSaveData(output)
@@ -28,7 +27,6 @@ function test()
         }
 
         InspectorTest.override(model, "_createFileReader", createFileReader);
-        InspectorTest.override(model, "_createFileWriter", createFileWriter);
 
         model.loadFromFile({}, new WebInspector.Progress());
     }

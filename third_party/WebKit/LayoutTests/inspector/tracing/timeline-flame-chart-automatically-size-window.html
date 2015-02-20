@@ -27,7 +27,7 @@ function test()
 
     function createFileReader(file, delegate)
     {
-        return new InspectorTest.FakeFileReader(timelineData, delegate, model.saveToFile.bind(model));
+        return new InspectorTest.FakeFileReader(timelineData, delegate, timeline._saveToFile.bind(timeline));
     }
 
     InspectorTest.override(model, "_createFileReader", createFileReader);

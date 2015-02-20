@@ -54,7 +54,7 @@ function test()
         {"name": "Outer", "ts": 130000, args: {}, "ph": "I", "tid": mainThread, "pid": 100, "cat":"test" }
     ];
     
-    var model = new WebInspector.TracingModel();
+    var model = InspectorTest.createTracingModel();
     model.setEventsForTest(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).events();
     for (var i = 0; i < events.length; ++i) {

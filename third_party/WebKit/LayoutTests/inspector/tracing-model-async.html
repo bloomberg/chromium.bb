@@ -61,7 +61,7 @@ function test()
         { "cat": "blink.console", "name": "nestableEndWithoutBegin", "ph": "e", "ts": 182000, "args": {}, "id": 124, "tid": mainThread, "pid": pid }
     ];
 
-    var model = new WebInspector.TracingModel();
+    var model = InspectorTest.createTracingModel();
     model.setEventsForTest(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).asyncEvents();
     for (var i = 0; i < events.length; ++i) {

@@ -4,6 +4,11 @@ function initialize_TracingTest()
 InspectorTest.preloadPanel("timeline");
 WebInspector.TempFile = InspectorTest.TempFileMock;
 
+InspectorTest.createTracingModel = function()
+{
+    return new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
+}
+
 InspectorTest.tracingModel = function()
 {
     return WebInspector.panels.timeline._tracingModel;

@@ -10,6 +10,7 @@ div#test {
 </style>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script src="../http/tests/inspector/timeline-test.js"></script>
+<script src="tracing-test.js"></script>
 <script>
 function initialize_TracingManagerClient()
 {
@@ -18,7 +19,7 @@ InspectorTest.TracingManagerClient = function(tracingManager, callback)
 {
     this._tracingManager = tracingManager;
     this._completionCallback = callback;
-    this._tracingModel = new WebInspector.TracingModel();
+    this._tracingModel = InspectorTest.createTracingModel();
 }
 
 InspectorTest.TracingManagerClient.prototype = {

@@ -15,7 +15,7 @@ function test()
         {"name": "LongSnapshot", "ts": 20000, args: {"snapshot": Array(10000).join("abcdef")}, "dur": 1000, "ph": "O", "tid": mainThread, "pid": 100, "cat":"test"}
     ];
 
-    var model = new WebInspector.TracingModel();
+    var model = InspectorTest.createTracingModel();
     model.setEventsForTest(testData);
     var process = model.sortedProcesses()[0];
     process.objectsByName("ShortSnapshot")[0].requestObject(step1);
