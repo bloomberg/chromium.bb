@@ -375,10 +375,16 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
     custom_page_contents_.push_back(page_contents);
   }
 
+  std::string first_launcher_page_app_id = custom_launcher_page_urls[0].host();
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)
+          ->GetExtensionById(first_launcher_page_app_id,
+                             extensions::ExtensionRegistry::EVERYTHING);
+  model_->set_custom_launcher_page_name(extension->name());
   // Only the first custom launcher page gets events dispatched to it.
   launcher_page_event_dispatcher_.reset(
-      new app_list::LauncherPageEventDispatcher(
-          profile_, custom_launcher_page_urls[0].host()));
+      new app_list::LauncherPageEventDispatcher(profile_,
+                                                first_launcher_page_app_id));
 }
 
 void AppListViewDelegate::OnHotwordStateChanged(bool started) {

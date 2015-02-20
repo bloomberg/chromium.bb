@@ -138,6 +138,14 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
     return custom_launcher_page_enabled_;
   }
 
+  void set_custom_launcher_page_name(const std::string& name) {
+    custom_launcher_page_name_ = name;
+  }
+
+  const std::string& custom_launcher_page_name() const {
+    return custom_launcher_page_name_;
+  }
+
   // Pushes a custom launcher page's subpage into the state stack in the model.
   void PushCustomLauncherPageSubpage();
 
@@ -211,6 +219,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
   bool custom_launcher_page_enabled_;
+  std::string custom_launcher_page_name_;
   bool search_engine_is_google_;
 
   // The current number of subpages the custom launcher page has pushed.

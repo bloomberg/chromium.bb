@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
@@ -44,6 +45,8 @@ const int kWebViewHeight = 244;
 const size_t kNumStartPageTiles = 4;
 const int kTileSpacing = 7;
 
+const int kLauncherPageBackgroundWidth = 400;
+
 // An invisible placeholder view which fills the space for the search box view
 // in a box layout. The search box view itself is a child of the AppListView
 // (because it is visible on many different pages).
@@ -64,6 +67,38 @@ class SearchBoxSpacerView : public views::View {
 };
 
 }  // namespace
+
+class CustomLauncherPageBackgroundView : public views::View {
+ public:
+  explicit CustomLauncherPageBackgroundView(
+      const std::string& custom_launcher_page_name)
+      : selected_(false),
+        custom_launcher_page_name_(custom_launcher_page_name) {
+    set_background(views::Background::CreateSolidBackground(kSelectedColor));
+  }
+  ~CustomLauncherPageBackgroundView() override {}
+
+  void SetSelected(bool selected) {
+    selected_ = selected;
+    SetVisible(selected);
+    if (selected)
+      NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
+  }
+
+  bool selected() { return selected_; }
+
+  // Overridden from views::View:
+  void GetAccessibleState(ui::AXViewState* state) override {
+    state->role = ui::AX_ROLE_BUTTON;
+    state->name = base::UTF8ToUTF16(custom_launcher_page_name_);
+  }
+
+ private:
+  bool selected_;
+  std::string custom_launcher_page_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomLauncherPageBackgroundView);
+};
 
 // A container that holds the start page recommendation tiles and the all apps
 // tile.
@@ -188,6 +223,8 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
       search_box_spacer_view_(new SearchBoxSpacerView(
           app_list_main_view->search_box_view()->GetPreferredSize())),
       instant_container_(new views::View),
+      custom_launcher_page_background_(new CustomLauncherPageBackgroundView(
+          view_delegate_->GetModel()->custom_launcher_page_name())),
       tiles_container_(new StartPageTilesContainer(
           app_list_main_view->contents_view(),
           new AllAppsTileItemView(
@@ -199,6 +236,8 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
 
   // The view containing the start page tiles.
   AddChildView(tiles_container_);
+
+  AddChildView(custom_launcher_page_background_);
 
   tiles_container_->SetResults(view_delegate_->GetModel()->results());
   Reset();
@@ -263,6 +302,7 @@ TileItemView* StartPageView::all_apps_button() const {
 void StartPageView::OnShow() {
   tiles_container_->Update();
   tiles_container_->ClearSelectedIndex();
+  custom_launcher_page_background_->SetSelected(false);
 }
 
 void StartPageView::Layout() {
@@ -274,27 +314,56 @@ void StartPageView::Layout() {
   bounds.set_y(bounds.bottom());
   bounds.set_height(tiles_container_->GetHeightForWidth(bounds.width()));
   tiles_container_->SetBoundsRect(bounds);
+
+  bounds = app_list_main_view_->contents_view()->GetCustomPageCollapsedBounds();
+  bounds.Intersect(GetContentsBounds());
+  bounds.ClampToCenteredSize(
+      gfx::Size(kLauncherPageBackgroundWidth, bounds.height()));
+  custom_launcher_page_background_->SetBoundsRect(bounds);
 }
 
 bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  int selected_index = tiles_container_->selected_index();
-  if (selected_index >= 0 &&
-      tiles_container_->GetTileItemView(selected_index)->OnKeyPressed(event))
-    return true;
-
   const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
+  int selected_index = tiles_container_->selected_index();
+
+  if (custom_launcher_page_background_->selected()) {
+    selected_index = tiles_container_->num_results();
+    switch (event.key_code()) {
+      case ui::VKEY_RETURN:
+        MaybeOpenCustomLauncherPage();
+        return true;
+      default:
+        break;
+    }
+  } else if (selected_index >= 0 &&
+             tiles_container_->GetTileItemView(selected_index)
+                 ->OnKeyPressed(event)) {
+    return true;
+  }
+
   int dir = 0;
   switch (event.key_code()) {
     case ui::VKEY_LEFT:
       dir = -forward_dir;
       break;
     case ui::VKEY_RIGHT:
-      dir = forward_dir;
+      // Don't go to the custom launcher page from the All apps tile.
+      if (selected_index != tiles_container_->num_results() - 1)
+        dir = forward_dir;
+      break;
+    case ui::VKEY_UP:
+      // Up selects the first tile if the custom launcher is selected.
+      if (custom_launcher_page_background_->selected()) {
+        selected_index = -1;
+        dir = 1;
+      }
       break;
     case ui::VKEY_DOWN:
       // Down selects the first tile if nothing is selected.
-      if (!tiles_container_->IsValidSelectionIndex(selected_index))
-        dir = 1;
+      dir = 1;
+      // If something is selected, select the custom launcher page.
+      if (tiles_container_->IsValidSelectionIndex(selected_index))
+        selected_index = tiles_container_->num_results() - 1;
       break;
     case ui::VKEY_TAB:
       dir = event.IsShiftDown() ? -1 : 1;
@@ -306,7 +375,8 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (dir == 0)
     return false;
 
-  if (!tiles_container_->IsValidSelectionIndex(selected_index)) {
+  if (selected_index == -1) {
+    custom_launcher_page_background_->SetSelected(false);
     tiles_container_->SetSelectedIndex(
         dir == -1 ? tiles_container_->num_results() - 1 : 0);
     return true;
@@ -314,7 +384,15 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
 
   int selection_index = selected_index + dir;
   if (tiles_container_->IsValidSelectionIndex(selection_index)) {
+    custom_launcher_page_background_->SetSelected(false);
     tiles_container_->SetSelectedIndex(selection_index);
+    return true;
+  }
+
+  if (selection_index == tiles_container_->num_results() &&
+      app_list_main_view_->ShouldShowCustomLauncherPage()) {
+    custom_launcher_page_background_->SetSelected(true);
+    tiles_container_->ClearSelectedIndex();
     return true;
   }
 

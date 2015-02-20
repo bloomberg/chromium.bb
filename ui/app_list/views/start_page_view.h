@@ -16,6 +16,7 @@ namespace app_list {
 class AllAppsTileItemView;
 class AppListMainView;
 class AppListViewDelegate;
+class CustomLauncherPageBackgroundView;
 class SearchResultTileItemView;
 class TileItemView;
 
@@ -55,6 +56,8 @@ class APP_LIST_EXPORT StartPageView : public views::View {
   void InitInstantContainer();
   void MaybeOpenCustomLauncherPage();
 
+  void SetCustomLauncherPageSelected(bool selected);
+
   TileItemView* GetTileItemView(size_t index);
 
   // The parent view of ContentsView which is the parent of this view.
@@ -64,6 +67,8 @@ class APP_LIST_EXPORT StartPageView : public views::View {
 
   views::View* search_box_spacer_view_;  // Owned by views hierarchy.
   views::View* instant_container_;  // Owned by views hierarchy.
+  CustomLauncherPageBackgroundView*
+      custom_launcher_page_background_;       // Owned by view hierarchy.
   StartPageTilesContainer* tiles_container_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(StartPageView);
