@@ -57,9 +57,11 @@ CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
                          WATERFALL_EXTERNAL,
                          WATERFALL_TRYBOT,
                          WATERFALL_RELEASE,
-                         WATERFALL_BRANCH)
+                         WATERFALL_BRANCH,
+                         WATERFALL_CHROMIUM,
+                         WATERFALL_CHROME,)
 
-ALL_WATERFALLS = CIDB_KNOWN_WATERFALLS + (WATERFALL_CHROMIUM,)
+ALL_WATERFALLS = CIDB_KNOWN_WATERFALLS
 
 # URLs to the various waterfalls.
 BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
