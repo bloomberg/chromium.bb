@@ -80,8 +80,7 @@ int DetermineBaselineCenteringText(const Rect& display_rect,
   // the entire font height instead.
   const int space =
       display_height - ((internal_leading != 0) ? cap_height : font_height);
-  const int baseline_shift =
-      std::ceil(static_cast<float>(space) / 2) - internal_leading;
+  const int baseline_shift = space / 2 - internal_leading;
   return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
 }
 
