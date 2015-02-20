@@ -642,7 +642,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   if (data.GetBoolean("enableVideoDecodeRenderer",
                       &enable_video_decode_renderer) &&
       enable_video_decode_renderer) {
-    LOG(ERROR) << "Initializing 3D renderer.";
+    LogToWebapp("Initializing 3D renderer.");
     video_renderer_.reset(new PepperVideoRenderer3D());
     if (!video_renderer_->Initialize(this, context_, this))
       video_renderer_.reset();
@@ -650,7 +650,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   // If we didn't initialize 3D renderer then use the 2D renderer.
   if (!video_renderer_) {
-    LOG(ERROR) << "Initializing 2D renderer.";
+    LogToWebapp("Initializing 2D renderer.");
     video_renderer_.reset(new PepperVideoRenderer2D());
     if (!video_renderer_->Initialize(this, context_, this))
       video_renderer_.reset();
@@ -1134,6 +1134,19 @@ bool ChromotingInstance::IsCallerAppOrExtension() {
 bool ChromotingInstance::IsConnected() {
   return client_ &&
          (client_->connection_state() == protocol::ConnectionToHost::CONNECTED);
+}
+
+void ChromotingInstance::LogToWebapp(const std::string& message) {
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  LOG(ERROR) << message;
+
+#if !defined(OS_NACL)
+  // Log messages are forwarded to the webapp only in PNaCl version of the
+  // plugin, so ProcessLogToUI() needs to be called explicitly in the non-PNaCl
+  // version.
+  ProcessLogToUI(message);
+#endif  // !defined(OS_NACL)
 }
 
 }  // namespace remoting

@@ -230,6 +230,9 @@ class ChromotingInstance : public ClientUserInterface,
       bool pairing_supported,
       const protocol::SecretFetchedCallback& secret_fetched_callback);
 
+  // Helper to log messages in the JS console in the webapp.
+  void LogToWebapp(const std::string& message);
+
   bool initialized_;
 
   PepperPluginThreadDelegate plugin_thread_delegate_;
