@@ -68,6 +68,8 @@ class ActiveScriptController : public content::WebContentsObserver,
   // run.
   bool WantsToRun(const Extension* extension);
 
+  int num_page_requests() const { return num_page_requests_; }
+
 #if defined(UNIT_TEST)
   // Only used in tests.
   PermissionsData::AccessType RequiresUserConsentForScriptInjectionForTesting(
@@ -126,6 +128,11 @@ class ActiveScriptController : public content::WebContentsObserver,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
+
+  // The total number of requests from the renderer on the current page,
+  // including any that are pending or were immediately granted.
+  // Right now, used only in tests.
+  int num_page_requests_;
 
   // The associated browser context.
   content::BrowserContext* browser_context_;

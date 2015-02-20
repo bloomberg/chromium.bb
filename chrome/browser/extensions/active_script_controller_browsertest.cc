@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
@@ -400,6 +401,59 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
   inject_success_listener.set_extension_id(extension1->id());
   active_script_controller->OnClicked(extension1);
   inject_success_listener.WaitUntilSatisfied();
+}
+
+// Test that granting the extension all urls permission allows it to run on
+// pages, and that the permission update is sent to existing renderers.
+IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
+                       GrantExtensionAllUrlsPermission) {
+
+  // Loadup an extension and navigate.
+  const Extension* extension = CreateExtension(ALL_HOSTS, CONTENT_SCRIPT);
+  ASSERT_TRUE(extension);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents);
+  ASSERT_TRUE(active_script_controller);
+
+  ExtensionTestMessageListener inject_success_listener(
+      new ExtensionTestMessageListener(kInjectSucceeded,
+                                       false /* won't reply */));
+  inject_success_listener.set_extension_id(extension->id());
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // The extension shouldn't be allowed to run.
+  EXPECT_TRUE(active_script_controller->WantsToRun(extension));
+  EXPECT_EQ(1, active_script_controller->num_page_requests());
+  EXPECT_FALSE(inject_success_listener.was_satisfied());
+
+  // Enable the extension to run on all urls.
+  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), true);
+  EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
+
+  // Navigate again - this time, the extension should execute immediately (and
+  // should not need to ask the script controller for permission).
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(active_script_controller->WantsToRun(extension));
+  EXPECT_EQ(0, active_script_controller->num_page_requests());
+  EXPECT_TRUE(inject_success_listener.WaitUntilSatisfied());
+
+  // Revoke all urls permissions.
+  inject_success_listener.Reset();
+  util::SetAllowedScriptingOnAllUrls(extension->id(), profile(), false);
+  EXPECT_TRUE(RunAllPendingInRenderer(web_contents));
+
+  // Re-navigate; the extension should again need permission to run.
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(active_script_controller->WantsToRun(extension));
+  EXPECT_EQ(1, active_script_controller->num_page_requests());
+  EXPECT_FALSE(inject_success_listener.was_satisfied());
 }
 
 // A version of the test with the flag off, in order to test that everything

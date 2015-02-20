@@ -39,6 +39,7 @@ namespace extensions {
 ActiveScriptController::ActiveScriptController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      num_page_requests_(0),
       browser_context_(web_contents->GetBrowserContext()),
       was_used_on_page_(false),
       extension_registry_observer_(this) {
@@ -237,6 +238,8 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
     return;
   }
 
+  ++num_page_requests_;
+
   switch (RequiresUserConsentForScriptInjection(extension, script_type)) {
     case PermissionsData::ACCESS_ALLOWED:
       PermitScriptInjection(request_id);
@@ -315,6 +318,7 @@ void ActiveScriptController::DidNavigateMainFrame(
     return;
 
   LogUMA();
+  num_page_requests_ = 0;
   permitted_extensions_.clear();
   pending_requests_.clear();
   was_used_on_page_ = false;

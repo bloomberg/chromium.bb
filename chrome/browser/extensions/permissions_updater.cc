@@ -253,16 +253,29 @@ void PermissionsUpdater::WithholdImpliedAllHosts(const Extension* extension) {
                           &active_explicit,
                           &withheld_explicit);
 
+  URLPatternSet delta_explicit;
+  URLPatternSet::CreateDifference(
+      active->explicit_hosts(), active_explicit, &delta_explicit);
+  URLPatternSet delta_scriptable;
+  URLPatternSet::CreateDifference(
+      active->scriptable_hosts(), active_scriptable, &delta_scriptable);
+
   SetPermissions(extension,
                  new PermissionSet(active->apis(),
                                    active->manifest_permissions(),
                                    active_explicit,
                                    active_scriptable),
-                  new PermissionSet(withheld->apis(),
-                                    withheld->manifest_permissions(),
-                                    withheld_explicit,
-                                    withheld_scriptable));
-  // TODO(rdevlin.cronin) We should notify the observers/renderer.
+                 new PermissionSet(withheld->apis(),
+                                   withheld->manifest_permissions(),
+                                   withheld_explicit,
+                                   withheld_scriptable));
+
+  scoped_refptr<const PermissionSet> delta(new PermissionSet(
+      APIPermissionSet(),
+      ManifestPermissionSet(),
+      delta_explicit,
+      delta_scriptable));
+  NotifyPermissionsUpdated(REMOVED, extension, delta.get());
 }
 
 void PermissionsUpdater::GrantWithheldImpliedAllHosts(
@@ -284,6 +297,13 @@ void PermissionsUpdater::GrantWithheldImpliedAllHosts(
                              withheld->scriptable_hosts(),
                              &scriptable_hosts);
 
+  URLPatternSet delta_explicit;
+  URLPatternSet::CreateDifference(
+      explicit_hosts, active->explicit_hosts(), &delta_explicit);
+  URLPatternSet delta_scriptable;
+  URLPatternSet::CreateDifference(
+      scriptable_hosts, active->scriptable_hosts(), &delta_scriptable);
+
   // Since we only withhold host permissions (so far), we know that withheld
   // permissions will be empty.
   SetPermissions(extension,
@@ -292,7 +312,13 @@ void PermissionsUpdater::GrantWithheldImpliedAllHosts(
                                    explicit_hosts,
                                    scriptable_hosts),
                  new PermissionSet());
-  // TODO(rdevlin.cronin) We should notify the observers/renderer.
+
+  scoped_refptr<const PermissionSet> delta(new PermissionSet(
+      APIPermissionSet(),
+      ManifestPermissionSet(),
+      delta_explicit,
+      delta_scriptable));
+  NotifyPermissionsUpdated(ADDED, extension, delta.get());
 }
 
 void PermissionsUpdater::SetPermissions(
