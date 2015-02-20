@@ -58,10 +58,6 @@ class SANDBOX_EXPORT TrapRegistry {
 
  protected:
   TrapRegistry() {}
-
-  // TrapRegistry's destructor is intentionally non-virtual so that
-  // implementations can omit their destructor.  Instead we protect against
-  // misuse by marking it protected.
   ~TrapRegistry() {}
 
   DISALLOW_COPY_AND_ASSIGN(TrapRegistry);
