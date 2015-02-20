@@ -193,6 +193,10 @@ class EasyUnlockService : public KeyedService {
   // trial run initiated by Easy Unlock app.
   void SetTrialRun();
 
+  // Records that the user clicked on the lock icon during the trial run
+  // initiated by the Easy Unlock app.
+  void RecordClickOnLockIcon();
+
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
 

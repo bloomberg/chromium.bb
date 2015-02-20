@@ -471,6 +471,13 @@ void UserSelectionScreen::AttemptEasyUnlock(const std::string& user_id) {
   service->AttemptAuth(user_id);
 }
 
+void UserSelectionScreen::RecordClickOnLockIcon(const std::string& user_id) {
+  EasyUnlockService* service = GetEasyUnlockServiceForUser(user_id);
+  if (!service)
+    return;
+  service->RecordClickOnLockIcon();
+}
+
 EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(
     const std::string& user_id) const {
   if (GetScreenType() == OTHER_SCREEN)

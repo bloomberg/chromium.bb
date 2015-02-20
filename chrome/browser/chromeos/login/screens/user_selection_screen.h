@@ -81,6 +81,7 @@ class UserSelectionScreen : public ui::UserActivityObserver,
   void SendUserList() override;
   void HardLockPod(const std::string& user_id) override;
   void AttemptEasyUnlock(const std::string& user_id) override;
+  void RecordClickOnLockIcon(const std::string& user_id) override;
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(

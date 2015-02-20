@@ -34,6 +34,7 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
   void HandleGetUsers();
   void HandleHardlockPod(const std::string& user_id);
   void HandleAttemptUnlock(const std::string& user_id);
+  void HandleRecordClickOnLockIcon(const std::string& user_id);
 
   // UserBoardView implementation:
   void SetPublicSessionDisplayName(const std::string& user_id,

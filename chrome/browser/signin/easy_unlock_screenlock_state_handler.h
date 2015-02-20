@@ -97,6 +97,10 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // Marks the current screenlock state as the one for trial Easy Unlock run.
   void SetTrialRun();
 
+  // Records that the user clicked on the lock icon during the trial run
+  // initiated by the Easy Unlock app.
+  void RecordClickOnLockIcon();
+
   State state() const { return state_; }
 
  private:
@@ -113,9 +117,7 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   void ShowHardlockUI();
 
   // Updates icon's tooltip options.
-  // |trial_run|: Whether the trial Easy Unlock run is in progress.
   void UpdateTooltipOptions(
-      bool trial_run,
       ScreenlockBridge::UserPodCustomIconOptions* icon_options);
 
   // Gets the name to be used for the device. The name depends on the device

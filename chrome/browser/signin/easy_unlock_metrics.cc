@@ -18,3 +18,10 @@ void RecordEasyUnlockScreenUnlockEvent(EasyUnlockAuthEvent event) {
   UMA_HISTOGRAM_ENUMERATION("EasyUnlock.AuthEvent.Unlock", event,
                             EASY_UNLOCK_AUTH_EVENT_COUNT);
 }
+
+void RecordEasyUnlockTrialRunEvent(EasyUnlockTrialRunEvent event) {
+  DCHECK_LT(event, EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("EasyUnlock.TrialRun.Events",
+                            event,
+                            EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT);
+}

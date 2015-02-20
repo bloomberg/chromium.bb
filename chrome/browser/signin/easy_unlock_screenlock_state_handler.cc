@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/chromeos_utils.h"
+#include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -154,10 +155,12 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
   icon_options.SetIcon(icon);
 
   // Don't hardlock on trial run.
-  if (!is_trial_run_ && HardlockOnClick(state_))
+  if (is_trial_run_)
+    icon_options.SetTrialRun();
+  else if (HardlockOnClick(state_))
     icon_options.SetHardlockOnClick();
 
-  UpdateTooltipOptions(is_trial_run_, &icon_options);
+  UpdateTooltipOptions(&icon_options);
 
   // For states without tooltips, we still need to set an accessibility label.
   if (state_ == EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING) {
@@ -198,6 +201,13 @@ void EasyUnlockScreenlockStateHandler::SetTrialRun() {
     return;
   is_trial_run_ = true;
   RefreshScreenlockState();
+  RecordEasyUnlockTrialRunEvent(EASY_UNLOCK_TRIAL_RUN_EVENT_LAUNCHED);
+}
+
+void EasyUnlockScreenlockStateHandler::RecordClickOnLockIcon() {
+  if (!is_trial_run_)
+    return;
+  RecordEasyUnlockTrialRunEvent(EASY_UNLOCK_TRIAL_RUN_EVENT_CLICKED_LOCK_ICON);
 }
 
 void EasyUnlockScreenlockStateHandler::OnScreenDidLock(
@@ -289,11 +299,10 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
 }
 
 void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
-    bool trial_run,
     ScreenlockBridge::UserPodCustomIconOptions* icon_options) {
   size_t resource_id = 0;
   base::string16 device_name;
-  if (trial_run && state_ == STATE_AUTHENTICATED) {
+  if (is_trial_run_ && state_ == STATE_AUTHENTICATED) {
     resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED;
   } else {
     resource_id = GetTooltipResourceId(state_);
@@ -316,7 +325,7 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
 
   icon_options->SetTooltip(
       tooltip,
-      trial_run || (state_ != STATE_AUTHENTICATED) /* autoshow tooltip */);
+      is_trial_run_ || (state_ != STATE_AUTHENTICATED) /* autoshow tooltip */);
 }
 
 base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {

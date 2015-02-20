@@ -290,6 +290,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * @param {string} username Username of pod to add button
      * @param {!{id: !string,
      *           hardlockOnClick: boolean,
+     *           isTrialRun: boolean,
      *           tooltip: ({text: string, autoshow: boolean} | undefined)}} icon
      *     The icon parameters.
      */

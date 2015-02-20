@@ -60,7 +60,8 @@ ScreenlockBridge* ScreenlockBridge::Get() {
 
 ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
     : autoshow_tooltip_(false),
-      hardlock_on_click_(false) {
+      hardlock_on_click_(false),
+      is_trial_run_(false) {
 }
 
 ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {}
@@ -84,6 +85,9 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
   if (hardlock_on_click_)
     result->SetBoolean("hardlockOnClick", true);
 
+  if (is_trial_run_)
+    result->SetBoolean("isTrialRun", true);
+
   return result.Pass();
 }
 
@@ -106,6 +110,10 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetAriaLabel(
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetHardlockOnClick() {
   hardlock_on_click_ = true;
+}
+
+void ScreenlockBridge::UserPodCustomIconOptions::SetTrialRun() {
+  is_trial_run_ = true;
 }
 
 // static

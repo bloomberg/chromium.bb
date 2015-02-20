@@ -67,6 +67,10 @@ class ScreenlockBridge {
     // go to state where password is required for unlock.
     void SetHardlockOnClick();
 
+    // If the current lock screen is a trial run to introduce users to Easy
+    // Unlock, the icon will record metrics upon click.
+    void SetTrialRun();
+
    private:
     UserPodCustomIcon icon_;
 
@@ -76,6 +80,8 @@ class ScreenlockBridge {
     base::string16 aria_label_;
 
     bool hardlock_on_click_;
+
+    bool is_trial_run_;
 
     DISALLOW_COPY_AND_ASSIGN(UserPodCustomIconOptions);
   };

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
+
 #include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
+#include "base/test/histogram_tester.h"
+#include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/grit/generated_resources.h"
@@ -749,6 +752,28 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
               lock_handler_->GetAuthType(user_email_));
     EXPECT_FALSE(lock_handler_->HasCustomIcon());
   }
+}
+
+TEST_F(EasyUnlockScreenlockStateHandlerTest, TrialRunMetrics) {
+  base::HistogramTester histogram_tester;
+
+  // Simulate the user clicking on the lock icon twice outside of a trial run.
+  // No trial run metrics should be recorded.
+  state_handler_->RecordClickOnLockIcon();
+  state_handler_->RecordClickOnLockIcon();
+  histogram_tester.ExpectTotalCount("EasyUnlock.TrialRun.Events", 0);
+
+  // Simulate the user clicking on the lock icon three times during a trial run.
+  state_handler_->SetTrialRun();
+  state_handler_->RecordClickOnLockIcon();
+  state_handler_->RecordClickOnLockIcon();
+  state_handler_->RecordClickOnLockIcon();
+  histogram_tester.ExpectTotalCount("EasyUnlock.TrialRun.Events", 4);
+  histogram_tester.ExpectBucketCount("EasyUnlock.TrialRun.Events",
+                                     EASY_UNLOCK_TRIAL_RUN_EVENT_LAUNCHED, 1);
+  histogram_tester.ExpectBucketCount(
+      "EasyUnlock.TrialRun.Events",
+      EASY_UNLOCK_TRIAL_RUN_EVENT_CLICKED_LOCK_ICON, 3);
 }
 
 }  // namespace

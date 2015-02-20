@@ -500,11 +500,16 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
 }
 
 void EasyUnlockService::SetTrialRun() {
-  DCHECK(GetType() == TYPE_REGULAR);
+  DCHECK_EQ(GetType(), TYPE_REGULAR);
 
   EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
   if (handler)
     handler->SetTrialRun();
+}
+
+void EasyUnlockService::RecordClickOnLockIcon() {
+  if (screenlock_state_handler_)
+    screenlock_state_handler_->RecordClickOnLockIcon();
 }
 
 void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {

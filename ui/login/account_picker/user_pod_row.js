@@ -2427,6 +2427,7 @@ cr.define('login', function() {
      * @param {string} username Username of pod to add button
      * @param {!{id: !string,
      *           hardlockOnClick: boolean,
+     *           isTrialRun: boolean,
      *           ariaLabel: string | undefined,
      *           tooltip: ({text: string, autoshow: boolean} | undefined)}} icon
      *     The icon parameters.
@@ -2445,7 +2446,10 @@ cr.define('login', function() {
       if (icon.id)
         pod.customIconElement.setIcon(icon.id);
 
-      if (icon.hardlockOnClick) {
+      if (icon.isTrialRun) {
+        pod.customIconElement.setInteractive(
+            this.onDidClickLockIconDuringTrialRun_.bind(this, username));
+      } else if (icon.hardlockOnClick) {
         pod.customIconElement.setInteractive(
             this.hardlockUserPod_.bind(this, username));
       } else {
@@ -2475,6 +2479,16 @@ cr.define('login', function() {
      */
     hardlockUserPod_: function(username) {
       chrome.send('hardlockPod', [username]);
+    },
+
+    /**
+     * Records a metric indicating that the user clicked on the lock icon during
+     * the trial run for Easy Unlock.
+     * @param {!string} username The user's username.
+     * @private
+     */
+    onDidClickLockIconDuringTrialRun_: function(username) {
+      chrome.send('recordClickOnLockIcon', [username]);
     },
 
     /**
