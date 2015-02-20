@@ -3645,11 +3645,4 @@
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
-{
-   bug_459556
-   Memcheck:Unaddressable
-   fun:_ZN4base11trace_event8TraceLog31ConvertTraceEventsToTraceFormat*
-   fun:_ZN4base11trace_event8TraceLog25FlushButLeaveBufferIntact*
-   fun:_ZN4base11trace_event12_GLOBAL__N_121TraceEventTestFixture15FlushMonitoring*
-}
 

@@ -27,7 +27,3 @@ PlatformFile.TouchGetInfoPlatformFile
 
 # Crashes under Valgrind, see http://crbug.com/355436
 OutOfMemoryHandledTest.Unchecked*
-
-# Fails under Valgrind, see http://crbug.com/459556
-TraceEventTestFixture.*
-TraceEventCallbackTest.TraceEventCallbackAndRecording*
