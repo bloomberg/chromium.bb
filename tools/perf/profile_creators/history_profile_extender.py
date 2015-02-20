@@ -84,7 +84,7 @@ class HistoryProfileExtender(
     size = stat_info.st_size
 
     max_size_threshold = 0.95
-    bytes_in_megabyte = 2**10
+    bytes_in_megabyte = 2**20
     max_size = (bytes_in_megabyte *
         HistoryProfileExtender._HISTORY_DB_MAX_SIZE_IN_MB * max_size_threshold)
     return size > max_size
