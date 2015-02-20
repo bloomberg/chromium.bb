@@ -20,7 +20,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.JavascriptInterface;
-import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content.common.ContentSwitches;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +33,7 @@ import java.util.List;
 /**
  * Responsible for accessibility injection and management of a {@link ContentViewCore}.
  */
-public class AccessibilityInjector extends WebContentsObserver {
+public class AccessibilityInjector {
     // The ContentView this injector is responsible for managing.
     protected ContentViewCore mContentViewCore;
 
@@ -103,7 +102,6 @@ public class AccessibilityInjector extends WebContentsObserver {
      * @param view The ContentViewCore that this AccessibilityInjector manages.
      */
     protected AccessibilityInjector(ContentViewCore view) {
-        super(view.getWebContents());
         mContentViewCore = view;
 
         mAccessibilityScreenReaderUrl = CommandLine.getInstance().getSwitchValue(
@@ -208,13 +206,15 @@ public class AccessibilityInjector extends WebContentsObserver {
      * accessibility script as not being injected.  This way we can properly ignore incoming
      * accessibility gesture events.
      */
-    @Override
-    public void didStartLoading(String url) {
+    public void onPageLoadStarted() {
         mScriptInjected = false;
     }
 
-    @Override
-    public void didStopLoading(String url) {
+    /**
+     * Notifies this handler that a page load has stopped, which means we can now inject the
+     * accessibility script.
+     */
+    public void onPageLoadStopped() {
         injectAccessibilityScriptIntoPage();
     }
 

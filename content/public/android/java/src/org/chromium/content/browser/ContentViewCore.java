@@ -748,6 +748,16 @@ public class ContentViewCore
 
         mWebContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
+            public void didStartLoading(String url) {
+                mAccessibilityInjector.onPageLoadStarted();
+            }
+
+            @Override
+            public void didStopLoading(String url) {
+                mAccessibilityInjector.onPageLoadStopped();
+            }
+
+            @Override
             public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
                     String description, String failingUrl) {
                 // Navigation that fails the provisional load will have the strong binding removed
