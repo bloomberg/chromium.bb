@@ -77,21 +77,24 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, TypingTest) {
+// Disabled for flaking. See crbug.com/459420.
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_TypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"),
           InputViewConfig(id, kDefaultLayout));
 }
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactTypingTest) {
+// Disabled for flaking. See crbug.com/459420.
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_CompactTypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"),
           InputViewConfig(id, kCompactLayout));
 }
 
-IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactLongpressTest) {
+// Disabled for flaking. See crbug.com/459420.
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, DISABLED_CompactLongpressTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("longpress_test.js"),
