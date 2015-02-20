@@ -24,6 +24,7 @@ const char* const kPublicSessionWhitelist[] = {
     "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
     "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
     "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
+    "mfaihdlpglflfgpfjcifdjdjcckigekc",  // ARC Runtime
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
