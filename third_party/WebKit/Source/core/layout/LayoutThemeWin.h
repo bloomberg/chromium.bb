@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutThemeChromiumWin_h
-#define LayoutThemeChromiumWin_h
+#ifndef LayoutThemeWin_h
+#define LayoutThemeWin_h
 
-#include "core/layout/LayoutThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeDefault.h"
 
 namespace blink {
 
-class LayoutThemeChromiumWin final : public LayoutThemeChromiumDefault {
+class LayoutThemeWin final : public LayoutThemeDefault {
 public:
     static PassRefPtr<LayoutTheme> create();
 };
 
 } // namespace blink
 
-#endif // LayoutThemeChromiumWin_h
+#endif // LayoutThemeWin_h

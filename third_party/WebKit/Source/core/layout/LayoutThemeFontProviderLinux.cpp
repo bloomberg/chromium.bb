@@ -24,32 +24,43 @@
  */
 
 #include "config.h"
-#include "core/layout/LayoutThemeChromiumFontProvider.h"
+#include "core/layout/LayoutThemeFontProvider.h"
 
+#include "core/CSSValueKeywords.h"
+#include "platform/fonts/FontDescription.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-// The default variable-width font size. We use this as the default font
-// size for the "system font", and as a base size (which we then shrink) for
-// form control fonts.
 // static
-float LayoutThemeChromiumFontProvider::s_defaultFontSize = 16.0;
-
-// We aim to match IE here.
-// -IE uses a font based on the encoding as the default font for form controls.
-// -Gecko uses MS Shell Dlg (actually calls GetStockObject(DEFAULT_GUI_FONT),
-// which returns MS Shell Dlg)
-// -Safari uses Lucida Grande.
-//
-// FIXME: The only case where we know we don't match IE is for ANSI encodings.
-// IE uses MS Shell Dlg there, which we render incorrectly at certain pixel
-// sizes (e.g. 15px). So, for now we just use Arial.
-const AtomicString& LayoutThemeChromiumFontProvider::defaultGUIFont()
+void LayoutThemeFontProvider::setDefaultFontSize(int fontSize)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, fontFace, ("Arial", AtomicString::ConstructFromLiteral));
-    return fontFace;
+    s_defaultFontSize = static_cast<float>(fontSize);
+}
+
+// static
+void LayoutThemeFontProvider::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily)
+{
+    fontWeight = FontWeightNormal;
+    fontStyle = FontStyleNormal;
+    fontSize = s_defaultFontSize;
+    fontFamily = defaultGUIFont();
+
+    switch (systemFontID) {
+    case CSSValueWebkitMiniControl:
+    case CSSValueWebkitSmallControl:
+    case CSSValueWebkitControl:
+        // Why 2 points smaller? Because that's what Gecko does. Note that we
+        // are assuming a 96dpi screen, which is the default that we use on
+        // Windows.
+        static const float pointsPerInch = 72.0f;
+        static const float pixelsPerInch = 96.0f;
+        fontSize -= (2.0f / pointsPerInch) * pixelsPerInch;
+        break;
+    default:
+        break;
+    }
 }
 
 } // namespace blink

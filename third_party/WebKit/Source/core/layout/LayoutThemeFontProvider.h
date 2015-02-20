@@ -23,45 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/layout/LayoutThemeChromiumFontProvider.h"
+#ifndef LayoutThemeFontProvider_h
+#define LayoutThemeFontProvider_h
 
 #include "core/CSSValueKeywords.h"
-#include "platform/fonts/FontDescription.h"
-
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/fonts/FontTraits.h"
 
 namespace blink {
 
-// static
-void LayoutThemeChromiumFontProvider::setDefaultFontSize(int fontSize)
-{
-    s_defaultFontSize = static_cast<float>(fontSize);
-}
+class LayoutThemeFontProvider {
+public:
+    static void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily);
+    static void setDefaultFontSize(int);
 
-// static
-void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily)
-{
-    fontWeight = FontWeightNormal;
-    fontStyle = FontStyleNormal;
-    fontSize = s_defaultFontSize;
-    fontFamily = defaultGUIFont();
+protected:
+    static const WTF::AtomicString& defaultGUIFont();
 
-    switch (systemFontID) {
-    case CSSValueWebkitMiniControl:
-    case CSSValueWebkitSmallControl:
-    case CSSValueWebkitControl:
-        // Why 2 points smaller? Because that's what Gecko does. Note that we
-        // are assuming a 96dpi screen, which is the default that we use on
-        // Windows.
-        static const float pointsPerInch = 72.0f;
-        static const float pixelsPerInch = 96.0f;
-        fontSize -= (2.0f / pointsPerInch) * pixelsPerInch;
-        break;
-    default:
-        break;
-    }
-}
+    static float s_defaultFontSize;
+};
 
 } // namespace blink
+
+#endif // LayoutThemeFontProvider_h

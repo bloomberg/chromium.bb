@@ -3,26 +3,26 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/layout/LayoutThemeChromiumLinux.h"
+#include "core/layout/LayoutThemeLinux.h"
 
 #include "platform/PlatformResourceLoader.h"
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeChromiumLinux::create()
+PassRefPtr<LayoutTheme> LayoutThemeLinux::create()
 {
-    return adoptRef(new LayoutThemeChromiumLinux());
+    return adoptRef(new LayoutThemeLinux());
 }
 
 LayoutTheme& LayoutTheme::theme()
 {
-    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeChromiumLinux::create()));
+    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeLinux::create()));
     return *layoutTheme;
 }
 
-String LayoutThemeChromiumLinux::extraDefaultStyleSheet()
+String LayoutThemeLinux::extraDefaultStyleSheet()
 {
-    return LayoutThemeChromiumDefault::extraDefaultStyleSheet() +
+    return LayoutThemeDefault::extraDefaultStyleSheet() +
         loadResourceAsASCIIString("themeChromiumLinux.css");
 }
 

@@ -58,7 +58,7 @@ namespace {
 int32_t ensureMinimumFontHeightIfNeeded(int32_t fontHeight)
 {
     // Adjustment for codepage 936 to make the fonts more legible in Simplified Chinese.
-    // Please refer to LayoutThemeChromiumFontProviderWin.cpp for more information.
+    // Please refer to LayoutThemeFontProviderWin.cpp for more information.
     return (fontHeight < 12.0f) && (GetACP() == 936) ? 12.0f : fontHeight;
 }
 

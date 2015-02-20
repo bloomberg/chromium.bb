@@ -23,12 +23,12 @@
  */
 
 #include "config.h"
-#include "core/layout/LayoutThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeDefault.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/layout/LayoutMediaControls.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutThemeChromiumFontProvider.h"
+#include "core/layout/LayoutThemeFontProvider.h"
 #include "core/layout/PaintInfo.h"
 #include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
@@ -67,16 +67,12 @@ static bool useMockTheme()
     return LayoutTestSupport::isRunningLayoutTest();
 }
 
-unsigned LayoutThemeChromiumDefault::m_activeSelectionBackgroundColor =
-    0xff1e90ff;
-unsigned LayoutThemeChromiumDefault::m_activeSelectionForegroundColor =
-    Color::black;
-unsigned LayoutThemeChromiumDefault::m_inactiveSelectionBackgroundColor =
-    0xffc8c8c8;
-unsigned LayoutThemeChromiumDefault::m_inactiveSelectionForegroundColor =
-    0xff323232;
+unsigned LayoutThemeDefault::m_activeSelectionBackgroundColor = 0xff1e90ff;
+unsigned LayoutThemeDefault::m_activeSelectionForegroundColor = Color::black;
+unsigned LayoutThemeDefault::m_inactiveSelectionBackgroundColor = 0xffc8c8c8;
+unsigned LayoutThemeDefault::m_inactiveSelectionForegroundColor = 0xff323232;
 
-double LayoutThemeChromiumDefault::m_caretBlinkInterval;
+double LayoutThemeDefault::m_caretBlinkInterval;
 
 static const unsigned defaultButtonBackgroundColor = 0xffdddddd;
 
@@ -96,16 +92,16 @@ static WebThemeEngine::State getWebThemeState(const LayoutTheme* theme, const La
     return WebThemeEngine::StateNormal;
 }
 
-LayoutThemeChromiumDefault::LayoutThemeChromiumDefault()
+LayoutThemeDefault::LayoutThemeDefault()
 {
     m_caretBlinkInterval = LayoutTheme::caretBlinkInterval();
 }
 
-LayoutThemeChromiumDefault::~LayoutThemeChromiumDefault()
+LayoutThemeDefault::~LayoutThemeDefault()
 {
 }
 
-bool LayoutThemeChromiumDefault::supportsFocusRing(const LayoutStyle& style) const
+bool LayoutThemeDefault::supportsFocusRing(const LayoutStyle& style) const
 {
     if (useMockTheme()) {
         // Don't use focus rings for buttons when mocking controls.
@@ -118,7 +114,7 @@ bool LayoutThemeChromiumDefault::supportsFocusRing(const LayoutStyle& style) con
     return false;
 }
 
-Color LayoutThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
+Color LayoutThemeDefault::systemColor(CSSValueID cssValueId) const
 {
     static const Color defaultButtonGrayColor(0xffdddddd);
     static const Color defaultMenuColor(0xfff7f7f7);
@@ -134,7 +130,7 @@ Color LayoutThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
 }
 
 // Use the Windows style sheets to match their metrics.
-String LayoutThemeChromiumDefault::extraDefaultStyleSheet()
+String LayoutThemeDefault::extraDefaultStyleSheet()
 {
     return LayoutTheme::extraDefaultStyleSheet()
         + loadResourceAsASCIIString("themeWin.css")
@@ -147,74 +143,74 @@ String LayoutThemeChromiumDefault::extraDefaultStyleSheet()
 #endif
 }
 
-String LayoutThemeChromiumDefault::extraQuirksStyleSheet()
+String LayoutThemeDefault::extraQuirksStyleSheet()
 {
     return loadResourceAsASCIIString("themeWinQuirks.css");
 }
 
-Color LayoutThemeChromiumDefault::activeListBoxSelectionBackgroundColor() const
+Color LayoutThemeDefault::activeListBoxSelectionBackgroundColor() const
 {
     return Color(0x28, 0x28, 0x28);
 }
 
-Color LayoutThemeChromiumDefault::activeListBoxSelectionForegroundColor() const
+Color LayoutThemeDefault::activeListBoxSelectionForegroundColor() const
 {
     return Color::black;
 }
 
-Color LayoutThemeChromiumDefault::inactiveListBoxSelectionBackgroundColor() const
+Color LayoutThemeDefault::inactiveListBoxSelectionBackgroundColor() const
 {
     return Color(0xc8, 0xc8, 0xc8);
 }
 
-Color LayoutThemeChromiumDefault::inactiveListBoxSelectionForegroundColor() const
+Color LayoutThemeDefault::inactiveListBoxSelectionForegroundColor() const
 {
     return Color(0x32, 0x32, 0x32);
 }
 
-Color LayoutThemeChromiumDefault::platformActiveSelectionBackgroundColor() const
+Color LayoutThemeDefault::platformActiveSelectionBackgroundColor() const
 {
     if (useMockTheme())
         return Color(0x00, 0x00, 0xff); // Royal blue.
     return m_activeSelectionBackgroundColor;
 }
 
-Color LayoutThemeChromiumDefault::platformInactiveSelectionBackgroundColor() const
+Color LayoutThemeDefault::platformInactiveSelectionBackgroundColor() const
 {
     if (useMockTheme())
         return Color(0x99, 0x99, 0x99); // Medium gray.
     return m_inactiveSelectionBackgroundColor;
 }
 
-Color LayoutThemeChromiumDefault::platformActiveSelectionForegroundColor() const
+Color LayoutThemeDefault::platformActiveSelectionForegroundColor() const
 {
     if (useMockTheme())
         return Color(0xff, 0xff, 0xcc); // Pale yellow.
     return m_activeSelectionForegroundColor;
 }
 
-Color LayoutThemeChromiumDefault::platformInactiveSelectionForegroundColor() const
+Color LayoutThemeDefault::platformInactiveSelectionForegroundColor() const
 {
     if (useMockTheme())
         return Color::white;
     return m_inactiveSelectionForegroundColor;
 }
 
-IntSize LayoutThemeChromiumDefault::sliderTickSize() const
+IntSize LayoutThemeDefault::sliderTickSize() const
 {
     if (useMockTheme())
         return IntSize(1, 3);
     return IntSize(1, 6);
 }
 
-int LayoutThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
+int LayoutThemeDefault::sliderTickOffsetFromTrackCenter() const
 {
     if (useMockTheme())
         return 11;
     return -16;
 }
 
-void LayoutThemeChromiumDefault::adjustSliderThumbSize(LayoutStyle& style, Element* element) const
+void LayoutThemeDefault::adjustSliderThumbSize(LayoutStyle& style, Element* element) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartSliderThumb);
 
@@ -231,12 +227,12 @@ void LayoutThemeChromiumDefault::adjustSliderThumbSize(LayoutStyle& style, Eleme
     }
 }
 
-void LayoutThemeChromiumDefault::setCaretBlinkInterval(double interval)
+void LayoutThemeDefault::setCaretBlinkInterval(double interval)
 {
     m_caretBlinkInterval = interval;
 }
 
-void LayoutThemeChromiumDefault::setSelectionColors(
+void LayoutThemeDefault::setSelectionColors(
     unsigned activeBackgroundColor,
     unsigned activeForegroundColor,
     unsigned inactiveBackgroundColor,
@@ -248,7 +244,7 @@ void LayoutThemeChromiumDefault::setSelectionColors(
     m_inactiveSelectionForegroundColor = inactiveForegroundColor;
 }
 
-bool LayoutThemeChromiumDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -271,7 +267,7 @@ bool LayoutThemeChromiumDefault::paintCheckbox(LayoutObject* o, const PaintInfo&
     return false;
 }
 
-void LayoutThemeChromiumDefault::setCheckboxSize(LayoutStyle& style) const
+void LayoutThemeDefault::setCheckboxSize(LayoutStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -284,7 +280,7 @@ void LayoutThemeChromiumDefault::setCheckboxSize(LayoutStyle& style) const
     setSizeIfAuto(style, size);
 }
 
-bool LayoutThemeChromiumDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -294,7 +290,7 @@ bool LayoutThemeChromiumDefault::paintRadio(LayoutObject* o, const PaintInfo& i,
     return false;
 }
 
-void LayoutThemeChromiumDefault::setRadioSize(LayoutStyle& style) const
+void LayoutThemeDefault::setRadioSize(LayoutStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -307,7 +303,7 @@ void LayoutThemeChromiumDefault::setRadioSize(LayoutStyle& style) const
     setSizeIfAuto(style, size);
 }
 
-bool LayoutThemeChromiumDefault::paintButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -320,7 +316,7 @@ bool LayoutThemeChromiumDefault::paintButton(LayoutObject* o, const PaintInfo& i
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintTextField(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintTextField(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     // WebThemeEngine does not handle border rounded corner and background image
     // so return true to draw CSS border and background.
@@ -342,7 +338,7 @@ bool LayoutThemeChromiumDefault::paintTextField(LayoutObject* o, const PaintInfo
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isBox())
         return false;
@@ -387,7 +383,7 @@ bool LayoutThemeChromiumDefault::paintMenuList(LayoutObject* o, const PaintInfo&
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isBox())
         return false;
@@ -421,7 +417,7 @@ bool LayoutThemeChromiumDefault::paintMenuListButton(LayoutObject* o, const Pain
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintSliderTrack(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintSliderTrack(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -447,7 +443,7 @@ bool LayoutThemeChromiumDefault::paintSliderTrack(LayoutObject* o, const PaintIn
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -471,7 +467,7 @@ bool LayoutThemeChromiumDefault::paintSliderThumb(LayoutObject* o, const PaintIn
     return false;
 }
 
-void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
@@ -479,7 +475,7 @@ void LayoutThemeChromiumDefault::adjustInnerSpinButtonStyle(LayoutStyle& style, 
     style.setMinWidth(Length(size.width(), Fixed));
 }
 
-bool LayoutThemeChromiumDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
@@ -490,7 +486,7 @@ bool LayoutThemeChromiumDefault::paintInnerSpinButton(LayoutObject* o, const Pai
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
+bool LayoutThemeDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
 {
     if (!o->isProgress())
         return true;
@@ -511,12 +507,12 @@ bool LayoutThemeChromiumDefault::paintProgressBar(LayoutObject* o, const PaintIn
     return false;
 }
 
-bool LayoutThemeChromiumDefault::shouldOpenPickerWithF4Key() const
+bool LayoutThemeDefault::shouldOpenPickerWithF4Key() const
 {
     return true;
 }
 
-bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(const LayoutStyle& style) const
+bool LayoutThemeDefault::shouldUseFallbackTheme(const LayoutStyle& style) const
 {
     if (useMockTheme()) {
         // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.
@@ -527,18 +523,18 @@ bool LayoutThemeChromiumDefault::shouldUseFallbackTheme(const LayoutStyle& style
     return LayoutTheme::shouldUseFallbackTheme(style);
 }
 
-bool LayoutThemeChromiumDefault::supportsHover(const LayoutStyle& style) const
+bool LayoutThemeDefault::supportsHover(const LayoutStyle& style) const
 {
     return true;
 }
 
-Color LayoutThemeChromiumDefault::platformFocusRingColor() const
+Color LayoutThemeDefault::platformFocusRingColor() const
 {
     static Color focusRingColor(229, 151, 0, 255);
     return focusRingColor;
 }
 
-double LayoutThemeChromiumDefault::caretBlinkInterval() const
+double LayoutThemeDefault::caretBlinkInterval() const
 {
     // Disable the blinking caret in layout test mode, as it introduces
     // a race condition for the pixel tests. http://b/1198440
@@ -548,12 +544,12 @@ double LayoutThemeChromiumDefault::caretBlinkInterval() const
     return m_caretBlinkInterval;
 }
 
-void LayoutThemeChromiumDefault::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily) const
+void LayoutThemeDefault::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily) const
 {
-    LayoutThemeChromiumFontProvider::systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
+    LayoutThemeFontProvider::systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
 }
 
-int LayoutThemeChromiumDefault::minimumMenuListSize(const LayoutStyle& style) const
+int LayoutThemeDefault::minimumMenuListSize(const LayoutStyle& style) const
 {
     return 0;
 }
@@ -570,7 +566,7 @@ IntRect center(const IntRect& original, int width, int height)
     return IntRect(x, y, width, height);
 }
 
-void LayoutThemeChromiumDefault::adjustButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustButtonStyle(LayoutStyle& style, Element*) const
 {
     if (style.appearance() == PushButtonPart) {
         // Ignore line-height.
@@ -578,23 +574,23 @@ void LayoutThemeChromiumDefault::adjustButtonStyle(LayoutStyle& style, Element*)
     }
 }
 
-bool LayoutThemeChromiumDefault::paintTextArea(LayoutObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutThemeDefault::paintTextArea(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
 }
 
-void LayoutThemeChromiumDefault::adjustSearchFieldStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldStyle(LayoutStyle& style, Element*) const
 {
     // Ignore line-height.
     style.setLineHeight(LayoutStyle::initialLineHeight());
 }
 
-bool LayoutThemeChromiumDefault::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
+bool LayoutThemeDefault::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
 }
 
-void LayoutThemeChromiumDefault::adjustSearchFieldCancelButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(LayoutStyle& style, Element*) const
 {
     // Scale the button size based on the font size
     float fontScale = style.fontSize() / defaultControlFontPixelSize;
@@ -603,7 +599,7 @@ void LayoutThemeChromiumDefault::adjustSearchFieldCancelButtonStyle(LayoutStyle&
     style.setHeight(Length(cancelButtonSize, Fixed));
 }
 
-IntRect LayoutThemeChromiumDefault::convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const
+IntRect LayoutThemeDefault::convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const
 {
     // Compute an offset between the part renderer and the input renderer.
     LayoutSize offsetFromInputRenderer = -partRenderer->offsetFromAncestorContainer(inputRenderer);
@@ -615,7 +611,7 @@ IntRect LayoutThemeChromiumDefault::convertToPaintingRect(LayoutObject* inputRen
     return pixelSnappedIntRect(partRect);
 }
 
-bool LayoutThemeChromiumDefault::paintSearchFieldCancelButton(LayoutObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeDefault::paintSearchFieldCancelButton(LayoutObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the renderer of <input> element.
     if (!cancelButtonObject->node())
@@ -643,14 +639,14 @@ bool LayoutThemeChromiumDefault::paintSearchFieldCancelButton(LayoutObject* canc
     return false;
 }
 
-void LayoutThemeChromiumDefault::adjustSearchFieldDecorationStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldDecorationStyle(LayoutStyle& style, Element*) const
 {
     IntSize emptySize(1, 11);
     style.setWidth(Length(emptySize.width(), Fixed));
     style.setHeight(Length(emptySize.height(), Fixed));
 }
 
-void LayoutThemeChromiumDefault::adjustSearchFieldResultsDecorationStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustSearchFieldResultsDecorationStyle(LayoutStyle& style, Element*) const
 {
     // Scale the decoration size based on the font size
     float fontScale = style.fontSize() / defaultControlFontPixelSize;
@@ -660,7 +656,7 @@ void LayoutThemeChromiumDefault::adjustSearchFieldResultsDecorationStyle(LayoutS
     style.setHeight(Length(magnifierSize, Fixed));
 }
 
-bool LayoutThemeChromiumDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
 {
     // Get the renderer of <input> element.
     if (!magnifierObject->node())
@@ -687,109 +683,109 @@ bool LayoutThemeChromiumDefault::paintSearchFieldResultsDecoration(LayoutObject*
     return false;
 }
 
-bool LayoutThemeChromiumDefault::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaToggleClosedCaptionsButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeDefault::paintMediaToggleClosedCaptionsButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaCastButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeDefault::paintMediaCastButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
 
-String LayoutThemeChromiumDefault::formatMediaControlsTime(float time) const
+String LayoutThemeDefault::formatMediaControlsTime(float time) const
 {
     return LayoutMediaControls::formatMediaControlsTime(time);
 }
 
-String LayoutThemeChromiumDefault::formatMediaControlsCurrentTime(float currentTime, float duration) const
+String LayoutThemeDefault::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
     return LayoutMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
-bool LayoutThemeChromiumDefault::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeDefault::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
-void LayoutThemeChromiumDefault::adjustMenuListStyle(LayoutStyle& style, Element*) const
+void LayoutThemeDefault::adjustMenuListStyle(LayoutStyle& style, Element*) const
 {
     // Height is locked to auto on all browsers.
     style.setLineHeight(LayoutStyle::initialLineHeight());
 }
 
-void LayoutThemeChromiumDefault::adjustMenuListButtonStyle(LayoutStyle& style, Element* e) const
+void LayoutThemeDefault::adjustMenuListButtonStyle(LayoutStyle& style, Element* e) const
 {
     adjustMenuListStyle(style, e);
 }
 
-int LayoutThemeChromiumDefault::popupInternalPaddingLeft(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingLeft(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, LeftPadding);
 }
 
-int LayoutThemeChromiumDefault::popupInternalPaddingRight(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingRight(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, RightPadding);
 }
 
-int LayoutThemeChromiumDefault::popupInternalPaddingTop(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingTop(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, TopPadding);
 }
 
-int LayoutThemeChromiumDefault::popupInternalPaddingBottom(const LayoutStyle& style) const
+int LayoutThemeDefault::popupInternalPaddingBottom(const LayoutStyle& style) const
 {
     return menuListInternalPadding(style, BottomPadding);
 }
 
 // static
-void LayoutThemeChromiumDefault::setDefaultFontSize(int fontSize)
+void LayoutThemeDefault::setDefaultFontSize(int fontSize)
 {
-    LayoutThemeChromiumFontProvider::setDefaultFontSize(fontSize);
+    LayoutThemeFontProvider::setDefaultFontSize(fontSize);
 }
 
-int LayoutThemeChromiumDefault::menuListArrowPadding() const
+int LayoutThemeDefault::menuListArrowPadding() const
 {
     return ScrollbarTheme::theme()->scrollbarThickness();
 }
 
-int LayoutThemeChromiumDefault::menuListInternalPadding(const LayoutStyle& style, int paddingType) const
+int LayoutThemeDefault::menuListInternalPadding(const LayoutStyle& style, int paddingType) const
 {
     // This internal padding is in addition to the user-supplied padding.
     // Matches the FF behavior.
@@ -807,7 +803,7 @@ int LayoutThemeChromiumDefault::menuListInternalPadding(const LayoutStyle& style
     return padding;
 }
 
-bool LayoutThemeChromiumDefault::shouldShowPlaceholderWhenFocused() const
+bool LayoutThemeDefault::shouldShowPlaceholderWhenFocused() const
 {
     return true;
 }
@@ -819,13 +815,13 @@ static const int progressActivityBlocks = 5;
 static const int progressAnimationFrames = 10;
 static const double progressAnimationInterval = 0.125;
 
-IntRect LayoutThemeChromiumDefault::determinateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::determinateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
 {
     int dx = rect.width() * renderProgress->position();
     return IntRect(rect.x(), rect.y(), dx, rect.height());
 }
 
-IntRect LayoutThemeChromiumDefault::indeterminateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
 {
 
     int valueWidth = rect.width() / progressActivityBlocks;
@@ -839,22 +835,22 @@ IntRect LayoutThemeChromiumDefault::indeterminateProgressValueRectFor(RenderProg
     return IntRect(rect.x() + (1.0 - progress) * 2 * movableWidth, rect.y(), valueWidth, rect.height());
 }
 
-double LayoutThemeChromiumDefault::animationRepeatIntervalForProgressBar(RenderProgress*) const
+double LayoutThemeDefault::animationRepeatIntervalForProgressBar(RenderProgress*) const
 {
     return progressAnimationInterval;
 }
 
-double LayoutThemeChromiumDefault::animationDurationForProgressBar(RenderProgress* renderProgress) const
+double LayoutThemeDefault::animationDurationForProgressBar(RenderProgress* renderProgress) const
 {
     return progressAnimationInterval * progressAnimationFrames * 2; // "2" for back and forth
 }
 
-IntRect LayoutThemeChromiumDefault::progressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::progressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
 {
     return renderProgress->isDeterminate() ? determinateProgressValueRectFor(renderProgress, rect) : indeterminateProgressValueRectFor(renderProgress, rect);
 }
 
-LayoutThemeChromiumDefault::DirectionFlippingScope::DirectionFlippingScope(LayoutObject* renderer, const PaintInfo& paintInfo, const IntRect& rect)
+LayoutThemeDefault::DirectionFlippingScope::DirectionFlippingScope(LayoutObject* renderer, const PaintInfo& paintInfo, const IntRect& rect)
     : m_needsFlipping(!renderer->style()->isLeftToRightDirection())
     , m_paintInfo(paintInfo)
 {
@@ -865,7 +861,7 @@ LayoutThemeChromiumDefault::DirectionFlippingScope::DirectionFlippingScope(Layou
     m_paintInfo.context->scale(-1, 1);
 }
 
-LayoutThemeChromiumDefault::DirectionFlippingScope::~DirectionFlippingScope()
+LayoutThemeDefault::DirectionFlippingScope::~DirectionFlippingScope()
 {
     if (!m_needsFlipping)
         return;

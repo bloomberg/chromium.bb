@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/layout/LayoutThemeChromiumAndroid.h"
+#include "core/layout/LayoutThemeAndroid.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
@@ -43,35 +43,35 @@
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeChromiumAndroid::create()
+PassRefPtr<LayoutTheme> LayoutThemeAndroid::create()
 {
-    return adoptRef(new LayoutThemeChromiumAndroid());
+    return adoptRef(new LayoutThemeAndroid());
 }
 
 LayoutTheme& LayoutTheme::theme()
 {
-    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeChromiumAndroid::create()));
+    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeAndroid::create()));
     return *layoutTheme;
 }
 
-LayoutThemeChromiumAndroid::~LayoutThemeChromiumAndroid()
+LayoutThemeAndroid::~LayoutThemeAndroid()
 {
 }
 
-String LayoutThemeChromiumAndroid::extraMediaControlsStyleSheet()
+String LayoutThemeAndroid::extraMediaControlsStyleSheet()
 {
     return loadResourceAsASCIIString("mediaControlsAndroid.css");
 }
 
-String LayoutThemeChromiumAndroid::extraDefaultStyleSheet()
+String LayoutThemeAndroid::extraDefaultStyleSheet()
 {
-    return LayoutThemeChromiumDefault::extraDefaultStyleSheet() +
+    return LayoutThemeDefault::extraDefaultStyleSheet() +
         loadResourceAsASCIIString("themeChromiumLinux.css") +
         loadResourceAsASCIIString("themeChromiumAndroid.css");
 
 }
 
-void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeAndroid::adjustInnerSpinButtonStyle(LayoutStyle& style, Element*) const
 {
     if (LayoutTestSupport::isRunningLayoutTest()) {
         // Match Linux spin button style in layout tests.
@@ -83,7 +83,7 @@ void LayoutThemeChromiumAndroid::adjustInnerSpinButtonStyle(LayoutStyle& style, 
     }
 }
 
-int LayoutThemeChromiumAndroid::menuListArrowPadding() const
+int LayoutThemeAndroid::menuListArrowPadding() const
 {
     // We cannot use the scrollbar thickness here, as it's width is 0 on Android.
     // Instead, use the width of the scrollbar down arrow.

@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef LayoutThemeChromiumDefault_h
-#define LayoutThemeChromiumDefault_h
+#ifndef LayoutThemeDefault_h
+#define LayoutThemeDefault_h
 
 #include "core/layout/LayoutTheme.h"
 
@@ -35,7 +35,7 @@ namespace blink {
 
 class RenderProgress;
 
-class LayoutThemeChromiumDefault : public LayoutTheme {
+class LayoutThemeDefault : public LayoutTheme {
 public:
     virtual String extraDefaultStyleSheet() override;
     virtual String extraQuirksStyleSheet() override;
@@ -162,8 +162,8 @@ public:
     static void setSelectionColors(unsigned activeBackgroundColor, unsigned activeForegroundColor, unsigned inactiveBackgroundColor, unsigned inactiveForegroundColor);
 
 protected:
-    LayoutThemeChromiumDefault();
-    virtual ~LayoutThemeChromiumDefault();
+    LayoutThemeDefault();
+    virtual ~LayoutThemeDefault();
     virtual bool shouldUseFallbackTheme(const LayoutStyle&) const override;
     virtual int menuListArrowPadding() const;
 
@@ -199,4 +199,4 @@ private:
 
 } // namespace blink
 
-#endif // LayoutThemeChromiumDefault_h
+#endif // LayoutThemeDefault_h

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/layout/LayoutThemeChromiumFontProvider.h"
+#include "core/layout/LayoutThemeFontProvider.h"
 
 #include "core/CSSValueKeywords.h"
 #include "platform/fonts/FontCache.h"
@@ -102,7 +102,7 @@ static float systemFontSize(const LOGFONT& font)
 }
 
 // static
-void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily)
+void LayoutThemeFontProvider::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily)
 {
     fontStyle = FontStyleNormal;
     fontWeight = FontWeightNormal;
@@ -164,7 +164,7 @@ void LayoutThemeChromiumFontProvider::systemFont(CSSValueID systemFontID, FontSt
 }
 
 // static
-void LayoutThemeChromiumFontProvider::setDefaultFontSize(int fontSize)
+void LayoutThemeFontProvider::setDefaultFontSize(int fontSize)
 {
     s_defaultFontSize = static_cast<float>(fontSize);
 }

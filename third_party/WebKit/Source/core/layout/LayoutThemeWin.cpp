@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/layout/LayoutThemeChromiumWin.h"
+#include "core/layout/LayoutThemeWin.h"
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeChromiumWin::create()
+PassRefPtr<LayoutTheme> LayoutThemeWin::create()
 {
-    return adoptRef(new LayoutThemeChromiumWin());
+    return adoptRef(new LayoutThemeWin());
 }
 
 LayoutTheme& LayoutTheme::theme()
 {
-    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeChromiumWin::create()));
+    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeWin::create()));
     return *layoutTheme;
 }
 

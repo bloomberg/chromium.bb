@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef LayoutThemeChromiumMac_h
-#define LayoutThemeChromiumMac_h
+#ifndef LayoutThemeMac_h
+#define LayoutThemeMac_h
 
 #import "core/layout/LayoutTheme.h"
 #import "wtf/HashMap.h"
@@ -32,7 +32,7 @@ OBJC_CLASS LayoutThemeNotificationObserver;
 
 namespace blink {
 
-class LayoutThemeChromiumMac final : public LayoutTheme {
+class LayoutThemeMac final : public LayoutTheme {
 public:
     static PassRefPtr<LayoutTheme> create();
 
@@ -89,8 +89,8 @@ public:
     virtual bool isModalColorChooser() const { return false; }
 
 protected:
-    LayoutThemeChromiumMac();
-    virtual ~LayoutThemeChromiumMac();
+    LayoutThemeMac();
+    virtual ~LayoutThemeMac();
 
     virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
@@ -206,4 +206,4 @@ private:
 
 } // namespace blink
 
-#endif // LayoutThemeChromiumMac_h
+#endif // LayoutThemeMac_h

@@ -473,15 +473,15 @@
         }],
         ['use_default_render_theme==0 and OS != "android"', {
           'sources!': [
-            'layout/LayoutThemeChromiumDefault.cpp',
-            'layout/LayoutThemeChromiumDefault.h',
+            'layout/LayoutThemeDefault.cpp',
+            'layout/LayoutThemeDefault.h',
           ],
         }],
         ['OS!="win"', {
           'sources!': [
-            'layout/LayoutThemeChromiumFontProviderWin.cpp',
-            'layout/LayoutThemeChromiumWin.cpp',
-            'layout/LayoutThemeChromiumWin.h',
+            'layout/LayoutThemeFontProviderWin.cpp',
+            'layout/LayoutThemeWin.cpp',
+            'layout/LayoutThemeWin.h',
           ],
         }],
         ['OS=="win" and chromium_win_pch==1', {
@@ -491,15 +491,14 @@
         }],
         ['OS=="mac"', {
           'sources!': [
-            # LayoutThemeChromiumFontProvider is used by
-            # LayoutThemeChromiumDefault.
-            'layout/LayoutThemeChromiumFontProvider.cpp',
-            'layout/LayoutThemeChromiumFontProvider.h',
+            # LayoutThemeFontProvider is used by LayoutThemeDefault.
+            'layout/LayoutThemeFontProvider.cpp',
+            'layout/LayoutThemeFontProvider.h',
           ],
         },{ # OS!="mac"
           'sources!': [
-            'layout/LayoutThemeChromiumMac.h',
-            'layout/LayoutThemeChromiumMac.mm',
+            'layout/LayoutThemeMac.h',
+            'layout/LayoutThemeMac.mm',
           ],
         }],
         ['OS == "android" and target_arch == "ia32" and gcc_version == 46', {
@@ -508,19 +507,19 @@
         }],
         ['OS != "linux"', {
           'sources!': [
-            'layout/LayoutThemeChromiumLinux.cpp',
-            'layout/LayoutThemeChromiumLinux.h',
+            'layout/LayoutThemeLinux.cpp',
+            'layout/LayoutThemeLinux.h',
           ],
         }],
         ['OS != "linux" and OS != "android"', {
           'sources!': [
-            'layout/LayoutThemeChromiumFontProviderLinux.cpp',
+            'layout/LayoutThemeFontProviderLinux.cpp',
           ],
         }],
         ['OS!="android"', {
           'sources!': [
-            'layout/LayoutThemeChromiumAndroid.cpp',
-            'layout/LayoutThemeChromiumAndroid.h',
+            'layout/LayoutThemeAndroid.cpp',
+            'layout/LayoutThemeAndroid.h',
           ],
         }],
       ],
@@ -759,8 +758,8 @@
           'conditions': [
             ['use_default_render_theme==0 and OS != "android"', {
               'sources!': [
-                'layout/LayoutThemeChromiumDefault.cpp',
-                'layout/LayoutThemeChromiumDefault.h',
+                'layout/LayoutThemeDefault.cpp',
+                'layout/LayoutThemeDefault.h',
               ],
             }],
             ['OS=="win"', {
@@ -773,9 +772,9 @@
               'msvs_disabled_warnings': [ 4065, 4267, 4305, 4334, 4701, 4702 ],
             }, {
               'sources!': [
-                'layout/LayoutThemeChromiumFontProviderWin.cpp',
-                'layout/LayoutThemeChromiumWin.cpp',
-                'layout/LayoutThemeChromiumWin.h',
+                'layout/LayoutThemeFontProviderWin.cpp',
+                'layout/LayoutThemeWin.cpp',
+                'layout/LayoutThemeWin.h',
               ],
               'libraries': [
                 '-lm -lstdc++',

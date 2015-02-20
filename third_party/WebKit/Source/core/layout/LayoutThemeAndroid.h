@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutThemeChromiumAndroid_h
-#define LayoutThemeChromiumAndroid_h
+#ifndef LayoutThemeAndroid_h
+#define LayoutThemeAndroid_h
 
-#include "core/layout/LayoutThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeDefault.h"
 
 namespace blink {
 
-class LayoutThemeChromiumAndroid final : public LayoutThemeChromiumDefault {
+class LayoutThemeAndroid final : public LayoutThemeDefault {
 public:
     static PassRefPtr<LayoutTheme> create();
     virtual String extraDefaultStyleSheet() override;
@@ -43,19 +43,19 @@ public:
 
     virtual Color platformTapHighlightColor() const override
     {
-        return LayoutThemeChromiumAndroid::defaultTapHighlightColor;
+        return LayoutThemeAndroid::defaultTapHighlightColor;
     }
 
     virtual Color platformActiveSelectionBackgroundColor() const override
     {
-        return LayoutThemeChromiumAndroid::defaultActiveSelectionBackgroundColor;
+        return LayoutThemeAndroid::defaultActiveSelectionBackgroundColor;
     }
 
 protected:
     virtual int menuListArrowPadding() const override;
 
 private:
-    virtual ~LayoutThemeChromiumAndroid();
+    virtual ~LayoutThemeAndroid();
 
     static const RGBA32 defaultTapHighlightColor = 0x6633b5e5;
     static const RGBA32 defaultActiveSelectionBackgroundColor = 0x6633b5e5;
@@ -63,4 +63,4 @@ private:
 
 } // namespace blink
 
-#endif // LayoutThemeChromiumAndroid_h
+#endif // LayoutThemeAndroid_h

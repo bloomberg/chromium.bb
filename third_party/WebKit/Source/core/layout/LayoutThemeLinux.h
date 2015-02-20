@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutThemeChromiumLinux_h
-#define LayoutThemeChromiumLinux_h
+#ifndef LayoutThemeLinux_h
+#define LayoutThemeLinux_h
 
-#include "core/layout/LayoutThemeChromiumDefault.h"
+#include "core/layout/LayoutThemeDefault.h"
 
 namespace blink {
 
-class LayoutThemeChromiumLinux final : public LayoutThemeChromiumDefault {
+class LayoutThemeLinux final : public LayoutThemeDefault {
 public:
     static PassRefPtr<LayoutTheme> create();
     virtual String extraDefaultStyleSheet() override;
@@ -17,4 +17,4 @@ public:
 
 } // namespace blink
 
-#endif // LayoutThemeChromiumLinux_h
+#endif // LayoutThemeLinux_h

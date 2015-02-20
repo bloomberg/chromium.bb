@@ -19,7 +19,7 @@
  */
 
 #import "config.h"
-#import "core/layout/LayoutThemeChromiumMac.h"
+#import "core/layout/LayoutThemeMac.h"
 
 #import "core/CSSValueKeywords.h"
 #import "core/HTMLNames.h"
@@ -152,7 +152,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-LayoutThemeChromiumMac::LayoutThemeChromiumMac()
+LayoutThemeMac::LayoutThemeMac()
     : m_notificationObserver(AdoptNS, [[LayoutThemeNotificationObserver alloc] initWithTheme:this])
 {
     [[NSNotificationCenter defaultCenter] addObserver:m_notificationObserver.get()
@@ -161,45 +161,45 @@ LayoutThemeChromiumMac::LayoutThemeChromiumMac()
                                                object:nil];
 }
 
-LayoutThemeChromiumMac::~LayoutThemeChromiumMac()
+LayoutThemeMac::~LayoutThemeMac()
 {
     [[NSNotificationCenter defaultCenter] removeObserver:m_notificationObserver.get()];
 }
 
-Color LayoutThemeChromiumMac::platformActiveSelectionBackgroundColor() const
+Color LayoutThemeMac::platformActiveSelectionBackgroundColor() const
 {
     NSColor* color = [[NSColor selectedTextBackgroundColor] colorUsingColorSpaceName:NSDeviceRGBColorSpace];
     return Color(static_cast<int>(255.0 * [color redComponent]), static_cast<int>(255.0 * [color greenComponent]), static_cast<int>(255.0 * [color blueComponent]));
 }
 
-Color LayoutThemeChromiumMac::platformInactiveSelectionBackgroundColor() const
+Color LayoutThemeMac::platformInactiveSelectionBackgroundColor() const
 {
     NSColor* color = [[NSColor secondarySelectedControlColor] colorUsingColorSpaceName:NSDeviceRGBColorSpace];
     return Color(static_cast<int>(255.0 * [color redComponent]), static_cast<int>(255.0 * [color greenComponent]), static_cast<int>(255.0 * [color blueComponent]));
 }
 
-Color LayoutThemeChromiumMac::platformActiveSelectionForegroundColor() const
+Color LayoutThemeMac::platformActiveSelectionForegroundColor() const
 {
     return Color::black;
 }
 
-Color LayoutThemeChromiumMac::platformActiveListBoxSelectionBackgroundColor() const
+Color LayoutThemeMac::platformActiveListBoxSelectionBackgroundColor() const
 {
     NSColor* color = [[NSColor alternateSelectedControlColor] colorUsingColorSpaceName:NSDeviceRGBColorSpace];
     return Color(static_cast<int>(255.0 * [color redComponent]), static_cast<int>(255.0 * [color greenComponent]), static_cast<int>(255.0 * [color blueComponent]));
 }
 
-Color LayoutThemeChromiumMac::platformActiveListBoxSelectionForegroundColor() const
+Color LayoutThemeMac::platformActiveListBoxSelectionForegroundColor() const
 {
     return Color::white;
 }
 
-Color LayoutThemeChromiumMac::platformInactiveListBoxSelectionForegroundColor() const
+Color LayoutThemeMac::platformInactiveListBoxSelectionForegroundColor() const
 {
     return Color::black;
 }
 
-Color LayoutThemeChromiumMac::platformFocusRingColor() const
+Color LayoutThemeMac::platformFocusRingColor() const
 {
     static const RGBA32 oldAquaFocusRingColor = 0xFF7DADD9;
     if (usesTestModeFocusRingColor())
@@ -208,7 +208,7 @@ Color LayoutThemeChromiumMac::platformFocusRingColor() const
     return systemColor(CSSValueWebkitFocusRingColor);
 }
 
-Color LayoutThemeChromiumMac::platformInactiveListBoxSelectionBackgroundColor() const
+Color LayoutThemeMac::platformInactiveListBoxSelectionBackgroundColor() const
 {
     return platformInactiveSelectionBackgroundColor();
 }
@@ -260,7 +260,7 @@ static inline NSFont* systemNSFont(CSSValueID systemFontID)
     }
 }
 
-void LayoutThemeChromiumMac::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily) const
+void LayoutThemeMac::systemFont(CSSValueID systemFontID, FontStyle& fontStyle, FontWeight& fontWeight, float& fontSize, AtomicString& fontFamily) const
 {
     NSFont* font = systemNSFont(systemFontID);
     if (!font)
@@ -341,13 +341,13 @@ static RGBA32 menuBackgroundColor()
     return makeRGB(pixel[0], pixel[1], pixel[2]);
 }
 
-void LayoutThemeChromiumMac::platformColorsDidChange()
+void LayoutThemeMac::platformColorsDidChange()
 {
     m_systemColorCache.clear();
     LayoutTheme::platformColorsDidChange();
 }
 
-Color LayoutThemeChromiumMac::systemColor(CSSValueID cssValueId) const
+Color LayoutThemeMac::systemColor(CSSValueID cssValueId) const
 {
     {
         HashMap<int, RGBA32>::iterator it = m_systemColorCache.find(cssValueId);
@@ -470,7 +470,7 @@ Color LayoutThemeChromiumMac::systemColor(CSSValueID cssValueId) const
     return color;
 }
 
-bool LayoutThemeChromiumMac::isControlStyled(const LayoutStyle& style, const AuthorStyleInfo& authorStyle) const
+bool LayoutThemeMac::isControlStyled(const LayoutStyle& style, const AuthorStyleInfo& authorStyle) const
 {
     if (style.appearance() == TextFieldPart || style.appearance() == TextAreaPart)
         return authorStyle.specifiesBorder() || style.boxShadow();
@@ -492,7 +492,7 @@ bool LayoutThemeChromiumMac::isControlStyled(const LayoutStyle& style, const Aut
 
 const int sliderThumbShadowBlur = 1;
 
-void LayoutThemeChromiumMac::adjustPaintInvalidationRect(const LayoutObject* o, IntRect& r)
+void LayoutThemeMac::adjustPaintInvalidationRect(const LayoutObject* o, IntRect& r)
 {
     ControlPart part = o->style()->appearance();
 
@@ -523,7 +523,7 @@ void LayoutThemeChromiumMac::adjustPaintInvalidationRect(const LayoutObject* o, 
     }
 }
 
-FloatRect LayoutThemeChromiumMac::convertToPaintingRect(const LayoutObject* inputRenderer, const LayoutObject* partRenderer, const FloatRect& inputRect, const IntRect& r) const
+FloatRect LayoutThemeMac::convertToPaintingRect(const LayoutObject* inputRenderer, const LayoutObject* partRenderer, const FloatRect& inputRect, const IntRect& r) const
 {
     FloatRect partRect(inputRect);
 
@@ -545,7 +545,7 @@ FloatRect LayoutThemeChromiumMac::convertToPaintingRect(const LayoutObject* inpu
     return partRect;
 }
 
-void LayoutThemeChromiumMac::updateCheckedState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateCheckedState(NSCell* cell, const LayoutObject* o)
 {
     bool oldIndeterminate = [cell state] == NSMixedState;
     bool indeterminate = isIndeterminate(o);
@@ -561,7 +561,7 @@ void LayoutThemeChromiumMac::updateCheckedState(NSCell* cell, const LayoutObject
         [cell setState:checked ? NSOnState : NSOffState];
 }
 
-void LayoutThemeChromiumMac::updateEnabledState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateEnabledState(NSCell* cell, const LayoutObject* o)
 {
     bool oldEnabled = [cell isEnabled];
     bool enabled = isEnabled(o);
@@ -569,7 +569,7 @@ void LayoutThemeChromiumMac::updateEnabledState(NSCell* cell, const LayoutObject
         [cell setEnabled:enabled];
 }
 
-void LayoutThemeChromiumMac::updateFocusedState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateFocusedState(NSCell* cell, const LayoutObject* o)
 {
     bool oldFocused = [cell showsFirstResponder];
     bool focused = isFocused(o) && o->style()->outlineStyleIsAuto();
@@ -577,7 +577,7 @@ void LayoutThemeChromiumMac::updateFocusedState(NSCell* cell, const LayoutObject
         [cell setShowsFirstResponder:focused];
 }
 
-void LayoutThemeChromiumMac::updatePressedState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updatePressedState(NSCell* cell, const LayoutObject* o)
 {
     bool oldPressed = [cell isHighlighted];
     bool pressed = o->node() && o->node()->active();
@@ -585,7 +585,7 @@ void LayoutThemeChromiumMac::updatePressedState(NSCell* cell, const LayoutObject
         [cell setHighlighted:pressed];
 }
 
-NSControlSize LayoutThemeChromiumMac::controlSizeForFont(const LayoutStyle& style) const
+NSControlSize LayoutThemeMac::controlSizeForFont(const LayoutStyle& style) const
 {
     int fontSize = style.fontSize();
     if (fontSize >= 16)
@@ -608,7 +608,7 @@ static NSControlSize searchFieldControlSizeForFont(const LayoutStyle& style)
     return NSMiniControlSize;
 }
 
-void LayoutThemeChromiumMac::setControlSize(NSCell* cell, const IntSize* sizes, const IntSize& minSize, float zoomLevel)
+void LayoutThemeMac::setControlSize(NSCell* cell, const IntSize* sizes, const IntSize& minSize, float zoomLevel)
 {
     NSControlSize size;
     if (minSize.width() >= static_cast<int>(sizes[NSRegularControlSize].width() * zoomLevel) &&
@@ -625,7 +625,7 @@ void LayoutThemeChromiumMac::setControlSize(NSCell* cell, const IntSize* sizes, 
         [cell setControlSize:size];
 }
 
-IntSize LayoutThemeChromiumMac::sizeForFont(const LayoutStyle& style, const IntSize* sizes) const
+IntSize LayoutThemeMac::sizeForFont(const LayoutStyle& style, const IntSize* sizes) const
 {
     if (style.effectiveZoom() != 1.0f) {
         IntSize result = sizes[controlSizeForFont(style)];
@@ -634,7 +634,7 @@ IntSize LayoutThemeChromiumMac::sizeForFont(const LayoutStyle& style, const IntS
     return sizes[controlSizeForFont(style)];
 }
 
-IntSize LayoutThemeChromiumMac::sizeForSystemFont(const LayoutStyle& style, const IntSize* sizes) const
+IntSize LayoutThemeMac::sizeForSystemFont(const LayoutStyle& style, const IntSize* sizes) const
 {
     if (style.effectiveZoom() != 1.0f) {
         IntSize result = sizes[controlSizeForSystemFont(style)];
@@ -643,7 +643,7 @@ IntSize LayoutThemeChromiumMac::sizeForSystemFont(const LayoutStyle& style, cons
     return sizes[controlSizeForSystemFont(style)];
 }
 
-void LayoutThemeChromiumMac::setSizeFromFont(LayoutStyle& style, const IntSize* sizes) const
+void LayoutThemeMac::setSizeFromFont(LayoutStyle& style, const IntSize* sizes) const
 {
     // FIXME: Check is flawed, since it doesn't take min-width/max-width into
     // account.
@@ -654,7 +654,7 @@ void LayoutThemeChromiumMac::setSizeFromFont(LayoutStyle& style, const IntSize* 
         style.setHeight(Length(size.height(), Fixed));
 }
 
-void LayoutThemeChromiumMac::setFontFromControlSize(LayoutStyle& style, NSControlSize controlSize) const
+void LayoutThemeMac::setFontFromControlSize(LayoutStyle& style, NSControlSize controlSize) const
 {
     FontDescription fontDescription;
     fontDescription.setIsAbsoluteSize(true);
@@ -672,7 +672,7 @@ void LayoutThemeChromiumMac::setFontFromControlSize(LayoutStyle& style, NSContro
         style.font().update(nullptr);
 }
 
-NSControlSize LayoutThemeChromiumMac::controlSizeForSystemFont(const LayoutStyle& style) const
+NSControlSize LayoutThemeMac::controlSizeForSystemFont(const LayoutStyle& style) const
 {
     float fontSize = style.fontSize();
     float zoomLevel = style.effectiveZoom();
@@ -685,7 +685,7 @@ NSControlSize LayoutThemeChromiumMac::controlSizeForSystemFont(const LayoutStyle
     return NSMiniControlSize;
 }
 
-bool LayoutThemeChromiumMac::paintTextField(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintTextField(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
@@ -717,7 +717,7 @@ bool LayoutThemeChromiumMac::paintTextField(LayoutObject* o, const PaintInfo& pa
     return false;
 }
 
-bool LayoutThemeChromiumMac::paintCapsLockIndicator(LayoutObject*, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintCapsLockIndicator(LayoutObject*, const PaintInfo& paintInfo, const IntRect& r)
 {
     // This draws the caps lock indicator as it was done by
     // WKDrawCapsLockIndicator.
@@ -778,14 +778,14 @@ bool LayoutThemeChromiumMac::paintCapsLockIndicator(LayoutObject*, const PaintIn
     return false;
 }
 
-bool LayoutThemeChromiumMac::paintTextArea(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintTextArea(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, r);
     _NSDrawCarbonThemeListBox(r, isEnabled(o) && !isReadOnlyControl(o), YES, YES);
     return false;
 }
 
-const int* LayoutThemeChromiumMac::popupButtonMargins() const
+const int* LayoutThemeMac::popupButtonMargins() const
 {
     static const int margins[3][4] =
     {
@@ -796,13 +796,13 @@ const int* LayoutThemeChromiumMac::popupButtonMargins() const
     return margins[[popupButton() controlSize]];
 }
 
-const IntSize* LayoutThemeChromiumMac::popupButtonSizes() const
+const IntSize* LayoutThemeMac::popupButtonSizes() const
 {
     static const IntSize sizes[3] = { IntSize(0, 21), IntSize(0, 18), IntSize(0, 15) };
     return sizes;
 }
 
-const int* LayoutThemeChromiumMac::popupButtonPadding(NSControlSize size) const
+const int* LayoutThemeMac::popupButtonPadding(NSControlSize size) const
 {
     static const int padding[3][4] =
     {
@@ -813,7 +813,7 @@ const int* LayoutThemeChromiumMac::popupButtonPadding(NSControlSize size) const
     return padding[size];
 }
 
-bool LayoutThemeChromiumMac::paintMenuList(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintMenuList(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     setPopupButtonCellState(o, r);
 
@@ -855,7 +855,7 @@ bool LayoutThemeChromiumMac::paintMenuList(LayoutObject* o, const PaintInfo& pai
     return false;
 }
 
-IntSize LayoutThemeChromiumMac::meterSizeForBounds(const RenderMeter* renderMeter, const IntRect& bounds) const
+IntSize LayoutThemeMac::meterSizeForBounds(const RenderMeter* renderMeter, const IntRect& bounds) const
 {
     if (NoControlPart == renderMeter->style()->appearance())
         return bounds.size();
@@ -867,7 +867,7 @@ IntSize LayoutThemeChromiumMac::meterSizeForBounds(const RenderMeter* renderMete
                    bounds.height() < cellSize.height ? cellSize.height : bounds.height());
 }
 
-bool LayoutThemeChromiumMac::paintMeter(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMeter(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
 {
     if (!layoutObject->isMeter())
         return true;
@@ -882,7 +882,7 @@ bool LayoutThemeChromiumMac::paintMeter(LayoutObject* layoutObject, const PaintI
     return false;
 }
 
-bool LayoutThemeChromiumMac::supportsMeter(ControlPart part) const
+bool LayoutThemeMac::supportsMeter(ControlPart part) const
 {
     switch (part) {
     case RelevancyLevelIndicatorPart:
@@ -896,7 +896,7 @@ bool LayoutThemeChromiumMac::supportsMeter(ControlPart part) const
     }
 }
 
-NSLevelIndicatorStyle LayoutThemeChromiumMac::levelIndicatorStyleFor(ControlPart part) const
+NSLevelIndicatorStyle LayoutThemeMac::levelIndicatorStyleFor(ControlPart part) const
 {
     switch (part) {
     case RelevancyLevelIndicatorPart:
@@ -912,7 +912,7 @@ NSLevelIndicatorStyle LayoutThemeChromiumMac::levelIndicatorStyleFor(ControlPart
     }
 }
 
-NSLevelIndicatorCell* LayoutThemeChromiumMac::levelIndicatorFor(const RenderMeter* renderMeter) const
+NSLevelIndicatorCell* LayoutThemeMac::levelIndicatorFor(const RenderMeter* renderMeter) const
 {
     const LayoutStyle& style = renderMeter->styleRef();
     ASSERT(style.appearance() != NoControlPart);
@@ -955,13 +955,13 @@ NSLevelIndicatorCell* LayoutThemeChromiumMac::levelIndicatorFor(const RenderMete
     return cell;
 }
 
-const IntSize* LayoutThemeChromiumMac::progressBarSizes() const
+const IntSize* LayoutThemeMac::progressBarSizes() const
 {
     static const IntSize sizes[3] = { IntSize(0, 20), IntSize(0, 12), IntSize(0, 12) };
     return sizes;
 }
 
-const int* LayoutThemeChromiumMac::progressBarMargins(NSControlSize controlSize) const
+const int* LayoutThemeMac::progressBarMargins(NSControlSize controlSize) const
 {
     static const int margins[3][4] =
     {
@@ -972,22 +972,22 @@ const int* LayoutThemeChromiumMac::progressBarMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-int LayoutThemeChromiumMac::minimumProgressBarHeight(const LayoutStyle& style) const
+int LayoutThemeMac::minimumProgressBarHeight(const LayoutStyle& style) const
 {
     return sizeForSystemFont(style, progressBarSizes()).height();
 }
 
-double LayoutThemeChromiumMac::animationRepeatIntervalForProgressBar(RenderProgress*) const
+double LayoutThemeMac::animationRepeatIntervalForProgressBar(RenderProgress*) const
 {
     return progressAnimationFrameRate;
 }
 
-double LayoutThemeChromiumMac::animationDurationForProgressBar(RenderProgress*) const
+double LayoutThemeMac::animationDurationForProgressBar(RenderProgress*) const
 {
     return progressAnimationNumFrames * progressAnimationFrameRate;
 }
 
-bool LayoutThemeChromiumMac::paintProgressBar(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintProgressBar(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
 {
     if (!layoutObject->isProgress())
         return true;
@@ -1053,7 +1053,7 @@ const int styledPopupPaddingLeft = 8;
 const int styledPopupPaddingTop = 1;
 const int styledPopupPaddingBottom = 2;
 
-bool LayoutThemeChromiumMac::paintMenuListButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintMenuListButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     IntRect bounds = IntRect(r.x() + o->style()->borderLeftWidth(),
                              r.y() + o->style()->borderTopWidth(),
@@ -1097,7 +1097,7 @@ static const IntSize* menuListButtonSizes()
     return sizes;
 }
 
-void LayoutThemeChromiumMac::adjustMenuListStyle(LayoutStyle& style, Element* e) const
+void LayoutThemeMac::adjustMenuListStyle(LayoutStyle& style, Element* e) const
 {
     NSControlSize controlSize = controlSizeForFont(style);
 
@@ -1133,7 +1133,7 @@ const int autofillPopupHorizontalPadding = 4;
 // TexfieldPart appearance here. We want to change only Autofill padding.  In
 // the future, we have to separate Autofill popup window logic from WebKit to
 // Chromium.
-int LayoutThemeChromiumMac::popupInternalPaddingLeft(const LayoutStyle& style) const
+int LayoutThemeMac::popupInternalPaddingLeft(const LayoutStyle& style) const
 {
     if (style.appearance() == TextFieldPart)
         return autofillPopupHorizontalPadding;
@@ -1145,7 +1145,7 @@ int LayoutThemeChromiumMac::popupInternalPaddingLeft(const LayoutStyle& style) c
     return 0;
 }
 
-int LayoutThemeChromiumMac::popupInternalPaddingRight(const LayoutStyle& style) const
+int LayoutThemeMac::popupInternalPaddingRight(const LayoutStyle& style) const
 {
     if (style.appearance() == TextFieldPart)
         return autofillPopupHorizontalPadding;
@@ -1160,7 +1160,7 @@ int LayoutThemeChromiumMac::popupInternalPaddingRight(const LayoutStyle& style) 
     return 0;
 }
 
-int LayoutThemeChromiumMac::popupInternalPaddingTop(const LayoutStyle& style) const
+int LayoutThemeMac::popupInternalPaddingTop(const LayoutStyle& style) const
 {
     if (style.appearance() == MenulistPart)
         return popupButtonPadding(controlSizeForFont(style))[ThemeMac::TopMargin] * style.effectiveZoom();
@@ -1169,7 +1169,7 @@ int LayoutThemeChromiumMac::popupInternalPaddingTop(const LayoutStyle& style) co
     return 0;
 }
 
-int LayoutThemeChromiumMac::popupInternalPaddingBottom(const LayoutStyle& style) const
+int LayoutThemeMac::popupInternalPaddingBottom(const LayoutStyle& style) const
 {
     if (style.appearance() == MenulistPart)
         return popupButtonPadding(controlSizeForFont(style))[ThemeMac::BottomMargin] * style.effectiveZoom();
@@ -1178,7 +1178,7 @@ int LayoutThemeChromiumMac::popupInternalPaddingBottom(const LayoutStyle& style)
     return 0;
 }
 
-void LayoutThemeChromiumMac::adjustMenuListButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeMac::adjustMenuListButtonStyle(LayoutStyle& style, Element*) const
 {
     float fontScale = style.fontSize() / baseFontSize;
 
@@ -1191,7 +1191,7 @@ void LayoutThemeChromiumMac::adjustMenuListButtonStyle(LayoutStyle& style, Eleme
     style.setLineHeight(LayoutStyle::initialLineHeight());
 }
 
-void LayoutThemeChromiumMac::setPopupButtonCellState(const LayoutObject* o, const IntRect& r)
+void LayoutThemeMac::setPopupButtonCellState(const LayoutObject* o, const IntRect& r)
 {
     NSPopUpButtonCell* popupButton = this->popupButton();
 
@@ -1208,13 +1208,13 @@ void LayoutThemeChromiumMac::setPopupButtonCellState(const LayoutObject* o, cons
 #endif
 }
 
-const IntSize* LayoutThemeChromiumMac::menuListSizes() const
+const IntSize* LayoutThemeMac::menuListSizes() const
 {
     static const IntSize sizes[3] = { IntSize(9, 0), IntSize(5, 0), IntSize(0, 0) };
     return sizes;
 }
 
-int LayoutThemeChromiumMac::minimumMenuListSize(const LayoutStyle& style) const
+int LayoutThemeMac::minimumMenuListSize(const LayoutStyle& style) const
 {
     return sizeForSystemFont(style, menuListSizes()).width();
 }
@@ -1222,7 +1222,7 @@ int LayoutThemeChromiumMac::minimumMenuListSize(const LayoutStyle& style) const
 const int sliderTrackWidth = 5;
 const int sliderTrackBorderWidth = 1;
 
-bool LayoutThemeChromiumMac::paintSliderTrack(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintSliderTrack(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     paintSliderTicks(o, paintInfo, r);
 
@@ -1302,7 +1302,7 @@ const int sliderThumbWidth = 15;
 const int sliderThumbHeight = 15;
 const int sliderThumbBorderWidth = 1;
 
-bool LayoutThemeChromiumMac::paintSliderThumb(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintSliderThumb(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
     float zoomLevel = o->style()->effectiveZoom();
@@ -1377,7 +1377,7 @@ bool LayoutThemeChromiumMac::paintSliderThumb(LayoutObject* o, const PaintInfo& 
     return false;
 }
 
-bool LayoutThemeChromiumMac::paintSearchField(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintSearchField(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
@@ -1411,7 +1411,7 @@ bool LayoutThemeChromiumMac::paintSearchField(LayoutObject* o, const PaintInfo& 
     return false;
 }
 
-void LayoutThemeChromiumMac::setSearchCellState(LayoutObject* o, const IntRect&)
+void LayoutThemeMac::setSearchCellState(LayoutObject* o, const IntRect&)
 {
     NSSearchFieldCell* search = this->search();
 
@@ -1421,7 +1421,7 @@ void LayoutThemeChromiumMac::setSearchCellState(LayoutObject* o, const IntRect&)
     updateFocusedState(search, o);
 }
 
-const IntSize* LayoutThemeChromiumMac::searchFieldSizes() const
+const IntSize* LayoutThemeMac::searchFieldSizes() const
 {
     static const IntSize sizes[3] = { IntSize(0, 22), IntSize(0, 19), IntSize(0, 15) };
     return sizes;
@@ -1433,7 +1433,7 @@ static const int* searchFieldHorizontalPaddings()
     return sizes;
 }
 
-void LayoutThemeChromiumMac::setSearchFieldSize(LayoutStyle& style) const
+void LayoutThemeMac::setSearchFieldSize(LayoutStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
@@ -1444,7 +1444,7 @@ void LayoutThemeChromiumMac::setSearchFieldSize(LayoutStyle& style) const
 }
 
 const int searchFieldBorderWidth = 2;
-void LayoutThemeChromiumMac::adjustSearchFieldStyle(LayoutStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldStyle(LayoutStyle& style, Element*) const
 {
     // Override border.
     style.resetBorder();
@@ -1477,7 +1477,7 @@ void LayoutThemeChromiumMac::adjustSearchFieldStyle(LayoutStyle& style, Element*
     style.setBoxShadow(nullptr);
 }
 
-bool LayoutThemeChromiumMac::paintSearchFieldCancelButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintSearchFieldCancelButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     if (!o->node())
         return false;
@@ -1534,13 +1534,13 @@ bool LayoutThemeChromiumMac::paintSearchFieldCancelButton(LayoutObject* o, const
     return false;
 }
 
-const IntSize* LayoutThemeChromiumMac::cancelButtonSizes() const
+const IntSize* LayoutThemeMac::cancelButtonSizes() const
 {
     static const IntSize sizes[3] = { IntSize(14, 14), IntSize(11, 11), IntSize(9, 9) };
     return sizes;
 }
 
-void LayoutThemeChromiumMac::adjustSearchFieldCancelButtonStyle(LayoutStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldCancelButtonStyle(LayoutStyle& style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, cancelButtonSizes());
     style.setWidth(Length(size.width(), Fixed));
@@ -1548,13 +1548,13 @@ void LayoutThemeChromiumMac::adjustSearchFieldCancelButtonStyle(LayoutStyle& sty
     style.setBoxShadow(nullptr);
 }
 
-const IntSize* LayoutThemeChromiumMac::resultsButtonSizes() const
+const IntSize* LayoutThemeMac::resultsButtonSizes() const
 {
     static const IntSize sizes[3] = { IntSize(15, 14), IntSize(16, 13), IntSize(14, 11) };
     return sizes;
 }
 
-void LayoutThemeChromiumMac::adjustSearchFieldDecorationStyle(LayoutStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldDecorationStyle(LayoutStyle& style, Element*) const
 {
     NSControlSize controlSize = controlSizeForSystemFont(style);
     IntSize searchFieldSize = searchFieldSizes()[controlSize];
@@ -1564,12 +1564,12 @@ void LayoutThemeChromiumMac::adjustSearchFieldDecorationStyle(LayoutStyle& style
     style.setBoxShadow(nullptr);
 }
 
-bool LayoutThemeChromiumMac::paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&)
+bool LayoutThemeMac::paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&)
 {
     return false;
 }
 
-void LayoutThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(LayoutStyle& style, Element*) const
+void LayoutThemeMac::adjustSearchFieldResultsDecorationStyle(LayoutStyle& style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, resultsButtonSizes());
     style.setWidth(Length(size.width(), Fixed));
@@ -1577,7 +1577,7 @@ void LayoutThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(LayoutStyle
     style.setBoxShadow(nullptr);
 }
 
-bool LayoutThemeChromiumMac::paintSearchFieldResultsDecoration(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
+bool LayoutThemeMac::paintSearchFieldResultsDecoration(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     if (!o->node())
         return false;
@@ -1614,17 +1614,17 @@ bool LayoutThemeChromiumMac::paintSearchFieldResultsDecoration(LayoutObject* o, 
     return false;
 }
 
-IntSize LayoutThemeChromiumMac::sliderTickSize() const
+IntSize LayoutThemeMac::sliderTickSize() const
 {
     return IntSize(1, 3);
 }
 
-int LayoutThemeChromiumMac::sliderTickOffsetFromTrackCenter() const
+int LayoutThemeMac::sliderTickOffsetFromTrackCenter() const
 {
     return -9;
 }
 
-void LayoutThemeChromiumMac::adjustSliderThumbSize(LayoutStyle& style, Element*) const
+void LayoutThemeMac::adjustSliderThumbSize(LayoutStyle& style, Element*) const
 {
     float zoomLevel = style.effectiveZoom();
     if (style.appearance() == SliderThumbHorizontalPart || style.appearance() == SliderThumbVerticalPart) {
@@ -1635,7 +1635,7 @@ void LayoutThemeChromiumMac::adjustSliderThumbSize(LayoutStyle& style, Element*)
     adjustMediaSliderThumbSize(style);
 }
 
-NSPopUpButtonCell* LayoutThemeChromiumMac::popupButton() const
+NSPopUpButtonCell* LayoutThemeMac::popupButton() const
 {
     if (!m_popupButton) {
         m_popupButton.adoptNS([[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
@@ -1646,7 +1646,7 @@ NSPopUpButtonCell* LayoutThemeChromiumMac::popupButton() const
     return m_popupButton.get();
 }
 
-NSSearchFieldCell* LayoutThemeChromiumMac::search() const
+NSSearchFieldCell* LayoutThemeMac::search() const
 {
     if (!m_search) {
         m_search.adoptNS([[NSSearchFieldCell alloc] initTextCell:@""]);
@@ -1669,7 +1669,7 @@ NSSearchFieldCell* LayoutThemeChromiumMac::search() const
     return m_search.get();
 }
 
-NSTextFieldCell* LayoutThemeChromiumMac::textField() const
+NSTextFieldCell* LayoutThemeMac::textField() const
 {
     if (!m_textField) {
         m_textField.adoptNS([[WebCoreTextFieldCell alloc] initTextCell:@""]);
@@ -1690,7 +1690,7 @@ NSTextFieldCell* LayoutThemeChromiumMac::textField() const
     return m_textField.get();
 }
 
-String LayoutThemeChromiumMac::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const
+String LayoutThemeMac::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const
 {
     if (width <= 0)
         return String();
@@ -1720,21 +1720,21 @@ NSView* FlippedView()
 
 LayoutTheme& LayoutTheme::theme()
 {
-    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeChromiumMac::create()));
+    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeMac::create()));
     return *layoutTheme;
 }
 
-PassRefPtr<LayoutTheme> LayoutThemeChromiumMac::create()
+PassRefPtr<LayoutTheme> LayoutThemeMac::create()
 {
-    return adoptRef(new LayoutThemeChromiumMac);
+    return adoptRef(new LayoutThemeMac);
 }
 
-bool LayoutThemeChromiumMac::usesTestModeFocusRingColor() const
+bool LayoutThemeMac::usesTestModeFocusRingColor() const
 {
     return LayoutTestSupport::isRunningLayoutTest();
 }
 
-NSView* LayoutThemeChromiumMac::documentViewFor(LayoutObject*) const
+NSView* LayoutThemeMac::documentViewFor(LayoutObject*) const
 {
     return FlippedView();
 }
@@ -1748,7 +1748,7 @@ NSView* LayoutThemeChromiumMac::documentViewFor(LayoutObject*) const
 // code is called.
 // This function should be called before drawing any NSCell-derived controls,
 // unless you're sure it isn't needed.
-void LayoutThemeChromiumMac::updateActiveState(NSCell* cell, const LayoutObject* o)
+void LayoutThemeMac::updateActiveState(NSCell* cell, const LayoutObject* o)
 {
     NSControlTint oldTint = [cell controlTint];
     NSControlTint tint = isActive(o) ? [NSColor currentControlTint] :
@@ -1758,43 +1758,43 @@ void LayoutThemeChromiumMac::updateActiveState(NSCell* cell, const LayoutObject*
         [cell setControlTint:tint];
 }
 
-bool LayoutThemeChromiumMac::shouldShowPlaceholderWhenFocused() const
+bool LayoutThemeMac::shouldShowPlaceholderWhenFocused() const
 {
     return true;
 }
 
-void LayoutThemeChromiumMac::adjustMediaSliderThumbSize(LayoutStyle& style) const
+void LayoutThemeMac::adjustMediaSliderThumbSize(LayoutStyle& style) const
 {
     LayoutMediaControls::adjustMediaSliderThumbSize(style);
 }
 
-bool LayoutThemeChromiumMac::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
 }
 
-String LayoutThemeChromiumMac::extraFullScreenStyleSheet()
+String LayoutThemeMac::extraFullScreenStyleSheet()
 {
     // FIXME: Chromium may wish to style its default media controls differently in fullscreen.
     return String();
 }
 
-String LayoutThemeChromiumMac::extraDefaultStyleSheet()
+String LayoutThemeMac::extraDefaultStyleSheet()
 {
     return LayoutTheme::extraDefaultStyleSheet() +
         loadResourceAsASCIIString("themeChromium.css") +
@@ -1802,47 +1802,47 @@ String LayoutThemeChromiumMac::extraDefaultStyleSheet()
         loadResourceAsASCIIString("themeMac.css");
 }
 
-bool LayoutThemeChromiumMac::paintMediaVolumeSliderContainer(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaVolumeSliderContainer(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return true;
 }
 
-bool LayoutThemeChromiumMac::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
 }
 
-String LayoutThemeChromiumMac::formatMediaControlsTime(float time) const
+String LayoutThemeMac::formatMediaControlsTime(float time) const
 {
     return LayoutMediaControls::formatMediaControlsTime(time);
 }
 
-String LayoutThemeChromiumMac::formatMediaControlsCurrentTime(float currentTime, float duration) const
+String LayoutThemeMac::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
     return LayoutMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
-bool LayoutThemeChromiumMac::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool LayoutThemeMac::paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return LayoutMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
 
-bool LayoutThemeChromiumMac::shouldUseFallbackTheme(const LayoutStyle& style) const
+bool LayoutThemeMac::shouldUseFallbackTheme(const LayoutStyle& style) const
 {
     ControlPart part = style.appearance();
     if (part == CheckboxPart || part == RadioPart)
