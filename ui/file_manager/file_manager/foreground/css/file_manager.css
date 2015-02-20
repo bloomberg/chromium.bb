@@ -674,7 +674,7 @@ body.selecting #search-box {
   background: transparent;
   border: 0;
   border-image: none;
-  border-radius: 3px;
+  border-radius: 2px;
   box-sizing: border-box;
   cursor: pointer;
   margin: 0 0.29em;
@@ -752,6 +752,13 @@ body.selecting #search-box {
 
 .dialog-footer select:hover {
   border-image: none;
+}
+
+/* Draw outline using box-shadow to make them rounded. */
+.dialog-footer .primary:focus,
+.dialog-footer .secondary:focus,
+.dialog-footer select:focus {
+  box-shadow: 0 0 0 2px rgba(27, 168, 243, 0.5);
 }
 
 .progressable:not([progress]) .progress-bar,
