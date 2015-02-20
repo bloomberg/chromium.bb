@@ -213,11 +213,6 @@ div.splitter {
   color: rgb(27, 168, 243);
 }
 
-/* Make Drive volume's expand-icon invisible */
-#directory-tree > .tree-item.drive-volume > .tree-row > .expand-icon {
-  visibility: hidden;
-}
-
 #directory-tree .tree-row > .root-eject {
   background: -webkit-image-set(
       url(../images/files/ui/eject.png) 1x,

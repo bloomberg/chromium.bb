@@ -576,10 +576,13 @@ DriveVolumeItem.prototype = {
         cr.ui.TreeItem.prototype, 'expanded').get.call(this);
   },
   set expanded(b) {
-    if (!b)
-      return;
     Object.getOwnPropertyDescriptor(
         cr.ui.TreeItem.prototype, 'expanded').set.call(this, b);
+    // When Google Drive is expanded while it is selected, select the My Drive.
+    if (b) {
+      if (this.selected && this.entry)
+        this.selectByEntry(this.entry);
+    }
   }
 };
 
