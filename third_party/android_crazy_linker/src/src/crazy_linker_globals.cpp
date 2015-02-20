@@ -20,7 +20,10 @@ void CreateGlobalsInstance() { g_globals = new Globals(); }
 }  // namespace
 
 Globals::Globals() : search_paths_(), rdebug_() {
-  pthread_mutex_init(&lock_, NULL);
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+  pthread_mutex_init(&lock_, &attr);
   search_paths_.ResetFromEnv("LD_LIBRARY_PATH");
 }
 

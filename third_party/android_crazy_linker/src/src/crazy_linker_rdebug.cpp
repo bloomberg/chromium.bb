@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "crazy_linker_debug.h"
+#include "crazy_linker_globals.h"
 #include "crazy_linker_proc_maps.h"
 #include "crazy_linker_util.h"
 #include "crazy_linker_system.h"
@@ -155,11 +156,13 @@ bool FindElfDynamicSection(const char* path,
 
 // Helper class to temporarily remap a page to readable+writable until
 // scope exit.
-class ScopedPageMapper {
+class ScopedPageReadWriteRemapper {
  public:
-  ScopedPageMapper() : page_address_(0), page_prot_(0) {}
-  void MapReadWrite(void* address);
-  ~ScopedPageMapper();
+  ScopedPageReadWriteRemapper(void* address);
+  ~ScopedPageReadWriteRemapper();
+
+  // Releases the page so that the destructor does not undo the remapping.
+  void Release();
 
  private:
   static const uintptr_t kPageSize = 4096;
@@ -167,16 +170,20 @@ class ScopedPageMapper {
   int page_prot_;
 };
 
-void ScopedPageMapper::MapReadWrite(void* address) {
+ScopedPageReadWriteRemapper::ScopedPageReadWriteRemapper(void* address) {
   page_address_ = reinterpret_cast<uintptr_t>(address) & ~(kPageSize - 1);
   page_prot_ = 0;
-  if (!FindProtectionFlagsForAddress(address, &page_prot_) ||
-      (page_prot_ & (PROT_READ | PROT_WRITE)) == (PROT_READ | PROT_WRITE)) {
-    // If the address is invalid, or if the page is already read+write,
-    // no need to do anything here.
+  if (!FindProtectionFlagsForAddress(address, &page_prot_)) {
+    LOG("Could not find protection flags for %p\n", address);
     page_address_ = 0;
     return;
   }
+
+  // Note: page_prot_ may already indicate read/write, but because of
+  // possible races with the system linker we cannot be confident that
+  // this is reliable. So we always set read/write here.
+  //
+  // See commentary in WriteLinkMapField for more.
   int new_page_prot = page_prot_ | PROT_READ | PROT_WRITE;
   int ret = mprotect(
       reinterpret_cast<void*>(page_address_), kPageSize, new_page_prot);
@@ -186,13 +193,18 @@ void ScopedPageMapper::MapReadWrite(void* address) {
   }
 }
 
-ScopedPageMapper::~ScopedPageMapper() {
+ScopedPageReadWriteRemapper::~ScopedPageReadWriteRemapper() {
   if (page_address_) {
     int ret =
         mprotect(reinterpret_cast<void*>(page_address_), kPageSize, page_prot_);
     if (ret < 0)
       LOG_ERRNO("Could not remap page to old protection flags");
   }
+}
+
+void ScopedPageReadWriteRemapper::Release() {
+  page_address_ = 0;
+  page_prot_ = 0;
 }
 
 }  // namespace
@@ -382,7 +394,38 @@ bool RDebug::PostCallback(rdebug_callback_handler_t handler,
   return true;
 }
 
+// Helper function for AddEntryImpl and DelEntryImpl.
+// Sets *link_pointer to entry.  link_pointer is either an 'l_prev' or an
+// 'l_next' field in a neighbouring linkmap_t.  If link_pointer is in a
+// page that is mapped readonly, the page is remapped to be writable before
+// assignment.
+void RDebug::WriteLinkMapField(link_map_t** link_pointer, link_map_t* entry) {
+  ScopedPageReadWriteRemapper mapper(link_pointer);
+  LOG("%s: Remapped page for %p for read/write\n", __FUNCTION__, link_pointer);
+
+  *link_pointer = entry;
+
+  // We always mprotect the page containing link_pointer to read/write,
+  // then write the entry. The page may already be read/write, but on
+  // recent Android release is most likely readonly. Because of the way
+  // the system linker operates we cannot tell with certainty what its
+  // correct setting should be.
+  //
+  // Now, we always leave the page read/write. Here is why. If we set it
+  // back to readonly at the point between where the system linker sets
+  // it to read/write and where it writes to the address, this will cause
+  // the system linker to crash. Clearly that is undesirable. From
+  // observations this occurs most frequently on the gpu process.
+  //
+  // TODO(simonb): Revisit this, details in:
+  // https://code.google.com/p/chromium/issues/detail?id=450659
+  // https://code.google.com/p/chromium/issues/detail?id=458346
+  mapper.Release();
+  LOG("%s: Released mapper, leaving page read/write\n", __FUNCTION__);
+}
+
 void RDebug::AddEntryImpl(link_map_t* entry) {
+  ScopedGlobalLock lock;
   LOG("%s: Adding: %s\n", __FUNCTION__, entry->l_name);
   if (!init_)
     Init();
@@ -433,19 +476,8 @@ void RDebug::AddEntryImpl(link_map_t* entry) {
   // list, ensure that they are writable. This avoids crashing when
   // updating the 'l_prev' or 'l_next' fields of a system linker entry,
   // which are mapped read-only.
-  {
-    ScopedPageMapper mapper;
-    if (readonly_entries_)
-      mapper.MapReadWrite(before);
-    before->l_next = entry;
-  }
-
-  {
-    ScopedPageMapper mapper;
-    if (readonly_entries_)
-      mapper.MapReadWrite(after);
-    after->l_prev = entry;
-  }
+  WriteLinkMapField(&before->l_next, entry);
+  WriteLinkMapField(&after->l_prev, entry);
 
   // Tell GDB that the list modification has completed.
   r_debug_->r_state = RT_CONSISTENT;
@@ -453,6 +485,7 @@ void RDebug::AddEntryImpl(link_map_t* entry) {
 }
 
 void RDebug::DelEntryImpl(link_map_t* entry) {
+  ScopedGlobalLock lock;
   LOG("%s: Deleting: %s\n", __FUNCTION__, entry->l_name);
   if (!r_debug_)
     return;
@@ -464,19 +497,10 @@ void RDebug::DelEntryImpl(link_map_t* entry) {
   // IMPORTANT: Before modifying the previous and next entries in the
   // list, ensure that they are writable. See comment above for more
   // details.
-  if (entry->l_prev) {
-    ScopedPageMapper mapper;
-    if (readonly_entries_)
-      mapper.MapReadWrite(entry->l_prev);
-    entry->l_prev->l_next = entry->l_next;
-  }
-
-  if (entry->l_next) {
-    ScopedPageMapper mapper;
-    if (readonly_entries_)
-      mapper.MapReadWrite(entry->l_next);
-    entry->l_next->l_prev = entry->l_prev;
-  }
+  if (entry->l_prev)
+    WriteLinkMapField(&entry->l_prev->l_next, entry->l_next);
+  if (entry->l_next)
+    WriteLinkMapField(&entry->l_next->l_prev, entry->l_prev);
 
   if (r_debug_->r_map == entry)
     r_debug_->r_map = entry->l_next;
