@@ -53,7 +53,7 @@
           "tryserver.chromium.linux": {
               "android_chromium_gn_compile_dbg": ["defaulttests"],
               "android_chromium_gn_compile_rel": ["defaulttests"],
-              "android_compile_dbg": ["defaulttests"],
+              "android_compile_rel": ["defaulttests"],
               "chromium_presubmit": ["defaulttests"],
               "linux_chromium_asan_rel": ["defaulttests"],
               "linux_chromium_chromeos_compile_dbg_ng": ["defaulttests"],
