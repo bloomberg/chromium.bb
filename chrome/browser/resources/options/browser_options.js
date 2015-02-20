@@ -437,13 +437,13 @@ cr.define('options', function() {
       // 'metricsReportingEnabled' element is only present on Chrome branded
       // builds, and the 'metricsReportingCheckboxAction' message is only
       // handled on ChromeOS.
-      if ($('metricsReportingEnabled') && cr.isChromeOS) {
-        $('metricsReportingEnabled').onclick = function(event) {
+      if ($('metrics-reporting-enabled') && cr.isChromeOS) {
+        $('metrics-reporting-enabled').onclick = function(event) {
           chrome.send('metricsReportingCheckboxAction',
               [String(event.currentTarget.checked)]);
         };
       }
-      if ($('metricsReportingEnabled') && !cr.isChromeOS) {
+      if ($('metrics-reporting-enabled') && !cr.isChromeOS) {
         // The localized string has the | symbol on each side of the text that
         // needs to be made into a button to restart Chrome. We parse the text
         // and build the button from that.
@@ -464,20 +464,21 @@ cr.define('options', function() {
         var updateMetricsRestartButton = function() {
           $('metrics-reporting-reset-restart').hidden =
               loadTimeData.getBoolean('metricsReportingEnabledAtStart') ==
-                  $('metricsReportingEnabled').checked;
+                  $('metrics-reporting-enabled').checked;
         };
-        $('metricsReportingEnabled').onclick = function(event) {
+        $('metrics-reporting-enabled').onclick = function(event) {
           chrome.send('metricsReportingCheckboxChanged',
               [Boolean(event.currentTarget.checked)]);
           updateMetricsRestartButton();
         };
-        $('metricsReportingEnabled').checked =
+        $('metrics-reporting-enabled').checked =
             loadTimeData.getBoolean('metricsReportingEnabledAtStart');
         updateMetricsRestartButton();
       }
-      // 'rapporDiv' element is only present on Chrome branded builds.
-      if ($('rapporDiv')) {
-        $('rapporDiv').hidden = !loadTimeData.getBoolean('hasRapporOption');
+      // 'rappor-setting' element is only present on Chrome branded builds.
+      if ($('rappor-setting')) {
+        $('rappor-setting').hidden =
+            !loadTimeData.getBoolean('hasRapporOption');
       }
       $('networkPredictionOptions').onchange = function(event) {
         var value = (event.target.checked ?
@@ -1713,8 +1714,8 @@ cr.define('options', function() {
      * @private
      */
     setMetricsReportingCheckboxState_: function(checked, disabled) {
-      $('metricsReportingEnabled').checked = checked;
-      $('metricsReportingEnabled').disabled = disabled;
+      $('metrics-reporting-enabled').checked = checked;
+      $('metrics-reporting-enabled').disabled = disabled;
 
       // If checkbox gets disabled then add an attribute for displaying the
       // special icon. Otherwise remove the indicator attribute.
@@ -1731,9 +1732,9 @@ cr.define('options', function() {
      */
     setMetricsReportingSettingVisibility_: function(visible) {
       if (visible)
-        $('metricsReportingSetting').style.display = 'block';
+        $('metrics-reporting-setting').style.display = 'block';
       else
-        $('metricsReportingSetting').style.display = 'none';
+        $('metrics-reporting-setting').style.display = 'none';
     },
 
     /**

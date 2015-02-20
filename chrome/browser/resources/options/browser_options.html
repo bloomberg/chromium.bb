@@ -431,11 +431,11 @@
             </span>
         </label>
       </div>
-      <div id="metricsReportingSetting"
+      <div id="metrics-reporting-setting"
           class="checkbox controlled-setting-with-label">
 <if expr="chromeos">
         <label>
-          <input id="metricsReportingEnabled"
+          <input id="metrics-reporting-enabled"
               pref="cros.metrics.reportingEnabled" type="checkbox">
           <span>
             <span i18n-content="enableLogging"></span>
@@ -446,7 +446,7 @@
 </if>
 <if expr="not chromeos">
         <label>
-          <input id="metricsReportingEnabled" type="checkbox">
+          <input id="metrics-reporting-enabled" type="checkbox">
           <span>
             <span i18n-content="enableLogging"></span>
             <span id="metrics-reporting-disabled-icon"
@@ -460,7 +460,7 @@
         </span>
 </if>
       </div>
-      <div id="rapporDiv" class="checkbox controlled-setting-with-label">
+      <div id="rappor-setting" class="checkbox controlled-setting-with-label">
         <label>
           <input pref="rappor.enabled" type="checkbox"
               metric="Options_RapporEnabledCheckbox">
