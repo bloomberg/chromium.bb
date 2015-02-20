@@ -48,7 +48,8 @@ To just build a single package:
       cros_build_lib.Debug('Skipping chroot update due to --nodeps')
     self.build_pkgs = None
     self.host = self.options.host
-    self.board = self.options.board or self.curr_project_name
+    self.board = (self.options.board or self.curr_project_name or
+                  cros_build_lib.GetDefaultBoard())
     self.project = project.FindProjectByName(self.board)
 
   @classmethod
