@@ -204,10 +204,6 @@ function isSymbol(obj)
  */
 var InjectedScript = function()
 {
-    /** @type {!Object.<number, string>} */
-    this._idToObjectGroupName = { __proto__: null };
-    /** @type {!Object.<string, !Array.<number>>} */
-    this._objectGroups = { __proto__: null };
     /** @type {!Object.<string, !Object>} */
     this._modules = { __proto__: null };
 }
@@ -341,18 +337,8 @@ InjectedScript.prototype = {
      */
     _bind: function(object, objectGroupName)
     {
-        var id = InjectedScriptHost.bind(object);
-        var objectId = "{\"injectedScriptId\":" + injectedScriptId + ",\"id\":" + id + "}";
-        if (objectGroupName) {
-            var group = this._objectGroups[objectGroupName];
-            if (!group) {
-                group = [];
-                this._objectGroups[objectGroupName] = group;
-            }
-            push(group, id);
-            this._idToObjectGroupName[id] = objectGroupName;
-        }
-        return objectId;
+        var id = InjectedScriptHost.bind(object, objectGroupName || "");
+        return "{\"injectedScriptId\":" + injectedScriptId + ",\"id\":" + id + "}";
     },
 
     /**
@@ -371,12 +357,7 @@ InjectedScript.prototype = {
     {
         if (objectGroupName === "console")
             delete this._lastResult;
-        var group = this._objectGroups[objectGroupName];
-        if (!group)
-            return;
-        for (var i = 0; i < group.length; i++)
-            this._releaseObject(group[i]);
-        delete this._objectGroups[objectGroupName];
+        InjectedScriptHost.releaseObjectGroup(objectGroupName);
     },
 
     /**
@@ -415,7 +396,7 @@ InjectedScript.prototype = {
     {
         var parsedObjectId = this._parseObjectId(objectId);
         var object = this._objectForId(parsedObjectId);
-        var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
+        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
 
         if (!this._isDefined(object) || isSymbol(object))
             return false;
@@ -450,7 +431,7 @@ InjectedScript.prototype = {
     {
         var parsedObjectId = this._parseObjectId(objectId);
         var object = this._objectForId(parsedObjectId);
-        var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
+        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
         if (!this._isDefined(object) || isSymbol(object))
             return false;
         object = /** @type {!Object} */ (object);
@@ -482,7 +463,7 @@ InjectedScript.prototype = {
             return "Cannot resolve function by id.";
         var details = nullifyObjectProto(/** @type {!DebuggerAgent.FunctionDetails} */ (InjectedScriptHost.functionDetails(func)));
         if ("rawScopes" in details) {
-            var objectGroupName = this._idToObjectGroupName[parsedFunctionId.id];
+            var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedFunctionId.id);
             var rawScopes = details["rawScopes"];
             delete details["rawScopes"];
             var scopes = [];
@@ -506,7 +487,7 @@ InjectedScript.prototype = {
         var details = nullifyObjectProto(/** @type {?DebuggerAgent.GeneratorObjectDetails} */ (InjectedScriptHost.generatorObjectDetails(object)));
         if (!details)
             return "Object is not a generator";
-        var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
+        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
         details["function"] = this._wrapObject(details["function"], objectGroupName);
         return details;
     },
@@ -524,7 +505,7 @@ InjectedScript.prototype = {
         var entries = InjectedScriptHost.collectionEntries(object);
         if (!entries)
             return "Object with given id is not a collection";
-        var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
+        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
         for (var i = 0; i < entries.length; ++i) {
             var entry = nullifyObjectProto(entries[i]);
             if ("key" in entry)
@@ -541,16 +522,7 @@ InjectedScript.prototype = {
     releaseObject: function(objectId)
     {
         var parsedObjectId = this._parseObjectId(objectId);
-        this._releaseObject(parsedObjectId.id);
-    },
-
-    /**
-     * @param {number} id
-     */
-    _releaseObject: function(id)
-    {
-        InjectedScriptHost.unbind(id);
-        delete this._idToObjectGroupName[id];
+        InjectedScriptHost.unbind(parsedObjectId.id);
     },
 
     /**
@@ -713,7 +685,7 @@ InjectedScript.prototype = {
             }
         }
 
-        var objectGroup = this._idToObjectGroupName[parsedObjectId.id];
+        var objectGroup = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
 
         /**
          * @suppressReceiverCheck

@@ -553,12 +553,15 @@ void V8InjectedScriptHost::setNonEnumPropertyMethodCustom(const v8::FunctionCall
 
 void V8InjectedScriptHost::bindMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
+    if (info.Length() < 2 || !info[1]->IsString())
         return;
     InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
     if (!injectedScriptNative)
         return;
-    int id = injectedScriptNative->bind(info[0]);
+
+    v8::Handle<v8::String> v8groupName = info[1]->ToString(info.GetIsolate());
+    String groupName = toCoreStringWithUndefinedOrNullCheck(v8groupName);
+    int id = injectedScriptNative->bind(info[0], groupName);
     info.GetReturnValue().Set(id);
 }
 
@@ -584,6 +587,31 @@ void V8InjectedScriptHost::objectForIdMethodCustom(const v8::FunctionCallbackInf
     v8::Local<v8::Value> value = injectedScriptNative->objectForId(id);
     if (!value.IsEmpty())
         info.GetReturnValue().Set(value);
+}
+
+void V8InjectedScriptHost::idToObjectGroupNameMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1 || !info[0]->IsInt32())
+        return;
+    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
+    if (!injectedScriptNative)
+        return;
+    int id = info[0]->ToInt32(info.GetIsolate())->Value();
+    String groupName = injectedScriptNative->groupName(id);
+    if (!groupName.isEmpty())
+        info.GetReturnValue().Set(v8String(info.GetIsolate(), groupName));
+}
+
+void V8InjectedScriptHost::releaseObjectGroupMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1 || !info[0]->IsString())
+        return;
+    InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
+    if (!injectedScriptNative)
+        return;
+    v8::Handle<v8::String> v8groupName = info[0]->ToString(info.GetIsolate());
+    String groupName = toCoreStringWithUndefinedOrNullCheck(v8groupName);
+    injectedScriptNative->releaseObjectGroup(groupName);
 }
 
 } // namespace blink

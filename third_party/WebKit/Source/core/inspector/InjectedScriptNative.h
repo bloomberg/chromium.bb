@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/V8PersistentValueMap.h"
 #include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
@@ -20,15 +21,23 @@ public:
     void setOnInjectedScriptHost(v8::Handle<v8::Object>);
     static InjectedScriptNative* fromInjectedScriptHost(v8::Handle<v8::Object>);
 
-    int bind(v8::Local<v8::Value>);
+    int bind(v8::Local<v8::Value>, const String& groupName);
     void unbind(int id);
     v8::Local<v8::Value> objectForId(int id);
 
+    void releaseObjectGroup(const String& groupName);
+    String groupName(int objectId) const;
+
 private:
+    void addObjectToGroup(int objectId, const String& groupName);
 
     int m_lastBoundObjectId;
     v8::Isolate* m_isolate;
     V8PersistentValueMap<int, v8::Value, false> m_idToWrappedObject;
+    typedef HashMap<int, String> IdToObjectGroupName;
+    IdToObjectGroupName m_idToObjectGroupName;
+    typedef HashMap<String, Vector<int>> NameToObjectGroup;
+    NameToObjectGroup m_nameToObjectGroup;
 };
 
 } // namespace blink
