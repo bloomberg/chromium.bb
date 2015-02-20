@@ -250,8 +250,8 @@ typedef NTSTATUS (WINAPI *NtQuerySectionFunction)(
   IN HANDLE SectionHandle,
   IN SECTION_INFORMATION_CLASS SectionInformationClass,
   OUT PVOID SectionInformation,
-  IN ULONG SectionInformationLength,
-  OUT PULONG ReturnLength OPTIONAL);
+  IN SIZE_T SectionInformationLength,
+  OUT PSIZE_T ReturnLength OPTIONAL);
 
 // -----------------------------------------------------------------------
 // Process and Thread
@@ -450,8 +450,8 @@ typedef NTSTATUS (WINAPI *NtQueryVirtualMemoryFunction)(
   IN PVOID BaseAddress,
   IN MEMORY_INFORMATION_CLASS MemoryInformationClass,
   OUT PVOID MemoryInformation,
-  IN SIZE_T MemoryInformationLength,
-  OUT PSIZE_T ReturnLength OPTIONAL);
+  IN ULONG MemoryInformationLength,
+  OUT PULONG ReturnLength OPTIONAL);
 
 typedef NTSTATUS (WINAPI *NtProtectVirtualMemoryFunction)(
   IN HANDLE ProcessHandle,

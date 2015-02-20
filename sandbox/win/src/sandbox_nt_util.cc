@@ -385,7 +385,7 @@ bool IsValidImageSection(HANDLE section, PVOID *base, PLARGE_INTEGER offset,
     return false;
 
   SECTION_BASIC_INFORMATION basic_info;
-  ULONG bytes_returned;
+  SIZE_T bytes_returned;
   ret = g_nt.QuerySection(query_section, SectionBasicInformation, &basic_info,
                           sizeof(basic_info), &bytes_returned);
 
@@ -469,7 +469,7 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags) {
 
 UNICODE_STRING* GetBackingFilePath(PVOID address) {
   // We'll start with something close to max_path charactes for the name.
-  SIZE_T buffer_bytes = MAX_PATH * 2;
+  ULONG buffer_bytes = MAX_PATH * 2;
 
   for (;;) {
     MEMORY_SECTION_NAME* section_name = reinterpret_cast<MEMORY_SECTION_NAME*>(
@@ -478,7 +478,7 @@ UNICODE_STRING* GetBackingFilePath(PVOID address) {
     if (!section_name)
       return NULL;
 
-    SIZE_T returned_bytes;
+    ULONG returned_bytes;
     NTSTATUS ret = g_nt.QueryVirtualMemory(NtCurrentProcess, address,
                                            MemorySectionName, section_name,
                                            buffer_bytes, &returned_bytes);
