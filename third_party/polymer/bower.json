@@ -51,6 +51,8 @@
     "paper-button": "Polymer/paper-button#0.5.2",
     "paper-checkbox": "Polymer/paper-checkbox#0.5.4",
     "paper-dialog": "Polymer/paper-dialog#0.5.2",
+    "paper-dropdown": "Polymer/paper-dropdown#0.5.2",
+    "paper-dropdown-menu": "Polymer/paper-dropdown-menu#0.5.2",
     "paper-fab": "Polymer/paper-fab#0.5.2",
     "paper-icon-button": "Polymer/paper-icon-button#0.5.2",
     "paper-input": "Polymer/paper-input#0.5.2",
