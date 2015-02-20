@@ -44,6 +44,11 @@ void ManagePasswordsUIControllerMock::UpdateBubbleAndIconVisibility() {
   OnBubbleShown();
 }
 
+void ManagePasswordsUIControllerMock::
+    UpdateAndroidAccountChooserInfoBarVisibility() {
+  OnBubbleShown();
+}
+
 base::TimeDelta ManagePasswordsUIControllerMock::Elapsed() const {
   return elapsed_;
 }

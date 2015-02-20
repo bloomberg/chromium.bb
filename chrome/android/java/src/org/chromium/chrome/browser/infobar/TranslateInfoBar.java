@@ -120,8 +120,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
                 String translated = context.getString(
                         R.string.translate_infobar_translation_done, mOptions.targetLanguage());
                 if (needsAlwaysPanel()) {
-                    String moreOptions = context.getString(
-                            R.string.translate_infobar_translation_more_options);
+                    String moreOptions = context.getString(R.string.more);
                     return formatAfterTranslateInfoBarMessage(translated, moreOptions,
                             ALWAYS_PANEL);
                 } else {

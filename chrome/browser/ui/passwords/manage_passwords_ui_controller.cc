@@ -25,6 +25,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/password_manager/account_chooser_infobar_delegate_android.h"
 #endif
 
 using autofill::PasswordFormMap;
@@ -95,6 +97,15 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 #endif
 }
 
+void ManagePasswordsUIController::
+    UpdateAndroidAccountChooserInfoBarVisibility() {
+#if defined(OS_ANDROID)
+  AccountChooserInfoBarDelegateAndroid::Create(
+      InfoBarService::FromWebContents(web_contents()), this);
+  should_pop_up_bubble_ = false;
+#endif
+}
+
 base::TimeDelta ManagePasswordsUIController::Elapsed() const {
   return timer_ ? timer_->Elapsed() : base::TimeDelta::Max();
 }
@@ -128,7 +139,11 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   origin_ = origin;
   SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+#if defined(OS_ANDROID)
+  UpdateAndroidAccountChooserInfoBarVisibility();
+#else
   UpdateBubbleAndIconVisibility();
+#endif
   if (!should_pop_up_bubble_) {
     credentials_callback_ = callback;
     return true;

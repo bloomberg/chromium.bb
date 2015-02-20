@@ -1110,6 +1110,8 @@
     'chrome_browser_ui_android_sources': [
       'browser/ui/android/autofill/credit_card_scanner_view_android.cc',
       'browser/ui/android/autofill/credit_card_scanner_view_android.h',
+      'browser/ui/android/infobars/account_chooser_infobar.cc',
+      'browser/ui/android/infobars/account_chooser_infobar.h',
       'browser/ui/android/infobars/generated_password_saved_infobar.cc',
       'browser/ui/android/infobars/generated_password_saved_infobar.h',
       'browser/ui/auto_login_infobar_delegate.cc',

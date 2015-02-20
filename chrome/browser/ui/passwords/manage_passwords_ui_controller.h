@@ -182,6 +182,10 @@ class ManagePasswordsUIController
   void SaveForms(ScopedVector<autofill::PasswordForm> local_forms,
                  ScopedVector<autofill::PasswordForm> federated_forms);
 
+  // Shows infobar which allows user to choose credentials. Placing this
+  // code to separate method allows mocking.
+  virtual void UpdateAndroidAccountChooserInfoBarVisibility();
+
   // The current state of the password manager UI.
   password_manager::ui::State state_;
 

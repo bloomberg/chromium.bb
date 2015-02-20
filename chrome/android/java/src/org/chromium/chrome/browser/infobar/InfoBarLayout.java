@@ -624,6 +624,9 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
                 measureChildWithFixedWidth(view1, view1.getMeasuredWidth() + extraWidth1);
             }
         }
+        if (row == ROW_OTHER && mCustomGroup.views.length == 1) {
+            mCustomGroup.gravity = Gravity.FILL_HORIZONTAL;
+        }
     }
 
     /**

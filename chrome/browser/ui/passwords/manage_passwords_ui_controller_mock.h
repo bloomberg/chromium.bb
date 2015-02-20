@@ -53,6 +53,8 @@ class ManagePasswordsUIControllerMock
 
   void UpdateBubbleAndIconVisibility() override;
 
+  void UpdateAndroidAccountChooserInfoBarVisibility() override;
+
   base::TimeDelta Elapsed() const override;
 
   // Sneaky setters for testing.

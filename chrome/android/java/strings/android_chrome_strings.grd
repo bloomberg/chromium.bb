@@ -115,6 +115,9 @@
       <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
         Learn more
       </message>
+      <message name="IDS_MORE" desc="Generic label for a button to show more items or options. [CHAR-LIMIT=20]">
+        More
+      </message>
       <message name="IDS_CLOSE" desc="Content description for a button to close a dialog or popup" >
         Close
       </message>
@@ -865,6 +868,11 @@ You are signing in with a managed account and giving its administrator control o
         Close
       </message>
 
+      <!-- Account chooser infobar strings. -->
+      <message name="IDS_ACCOUNT_CHOOSER_INFOBAR_TITLE" desc="The title text for Account chooser infobar.">
+        Choose an account from your Google Smart Lock.
+      </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_TEXT" desc="Text to display on the translate infobar to offer a translate. [CHAR-LIMIT=64]" meaning="Android">
         This page is in <ph name="SOURCE_LANGUAGE">^1<ex>English</ex></ph>. Translate it to <ph name="TARGET_LANGUAGE">^2<ex>FRENCH</ex></ph>?
@@ -874,9 +882,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_TRANSLATION_DONE">
         Translated to <ph name="TARGET_LANGUAGE">%1$s<ex>FRENCH</ex></ph>.
-      </message>
-      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATION_MORE_OPTIONS" desc="Text link that will provide more options after a translate [CHAR-LIMIT=24]">
-        More
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING">
         Translating page to <ph name="SOURCE_LANGUAGE">%1$s<ex>English</ex></ph>...
