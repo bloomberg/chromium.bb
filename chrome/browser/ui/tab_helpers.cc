@@ -12,6 +12,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
+#include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #else
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
-#include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
@@ -138,9 +138,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   BookmarkTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
+  chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
+  ChromeContentSettingsClient::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
+  ChromeTranslateClient::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   FaviconTabHelper::CreateForWebContents(web_contents);
   FindTabHelper::CreateForWebContents(web_contents);
@@ -155,8 +158,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);
-  ChromeContentSettingsClient::CreateForWebContents(web_contents);
-  ChromeTranslateClient::CreateForWebContents(web_contents);
 
   // --- Platform-specific tab helpers ---
 
@@ -166,7 +167,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   WindowAndroidHelper::CreateForWebContents(web_contents);
 #else
-  chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
