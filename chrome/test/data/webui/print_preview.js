@@ -113,7 +113,7 @@ PrintPreviewWebUITest.prototype = {
    */
   setLocalDestinations: function() {
     var localDestsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+        new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
     localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
     this.nativeLayer_.dispatchEvent(localDestsSetEvent);
   },
@@ -125,7 +125,7 @@ PrintPreviewWebUITest.prototype = {
    */
   setCapabilities: function(device) {
     var capsSetEvent =
-      new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+        new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
     capsSetEvent.settingsInfo = device;
     this.nativeLayer_.dispatchEvent(capsSetEvent);
   },
@@ -337,6 +337,16 @@ function getCddTemplate(printerId) {
     }
   };
 }
+
+TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreLocalDestination',
+    function() {
+  this.initialSettings_.serializedAppStateStr_ =
+      '{"version":2,"selectedDestinationId":"ID",' +
+      '"selectedDestinationOrigin":"local"}';
+  this.setInitialSettings();
+
+  testDone();
+});
 
 TEST_F('PrintPreviewWebUITest', 'TestSystemDialogLinkIsHiddenInAppKioskMode',
     function() {
