@@ -200,7 +200,10 @@ template("msvc_toolchain") {
     # When invoking this toolchain not as the default one, these args will be
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
-      cpu_arch = invoker.cpu_arch
+      current_cpu = invoker.current_cpu
+
+      # TODO(dpranke): cpu_arch is here for backwards compatibility.
+      cpu_arch = current_cpu
     }
   }
 }
@@ -212,13 +215,15 @@ template("msvc_toolchain") {
 if (cpu_arch == "x86") {
   msvc_toolchain("32") {
     environment = "environment.x86"
-    cpu_arch = "x86"
+
+    current_cpu = "x86"
   }
 }
 
 if (cpu_arch == "x64") {
   msvc_toolchain("64") {
     environment = "environment.x64"
-    cpu_arch = "x64"
+
+    current_cpu = "x64"
   }
 }

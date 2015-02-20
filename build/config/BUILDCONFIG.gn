@@ -16,7 +16,47 @@
 # KEEP IN ALPHABETICAL ORDER and write a good description for everything.
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
+
+# TODO(dpranke): The os and cpu_arch variables exist for backwards
+# compatibility and should be deleted once all of the build files and
+# bots have been updated to use current_cpu/target_cpu and
+# current_os/target_os instead.
+
+if (target_os == "") {
+  if (defined(os)) {
+    # If os is defined, it was set in an args file and needs to be
+    # used for backwards-compatibility.
+    target_os = os
+  } else {
+    target_os = host_os
+  }
+}
+
+if (target_cpu == "") {
+  if (defined(cpu_arch)) {
+    # If cpu_arch is defined, it was set in an args file and needs to be
+    # used for backwards-compatibility.
+    target_cpu = cpu_arch
+  } else {
+    target_cpu = host_cpu
+  }
+}
+
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+if (current_os == "") {
+  current_os = target_os
+}
+
 declare_args() {
+  # TODO(dpranke): These values are here for backwards compatibility and
+  # should be deleted when all of the builders and configs have been updated.
+  cpu_arch = target_cpu
+  os = target_os
+  build_cpu_arch = host_cpu
+  build_os = host_os
+
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
   #   2 means regular build with symbols.
@@ -82,6 +122,10 @@ declare_args() {
   # enable linking for local compiles.
   link_chrome_on_windows = true
 }
+
+# TODO(dpranke): Remove these asserts when os and cpu_arch are removed.
+assert(current_cpu == cpu_arch)
+assert(current_os == os)
 
 # =============================================================================
 # OS DEFINITIONS

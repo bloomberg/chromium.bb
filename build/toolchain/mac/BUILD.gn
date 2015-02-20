@@ -194,7 +194,10 @@ template("mac_clang_toolchain") {
     }
 
     toolchain_args() {
-      os = invoker.toolchain_os
+      current_os = invoker.toolchain_os
+
+      # TODO(dpranke): os is here for backwards compatibility.
+      os = current_os
     }
   }
 }

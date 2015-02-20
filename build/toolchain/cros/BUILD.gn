@@ -29,7 +29,7 @@ gcc_toolchain("target") {
   ar = "${cros_target_ar}"
   ld = cxx
 
-  toolchain_cpu_arch = "${cpu_arch}"
+  toolchain_cpu = "${target_cpu}"
   toolchain_os = "linux"
   is_clang = is_clang
 }

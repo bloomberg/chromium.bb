@@ -51,7 +51,7 @@ template("android_gcc_toolchain") {
     ld = cxx
 
     toolchain_os = "android"
-    toolchain_cpu_arch = invoker.toolchain_cpu_arch
+    toolchain_cpu = invoker.toolchain_cpu
 
     # We make the assumption that the gcc_toolchain will produce a soname with
     # the following definition.
@@ -85,7 +85,7 @@ android_gcc_toolchain("x86") {
   android_ndk_lib_dir = "usr/lib"
 
   tool_prefix = "$x86_android_toolchain_root/bin/i686-linux-android-"
-  toolchain_cpu_arch = "x86"
+  toolchain_cpu = "x86"
 }
 
 android_gcc_toolchain("arm") {
@@ -93,7 +93,7 @@ android_gcc_toolchain("arm") {
   android_ndk_lib_dir = "usr/lib"
 
   tool_prefix = "$arm_android_toolchain_root/bin/arm-linux-androideabi-"
-  toolchain_cpu_arch = "arm"
+  toolchain_cpu = "arm"
 }
 
 android_gcc_toolchain("mipsel") {
@@ -101,7 +101,7 @@ android_gcc_toolchain("mipsel") {
   android_ndk_lib_dir = "usr/lib"
 
   tool_prefix = "$mips_android_toolchain_root/bin/mipsel-linux-android-"
-  toolchain_cpu_arch = "mipsel"
+  toolchain_cpu = "mipsel"
 }
 
 android_gcc_toolchain("x64") {
@@ -109,7 +109,7 @@ android_gcc_toolchain("x64") {
   android_ndk_lib_dir = "usr/lib64"
 
   tool_prefix = "$x86_64_android_toolchain_root/bin/x86_64-linux-android-"
-  toolchain_cpu_arch = "x86_64"
+  toolchain_cpu = "x86_64"
 }
 
 android_gcc_toolchain("arm64") {
@@ -117,7 +117,7 @@ android_gcc_toolchain("arm64") {
   android_ndk_lib_dir = "usr/lib"
 
   tool_prefix = "$arm64_android_toolchain_root/bin/arm-linux-androideabi-"
-  toolchain_cpu_arch = "aarch64"
+  toolchain_cpu = "aarch64"
 }
 
 android_gcc_toolchain("mips64el") {
@@ -125,5 +125,5 @@ android_gcc_toolchain("mips64el") {
   android_ndk_lib_dir = "usr/lib64"
 
   tool_prefix = "$mips64_android_toolchain_root/bin/mipsel-linux-android-"
-  toolchain_cpu_arch = "mipsel64el"
+  toolchain_cpu = "mipsel64el"
 }
