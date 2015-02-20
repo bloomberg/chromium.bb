@@ -14,10 +14,7 @@ class CookieOptions {
   // Default is to exclude httponly, which means:
   // - reading operations will not return httponly cookies.
   // - writing operations will not write httponly cookies.
-  CookieOptions()
-      : exclude_httponly_(true),
-        server_time_() {
-  }
+  CookieOptions() : exclude_httponly_(true), server_time_() {}
 
   void set_exclude_httponly() { exclude_httponly_ = true; }
   void set_include_httponly() { exclude_httponly_ = false; }
@@ -39,4 +36,3 @@ class CookieOptions {
 }  // namespace net
 
 #endif  // NET_COOKIES_COOKIE_OPTIONS_H_
-

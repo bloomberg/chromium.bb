@@ -171,7 +171,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback);
 
-
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
   // The returned cookies are ordered by longest path, then by earliest
@@ -195,8 +194,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // regardless of path.  This includes all http_only and secure cookies,
   // but does not include any domain cookies that may apply to this host.
   // Returns the number of cookies deleted.
-  void DeleteAllForHostAsync(const GURL& url,
-                             const DeleteCallback& callback);
+  void DeleteAllForHostAsync(const GURL& url, const DeleteCallback& callback);
 
   // Deletes one specific cookie.
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
@@ -325,7 +323,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
  private:
   // For queueing the cookie monster calls.
   class CookieMonsterTask;
-  template <typename Result> class DeleteTask;
+  template <typename Result>
+  class DeleteTask;
   class DeleteAllCreatedBetweenTask;
   class DeleteAllCreatedBetweenForHostTask;
   class DeleteAllForHostTask;
@@ -495,9 +494,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // (eTLD+1). Called when all cookies for the domain key(eTLD+1) have been
   // loaded from DB. See PersistentCookieStore::Load for details on the contents
   // of cookies.
-  void OnKeyLoaded(
-    const std::string& key,
-    const std::vector<CanonicalCookie*>& cookies);
+  void OnKeyLoaded(const std::string& key,
+                   const std::vector<CanonicalCookie*>& cookies);
 
   // Stores the loaded cookies.
   void StoreLoadedCookies(const std::vector<CanonicalCookie*>& cookies);
@@ -568,7 +566,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // the correct CookieMonsterDelegate::ChangeCause for OnCookieChanged
   // notifications.  Guarantee: All iterators to cookies_ except to the
   // deleted entry remain vaild.
-  void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
+  void InternalDeleteCookie(CookieMap::iterator it,
+                            bool sync_to_store,
                             DeletionCause deletion_cause);
 
   // If the number of cookies for CookieMap key |key|, or globally, are
@@ -618,7 +617,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Runs the task if, or defers the task until, the cookies for the given URL
   // are loaded.
   void DoCookieTaskForURL(const scoped_refptr<CookieMonsterTask>& task_item,
-    const GURL& url);
+                          const GURL& url);
 
   // Run all cookie changed callbacks that are monitoring |cookie|.
   // |removed| is true if the cookie was deleted.
@@ -654,12 +653,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Map of domain keys to their associated task queues. These tasks are blocked
   // until all cookies for the associated domain key eTLD+1 are loaded from the
   // backend store.
-  std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
+  std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask>>>
       tasks_pending_for_key_;
 
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
-  std::queue<scoped_refptr<CookieMonsterTask> > tasks_pending_;
+  std::queue<scoped_refptr<CookieMonsterTask>> tasks_pending_;
 
   scoped_refptr<PersistentCookieStore> store_;
 

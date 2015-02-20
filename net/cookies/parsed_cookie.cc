@@ -73,7 +73,8 @@ inline bool CharIsA(const char c, const char* chars) {
 inline bool SeekTo(std::string::const_iterator* it,
                    const std::string::const_iterator& end,
                    const char* chars) {
-  for (; *it != end && !CharIsA(**it, chars); ++(*it)) {}
+  for (; *it != end && !CharIsA(**it, chars); ++(*it)) {
+  }
   return *it == end;
 }
 // Seek the iterator to the first occurrence of a character not in |chars|.
@@ -81,13 +82,15 @@ inline bool SeekTo(std::string::const_iterator* it,
 inline bool SeekPast(std::string::const_iterator* it,
                      const std::string::const_iterator& end,
                      const char* chars) {
-  for (; *it != end && CharIsA(**it, chars); ++(*it)) {}
+  for (; *it != end && CharIsA(**it, chars); ++(*it)) {
+  }
   return *it == end;
 }
 inline bool SeekBackPast(std::string::const_iterator* it,
                          const std::string::const_iterator& end,
                          const char* chars) {
-  for (; *it != end && CharIsA(**it, chars); --(*it)) {}
+  for (; *it != end && CharIsA(**it, chars); --(*it)) {
+  }
   return *it == end;
 }
 
@@ -120,15 +123,13 @@ bool IsValidToken(const std::string& value) {
 bool IsValidCookieValue(const std::string& value) {
   // Number of characters to skip in validation at beginning and end of string.
   size_t skip = 0;
-  if (value.size() >= 2 && *value.begin() == '"' && *(value.end()-1) == '"')
+  if (value.size() >= 2 && *value.begin() == '"' && *(value.end() - 1) == '"')
     skip = 1;
   for (std::string::const_iterator i = value.begin() + skip;
        i != value.end() - skip; ++i) {
     bool valid_octet =
-        (*i == 0x21 ||
-         (*i >= 0x23 && *i <= 0x2B) ||
-         (*i >= 0x2D && *i <= 0x3A) ||
-         (*i >= 0x3C && *i <= 0x5B) ||
+        (*i == 0x21 || (*i >= 0x23 && *i <= 0x2B) ||
+         (*i >= 0x2D && *i <= 0x3A) || (*i >= 0x3C && *i <= 0x5B) ||
          (*i >= 0x5D && *i <= 0x7E));
     if (!valid_octet)
       return false;
@@ -162,7 +163,6 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line)
       secure_index_(0),
       httponly_index_(0),
       priority_index_(0) {
-
   if (cookie_line.size() > kMaxCookieSize) {
     VLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
     return;
@@ -181,8 +181,9 @@ bool ParsedCookie::IsValid() const {
 }
 
 CookiePriority ParsedCookie::Priority() const {
-  return (priority_index_ == 0) ? COOKIE_PRIORITY_DEFAULT :
-      StringToCookiePriority(pairs_[priority_index_].second);
+  return (priority_index_ == 0)
+             ? COOKIE_PRIORITY_DEFAULT
+             : StringToCookiePriority(pairs_[priority_index_].second);
 }
 
 bool ParsedCookie::SetName(const std::string& name) {
@@ -233,8 +234,7 @@ bool ParsedCookie::SetPriority(const std::string& priority) {
 
 std::string ParsedCookie::ToCookieLine() const {
   std::string out;
-  for (PairList::const_iterator it = pairs_.begin();
-       it != pairs_.end(); ++it) {
+  for (PairList::const_iterator it = pairs_.begin(); it != pairs_.end(); ++it) {
     if (!out.empty())
       out.append("; ");
     out.append(it->first);
@@ -249,8 +249,7 @@ std::string ParsedCookie::ToCookieLine() const {
 std::string::const_iterator ParsedCookie::FindFirstTerminator(
     const std::string& s) {
   std::string::const_iterator end = s.end();
-  size_t term_pos =
-      s.find_first_of(std::string(kTerminator, kTerminatorLen));
+  size_t term_pos = s.find_first_of(std::string(kTerminator, kTerminatorLen));
   if (term_pos != std::string::npos) {
     // We found a character we should treat as an end of string.
     end = s.begin() + term_pos;
@@ -281,7 +280,7 @@ bool ParsedCookie::ParseToken(std::string::const_iterator* it,
   // token_end should point after the last interesting token character,
   // pointing at either whitespace, or at '=' (and equal to token_real_end).
   if (*it != *token_start) {  // We could have an empty token name.
-    --(*it);  // Go back before the token separator.
+    --(*it);                  // Go back before the token separator.
     // Skip over any whitespace to the first non-whitespace character.
     SeekBackPast(it, *token_start, kWhitespace);
     // Point after it.
@@ -449,9 +448,7 @@ bool ParsedCookie::SetString(size_t* index,
   }
 }
 
-bool ParsedCookie::SetBool(size_t* index,
-                           const std::string& key,
-                           bool value) {
+bool ParsedCookie::SetBool(size_t* index, const std::string& key, bool value) {
   if (!value) {
     ClearAttributePair(*index);
     return true;
@@ -483,9 +480,13 @@ void ParsedCookie::ClearAttributePair(size_t index) {
   if (index == 0)
     return;
 
-  size_t* indexes[] = { &path_index_, &domain_index_, &expires_index_,
-                        &maxage_index_, &secure_index_, &httponly_index_,
-                        &priority_index_ };
+  size_t* indexes[] = {&path_index_,
+                       &domain_index_,
+                       &expires_index_,
+                       &maxage_index_,
+                       &secure_index_,
+                       &httponly_index_,
+                       &priority_index_};
   for (size_t i = 0; i < arraysize(indexes); ++i) {
     if (*indexes[i] == index)
       *indexes[i] = 0;

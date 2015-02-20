@@ -113,9 +113,7 @@ class NET_EXPORT ParsedCookie {
   bool SetString(size_t* index,
                  const std::string& key,
                  const std::string& value);
-  bool SetBool(size_t* index,
-               const std::string& key,
-               bool value);
+  bool SetBool(size_t* index, const std::string& key, bool value);
 
   // Helper function for SetString and SetBool handling the case that the
   // key/value pair shall not be removed.
