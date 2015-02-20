@@ -918,7 +918,6 @@ void ThreadState::preGC()
     flushHeapDoesNotContainCacheIfNeeded();
     if (isMainThread())
         m_allocatedObjectSizeBeforeGC = Heap::allocatedObjectSize() + Heap::markedObjectSize();
-    invokePreMarkingTasks();
 }
 
 void ThreadState::postGC(GCType gcType)
@@ -943,40 +942,9 @@ void ThreadState::postGC(GCType gcType)
     }
 #endif
 
-    invokePostMarkingTasks();
     setGCState(gcType == GCWithSweep ? EagerSweepScheduled : LazySweepScheduled);
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->prepareForSweep();
-}
-
-void ThreadState::invokePreMarkingTasks()
-{
-    ASSERT(isInGC());
-    for (MarkingTask* task : m_markingTasks)
-        task->willStartMarking(*this);
-}
-
-void ThreadState::invokePostMarkingTasks()
-{
-    ASSERT(isInGC());
-    for (size_t i = m_markingTasks.size(); i > 0; --i)
-        m_markingTasks[i - 1]->didFinishMarking(*this);
-}
-
-void ThreadState::addMarkingTask(MarkingTask* task)
-{
-    ASSERT(!isInGC());
-    checkThread();
-    m_markingTasks.append(task);
-}
-
-void ThreadState::removeMarkingTask(MarkingTask* task)
-{
-    ASSERT(!isInGC());
-    checkThread();
-    size_t position = m_markingTasks.find(task);
-    ASSERT(position != kNotFound);
-    m_markingTasks.remove(position);
 }
 
 void ThreadState::prepareHeapForTermination()
@@ -1133,19 +1101,6 @@ void ThreadState::postGCProcessing()
             }
         }
 
-        if (!m_zombies.isEmpty()) {
-            TRACE_EVENT0("blink_gc", "Heap::visitObjects");
-            // The following marking should not run in multiple threads because
-            // it uses global resources such as s_markingStack.
-            SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
-            GCState originalState = gcState();
-            setGCState(GCRunning);
-            invokePreMarkingTasks();
-            Heap::visitObjects(this, m_zombies);
-            invokePostMarkingTasks();
-            setGCState(originalState);
-        }
-
         if (isMainThread())
             ScriptForbiddenScope::exit();
     }
@@ -1227,19 +1182,6 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_preFinalizers.removeAll(deadObjects);
-}
-
-void ThreadState::markAsZombie(void* object)
-{
-    ASSERT(!isInGC());
-    checkThread();
-    ASSERT(!m_zombies.contains(object));
-    m_zombies.add(object);
-}
-
-void ThreadState::purifyZombies()
-{
-    m_zombies.clear();
 }
 
 #if ENABLE(GC_PROFILING)

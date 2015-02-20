@@ -105,11 +105,6 @@ void AudioNode::dispose()
     context()->disposeOutputs(*this);
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
-
-    if (context()->contextState() != AudioContext::Running)
-        return;
-    ThreadState::current()->markAsZombie(this);
-    context()->setLastZombie(this);
 }
 
 String AudioNode::nodeTypeName() const

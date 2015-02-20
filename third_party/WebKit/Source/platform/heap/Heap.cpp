@@ -1946,8 +1946,7 @@ void Heap::flushHeapDoesNotContainCache()
 
 enum MarkingMode {
     GlobalMarking,
-    ThreadLocalMarking, // This works only if the thread is terminating.
-    ZombieMarking,
+    ThreadLocalMarking,
 };
 
 template <MarkingMode Mode>
@@ -2126,21 +2125,15 @@ protected:
 
     inline bool shouldMarkObject(const void* objectPointer)
     {
-        if (Mode == GlobalMarking)
+        if (Mode != ThreadLocalMarking)
             return true;
 
-        if (Mode == ThreadLocalMarking) {
-            BasePage* page = pageFromObject(objectPointer);
-            ASSERT(!page->orphaned());
-            // When doing a thread local GC, the marker checks if the object
-            // resides in another thread's heap. If it does, the object should
-            // not be marked & traced.
-            return page->terminating();
-        }
-
-        // ZombieMarking case.  Any objects must not be owned by other threads.
-        ASSERT(ThreadState::current()->findPageFromAddress(objectPointer));
-        return true;
+        BasePage* page = pageFromObject(objectPointer);
+        ASSERT(!page->orphaned());
+        // When doing a thread local GC, the marker checks if
+        // the object resides in another thread's heap. If it
+        // does, the object should not be marked & traced.
+        return page->terminating();
     }
 
 #if ENABLE(ASSERT)
@@ -2481,17 +2474,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
 
     if (state->isMainThread())
         ScriptForbiddenScope::exit();
-}
-
-void Heap::visitObjects(ThreadState* state, const HashSet<void*>& objects)
-{
-    MarkingVisitor<ZombieMarking> visitor;
-    ThreadState::NoAllocationScope noAllocationScope(state);
-    for (void* address : objects)
-        checkAndMarkPointer(&visitor, reinterpret_cast<Address>(address));
-    processMarkingStack(&visitor);
-    postMarkingProcessing(&visitor);
-    globalWeakProcessing(&visitor);
 }
 
 void Heap::collectGarbageForTerminatingThread(ThreadState* state)

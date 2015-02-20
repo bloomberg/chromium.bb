@@ -928,7 +928,6 @@ public:
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
 
-    static void visitObjects(ThreadState*, const HashSet<void*>&);
     static void processMarkingStack(Visitor*);
     static void postMarkingProcessing(Visitor*);
     static void globalWeakProcessing(Visitor*);

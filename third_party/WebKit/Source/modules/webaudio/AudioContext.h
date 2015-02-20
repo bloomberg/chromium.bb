@@ -79,10 +79,7 @@ class WaveShaperNode;
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class AudioContext
-    : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>
-    , public ActiveDOMObject
-    , private ThreadState::MarkingTask {
+class AudioContext : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioContext>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
     DEFINE_WRAPPERTYPEINFO();
@@ -106,8 +103,6 @@ public:
 
     bool isInitialized() const { return m_isInitialized; }
     bool isOfflineContext() { return m_isOfflineContext; }
-    AudioContextState contextState() const { return m_contextState; }
-    void setLastZombie(void*);
 
     // Document notification
     virtual void stop() override final;
@@ -295,10 +290,6 @@ private:
     void initialize();
     void uninitialize();
 
-    // ThreadState::MarkingTask functions.
-    void willStartMarking(ThreadState&) override;
-    void didFinishMarking(ThreadState&) override;
-
     // ExecutionContext calls stop twice.
     // We'd like to schedule only one stop action for them.
     bool m_isStopScheduled;
@@ -408,10 +399,6 @@ private:
     bool m_didInitializeContextGraphMutex;
     RecursiveMutex m_contextGraphMutex;
     volatile ThreadIdentifier m_audioThread;
-    // Accessing m_last*Zombie should be protected by
-    // m_didInitializeContextGraphMutex.
-    void* m_lastZombie;
-    void* m_lastRemovableZombie;
 
     // Only accessed in the audio thread.
     // Oilpan: Since items are added to these vectors by the audio thread (not registered to Oilpan),

@@ -5572,18 +5572,4 @@ TEST(HeapTest, StackGrowthDirection)
     EXPECT_EQ(GrowsTowardsLower, stackGrowthDirection());
 }
 
-TEST(HeapTest, Zombie)
-{
-    Bar::s_live = 0;
-    Baz* baz = Baz::create(Bar::create());
-    ThreadState::current()->markAsZombie(baz);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    // |baz| and a Bar shouldn't be collected.
-    EXPECT_EQ(1u, Bar::s_live);
-
-    ThreadState::current()->purifyZombies();
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(0u, Bar::s_live);
-}
-
 } // namespace blink

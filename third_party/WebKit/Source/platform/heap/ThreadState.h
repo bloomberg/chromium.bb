@@ -476,20 +476,6 @@ public:
         m_endOfStack = endOfStack;
     }
 
-    // MarkingTask functions are called before and after marking live objects.
-    // They might be called on threads other than the thread associated to this
-    // ThreadState.
-    class MarkingTask {
-    public:
-        virtual ~MarkingTask() { }
-        virtual void willStartMarking(ThreadState&) { }
-        virtual void didFinishMarking(ThreadState&) { }
-    };
-    // A caller is responsible to call removeMarkingTask before deleting the
-    // specified task.
-    void addMarkingTask(MarkingTask*);
-    void removeMarkingTask(MarkingTask*);
-
     // Get one of the heap structures for this thread.
     //
     // The heap is split into multiple heap parts based on object
@@ -502,7 +488,7 @@ public:
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
     BasePage* findPageFromAddress(Address);
-    BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
+    BasePage* findPageFromAddress(void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(pointer)); }
 #endif
 
     // List of persistent roots allocated on the given thread.
@@ -596,16 +582,6 @@ public:
         unregisterPreFinalizerInternal(&target);
     }
 
-    // Mark an on-heap object as a zombie.  The object won't be swept until
-    // purifyZombies().  It's ok to call markAsZombie() during weak processing.
-    // The specified object must not have references to objects owned by other
-    // threads.
-    // Do not use this function.  This feature is a temporal workaround for
-    // WebAudio, and will be removed soon.
-    void markAsZombie(void*);
-    // Purify all of zombie objects marked before calling purifyZombies().
-    void purifyZombies();
-
     Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
 
     void shouldFlushHeapDoesNotContainCache() { m_shouldFlushHeapDoesNotContainCache = true; }
@@ -657,8 +633,6 @@ private:
 
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers(Visitor&);
-    void invokePreMarkingTasks();
-    void invokePostMarkingTasks();
 
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList();
@@ -696,7 +670,6 @@ private:
 
     Vector<OwnPtr<CleanupTask>> m_cleanupTasks;
     bool m_isTerminating;
-    Vector<MarkingTask*> m_markingTasks;
 
     bool m_shouldFlushHeapDoesNotContainCache;
     double m_collectionRate;
@@ -704,7 +677,7 @@ private:
 
     CallbackStack* m_weakCallbackStack;
     HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
-    HashSet<void*> m_zombies;
+
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);
 

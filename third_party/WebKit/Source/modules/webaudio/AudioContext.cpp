@@ -111,8 +111,6 @@ AudioContext::AudioContext(Document* document)
     , m_connectionCount(0)
     , m_didInitializeContextGraphMutex(false)
     , m_audioThread(0)
-    , m_lastZombie(nullptr)
-    , m_lastRemovableZombie(nullptr)
     , m_isOfflineContext(false)
     , m_contextState(Suspended)
     , m_cachedSampleFrame(0)
@@ -135,8 +133,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_connectionCount(0)
     , m_didInitializeContextGraphMutex(false)
     , m_audioThread(0)
-    , m_lastZombie(nullptr)
-    , m_lastRemovableZombie(nullptr)
     , m_isOfflineContext(true)
     , m_contextState(Suspended)
     , m_cachedSampleFrame(0)
@@ -173,7 +169,6 @@ void AudioContext::initialize()
     if (isInitialized())
         return;
 
-    ThreadState::current()->addMarkingTask(this);
     FFTFrame::initialize();
     m_listener = AudioListener::create();
 
@@ -244,12 +239,6 @@ void AudioContext::uninitialize()
     m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
 
     clear();
-
-    ThreadState::current()->removeMarkingTask(this);
-    if (m_lastZombie)
-        ThreadState::current()->purifyZombies();
-    m_lastZombie = nullptr;
-    m_lastRemovableZombie = nullptr;
 }
 
 void AudioContext::stop()
@@ -996,8 +985,6 @@ void AudioContext::handlePostRenderTasks()
         // Dynamically clean up nodes which are no longer needed.
         derefFinishedSourceNodes();
 
-        m_lastRemovableZombie = m_lastZombie;
-
         // Fixup the state of any dirty AudioSummingJunctions and AudioNodeOutputs.
         handleDirtyAudioSummingJunctions();
         handleDirtyAudioNodeOutputs();
@@ -1294,7 +1281,14 @@ DEFINE_TRACE(AudioContext)
     visitor->trace(m_renderTarget);
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
-    visitor->trace(m_referencedNodes);
+    // trace() can be called in AudioContext constructor, and
+    // m_contextGraphMutex might be unavailable.
+    if (m_didInitializeContextGraphMutex) {
+        AutoLocker lock(this);
+        visitor->trace(m_referencedNodes);
+    } else {
+        visitor->trace(m_referencedNodes);
+    }
     visitor->trace(m_resumeResolvers);
     visitor->trace(m_suspendResolvers);
     visitor->trace(m_liveNodes);
@@ -1369,29 +1363,6 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
     stop();
 
     return promise;
-}
-
-void AudioContext::setLastZombie(void* object)
-{
-    ASSERT(isGraphOwner());
-    m_lastZombie = object;
-}
-
-void AudioContext::willStartMarking(ThreadState& threadState)
-{
-    lock();
-    if (!m_lastRemovableZombie)
-        return;
-    if (m_lastZombie != m_lastRemovableZombie)
-        return;
-    threadState.purifyZombies();
-    m_lastZombie = nullptr;
-    m_lastRemovableZombie = nullptr;
-}
-
-void AudioContext::didFinishMarking(ThreadState&)
-{
-    unlock();
 }
 
 } // namespace blink
