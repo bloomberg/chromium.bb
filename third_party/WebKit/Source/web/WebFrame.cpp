@@ -250,7 +250,8 @@ WebFrame::~WebFrame()
 }
 
 #if ENABLE(OILPAN)
-void WebFrame::traceFrame(Visitor* visitor, WebFrame* frame)
+template <typename VisitorDispatcher>
+ALWAYS_INLINE void WebFrame::traceFrameImpl(VisitorDispatcher visitor, WebFrame* frame)
 {
     if (!frame)
         return;
@@ -261,7 +262,8 @@ void WebFrame::traceFrame(Visitor* visitor, WebFrame* frame)
         visitor->trace(toWebRemoteFrameImpl(frame));
 }
 
-void WebFrame::traceFrames(Visitor* visitor, WebFrame* frame)
+template <typename VisitorDispatcher>
+ALWAYS_INLINE void WebFrame::traceFramesImpl(VisitorDispatcher visitor, WebFrame* frame)
 {
     ASSERT(frame);
     traceFrame(visitor, frame->m_parent);
@@ -271,7 +273,8 @@ void WebFrame::traceFrames(Visitor* visitor, WebFrame* frame)
     frame->m_openedFrameTracker->traceFrames(visitor);
 }
 
-bool WebFrame::isFrameAlive(Visitor* visitor, const WebFrame* frame)
+template <typename VisitorDispatcher>
+ALWAYS_INLINE bool WebFrame::isFrameAliveImpl(VisitorDispatcher visitor, const WebFrame* frame)
 {
     if (!frame)
         return true;
@@ -282,11 +285,23 @@ bool WebFrame::isFrameAlive(Visitor* visitor, const WebFrame* frame)
     return visitor->isAlive(toWebRemoteFrameImpl(frame));
 }
 
-void WebFrame::clearWeakFrames(Visitor* visitor)
+template <typename VisitorDispatcher>
+ALWAYS_INLINE void WebFrame::clearWeakFramesImpl(VisitorDispatcher visitor)
 {
     if (!isFrameAlive(visitor, m_opener))
         m_opener = nullptr;
 }
+
+#define DEFINE_VISITOR_METHOD(VisitorType)                                                                               \
+    void WebFrame::traceFrame(VisitorType visitor, WebFrame* frame) { traceFrameImpl(visitor, frame); }                  \
+    void WebFrame::traceFrames(VisitorType visitor, WebFrame* frame) { traceFramesImpl(visitor, frame); }                \
+    bool WebFrame::isFrameAlive(VisitorType visitor, const WebFrame* frame) { return isFrameAliveImpl(visitor, frame); } \
+    void WebFrame::clearWeakFrames(VisitorType visitor) { clearWeakFramesImpl(visitor); }
+
+DEFINE_VISITOR_METHOD(Visitor*)
+DEFINE_VISITOR_METHOD(InlinedGlobalMarkingVisitor)
+
+#undef DEFINE_VISITOR_METHOD
 #endif
 
 } // namespace blink

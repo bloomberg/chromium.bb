@@ -44,7 +44,8 @@ void OpenedFrameTracker::updateOpener(WebFrame* frame)
         (*it)->m_opener = frame;
 }
 
-void OpenedFrameTracker::traceFrames(Visitor* visitor)
+template <typename VisitorDispatcher>
+ALWAYS_INLINE void OpenedFrameTracker::traceFramesImpl(VisitorDispatcher visitor)
 {
 #if ENABLE(OILPAN)
     HashSet<WebFrame*>::iterator end = m_openedFrames.end();
@@ -52,5 +53,8 @@ void OpenedFrameTracker::traceFrames(Visitor* visitor)
         WebFrame::traceFrame(visitor, *it);
 #endif
 }
+
+void OpenedFrameTracker::traceFrames(Visitor* visitor) { traceFramesImpl(visitor); }
+void OpenedFrameTracker::traceFrames(InlinedGlobalMarkingVisitor visitor) { traceFramesImpl(visitor); }
 
 } // namespace blink

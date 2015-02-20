@@ -670,7 +670,9 @@ public:
     static WebFrame* fromFrame(Frame*);
 #if ENABLE(OILPAN)
     static void traceFrames(Visitor*, WebFrame*);
+    static void traceFrames(InlinedGlobalMarkingVisitor, WebFrame*);
     void clearWeakFrames(Visitor*);
+    void clearWeakFrames(InlinedGlobalMarkingVisitor);
 #endif
 #endif
 
@@ -690,7 +692,18 @@ private:
 #if BLINK_IMPLEMENTATION
 #if ENABLE(OILPAN)
     static void traceFrame(Visitor*, WebFrame*);
+    static void traceFrame(InlinedGlobalMarkingVisitor, WebFrame*);
     static bool isFrameAlive(Visitor*, const WebFrame*);
+    static bool isFrameAlive(InlinedGlobalMarkingVisitor, const WebFrame*);
+
+    template <typename VisitorDispatcher>
+    static void traceFramesImpl(VisitorDispatcher, WebFrame*);
+    template <typename VisitorDispatcher>
+    void clearWeakFramesImpl(VisitorDispatcher);
+    template <typename VisitorDispatcher>
+    static void traceFrameImpl(VisitorDispatcher, WebFrame*);
+    template <typename VisitorDispatcher>
+    static bool isFrameAliveImpl(VisitorDispatcher, const WebFrame*);
 #endif
 #endif
 
