@@ -1510,8 +1510,6 @@
     'compositor_browser_sources': [
       'browser/compositor/browser_compositor_output_surface.cc',
       'browser/compositor/browser_compositor_output_surface.h',
-      'browser/compositor/browser_compositor_output_surface_proxy.cc',
-      'browser/compositor/browser_compositor_output_surface_proxy.h',
       'browser/compositor/browser_compositor_view_mac.h',
       'browser/compositor/browser_compositor_view_mac.mm',
       'browser/compositor/buffer_queue.cc',

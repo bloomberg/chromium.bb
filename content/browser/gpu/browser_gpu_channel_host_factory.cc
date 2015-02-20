@@ -422,29 +422,6 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
     host->AddFilter(filter.get());
 }
 
-void BrowserGpuChannelHostFactory::SetHandlerForControlMessages(
-      const uint32* message_ids,
-      size_t num_messages,
-      const base::Callback<void(const IPC::Message&)>& handler,
-      base::TaskRunner* target_task_runner) {
-  DCHECK(gpu_host_id_)
-      << "Do not call"
-      << " BrowserGpuChannelHostFactory::SetHandlerForControlMessages()"
-      << " until the GpuProcessHost has been set up.";
-
-  scoped_refptr<IPC::ForwardingMessageFilter> filter =
-      new IPC::ForwardingMessageFilter(message_ids,
-                                       num_messages,
-                                       target_task_runner);
-  filter->AddRoute(MSG_ROUTING_CONTROL, handler);
-
-  GetIOLoopProxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserGpuChannelHostFactory::AddFilterOnIO,
-                 gpu_host_id_,
-                 filter));
-}
-
 bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferConfigurationSupported(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {

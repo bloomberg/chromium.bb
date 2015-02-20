@@ -18,7 +18,6 @@
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "content/browser/compositor/browser_compositor_output_surface_proxy.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
@@ -72,9 +71,6 @@ struct GpuProcessTransportFactory::PerCompositorData {
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : next_surface_id_namespace_(1u),
       callback_factory_(this) {
-  output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
-      &output_surface_map_);
-
   if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
 }
@@ -185,18 +181,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
                         !!context_provider.get());
 
-  if (context_provider.get()) {
-    scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
-        GetCompositorMessageLoop();
-    if (!compositor_thread_task_runner.get())
-      compositor_thread_task_runner = base::MessageLoopProxy::current();
-
-    // Here we know the GpuProcessHost has been set up, because we created a
-    // context.
-    output_surface_proxy_->ConnectToGpuProcessHost(
-        compositor_thread_task_runner.get());
-  }
-
   if (UseSurfacesEnabled()) {
     // This gets a bit confusing. Here we have a ContextProvider configured to
     // render directly to this widget. We need to make an OnscreenDisplayClient
@@ -207,7 +191,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (!context_provider.get()) {
       display_surface =
           make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
-              output_surface_proxy_,
               CreateSoftwareOutputDevice(compositor.get()),
               data->surface_id,
               &output_surface_map_,
@@ -245,7 +228,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
     scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
         new SoftwareBrowserCompositorOutputSurface(
-            output_surface_proxy_,
             CreateSoftwareOutputDevice(compositor.get()),
             data->surface_id,
             &output_surface_map_,

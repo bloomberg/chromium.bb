@@ -30,7 +30,10 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
 #endif
       swap_buffers_completion_callback_(
           base::Bind(&GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted,
-                     base::Unretained(this))) {
+                     base::Unretained(this))),
+      update_vsync_parameters_callback_(base::Bind(
+          &BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
+          base::Unretained(this))) {
   overlay_candidate_validator_ = overlay_candidate_validator.Pass();
 }
 
@@ -54,6 +57,8 @@ bool GpuBrowserCompositorOutputSurface::BindToClient(
 
   GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
       swap_buffers_completion_callback_.callback());
+  GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
+      update_vsync_parameters_callback_.callback());
   return true;
 }
 

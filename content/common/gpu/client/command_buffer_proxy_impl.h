@@ -135,10 +135,15 @@ class CommandBufferProxyImpl
       const GpuConsoleMessageCallback& callback);
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  typedef base::Callback<void(const std::vector<ui::LatencyInfo>& latency_info)>
-      SwapBuffersCompletionCallback;
+  using SwapBuffersCompletionCallback =
+      base::Callback<void(const std::vector<ui::LatencyInfo>& latency_info)>;
   void SetSwapBuffersCompletionCallback(
       const SwapBuffersCompletionCallback& callback);
+
+  using UpdateVSyncParametersCallback =
+      base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
+  void SetUpdateVSyncParametersCallback(
+      const UpdateVSyncParametersCallback& callback);
 
   // TODO(apatrick): this is a temporary optimization while skia is calling
   // ContentGLContext::MakeCurrent prior to every GL call. It saves returning 6
@@ -175,6 +180,8 @@ class CommandBufferProxyImpl
   void OnSetMemoryAllocation(const gpu::MemoryAllocation& allocation);
   void OnSignalSyncPointAck(uint32 id);
   void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info);
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
 
   // Try to read an updated copy of the state from shared memory.
   void TryUpdateState();
@@ -219,6 +226,7 @@ class CommandBufferProxyImpl
   std::vector<ui::LatencyInfo> latency_info_;
 
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
+  UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

@@ -123,10 +123,6 @@ class ImageTransportHelper
   // like size and surface id. The helper fills in the rest.
   void SendAcceleratedSurfaceBuffersSwapped(
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
-  void SendUpdateVSyncParameters(
-      base::TimeTicks timebase, base::TimeDelta interval);
-
-  void SwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info);
 
   void SetPreemptByFlag(
       scoped_refptr<gpu::PreemptionFlag> preemption_flag);

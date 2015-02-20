@@ -5,7 +5,6 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "content/browser/compositor/browser_compositor_output_surface_proxy.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
@@ -73,7 +72,6 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
   scoped_ptr<ui::Compositor> compositor_;
 
   IDMap<content::BrowserCompositorOutputSurface> surface_map_;
-  scoped_refptr<content::BrowserCompositorOutputSurfaceProxy> surface_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurfaceTest);
 };
@@ -96,8 +94,6 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
   compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget,
                                        context_factory,
                                        base::MessageLoopProxy::current()));
-  surface_proxy_ =
-      new content::BrowserCompositorOutputSurfaceProxy(&surface_map_);
 }
 
 void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
@@ -115,7 +111,6 @@ SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
     scoped_ptr<cc::SoftwareOutputDevice> device) {
   return scoped_ptr<content::BrowserCompositorOutputSurface>(
       new content::SoftwareBrowserCompositorOutputSurface(
-          surface_proxy_,
           device.Pass(),
           1,
           &surface_map_,

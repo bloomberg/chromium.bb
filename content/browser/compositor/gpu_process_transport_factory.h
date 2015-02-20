@@ -26,7 +26,6 @@ class SurfaceManager;
 
 namespace content {
 class BrowserCompositorOutputSurface;
-class BrowserCompositorOutputSurfaceProxy;
 class CompositorSwapClient;
 class ContextProviderCommandBuffer;
 class ReflectorImpl;
@@ -97,8 +96,6 @@ class GpuProcessTransportFactory
   // The contents of this map and its methods may only be used on the compositor
   // thread.
   IDMap<BrowserCompositorOutputSurface> output_surface_map_;
-
-  scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
 
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
 

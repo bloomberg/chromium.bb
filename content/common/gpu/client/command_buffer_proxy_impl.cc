@@ -56,6 +56,8 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSignalSyncPointAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffersCompleted,
                         OnSwapBuffersCompleted);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateVSyncParameters,
+                        OnUpdateVSyncParameters);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -235,6 +237,12 @@ void CommandBufferProxyImpl::SetSwapBuffersCompletionCallback(
     const SwapBuffersCompletionCallback& callback) {
   CheckLock();
   swap_buffers_completion_callback_ = callback;
+}
+
+void CommandBufferProxyImpl::SetUpdateVSyncParametersCallback(
+    const UpdateVSyncParametersCallback& callback) {
+  CheckLock();
+  update_vsync_parameters_completion_callback_ = callback;
 }
 
 void CommandBufferProxyImpl::WaitForTokenInRange(int32 start, int32 end) {
@@ -592,6 +600,12 @@ void CommandBufferProxyImpl::OnSwapBuffersCompleted(
     }
     swap_buffers_completion_callback_.Run(latency_info);
   }
+}
+
+void CommandBufferProxyImpl::OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                                     base::TimeDelta interval) {
+  if (!update_vsync_parameters_completion_callback_.is_null())
+    update_vsync_parameters_completion_callback_.Run(timebase, interval);
 }
 
 }  // namespace content

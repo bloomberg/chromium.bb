@@ -393,12 +393,6 @@ IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceInitialized,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 
-// Tells the browser about updated parameters for vsync alignment.
-IPC_MESSAGE_CONTROL3(GpuHostMsg_UpdateVSyncParameters,
-                     int32 /* surface_id */,
-                     base::TimeTicks /* timebase */,
-                     base::TimeDelta /* interval */)
-
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext,
                      GURL /* url */)
 
@@ -563,6 +557,11 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
 // Tells the browser that SwapBuffers returned and passes latency info
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SwapBuffersCompleted,
                     std::vector<ui::LatencyInfo> /* latency_info */)
+
+// Tells the browser about updated parameters for vsync alignment.
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,
+                    base::TimeTicks /* timebase */,
+                    base::TimeDelta /* interval */)
 
 // Send to stub on surface visibility change.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)

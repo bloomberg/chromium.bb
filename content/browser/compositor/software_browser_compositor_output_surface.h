@@ -19,13 +19,10 @@ class CompositorVSyncManager;
 
 namespace content {
 
-class BrowserCompositorOutputSurfaceProxy;
-
 class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   SoftwareBrowserCompositorOutputSurface(
-      scoped_refptr<BrowserCompositorOutputSurfaceProxy> surface_proxy,
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
@@ -42,9 +39,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   bool ShouldNotShowFramesAfterRecycle() const override;
 #endif
 
-  // On the software path we need to explicitly call the proxy to update the
-  // VSync parameters.
-  scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
+  base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurface);
 };

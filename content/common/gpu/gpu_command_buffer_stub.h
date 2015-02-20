@@ -147,7 +147,10 @@ class GpuCommandBufferStub
 
   uint64 GetMemoryUsage() const;
 
-  void SwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info);
+  void SendSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info);
+  void SendUpdateVSyncParameters(base::TimeTicks timebase,
+                                 base::TimeDelta interval);
 
  private:
   GpuMemoryManager* GetMemoryManager() const;
