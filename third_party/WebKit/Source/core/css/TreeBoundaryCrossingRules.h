@@ -23,7 +23,6 @@
 #ifndef TreeBoundaryCrossingRules_h
 #define TreeBoundaryCrossingRules_h
 
-#include "core/css/RuleSet.h"
 #include "core/dom/DocumentOrderedList.h"
 
 #include "wtf/OwnPtr.h"
@@ -32,51 +31,23 @@
 
 namespace blink {
 
-class CSSStyleSheet;
 class ContainerNode;
+class Element;
 class ElementRuleCollector;
-class RuleFeatureSet;
 
 class TreeBoundaryCrossingRules final {
     DISALLOW_ALLOCATION();
 public:
-    void addTreeBoundaryCrossingRules(const RuleSet&, CSSStyleSheet*, unsigned sheetIndex, ContainerNode&);
-
-    void reset(const ContainerNode* scopingNode);
-    void collectFeaturesTo(RuleFeatureSet&);
+    void addScope(ContainerNode&);
+    void removeScope(const ContainerNode&);
     void collectTreeBoundaryCrossingRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
 
     void trace(Visitor*);
 
 private:
     size_t size() const { return m_scopingNodes.size(); }
-    class RuleSubSet final : public NoBaseWillBeGarbageCollected<RuleSubSet> {
-    public:
-        static PassOwnPtrWillBeRawPtr<RuleSubSet> create(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
-        {
-            return adoptPtrWillBeNoop(new RuleSubSet(sheet, index, rules));
-        }
-
-        CSSStyleSheet* parentStyleSheet;
-        unsigned parentIndex;
-        OwnPtrWillBeMember<RuleSet> ruleSet;
-
-        void trace(Visitor*);
-
-    private:
-        RuleSubSet(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
-            : parentStyleSheet(sheet)
-            , parentIndex(index)
-            , ruleSet(rules)
-        {
-        }
-    };
-    typedef WillBeHeapVector<OwnPtrWillBeMember<RuleSubSet> > CSSStyleSheetRuleSubSet;
-    void collectFeaturesFromRuleSubSet(CSSStyleSheetRuleSubSet*, RuleFeatureSet&);
 
     DocumentOrderedList m_scopingNodes;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<const ContainerNode>, OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> > TreeBoundaryCrossingRuleSetMap;
-    TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
 } // namespace blink

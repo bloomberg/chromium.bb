@@ -122,13 +122,6 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl;
 }
 
-static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule)
-{
-    RefPtrWillBeRawPtr<FontFace> fontFace = FontFace::create(document, fontFaceRule);
-    if (fontFace)
-        cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
-}
-
 static void collectScopedResolversForHostedShadowTrees(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
 {
     ElementShadow* shadow = element->shadow();
@@ -197,18 +190,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet)
     if (!treeScope)
         return;
 
-    unsigned index = treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(&cssSheet);
-    addRulesFromSheet(cssSheet, treeScope, index);
-}
-
-void StyleResolver::addRulesFromSheet(CSSStyleSheet& cssSheet, TreeScope* treeScope, unsigned index)
-{
-    StyleSheetContents* sheet = cssSheet.contents();
-    AddRuleFlags addRuleFlags = document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
-    const RuleSet& ruleSet = sheet->ensureRuleSet(*m_medium, addRuleFlags);
-
-    addMediaQueryResults(ruleSet.viewportDependentMediaQueryResults());
-    processScopedRules(ruleSet, &cssSheet, index, treeScope->rootNode());
+    treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(cssSheet, *m_medium);
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets()
@@ -249,28 +231,14 @@ void StyleResolver::resetRuleFeatures()
     m_needCollectFeatures = true;
 }
 
-void StyleResolver::processScopedRules(const RuleSet& authorRules, CSSStyleSheet* parentStyleSheet, unsigned parentIndex, ContainerNode& scope)
+void StyleResolver::addTreeBoundaryCrossingScope(ContainerNode& scope)
 {
-    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
-    ScopedStyleResolver& resolver = scope.treeScope().ensureScopedStyleResolver();
-    for (unsigned i = 0; i < keyframesRules.size(); ++i)
-        resolver.addKeyframeStyle(keyframesRules[i]);
-
-    m_treeBoundaryCrossingRules.addTreeBoundaryCrossingRules(authorRules, parentStyleSheet, parentIndex, scope);
-
-    // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
-    if (scope.isDocumentNode()) {
-        const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> > fontFaceRules = authorRules.fontFaceRules();
-        for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-            addFontFaceRule(m_document, document().styleEngine()->fontSelector(), fontFaceRules[i]);
-        if (fontFaceRules.size())
-            invalidateMatchedPropertiesCache();
-    }
+    m_treeBoundaryCrossingRules.addScope(scope);
 }
 
 void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
 {
-    m_treeBoundaryCrossingRules.reset(&treeScope.rootNode());
+    m_treeBoundaryCrossingRules.removeScope(treeScope.rootNode());
     resetRuleFeatures();
 
     ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
@@ -314,8 +282,6 @@ void StyleResolver::collectFeatures()
 
     if (m_watchedSelectorsRules)
         m_features.add(m_watchedSelectorsRules->features());
-
-    m_treeBoundaryCrossingRules.collectFeaturesTo(m_features);
 
     document().styleEngine()->collectScopedStyleFeaturesTo(m_features);
 

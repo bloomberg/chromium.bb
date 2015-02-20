@@ -30,43 +30,14 @@
 #include "core/css/TreeBoundaryCrossingRules.h"
 
 #include "core/css/ElementRuleCollector.h"
-#include "core/css/RuleFeature.h"
-#include "core/dom/StyleEngine.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 
 namespace blink {
 
-static void addRules(RuleSet* ruleSet, const WillBeHeapVector<MinimalRuleData>& rules)
-{
-    for (unsigned i = 0; i < rules.size(); ++i) {
-        const MinimalRuleData& info = rules[i];
-        ruleSet->addRule(info.m_rule, info.m_selectorIndex, info.m_flags);
-    }
-}
-
-void TreeBoundaryCrossingRules::addTreeBoundaryCrossingRules(const RuleSet& authorRules, CSSStyleSheet* parentStyleSheet, unsigned parentIndex, ContainerNode& scopingNode)
-{
-    if (authorRules.treeBoundaryCrossingRules().isEmpty() && (scopingNode.isDocumentNode() || authorRules.shadowDistributedRules().isEmpty()))
-        return;
-    OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
-    addRules(ruleSetForScope.get(), authorRules.treeBoundaryCrossingRules());
-    if (!scopingNode.isDocumentNode())
-        addRules(ruleSetForScope.get(), authorRules.shadowDistributedRules());
-
-    if (!m_treeBoundaryCrossingRuleSetMap.contains(&scopingNode)) {
-        m_treeBoundaryCrossingRuleSetMap.add(&scopingNode, adoptPtrWillBeNoop(new CSSStyleSheetRuleSubSet()));
-        m_scopingNodes.add(&scopingNode);
-    }
-    CSSStyleSheetRuleSubSet* ruleSubSet = m_treeBoundaryCrossingRuleSetMap.get(&scopingNode);
-    ruleSubSet->append(RuleSubSet::create(parentStyleSheet, parentIndex, ruleSetForScope.release()));
-}
-
 void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (m_treeBoundaryCrossingRuleSetMap.isEmpty())
+    if (m_scopingNodes.isEmpty())
         return;
-
-    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
     // When comparing rules declared in outer treescopes, outer's rules win.
     CascadeOrder outerCascadeOrder = size() + size();
@@ -75,51 +46,36 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
 
     ASSERT(!collector.scopeContainsLastMatchedElement());
     collector.setScopeContainsLastMatchedElement(true);
-    for (const auto& scope : m_scopingNodes) {
-        const ContainerNode* scopingNode = toContainerNode(scope);
-        CSSStyleSheetRuleSubSet* ruleSubSet = m_treeBoundaryCrossingRuleSetMap.get(scopingNode);
-        bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
 
+    for (const auto& scope : m_scopingNodes) {
+
+        bool isInnerTreeScope = element->treeScope().isInclusiveAncestorOf(scope->treeScope());
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
-        for (const auto& rules : *ruleSubSet) {
-            MatchRequest request(rules->ruleSet.get(), includeEmptyRules, scopingNode, rules->parentStyleSheet, rules->parentIndex);
-            collector.collectMatchingRules(request, ruleRange, cascadeOrder, true);
-        }
+
+        scope->treeScope().scopedStyleResolver()->collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules, cascadeOrder);
+
         ++innerCascadeOrder;
         --outerCascadeOrder;
     }
+
     collector.setScopeContainsLastMatchedElement(false);
 }
 
-void TreeBoundaryCrossingRules::reset(const ContainerNode* scopingNode)
+void TreeBoundaryCrossingRules::addScope(ContainerNode& scopingNode)
 {
-    m_treeBoundaryCrossingRuleSetMap.remove(scopingNode);
-    m_scopingNodes.remove(scopingNode);
+    m_scopingNodes.add(&scopingNode);
 }
 
-void TreeBoundaryCrossingRules::collectFeaturesFromRuleSubSet(CSSStyleSheetRuleSubSet* ruleSubSet, RuleFeatureSet& features)
+void TreeBoundaryCrossingRules::removeScope(const ContainerNode& scopingNode)
 {
-    for (const auto& rules : *ruleSubSet)
-        features.add(rules->ruleSet->features());
-}
-
-void TreeBoundaryCrossingRules::collectFeaturesTo(RuleFeatureSet& features)
-{
-    for (const auto& value : m_treeBoundaryCrossingRuleSetMap.values())
-        collectFeaturesFromRuleSubSet(value.get(), features);
+    m_scopingNodes.remove(&scopingNode);
 }
 
 void TreeBoundaryCrossingRules::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_treeBoundaryCrossingRuleSetMap);
     visitor->trace(m_scopingNodes);
 #endif
-}
-
-void TreeBoundaryCrossingRules::RuleSubSet::trace(Visitor* visitor)
-{
-    visitor->trace(ruleSet);
 }
 
 } // namespace blink

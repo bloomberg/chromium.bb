@@ -56,13 +56,12 @@ public:
     const TreeScope& treeScope() const { return *m_scope; }
     ScopedStyleResolver* parent() const;
 
-public:
     StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
-    void addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes>);
 
-    unsigned appendCSSStyleSheet(CSSStyleSheet*);
+    void appendCSSStyleSheet(CSSStyleSheet&, const MediaQueryEvaluator&);
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
     void collectMatchingShadowHostRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();
@@ -76,12 +75,42 @@ private:
     {
     }
 
+    void addTreeBoundaryCrossingRules(const RuleSet&, CSSStyleSheet*, unsigned sheetIndex);
+    void addKeyframeRules(const RuleSet&);
+    void addFontFaceRules(const RuleSet&);
+    void addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes>);
+
     RawPtrWillBeMember<TreeScope> m_scope;
 
-    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
+    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>> m_authorStyleSheets;
 
-    typedef WillBeHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
+    typedef WillBeHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes>> KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
+
+    class RuleSubSet final : public NoBaseWillBeGarbageCollected<RuleSubSet> {
+    public:
+        static PassOwnPtrWillBeRawPtr<RuleSubSet> create(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
+        {
+            return adoptPtrWillBeNoop(new RuleSubSet(sheet, index, rules));
+        }
+
+        CSSStyleSheet* m_parentStyleSheet;
+        unsigned m_parentIndex;
+        OwnPtrWillBeMember<RuleSet> m_ruleSet;
+
+        void trace(Visitor*);
+
+    private:
+        RuleSubSet(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
+            : m_parentStyleSheet(sheet)
+            , m_parentIndex(index)
+            , m_ruleSet(rules)
+        {
+        }
+    };
+    typedef WillBeHeapVector<OwnPtrWillBeMember<RuleSubSet>> CSSStyleSheetRuleSubSet;
+
+    OwnPtrWillBeMember<CSSStyleSheetRuleSubSet> m_treeBoundaryCrossingRuleSet;
 };
 
 } // namespace blink

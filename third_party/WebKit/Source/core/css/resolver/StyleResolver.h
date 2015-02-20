@@ -202,6 +202,8 @@ public:
 
     void trace(Visitor*);
 
+    void addTreeBoundaryCrossingScope(ContainerNode& scope);
+
 private:
     void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors);
 
@@ -213,7 +215,6 @@ private:
 
     void appendCSSStyleSheet(CSSStyleSheet&);
     void addRulesFromSheet(CSSStyleSheet&, TreeScope*, unsigned);
-    void processScopedRules(const RuleSet& authorRules, CSSStyleSheet*, unsigned sheetIndex, ContainerNode& scope);
 
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
