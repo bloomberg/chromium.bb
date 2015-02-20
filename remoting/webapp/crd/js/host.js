@@ -12,9 +12,15 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+(function() {
+
+'use strict';
+
 /**
  * Note that the object has more fields than are detailed below--these
  * are just the ones that we refer to directly.
+ *
+ * TODO(kelvinp):Make fields private and expose them via getters.
  * @constructor
  */
 remoting.Host = function() {
@@ -36,6 +42,49 @@ remoting.Host = function() {
   this.updatedTime = '';
   /** @type {string} */
   this.hostOfflineReason = '';
+  /** @type {remoting.Host.Options} */
+  this.options = new remoting.Host.Options(this.hostId);
+};
+
+/**
+ * @constructor
+ * @param {string} hostId
+ * @struct
+ */
+remoting.Host.Options = function(hostId) {
+  /** @private */
+  this.hostId_ = hostId;
+  /** @type {boolean} */
+  this.shrinkToFit = false;
+  /** @type {boolean} */
+  this.resizeToClient = false;
+  /** @type {string} */
+  this.remapKeys = '';
+  /** @type {number} */
+  this.desktopScale = 1;
+};
+
+remoting.Host.Options.prototype.save = function() {
+  // TODO(kelvinp): Migrate pairingInfo to use this class as well and get rid of
+  // remoting.HostSettings.
+  remoting.HostSettings.save(this.hostId_, this);
+};
+
+
+/** @return {Promise} A promise that resolves when the settings are loaded. */
+remoting.Host.Options.prototype.load = function() {
+  var that = this;
+  return base.Promise.as(remoting.HostSettings.load, [this.hostId_]).then(
+    /**
+     * @param {Object.<string|boolean|number>} options
+     */
+    function(options) {
+      that.resizeToClient =
+          getBooleanAttr(options, 'resizeToClient', false);
+      that.shrinkToFit = getBooleanAttr(options, 'shrinkToFit', false);
+      that.desktopScale = getNumberAttr(options, 'desktopScale', 1);
+      that.remapKeys = getStringAttr(options, 'remapKeys', '');
+    });
 };
 
 /**
@@ -62,3 +111,5 @@ remoting.Host.needsUpdate = function(host, webappVersion) {
   }
   return (parseInt(webappVersion, 10) - hostMajorVersion) > 1;
 };
+
+})();

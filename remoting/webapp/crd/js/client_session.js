@@ -32,9 +32,9 @@ var remoting = remoting || {};
 remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
+ * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
  * @param {HTMLElement} container Container element for the client view.
- * @param {string} hostDisplayName A human-readable name for the host.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
  * @param {function(boolean, function(string): void): void} fetchPin
  *     Called by Me2Me connections when a PIN needs to be obtained
@@ -45,11 +45,6 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  *     authentication token must be obtained.
  * @param {string} authenticationMethods Comma-separated list of
  *     authentication methods the client should attempt to use.
- * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
- *     Mixed into authentication hashes for some authentication methods.
- * @param {string} hostJid The jid of the host to connect to.
- * @param {string} hostPublicKey The base64 encoded version of the host's
- *     public key.
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
  * @param {string} clientPairingId For paired Me2Me connections, the
  *     pairing id for this client, as issued by the host.
@@ -60,10 +55,9 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  * @constructor
  * @extends {base.EventSourceImpl}
  */
-remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
-                                  accessCode, fetchPin, fetchThirdPartyToken,
-                                  authenticationMethods, hostId, hostJid,
-                                  hostPublicKey, mode, clientPairingId,
+remoting.ClientSession = function(host, signalStrategy, container, accessCode,
+                                  fetchPin, fetchThirdPartyToken,
+                                  authenticationMethods, mode, clientPairingId,
                                   clientPairedSecret, defaultRemapKeys) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
@@ -72,9 +66,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   this.error_ = remoting.Error.NONE;
 
   /** @private */
-  this.hostJid_ = hostJid;
-  /** @private */
-  this.hostPublicKey_ = hostPublicKey;
+  this.host_ = host;
   /** @private */
   this.accessCode_ = accessCode;
   /** @private */
@@ -84,15 +76,13 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   /** @private */
   this.authenticationMethods_ = authenticationMethods;
   /** @private */
-  this.hostId_ = hostId;
-  /** @private */
   this.clientPairingId_ = clientPairingId;
   /** @private */
   this.clientPairedSecret_ = clientPairedSecret;
 
   /** @private */
   this.uiHandler_ = new remoting.DesktopConnectedView(
-      this, container, hostDisplayName, hostId, mode, defaultRemapKeys,
+      this, container, this.host_, mode, defaultRemapKeys,
       this.onPluginInitialized_.bind(this));
   remoting.desktopConnectedView = this.uiHandler_;
 
@@ -111,7 +101,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
                     remoting.SignalStrategy.State.CONNECTED);
   this.signalStrategy_.setIncomingStanzaCallback(
       this.onIncomingMessage_.bind(this));
-  remoting.formatIq.setJids(this.signalStrategy_.getJid(), hostJid);
+  remoting.formatIq.setJids(this.signalStrategy_.getJid(), host.jabberId);
 
   /**
    * Allow host-offline error reporting to be suppressed in situations where it
@@ -374,7 +364,7 @@ remoting.ClientSession.prototype.disconnect = function(error) {
 remoting.ClientSession.prototype.cleanup = function() {
   this.sendIq_(
       '<cli:iq ' +
-          'to="' + this.hostJid_ + '" ' +
+          'to="' + this.host_.jabberId + '" ' +
           'type="set" ' +
           'id="session-terminate" ' +
           'xmlns:cli="jabber:client">' +
@@ -467,7 +457,7 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
   console.log(remoting.timestamp(),
               remoting.formatIq.prettifyReceiveIq(formatted));
   this.plugin_.onIncomingIq(formatted);
-}
+};
 
 /**
  * @private
@@ -478,14 +468,14 @@ remoting.ClientSession.prototype.initiateConnection_ = function() {
 
   /** @param {string} sharedSecret Shared secret. */
   function onSharedSecretReceived(sharedSecret) {
-    that.plugin_.connect(
-        that.hostJid_, that.hostPublicKey_, that.signalStrategy_.getJid(),
-        sharedSecret, that.authenticationMethods_, that.hostId_,
-        that.clientPairingId_, that.clientPairedSecret_);
-  };
+    that.plugin_.connect(that.host_.jabberId, that.host_.publicKey,
+                         that.signalStrategy_.getJid(), sharedSecret,
+                         that.authenticationMethods_, that.host_.hostId,
+                         that.clientPairingId_, that.clientPairedSecret_);
+  }
 
   this.getSharedSecret_(onSharedSecretReceived);
-}
+};
 
 /**
  * Gets shared secret to be used for connection.
@@ -605,6 +595,7 @@ remoting.ClientSession.prototype.onConnectionReady_ = function(ready) {
 
 /**
  * Called when the client-host capabilities negotiation is complete.
+ * TODO(kelvinp): Move this function out of ClientSession.
  *
  * @param {!Array<string>} capabilities The set of capabilities negotiated
  *     between the client and host.

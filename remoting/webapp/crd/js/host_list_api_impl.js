@@ -109,7 +109,21 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
       console.error('Invalid "hosts" response from server.');
       onError(remoting.Error.UNEXPECTED);
     } else {
-      var hosts = response.data.items || [];
+      var items = response.data.items || [];
+      var hosts = items.map(
+        function(/** Object */ item) {
+          var host = new remoting.Host();
+          host.hostName = getStringAttr(item, 'hostName', '');
+          host.hostId = getStringAttr(item, 'hostId', '');
+          host.status = getStringAttr(item, 'status', '');
+          host.jabberId = getStringAttr(item, 'jabberId', '');
+          host.publicKey = getStringAttr(item, 'publicKey', '');
+          host.hostVersion = getStringAttr(item, 'hostVersion', '');
+          host.tokenUrlPatterns = getArrayAttr(item, 'tokenUrlPatterns', []);
+          host.updatedTime = getStringAttr(item, 'updatedTime', '');
+          host.hostOfflineReason = getStringAttr(item, 'hostOfflineReason', '');
+          return host;
+      });
       onDone(hosts);
     }
   } else {

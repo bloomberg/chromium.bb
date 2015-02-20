@@ -27,9 +27,7 @@ remoting.enableMouseLock = false;
 /**
  * @param {remoting.ClientSession} session
  * @param {HTMLElement} container
- * @param {string} hostDisplayName A human-readable name for the host.
- * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
- *     Mixed into authentication hashes for some authentication methods.
+ * @param {remoting.Host} host
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
  * @param {string} defaultRemapKeys The default set of remap keys, to use
  *     when the client doesn't define any.
@@ -37,9 +35,8 @@ remoting.enableMouseLock = false;
  * @constructor
  * @extends {base.EventSourceImpl}
  */
-remoting.DesktopConnectedView = function(session, container, hostDisplayName,
-                                    hostId, mode, defaultRemapKeys,
-                                    onInitialized) {
+remoting.DesktopConnectedView = function(session, container, host, mode,
+                                         defaultRemapKeys, onInitialized) {
   this.session_ = session;
 
   /** @type {HTMLElement} @private */
@@ -49,28 +46,13 @@ remoting.DesktopConnectedView = function(session, container, hostDisplayName,
   this.plugin_ = null;
 
   /** @private */
-  this.hostDisplayName_ = hostDisplayName;
-
-  /** @private */
-  this.hostId_ = hostId;
+  this.host_ = host;
 
   /** @private */
   this.mode_ = mode;
 
-  /** @type {boolean} @private */
-  this.shrinkToFit_ = true;
-
-  /** @type {boolean} @private */
-  this.resizeToClient_ = true;
-
-  /** @type {number} @private */
-  this.desktopScale_ = 1.0;
-
   /** @type {string} @private */
   this.defaultRemapKeys_ = defaultRemapKeys;
-
-  /** @type {string} @private */
-  this.remapKeys_ = '';
 
   /**
    * Called when the UI is finished initializing.
@@ -149,7 +131,7 @@ remoting.DesktopConnectedView.KEY_DESKTOP_SCALE = 'desktopScale';
  * @return {string}
  */
 remoting.DesktopConnectedView.prototype.getHostDisplayName = function() {
-  return this.hostDisplayName_;
+  return this.host_.hostName;
 };
 
 /**
@@ -163,14 +145,14 @@ remoting.DesktopConnectedView.prototype.getMode = function() {
  * @return {boolean} True if shrink-to-fit is enabled; false otherwise.
  */
 remoting.DesktopConnectedView.prototype.getShrinkToFit = function() {
-  return this.shrinkToFit_;
+  return this.host_.options.shrinkToFit;
 };
 
 /**
  * @return {boolean} True if resize-to-client is enabled; false otherwise.
  */
 remoting.DesktopConnectedView.prototype.getResizeToClient = function() {
-  return this.resizeToClient_;
+  return this.host_.options.resizeToClient;
 };
 
 /**
@@ -209,8 +191,9 @@ remoting.DesktopConnectedView.prototype.setPluginSizeForBumpScrollTesting =
  */
 remoting.DesktopConnectedView.prototype.notifyClientResolution_ = function() {
   var clientArea = this.getClientArea_();
-  this.plugin_.hostDesktop().resize(clientArea.width * this.desktopScale_,
-                                    clientArea.height * this.desktopScale_,
+  var desktopScale = this.host_.options.desktopScale;
+  this.plugin_.hostDesktop().resize(clientArea.width * desktopScale,
+                                    clientArea.height * desktopScale,
                                     window.devicePixelRatio);
 };
 
@@ -228,44 +211,10 @@ remoting.DesktopConnectedView.prototype.createPluginAndConnect =
   this.plugin_ = remoting.ClientPlugin.factory.createPlugin(
       this.getPluginContainer(),
       onExtensionMessage, requiredCapabilities);
-  remoting.HostSettings.load(this.hostId_,
-                             this.onHostSettingsLoaded_.bind(this));
-};
-
-/**
- * @param {Object<string|boolean|number>} options The current options for the
- *     host, or {} if this client has no saved settings for the host.
- * @private
- */
-remoting.DesktopConnectedView.prototype.onHostSettingsLoaded_ = function(
-    options) {
-  if (remoting.DesktopConnectedView.KEY_REMAP_KEYS in options &&
-      typeof(options[remoting.DesktopConnectedView.KEY_REMAP_KEYS]) ==
-          'string') {
-    this.remapKeys_ = /** @type {string} */
-        (options[remoting.DesktopConnectedView.KEY_REMAP_KEYS]);
-  }
-  if (remoting.DesktopConnectedView.KEY_RESIZE_TO_CLIENT in options &&
-      typeof(options[remoting.DesktopConnectedView.KEY_RESIZE_TO_CLIENT]) ==
-          'boolean') {
-    this.resizeToClient_ = /** @type {boolean} */
-        (options[remoting.DesktopConnectedView.KEY_RESIZE_TO_CLIENT]);
-  }
-  if (remoting.DesktopConnectedView.KEY_SHRINK_TO_FIT in options &&
-      typeof(options[remoting.DesktopConnectedView.KEY_SHRINK_TO_FIT]) ==
-          'boolean') {
-    this.shrinkToFit_ = /** @type {boolean} */
-        (options[remoting.DesktopConnectedView.KEY_SHRINK_TO_FIT]);
-  }
-  if (remoting.DesktopConnectedView.KEY_DESKTOP_SCALE in options &&
-      typeof(options[remoting.DesktopConnectedView.KEY_DESKTOP_SCALE]) ==
-          'number') {
-    this.desktopScale_ = /** @type {number} */
-        (options[remoting.DesktopConnectedView.KEY_DESKTOP_SCALE]);
-  }
-
-  /** @param {boolean} result */
-  this.plugin_.initialize(this.onPluginInitialized_.bind(this));
+  var that = this;
+  this.host_.options.load().then(function(){
+    that.plugin_.initialize(that.onPluginInitialized_.bind(that));
+  });
 };
 
 /**
@@ -381,7 +330,7 @@ remoting.DesktopConnectedView.prototype.onResize = function() {
 
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
-  if (this.resizeToClient_) {
+  if (this.getResizeToClient()) {
     var kResizeRateLimitMs = 250;
     var clientArea = this.getClientArea_();
     this.notifyClientResolutionTimer_ = window.setTimeout(
@@ -466,7 +415,7 @@ remoting.DesktopConnectedView.prototype.updateClientSessionUi_ = function(
       remoting.optionsMenu.setDesktopConnectedView(this);
     }
 
-    if (this.resizeToClient_) {
+    if (this.getResizeToClient()) {
       this.notifyClientResolution_();
     }
 
@@ -519,25 +468,17 @@ remoting.DesktopConnectedView.prototype.setFocusHandlers_ = function() {
  */
 remoting.DesktopConnectedView.prototype.setScreenMode =
     function(shrinkToFit, resizeToClient) {
-  if (resizeToClient && !this.resizeToClient_) {
+  if (resizeToClient && !this.getResizeToClient()) {
     this.notifyClientResolution_();
   }
 
   // If enabling shrink, reset bump-scroll offsets.
-  var needsScrollReset = shrinkToFit && !this.shrinkToFit_;
+  var needsScrollReset = shrinkToFit && !this.getShrinkToFit();
 
-  this.shrinkToFit_ = shrinkToFit;
-  this.resizeToClient_ = resizeToClient;
+  this.host_.options.shrinkToFit = shrinkToFit;
+  this.host_.options.resizeToClient = resizeToClient;
   this.updateScrollbarVisibility();
-
-  if (this.hostId_ != '') {
-    var options = {};
-    options[remoting.DesktopConnectedView.KEY_SHRINK_TO_FIT] =
-        this.shrinkToFit_;
-    options[remoting.DesktopConnectedView.KEY_RESIZE_TO_CLIENT] =
-        this.resizeToClient_;
-    remoting.HostSettings.save(this.hostId_, options);
-  }
+  this.host_.options.save();
 
   this.updateDimensions();
   if (needsScrollReset) {
@@ -554,16 +495,14 @@ remoting.DesktopConnectedView.prototype.setScreenMode =
  */
 remoting.DesktopConnectedView.prototype.setDesktopScale = function(
     desktopScale) {
-  this.desktopScale_ = desktopScale;
+  this.host_.options.desktopScale = desktopScale;
 
   // onResize() will update the plugin size and scrollbars for the new
   // scaled plugin dimensions, and send a client resolution notification.
   this.onResize();
 
   // Save the new desktop scale setting.
-  var options = {};
-  options[remoting.DesktopConnectedView.KEY_DESKTOP_SCALE] = this.desktopScale_;
-  remoting.HostSettings.save(this.hostId_, options);
+  this.host_.options.save();
 };
 
 /**
@@ -765,8 +704,8 @@ remoting.DesktopConnectedView.prototype.updateDimensions = function() {
                      y: desktopSize.yDpi };
   var newSize = remoting.DesktopConnectedView.choosePluginSize(
       this.getClientArea_(), window.devicePixelRatio,
-      desktopSize, desktopDpi, this.desktopScale_,
-      remoting.fullscreen.isActive(), this.shrinkToFit_);
+      desktopSize, desktopDpi, this.host_.options.desktopScale,
+      remoting.fullscreen.isActive(), this.getShrinkToFit());
 
   // Resize the plugin if necessary.
   console.log('plugin dimensions:' + newSize.width + 'x' + newSize.height);
@@ -926,7 +865,7 @@ remoting.DesktopConnectedView.prototype.updateScrollbarVisibility = function() {
 
   var needsVerticalScroll = false;
   var needsHorizontalScroll = false;
-  if (!this.shrinkToFit_) {
+  if (!this.getShrinkToFit()) {
     // Determine whether or not horizontal or vertical scrollbars are
     // required, taking into account their width.
     var clientArea = this.getClientArea_();
@@ -963,13 +902,11 @@ remoting.DesktopConnectedView.prototype.updateScrollbarVisibility = function() {
 remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
   // Cancel any existing remappings and apply the new ones.
   this.applyRemapKeys_(false);
-  this.remapKeys_ = remappings;
+  this.host_.options.remapKeys = remappings;
   this.applyRemapKeys_(true);
 
   // Save the new remapping setting.
-  var options = {};
-  options[remoting.DesktopConnectedView.KEY_REMAP_KEYS] = this.remapKeys_;
-  remoting.HostSettings.save(this.hostId_, options);
+  this.host_.options.save();
 };
 
 /**
@@ -978,7 +915,7 @@ remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
  * @param {boolean} apply True to apply remappings, false to cancel them.
  */
 remoting.DesktopConnectedView.prototype.applyRemapKeys_ = function(apply) {
-  var remapKeys = this.remapKeys_;
+  var remapKeys = this.host_.options.remapKeys;
   if (remapKeys == '') {
     remapKeys = this.defaultRemapKeys_;
     if (remapKeys == '') {
