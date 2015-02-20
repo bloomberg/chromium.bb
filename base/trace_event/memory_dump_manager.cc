@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace base {
 namespace trace_event {
@@ -91,15 +92,14 @@ void MemoryDumpManager::BroadcastDumpRequest() {
 // Creates a dump point for the current process and appends it to the trace.
 void MemoryDumpManager::CreateLocalDumpPoint() {
   AutoLock lock(lock_);
-  // TRACE_EVENT_* macros don't induce scoped_refptr type inference, hence we
-  // need the base ConvertableToTraceFormat and the upcast below. The
-  // alternative would be unnecessarily expensive (double Acquire/Release).
-  scoped_refptr<ConvertableToTraceFormat> pmd(new ProcessMemoryDump());
+  scoped_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump());
 
   for (MemoryDumpProvider* dump_provider : dump_providers_enabled_) {
-    dump_provider->DumpInto(static_cast<ProcessMemoryDump*>(pmd.get()));
+    dump_provider->DumpInto(pmd.get());
   }
 
+  scoped_refptr<TracedValue> value(new TracedValue());
+  pmd->AsValueInto(value.get());
   // TODO(primiano): add the dump point to the trace at this point.
 }
 

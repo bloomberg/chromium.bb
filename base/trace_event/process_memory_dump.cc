@@ -4,25 +4,25 @@
 
 #include "base/trace_event/process_memory_dump.h"
 
-#include "base/json/json_writer.h"
-#include "base/values.h"
+#include "base/trace_event/process_memory_totals.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace base {
 namespace trace_event {
 
-ProcessMemoryDump::ProcessMemoryDump() {
+ProcessMemoryDump::ProcessMemoryDump() : has_process_totals_(false) {
 }
 
 ProcessMemoryDump::~ProcessMemoryDump() {
 }
 
-void ProcessMemoryDump::AppendAsTraceFormat(std::string* out) const {
-  // Build up the [dumper name] -> [serialized snapshot] JSON dictionary.
-  DictionaryValue dict;
-  std::string json_dict;
-  // TODO(primiano): this will append here the actual dumps from the dumpers.
-  base::JSONWriter::Write(&dict, &json_dict);
-  *out += json_dict;
+void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
+  // Build up the [dumper name] -> [value] dictionary.
+  if (has_process_totals_) {
+    value->BeginDictionary("process_totals");
+    process_totals_.AsValueInto(value);
+    value->EndDictionary();
+  }
 }
 
 }  // namespace trace_event

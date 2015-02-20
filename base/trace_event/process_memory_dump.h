@@ -6,27 +6,34 @@
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_DUMP_H_
 
 #include "base/base_export.h"
-#include "base/basictypes.h"
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/process_memory_totals.h"
 
 namespace base {
 namespace trace_event {
 
-// A container which holds the dumps produced by the MemoryDumpProvider(s)
-// for a specific process. ProcessMemoryDump is as a strongly typed container
-// which enforces the data model for each memory dump point.
-// At trace generation time (i.e. when AppendAsTraceFormat is called) the
-// ProcessMemoryDump will compose a key-value dictionary of the various dumps
-// obtained during at trace dump point time.
-class BASE_EXPORT ProcessMemoryDump : public ConvertableToTraceFormat {
+class ConvertableToTraceFormat;
+
+// ProcessMemoryDump is as a strongly typed container which enforces the data
+// model for each memory dump point and holds the dumps produced by the
+// MemoryDumpProvider(s) for a specific process.
+// At trace generation time (i.e. when AsValue() is called), ProcessMemoryDump
+// will compose a key-value dictionary of the various dumps obtained at trace
+// dump point time.
+class BASE_EXPORT ProcessMemoryDump {
  public:
   ProcessMemoryDump();
+  ~ProcessMemoryDump();
 
-  // ConvertableToTraceFormat implementation.
-  void AppendAsTraceFormat(std::string* out) const override;
+  // Called at trace generation time to populate the TracedValue.
+  void AsValueInto(TracedValue* value) const;
+
+  ProcessMemoryTotals* process_totals() { return &process_totals_; }
+  bool has_process_totals() const { return has_process_totals_; }
+  void set_has_process_totals() { has_process_totals_ = true; }
 
  private:
-  ~ProcessMemoryDump() override;
+  ProcessMemoryTotals process_totals_;
+  bool has_process_totals_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDump);
 };
