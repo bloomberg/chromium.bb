@@ -50,7 +50,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
       const base::WeakPtr<ServiceWorkerContextCore>& context,
       EmbeddedWorkerRegistry* old_registry);
 
-  bool OnMessageReceived(const IPC::Message& message);
+  bool OnMessageReceived(const IPC::Message& message, int process_id);
 
   // Creates and removes a new worker instance entry for bookkeeping.
   // This doesn't actually start or stop the worker.

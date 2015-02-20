@@ -40,6 +40,15 @@ class CONTENT_EXPORT ServiceWorkerResponseWriter
       ServiceWorkerDiskCache* disk_cache);
 };
 
+class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
+    : public AppCacheResponseMetadataWriter {
+ protected:
+  // Should only be constructed by the storage class.
+  friend class ServiceWorkerStorage;
+  ServiceWorkerResponseMetadataWriter(int64 response_id,
+                                      ServiceWorkerDiskCache* disk_cache);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_DISK_CACHE_H_

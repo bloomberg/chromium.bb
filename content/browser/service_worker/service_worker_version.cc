@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -269,6 +270,18 @@ void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
       RenderProcessHost::FromID(process_id);
   if (render_process_host->GetHandle() != base::kNullProcessHandle)
     render_process_host->ReceivedBadMessage();
+}
+
+void DidSetCachedMetadata(int64 callback_id, int result) {
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerVersion::OnSetCachedMetadata",
+                         callback_id, "result", result);
+}
+
+void DidClearCachedMetadata(int64 callback_id, int result) {
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerVersion::OnClearCachedMetadata",
+                         callback_id, "result", result);
 }
 
 }  // namespace
@@ -915,6 +928,10 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnCrossOriginConnectEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
                         OnOpenWindow)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetCachedMetadata,
+                        OnSetCachedMetadata)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClearCachedMetadata,
+                        OnClearCachedMetadata)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
                         OnPostMessageToDocument)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
@@ -1218,6 +1235,25 @@ void ServiceWorkerVersion::OnOpenWindowFinished(
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowResponse(
       request_id, client));
+}
+
+void ServiceWorkerVersion::OnSetCachedMetadata(const GURL& url,
+                                               const std::vector<char>& data) {
+  int64 callback_id = base::TimeTicks::Now().ToInternalValue();
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerVersion::OnSetCachedMetadata",
+                           callback_id, "URL", url.spec());
+  script_cache_map_.WriteMetadata(
+      url, data, base::Bind(&DidSetCachedMetadata, callback_id));
+}
+
+void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
+  int64 callback_id = base::TimeTicks::Now().ToInternalValue();
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerVersion::OnClearCachedMetadata",
+                           callback_id, "URL", url.spec());
+  script_cache_map_.ClearMetadata(
+      url, base::Bind(&DidClearCachedMetadata, callback_id));
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(

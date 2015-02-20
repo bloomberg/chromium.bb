@@ -215,7 +215,7 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStopped(
 
 void EmbeddedWorkerTestHelper::SimulateSend(
     IPC::Message* message) {
-  registry()->OnMessageReceived(*message);
+  registry()->OnMessageReceived(*message, mock_render_process_id_);
   delete message;
 }
 

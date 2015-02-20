@@ -233,6 +233,17 @@ void ServiceWorkerScriptContext::OpenWindow(
   Send(new ServiceWorkerHostMsg_OpenWindow(GetRoutingID(), request_id, url));
 }
 
+void ServiceWorkerScriptContext::SetCachedMetadata(const GURL& url,
+                                                   const char* data,
+                                                   size_t size) {
+  std::vector<char> copy(data, data + size);
+  Send(new ServiceWorkerHostMsg_SetCachedMetadata(GetRoutingID(), url, copy));
+}
+
+void ServiceWorkerScriptContext::ClearCachedMetadata(const GURL& url) {
+  Send(new ServiceWorkerHostMsg_ClearCachedMetadata(GetRoutingID(), url));
+}
+
 void ServiceWorkerScriptContext::PostMessageToDocument(
     int client_id,
     const base::string16& message,

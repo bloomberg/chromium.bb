@@ -230,6 +230,16 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
                     base::string16 /* message */,
                     std::vector<int> /* sent_message_port_ids */)
 
+// ServiceWorker -> Browser message to request that the ServiceWorkerStorage
+// cache |data| associated with |url|.
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_SetCachedMetadata,
+                    GURL /* url */,
+                    std::vector<char> /* data */)
+
+// ServiceWorker -> Browser message to request that the ServiceWorkerStorage
+// clear the cache associated with |url|.
+IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClearCachedMetadata, GURL /* url */)
+
 // Ask the browser to open a tab/window (renderer->browser).
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenWindow,
                     int /* request_id */,

@@ -48,13 +48,14 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(
               new EmbeddedWorkerMsg_StopWorker(embedded_worker_id));
 }
 
-bool EmbeddedWorkerRegistry::OnMessageReceived(const IPC::Message& message) {
+bool EmbeddedWorkerRegistry::OnMessageReceived(const IPC::Message& message,
+                                               int process_id) {
   // TODO(kinuko): Move all EmbeddedWorker message handling from
   // ServiceWorkerDispatcherHost.
 
   WorkerInstanceMap::iterator found = worker_map_.find(message.routing_id());
   DCHECK(found != worker_map_.end());
-  if (found == worker_map_.end())
+  if (found == worker_map_.end() || found->second->process_id() != process_id)
     return false;
   return found->second->OnMessageReceived(message);
 }

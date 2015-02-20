@@ -204,6 +204,56 @@ void WriteResponseOfSize(ServiceWorkerStorage* storage, int64 id,
   WriteResponse(storage, id, headers, buffer.get(), size);
 }
 
+int WriteResponseMetadata(ServiceWorkerStorage* storage,
+                          int64 id,
+                          const std::string& metadata) {
+  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(metadata.data()));
+  scoped_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
+      storage->CreateResponseMetadataWriter(id);
+  TestCompletionCallback cb;
+  metadata_writer->WriteMetadata(body_buffer.get(), metadata.length(),
+                                 cb.callback());
+  return cb.WaitForResult();
+}
+
+int WriteMetadata(ServiceWorkerVersion* version,
+                  const GURL& url,
+                  const std::string& metadata) {
+  const std::vector<char> data(metadata.begin(), metadata.end());
+  EXPECT_TRUE(version);
+  TestCompletionCallback cb;
+  version->script_cache_map()->WriteMetadata(url, data, cb.callback());
+  return cb.WaitForResult();
+}
+
+int ClearMetadata(ServiceWorkerVersion* version, const GURL& url) {
+  EXPECT_TRUE(version);
+  TestCompletionCallback cb;
+  version->script_cache_map()->ClearMetadata(url, cb.callback());
+  return cb.WaitForResult();
+}
+
+bool VerifyResponseMetadata(ServiceWorkerStorage* storage,
+                            int64 id,
+                            const std::string& expected_metadata) {
+  scoped_ptr<ServiceWorkerResponseReader> reader =
+      storage->CreateResponseReader(id);
+  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
+      new HttpResponseInfoIOBuffer();
+  {
+    TestCompletionCallback cb;
+    reader->ReadInfo(info_buffer.get(), cb.callback());
+    int rv = cb.WaitForResult();
+    EXPECT_LT(0, rv);
+  }
+  const net::HttpResponseInfo* read_head = info_buffer->http_info.get();
+  if (!read_head->metadata.get())
+    return false;
+  EXPECT_EQ(0, memcmp(expected_metadata.data(), read_head->metadata->data(),
+                      expected_metadata.length()));
+  return true;
+}
+
 }  // namespace
 
 class ServiceWorkerStorageTest : public testing::Test {
@@ -908,6 +958,65 @@ class ServiceWorkerResourceStorageDiskTest
  protected:
   base::ScopedTempDir user_data_directory_;
 };
+
+TEST_F(ServiceWorkerResourceStorageTest,
+       WriteMetadataWithServiceWorkerResponseMetadataWriter) {
+  const char kMetadata1[] = "Test metadata";
+  const char kMetadata2[] = "small";
+  int64 new_resource_id_ = storage()->NewResourceId();
+  // Writing metadata to nonexistent resoirce ID must fail.
+  EXPECT_GE(0, WriteResponseMetadata(storage(), new_resource_id_, kMetadata1));
+
+  // Check metadata is written.
+  EXPECT_EQ(static_cast<int>(strlen(kMetadata1)),
+            WriteResponseMetadata(storage(), resource_id1_, kMetadata1));
+  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata1));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+
+  // Check metadata is written and truncated.
+  EXPECT_EQ(static_cast<int>(strlen(kMetadata2)),
+            WriteResponseMetadata(storage(), resource_id1_, kMetadata2));
+  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata2));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+
+  // Check metadata is deleted.
+  EXPECT_EQ(0, WriteResponseMetadata(storage(), resource_id1_, ""));
+  EXPECT_FALSE(VerifyResponseMetadata(storage(), resource_id1_, ""));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+}
+
+TEST_F(ServiceWorkerResourceStorageTest,
+       WriteMetadataWithServiceWorkerScriptCacheMap) {
+  const char kMetadata1[] = "Test metadata";
+  const char kMetadata2[] = "small";
+  ServiceWorkerVersion* version = registration_->waiting_version();
+  EXPECT_TRUE(version);
+
+  // Writing metadata to nonexistent URL must fail.
+  EXPECT_GE(0,
+            WriteMetadata(version, GURL("http://www.test.not/nonexistent.js"),
+                          kMetadata1));
+  // Clearing metadata of nonexistent URL must fail.
+  EXPECT_GE(0,
+            ClearMetadata(version, GURL("http://www.test.not/nonexistent.js")));
+
+  // Check metadata is written.
+  EXPECT_EQ(static_cast<int>(strlen(kMetadata1)),
+            WriteMetadata(version, script_, kMetadata1));
+  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata1));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+
+  // Check metadata is written and truncated.
+  EXPECT_EQ(static_cast<int>(strlen(kMetadata2)),
+            WriteMetadata(version, script_, kMetadata2));
+  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata2));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+
+  // Check metadata is deleted.
+  EXPECT_EQ(0, ClearMetadata(version, script_));
+  EXPECT_FALSE(VerifyResponseMetadata(storage(), resource_id1_, ""));
+  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+}
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   bool was_called = false;

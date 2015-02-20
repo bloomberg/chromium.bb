@@ -39,6 +39,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDiskCache;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationInfo;
+class ServiceWorkerResponseMetadataWriter;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
 
@@ -143,6 +144,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   scoped_ptr<ServiceWorkerResponseReader> CreateResponseReader(
       int64 response_id);
   scoped_ptr<ServiceWorkerResponseWriter> CreateResponseWriter(
+      int64 response_id);
+  scoped_ptr<ServiceWorkerResponseMetadataWriter> CreateResponseMetadataWriter(
       int64 response_id);
 
   // Adds |id| to the set of resources ids that are in the disk

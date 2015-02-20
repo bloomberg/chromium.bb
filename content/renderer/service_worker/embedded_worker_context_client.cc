@@ -162,6 +162,19 @@ void EmbeddedWorkerContextClient::openWindow(
   script_context_->OpenWindow(url, callbacks);
 }
 
+void EmbeddedWorkerContextClient::setCachedMetadata(const blink::WebURL& url,
+                                                    const char* data,
+                                                    size_t size) {
+  DCHECK(script_context_);
+  script_context_->SetCachedMetadata(url, data, size);
+}
+
+void EmbeddedWorkerContextClient::clearCachedMetadata(
+    const blink::WebURL& url) {
+  DCHECK(script_context_);
+  script_context_->ClearCachedMetadata(url);
+}
+
 void EmbeddedWorkerContextClient::workerReadyForInspection() {
   Send(new EmbeddedWorkerHostMsg_WorkerReadyForInspection(embedded_worker_id_));
 }

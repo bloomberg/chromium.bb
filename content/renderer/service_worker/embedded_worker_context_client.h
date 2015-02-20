@@ -66,6 +66,10 @@ class EmbeddedWorkerContextClient
   virtual void getClients(blink::WebServiceWorkerClientsCallbacks*);
   virtual void openWindow(const blink::WebURL&,
                           blink::WebServiceWorkerClientCallbacks*);
+  virtual void setCachedMetadata(const blink::WebURL&,
+                                 const char* data,
+                                 size_t size);
+  virtual void clearCachedMetadata(const blink::WebURL&);
   virtual void workerReadyForInspection();
 
   // Called on the main thread.

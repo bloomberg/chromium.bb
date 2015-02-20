@@ -371,6 +371,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             int client_id,
                             const ServiceWorkerClientInfo& client_info);
 
+  void OnSetCachedMetadata(const GURL& url, const std::vector<char>& data);
+  void OnClearCachedMetadata(const GURL& url);
+
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);

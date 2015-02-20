@@ -643,6 +643,12 @@ ServiceWorkerStorage::CreateResponseWriter(int64 response_id) {
       new ServiceWorkerResponseWriter(response_id, disk_cache()));
 }
 
+scoped_ptr<ServiceWorkerResponseMetadataWriter>
+ServiceWorkerStorage::CreateResponseMetadataWriter(int64 response_id) {
+  return make_scoped_ptr(
+      new ServiceWorkerResponseMetadataWriter(response_id, disk_cache()));
+}
+
 void ServiceWorkerStorage::StoreUncommittedResponseId(int64 id) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, id);
   DCHECK_EQ(INITIALIZED, state_);

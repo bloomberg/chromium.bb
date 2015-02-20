@@ -6,17 +6,19 @@
 
 #include "base/logging.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 
 ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
     ServiceWorkerVersion* owner,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : owner_(owner),
-      context_(context) {
+    : owner_(owner), context_(context), weak_factory_(this) {
 }
 
 ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
@@ -88,6 +90,42 @@ void ServiceWorkerScriptCacheMap::SetResources(
        it != resources.end(); ++it) {
     resource_map_[it->url] = *it;
   }
+}
+
+void ServiceWorkerScriptCacheMap::WriteMetadata(
+    const GURL& url,
+    const std::vector<char>& data,
+    const net::CompletionCallback& callback) {
+  ResourceMap::iterator found = resource_map_.find(url);
+  if (found == resource_map_.end() ||
+      found->second.resource_id == kInvalidServiceWorkerResponseId) {
+    callback.Run(net::ERR_FILE_NOT_FOUND);
+    return;
+  }
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(data.size()));
+  if (data.size())
+    memmove(buffer->data(), &data[0], data.size());
+  scoped_ptr<ServiceWorkerResponseMetadataWriter> writer;
+  writer = context_->storage()->CreateResponseMetadataWriter(
+      found->second.resource_id);
+  ServiceWorkerResponseMetadataWriter* raw_writer = writer.get();
+  raw_writer->WriteMetadata(
+      buffer.get(), data.size(),
+      base::Bind(&ServiceWorkerScriptCacheMap::OnMetadataWritten,
+                 weak_factory_.GetWeakPtr(), Passed(&writer), callback));
+}
+
+void ServiceWorkerScriptCacheMap::ClearMetadata(
+    const GURL& url,
+    const net::CompletionCallback& callback) {
+  WriteMetadata(url, std::vector<char>(), callback);
+}
+
+void ServiceWorkerScriptCacheMap::OnMetadataWritten(
+    scoped_ptr<ServiceWorkerResponseMetadataWriter> writer,
+    const net::CompletionCallback& callback,
+    int result) {
+  callback.Run(result);
 }
 
 }  // namespace content

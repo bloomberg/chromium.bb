@@ -76,6 +76,8 @@ class ServiceWorkerScriptContext {
       blink::WebServiceWorkerClientsCallbacks* callbacks);
   void OpenWindow(const GURL& url,
                   blink::WebServiceWorkerClientCallbacks* callbacks);
+  void SetCachedMetadata(const GURL& url, const char* data, size_t size);
+  void ClearCachedMetadata(const GURL& url);
   void PostMessageToDocument(
       int client_id,
       const base::string16& message,

@@ -16,4 +16,10 @@ ServiceWorkerResponseWriter::ServiceWorkerResponseWriter(
     : AppCacheResponseWriter(response_id, 0, disk_cache) {
 }
 
+ServiceWorkerResponseMetadataWriter::ServiceWorkerResponseMetadataWriter(
+    int64 response_id,
+    ServiceWorkerDiskCache* disk_cache)
+    : AppCacheResponseMetadataWriter(response_id, 0, disk_cache) {
+}
+
 }  // namespace content

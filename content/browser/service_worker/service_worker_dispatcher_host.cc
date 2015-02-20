@@ -202,8 +202,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   if (!handled && GetContext()) {
-    handled =
-        GetContext()->embedded_worker_registry()->OnMessageReceived(message);
+    handled = GetContext()->embedded_worker_registry()->OnMessageReceived(
+        message, render_process_id_);
     if (!handled)
       BadMessageReceived();
   }

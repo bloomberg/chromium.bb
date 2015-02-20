@@ -281,6 +281,14 @@ TEST_F(ServiceWorkerVersionTest, SendMessage) {
 }
 
 TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
+  // Start worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+
   MessageReceiverFromWorker receiver(version_->embedded_worker());
 
   // Simulate sending some dummy values from the worker.
