@@ -182,6 +182,12 @@ void InputScrollElasticityController::UpdateVelocity(
 void InputScrollElasticityController::Overscroll(
     const gfx::Vector2dF& input_delta,
     const gfx::Vector2dF& overscroll_delta) {
+  // The effect can be dynamically disabled by setting disallowing user
+  // scrolling. When disabled, disallow active or momentum overscrolling, but
+  // allow any current overscroll to animate back.
+  if (!helper_->IsUserScrollable())
+    return;
+
   gfx::Vector2dF adjusted_overscroll_delta =
       pending_overscroll_delta_ + overscroll_delta;
   pending_overscroll_delta_ = gfx::Vector2dF();

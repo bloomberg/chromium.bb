@@ -15,6 +15,7 @@ class ScrollElasticityHelperImpl : public ScrollElasticityHelper {
   explicit ScrollElasticityHelperImpl(LayerTreeHostImpl* layer_tree_host_impl);
   ~ScrollElasticityHelperImpl() override;
 
+  bool IsUserScrollable() const override;
   gfx::Vector2dF StretchAmount() const override;
   void SetStretchAmount(const gfx::Vector2dF& stretch_amount) override;
   gfx::ScrollOffset ScrollOffset() const override;
@@ -32,6 +33,14 @@ ScrollElasticityHelperImpl::ScrollElasticityHelperImpl(
 }
 
 ScrollElasticityHelperImpl::~ScrollElasticityHelperImpl() {
+}
+
+bool ScrollElasticityHelperImpl::IsUserScrollable() const {
+  LayerImpl* layer = layer_tree_host_impl_->OuterViewportScrollLayer();
+  if (!layer)
+    return false;
+  return layer->user_scrollable_horizontal() ||
+         layer->user_scrollable_vertical();
 }
 
 gfx::Vector2dF ScrollElasticityHelperImpl::StretchAmount() const {

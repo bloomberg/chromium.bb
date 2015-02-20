@@ -52,6 +52,8 @@ class CC_EXPORT ScrollElasticityHelper {
 
   virtual ~ScrollElasticityHelper() {}
 
+  virtual bool IsUserScrollable() const = 0;
+
   // The amount that the view is stretched past the normal allowable bounds.
   virtual gfx::Vector2dF StretchAmount() const = 0;
   virtual void SetStretchAmount(const gfx::Vector2dF& stretch_amount) = 0;

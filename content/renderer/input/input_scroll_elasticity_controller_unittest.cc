@@ -23,11 +23,13 @@ enum Phase {
 class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
  public:
   MockScrollElasticityHelper()
-      : set_stretch_amount_count_(0),
+      : is_user_scrollable_(true),
+        set_stretch_amount_count_(0),
         request_animate_count_(0) {}
   ~MockScrollElasticityHelper() override {}
 
   // cc::ScrollElasticityHelper implementation:
+  bool IsUserScrollable() const override { return is_user_scrollable_; }
   gfx::Vector2dF StretchAmount() const override { return stretch_amount_; }
   void SetStretchAmount(const gfx::Vector2dF& stretch_amount) override {
     set_stretch_amount_count_ += 1;
@@ -52,8 +54,12 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
     scroll_offset_ = scroll_offset;
     max_scroll_offset_ = max_scroll_offset;
   }
+  void SetUserScrollable(bool is_user_scrollable) {
+    is_user_scrollable_ = is_user_scrollable;
+  }
 
  private:
+  bool is_user_scrollable_;
   gfx::Vector2dF stretch_amount_;
   int set_stretch_amount_count_;
   int request_animate_count_;
@@ -325,6 +331,56 @@ TEST_F(ScrollElasticityControllerTest, ReconcileStretchAndScroll) {
   controller_.ReconcileStretchAndScroll();
   EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
   EXPECT_EQ(helper_.ScrollOffset(), gfx::ScrollOffset(7, 8));
+}
+
+// Verify that stretching only happens when the area is user scrollable.
+TEST_F(ScrollElasticityControllerTest, UserScrollableRequiredForStretch) {
+  helper_.SetScrollOffsetAndMaxScrollOffset(gfx::ScrollOffset(0, 0),
+                                            gfx::ScrollOffset(10, 10));
+  gfx::Vector2dF delta(0, -15);
+
+  // Do an active scroll, and ensure that the stretch amount doesn't change,
+  // and also that the stretch amount isn't even ever changed.
+  helper_.SetUserScrollable(false);
+  SendMouseWheelEvent(PhaseBegan, PhaseNone);
+  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
+  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
+  SendMouseWheelEvent(PhaseEnded, PhaseNone);
+  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
+  EXPECT_EQ(0, helper_.set_stretch_amount_count());
+  SendMouseWheelEvent(PhaseNone, PhaseBegan);
+  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
+  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
+  SendMouseWheelEvent(PhaseNone, PhaseEnded);
+  EXPECT_EQ(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
+  EXPECT_EQ(0, helper_.set_stretch_amount_count());
+
+  // Re-enable user scrolling and ensure that stretching is re-enabled.
+  helper_.SetUserScrollable(true);
+  SendMouseWheelEvent(PhaseBegan, PhaseNone);
+  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
+  SendMouseWheelEvent(PhaseChanged, PhaseNone, delta, delta);
+  SendMouseWheelEvent(PhaseEnded, PhaseNone);
+  EXPECT_NE(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
+  EXPECT_GT(helper_.set_stretch_amount_count(), 0);
+  SendMouseWheelEvent(PhaseNone, PhaseBegan);
+  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
+  SendMouseWheelEvent(PhaseNone, PhaseChanged, delta, delta);
+  SendMouseWheelEvent(PhaseNone, PhaseEnded);
+  EXPECT_NE(helper_.StretchAmount(), gfx::Vector2dF(0, 0));
+  EXPECT_GT(helper_.set_stretch_amount_count(), 0);
+
+  // Disable user scrolling and tick the timer until the stretch goes back
+  // to zero. Ensure that the return to zero doesn't happen immediately.
+  helper_.SetUserScrollable(false);
+  int ticks_to_zero = 0;
+  while (1) {
+    TickCurrentTimeAndAnimate();
+    if (helper_.StretchAmount().IsZero())
+      break;
+    ticks_to_zero += 1;
+  }
+  EXPECT_GT(ticks_to_zero, 3);
 }
 
 }  // namespace
