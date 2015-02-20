@@ -78,6 +78,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual blink::WebPrescientNetworking* prescientNetworking();
   virtual void cacheMetadata(
       const blink::WebURL&, double, const char*, size_t);
+  virtual void cacheMetadata(const blink::WebURL&, int64, const char*, size_t);
   virtual blink::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
   virtual blink::WebStorageNamespace* createLocalStorageNamespace();

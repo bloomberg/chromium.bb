@@ -347,8 +347,20 @@ void RendererBlinkPlatformImpl::cacheMetadata(const blink::WebURL& url,
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.
   std::vector<char> copy(data, data + size);
-  RenderThread::Get()->Send(
-      new ViewHostMsg_DidGenerateCacheableMetadata(url, response_time, copy));
+  RenderThread::Get()->Send(new ViewHostMsg_DidGenerateCacheableMetadata(
+      url, base::Time::FromDoubleT(response_time), copy));
+}
+
+void RendererBlinkPlatformImpl::cacheMetadata(const blink::WebURL& url,
+                                              int64 response_time,
+                                              const char* data,
+                                              size_t size) {
+  // Let the browser know we generated cacheable metadata for this resource. The
+  // browser may cache it and return it on subsequent responses to speed
+  // the processing of this resource.
+  std::vector<char> copy(data, data + size);
+  RenderThread::Get()->Send(new ViewHostMsg_DidGenerateCacheableMetadata(
+      url, base::Time::FromInternalValue(response_time), copy));
 }
 
 WebString RendererBlinkPlatformImpl::defaultLocale() {

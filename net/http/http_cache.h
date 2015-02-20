@@ -178,7 +178,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // be performed asynchronously without any completion notification.
   void WriteMetadata(const GURL& url,
                      RequestPriority priority,
-                     double expected_response_time,
+                     base::Time expected_response_time,
                      IOBuffer* buf,
                      int buf_len);
 

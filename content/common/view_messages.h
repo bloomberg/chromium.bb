@@ -1469,10 +1469,10 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_Keygen,
                             std::string /* signed public key and challenge */)
 
 // Message sent from the renderer to the browser to request that the browser
-// cache |data| associated with |url|.
+// cache |data| associated with |url| and |expected_response_time|.
 IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                      GURL /* url */,
-                     double /* expected_response_time */,
+                     base::Time /* expected_response_time */,
                      std::vector<char> /* data */)
 
 // Register a new handler for URL requests with the given scheme.

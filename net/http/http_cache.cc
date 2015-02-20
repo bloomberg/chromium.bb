@@ -212,7 +212,7 @@ class HttpCache::MetadataWriter {
 
   // Implements the bulk of HttpCache::WriteMetadata.
   void Write(const GURL& url,
-             double expected_response_time,
+             base::Time expected_response_time,
              IOBuffer* buf,
              int buf_len);
 
@@ -225,13 +225,13 @@ class HttpCache::MetadataWriter {
   bool verified_;
   scoped_refptr<IOBuffer> buf_;
   int buf_len_;
-  double expected_response_time_;
+  base::Time expected_response_time_;
   HttpRequestInfo request_info_;
   DISALLOW_COPY_AND_ASSIGN(MetadataWriter);
 };
 
 void HttpCache::MetadataWriter::Write(const GURL& url,
-                                      double expected_response_time,
+                                      base::Time expected_response_time,
                                       IOBuffer* buf,
                                       int buf_len) {
   DCHECK_GT(buf_len, 0);
@@ -261,7 +261,7 @@ void HttpCache::MetadataWriter::VerifyResponse(int result) {
 
   const HttpResponseInfo* response_info = transaction_->GetResponseInfo();
   DCHECK(response_info->was_cached);
-  if (response_info->response_time.ToDoubleT() != expected_response_time_)
+  if (response_info->response_time != expected_response_time_)
     return SelfDestroy();
 
   result = transaction_->WriteMetadata(
@@ -579,7 +579,7 @@ bool HttpCache::ParseResponseInfo(const char* data, int len,
 
 void HttpCache::WriteMetadata(const GURL& url,
                               RequestPriority priority,
-                              double expected_response_time,
+                              base::Time expected_response_time,
                               IOBuffer* buf,
                               int buf_len) {
   if (!buf_len)

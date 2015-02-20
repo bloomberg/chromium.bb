@@ -988,7 +988,7 @@ net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(
 
 void RenderMessageFilter::OnCacheableMetadataAvailable(
     const GURL& url,
-    double expected_response_time,
+    base::Time expected_response_time,
     const std::vector<char>& data) {
   net::HttpCache* cache = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache();
