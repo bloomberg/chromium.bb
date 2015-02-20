@@ -448,7 +448,7 @@ def GypNinjaInstall(pepperdir, toolchains):
 
   for tc in set(toolchains) & set(['newlib', 'glibc', 'pnacl']):
     if tc == 'pnacl':
-      xarches = (None, 'ia32', 'x64')
+      xarches = (None, 'ia32', 'x64', 'arm')
     elif tc == 'glibc':
       xarches = ('ia32', 'x64')
     else:
@@ -483,14 +483,17 @@ def GypNinjaBuild_NaCl(rel_out_dir):
   out_dir_arm = MakeNinjaRelPath(rel_out_dir + '-arm')
   out_dir_clang_32 = MakeNinjaRelPath(rel_out_dir + '-clang-ia32')
   out_dir_clang_64 = MakeNinjaRelPath(rel_out_dir + '-clang-x64')
+  out_dir_clang_arm = MakeNinjaRelPath(rel_out_dir + '-clang-arm')
 
   GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_32)
   GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_64)
+  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
   GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
       out_dir_clang_32, gyp_defines=['use_nacl_clang=1'])
   GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
       out_dir_clang_64, gyp_defines=['use_nacl_clang=1'])
-  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
+  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
+      out_dir_clang_arm, gyp_defines=['use_nacl_clang=1'])
   GypNinjaBuild('x64', gyp_py, all_gyp, 'ncval_new', out_dir_64)
 
 
@@ -596,6 +599,8 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
                           ['use_nacl_clang=1'])
       GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-clang-x64',
                           ['use_nacl_clang=1'])
+      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-clang-arm',
+                          ['use_nacl_clang=1'])
 
       # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
       for arch in ('ia32', 'arm'):
@@ -657,6 +662,8 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'pnacl'),
                        'pnacl')
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
+                       'pnacl')
+    InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'arm'),
                        'pnacl')
 
 

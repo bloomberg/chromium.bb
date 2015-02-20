@@ -26,7 +26,7 @@ X86_64_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=strip)
 X86_64_NM := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=nm)
 endif
 
-ifneq (,$(findstring $(TOOLCHAIN),newlib bionic))
+ifneq (,$(findstring $(TOOLCHAIN),newlib bionic clang-newlib))
 ARM_SUPPORT=1
 endif
 
