@@ -944,7 +944,8 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
         MoveSelected(0, forward_dir, 0);
         return true;
       case ui::VKEY_UP:
-        MoveSelected(0, 0, -1);
+        if (selected_view_)  // Don't initiate selection with UP
+          MoveSelected(0, 0, -1);
         return true;
       case ui::VKEY_DOWN:
         MoveSelected(0, 0, 1);
@@ -956,6 +957,15 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
       case ui::VKEY_NEXT: {
         MoveSelected(1, 0, 0);
         return true;
+      }
+      case ui::VKEY_TAB: {
+        if (event.IsShiftDown()) {
+          ClearAnySelectedView();  // ContentsView will move focus back.
+        } else {
+          MoveSelected(0, 0, 0);  // Ensure but don't change selection.
+          handled = true;         // TABing internally doesn't move focus.
+        }
+        break;
       }
       default:
         break;

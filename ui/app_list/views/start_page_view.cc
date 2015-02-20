@@ -311,6 +311,9 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
 
+  if (event.key_code() == ui::VKEY_TAB && selection_index == -1)
+    tiles_container_->ClearSelectedIndex();  // ContentsView will handle focus.
+
   return false;
 }
 

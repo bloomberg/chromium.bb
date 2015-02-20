@@ -26,6 +26,7 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -323,6 +324,11 @@ void AppListMainView::QueryChanged(SearchBoxView* sender) {
 
 void AppListMainView::BackButtonPressed() {
   contents_view_->Back();
+}
+
+void AppListMainView::SetSearchResultSelection(bool select) {
+  if (contents_view_->GetActiveState() == AppListModel::STATE_SEARCH_RESULTS)
+    contents_view_->search_results_page_view()->SetSelection(select);
 }
 
 void AppListMainView::OnResultInstalled(SearchResult* result) {

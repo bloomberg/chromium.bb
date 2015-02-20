@@ -67,6 +67,45 @@ class ExperimentalSearchBoxBackground : public views::Background {
 
 }  // namespace
 
+// To paint grey background on mic and back buttons
+class SearchBoxImageButton : public views::ImageButton {
+ public:
+  explicit SearchBoxImageButton(views::ButtonListener* listener)
+      : ImageButton(listener), selected_(false) {}
+  ~SearchBoxImageButton() override {}
+
+  bool selected() { return selected_; }
+  void SetSelected(bool selected) {
+    if (selected_ == selected)
+      return;
+
+    selected_ = selected;
+    SchedulePaint();
+  }
+
+  bool OnKeyPressed(const ui::KeyEvent& event) override {
+    // Disable space key to press the button. The keyboard events received
+    // by this view are forwarded from a Textfield (SearchBoxView) and key
+    // released events are not forwarded. This leaves the button in pressed
+    // state.
+    if (event.key_code() == ui::VKEY_SPACE)
+      return false;
+
+    return CustomButton::OnKeyPressed(event);
+  }
+
+ private:
+  // views::View overrides:
+  void OnPaintBackground(gfx::Canvas* canvas) override {
+    if (state_ == STATE_HOVERED || state_ == STATE_PRESSED || selected_)
+      canvas->FillRect(gfx::Rect(size()), kSelectedColor);
+  }
+
+  bool selected_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxImageButton);
+};
+
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListViewDelegate* view_delegate)
     : delegate_(delegate),
@@ -78,13 +117,14 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       speech_button_(NULL),
       menu_button_(NULL),
       search_box_(new views::Textfield),
-      contents_view_(NULL) {
+      contents_view_(NULL),
+      focused_view_(FOCUS_SEARCH_BOX) {
   SetLayoutManager(new views::FillLayout);
   AddChildView(content_container_);
 
   if (switches::IsExperimentalAppListEnabled()) {
     SetShadow(GetShadowForZHeight(2));
-    back_button_ = new views::ImageButton(this);
+    back_button_ = new SearchBoxImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     back_button_->SetImage(
         views::ImageButton::STATE_NORMAL,
@@ -180,6 +220,64 @@ gfx::Rect SearchBoxView::GetViewBoundsForSearchBoxContentsBounds(
   return view_bounds;
 }
 
+views::ImageButton* SearchBoxView::back_button() {
+  return static_cast<views::ImageButton*>(back_button_);
+}
+
+// Returns true if set internally, i.e. if focused_view_ != CONTENTS_VIEW.
+// Note: because we always want to be able to type in the edit box, this is only
+// a faux-focus so that buttons can respond to the ENTER key.
+bool SearchBoxView::MoveTabFocus(bool move_backwards) {
+  if (back_button_)
+    back_button_->SetSelected(false);
+  if (speech_button_)
+    speech_button_->SetSelected(false);
+
+  switch (focused_view_) {
+    case FOCUS_BACK_BUTTON:
+      focused_view_ = move_backwards ? FOCUS_BACK_BUTTON : FOCUS_SEARCH_BOX;
+      break;
+    case FOCUS_SEARCH_BOX:
+      if (move_backwards) {
+        focused_view_ = back_button_ && back_button_->visible()
+            ? FOCUS_BACK_BUTTON : FOCUS_SEARCH_BOX;
+      } else {
+        focused_view_ = speech_button_ && speech_button_->visible()
+            ? FOCUS_MIC_BUTTON : FOCUS_CONTENTS_VIEW;
+      }
+      break;
+    case FOCUS_MIC_BUTTON:
+      focused_view_ = move_backwards ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
+      break;
+    case FOCUS_CONTENTS_VIEW:
+      focused_view_ = move_backwards
+          ? (speech_button_ && speech_button_->visible() ?
+              FOCUS_MIC_BUTTON : FOCUS_SEARCH_BOX)
+          : FOCUS_CONTENTS_VIEW;
+      break;
+    default:
+      DCHECK(false);
+  }
+
+  if (back_button_ && focused_view_ == FOCUS_BACK_BUTTON)
+    back_button_->SetSelected(true);
+  if (speech_button_ && focused_view_ == FOCUS_MIC_BUTTON)
+    speech_button_->SetSelected(true);
+
+  if (focused_view_ < FOCUS_CONTENTS_VIEW)
+    delegate_->SetSearchResultSelection(focused_view_ == FOCUS_SEARCH_BOX);
+
+  return (focused_view_ < FOCUS_CONTENTS_VIEW);
+}
+
+void SearchBoxView::ResetTabFocus(bool on_contents) {
+  if (back_button_)
+    back_button_->SetSelected(false);
+  if (speech_button_)
+    speech_button_->SetSelected(false);
+  focused_view_ = on_contents ? FOCUS_CONTENTS_VIEW : FOCUS_SEARCH_BOX;
+}
+
 gfx::Size SearchBoxView::GetPreferredSize() const {
   return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
@@ -222,8 +320,35 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   bool handled = false;
+  if (key_event.key_code() == ui::VKEY_TAB) {
+    if (focused_view_ != FOCUS_CONTENTS_VIEW &&
+        MoveTabFocus(key_event.IsShiftDown()))
+      return true;
+  }
+
+  if (focused_view_ == FOCUS_BACK_BUTTON && back_button_ &&
+      back_button_->OnKeyPressed(key_event))
+    return true;
+
+  if (focused_view_ == FOCUS_MIC_BUTTON && speech_button_ &&
+      speech_button_->OnKeyPressed(key_event))
+    return true;
+
   if (contents_view_ && contents_view_->visible())
     handled = contents_view_->OnKeyPressed(key_event);
+
+  // Arrow keys may have selected an item.  If they did, move focus off buttons.
+  // If they didn't, we still select the first search item, in case they're
+  // moving the caret through typed search text.  The UP arrow never moves
+  // focus from text/buttons to app list/results, so ignore it.
+  if (focused_view_ < FOCUS_CONTENTS_VIEW &&
+      (key_event.key_code() == ui::VKEY_LEFT ||
+       key_event.key_code() == ui::VKEY_RIGHT ||
+       key_event.key_code() == ui::VKEY_DOWN)) {
+    if (!handled)
+      delegate_->SetSearchResultSelection(true);
+    ResetTabFocus(handled);
+  }
 
   return handled;
 }
@@ -258,7 +383,7 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
       model_->search_box()->speech_button();
   if (speech_button_prop) {
     if (!speech_button_) {
-      speech_button_ = new views::ImageButton(this);
+      speech_button_ = new SearchBoxImageButton(this);
       content_container_->AddChildView(speech_button_);
     }
 

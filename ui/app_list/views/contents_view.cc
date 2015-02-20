@@ -222,6 +222,11 @@ void ContentsView::ActivePageChanged() {
     app_list_main_view_->model()->ClearCustomLauncherPageSubpages();
   }
 
+  app_list_main_view_->search_box_view()->ResetTabFocus(false);
+  apps_container_view_->apps_grid_view()->ClearAnySelectedView();
+  apps_container_view_->app_list_folder_view()->items_grid_view()
+      ->ClearAnySelectedView();
+
   if (custom_page_view_) {
     custom_page_view_->SetFocusable(state ==
                                     AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
@@ -509,7 +514,17 @@ void ContentsView::Layout() {
 }
 
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
-  return view_model_->view_at(GetActivePageIndex())->OnKeyPressed(event);
+  bool handled =
+      view_model_->view_at(GetActivePageIndex())->OnKeyPressed(event);
+
+  if (!handled) {
+    if (event.key_code() == ui::VKEY_TAB && event.IsShiftDown()) {
+      GetSearchBoxView()->MoveTabFocus(true);
+      handled = true;
+    }
+  }
+
+  return handled;
 }
 
 void ContentsView::TotalPagesChanged() {

@@ -39,6 +39,8 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   void SetFolderItem(AppListFolderItem* folder_item);
   void UpdateFolderNameVisibility(bool visible);
   void OnFolderItemRemoved();
+  bool HasTextFocus() const;
+  void SetTextFocus();
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;

@@ -26,6 +26,7 @@ class APP_LIST_EXPORT SearchResultPageView : public views::View {
   ~SearchResultPageView() override;
 
   int selected_index() { return selected_index_; }
+  void SetSelection(bool select);  // Set or unset result selection.
 
   void AddSearchResultContainerView(
       AppListModel::SearchResults* result_model,

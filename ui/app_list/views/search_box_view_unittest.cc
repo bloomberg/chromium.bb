@@ -114,6 +114,8 @@ class SearchBoxViewTest : public views::test::WidgetTest,
 
   void BackButtonPressed() override {}
 
+  void SetSearchResultSelection(bool select) override {}
+
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_;
   SearchBoxView* view_;

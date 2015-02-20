@@ -68,6 +68,13 @@ SearchResultPageView::SearchResultPageView() : selected_index_(0) {
 SearchResultPageView::~SearchResultPageView() {
 }
 
+void SearchResultPageView::SetSelection(bool select) {
+  if (select)
+    SetSelectedIndex(0);
+  else
+    result_container_views_[selected_index_]->ClearSelectedIndex();
+}
+
 void SearchResultPageView::AddSearchResultContainerView(
     AppListModel::SearchResults* results_model,
     SearchResultContainerView* result_container) {
@@ -111,8 +118,7 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
 
-  // Capture the Tab key to prevent defocusing of the search box.
-  return event.key_code() == ui::VKEY_TAB;
+  return false;
 }
 
 void SearchResultPageView::SetSelectedIndex(int index) {

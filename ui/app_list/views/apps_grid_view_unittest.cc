@@ -736,7 +736,7 @@ TEST_F(AppsGridViewTest, HighlightWithKeyboard) {
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
       first_index_on_page2)));
 
-  // Moving onto a a page with too few apps to support the expected index snaps
+  // Moving onto a page with too few apps to support the expected index snaps
   // to the last available index.
   apps_grid_view_->SetSelectedView(GetItemViewAt(last_index_on_page2_last_row));
   SimulateKeyPress(ui::VKEY_RIGHT);
@@ -747,12 +747,10 @@ TEST_F(AppsGridViewTest, HighlightWithKeyboard) {
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
       last_index)));
 
-
-
   // After page switch, arrow keys select first item on current page.
   apps_grid_view_->SetSelectedView(GetItemViewAt(first_index));
   GetPaginationModel()->SelectPage(1, false);
-  SimulateKeyPress(ui::VKEY_UP);
+  SimulateKeyPress(ui::VKEY_LEFT);
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(
       first_index_on_page2)));
 }

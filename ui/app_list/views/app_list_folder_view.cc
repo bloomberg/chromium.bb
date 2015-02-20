@@ -127,6 +127,23 @@ void AppListFolderView::Layout() {
 }
 
 bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Process TAB if focus should go to header; otherwise, AppsGridView will do
+  // the right thing.
+  if (event.key_code() == ui::VKEY_TAB) {
+    if (items_grid_view_->has_selected_view() == event.IsShiftDown() &&
+        !folder_header_view_->HasTextFocus()) {
+      folder_header_view_->SetTextFocus();
+      items_grid_view_->ClearAnySelectedView();
+      return true;
+    } else {
+      GiveBackFocusToSearchBox();
+    }
+  }
+
+  // This will select an app in the list, so we need to relinquish focus.
+  if (event.key_code() == ui::VKEY_DOWN)
+    GiveBackFocusToSearchBox();
+
   return items_grid_view_->OnKeyPressed(event);
 }
 

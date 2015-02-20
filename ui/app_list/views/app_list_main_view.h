@@ -109,6 +109,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(SearchBoxView* sender) override;
   void BackButtonPressed() override;
+  void SetSearchResultSelection(bool select) override;
 
   // Overridden from SearchResultListViewDelegate:
   void OnResultInstalled(SearchResult* result) override;

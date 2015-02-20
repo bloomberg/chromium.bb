@@ -18,6 +18,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/painter.h"
 
 namespace app_list {
@@ -114,6 +115,18 @@ void FolderHeaderView::UpdateFolderNameVisibility(bool visible) {
 
 void FolderHeaderView::OnFolderItemRemoved() {
   folder_item_ = NULL;
+}
+
+void FolderHeaderView::SetTextFocus() {
+  if (!folder_name_view_->HasFocus()) {
+    views::FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager)
+      focus_manager->SetFocusedView(folder_name_view_);
+  }
+}
+
+bool FolderHeaderView::HasTextFocus() const {
+  return folder_name_view_->HasFocus();
 }
 
 void FolderHeaderView::Update() {

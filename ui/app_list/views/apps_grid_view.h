@@ -97,6 +97,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void ClearSelectedView(AppListItemView* view);
   void ClearAnySelectedView();
   bool IsSelectedView(const AppListItemView* view) const;
+  bool has_selected_view() const { return selected_view_ != nullptr; }
 
   void InitiateDrag(AppListItemView* view,
                     Pointer pointer,
@@ -124,7 +125,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Return true if the |bounds_animator_| is animating |view|.
   bool IsAnimatingView(AppListItemView* view);
 
-  bool has_dragged_view() const { return drag_view_ != NULL; }
+  bool has_dragged_view() const { return drag_view_ != nullptr; }
   bool dragging() const { return drag_pointer_ != NONE; }
 
   // Gets the PaginationModel used for the grid view.
@@ -202,7 +203,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   }
 
   // For test: Return if the drag and drop handler was set.
-  bool has_drag_and_drop_host_for_test() { return NULL != drag_and_drop_host_; }
+  bool has_drag_and_drop_host_for_test() {
+    return nullptr != drag_and_drop_host_;
+  }
 
   // For test: Return if the drag and drop operation gets dispatched.
   bool forward_events_to_drag_and_drop_host_for_test() {
