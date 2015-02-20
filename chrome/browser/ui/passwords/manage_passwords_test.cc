@@ -21,6 +21,12 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+ManagePasswordsTest::ManagePasswordsTest() {
+}
+
+ManagePasswordsTest::~ManagePasswordsTest() {
+}
+
 void ManagePasswordsTest::SetUpOnMainThread() {
   AddTabAtIndex(0, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
 }

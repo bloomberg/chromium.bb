@@ -283,6 +283,9 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
       for (CXXRecordDecl::ctor_iterator it = record->ctor_begin();
            it != record->ctor_end();
            ++it) {
+        // The current check is buggy. An implicit copy constructor does not
+        // have an inline body, so this check never fires for classes with a
+        // user-declared out-of-line constructor.
         if (it->hasInlineBody()) {
           if (it->isCopyConstructor() &&
               !record->hasUserDeclaredCopyConstructor()) {
@@ -293,6 +296,15 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
             emitWarning(it->getInnerLocStart(),
                         "Complex constructor has an inlined body.");
           }
+        } else if (it->isInlined() && (!it->isCopyOrMoveConstructor() ||
+                                       it->isExplicitlyDefaulted())) {
+          // isInlined() is a more reliable check than hasInlineBody(), but
+          // unfortunately, it results in warnings for implicit copy/move
+          // constructors in the previously mentioned situation. To preserve
+          // compatibility with existing Chromium code, only warn if it's an
+          // explicitly defaulted copy or move constructor.
+          emitWarning(it->getInnerLocStart(),
+                      "Complex constructor has an inlined body.");
         }
       }
     }
@@ -306,7 +318,7 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
                   "Complex class/struct needs an explicit out-of-line "
                   "destructor.");
     } else if (CXXDestructorDecl* dtor = record->getDestructor()) {
-      if (dtor->hasInlineBody()) {
+      if (dtor->isInlined()) {
         emitWarning(dtor->getInnerLocStart(),
                     "Complex destructor has an inline body.");
       }

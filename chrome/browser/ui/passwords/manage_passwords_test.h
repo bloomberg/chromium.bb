@@ -22,8 +22,8 @@ class GURL;
 // to poke at the bubble, icon, and controller's state.
 class ManagePasswordsTest : public InProcessBrowserTest {
  public:
-  ManagePasswordsTest() = default;
-  ~ManagePasswordsTest() = default;
+  ManagePasswordsTest();
+  ~ManagePasswordsTest();
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
