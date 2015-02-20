@@ -869,7 +869,7 @@ FileManager.prototype = /** @struct */ {
             // NOTE: That dynamic values, like volume name MUST NOT
             // be sent to GA as that value can contain PII.
             // VolumeType is an enum.
-            this.tracker_.sendAppView(volumeInfo.volumeType());
+            this.tracker_.sendAppView(volumeInfo.volumeType);
           }
         }.bind(this));
 
