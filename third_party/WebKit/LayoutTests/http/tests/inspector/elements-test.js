@@ -317,14 +317,13 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
     sidebarPane.expand();
-    sidebarPane._treeOutline.expand();
 
     function listenersArrived()
     {
-        var listenerTypes = sidebarPane._treeOutline.children;
+        var listenerTypes = sidebarPane._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
             listenerTypes[i].expand();
-            var listenerItems = listenerTypes[i].children;
+            var listenerItems = listenerTypes[i].children();
             for (var j = 0; j < listenerItems.length; ++j)
                 listenerItems[j].expand();
         }
@@ -333,12 +332,12 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     function objectsExpanded()
     {
-        var listenerTypes = sidebarPane._treeOutline.children;
+        var listenerTypes = sidebarPane._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
             var eventType = listenerTypes[i]._title;
             InspectorTest.addResult("");
             InspectorTest.addResult("======== " + eventType + " ========");
-            var listenerItems = listenerTypes[i].children;
+            var listenerItems = listenerTypes[i].children();
             for (var j = 0; j < listenerItems.length; ++j)
                 InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
         }
@@ -351,8 +350,8 @@ InspectorTest.dumpObjectPropertyTreeElement = function(treeElement)
     var expandedSubstring = treeElement.expanded ? "[expanded]" : "[collapsed]";
     InspectorTest.addResult(expandedSubstring + " " + treeElement.listItemElement.deepTextContent());
 
-    for (var i = 0; i < treeElement.children.length; ++i) {
-        var property = treeElement.children[i].property;
+    for (var i = 0; i < treeElement.childCount(); ++i) {
+        var property = treeElement.childAt(i).property;
         var key = property.name;
         var value = property.value._description;
         InspectorTest.addResult("    " + key + ": " + value);
@@ -372,11 +371,11 @@ InspectorTest.dumpObjectPropertySectionDeep = function(section)
             InspectorTest.addResult(prefix + domNodeToString(treeElement.nameElement) + " => " + domNodeToString(treeElement.valueElement));
         else
             InspectorTest.addResult(prefix + treeElement.title);
-        for (var i = 0; i < treeElement.children.length; i++)
-            dumpTreeElementRecursively(treeElement.children[i], prefix + "    ");
+        for (var i = 0; i < treeElement.childCount(); i++)
+            dumpTreeElementRecursively(treeElement.childAt(i), prefix + "    ");
     }
 
-    var childNodes = section.propertiesTreeOutline.children;
+    var childNodes = section.propertiesTreeOutline.rootElement().children();
     for (var i = 0; i < childNodes.length; i++) {
         dumpTreeElementRecursively(childNodes[i], "");
     }
@@ -405,9 +404,9 @@ InspectorTest.getMatchedStylePropertyTreeItem = function(propertyName)
 
 InspectorTest.getFirstPropertyTreeItemForSection = function(section, propertyName)
 {
-    var outline = section.propertiesTreeOutline;
-    for (var i = 0; i < outline.children.length; ++i) {
-        var treeItem = outline.children[i];
+    var outline = section.propertiesTreeOutline.rootElement();
+    for (var i = 0; i < outline.childCount(); ++i) {
+        var treeItem = outline.childAt(i);
         if (treeItem.name === propertyName)
             return treeItem;
     }
@@ -416,7 +415,7 @@ InspectorTest.getFirstPropertyTreeItemForSection = function(section, propertyNam
 
 InspectorTest.dumpStyleTreeOutline = function(treeItem, depth)
 {
-    var children = treeItem.children;
+    var children = treeItem.rootElement().children();
     for (var i = 0; i < children.length; ++i)
         InspectorTest.dumpStyleTreeItem(children[i], "", depth || 2);
 };
@@ -445,7 +444,7 @@ InspectorTest.dumpStyleTreeItem = function(treeItem, prefix, depth)
     InspectorTest.addResult(prefix + typePrefix + textContent);
     if (--depth) {
         treeItem.expand();
-        var children = treeItem.children;
+        var children = treeItem.children();
         for (var i = 0; children && i < children.length; ++i)
             InspectorTest.dumpStyleTreeItem(children[i], prefix + "    ", depth);
     }
@@ -491,7 +490,8 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 
     function print(treeItem, prefix, depth)
     {
-        if (treeItem.listItemElement) {
+        var isRoot = treeItem === treeItem.treeOutline._rootElement;
+        if (!isRoot) {
             var expander;
             if (treeItem.hasChildren) {
                 if (treeItem.expanded)
@@ -521,8 +521,8 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
         if (!treeItem.expanded)
             return;
 
-        var children = treeItem.children;
-        var newPrefix = treeItem === treeItem.treeOutline ? "" : prefix + "    ";
+        var children = treeItem.children();
+        var newPrefix = isRoot ? "" : prefix + "    ";
         for (var i = 0; depth && children && i < children.length; ++i) {
             if (!children[i]._elementCloseTag)
                 print(children[i], newPrefix, depth - 1);
@@ -533,7 +533,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
 
     var treeOutline = InspectorTest.firstElementsTreeOutline();
     treeOutline.runPendingUpdates();
-    print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
+    print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline.rootElement(), "", depth || 10000);
 };
 
 InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
@@ -545,7 +545,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
     function didUpdate()
     {
         var treeOutline = InspectorTest.firstElementsTreeOutline();
-        print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
+        print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline.rootElement(), "", depth || 10000);
         if (!hasHighlights)
             InspectorTest.addResult("<No highlights>");
         if (callback)
@@ -554,7 +554,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
 
     function print(treeItem, prefix, depth)
     {
-        if (treeItem.listItemElement) {
+        if (!treeItem.root) {
             var elementXPath = WebInspector.DOMPresentationUtils.xPath(treeItem._node, true);
             var highlightedElements = treeItem.listItemElement.querySelectorAll(".dom-update-highlight");
             for (var i = 0; i < highlightedElements.length; ++i) {
@@ -577,7 +577,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
         if (!treeItem.expanded)
             return;
 
-        var children = treeItem.children;
+        var children = treeItem.children();
         var newPrefix = treeItem === treeItem.treeOutline ? "" : prefix + "    ";
         for (var i = 0; depth && children && i < children.length; ++i) {
             if (!children[i]._elementCloseTag)
@@ -593,7 +593,7 @@ InspectorTest.expandElementsTree = function(callback)
 
     function expand(treeItem)
     {
-        var children = treeItem.children;
+        var children = treeItem.children();
         for (var i = 0; children && i < children.length; ++i) {
             var child = children[i];
             if (child.hasChildren && !child.expanded) {
@@ -607,7 +607,7 @@ InspectorTest.expandElementsTree = function(callback)
     function onAllNodesAvailable()
     {
         InspectorTest.firstElementsTreeOutline().runPendingUpdates();
-        expand(InspectorTest.firstElementsTreeOutline());
+        expand(InspectorTest.firstElementsTreeOutline().rootElement());
         // Make all promises succeed.
         setTimeout(callback.bind(null, expandedSomething));
     }

@@ -14,7 +14,7 @@ function test()
         InspectorTest.addResult("===== Initial state of tree outline =====\n");
         dump();
 
-        var topNode = treeOutline.children[0].children[1].children[1];
+        var topNode = treeOutline.rootElement().childAt(0).childAt(1).childAt(1);
         topNode.expandRecursively();
         InspectorTest.runAfterPendingDispatches(secondStep);
     };

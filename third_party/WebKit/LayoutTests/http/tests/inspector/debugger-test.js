@@ -363,14 +363,16 @@ InspectorTest.dumpNavigatorView = function(navigatorView, id, prefix)
     function dumpNavigatorTreeElement(prefix, treeElement)
     {
         InspectorTest.addResult(prefix + treeElement.titleText);
-        for (var i = 0; i < treeElement.children.length; ++i)
-            dumpNavigatorTreeElement(prefix + "  ", treeElement.children[i]);
+        var children = treeElement.children();
+        for (var i = 0; i < children.length; ++i)
+            dumpNavigatorTreeElement(prefix + "  ", children[i]);
     }
 
     function dumpNavigatorTreeOutline(prefix, treeOutline)
     {
-        for (var i = 0; i < treeOutline.children.length; ++i)
-            dumpNavigatorTreeElement(prefix + "  ", treeOutline.children[i]);
+        var children = treeOutline.rootElement().children();
+        for (var i = 0; i < children.length; ++i)
+            dumpNavigatorTreeElement(prefix + "  ", children[i]);
     }
 };
 
@@ -421,7 +423,7 @@ InspectorTest.expandProperties = function(properties, callback)
             InspectorTest.safeWrap(callback)();
             return;
         }
-        var parentTreeElement = properties[index++];
+        var parentTreeElement = properties[index++].rootElement();
         var path = properties[index++];
         InspectorTest._expandProperty(parentTreeElement, path, 0, expandNextPath);
     }
@@ -448,7 +450,7 @@ InspectorTest._expandProperty = function(parentTreeElement, path, pathIndex, cal
 
 InspectorTest._findChildPropertyTreeElement = function(parent, childName)
 {
-    var children = parent.children;
+    var children = parent.children();
     for (var i = 0; i < children.length; i++) {
         var treeElement = children[i];
         var property = treeElement.property;

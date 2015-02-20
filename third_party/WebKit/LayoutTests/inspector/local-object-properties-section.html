@@ -14,7 +14,7 @@ function test()
     var propertiesSection = new WebInspector.ObjectPropertiesSection(localObject, "local object");
     propertiesTreeOutline = propertiesSection.propertiesTreeOutline;
     propertiesSection.update();
-    propertiesTreeOutline.children[1].expand();
+    propertiesTreeOutline.rootElement().childAt(1).expand();
 
     InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(propertiesSection.element));
     InspectorTest.completeTest();

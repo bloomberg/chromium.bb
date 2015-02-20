@@ -211,7 +211,7 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
 
                 if (!deepFilter)
                     continue;
-                var treeElements = node._section.propertiesTreeOutline.children;
+                var treeElements = node._section.propertiesTreeOutline.rootElement().children();
                 for (var j = 0; j < treeElements.length; ++j) {
                     for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(true, null, true)) {
                         if (deepFilter(treeElement))

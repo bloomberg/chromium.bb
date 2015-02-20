@@ -82,19 +82,19 @@ InspectorTest.dumpApplicationCacheTree = function()
 {
     InspectorTest.addResult("Dumping application cache tree:");
     var applicationCacheTreeElement = WebInspector.panels.resources.applicationCacheListTreeElement;
-    if (!applicationCacheTreeElement.children.length) {
+    if (!applicationCacheTreeElement.childCount()) {
         InspectorTest.addResult("    (empty)");
         return;
     }
-    for (var i = 0; i < applicationCacheTreeElement.children.length; ++i) {
-        var manifestTreeElement = applicationCacheTreeElement.children[i];
+    for (var i = 0; i < applicationCacheTreeElement.childCount(); ++i) {
+        var manifestTreeElement = applicationCacheTreeElement.childAt(i);
         InspectorTest.addResult("    Manifest URL: " + manifestTreeElement.manifestURL);
-        if (!manifestTreeElement.children.length) {
+        if (!manifestTreeElement.childCount()) {
             InspectorTest.addResult("    (no frames)");
             continue;
         }
-        for (var j = 0; j < manifestTreeElement.children.length; ++j) {
-            var frameTreeElement = manifestTreeElement.children[j];
+        for (var j = 0; j < manifestTreeElement.childCount(); ++j) {
+            var frameTreeElement = manifestTreeElement.childAt(j);
             InspectorTest.addResult("        Frame: " + frameTreeElement.displayName);
         }
     }

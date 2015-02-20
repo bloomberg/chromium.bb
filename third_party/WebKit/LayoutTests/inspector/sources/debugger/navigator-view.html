@@ -37,7 +37,7 @@ function test()
 
     function expandDomains(tree)
     {
-        var children = sourcesNavigatorView._scriptsTree.children;
+        var children = sourcesNavigatorView._scriptsTree.rootElement().children();
         for (var i = 0; i < children.length; ++i)
           children[i].expand();
     }

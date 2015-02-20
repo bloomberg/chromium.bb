@@ -54,7 +54,7 @@ function test()
             InspectorTest.addSniffer(WebInspector.FileSystemModel.prototype, "_directoryContentReceived", testStep.shift(), false);
             fileSystemItem.select();
             fileSystemView = fileSystemItem._fileSystemView;
-            directoryTree = fileSystemView._directoryTree;
+            directoryTree = fileSystemView._directoryTree.rootElement();
         },
 
         function() {
@@ -69,7 +69,7 @@ function test()
             InspectorTest.addSniffer(WebInspector.FileSystemModel.prototype, "_directoryContentReceived", testStep.shift(), true);
             InspectorTest.addSniffer(WebInspector.FileSystemModel.prototype, "requestDirectoryContent", requestSent, true);
 
-            directoryTree.children[0].expandRecursively();
+            directoryTree.firstChild().expandRecursively();
         },
 
         function() {
@@ -97,10 +97,10 @@ function test()
             InspectorTest.addResult(indent + "entry: " + treeNode._entry.url)
         else
             InspectorTest.addResult(indent + "entry: (null)")
-        InspectorTest.addResult(indent + "#children: " + treeNode.children.length);
+        InspectorTest.addResult(indent + "#children: " + treeNode.childCount());
 
-        for (var i = 0; i < treeNode.children.length; ++i)
-            dumpDirectoryTree(treeNode.children[i], indent + "  ");
+        for (var i = 0; i < treeNode.childCount(); ++i)
+            dumpDirectoryTree(treeNode.childAt(i), indent + "  ");
     }
 }
 </script>

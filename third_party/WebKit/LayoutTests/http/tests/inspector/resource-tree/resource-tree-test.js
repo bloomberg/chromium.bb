@@ -59,7 +59,7 @@ InspectorTest.dumpResourcesTree = function()
         InspectorTest.addResult(prefix + treeItem.listItemElement.textContent);
 
         treeItem.expand();
-        var children = treeItem.children;
+        var children = treeItem.children();
         for (var i = 0; children && i < children.length; ++i)
             dump(children[i], prefix + "    ");
     }

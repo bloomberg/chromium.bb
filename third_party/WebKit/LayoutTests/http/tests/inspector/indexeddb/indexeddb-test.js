@@ -4,26 +4,26 @@ InspectorTest.dumpIndexedDBTree = function()
 {
     InspectorTest.addResult("Dumping IndexedDB tree:");
     var indexedDBTreeElement = WebInspector.panels.resources.indexedDBListTreeElement;
-    if (!indexedDBTreeElement.children.length) {
+    if (!indexedDBTreeElement.childCount()) {
         InspectorTest.addResult("    (empty)");
         return;
     }
-    for (var i = 0; i < indexedDBTreeElement.children.length; ++i) {
-        var databaseTreeElement = indexedDBTreeElement.children[i];
+    for (var i = 0; i < indexedDBTreeElement.childCount(); ++i) {
+        var databaseTreeElement = indexedDBTreeElement.childAt(i);
         InspectorTest.addResult("    database: " + databaseTreeElement.titleText);
-        if (!databaseTreeElement.children.length) {
+        if (!databaseTreeElement.childCount()) {
             InspectorTest.addResult("        (no object stores)");
             continue;
         }
-        for (var j = 0; j < databaseTreeElement.children.length; ++j) {
-            var objectStoreTreeElement = databaseTreeElement.children[j];
+        for (var j = 0; j < databaseTreeElement.childCount(); ++j) {
+            var objectStoreTreeElement = databaseTreeElement.childAt(j);
             InspectorTest.addResult("        Object store: " + objectStoreTreeElement.titleText);
-            if (!objectStoreTreeElement.children.length) {
+            if (!objectStoreTreeElement.childCount()) {
                 InspectorTest.addResult("            (no indexes)");
                 continue;
             }
-            for (var j = 0; j < objectStoreTreeElement.children.length; ++j) {
-                var indexTreeElement = objectStoreTreeElement.children[j];
+            for (var j = 0; j < objectStoreTreeElement.childCount(); ++j) {
+                var indexTreeElement = objectStoreTreeElement.childAt(j);
                 InspectorTest.addResult("            Index: " + indexTreeElement.titleText);
             }
         }

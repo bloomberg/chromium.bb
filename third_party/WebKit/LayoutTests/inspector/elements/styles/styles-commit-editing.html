@@ -44,7 +44,7 @@ function test()
 
         function testNewPropertyEditorIsCreated(next)
         {
-            var blankTreeElement = treeOutline.children[1];
+            var blankTreeElement = treeOutline.rootElement().childAt(1);
             if (!WebInspector.isBeingEdited(blankTreeElement.nameElement)) {
                 InspectorTest.addResult("No new property editor active!");
                 InspectorTest.completeTest();
@@ -58,7 +58,7 @@ function test()
 
         function testCycleThroughPropertyEditing(next)
         {
-            if (!WebInspector.isBeingEdited(treeOutline.children[0].nameElement)) {
+            if (!WebInspector.isBeingEdited(treeOutline.firstChild().nameElement)) {
                 InspectorTest.addResult("Original property name editor not active!");
                 InspectorTest.completeTest();
                 return;

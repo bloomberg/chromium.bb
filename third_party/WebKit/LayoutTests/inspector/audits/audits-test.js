@@ -5,7 +5,7 @@ InspectorTest.preloadPanel("audits");
 
 InspectorTest.collectAuditResults = function()
 {
-    WebInspector.panels.audits.showResults(WebInspector.panels.audits.auditResultsTreeElement.children[0].results);
+    WebInspector.panels.audits.showResults(WebInspector.panels.audits.auditResultsTreeElement.firstChild().results);
     var liElements = WebInspector.panels.audits.visibleView.element.getElementsByTagName("li");
     for (var j = 0; j < liElements.length; ++j) {
         if (liElements[j].treeElement)
