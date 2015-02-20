@@ -358,14 +358,16 @@ void PepperVideoRenderer3D::PaintIfNeeded() {
   EnsureProgramForTexture(picture.texture_target);
 
   gles2_if_->UseProgram(graphics_3d, shader_program_);
-  if (picture.texture_target == GL_TEXTURE_RECTANGLE_ARB) {
-    gles2_if_->Uniform2f(graphics_3d, shader_texcoord_scale_location_,
-                         static_cast<GLfloat>(picture.texture_size.width),
-                         static_cast<GLfloat>(picture.texture_size.height));
-  } else {
-    gles2_if_->Uniform2f(
-        graphics_3d, shader_texcoord_scale_location_, 1.0, 1.0);
+
+  // Calculate v_scale passed to the vertex shader.
+  double scale_x = picture.visible_rect.size.width;
+  double scale_y = picture.visible_rect.size.height;
+  if (picture.texture_target != GL_TEXTURE_RECTANGLE_ARB) {
+    scale_x /= picture.texture_size.width;
+    scale_y /= picture.texture_size.height;
   }
+  gles2_if_->Uniform2f(graphics_3d, shader_texcoord_scale_location_,
+                       scale_x, scale_y);
 
   // Set viewport position & dimensions.
   gles2_if_->Viewport(graphics_3d, 0, 0, view_size_.width(),
