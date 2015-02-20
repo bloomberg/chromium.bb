@@ -28,9 +28,9 @@ TEST(ProcUtil, HasOpenDirectory) {
   // No open directory should exist at startup.
   EXPECT_FALSE(ProcUtil::HasOpenDirectory(-1));
   {
-    // Have a "/dev" file descriptor around.
-    int dev_fd = open("/dev", O_RDONLY | O_DIRECTORY);
-    base::ScopedFD dev_fd_closer(dev_fd);
+    // Have a "/proc" file descriptor around.
+    int proc_fd = open("/proc", O_RDONLY | O_DIRECTORY);
+    base::ScopedFD proc_fd_closer(proc_fd);
     EXPECT_TRUE(ProcUtil::HasOpenDirectory(-1));
   }
   EXPECT_FALSE(ProcUtil::HasOpenDirectory(-1));
@@ -48,14 +48,14 @@ TEST(ProcUtil, HasOpenDirectoryWithFD) {
   EXPECT_FALSE(ProcUtil::HasOpenDirectory(proc_fd));
 
   {
-    // Have a "/dev" file descriptor around.
-    int dev_fd = open("/dev", O_RDONLY | O_DIRECTORY);
-    base::ScopedFD dev_fd_closer(dev_fd);
+    // Have a directory file descriptor around.
+    int open_directory_fd = open("/proc/self", O_RDONLY | O_DIRECTORY);
+    base::ScopedFD open_directory_fd_closer(open_directory_fd);
     EXPECT_TRUE(ProcUtil::HasOpenDirectory(proc_fd));
   }
 
-  // The "/dev" file descriptor should now be closed, |proc_fd| is the only
-  // directory file descriptor open.
+  // The "/proc/self" file descriptor should now be closed, |proc_fd| is the
+  // only directory file descriptor open.
   EXPECT_FALSE(ProcUtil::HasOpenDirectory(proc_fd));
 }
 
