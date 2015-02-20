@@ -200,6 +200,10 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
+#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+#include "chrome/browser/ui/app_list/google_now_extension.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
@@ -575,6 +579,10 @@ void MigrateUserPrefs(Profile* profile) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   autofill::AutofillManager::MigrateUserPrefs(prefs);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+  MigrateGoogleNowPrefs(profile);
+#endif
 }
 
 void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {

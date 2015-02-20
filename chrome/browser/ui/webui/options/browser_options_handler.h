@@ -303,6 +303,9 @@ class BrowserOptionsHandler
   // Callback for "launchHotwordAudioVerificationApp" message.
   void HandleLaunchHotwordAudioVerificationApp(const base::ListValue* args);
 
+  // Callback for "requestGoogleNowAvailable" message.
+  void HandleRequestGoogleNowAvailable(const base::ListValue* args);
+
   // Callback for "launchEasyUnlockSetup" message.
   void HandleLaunchEasyUnlockSetup(const base::ListValue* args);
 

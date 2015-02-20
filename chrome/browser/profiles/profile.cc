@@ -113,6 +113,13 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
+  // This pref is intentionally outside the above #if. That flag corresponds
+  // to the Notifier extension and does not gate the launcher page.
+  // TODO(skare): Remove or rename ENABLE_GOOGLE_NOW: http://crbug.com/459827.
+  registry->RegisterBooleanPref(
+      prefs::kGoogleNowLauncherEnabled,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kDisableExtensions,
       false,

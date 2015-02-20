@@ -277,6 +277,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "fontSizeLabelSmall", IDS_OPTIONS_FONT_SIZE_LABEL_SMALL },
     { "fontSizeLabelVeryLarge", IDS_OPTIONS_FONT_SIZE_LABEL_VERY_LARGE },
     { "fontSizeLabelVerySmall", IDS_OPTIONS_FONT_SIZE_LABEL_VERY_SMALL },
+    { "googleNowLauncherEnable", IDS_OPTIONS_ENABLE_GOOGLE_NOW },
     { "hideAdvancedSettings", IDS_SETTINGS_HIDE_ADVANCED_SETTINGS },
     { "homePageNtp", IDS_OPTIONS_HOMEPAGE_NTP },
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
@@ -779,6 +780,11 @@ void BrowserOptionsHandler::RegisterMessages() {
   }
 #endif
   web_ui()->RegisterMessageCallback(
+      "requestGoogleNowAvailable",
+      base::Bind(&BrowserOptionsHandler::HandleRequestGoogleNowAvailable,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "requestHotwordAvailable",
       base::Bind(&BrowserOptionsHandler::HandleRequestHotwordAvailable,
                  base::Unretained(this)));
@@ -1214,6 +1220,7 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
   SetupExtensionControlledIndicators();
 
   HandleRequestHotwordAvailable(nullptr);
+  HandleRequestGoogleNowAvailable(nullptr);
 }
 
 void BrowserOptionsHandler::SetDefaultSearchEngine(
@@ -1685,6 +1692,27 @@ void BrowserOptionsHandler::SetHotwordAudioHistorySectionVisible(
       "BrowserOptions.setAudioHistorySectionVisible",
       base::FundamentalValue(visible),
       base::StringValue(audio_history_state));
+}
+
+void BrowserOptionsHandler::HandleRequestGoogleNowAvailable(
+    const base::ListValue* args) {
+  bool is_search_provider_google = false;
+  if (template_url_service_ && template_url_service_->loaded()) {
+    const TemplateURL* default_url =
+        template_url_service_->GetDefaultSearchProvider();
+    if (default_url && default_url->HasGoogleBaseURLs(
+            template_url_service_->search_terms_data())) {
+      is_search_provider_google = true;
+    }
+  }
+
+  std::string group = base::FieldTrialList::FindFullName("GoogleNowLauncher");
+  bool has_field_trial = !group.empty() && group != "Disabled";
+
+  bool should_show = is_search_provider_google && has_field_trial;
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setNowSectionVisible",
+      base::FundamentalValue(should_show));
 }
 
 void BrowserOptionsHandler::HandleRequestHotwordAvailable(

@@ -246,6 +246,8 @@ cr.define('options', function() {
           $('hotword-always-on-search-checkbox');
       chrome.send('requestHotwordAvailable');
 
+      chrome.send('requestGoogleNowAvailable');
+
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
           chrome.send('openWallpaperManager');
@@ -1254,6 +1256,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Controls the visibility of the Now settings.
+     * @param {boolean} visible Whether to show Now settings.
+     * @private
+     */
+    setNowSectionVisible_: function(visible) {
+      $('google-now-launcher').hidden = !visible;
+    },
+
+    /**
      * Activates the Audio History section of the Settings page.
      * @param {boolean} visible Whether the audio history section is visible.
      * @param {string} labelText Text describing current audio history state.
@@ -2173,6 +2184,7 @@ cr.define('options', function() {
     'setHotwordRetrainLinkVisible',
     'setNativeThemeButtonEnabled',
     'setNetworkPredictionValue',
+    'setNowSectionVisible',
     'setHighContrastCheckboxState',
     'setAllHotwordSectionsVisible',
     'setMetricsReportingCheckboxState',
