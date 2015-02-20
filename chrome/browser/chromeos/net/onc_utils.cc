@@ -217,6 +217,8 @@ void ImportNetworksForUser(const user_manager::User* user,
         normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
                                    *network);
 
+    // TODO(pneubeck): Use ONC and ManagedNetworkConfigurationHandler instead.
+    // crbug.com/457936
     scoped_ptr<base::DictionaryValue> shill_dict =
         onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
                                        *normalized_network);
@@ -243,7 +245,7 @@ void ImportNetworksForUser(const user_manager::User* user,
           NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
               NetworkTypePattern::Ethernet());
       if (ethernet) {
-        config_handler->SetProperties(
+        config_handler->SetShillProperties(
             ethernet->path(), *shill_dict,
             NetworkConfigurationObserver::SOURCE_USER_ACTION, base::Closure(),
             network_handler::ErrorCallback());
@@ -252,9 +254,8 @@ void ImportNetworksForUser(const user_manager::User* user,
       }
 
     } else {
-      config_handler->CreateConfiguration(
-          *shill_dict,
-          NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      config_handler->CreateShillConfiguration(
+          *shill_dict, NetworkConfigurationObserver::SOURCE_USER_ACTION,
           network_handler::StringResultCallback(),
           network_handler::ErrorCallback());
     }

@@ -231,7 +231,7 @@ void NetworkStateNotifier::ShowNetworkConnectError(
     return;
   }
   // Get the up-to-date properties for the network and display the error.
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       service_path,
       base::Bind(&NetworkStateNotifier::ConnectErrorPropertiesSucceeded,
                  weak_ptr_factory_.GetWeakPtr(), error_name),

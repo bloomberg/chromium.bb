@@ -51,8 +51,7 @@ const char kInvalidUserSettings[] = "InvalidUserSettings";
 const char kNetworkAlreadyConfigured[] = "NetworkAlreadyConfigured";
 const char kPoliciesNotInitialized[] = "PoliciesNotInitialized";
 const char kProfileNotInitialized[] = "ProfileNotInitialized";
-const char kSetOnUnconfiguredNetwork[] = "SetCalledOnUnconfiguredNetwork";
-const char kUnknownProfilePath[] = "UnknownProfilePath";
+const char kUnconfiguredNetwork[] = "UnconfiguredNetwork";
 const char kUnknownNetwork[] = "UnknownNetwork";
 
 std::string ToDebugString(::onc::ONCSource source,
@@ -120,16 +119,14 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
     InvokeErrorCallback(service_path, error_callback, kPoliciesNotInitialized);
     return;
   }
-  network_configuration_handler_->GetProperties(
+  network_configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback,
           weak_ptr_factory_.GetWeakPtr(),
           base::Bind(
               &ManagedNetworkConfigurationHandlerImpl::SendManagedProperties,
-              weak_ptr_factory_.GetWeakPtr(),
-              userhash,
-              callback,
+              weak_ptr_factory_.GetWeakPtr(), userhash, callback,
               error_callback)),
       error_callback);
 }
@@ -200,15 +197,13 @@ void ManagedNetworkConfigurationHandlerImpl::GetProperties(
     const std::string& service_path,
     const network_handler::DictionaryResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
-  network_configuration_handler_->GetProperties(
+  network_configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback,
           weak_ptr_factory_.GetWeakPtr(),
           base::Bind(&ManagedNetworkConfigurationHandlerImpl::SendProperties,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback,
-                     error_callback)),
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback)),
       error_callback);
 }
 
@@ -240,20 +235,16 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   }
 
   std::string guid = state->guid();
-  if (guid.empty()) {
-    // TODO(pneubeck): create an initial configuration in this case. As for
-    // CreateConfiguration, user settings from older ChromeOS versions have to
-    // determined here.
-    InvokeErrorCallback(
-        service_path, error_callback, kSetOnUnconfiguredNetwork);
-    return;
-  }
+  DCHECK(!guid.empty());
 
   const std::string& profile_path = state->profile_path();
   const NetworkProfile *profile =
       network_profile_handler_->GetProfileForPath(profile_path);
   if (!profile) {
-    InvokeErrorCallback(service_path, error_callback, kUnknownProfilePath);
+    // TODO(pneubeck): create an initial configuration in this case. As for
+    // CreateConfiguration, user settings from older ChromeOS versions have to
+    // be determined here.
+    InvokeErrorCallback(service_path, error_callback, kUnconfiguredNetwork);
     return;
   }
 
@@ -313,7 +304,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
                                             network_policy,
                                             validated_user_settings.get()));
 
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, *shill_dictionary,
       NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
       error_callback);
@@ -357,7 +348,7 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
                                             NULL,  // no network policy
                                             &properties));
 
-  network_configuration_handler_->CreateConfiguration(
+  network_configuration_handler_->CreateShillConfiguration(
       *shill_dictionary, NetworkConfigurationObserver::SOURCE_USER_ACTION,
       callback, error_callback);
 }
@@ -503,7 +494,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileRemoved(
 
 void ManagedNetworkConfigurationHandlerImpl::CreateConfigurationFromPolicy(
     const base::DictionaryValue& shill_properties) {
-  network_configuration_handler_->CreateConfiguration(
+  network_configuration_handler_->CreateShillConfiguration(
       shill_properties, NetworkConfigurationObserver::SOURCE_POLICY,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
@@ -540,7 +531,7 @@ void ManagedNetworkConfigurationHandlerImpl::
 
   shill_properties.MergeDictionary(&new_properties);
 
-  network_configuration_handler_->CreateConfiguration(
+  network_configuration_handler_->CreateShillConfiguration(
       shill_properties, NetworkConfigurationObserver::SOURCE_POLICY,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,

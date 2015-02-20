@@ -31,7 +31,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/device_event_log.h"
 #include "chromeos/network/device_state.h"
-#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"

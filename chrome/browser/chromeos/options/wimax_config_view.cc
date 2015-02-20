@@ -347,10 +347,9 @@ void WimaxConfigView::Init() {
   UpdateErrorLabel();
 
   if (wimax) {
-    NetworkHandler::Get()->network_configuration_handler()->GetProperties(
-        service_path_,
-        base::Bind(&WimaxConfigView::InitFromProperties,
-                   weak_ptr_factory_.GetWeakPtr()),
+    NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
+        service_path_, base::Bind(&WimaxConfigView::InitFromProperties,
+                                  weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&ShillError, "GetProperties"));
   }
 }

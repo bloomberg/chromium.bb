@@ -293,7 +293,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
   // Request additional properties to check. VerifyConfiguredAndConnect will
   // use only these properties, not cached properties, to ensure that they
   // are up to date after any recent configuration.
-  configuration_handler_->GetProperties(
+  configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(&NetworkConnectionHandler::VerifyConfiguredAndConnect,
                  AsWeakPtr(), check_error_state),
@@ -504,16 +504,13 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   if (!config_properties.empty()) {
     NET_LOG_EVENT("Configuring Network", service_path);
-    configuration_handler_->SetProperties(
-        service_path,
-        config_properties,
+    configuration_handler_->SetShillProperties(
+        service_path, config_properties,
         NetworkConfigurationObserver::SOURCE_USER_ACTION,
-        base::Bind(&NetworkConnectionHandler::CallShillConnect,
-                   AsWeakPtr(),
+        base::Bind(&NetworkConnectionHandler::CallShillConnect, AsWeakPtr(),
                    service_path),
         base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
-                   AsWeakPtr(),
-                   service_path));
+                   AsWeakPtr(), service_path));
     return;
   }
 

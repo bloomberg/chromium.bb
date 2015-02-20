@@ -64,8 +64,24 @@ const char kUser1ProfilePath[] = "/profile/user1/shill";
 MATCHER_P(IsEqualTo,
           value,
           std::string(negation ? "isn't" : "is") + " equal to " +
-          ValueToString(value)) {
+              ValueToString(value)) {
   return value->Equals(&arg);
+}
+
+// Match properties in |value| to |arg|. |arg| may contain extra properties).
+MATCHER_P(MatchesProperties,
+          value,
+          std::string(negation ? "does't match " : "matches ") +
+              ValueToString(value)) {
+  for (base::DictionaryValue::Iterator iter(*value); !iter.IsAtEnd();
+       iter.Advance()) {
+    const base::Value* property;
+    if (!arg.GetWithoutPathExpansion(iter.key(), &property) ||
+        !iter.value().Equals(property)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 class ShillProfileTestClient {
@@ -865,8 +881,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
-                  IsEqualTo(expected_shill_properties.get()),
-                  _, _));
+                  MatchesProperties(expected_shill_properties.get()), _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
             kUser1,

@@ -89,7 +89,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
       ErrorCallback(guid, "Error.InvalidNetworkGuid", nullptr);
       return;
     }
-    NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+    NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
         service_path,
         base::Bind(&NetworkConfigMessageHandler::GetShillPropertiesSuccess,
                    weak_ptr_factory_.GetWeakPtr()),

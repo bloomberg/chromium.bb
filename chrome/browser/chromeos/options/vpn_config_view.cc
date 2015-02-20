@@ -375,7 +375,7 @@ bool VPNConfigView::Login() {
     }
 
     ui::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
-                                                              shared);
+                                                             shared);
   } else {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
@@ -693,10 +693,9 @@ void VPNConfigView::Init() {
   Refresh();
 
   if (vpn) {
-    NetworkHandler::Get()->network_configuration_handler()->GetProperties(
-        service_path_,
-        base::Bind(&VPNConfigView::InitFromProperties,
-                   weak_ptr_factory_.GetWeakPtr()),
+    NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
+        service_path_, base::Bind(&VPNConfigView::InitFromProperties,
+                                  weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&VPNConfigView::GetPropertiesError,
                    weak_ptr_factory_.GetWeakPtr()));
   }

@@ -68,11 +68,11 @@ class NetworkConnectImpl : public NetworkConnect {
   void ActivateCellular(const std::string& service_path) override;
   void ShowMobileSetup(const std::string& service_path) override;
   void ConfigureNetworkAndConnect(const std::string& service_path,
-                                  const base::DictionaryValue& properties,
+                                  const base::DictionaryValue& shill_properties,
                                   bool shared) override;
-  void CreateConfigurationAndConnect(base::DictionaryValue* properties,
+  void CreateConfigurationAndConnect(base::DictionaryValue* shill_properties,
                                      bool shared) override;
-  void CreateConfiguration(base::DictionaryValue* properties,
+  void CreateConfiguration(base::DictionaryValue* shill_properties,
                            bool shared) override;
   base::string16 GetShillErrorString(const std::string& error,
                                      const std::string& service_path) override;
@@ -290,7 +290,7 @@ void NetworkConnectImpl::OnConfigureSucceeded(bool connect_on_configure,
 }
 
 void NetworkConnectImpl::CallCreateConfiguration(
-    base::DictionaryValue* properties,
+    base::DictionaryValue* shill_properties,
     bool shared,
     bool connect_on_configure) {
   std::string profile_path;
@@ -299,14 +299,16 @@ void NetworkConnectImpl::CallCreateConfiguration(
         NetworkConnectionHandler::kErrorConfigureFailed, "");
     return;
   }
-  properties->SetStringWithoutPathExpansion(shill::kProfileProperty,
-                                            profile_path);
-  NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
-      *properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&NetworkConnectImpl::OnConfigureSucceeded,
-                 weak_factory_.GetWeakPtr(), connect_on_configure),
-      base::Bind(&NetworkConnectImpl::OnConfigureFailed,
-                 weak_factory_.GetWeakPtr()));
+  shill_properties->SetStringWithoutPathExpansion(shill::kProfileProperty,
+                                                  profile_path);
+  NetworkHandler::Get()
+      ->network_configuration_handler()
+      ->CreateShillConfiguration(
+          *shill_properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+          base::Bind(&NetworkConnectImpl::OnConfigureSucceeded,
+                     weak_factory_.GetWeakPtr(), connect_on_configure),
+          base::Bind(&NetworkConnectImpl::OnConfigureFailed,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void NetworkConnectImpl::SetPropertiesFailed(
@@ -342,7 +344,7 @@ void NetworkConnectImpl::ClearPropertiesAndConnect(
   NET_LOG_USER("ClearPropertiesAndConnect", service_path);
   // After configuring a network, ignore any (possibly stale) error state.
   const bool check_error_state = false;
-  NetworkHandler::Get()->network_configuration_handler()->ClearProperties(
+  NetworkHandler::Get()->network_configuration_handler()->ClearShillProperties(
       service_path, properties_to_clear,
       base::Bind(&NetworkConnectImpl::CallConnectToNetwork,
                  weak_factory_.GetWeakPtr(), service_path, check_error_state),
@@ -355,7 +357,7 @@ void NetworkConnectImpl::ConfigureSetProfileSucceeded(
     scoped_ptr<base::DictionaryValue> properties_to_set) {
   std::vector<std::string> properties_to_clear;
   SetPropertiesToClear(properties_to_set.get(), &properties_to_clear);
-  NetworkHandler::Get()->network_configuration_handler()->SetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
       service_path, *properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&NetworkConnectImpl::ClearPropertiesAndConnect,

@@ -1195,11 +1195,9 @@ void WifiConfigView::Init(bool show_8021x) {
   UpdateErrorLabel();
 
   if (network) {
-    NetworkHandler::Get()->network_configuration_handler()->GetProperties(
-        service_path_,
-        base::Bind(&WifiConfigView::InitFromProperties,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   show_8021x),
+    NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
+        service_path_, base::Bind(&WifiConfigView::InitFromProperties,
+                                  weak_ptr_factory_.GetWeakPtr(), show_8021x),
         base::Bind(&ShillError, "GetProperties"));
   }
 }

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -263,7 +264,7 @@ void VpnService::NetworkListChanged() {
       continue;
     }
 
-    network_configuration_handler_->GetProperties(
+    network_configuration_handler_->GetShillProperties(
         iter->path(), base::Bind(&VpnService::OnGetPropertiesSuccess,
                                  weak_factory_.GetWeakPtr()),
         base::Bind(&VpnService::OnGetPropertiesFailure,
@@ -316,7 +317,12 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
   properties.SetStringWithoutPathExpansion(shill::kConfigurationNameProperty,
                                            configuration_name);
 
-  network_configuration_handler_->CreateConfiguration(
+  // Note: This will not create an entry in |policy_util|. TODO(pneubeck):
+  // Determine the correct thing to do here, crbug.com/459278.
+  std::string guid = base::GenerateGUID();
+  properties.SetStringWithoutPathExpansion(shill::kGuidProperty, guid);
+
+  network_configuration_handler_->CreateShillConfiguration(
       properties, NetworkConfigurationObserver::SOURCE_EXTENSION_INSTALL,
       base::Bind(&VpnService::OnCreateConfigurationSuccess,
                  weak_factory_.GetWeakPtr(), success, configuration),

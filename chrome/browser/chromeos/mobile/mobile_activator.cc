@@ -277,7 +277,7 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
 }
 
 void MobileActivator::ContinueActivation() {
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       service_path_,
       base::Bind(&MobileActivator::GetPropertiesAndContinueActivation,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -313,13 +313,11 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   // We want shill to connect us after activations, so enable autoconnect.
   base::DictionaryValue auto_connect_property;
   auto_connect_property.SetBoolean(shill::kAutoConnectProperty, true);
-  NetworkHandler::Get()->network_configuration_handler()->SetProperties(
-      service_path_,
-      auto_connect_property,
+  NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
+      service_path_, auto_connect_property,
       // Activation is triggered by the UI.
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&base::DoNothing),
-      network_handler::ErrorCallback());
+      base::Bind(&base::DoNothing), network_handler::ErrorCallback());
   StartActivation();
 }
 

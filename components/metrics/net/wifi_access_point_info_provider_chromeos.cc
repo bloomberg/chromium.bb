@@ -51,10 +51,9 @@ void WifiAccessPointInfoProviderChromeos::DefaultNetworkChanged(
     return;
 
   // Retrieve access point info for wifi connection.
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       default_network->path(),
-      base::Bind(&WifiAccessPointInfoProviderChromeos::ParseInfo,
-                 AsWeakPtr()),
+      base::Bind(&WifiAccessPointInfoProviderChromeos::ParseInfo, AsWeakPtr()),
       chromeos::network_handler::ErrorCallback());
 }
 

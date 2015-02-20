@@ -66,19 +66,20 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
 
   // Gets the properties of the network with id |service_path|. See note on
   // |callback| and |error_callback|, in class description above.
-  void GetProperties(const std::string& service_path,
-                     const network_handler::DictionaryResultCallback& callback,
-                     const network_handler::ErrorCallback& error_callback);
+  void GetShillProperties(
+      const std::string& service_path,
+      const network_handler::DictionaryResultCallback& callback,
+      const network_handler::ErrorCallback& error_callback);
 
   // Sets the properties of the network with id |service_path|. This means the
   // given properties will be merged with the existing settings, and it won't
   // clear any existing properties. See notes on |source| and callbacks in class
   // description above.
-  void SetProperties(const std::string& service_path,
-                     const base::DictionaryValue& properties,
-                     NetworkConfigurationObserver::Source source,
-                     const base::Closure& callback,
-                     const network_handler::ErrorCallback& error_callback);
+  void SetShillProperties(const std::string& service_path,
+                          const base::DictionaryValue& shill_properties,
+                          NetworkConfigurationObserver::Source source,
+                          const base::Closure& callback,
+                          const network_handler::ErrorCallback& error_callback);
 
   // Removes the properties with the given property paths. If any of them are
   // unable to be cleared, the |error_callback| will only be run once with
@@ -86,19 +87,22 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   // "errors" key of the error data, and the |callback| will not be run, even
   // though some of the properties may have been cleared. If there are no
   // errors, |callback| will be run.
-  void ClearProperties(const std::string& service_path,
-                       const std::vector<std::string>& property_paths,
-                       const base::Closure& callback,
-                       const network_handler::ErrorCallback& error_callback);
+  void ClearShillProperties(
+      const std::string& service_path,
+      const std::vector<std::string>& property_paths,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
 
   // Creates a network with the given |properties| in the specified Shill
   // profile, and returns the new service_path to |callback| if successful.
   // kProfileProperty must be set in |properties|. See notes on |source| and
   // callbacks in class description above. This may also be used to update an
   // existing matching configuration, see Shill documentation for
-  // Manager.ConfigureServiceForProfile.
-  void CreateConfiguration(
-      const base::DictionaryValue& properties,
+  // Manager.ConfigureServiceForProfile. NOTE: Normally
+  // ManagedNetworkConfigurationHandler should be used to call
+  // CreateConfiguration. This will set GUID if not provided.
+  void CreateShillConfiguration(
+      const base::DictionaryValue& shill_properties,
       NetworkConfigurationObserver::Source source,
       const network_handler::StringResultCallback& callback,
       const network_handler::ErrorCallback& error_callback);
@@ -124,7 +128,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       NetworkStateHandler* network_state_handler,
       NetworkDeviceHandler* network_device_handler);
 
- protected:
+ private:
   friend class ClientCertResolverTest;
   friend class NetworkHandler;
   friend class NetworkConfigurationHandlerTest;

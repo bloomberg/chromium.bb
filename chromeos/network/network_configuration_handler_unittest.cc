@@ -277,6 +277,14 @@ class NetworkConfigurationHandlerTest : public testing::Test {
         service_path);
   }
 
+  void CreateConfiguration(const std::string& service_path,
+                           const base::DictionaryValue& properties) {
+    network_configuration_handler_->CreateShillConfiguration(
+        properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+        base::Bind(&StringResultCallback, service_path),
+        base::Bind(&ErrorCallback, false, std::string()));
+  }
+
  protected:
   MockShillManagerClient* mock_manager_client_;
   MockShillProfileClient* mock_profile_client_;
@@ -310,7 +318,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   EXPECT_CALL(*mock_service_client_, GetProperties(_, _))
       .WillOnce(
           Invoke(this, &NetworkConfigurationHandlerTest::OnGetProperties));
-  network_configuration_handler_->GetProperties(
+  network_configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(&DictionaryValueCallback, service_path, expected_json),
       base::Bind(&ErrorCallback, false, service_path));
@@ -330,7 +338,7 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
           Invoke(this, &NetworkConfigurationHandlerTest::OnSetProperties));
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));
@@ -351,7 +359,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
           Invoke(this, &NetworkConfigurationHandlerTest::OnSetProperties));
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));
@@ -363,7 +371,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
   EXPECT_CALL(*mock_service_client_, ClearProperties(_, _, _, _))
       .WillOnce(
           Invoke(this, &NetworkConfigurationHandlerTest::OnClearProperties));
-  network_configuration_handler_->ClearProperties(
+  network_configuration_handler_->ClearShillProperties(
       service_path, values_to_clear, base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));
   message_loop_.RunUntilIdle();
@@ -383,7 +391,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
   EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
       .WillOnce(
           Invoke(this, &NetworkConfigurationHandlerTest::OnSetProperties));
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, false, service_path));
@@ -395,7 +403,7 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
   EXPECT_CALL(*mock_service_client_, ClearProperties(_, _, _, _))
       .WillOnce(Invoke(
           this, &NetworkConfigurationHandlerTest::OnClearPropertiesError));
-  network_configuration_handler_->ClearProperties(
+  network_configuration_handler_->ClearShillProperties(
       service_path, values_to_clear, base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback, true, service_path));
   message_loop_.RunUntilIdle();
@@ -417,10 +425,7 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
               ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))
       .WillOnce(
           Invoke(this, &NetworkConfigurationHandlerTest::OnConfigureService));
-  network_configuration_handler_->CreateConfiguration(
-      value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&StringResultCallback, std::string("/service/2")),
-      base::Bind(&ErrorCallback, false, std::string()));
+  CreateConfiguration("/service/2", value);
   message_loop_.RunUntilIdle();
 }
 
@@ -533,7 +538,7 @@ class NetworkConfigurationHandlerStubTest : public testing::Test {
     properties.SetStringWithoutPathExpansion(
         shill::kProfileProperty, NetworkProfileHandler::GetSharedProfilePath());
 
-    network_configuration_handler_->CreateConfiguration(
+    network_configuration_handler_->CreateShillConfiguration(
         properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
         base::Bind(
             &NetworkConfigurationHandlerStubTest::CreateConfigurationCallback,
@@ -588,7 +593,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
                                                   test_identity);
   properties_to_set.SetStringWithoutPathExpansion(shill::kPassphraseProperty,
                                                   test_passphrase);
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&NetworkConfigurationHandlerStubTest::SuccessCallback,
@@ -610,7 +615,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubSetAndClearProperties) {
   std::vector<std::string> properties_to_clear;
   properties_to_clear.push_back(shill::kIdentityProperty);
   properties_to_clear.push_back(shill::kPassphraseProperty);
-  network_configuration_handler_->ClearProperties(
+  network_configuration_handler_->ClearShillProperties(
       service_path, properties_to_clear,
       base::Bind(&NetworkConfigurationHandlerStubTest::SuccessCallback,
                  base::Unretained(this), "ClearProperties"),
@@ -635,7 +640,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   base::DictionaryValue properties_to_set;
   properties_to_set.SetStringWithoutPathExpansion(shill::kWifiHexSsid,
                                                   wifi_hex);
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
@@ -647,7 +652,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubGetNameFromWifiHex) {
   EXPECT_EQ(wifi_hex, wifi_hex_result);
 
   // Get Properties
-  network_configuration_handler_->GetProperties(
+  network_configuration_handler_->GetShillProperties(
       service_path,
       base::Bind(&NetworkConfigurationHandlerStubTest::GetPropertiesCallback,
                  base::Unretained(this)),
@@ -696,7 +701,7 @@ TEST_F(NetworkConfigurationHandlerStubTest, NetworkConfigurationObserver) {
   base::DictionaryValue properties_to_set;
   properties_to_set.SetStringWithoutPathExpansion(shill::kPassphraseProperty,
                                                   test_passphrase);
-  network_configuration_handler_->SetProperties(
+  network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
       NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),

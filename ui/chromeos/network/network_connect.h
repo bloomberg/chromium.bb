@@ -81,18 +81,19 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
   // connect request. The profile is set according to 'shared' if allowed.
   virtual void ConfigureNetworkAndConnect(
       const std::string& service_path,
-      const base::DictionaryValue& properties,
+      const base::DictionaryValue& shill_properties,
       bool shared) = 0;
 
   // Requests a new network configuration to be created from a dictionary of
   // Shill properties and sends a connect request if the configuration succeeds.
   // The profile used is determined by |shared|.
-  virtual void CreateConfigurationAndConnect(base::DictionaryValue* properties,
-                                             bool shared) = 0;
+  virtual void CreateConfigurationAndConnect(
+      base::DictionaryValue* shill_properties,
+      bool shared) = 0;
 
   // Requests a new network configuration to be created from a dictionary of
   // Shill properties. The profile used is determined by |shared|.
-  virtual void CreateConfiguration(base::DictionaryValue* properties,
+  virtual void CreateConfiguration(base::DictionaryValue* shill_properties,
                                    bool shared) = 0;
 
   // Returns the localized string for shill error string |error|.

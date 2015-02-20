@@ -268,14 +268,12 @@ void MobileSetupUIHTMLSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       path,
       base::Bind(&MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+                 weak_ptr_factory_.GetWeakPtr(), callback),
       base::Bind(&MobileSetupUIHTMLSource::GetPropertiesFailure,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback, path));
+                 weak_ptr_factory_.GetWeakPtr(), callback, path));
 }
 
 void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
@@ -399,15 +397,12 @@ void MobileSetupHandler::OnActivationStateChanged(
     return;
   }
 
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       network->path(),
       base::Bind(&MobileSetupHandler::GetPropertiesAndCallStatusChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 state,
-                 error_description),
+                 weak_ptr_factory_.GetWeakPtr(), state, error_description),
       base::Bind(&MobileSetupHandler::GetPropertiesFailure,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 network->path(),
+                 weak_ptr_factory_.GetWeakPtr(), network->path(),
                  kJsDeviceStatusChangedCallback));
 }
 
@@ -529,13 +524,12 @@ void MobileSetupHandler::HandleGetDeviceInfo(const base::ListValue* args) {
     }
   }
 
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
+  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
       network->path(),
       base::Bind(&MobileSetupHandler::GetPropertiesAndCallGetDeviceInfo,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&MobileSetupHandler::GetPropertiesFailure,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 network->path(),
+                 weak_ptr_factory_.GetWeakPtr(), network->path(),
                  kJsGetDeviceInfoCallback));
 }
 
