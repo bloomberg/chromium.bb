@@ -85,7 +85,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // NavigationController know about each other. This will be possible once
   // initialization of Navigator and NavigationController is properly done.
   virtual bool NavigateToPendingEntry(
-      RenderFrameHostImpl* render_frame_host,
+      FrameTreeNode* frame_tree_node,
       NavigationController::ReloadType reload_type);
 
 

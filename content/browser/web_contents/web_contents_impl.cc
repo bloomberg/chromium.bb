@@ -1958,6 +1958,8 @@ bool WebContentsImpl::NavigateToPendingEntry(
 
   // Navigate in the FrameTreeNode specified in the pending entry, if any.  This
   // is currently only used in --site-per-process and tests.
+  // TODO(creis): Remove this method and NavigationEntryImpl::frame_tree_node_id
+  // by using FrameNavigationEntries instead.  See https://crbug.com/236848.
   NavigationEntryImpl* pending_entry =
       NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry());
   if (pending_entry->frame_tree_node_id() != -1) {
@@ -1968,8 +1970,7 @@ bool WebContentsImpl::NavigateToPendingEntry(
       node = subframe;
   }
 
-  return node->navigator()->NavigateToPendingEntry(
-      node->current_frame_host(), reload_type);
+  return node->navigator()->NavigateToPendingEntry(node, reload_type);
 }
 
 void WebContentsImpl::RenderFrameForInterstitialPageCreated(

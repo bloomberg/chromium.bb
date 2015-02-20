@@ -321,7 +321,7 @@ void NavigatorImpl::DidFailLoadWithError(
 }
 
 bool NavigatorImpl::NavigateToEntry(
-    RenderFrameHostImpl* render_frame_host,
+    FrameTreeNode* frame_tree_node,
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
@@ -340,18 +340,14 @@ bool NavigatorImpl::NavigateToEntry(
   // capture the time needed for the RenderFrameHost initialization.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
-  RenderFrameHostManager* manager =
-      render_frame_host->frame_tree_node()->render_manager();
+  RenderFrameHostManager* manager = frame_tree_node->render_manager();
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     navigation_data_.reset(new NavigationMetricsData(
         navigation_start, entry.GetURL(), entry.restore_type()));
-    RequestNavigation(render_frame_host->frame_tree_node(),
-                      entry,
-                      reload_type,
-                      navigation_start);
+    RequestNavigation(frame_tree_node, entry, reload_type, navigation_start);
     return true;
   }
 
@@ -369,7 +365,7 @@ bool NavigatorImpl::NavigateToEntry(
 
   // Notify observers that we will navigate in this RenderFrame.
   if (delegate_) {
-    delegate_->AboutToNavigateRenderFrame(render_frame_host,
+    delegate_->AboutToNavigateRenderFrame(frame_tree_node->current_frame_host(),
                                           dest_render_frame_host);
   }
 
@@ -423,10 +419,10 @@ bool NavigatorImpl::NavigateToEntry(
 }
 
 bool NavigatorImpl::NavigateToPendingEntry(
-    RenderFrameHostImpl* render_frame_host,
+    FrameTreeNode* frame_tree_node,
     NavigationController::ReloadType reload_type) {
   return NavigateToEntry(
-      render_frame_host,
+      frame_tree_node,
       *NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry()),
       reload_type);
 }

@@ -15,7 +15,7 @@ NavigationController* Navigator::GetController() {
 }
 
 bool Navigator::NavigateToPendingEntry(
-    RenderFrameHostImpl* render_frame_host,
+    FrameTreeNode* frame_tree_node,
     NavigationController::ReloadType reload_type) {
   return false;
 }

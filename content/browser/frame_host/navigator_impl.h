@@ -51,7 +51,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                    const FrameHostMsg_DidCommitProvisionalLoad_Params&
                        input_params) override;
   bool NavigateToPendingEntry(
-      RenderFrameHostImpl* render_frame_host,
+      FrameTreeNode* frame_tree_node,
       NavigationController::ReloadType reload_type) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const GURL& url,
@@ -101,7 +101,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Navigates to the given entry, which must be the pending entry.  Private
   // because all callers should use NavigateToPendingEntry.
   bool NavigateToEntry(
-      RenderFrameHostImpl* render_frame_host,
+      FrameTreeNode* frame_tree_node,
       const NavigationEntryImpl& entry,
       NavigationController::ReloadType reload_type);
 
