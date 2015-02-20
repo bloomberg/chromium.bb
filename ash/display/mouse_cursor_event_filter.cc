@@ -110,7 +110,6 @@ void MovePointInside(const gfx::Rect& native_bounds,
 
 MouseCursorEventFilter::MouseCursorEventFilter()
     : mouse_warp_mode_(WARP_ALWAYS),
-      was_mouse_warped_(false),
       drag_source_root_(NULL),
       scale_when_drag_started_(1.0f),
       shared_display_edge_indicator_(new SharedDisplayEdgeIndicator) {

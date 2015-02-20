@@ -96,16 +96,10 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   void GetSrcAndDstRootWindows(aura::Window** src_window,
                                aura::Window** dst_window);
 
-  void reset_was_mouse_warped_for_test() { was_mouse_warped_ = false; }
-
   bool WarpMouseCursorIfNecessaryForTest(aura::Window* target_root,
                                          const gfx::Point& point_in_screen);
 
   MouseWarpMode mouse_warp_mode_;
-
-  // This flag is used to suppress the accidental mouse warp back to the
-  // original display.
-  bool was_mouse_warped_;
 
   // The bounds for warp hole windows. |dst_indicator_bounds_| is kept
   // in the instance for testing.

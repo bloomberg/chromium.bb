@@ -31,7 +31,6 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
                                   gfx::Point point_in_screen) {
     bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
         target_root, point_in_screen);
-    event_filter()->reset_was_mouse_warped_for_test();
     return is_warped;
   }
 
@@ -46,7 +45,6 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
     event_filter()->OnMouseEvent(&pressed);
     bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
         target_root, point_in_screen);
-    event_filter()->reset_was_mouse_warped_for_test();
 
     ui::MouseEvent released(ui::ET_MOUSE_RELEASED, location, location,
                             ui::EventTimeForNow(), 0, 0);
@@ -155,8 +153,6 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
       root_windows[0], gfx::Point(499, 123)));
   EXPECT_EQ("500,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-
-  event_filter()->reset_was_mouse_warped_for_test();
 
   // Touch the edge of 2nd display again and make sure it warps to
   // 1st dislay.
