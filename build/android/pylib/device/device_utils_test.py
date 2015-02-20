@@ -1404,6 +1404,12 @@ class DeviceUtilsParallelTest(mock_calls.TestCase):
           and serial == str(device),
           'Expected a DeviceUtils object with serial %s' % serial)
 
+  def testParallel_noDevices(self):
+    with self.assertCall(
+        mock.call.pylib.device.adb_wrapper.AdbWrapper.GetDevices(), []):
+      with self.assertRaises(device_errors.NoDevicesError):
+        device_utils.DeviceUtils.parallel()
+
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)

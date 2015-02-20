@@ -1428,6 +1428,8 @@ class DeviceUtils(object):
     """
     if not devices:
       devices = adb_wrapper.AdbWrapper.GetDevices()
+      if not devices:
+        raise device_errors.NoDevicesError()
     devices = [d if isinstance(d, cls) else cls(d) for d in devices]
     if async:
       return parallelizer.Parallelizer(devices)
