@@ -186,12 +186,11 @@ class VideoImageGenerator : public SkImageGenerator {
     return true;
   }
 
-  // TODO (scroggo): Rename to onGetPixels once Skia is updated.
-  Result onGetPixelsEnum(const SkImageInfo& info,
-                   void* pixels,
-                   size_t row_bytes,
-                   SkPMColor ctable[],
-                   int* ctable_count) override {
+  Result onGetPixels(const SkImageInfo& info,
+                     void* pixels,
+                     size_t row_bytes,
+                     SkPMColor ctable[],
+                     int* ctable_count) override {
     if (!frame_.get())
       return kInvalidInput;
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
