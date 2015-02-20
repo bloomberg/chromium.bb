@@ -113,6 +113,9 @@ class AppBannerManager : public content::WebContentsObserver {
   // Cancels an active BitmapFetcher, stopping its banner from appearing.
   void CancelActiveFetcher();
 
+  // Whether or not the banners should appear for native apps.
+  static bool IsEnabledForNativeApps();
+
   // Icon size that we want to be use for the launcher.
   const int preferred_icon_size_;
 

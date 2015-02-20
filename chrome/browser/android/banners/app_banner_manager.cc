@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
@@ -174,6 +175,9 @@ void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
       || (manifest.name.is_null() && manifest.short_name.is_null())
       || !DoesManifestContainRequiredIcon(manifest)) {
     // No usable manifest, see if there is a play store meta tag.
+    if (!IsEnabledForNativeApps())
+      return;
+
     Send(new ChromeViewMsg_RetrieveMetaTagContent(routing_id(),
                                                   validated_url_,
                                                   kBannerTag));
@@ -383,6 +387,12 @@ bool AppBannerManager::FetchIcon(const GURL& image_url) {
 }
 
 // static
+bool AppBannerManager::IsEnabledForNativeApps() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAppInstallAlerts);
+}
+
+// static
 base::Time AppBannerManager::GetCurrentTime() {
   return base::Time::Now() + gTimeDeltaForTesting;
 }
@@ -393,8 +403,9 @@ jlong Init(JNIEnv* env, jobject obj, jint icon_size) {
 }
 
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAppInstallAlerts);
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AppBanners");
+  return group_name == "Enabled";
 }
 
 void SetTimeDeltaForTesting(JNIEnv* env, jclass clazz, jint days) {

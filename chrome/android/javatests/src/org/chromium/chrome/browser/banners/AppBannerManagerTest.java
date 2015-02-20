@@ -11,7 +11,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.infobar.AnimationHelper;
@@ -131,6 +133,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         });
     }
 
+    @CommandLineFlags.Add(ChromeSwitches.ENABLE_APP_INSTALL_ALERTS)
     @SmallTest
     @Feature({"AppBanners"})
     public void testBannerAppears() throws Exception {
@@ -148,6 +151,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         assertTrue(waitUntilAppBannerInfoBarAppears());
     }
 
+    @CommandLineFlags.Add(ChromeSwitches.ENABLE_APP_INSTALL_ALERTS)
     @MediumTest
     @Feature({"AppBanners"})
     public void testBannerAppearsThenDoesNotAppearAgainForMonths() throws Exception {
@@ -198,6 +202,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         assertTrue(waitUntilAppBannerInfoBarAppears());
     }
 
+    @CommandLineFlags.Add(ChromeSwitches.ENABLE_APP_INSTALL_ALERTS)
     @MediumTest
     @Feature({"AppBanners"})
     public void testBlockedBannerDoesNotAppearAgainForMonths() throws Exception {
@@ -255,6 +260,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         assertTrue(waitUntilAppBannerInfoBarAppears());
     }
 
+    @CommandLineFlags.Add(ChromeSwitches.ENABLE_APP_INSTALL_ALERTS)
     @MediumTest
     @Feature({"AppBanners"})
     public void testBitmapFetchersCanOverlapWithoutCrashing() throws Exception {

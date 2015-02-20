@@ -119,6 +119,9 @@ public abstract class ChromeSwitches {
     /** Enable the Reader Mode icon in toolbar. */
     public static final String ENABLE_READER_MODE_TOOLBAR_ICON = "enable-reader-mode-toolbar-icon";
 
+    /** Enable the native app banners. */
+    public static final String ENABLE_APP_INSTALL_ALERTS = "enable-app-install-alerts";
+
     /**
      * Use sandbox Wallet environment for requestAutocomplete.
      * Native switch - autofill::switches::kWalletServiceUseSandbox.
