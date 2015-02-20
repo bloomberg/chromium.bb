@@ -9,6 +9,7 @@ import page_sets
 
 
 @benchmark.Enabled('has tabs')
+@benchmark.Disabled('android')  # http://crbug.com/460084
 class TabSwitchingTop10(benchmark.Benchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
@@ -26,6 +27,7 @@ class TabSwitchingTop10(benchmark.Benchmark):
 
 
 @benchmark.Enabled('has tabs')
+@benchmark.Disabled('android')  # http://crbug.com/460084
 class TabSwitchingTypical25(benchmark.Benchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
@@ -45,6 +47,7 @@ class TabSwitchingTypical25(benchmark.Benchmark):
 
 
 @benchmark.Disabled('mac')  # http://crbug.com/455349
+@benchmark.Disabled('android')  # http://crbug.com/460084
 @benchmark.Enabled('has tabs')
 class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
@@ -64,6 +67,7 @@ class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
 
 
 @benchmark.Enabled('has tabs')
+@benchmark.Disabled('android')  # http://crbug.com/460084
 class TabSwitchingToughEnergyCases(benchmark.Benchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
