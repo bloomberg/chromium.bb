@@ -282,7 +282,7 @@ function extractText(element)
     if (!anchor)
         return "";
     var anchorText = anchor.getAttribute("data-uncopyable");
-    var uiLocation = anchor.__uiLocation;
+    var uiLocation = anchor[WebInspector.Linkifier._uiLocationSymbol];
     var anchorTarget = uiLocation ? (uiLocation.uiSourceCode.name() + ":" + (uiLocation.lineNumber + 1) + ":" + (uiLocation.columnNumber + 1)) : "";
     return anchorText + " -> " + anchorTarget;
 }

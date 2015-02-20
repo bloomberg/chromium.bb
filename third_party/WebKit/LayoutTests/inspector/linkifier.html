@@ -1,0 +1,75 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/debugger-test.js"></script>
+<script>
+function test()
+{
+    var script;
+
+    InspectorTest.startDebuggerTest(waitForScripts);
+
+    function waitForScripts()
+    {
+        InspectorTest.showScriptSource("linkifier.html", debuggerTest);
+    }
+
+    function debuggerTest()
+    {
+        var url = InspectorTest.resourceTreeModel.inspectedPageURL();
+        var target = WebInspector.targetManager.mainTarget();
+        var scripts = InspectorTest.debuggerModel.scripts;
+        for (var scriptId in scripts) {
+            var scriptCandidate = scripts[scriptId];
+            if (scriptCandidate.sourceURL === url) {
+                script = scriptCandidate;
+                break;
+            }
+        }
+
+        dumpLiveLocationsCount();
+
+        var linkifier = new WebInspector.Linkifier();
+        InspectorTest.addResult("Created linkifier");
+        dumpLiveLocationsCount();
+
+        var linkA = linkifier.linkifyScriptLocation(target, null, url, 10);
+        InspectorTest.addResult("Linkified script location A");
+        dumpLiveLocationsCount();
+
+        var linkB = linkifier.linkifyScriptLocation(target, null, url, 15);
+        InspectorTest.addResult("Linkified script location B");
+        dumpLiveLocationsCount();
+
+        linkifier.disposeAnchor(target, linkA);
+        InspectorTest.addResult("Disposed link A");
+        dumpLiveLocationsCount();
+
+        linkifier.reset();
+        InspectorTest.addResult("Reseted linkifier");
+        dumpLiveLocationsCount();
+
+        linkifier.dispose();
+        InspectorTest.addResult("Disposed linkifier");
+        dumpLiveLocationsCount();
+
+        InspectorTest.completeTest();
+    }
+
+    function dumpLiveLocationsCount()
+    {
+        InspectorTest.addResult("Live locations count: " + WebInspector.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size);
+        InspectorTest.addResult("");
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that Linkifier works correctly.
+<p>
+
+</body>
+</html>

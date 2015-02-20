@@ -223,7 +223,7 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var anchorURI = WebInspector.networkMapping.networkURL(uiSourceCode);
                 var anchor = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, anchorURI, 10, 1);
-                WebInspector.Revealer.revealPromise(anchor.__uiLocation).then(function() {
+                WebInspector.Revealer.revealPromise(anchor[WebInspector.Linkifier._uiLocationSymbol]).then(function() {
                     InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
                     dumpSelection(panel.visibleView.textEditor, "Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
                     rollback();

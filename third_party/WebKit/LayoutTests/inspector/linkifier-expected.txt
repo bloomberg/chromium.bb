@@ -1,0 +1,23 @@
+Tests that Linkifier works correctly.
+
+Live locations count: 0
+
+Created linkifier
+Live locations count: 0
+
+Linkified script location A
+Live locations count: 1
+
+Linkified script location B
+Live locations count: 2
+
+Disposed link A
+Live locations count: 1
+
+Reseted linkifier
+Live locations count: 0
+
+Disposed linkifier
+Live locations count: 0
+
+
