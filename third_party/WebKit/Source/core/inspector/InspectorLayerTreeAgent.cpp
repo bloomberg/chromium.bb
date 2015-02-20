@@ -106,7 +106,8 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
         .setOffsetY(webLayer->position().y)
         .setWidth(webLayer->bounds().width)
         .setHeight(webLayer->bounds().height)
-        .setPaintCount(graphicsLayer->paintCount());
+        .setPaintCount(graphicsLayer->paintCount())
+        .setDrawsContent(webLayer->drawsContent());
 
     if (nodeId)
         layerObject->setBackendNodeId(nodeId);

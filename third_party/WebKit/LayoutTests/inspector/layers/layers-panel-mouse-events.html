@@ -7,6 +7,8 @@
     opacity: 0.8;
     left: 20px;
     top: 20px;
+    background-color: #eee;
+    border-color: black;
 }
 </style>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
@@ -80,7 +82,7 @@ function test()
 
         InspectorTest.completeTest();
     }
-    InspectorTest.requestLayers(step1);
+    InspectorTest.requestLayers(InspectorTest.safeWrap(step1));
 }
 </script>
 
