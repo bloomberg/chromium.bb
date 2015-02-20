@@ -101,6 +101,10 @@ mangle(pushAllRegisters):
 mangle(pushAllRegisters):
         ;; Push all callee-saves registers to get them
         ;; on the stack for conservative stack scanning.
+        ;; There is an 8-byte return address on the stack and we push
+        ;; 72 bytes which maintains the required 16-byte stack alignment
+        ;; at the call.
+        push 0
         push rsi
         push rdi
         push rbx
@@ -117,7 +121,7 @@ mangle(pushAllRegisters):
         call r9
         ;; Pop the callee-saved registers. None of them were
         ;; modified so no restoring is needed.
-        add rsp, 64
+        add rsp, 72
         ret
 
 %elif IA32
