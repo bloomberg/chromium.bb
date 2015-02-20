@@ -139,11 +139,9 @@ void AppBannerManager::DidFinishLoad(
   if (!validated_url_.SchemeIsSecure() && !gDisableSecureCheckForTesting)
     return;
 
-  // See if the page has a manifest. Using Unretained(this) here is safe as the
-  // lifetime of this object extends beyond the lifetime of the web_contents(),
-  // and when web_contents() is destroyed it will call OnDidGetManifest.
+  // See if the page has a manifest.
   web_contents()->GetManifest(base::Bind(&AppBannerManager::OnDidGetManifest,
-                                         base::Unretained(this)));
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void AppBannerManager::OnDidGetManifest(const content::Manifest& manifest) {
