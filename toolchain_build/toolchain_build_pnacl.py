@@ -583,6 +583,14 @@ def HostTools(host, options):
       },
   }
 
+  # TODO(kschimpf) Currently, there is a problem with the CMAKE scripts
+  # recognizing that clang 3.5.1 is newer than clang 3.1, when trying
+  # to build LLVM tools using the address sanitizer. The following
+  # flag fixes this problem. Fix the CMAKE scripts and remove this.
+  asan_fix = []
+  if options.sanitize:
+    asan_fix = ['-DLLVM_FORCE_USE_OLD_TOOLCHAIN=TRUE']
+
   # TODO(jfb) Windows currently uses MinGW's GCC 4.8.1 which generates warnings
   #           on upstream LLVM code. Turn on -Werror once these are fixed.
   llvm_do_werror = not TripleIsWindows(host)
@@ -594,7 +602,7 @@ def HostTools(host, options):
           'commands': [
               command.SkipForIncrementalCommand([
                   'cmake', '-G', 'Ninja'] +
-                  CmakeHostArchFlags(host, options) +
+                  CmakeHostArchFlags(host, options) + asan_fix +
                   [
                   '-DBUILD_SHARED_LIBS=ON',
                   '-DCMAKE_BUILD_TYPE=RelWithDebInfo',

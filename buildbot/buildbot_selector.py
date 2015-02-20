@@ -269,6 +269,27 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-win7-pnacl-x86_64':
         python + ' buildbot/buildbot_pnacl_toolchain.py --trybot',
 
+    # Sanitizer Pnacl toolchain trybots.
+    'nacl-toolchain-asan':
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
+        ' --sanitize address --skip-tests',
+    # TODO(kschimpf): Bot is currently broken: --sanitize memory not understood.
+    'nacl-toolchain-msan':
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
+        ' --sanitize memory --skip-tests',
+    # TODO(kschimpf): Bot is currently broken: --sanitize thread not understood.
+    'nacl-toolchain-tsan':
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
+        ' --sanitize thread --skip-tests',
+    # TODO(kschimpf): Bot is currently broken: --sanitize undefined not understood.
+    'nacl-toolchain-ubsan':
+        python +
+        ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
+        ' --sanitize undefined --skip-tests',
+
 }
 
 special_for_arm = [

@@ -41,9 +41,21 @@ group.add_argument('--trybot', action='store_true',
 parser.add_argument('--tests-arch', choices=['x86-32', 'x86-64'],
                     default='x86-64',
                     help='Host architecture for tests in buildbot_pnacl.sh')
+parser.add_argument('--skip-tests', action='store_true',
+                    help='Skip running tests after toolchain built')
+# Note: LLVM's tablegen doesn't run when built with the memory sanitizer.
+# TODO(kschimp): Add thread, memory, and undefined sanitizers once bugs fixed.
+parser.add_argument('--sanitize', choices=['address'
+                                           #, 'thread', 'memory', 'undefined'
+                                          ],
+                    help='Build with corresponding sanitizer')
 args = parser.parse_args()
 
 host_os = buildbot_lib.GetHostPlatform()
+
+if args.sanitize:
+  if host_os != 'linux' or args.tests_arch != 'x86-64':
+    raise Exception("Error: Can't run sanitize bot unless linux x86-64")
 
 # This is a minimal context, not useful for running tests yet, but enough for
 # basic Step handling.
@@ -67,6 +79,12 @@ def ToolchainBuildCmd(sync=False, extra_flags=[]):
 
   if pynacl.platform.IsLinux64():
     executable_args.append('--build-sbtc')
+
+  if args.sanitize:
+    executable_args.append('--sanitize')
+    executable_args.append(args.sanitize)
+    executable_args.append('--cmake')
+    executable_args.append('llvm_x86_64_linux')
 
   if args.buildbot:
     executable_args.append('--buildbot')
@@ -123,11 +141,18 @@ if host_os != 'win':
 # package_version tool.
 # First build only the packages that will be uploaded, and upload them.
 RunWithLog(ToolchainBuildCmd(sync=True, extra_flags=['--canonical-only']))
+
+if args.skip_tests:
+  sys.exit(0)
+
 if args.buildbot or args.trybot:
-  # Don't upload packages from the 32-bit linux bot to avoid racing on
-  # uploading the same packages as the 64-bit linux bot
-  if host_os != 'linux' or pynacl.platform.IsArch64Bit():
-    packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
+  # Don't upload package descriptions when sanitizing, since the
+  # package names are the same as for the unsanitized versions.
+  if not args.sanitize:
+    # Don't upload packages from the 32-bit linux bot to avoid racing on
+    # uploading the same packages as the 64-bit linux bot
+    if host_os != 'linux' or pynacl.platform.IsArch64Bit():
+      packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
 
 # Since windows bots don't build target libraries or run tests yet, Run a basic
 # sanity check that tests the host components (LLVM, binutils, gold plugin).
