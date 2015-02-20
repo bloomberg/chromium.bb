@@ -10,6 +10,7 @@
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
+    'use_chromecast_webui%': 0,
   },
   'includes': [
     'chromecast_tests.gypi',
@@ -129,12 +130,28 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
             ],
+            'conditions': [
+              ['chromecast_branding=="Chrome" and use_chromecast_webui==1', {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/app_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/cast_webui_resources.pak',
+                ],
+              }],
+            ],
             'pak_output': '<(PRODUCT_DIR)/assets/cast_shell.pak',
           },
           'includes': [ '../build/repack_action.gypi' ],
         },
       ],
-    },
+      'conditions': [
+        ['chromecast_branding=="Chrome" and use_chromecast_webui==1', {
+          'dependencies': [
+            'internal/chromecast_resources.gyp:chromecast_app_resources',
+            'internal/chromecast_resources.gyp:chromecast_webui_resources',
+          ],
+        }],
+      ],
+    },  # end of target 'cast_shell_pak'
     # This target contains all content-embedder implementation that is
     # non-platform-specific.
     {
