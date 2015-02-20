@@ -15,6 +15,7 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace content {
 
@@ -318,10 +319,17 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     while (!abort_task_stack_.empty())
       abort_task_stack_.pop().Run(NULL);
 
-    callbacks_->OnAbort(
-        id_,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
-                               "Internal error committing transaction."));
+    IndexedDBDatabaseError error;
+    if (leveldb_env::IndicatesDiskFull(s)) {
+      error = IndexedDBDatabaseError(
+          blink::WebIDBDatabaseExceptionQuotaError,
+          "Encountered disk full while committing transaction.");
+    } else {
+      error = IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                                     "Internal error committing transaction.");
+    }
+    callbacks_->OnAbort(id_, error);
+
     database_->TransactionFinished(this, false);
     database_->TransactionCommitFailed(s);
   }

@@ -13,21 +13,20 @@ namespace content {
 
 class IndexedDBDatabaseError {
  public:
-  explicit IndexedDBDatabaseError(uint16 code) : code_(code) {}
-  IndexedDBDatabaseError(uint16 code, const char* message)
-      : code_(code), message_(base::ASCIIToUTF16(message)) {}
-  IndexedDBDatabaseError(uint16 code, const base::string16& message)
-      : code_(code), message_(message) {}
-  ~IndexedDBDatabaseError() {}
+  IndexedDBDatabaseError();
+  explicit IndexedDBDatabaseError(uint16 code);
+  IndexedDBDatabaseError(uint16 code, const char* message);
+  IndexedDBDatabaseError(uint16 code, const base::string16& message);
+  ~IndexedDBDatabaseError();
+
+  IndexedDBDatabaseError& operator=(const IndexedDBDatabaseError& rhs);
 
   uint16 code() const { return code_; }
   const base::string16& message() const { return message_; }
 
  private:
-  const uint16 code_;
-  const base::string16 message_;
-
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseError);
+  uint16 code_ = 0;
+  base::string16 message_;
 };
 
 }  // namespace content

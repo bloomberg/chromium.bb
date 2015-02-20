@@ -441,6 +441,35 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   EXPECT_EQ(0, RequestDiskUsage());
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
+  // Ignore several preceding transactions:
+  // * The test calls deleteDatabase() which opens the backing store:
+  //   #1: IndexedDBBackingStore::OpenBackingStore
+  //       => IndexedDBBackingStore::SetUpMetadata
+  //   #2: IndexedDBBackingStore::OpenBackingStore
+  //       => IndexedDBBackingStore::CleanUpBlobJournal (no-op)
+  // * Then deletes the database:
+  //   #3: IndexedDBFactoryImpl::DeleteDatabase
+  //       => IndexedDBDatabase::Create
+  //       => IndexedDBBackingStore::CreateIDBDatabaseMetaData
+  //   #4: IndexedDBFactoryImpl::DeleteDatabase
+  //       => IndexedDBDatabase::DeleteDatabase
+  //       => IndexedDBBackingStore::DeleteDatabase
+  //       => IndexedDBBackingStore::CleanUpBlobJournal (no-op)
+  // * The test calls open(), to create a new database:
+  //   #5: IndexedDBFactoryImpl::Open
+  //       => IndexedDBDatabase::Create
+  //       => IndexedDBBackingStore::CreateIDBDatabaseMetaData
+  //   #6: IndexedDBTransaction::Commit - initial "versionchange" transaction
+  // * Once the connection is opened, the test runs:
+  //   #7: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
+  const int instance_num = 7;
+  const int call_num = 1;
+  FailOperation(FAIL_CLASS_LEVELDB_TRANSACTION, FAIL_METHOD_COMMIT_DISK_FULL,
+                instance_num, call_num);
+  SimpleTest(GetTestUrl("indexeddb", "disk_full_on_commit.html"));
+}
+
 namespace {
 
 static void CompactIndexedDBBackingStore(

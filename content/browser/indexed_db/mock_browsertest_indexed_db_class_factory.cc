@@ -8,6 +8,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace {
@@ -64,9 +65,17 @@ class LevelDBTestTransaction : public LevelDBTransaction {
   }
 
   leveldb::Status Commit() override {
-    if (fail_method_ != FAIL_METHOD_COMMIT ||
+    if ((fail_method_ != FAIL_METHOD_COMMIT &&
+         fail_method_ != FAIL_METHOD_COMMIT_DISK_FULL) ||
         ++current_call_num_ != fail_on_call_num_)
       return LevelDBTransaction::Commit();
+
+    // TODO(jsbell): Consider parameterizing the failure mode.
+    if (fail_method_ == FAIL_METHOD_COMMIT_DISK_FULL) {
+      return leveldb_env::MakeIOError("dummy filename", "Disk Full",
+                                      leveldb_env::kWritableFileAppend,
+                                      base::File::FILE_ERROR_NO_SPACE);
+    }
 
     return leveldb::Status::Corruption("Corrupted for the test");
   }
