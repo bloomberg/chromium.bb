@@ -338,7 +338,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     size_t size;
     buffer_pool_->GetBufferInfo(buffer_id, &data, &size);
     return scoped_refptr<media::VideoCaptureDevice::Client::Buffer>(
-        new PoolBuffer(buffer_pool_, buffer_id, data, size));
+        new AutoReleaseBuffer(buffer_pool_, buffer_id, data, size));
   }
 
   void OnIncomingCapturedVideoFrame(
@@ -361,17 +361,29 @@ class StubClient : public media::VideoCaptureDevice::Client {
   void OnError(const std::string& reason) override { error_callback_.Run(); }
 
  private:
-  class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
+  class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
    public:
-    PoolBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
+    AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
                int buffer_id,
                void* data,
                size_t size)
-        : Buffer(buffer_id, data, size), pool_(pool) {}
+        : pool_(pool),
+          id_(buffer_id),
+          data_(data),
+          size_(size) {
+      DCHECK(pool_.get());
+    }
+    int id() const override { return id_; }
+    void* data() const override { return data_; }
+    size_t size() const override { return size_; }
 
    private:
-    ~PoolBuffer() override { pool_->RelinquishProducerReservation(id()); }
+    ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
+
     const scoped_refptr<VideoCaptureBufferPool> pool_;
+    const int id_;
+    void* const data_;
+    const size_t size_;
   };
 
   scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

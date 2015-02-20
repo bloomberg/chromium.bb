@@ -175,20 +175,13 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // Memory buffer returned by Client::ReserveOutputBuffer().
     class Buffer : public base::RefCountedThreadSafe<Buffer> {
      public:
-      int id() const { return id_; }
-      void* data() const { return data_; }
-      size_t size() const { return size_; }
+      virtual int id() const = 0;
+      virtual void* data() const = 0;
+      virtual size_t size() const = 0;
 
      protected:
       friend class base::RefCountedThreadSafe<Buffer>;
-
-      Buffer(int id, void* data, size_t size)
-          : id_(id), data_(data), size_(size) {}
       virtual ~Buffer() {}
-
-      const int id_;
-      void* const data_;
-      const size_t size_;
     };
 
     virtual ~Client() {}

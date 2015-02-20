@@ -40,20 +40,31 @@ static const int kInfiniteRatio = 99999;
         name, \
         (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
-class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
+// Class combining a Client::Buffer interface implementation and a pool buffer
+// implementation to guarantee proper cleanup on destruction on our side.
+class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
  public:
-  PoolBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
-             int buffer_id,
-             void* data,
-             size_t size)
-      : Buffer(buffer_id, data, size), pool_(pool) {
+  AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
+                    int buffer_id,
+                    void* data,
+                    size_t size)
+      : pool_(pool),
+        id_(buffer_id),
+        data_(data),
+        size_(size) {
     DCHECK(pool_.get());
   }
+  int id() const override { return id_; }
+  void* data() const override { return data_; }
+  size_t size() const override { return size_; }
 
  private:
-  ~PoolBuffer() override { pool_->RelinquishProducerReservation(id()); }
+  ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
 
   const scoped_refptr<VideoCaptureBufferPool> pool_;
+  const int id_;
+  void* const data_;
+  const size_t size_;
 };
 
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
@@ -360,7 +371,7 @@ VideoCaptureController::VideoCaptureDeviceClient::ReserveOutputBuffer(
   buffer_pool_->GetBufferInfo(buffer_id, &data, &size);
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
-      new PoolBuffer(buffer_pool_, buffer_id, data, size));
+      new AutoReleaseBuffer(buffer_pool_, buffer_id, data, size));
 
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
     BrowserThread::PostTask(BrowserThread::IO,
