@@ -190,22 +190,107 @@ Device = cros_build_lib.Collection(
     'Device', scheme=None, username=None, hostname=None, port=None, path=None)
 
 
-def ParseDevice(value):
-  """Parse a device argument.
+class DeviceParser(object):
+  """Parses devices as an argparse argument type.
 
-  Args:
-    value: String representing a device target. Valid options are:
-      - [ssh://][username@]hostname[:port].
-      - usb://[path].
-      - file://path.
+  In addition to parsing user input, this class will also ensure that only
+  supported device schemes are accepted by the parser. For example,
+  `cros deploy` only makes sense with an SSH device, but `cros flash` can use
+  SSH, USB, or file device schemes.
 
-  Returns:
-    A Device object.
+  If the device input is malformed or the scheme is wrong, an error message will
+  be printed and the program will exit.
 
-  Raises:
-    ValueError: |value| is not a valid device specifier.
+  Valid device inputs are:
+    - [ssh://][username@]hostname[:port].
+    - usb://[path].
+    - file://path or /absolute_path.
+
+  Usage:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+      'ssh_device',
+      type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH))
+
+    parser.add_argument(
+      'usb_or_file_device',
+      type=commandline.DeviceParser([commandline.DEVICE_SCHEME_USB,
+                                     commandline.DEVICE_SCHEME_FILE]))
   """
-  try:
+
+  def __init__(self, schemes):
+    """Initializes the parser.
+
+    See the class comments for usage examples.
+
+    Args:
+      schemes: A scheme or list of schemes to accept.
+    """
+    self.schemes = [schemes] if isinstance(schemes, basestring) else schemes
+    # Provide __name__ for argparse to print on failure, or else it will use
+    # repr() which creates a confusing error message.
+    self.__name__ = type(self).__name__
+
+  def __call__(self, value):
+    """Parses a device input and enforces constraints.
+
+    DeviceParser is an object so that a set of valid schemes can be specified,
+    but argparse expects a parsing function, so we overload __call__() for
+    argparse to use.
+
+    Args:
+      value: String representing a device target. See class comments for
+        valid device input formats.
+
+    Returns:
+      A Device object.
+
+    Raises:
+      ValueError: |value| is not a valid device specifier or doesn't
+        match the supported list of schemes.
+    """
+    try:
+      device = self._ParseDevice(value)
+      self._EnforceConstraints(device, value)
+      return device
+    except ValueError as e:
+      # argparse ignores exception messages, so print the message manually.
+      cros_build_lib.Error(e)
+      raise
+    except Exception as e:
+      cros_build_lib.Error('Internal error while parsing device input: %s', e)
+      raise
+
+  def _EnforceConstraints(self, device, value):
+    """Verifies that user-specified constraints are upheld.
+
+    Checks that the parsed device has a scheme that matches what the user
+    expects. Additional constraints can be added if needed.
+
+    Args:
+      device: Device object.
+      value: String representing a device target.
+
+    Raises:
+      ValueError: |device| has the wrong scheme.
+    """
+    if device.scheme not in self.schemes:
+      raise ValueError('Unsupported scheme "%s" for device "%s"' %
+                       (device.scheme, value))
+
+  def _ParseDevice(self, value):
+    """Parse a device argument.
+
+    Args:
+      value: String representing a device target.
+
+    Returns:
+      A Device object.
+
+    Raises:
+      ValueError: |value| is not a valid device specifier.
+    """
     parsed = urlparse.urlparse(value)
     if not parsed.scheme:
       # Default to a file scheme for absolute paths, SSH scheme otherwise.
@@ -235,11 +320,7 @@ def ParseDevice(value):
         raise ValueError('Path is required for "%s"' % value)
       return Device(scheme=scheme, path=path)
     else:
-      raise ValueError('Invalid device scheme "%s" in "%s"' % (scheme, value))
-  except ValueError as e:
-    # argparse ignores exception messages, so print the message manually.
-    cros_build_lib.Error(e)
-    raise
+      raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
 
 
 def OptparseWrapCheck(desc, check_f, _option, opt, value):
@@ -257,7 +338,6 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
-    'device': ParseDevice,
 }
 
 

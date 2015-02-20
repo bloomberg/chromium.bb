@@ -8,9 +8,9 @@ from __future__ import print_function
 
 import os
 import logging
-import urlparse
 
 from chromite import cros
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import remote_access
 
@@ -51,7 +51,9 @@ class DebugCommand(cros.CrosCommand):
     """Add parser arguments."""
     super(cls, DebugCommand).AddParser(parser)
     parser.add_argument(
-        'device', help='IP[:port] address of the target device.')
+        'device',
+        type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
+        help='IP[:port] address of the target device.')
     parser.add_argument(
         '--board', default=None, help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
@@ -127,23 +129,14 @@ class DebugCommand(cros.CrosCommand):
 
   def _ReadOptions(self):
     """Process options and set variables."""
-    device = self.options.device
-    if urlparse.urlparse(device).scheme == '':
-      # For backward compatibility, prepend ssh:// ourselves.
-      device = 'ssh://%s' % device
-
-    parsed = urlparse.urlparse(device)
-    if parsed.scheme == 'ssh':
-      self.ssh_hostname = parsed.hostname
-      self.ssh_username = parsed.username
-      self.ssh_port = parsed.port
-      self.ssh_private_key = self.options.private_key
-      self.attach = self.options.attach
-      self.list = self.options.list
-      self.exe = self.options.exe
-      self.pid = self.options.pid
-    else:
-      cros_build_lib.Die('Does not support device %s', self.options.device)
+    self.ssh_hostname = self.options.device.hostname
+    self.ssh_username = self.options.device.username
+    self.ssh_port = self.options.device.port
+    self.ssh_private_key = self.options.private_key
+    self.attach = self.options.attach
+    self.list = self.options.list
+    self.exe = self.options.exe
+    self.pid = self.options.pid
 
   def Run(self):
     """Run cros debug."""

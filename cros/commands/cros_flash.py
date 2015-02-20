@@ -12,10 +12,10 @@ import os
 import shutil
 import tempfile
 import time
-import urlparse
 
 from chromite import cros
 from chromite.cbuildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
@@ -701,10 +701,6 @@ Examples:
   http://dev.chromium.org/chromium-os/build/cros-flash
 """
 
-  SSH_MODE = 'ssh'
-  USB_MODE = 'usb'
-  FILE_MODE = 'file'
-
   # Override base class property to enable stats upload.
   upload_stats = True
 
@@ -713,9 +709,13 @@ Examples:
     """Add parser arguments."""
     super(FlashCommand, cls).AddParser(parser)
     parser.add_argument(
-        'device', help='ssh://device_hostname[:port] or usb://{device_path}. '
-        'If no device_path is given (i.e. usb://), user will be prompted to '
-        'choose from a list of removable devices.')
+        'device',
+        type=commandline.DeviceParser([commandline.DEVICE_SCHEME_FILE,
+                                       commandline.DEVICE_SCHEME_SSH,
+                                       commandline.DEVICE_SCHEME_USB]),
+        help='ssh://device_hostname[:port], usb://[device_path], or '
+        'file://{path}. If no USB device_path is given (i.e. usb://), user '
+        'will be prompted to choose from a list of removable devices.')
     parser.add_argument(
         'image', nargs='?', default='latest', help="A local path or an xbuddy "
         "path: xbuddy://{local|remote}/board/version/{image_type} image_type "
@@ -781,33 +781,7 @@ Examples:
   def __init__(self, options):
     """Initializes cros flash."""
     cros.CrosCommand.__init__(self, options)
-    self.run_mode = None
-    self.ssh_hostname = None
-    self.ssh_port = None
-    self.usb_dev = None
-    self.copy_path = None
     self.any = False
-
-  def _ParseDevice(self, device):
-    """Parse |device| and set corresponding variables ."""
-    # pylint: disable=E1101
-    if urlparse.urlparse(device).scheme == '':
-      # For backward compatibility, prepend ssh:// ourselves.
-      device = 'ssh://%s' % device
-
-    parsed = urlparse.urlparse(device)
-    if parsed.scheme == self.SSH_MODE:
-      self.run_mode = self.SSH_MODE
-      self.ssh_hostname = parsed.hostname
-      self.ssh_port = parsed.port
-    elif parsed.scheme == self.USB_MODE:
-      self.run_mode = self.USB_MODE
-      self.usb_dev = device[len('%s://' % self.USB_MODE):]
-    elif parsed.scheme == self.FILE_MODE:
-      self.run_mode = self.FILE_MODE
-      self.copy_path = device[len('%s://' % self.FILE_MODE):]
-    else:
-      cros_build_lib.Die('Does not support device %s' % device)
 
   # pylint: disable=E1101
   def Run(self):
@@ -826,10 +800,10 @@ Examples:
     except OSError:
       logging.error('Failed to create %s', DEVSERVER_STATIC_DIR)
 
-    self._ParseDevice(self.options.device)
+    device = self.options.device
 
     if self.options.install:
-      if self.run_mode != self.USB_MODE:
+      if device.scheme != commandline.DEVICE_SCHEME_USB:
         logging.error('--install can only be used when writing to a USB device')
         return 1
       if not cros_build_lib.IsInsideChroot():
@@ -848,12 +822,12 @@ Examples:
 
     try:
       board = self.options.board or self.curr_project_name
-      if self.run_mode == self.SSH_MODE:
+      if device.scheme == commandline.DEVICE_SCHEME_SSH:
         logging.info('Preparing to update the remote device %s',
-                     self.options.device)
+                     device.hostname)
         updater = RemoteDeviceUpdater(
-            self.ssh_hostname,
-            self.ssh_port,
+            device.hostname,
+            device.port,
             image,
             board=board,
             src_image_to_delta=self.options.src_image_to_delta,
@@ -871,8 +845,8 @@ Examples:
 
         # Perform device update.
         updater.Run()
-      elif self.run_mode == self.USB_MODE:
-        path = osutils.ExpandPath(self.usb_dev) if self.usb_dev else ''
+      elif device.scheme == commandline.DEVICE_SCHEME_USB:
+        path = osutils.ExpandPath(device.path) if device.path else ''
         logging.info('Preparing to image the removable device %s', path)
         imager = USBImager(path,
                            board,
@@ -882,10 +856,9 @@ Examples:
                            install=self.options.install,
                            yes=self.options.yes)
         imager.Run()
-      elif self.run_mode == self.FILE_MODE:
-        path = osutils.ExpandPath(self.copy_path) if self.copy_path else ''
-        logging.info('Preparing to copy image to %s', path)
-        imager = FileImager(path,
+      elif device.scheme == commandline.DEVICE_SCHEME_FILE:
+        logging.info('Preparing to copy image to %s', device.path)
+        imager = FileImager(device.path,
                             board,
                             image,
                             sdk_version=sdk_version,

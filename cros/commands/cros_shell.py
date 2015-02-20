@@ -8,9 +8,9 @@ from __future__ import print_function
 
 import argparse
 import logging
-import urlparse
 
 from chromite import cros
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import remote_access
@@ -74,8 +74,10 @@ Quoting can be tricky; the rules are the same as with ssh:
     """Adds a parser."""
     super(cls, ShellCommand).AddParser(parser)
     parser.add_argument(
-        'device', help='[user@]IP[:port] address of the target device. Defaults'
-                       ' to user=root, port=22')
+        'device',
+        type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
+        help='[user@]IP[:port] address of the target device. Defaults to '
+        'user=root, port=22')
     parser.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
@@ -88,23 +90,14 @@ Quoting can be tricky; the rules are the same as with ssh:
 
   def _ReadOptions(self):
     """Processes options and set variables."""
-    device = self.options.device
-    if urlparse.urlparse(device).scheme == '':
-      # For backward compatibility, prepend ssh:// ourselves.
-      device = 'ssh://%s' % device
-
-    parsed = urlparse.urlparse(device)
-    if parsed.scheme == 'ssh':
-      self.ssh_hostname = parsed.hostname
-      self.ssh_username = parsed.username
-      self.ssh_port = parsed.port
-      self.ssh_private_key = self.options.private_key
-      self.known_hosts = self.options.known_hosts
-      # By default ask the user if a new key is found. SSH will still reject
-      # modified keys for existing hosts without asking the user.
-      self.host_key_checking = 'ask'
-    else:
-      cros_build_lib.Die('Does not support device %s.' % self.options.device)
+    self.ssh_hostname = self.options.device.hostname
+    self.ssh_username = self.options.device.username
+    self.ssh_port = self.options.device.port
+    self.ssh_private_key = self.options.private_key
+    self.known_hosts = self.options.known_hosts
+    # By default ask the user if a new key is found. SSH will still reject
+    # modified keys for existing hosts without asking the user.
+    self.host_key_checking = 'ask'
 
   def _ConnectSettings(self):
     """Generates the correct SSH connect settings based on our state."""

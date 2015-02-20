@@ -86,6 +86,10 @@ class GSPathTest(cros_test_lib.TestCase):
 class DeviceParseTest(cros_test_lib.TestCase):
   """Test device parsing functionality."""
 
+  _ALL_SCHEMES = (commandline.DEVICE_SCHEME_FILE,
+                  commandline.DEVICE_SCHEME_SSH,
+                  commandline.DEVICE_SCHEME_USB)
+
   def _CheckDeviceParse(self, device_input, scheme, username=None,
                         hostname=None, port=None, path=None):
     """Checks that parsing a device input gives the expected result.
@@ -99,7 +103,7 @@ class DeviceParseTest(cros_test_lib.TestCase):
       path: String expected path or None.
     """
     parser = commandline.ArgumentParser()
-    parser.add_argument('device', type='device')
+    parser.add_argument('device', type=commandline.DeviceParser(scheme))
     device = parser.parse_args([device_input]).device
     self.assertEqual(device.scheme, scheme)
     self.assertEqual(device.username, username)
@@ -107,14 +111,15 @@ class DeviceParseTest(cros_test_lib.TestCase):
     self.assertEqual(device.port, port)
     self.assertEqual(device.path, path)
 
-  def _CheckDeviceParseFails(self, device_input):
+  def _CheckDeviceParseFails(self, device_input, schemes=_ALL_SCHEMES):
     """Checks that parsing a device input fails.
 
     Args:
       device_input: String input specifying a device.
+      schemes: A scheme or list of allowed schemes, by default allows all.
     """
     parser = commandline.ArgumentParser()
-    parser.add_argument('device', type='device')
+    parser.add_argument('device', type=commandline.DeviceParser(schemes))
     with cros_test_lib.OutputCapturer():
       self.assertRaises2(SystemExit, parser.parse_args, [device_input])
 
@@ -183,6 +188,14 @@ class DeviceParseTest(cros_test_lib.TestCase):
 
   def testUnsupportedScheme(self):
     """Verify that an unsupported scheme fails."""
+    self._CheckDeviceParseFails('ssh://192.168.1.200',
+                                schemes=commandline.DEVICE_SCHEME_USB)
+    self._CheckDeviceParseFails('usb://path/to/my/device',
+                                schemes=[commandline.DEVICE_SCHEME_SSH,
+                                         commandline.DEVICE_SCHEME_FILE])
+
+  def testUnknownScheme(self):
+    """Verify that an unknown scheme fails."""
     self._CheckDeviceParseFails('ftp://192.168.1.200')
 
   def testSchemeCaseInsensitive(self):
