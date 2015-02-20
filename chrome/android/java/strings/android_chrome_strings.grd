@@ -1224,6 +1224,15 @@ Drag from top to exit.
       <message name="IDS_CARD_UNMASK_INPUT_HINT" desc="Hint text for an input field containing the user's credit card CVC (card verification code).">
         CVC
       </message>
+      <message name="IDS_CARD_UNMASK_MONTH_HINT" desc="Hint text for an input field containing a credit card expiration month in two digit format.">
+        MM
+      </message>
+      <message name="IDS_CARD_UNMASK_YEAR_HINT" desc="Hint text for an input field containing a credit card expiration year in two digit format.">
+        YY
+      </message>
+      <message name="IDS_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR" desc="Separator for a credit card expiration date, e.g. the slash in 05/16.">
+        /
+      </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORE_LOCALLY" desc="Checkbox text that permits a user to skip past this dialog next time this credit card is used on this device.">
         Don't ask again for this card
       </message>

@@ -47,14 +47,15 @@
                   android:layout_marginStart="16dp"
                   android:ems="2"
                   android:gravity="center_horizontal"
-                  android:inputType="number" />
+                  android:inputType="number"
+                  android:hint="@string/card_unmask_month_hint" />
 
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:layout_marginStart="8dp"
                   android:layout_marginEnd="8dp"
-                  android:text="/" />
+                  android:text="@string/card_unmask_expiration_date_separator" />
 
               <EditText
                   android:id="@+id/expiration_year"
@@ -62,7 +63,8 @@
                   android:layout_height="wrap_content"
                   android:ems="2"
                   android:gravity="center_horizontal"
-                  android:inputType="number" />
+                  android:inputType="number"
+                  android:hint="@string/card_unmask_year_hint" />
             </LinearLayout>
 
             <EditText
