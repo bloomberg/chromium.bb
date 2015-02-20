@@ -1042,7 +1042,7 @@ InjectedScript.prototype = {
      */
     _objectForId: function(objectId)
     {
-        return objectId.injectedScriptId === injectedScriptId ? InjectedScriptHost.objectForId(objectId.id) : void 0;
+        return objectId.injectedScriptId === injectedScriptId ? /** @type{!Object|symbol|undefined} */ (InjectedScriptHost.objectForId(objectId.id)) : void 0;
     },
 
     /**
