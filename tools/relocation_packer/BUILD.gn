@@ -7,9 +7,9 @@ import("//testing/test.gni")
 
 assert(relocation_packing_supported)
 
-if (target_arch == "arm") {
+if (target_cpu == "arm") {
   target_define = "TARGET_ARM"
-} else if (target_arch == "arm64") {
+} else if (target_cpu == "arm64") {
   target_define = "TARGET_ARM64"
 }
 
@@ -78,7 +78,7 @@ if (current_toolchain == host_toolchain) {
 }
 
 if (current_toolchain == default_toolchain &&
-    (target_arch == "arm" || target_arch == "arm64")) {
+    (target_cpu == "arm" || target_cpu == "arm64")) {
   # Targets to build test data.  These participate only in building test
   # data for use with elf_file_unittest.cc, and are not part of the main
   # relocation packer build.  Unit test data files are checked in to the
@@ -102,11 +102,11 @@ if (current_toolchain == default_toolchain &&
   action("relocation_packer_unittests_test_data") {
     script = "test_data/generate_elf_file_unittest_relocs.py"
     test_file = "$root_build_dir/librelocation_packer_test_data.so"
-    if (target_arch == "arm") {
+    if (target_cpu == "arm") {
       added_section = ".android.rel.dyn"
       packed_output = "elf_file_unittest_relocs_arm32_packed.so"
       unpacked_output = "elf_file_unittest_relocs_arm32.so"
-    } else if (target_arch == "arm64") {
+    } else if (target_cpu == "arm64") {
       added_section = ".android.rela.dyn"
       packed_output = "elf_file_unittest_relocs_arm64_packed.so"
       unpacked_output = "elf_file_unittest_relocs_arm64.so"
