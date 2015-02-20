@@ -34,23 +34,9 @@ class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
   // creating it if necessary.
   static bpf_dsl::TrapRegistry* Registry();
 
-  // Registers a new trap handler and sets up the appropriate SIGSYS handler
-  // as needed.
-  // N.B.: This makes a permanent state change. Traps cannot be unregistered,
-  //   as that would break existing BPF filters that are still active.
-  // TODO(mdempsky): Deprecated; remove.
-  static uint16_t MakeTrap(TrapFnc fnc, const void* aux, bool safe);
-
-  // Enables support for unsafe traps in the SIGSYS signal handler. This is a
-  // one-way fuse. It works in conjunction with the BPF compiler emitting code
-  // that unconditionally allows system calls, if they have a magic return
-  // address (i.e. SandboxSyscall(-1)).
-  // Once unsafe traps are enabled, the sandbox is essentially compromised.
-  // But this is still a very useful feature for debugging purposes. Use with
-  // care. This feature is availably only if enabled by the user (see above).
-  // Returns "true", if unsafe traps were turned on.
-  // TODO(mdempsky): Deprecated; remove.
-  static bool EnableUnsafeTrapsInSigSysHandler();
+  // SandboxDebuggingAllowedByUser returns whether the
+  // "CHROME_SANDBOX_DEBUGGING" environment variable is set.
+  static bool SandboxDebuggingAllowedByUser();
 
  private:
   struct TrapKey {
@@ -77,8 +63,6 @@ class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
   // dumps.
   void SigSys(int nr, siginfo_t* info, void* void_context)
       __attribute__((noinline));
-  bool SandboxDebuggingAllowedByUser() const;
-
   // We have a global singleton that handles all of our SIGSYS traps. This
   // variable must never be deallocated after it has been set up initially, as
   // there is no way to reset in-kernel BPF filters that generate SIGSYS
