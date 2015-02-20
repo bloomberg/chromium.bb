@@ -68,7 +68,7 @@ public:
     KURL baseURL() const { return m_baseURL; }
     bool isFilename() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     enum DataSource {

@@ -246,7 +246,7 @@ void DataObject::internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem> item
     m_itemList.append(item);
 }
 
-void DataObject::trace(Visitor* visitor)
+DEFINE_TRACE(DataObject)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_itemList);

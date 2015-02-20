@@ -60,7 +60,7 @@ public:
     DataTransfer* dataTransfer() { return m_dataTransfer.get(); }
     DataObjectItem* dataObjectItem() { return m_item.get(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DataTransferItem(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObjectItem>);

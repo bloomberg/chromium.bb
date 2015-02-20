@@ -115,7 +115,7 @@ public:
 
     PassRefPtrWillBeRawPtr<DataObject> dataObject() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DataTransfer(DataTransferType, DataTransferAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);

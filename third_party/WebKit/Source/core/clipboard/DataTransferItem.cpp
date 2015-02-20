@@ -93,7 +93,7 @@ DataTransferItem::DataTransferItem(PassRefPtrWillBeRawPtr<DataTransfer> dataTran
 {
 }
 
-void DataTransferItem::trace(Visitor* visitor)
+DEFINE_TRACE(DataTransferItem)
 {
     visitor->trace(m_dataTransfer);
     visitor->trace(m_item);

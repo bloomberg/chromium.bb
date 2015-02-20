@@ -524,7 +524,7 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
     }
 }
 
-void DataTransfer::trace(Visitor* visitor)
+DEFINE_TRACE(DataTransfer)
 {
     visitor->trace(m_dataObject);
     visitor->trace(m_dragImageElement);

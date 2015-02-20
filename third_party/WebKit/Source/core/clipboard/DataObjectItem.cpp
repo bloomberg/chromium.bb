@@ -168,7 +168,7 @@ bool DataObjectItem::isFilename() const
     return m_kind == FileKind && m_file;
 }
 
-void DataObjectItem::trace(Visitor* visitor)
+DEFINE_TRACE(DataObjectItem)
 {
     visitor->trace(m_file);
 }

@@ -59,7 +59,7 @@ public:
     PassRefPtrWillBeRawPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&);
     PassRefPtrWillBeRawPtr<DataTransferItem> add(File*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DataTransferItemList(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObject>);

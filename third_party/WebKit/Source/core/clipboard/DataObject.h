@@ -95,7 +95,7 @@ public:
     int modifierKeyState() const { return m_modifierKeyState; }
     void setModifierKeyState(int modifierKeyState) { m_modifierKeyState = modifierKeyState; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DataObject();
