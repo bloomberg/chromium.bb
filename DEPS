@@ -213,7 +213,7 @@ deps = {
     Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '0366d0b6d9dddb3d775d7ed8919c56a729cfe82f',
 
   'src/third_party/usrsctp/usrsctplib':
-    Var('chromium_git') + '/external/usrsctplib.git' + '@' + '190c8cbfcf8fd810aa09e0fab4ca62a8ce724e14',
+    Var('chromium_git') + '/external/usrsctplib.git' + '@' + '13718c7b9fd376fde092cbd3c5347d15059ac652', # from svn revision 9167
 
   'src/third_party/libsrtp':
    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '6446144c7f083552f21cc4e6768e891bcb767574',
