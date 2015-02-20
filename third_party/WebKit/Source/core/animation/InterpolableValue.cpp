@@ -100,9 +100,7 @@ void InterpolableList::multiply(double scalar, InterpolableValue& result) const
 
 void InterpolableList::trace(Visitor* visitor)
 {
-#if ENABLE_OILPAN
     visitor->trace(m_values);
-#endif
     InterpolableValue::trace(visitor);
 }
 

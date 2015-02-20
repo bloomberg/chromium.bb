@@ -80,9 +80,7 @@ void InterpolationEffect::InterpolationRecord::trace(Visitor* visitor)
 
 void InterpolationEffect::trace(Visitor* visitor)
 {
-#if ENABLE_OILPAN
     visitor->trace(m_interpolations);
-#endif
 }
 
-}
+} // namespace blink

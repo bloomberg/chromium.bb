@@ -1255,9 +1255,7 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-#if ENABLE_OILPAN
         visitor->trace(m_backPointer);
-#endif
     }
 
     static int s_aliveCount;
@@ -1281,7 +1279,7 @@ public:
 
     virtual ~SuperClass()
     {
-#if !ENABLE_OILPAN
+#if !ENABLE(OILPAN)
         m_pointsBack->setBackPointer(0);
 #endif
         --s_aliveCount;
@@ -1297,9 +1295,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-#if ENABLE_OILPAN
         visitor->trace(m_pointsBack);
-#endif
     }
 
     PointsBack* pointsBack() const { return m_pointsBack.get(); }
@@ -1344,10 +1340,8 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-#if ENABLE_OILPAN
-        SuperClass::trace(visitor);
         visitor->trace(m_data);
-#endif
+        SuperClass::trace(visitor);
     }
 
     static int s_aliveCount;
