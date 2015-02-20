@@ -132,7 +132,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
        (index > 0) && IsFormSubmit(entry);
        entry = controller.GetEntryAtIndex(index))
     --index;
-  if (IsFormSubmit(entry))
+  if (!entry || IsFormSubmit(entry))
     return;
 
   // Autogenerate a keyword for the autodetected case; in the other cases we'll
