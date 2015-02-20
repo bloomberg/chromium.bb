@@ -28,137 +28,156 @@
 #include "platform/weborigin/SchemeRegistry.h"
 
 #include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-static Mutex& threadSpecificMutex()
+static Mutex& mutex()
 {
     // The first call to this should be made before or during blink
     // initialization to avoid racy static local initialization.
-    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
-    return mutex;
+    DEFINE_STATIC_LOCAL(Mutex, m, ());
+    return m;
+}
+
+static void assertLockHeld()
+{
+#if ENABLE(ASSERT)
+    ASSERT(mutex().locked());
+#endif
 }
 
 static URLSchemesSet& localURLSchemes()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, localSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, localSchemes, ());
 
-    if (localSchemes->isEmpty())
-        localSchemes->add("file");
+    if (localSchemes.isEmpty())
+        localSchemes.add("file");
 
-    return *localSchemes;
+    return localSchemes;
 }
 
 static URLSchemesSet& displayIsolatedURLSchemes()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, displayIsolatedSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
-    return *displayIsolatedSchemes;
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, displayIsolatedSchemes, ());
+    return displayIsolatedSchemes;
 }
 
 static URLSchemesSet& mixedContentRestrictingSchemes()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, mixedContentRestrictingSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, mixedContentRestrictingSchemes, ());
 
-    if (mixedContentRestrictingSchemes->isEmpty())
-        mixedContentRestrictingSchemes->add("https");
+    if (mixedContentRestrictingSchemes.isEmpty())
+        mixedContentRestrictingSchemes.add("https");
 
-    return *mixedContentRestrictingSchemes;
+    return mixedContentRestrictingSchemes;
 }
 
 static URLSchemesSet& secureSchemes()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, secureSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, secureSchemes, ());
 
-    if (secureSchemes->isEmpty()) {
-        secureSchemes->add("https");
-        secureSchemes->add("about");
-        secureSchemes->add("data");
-        secureSchemes->add("wss");
+    if (secureSchemes.isEmpty()) {
+        secureSchemes.add("https");
+        secureSchemes.add("about");
+        secureSchemes.add("data");
+        secureSchemes.add("wss");
     }
 
-    return *secureSchemes;
+    return secureSchemes;
 }
 
 static URLSchemesSet& schemesWithUniqueOrigins()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, schemesWithUniqueOrigins, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, schemesWithUniqueOrigins, ());
 
-    if (schemesWithUniqueOrigins->isEmpty()) {
-        schemesWithUniqueOrigins->add("about");
-        schemesWithUniqueOrigins->add("javascript");
+    if (schemesWithUniqueOrigins.isEmpty()) {
+        schemesWithUniqueOrigins.add("about");
+        schemesWithUniqueOrigins.add("javascript");
         // This is a willful violation of HTML5.
         // See https://bugs.webkit.org/show_bug.cgi?id=11885
-        schemesWithUniqueOrigins->add("data");
+        schemesWithUniqueOrigins.add("data");
     }
 
-    return *schemesWithUniqueOrigins;
+    return schemesWithUniqueOrigins;
 }
 
 static URLSchemesSet& emptyDocumentSchemes()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, emptyDocumentSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, emptyDocumentSchemes, ());
 
-    if (emptyDocumentSchemes->isEmpty())
-        emptyDocumentSchemes->add("about");
+    if (emptyDocumentSchemes.isEmpty())
+        emptyDocumentSchemes.add("about");
 
-    return *emptyDocumentSchemes;
+    return emptyDocumentSchemes;
 }
 
 static HashSet<String>& schemesForbiddenFromDomainRelaxation()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<HashSet<String>>, schemes, new ThreadSpecific<HashSet<String>>(), threadSpecificMutex());
-    return *schemes;
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(HashSet<String>, schemes, ());
+    return schemes;
 }
 
 static URLSchemesSet& notAllowingJavascriptURLsSchemes()
 {
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, notAllowingJavascriptURLsSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
-    return *notAllowingJavascriptURLsSchemes;
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
+    return notAllowingJavascriptURLsSchemes;
 }
 
 void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme)
 {
+    MutexLocker locker(mutex());
     localURLSchemes().add(scheme);
 }
 
 const URLSchemesSet& SchemeRegistry::localSchemes()
 {
+    MutexLocker locker(mutex());
     return localURLSchemes();
 }
 
 static URLSchemesSet& CORSEnabledSchemes()
 {
     // FIXME: http://bugs.webkit.org/show_bug.cgi?id=77160
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<URLSchemesSet>, CORSEnabledSchemes, new ThreadSpecific<URLSchemesSet>(), threadSpecificMutex());
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, CORSEnabledSchemes, ());
 
-    if (CORSEnabledSchemes->isEmpty()) {
-        CORSEnabledSchemes->add("http");
-        CORSEnabledSchemes->add("https");
-        CORSEnabledSchemes->add("data");
+    if (CORSEnabledSchemes.isEmpty()) {
+        CORSEnabledSchemes.add("http");
+        CORSEnabledSchemes.add("https");
+        CORSEnabledSchemes.add("data");
     }
 
-    return *CORSEnabledSchemes;
+    return CORSEnabledSchemes;
 }
 
 static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
 {
-    using PolicyAreasMap = URLSchemesMap<SchemeRegistry::PolicyAreas>;
-    AtomicallyInitializedStaticReferenceWithLock(ThreadSpecific<PolicyAreasMap>, schemes, new ThreadSpecific<PolicyAreasMap>(), threadSpecificMutex());
-    return *schemes;
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesMap<SchemeRegistry::PolicyAreas>, schemes, ());
+    return schemes;
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme)
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return localURLSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsNoAccess(const String& scheme)
 {
+    MutexLocker locker(mutex());
     schemesWithUniqueOrigins().add(scheme);
 }
 
@@ -166,11 +185,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme)
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return schemesWithUniqueOrigins().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsDisplayIsolated(const String& scheme)
 {
+    MutexLocker locker(mutex());
     displayIsolatedURLSchemes().add(scheme);
 }
 
@@ -178,11 +199,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(const String& scheme)
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return displayIsolatedURLSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsRestrictingMixedContent(const String& scheme)
 {
+    MutexLocker locker(mutex());
     mixedContentRestrictingSchemes().add(scheme);
 }
 
@@ -190,11 +213,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(const String&
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return mixedContentRestrictingSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme)
 {
+    MutexLocker locker(mutex());
     secureSchemes().add(scheme);
 }
 
@@ -202,11 +227,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme)
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return secureSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsEmptyDocument(const String& scheme)
 {
+    MutexLocker locker(mutex());
     emptyDocumentSchemes().add(scheme);
 }
 
@@ -214,6 +241,7 @@ bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme)
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return emptyDocumentSchemes().contains(scheme);
 }
 
@@ -222,6 +250,7 @@ void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(bool forbidden, co
     if (scheme.isEmpty())
         return;
 
+    MutexLocker locker(mutex());
     if (forbidden)
         schemesForbiddenFromDomainRelaxation().add(scheme);
     else
@@ -232,6 +261,7 @@ bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(const String& schem
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return schemesForbiddenFromDomainRelaxation().contains(scheme);
 }
 
@@ -242,6 +272,7 @@ bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme)
 
 void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(const String& scheme)
 {
+    MutexLocker locker(mutex());
     notAllowingJavascriptURLsSchemes().add(scheme);
 }
 
@@ -249,11 +280,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(const Strin
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return notAllowingJavascriptURLsSchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsCORSEnabled(const String& scheme)
 {
+    MutexLocker locker(mutex());
     CORSEnabledSchemes().add(scheme);
 }
 
@@ -261,6 +294,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme)
 {
     if (scheme.isEmpty())
         return false;
+    MutexLocker locker(mutex());
     return CORSEnabledSchemes().contains(scheme);
 }
 
@@ -268,7 +302,12 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes()
 {
     StringBuilder builder;
     bool addSeparator = false;
-    for (const auto& scheme : CORSEnabledSchemes()) {
+    URLSchemesSet schemes;
+    {
+        MutexLocker locker(mutex());
+        schemes = CORSEnabledSchemes();
+    }
+    for (const auto& scheme : schemes) {
         if (addSeparator)
             builder.appendLiteral(", ");
         else
@@ -286,11 +325,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme)
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas policyAreas)
 {
+    MutexLocker locker(mutex());
     ContentSecurityPolicyBypassingSchemes().add(scheme, policyAreas);
 }
 
 void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme)
 {
+    MutexLocker locker(mutex());
     ContentSecurityPolicyBypassingSchemes().remove(scheme);
 }
 
@@ -302,6 +343,7 @@ bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(const String& schem
 
     // get() returns 0 (PolicyAreaNone) if there is no entry in the map.
     // Thus by default, schemes do not bypass CSP.
+    MutexLocker locker(mutex());
     return (ContentSecurityPolicyBypassingSchemes().get(scheme) & policyAreas) == policyAreas;
 }
 
