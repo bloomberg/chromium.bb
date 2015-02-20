@@ -22,6 +22,7 @@
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device_generator.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
@@ -97,8 +98,9 @@ class OzonePlatformDri : public OzonePlatform {
     display_manager_.reset(new DisplayManager());
     surface_factory_ozone_.reset(
         new DriSurfaceFactory(&window_delegate_manager_));
-    scoped_ptr<NativeDisplayDelegateDri> ndd(
-        new NativeDisplayDelegateDri(screen_manager_.get(), dri_));
+    scoped_ptr<NativeDisplayDelegateDri> ndd(new NativeDisplayDelegateDri(
+        screen_manager_.get(), dri_,
+        scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
         drm_device_manager_.get(), &window_delegate_manager_,
         screen_manager_.get(), ndd.Pass()));

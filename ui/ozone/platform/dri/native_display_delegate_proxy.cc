@@ -7,7 +7,9 @@
 #include <stdio.h>
 
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/worker_pool.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -21,6 +23,30 @@
 namespace ui {
 
 namespace {
+
+const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
+
+typedef base::Callback<void(const base::FilePath&, base::File)>
+    OnOpenDeviceReplyCallback;
+
+void OpenDeviceOnWorkerThread(
+    const base::FilePath& path,
+    const scoped_refptr<base::TaskRunner>& reply_runner,
+    const OnOpenDeviceReplyCallback& callback) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_WRITE);
+
+  base::File::Info info;
+  file.GetInfo(&info);
+
+  CHECK(!info.is_directory);
+  CHECK(path.DirName() == base::FilePath("/dev/dri"));
+
+  if (file.IsValid()) {
+    reply_runner->PostTask(
+        FROM_HERE, base::Bind(callback, path, base::Passed(file.Pass())));
+  }
+}
 
 class DriDisplaySnapshotProxy : public DisplaySnapshotProxy {
  public:
@@ -49,7 +75,8 @@ NativeDisplayDelegateProxy::NativeDisplayDelegateProxy(
     : proxy_(proxy),
       device_manager_(device_manager),
       display_manager_(display_manager),
-      has_dummy_display_(false) {
+      has_dummy_display_(false),
+      weak_ptr_factory_(this) {
   proxy_->RegisterHandler(this);
 }
 
@@ -195,16 +222,44 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
   switch (event.action_type()) {
     case DeviceEvent::ADD:
       VLOG(1) << "Got display added event for " << event.path().value();
-      proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(event.path()));
-      break;
+      // The default card is a special case since it needs to be opened early on
+      // the GPU process in order to initialize EGL. If it is opened here as
+      // well, it will cause a race with opening it in the GPU process and the
+      // GPU process may fail initialization.
+      // TODO(dnicoara) Remove this when EGL_DEFAULT_DISPLAY is the only native
+      // display we return in GbmSurfaceFactory.
+      if (event.path().value() == kDefaultGraphicsCardPath)
+        return;
+
+      base::WorkerPool::PostTask(
+          FROM_HERE,
+          base::Bind(
+              &OpenDeviceOnWorkerThread, event.path(),
+              base::ThreadTaskRunnerHandle::Get(),
+              base::Bind(&NativeDisplayDelegateProxy::OnNewGraphicsDevice,
+                         weak_ptr_factory_.GetWeakPtr())),
+          false /* task_is_slow */);
+      return;
     case DeviceEvent::CHANGE:
       VLOG(1) << "Got display changed event for " << event.path().value();
       break;
     case DeviceEvent::REMOVE:
       VLOG(1) << "Got display removed event for " << event.path().value();
+      // It shouldn't be possible to remove this device.
+      DCHECK_NE(kDefaultGraphicsCardPath, event.path().value());
       proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(event.path()));
       break;
   }
+
+  FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
+                    OnConfigurationChanged());
+}
+
+void NativeDisplayDelegateProxy::OnNewGraphicsDevice(const base::FilePath& path,
+                                                     base::File file) {
+  DCHECK(file.IsValid());
+  proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
+      path, base::FileDescriptor(file.Pass())));
 
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());
@@ -214,6 +269,7 @@ void NativeDisplayDelegateProxy::OnChannelEstablished(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::Callback<void(IPC::Message*)>& send_callback) {
+  device_manager_->ScanDevices(this);
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());
 }

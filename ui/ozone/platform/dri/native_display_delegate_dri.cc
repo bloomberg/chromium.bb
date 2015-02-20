@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_descriptor_posix.h"
+#include "base/files/file.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -14,6 +16,7 @@
 #include "ui/ozone/platform/dri/display_snapshot_dri.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/drm_device_generator.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/public/ozone_switches.h"
 
@@ -74,12 +77,26 @@ class DisplaySnapshotComparator {
   uint32_t connector_;
 };
 
+class FindByDevicePath {
+ public:
+  explicit FindByDevicePath(const base::FilePath& path) : path_(path) {}
+
+  bool operator()(const scoped_refptr<DriWrapper>& device) {
+    return device->device_path() == path_;
+  }
+
+ private:
+  base::FilePath path_;
+};
+
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
     ScreenManager* screen_manager,
-    const scoped_refptr<DriWrapper>& primary_device)
-    : screen_manager_(screen_manager) {
+    const scoped_refptr<DriWrapper>& primary_device,
+    scoped_ptr<DrmDeviceGenerator> drm_device_generator)
+    : screen_manager_(screen_manager),
+      drm_device_generator_(drm_device_generator.Pass()) {
   devices_.push_back(primary_device);
 }
 
@@ -195,13 +212,36 @@ bool NativeDisplayDelegateDri::RelinquishDisplayControl() {
   return true;
 }
 
-void NativeDisplayDelegateDri::AddGraphicsDevice(const base::FilePath& path) {
-  NOTIMPLEMENTED();
+void NativeDisplayDelegateDri::AddGraphicsDevice(
+    const base::FilePath& path,
+    const base::FileDescriptor& fd) {
+  base::File file(fd.fd);
+  auto it =
+      std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
+  if (it != devices_.end()) {
+    LOG(WARNING) << "Got request to add existing device '" << path.value()
+                 << "'";
+    return;
+  }
+
+  scoped_refptr<DriWrapper> device =
+      drm_device_generator_->CreateDevice(path, file.Pass());
+  devices_.push_back(device);
+  if (io_task_runner_)
+    device->InitializeTaskRunner(io_task_runner_);
 }
 
 void NativeDisplayDelegateDri::RemoveGraphicsDevice(
     const base::FilePath& path) {
-  NOTIMPLEMENTED();
+  auto it =
+      std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
+  if (it == devices_.end()) {
+    LOG(ERROR) << "Got request to remove non-existent device '" << path.value()
+               << "'";
+    return;
+  }
+
+  devices_.erase(it);
 }
 
 DisplaySnapshotDri* NativeDisplayDelegateDri::FindDisplaySnapshot(int64_t id) {

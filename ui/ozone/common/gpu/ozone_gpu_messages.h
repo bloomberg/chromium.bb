@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/file_descriptor_posix.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point.h"
@@ -91,8 +92,9 @@ IPC_MESSAGE_CONTROL3(OzoneGpuMsg_ConfigureNativeDisplay,
 IPC_MESSAGE_CONTROL1(OzoneGpuMsg_DisableNativeDisplay,
                      int64_t)  // display ID
 
-IPC_MESSAGE_CONTROL1(OzoneGpuMsg_AddGraphicsDevice,
-                     base::FilePath /* device_path */)
+IPC_MESSAGE_CONTROL2(OzoneGpuMsg_AddGraphicsDevice,
+                     base::FilePath /* device_path */,
+                     base::FileDescriptor /* device_fd */)
 
 IPC_MESSAGE_CONTROL1(OzoneGpuMsg_RemoveGraphicsDevice,
                      base::FilePath /* device_path */)

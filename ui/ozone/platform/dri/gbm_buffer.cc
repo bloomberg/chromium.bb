@@ -10,6 +10,7 @@
 #include <xf86drm.h>
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/ozone/platform/dri/gbm_wrapper.h"
 
 namespace ui {
@@ -47,6 +48,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     SurfaceFactoryOzone::BufferFormat format,
     const gfx::Size& size,
     bool scanout) {
+  TRACE_EVENT2("dri", "GbmBuffer::CreateBuffer", "device",
+               gbm->device_path().value(), "size", size.ToString());
   unsigned flags = GBM_BO_USE_RENDERING;
   if (scanout)
     flags |= GBM_BO_USE_SCANOUT;

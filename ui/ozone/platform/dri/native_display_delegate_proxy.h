@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -74,6 +75,8 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
       const std::vector<DisplaySnapshot_Params>& displays);
   void OnDisplayConfigured(int64_t display_id, bool status);
 
+  void OnNewGraphicsDevice(const base::FilePath& path, base::File file);
+
   DriGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
   DisplayManager* display_manager_;   // Not owned.
@@ -89,6 +92,8 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
 
   // Map between display_id and the configuration callback.
   std::map<int64_t, ConfigureCallback> configure_callback_map_;
+
+  base::WeakPtrFactory<NativeDisplayDelegateProxy> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayDelegateProxy);
 };

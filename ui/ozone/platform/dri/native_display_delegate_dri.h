@@ -11,6 +11,7 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
 namespace base {
+class FileDescriptor;
 class FilePath;
 class SingleThreadTaskRunner;
 }
@@ -22,12 +23,14 @@ class DisplaySnapshotDri;
 class DisplayMode;
 class DisplayModeDri;
 class DriWrapper;
+class DrmDeviceGenerator;
 class ScreenManager;
 
 class NativeDisplayDelegateDri {
  public:
   NativeDisplayDelegateDri(ScreenManager* screen_manager,
-                           const scoped_refptr<DriWrapper>& primary_device);
+                           const scoped_refptr<DriWrapper>& primary_device,
+                           scoped_ptr<DrmDeviceGenerator> device_generator);
   ~NativeDisplayDelegateDri();
 
   void InitializeIOTaskRunner(
@@ -49,7 +52,8 @@ class NativeDisplayDelegateDri {
   bool RelinquishDisplayControl();
 
   // Called on DRM hotplug events to add/remove a DRM device.
-  void AddGraphicsDevice(const base::FilePath& path);
+  void AddGraphicsDevice(const base::FilePath& path,
+                         const base::FileDescriptor& fd);
   void RemoveGraphicsDevice(const base::FilePath& path);
 
  private:
@@ -73,6 +77,7 @@ class NativeDisplayDelegateDri {
       const std::vector<DisplaySnapshotDri*>& old_displays) const;
 
   ScreenManager* screen_manager_;  // Not owned.
+  scoped_ptr<DrmDeviceGenerator> drm_device_generator_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::vector<scoped_refptr<DriWrapper>> devices_;
   // Modes can be shared between different displays, so we need to keep track

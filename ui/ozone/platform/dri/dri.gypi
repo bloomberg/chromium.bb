@@ -76,6 +76,8 @@
         'dri_window_manager.h',
         'dri_wrapper.cc',
         'dri_wrapper.h',
+        'drm_device_generator.cc',
+        'drm_device_generator.h',
         'drm_device_manager.cc',
         'drm_device_manager.h',
         'hardware_display_controller.cc',

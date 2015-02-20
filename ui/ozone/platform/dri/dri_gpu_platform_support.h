@@ -15,6 +15,7 @@
 class SkBitmap;
 
 namespace base {
+class FileDescriptor;
 class FilePath;
 class SingleThreadTaskRunner;
 }
@@ -74,7 +75,8 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
   void OnDisableNativeDisplay(int64_t id);
   void OnTakeDisplayControl();
   void OnRelinquishDisplayControl();
-  void OnAddGraphicsDevice(const base::FilePath& path);
+  void OnAddGraphicsDevice(const base::FilePath& path,
+                           const base::FileDescriptor& fd);
   void OnRemoveGraphicsDevice(const base::FilePath& path);
 
   void SetIOTaskRunner(

@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
+#include "ui/ozone/platform/dri/drm_device_generator.h"
 #include "ui/ozone/platform/dri/drm_device_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
@@ -74,6 +75,7 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
   GbmBufferGenerator() {}
   ~GbmBufferGenerator() override {}
 
+  // ScanoutBufferGenerator:
   scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DriWrapper>& drm,
                                       const gfx::Size& size) override {
     scoped_refptr<GbmWrapper> gbm(static_cast<GbmWrapper*>(drm.get()));
@@ -83,6 +85,23 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(GbmBufferGenerator);
+};
+
+class GbmDeviceGenerator : public DrmDeviceGenerator {
+ public:
+  GbmDeviceGenerator() {}
+  ~GbmDeviceGenerator() override {}
+
+  // DrmDeviceGenerator:
+  scoped_refptr<DriWrapper> CreateDevice(const base::FilePath& path,
+                                         base::File file) override {
+    scoped_refptr<DriWrapper> drm = new GbmWrapper(path, file.Pass());
+    drm->Initialize();
+    return drm;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GbmDeviceGenerator);
 };
 
 class OzonePlatformGbm : public OzonePlatform {
@@ -168,8 +187,9 @@ class OzonePlatformGbm : public OzonePlatform {
 
     surface_factory_ozone_->InitializeGpu(gbm_, drm_device_manager_.get(),
                                           window_delegate_manager_.get());
-    scoped_ptr<NativeDisplayDelegateDri> ndd(
-        new NativeDisplayDelegateDri(screen_manager_.get(), gbm_));
+    scoped_ptr<NativeDisplayDelegateDri> ndd(new NativeDisplayDelegateDri(
+        screen_manager_.get(), gbm_,
+        scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator())));
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
         drm_device_manager_.get(), window_delegate_manager_.get(),
         screen_manager_.get(), ndd.Pass()));

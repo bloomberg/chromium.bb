@@ -289,8 +289,10 @@ void DriGpuPlatformSupport::OnRelinquishDisplayControl() {
   ndd_->RelinquishDisplayControl();
 }
 
-void DriGpuPlatformSupport::OnAddGraphicsDevice(const base::FilePath& path) {
-  ndd_->AddGraphicsDevice(path);
+void DriGpuPlatformSupport::OnAddGraphicsDevice(
+    const base::FilePath& path,
+    const base::FileDescriptor& fd) {
+  ndd_->AddGraphicsDevice(path, fd);
 }
 
 void DriGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
