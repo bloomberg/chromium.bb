@@ -63,7 +63,7 @@ MessagePortService::~MessagePortService() {
 void MessagePortService::UpdateMessagePort(int message_port_id,
                                            MessagePortDelegate* delegate,
                                            int routing_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -76,6 +76,7 @@ void MessagePortService::UpdateMessagePort(int message_port_id,
 
 void MessagePortService::OnMessagePortDelegateClosing(
     MessagePortDelegate* delegate) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Check if the (possibly) crashed process had any message ports.
   for (MessagePorts::iterator iter = message_ports_.begin();
        iter != message_ports_.end();) {
@@ -89,7 +90,7 @@ void MessagePortService::OnMessagePortDelegateClosing(
 void MessagePortService::Create(int route_id,
                                 MessagePortDelegate* delegate,
                                 int* message_port_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *message_port_id = ++next_message_port_id_;
 
   MessagePort port;
@@ -104,6 +105,7 @@ void MessagePortService::Create(int route_id,
 }
 
 void MessagePortService::Destroy(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -116,6 +118,7 @@ void MessagePortService::Destroy(int message_port_id) {
 
 void MessagePortService::Entangle(int local_message_port_id,
                                   int remote_message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(local_message_port_id) ||
       !message_ports_.count(remote_message_port_id)) {
     NOTREACHED();
@@ -132,6 +135,7 @@ void MessagePortService::PostMessage(
     int sender_message_port_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(sender_message_port_id)) {
     NOTREACHED();
     return;
@@ -195,6 +199,7 @@ void MessagePortService::PostMessageTo(
 }
 
 void MessagePortService::QueueMessages(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -211,6 +216,7 @@ void MessagePortService::QueueMessages(int message_port_id) {
 void MessagePortService::SendQueuedMessages(
     int message_port_id,
     const QueuedMessages& queued_messages) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -240,6 +246,7 @@ void MessagePortService::SendQueuedMessages(
 }
 
 void MessagePortService::SendQueuedMessagesIfPossible(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -257,6 +264,7 @@ void MessagePortService::SendQueuedMessagesIfPossible(int message_port_id) {
 }
 
 void MessagePortService::HoldMessages(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -271,6 +279,7 @@ void MessagePortService::HoldMessages(int message_port_id) {
 }
 
 void MessagePortService::ClosePort(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -290,6 +299,7 @@ void MessagePortService::ClosePort(int message_port_id) {
 }
 
 void MessagePortService::ReleaseMessages(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
