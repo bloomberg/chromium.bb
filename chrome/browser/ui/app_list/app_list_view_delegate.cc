@@ -290,8 +290,11 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "431326 AppListViewDelegate::SetProfile3"));
   template_url_service_observer_.RemoveAll();
-  template_url_service_observer_.Add(
-      TemplateURLServiceFactory::GetForProfile(profile_));
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile_);
+    template_url_service_observer_.Add(template_url_service);
+  }
 
   model_ =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->model();
@@ -785,6 +788,9 @@ void AppListViewDelegate::RemoveObserver(
 }
 
 void AppListViewDelegate::OnTemplateURLServiceChanged() {
+  if (!app_list::switches::IsExperimentalAppListEnabled())
+    return;
+
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   const TemplateURL* default_provider =

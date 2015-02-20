@@ -285,15 +285,16 @@ StartPageService::StartPageService(Profile* profile)
   if (HotwordService::IsExperimentalHotwordingEnabled()) {
     state_ = app_list::SPEECH_RECOGNITION_READY;
   }
-
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  const TemplateURL* default_provider =
-      template_url_service->GetDefaultSearchProvider();
-  search_engine_is_google_ =
-      TemplateURLPrepopulateData::GetEngineType(
-          *default_provider, template_url_service->search_terms_data()) ==
-      SEARCH_ENGINE_GOOGLE;
+  if (switches::IsExperimentalAppListEnabled()) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile_);
+    const TemplateURL* default_provider =
+        template_url_service->GetDefaultSearchProvider();
+    search_engine_is_google_ =
+        TemplateURLPrepopulateData::GetEngineType(
+            *default_provider, template_url_service->search_terms_data()) ==
+        SEARCH_ENGINE_GOOGLE;
+  }
 
   network_change_observer_.reset(new NetworkChangeObserver(this));
 }
