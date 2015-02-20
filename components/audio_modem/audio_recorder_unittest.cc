@@ -20,6 +20,8 @@
 
 namespace {
 
+const size_t kSomeNumber = 0x9999;
+
 class TestAudioInputStream : public media::AudioInputStream {
  public:
   TestAudioInputStream(const media::AudioParameters& params,
@@ -87,23 +89,24 @@ class AudioRecorderTest : public testing::Test {
   }
 
   void CreateSimpleRecorder() {
-    DeleteRecorder();
-    recorder_ = new AudioRecorderImpl();
-    recorder_->Initialize(
-        base::Bind(&AudioRecorderTest::DecodeSamples, base::Unretained(this)));
+    // If we have input devices, we'll create a recorder which uses a real
+    // input stream, if not, we'll create a recorder which uses our mock input
+    // stream.
+    if (media::AudioManager::Get()->HasAudioInputDevices()) {
+      DeleteRecorder();
+      recorder_ = new AudioRecorderImpl();
+      recorder_->Initialize(base::Bind(&AudioRecorderTest::DecodeSamples,
+                                       base::Unretained(this)));
+    } else {
+      CreateRecorder(kSomeNumber);
+    }
   }
 
-  void CreateRecorder(size_t channels,
-                      size_t sample_rate,
-                      size_t bits_per_sample,
-                      size_t samples) {
+  void CreateRecorder(size_t samples) {
     DeleteRecorder();
-    params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                  kDefaultChannelLayout,
-                  channels,
-                  sample_rate,
-                  bits_per_sample,
-                  4096);
+
+    params_ = media::AudioManager::Get()->GetInputStreamParameters(
+        media::AudioManagerBase::kDefaultDeviceId);
 
     channel_data_.clear();
     channel_data_.push_back(GenerateSamples(0x1337, samples));
@@ -193,17 +196,7 @@ class AudioRecorderTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-// TODO(rkc): These tests are broken on all platforms.
-// On Windows and Mac, we cannot use non-OS params. The tests need to be
-// rewritten to use the params provided to us by the audio manager
-// rather than setting our own params.
-// On Linux, there is a memory leak in the audio code during initialization.
-#define MAYBE_BasicRecordAndStop DISABLED_BasicRecordAndStop
-#define MAYBE_OutOfOrderRecordAndStopMultiple \
-    DISABLED_OutOfOrderRecordAndStopMultiple
-#define MAYBE_RecordingEndToEnd DISABLED_RecordingEndToEnd
-
-TEST_F(AudioRecorderTest, MAYBE_BasicRecordAndStop) {
+TEST_F(AudioRecorderTest, BasicRecordAndStop) {
   CreateSimpleRecorder();
 
   recorder_->Record();
@@ -224,7 +217,7 @@ TEST_F(AudioRecorderTest, MAYBE_BasicRecordAndStop) {
   DeleteRecorder();
 }
 
-TEST_F(AudioRecorderTest, MAYBE_OutOfOrderRecordAndStopMultiple) {
+TEST_F(AudioRecorderTest, OutOfOrderRecordAndStopMultiple) {
   CreateSimpleRecorder();
 
   recorder_->Stop();
@@ -243,10 +236,9 @@ TEST_F(AudioRecorderTest, MAYBE_OutOfOrderRecordAndStopMultiple) {
   DeleteRecorder();
 }
 
-TEST_F(AudioRecorderTest, MAYBE_RecordingEndToEnd) {
+TEST_F(AudioRecorderTest, RecordingEndToEnd) {
   const int kNumSamples = 48000 * 3;
-  CreateRecorder(
-      kDefaultChannels, kDefaultSampleRate, kDefaultBitsPerSample, kNumSamples);
+  CreateRecorder(kNumSamples);
 
   RecordAndVerifySamples();
 

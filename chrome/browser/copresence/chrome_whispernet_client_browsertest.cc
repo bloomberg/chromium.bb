@@ -4,6 +4,7 @@
 
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 
+#include <cmath>
 #include <cstdlib>
 #include <string>
 
@@ -17,8 +18,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/audio_modem/public/audio_modem_types.h"
 #include "components/audio_modem/public/whispernet_client.h"
+#include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_converter.h"
 
 using audio_modem::WhispernetClient;
 using audio_modem::AUDIBLE;
@@ -59,10 +65,13 @@ void IgnoreResult(bool success) {}
 
 }  // namespace
 
-class ChromeWhispernetClientTest : public ExtensionBrowserTest {
+class ChromeWhispernetClientTest : public ExtensionBrowserTest,
+                                   public media::AudioConverter::InputCallback {
  protected:
   ChromeWhispernetClientTest()
-      : initialized_(false), expected_audible_(false) {}
+      : initialized_(false),
+        expected_audible_(false),
+        saved_samples_index_(0) {}
 
   ~ChromeWhispernetClientTest() override {}
 
@@ -74,8 +83,33 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
-
     EXPECT_TRUE(initialized_);
+  }
+
+  // This needs to be called before any of the decoder tests are run. We can't
+  // run this code in the constructor or the SetUp methods because the audio
+  // manager seems to get initialized only *after* ExtensionBrowserTest::SetUp
+  // has finished executing. Setting up a testing AudioMager causes the actual
+  // create happening later in the browser initialization to fail. The only way
+  // around this at the moment seems to be to have this method called from
+  // every test before they try to decode.
+  void SetupDecode() {
+    // We get default parameters here instead of the constructor since
+    // initializing Whispernet also creates our AudioManager. Initializing from
+    // the test instead causes issues.
+    default_params_ = media::AudioManager::Get()->GetInputStreamParameters(
+        media::AudioManagerBase::kDefaultDeviceId);
+
+    coder_params_ = media::AudioParameters(
+        default_params_.format(), audio_modem::kDefaultChannelLayout,
+        audio_modem::kDefaultSampleRate, audio_modem::kDefaultBitsPerSample,
+        default_params_.frames_per_buffer(),
+        media::AudioParameters::NO_EFFECTS);
+
+    converter_.reset(new media::AudioConverter(
+        coder_params_, default_params_,
+        default_params_.sample_rate() == coder_params_.sample_rate()));
+    converter_->AddInput(this);
   }
 
   void EncodeTokenAndSaveSamples(WhispernetClient* client,
@@ -107,20 +141,10 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 
     ASSERT_GT(saved_samples_->frames(), 0);
 
-    // Convert our single channel samples to two channel. Decode samples
-    // expects 2 channel data.
     scoped_refptr<media::AudioBusRefCounted> samples_bus =
-        media::AudioBusRefCounted::Create(2, saved_samples_->frames());
-    memcpy(samples_bus->channel(0),
-           saved_samples_->channel(0),
-           sizeof(float) * saved_samples_->frames());
-    memcpy(samples_bus->channel(1),
-           saved_samples_->channel(0),
-           sizeof(float) * saved_samples_->frames());
-
+        ConvertSavedSamplesToSystemParams();
     client->DecodeSamples(expect_audible ? AUDIBLE : INAUDIBLE,
-                          AudioBusToString(samples_bus),
-                          token_params);
+                          AudioBusToString(samples_bus), token_params);
     run_loop_->Run();
   }
 
@@ -150,13 +174,59 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     EXPECT_EQ(expected_audible_, tokens[0].audible);
   }
 
+ private:
+  scoped_refptr<media::AudioBusRefCounted> ConvertSavedSamplesToSystemParams() {
+    int new_size =
+        saved_samples_->frames() *
+        std::ceil(static_cast<double>(default_params_.sample_rate()) /
+                  coder_params_.sample_rate());
+    new_size =
+        std::ceil(static_cast<double>(new_size) / converter_->ChunkSize()) *
+        converter_->ChunkSize();
+
+    scoped_refptr<media::AudioBusRefCounted> converted_samples =
+        media::AudioBusRefCounted::Create(default_params_.channels(), new_size);
+
+    // Convert our single channel samples to two channel. Decode samples
+    // expects 2 channel data.
+    saved_samples_stereo_ =
+        media::AudioBusRefCounted::Create(2, saved_samples_->frames());
+    memcpy(saved_samples_stereo_->channel(0), saved_samples_->channel(0),
+           sizeof(float) * saved_samples_->frames());
+    memcpy(saved_samples_stereo_->channel(1), saved_samples_->channel(0),
+           sizeof(float) * saved_samples_->frames());
+
+    saved_samples_index_ = 0;
+    converter_->Convert(converted_samples.get());
+
+    return converted_samples;
+  }
+
+  // AudioConverter::InputCallback overrides:
+  double ProvideInput(media::AudioBus* dest,
+                      base::TimeDelta /* buffer_delay */) override {
+    int remaining_frames = saved_samples_->frames() - saved_samples_index_;
+    int frames_to_copy = std::min(remaining_frames, dest->frames());
+    saved_samples_stereo_->CopyPartialFramesTo(saved_samples_index_,
+                                               frames_to_copy, 0, dest);
+    saved_samples_index_ += frames_to_copy;
+    return 1.0;
+  }
+
   scoped_ptr<base::RunLoop> run_loop_;
   bool initialized_;
 
- private:
   std::string expected_token_;
   bool expected_audible_;
+
   scoped_refptr<media::AudioBusRefCounted> saved_samples_;
+  scoped_refptr<media::AudioBusRefCounted> saved_samples_stereo_;
+  int saved_samples_index_;
+
+  scoped_ptr<media::AudioConverter> converter_;
+
+  media::AudioParameters default_params_;
+  media::AudioParameters coder_params_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWhispernetClientTest);
 };
@@ -186,6 +256,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeAndDecode) {
   TokenParameters token_params[2];
   GetTokenParamsForLengths(kTokenLengths, token_params);
 
+  SetupDecode();
+
   EncodeTokenAndSaveSamples(client.get(), true, kSixZeros);
   DecodeSamplesAndVerifyToken(client.get(), true, kSixZeros, token_params);
 
@@ -201,6 +273,9 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_TokenLengths) {
   const size_t kLongTokenLengths[2] = {8, 9};
   TokenParameters token_params[2];
   GetTokenParamsForLengths(kLongTokenLengths, token_params);
+
+  SetupDecode();
+
   EncodeTokenAndSaveSamples(client.get(), true, kEightZeros);
   DecodeSamplesAndVerifyToken(client.get(), true, kEightZeros, token_params);
 
@@ -216,6 +291,8 @@ IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_MultipleClients) {
 
   TokenParameters token_params[2];
   GetTokenParamsForLengths(kTokenLengths, token_params);
+
+  SetupDecode();
 
   client_1->Initialize(base::Bind(&IgnoreResult));
 

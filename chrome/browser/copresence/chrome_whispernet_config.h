@@ -19,6 +19,7 @@ struct AudioDsssParams {
   double desired_carrier_frequency;
   int64_t use_crc_16;
   double coder_sample_rate;
+  double recording_sample_rate;
   int64_t bits_per_symbol;
   int64_t min_cycles_per_frame;
   int64_t baseband_decimation_factor;
@@ -38,6 +39,7 @@ struct AudioDtmfParams {
   int64_t include_parity_symbol;
   int64_t use_crc_16;
   double coder_sample_rate;
+  double recording_sample_rate;
   int64_t baseband_decimation_factor;
   int64_t frequencies_per_symbol;
   int64_t window_duration_millis;

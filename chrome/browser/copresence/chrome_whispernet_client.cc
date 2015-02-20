@@ -14,6 +14,9 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
+#include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_parameters.h"
 
 using audio_modem::AUDIBLE;
 using audio_modem::AudioType;
@@ -42,10 +45,19 @@ using extensions::copresence_private::RegisterWhispernetClient;
 namespace {
 
 AudioParamData GetDefaultAudioConfig() {
+  media::AudioParameters params =
+      media::AudioManager::Get()->GetInputStreamParameters(
+          media::AudioManagerBase::kDefaultDeviceId);
+
   AudioParamData config_data = {};
+
   config_data.audio_dtmf.coder_sample_rate =
       config_data.audio_dsss.coder_sample_rate =
           audio_modem::kDefaultSampleRate;
+
+  config_data.audio_dtmf.recording_sample_rate =
+      config_data.audio_dsss.recording_sample_rate = params.sample_rate();
+
   config_data.audio_dtmf.num_repetitions_to_play =
       config_data.audio_dsss.num_repetitions_to_play =
           audio_modem::kDefaultRepetitions;
@@ -54,7 +66,7 @@ AudioParamData GetDefaultAudioConfig() {
   config_data.audio_dsss.desired_carrier_frequency =
       audio_modem::kDefaultCarrierFrequency;
 
-  config_data.recording_channels = audio_modem::kDefaultChannels;
+  config_data.recording_channels = params.channels();
 
   return config_data;
 }

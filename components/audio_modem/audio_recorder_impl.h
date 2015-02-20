@@ -13,7 +13,6 @@
 #include "components/audio_modem/audio_recorder.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/audio_converter.h"
 
 namespace base {
 class MessageLoop;
@@ -28,8 +27,7 @@ namespace audio_modem {
 // The AudioRecorder class will record audio until told to stop.
 class AudioRecorderImpl final
     : public AudioRecorder,
-      public media::AudioInputStream::AudioInputCallback,
-      public media::AudioConverter::InputCallback {
+      public media::AudioInputStream::AudioInputCallback {
  public:
   using RecordedSamplesCallback = base::Callback<void(const std::string&)>;
 
@@ -79,10 +77,6 @@ class AudioRecorderImpl final
               double volume) override;
   void OnError(media::AudioInputStream* stream) override;
 
-  // AudioConverter::InputCallback overrides:
-  double ProvideInput(media::AudioBus* dest,
-                      base::TimeDelta buffer_delay) override;
-
   // Flushes the audio loop, making sure that any queued operations are
   // performed.
   void FlushAudioLoopForTesting();
@@ -93,16 +87,11 @@ class AudioRecorderImpl final
 
   RecordedSamplesCallback decode_callback_;
 
-  // ProvideInput will use this buffer as its source.
-  const media::AudioBus* temp_conversion_buffer_;
-
   // Outside of the ctor/Initialize method, only access the next variables on
   // the recording thread.
   scoped_ptr<media::AudioBus> buffer_;
   int total_buffer_frames_;
   int buffer_frame_index_;
-
-  scoped_ptr<media::AudioConverter> converter_;
 
   scoped_ptr<media::AudioInputStream> input_stream_for_testing_;
   scoped_ptr<media::AudioParameters> params_for_testing_;
