@@ -346,45 +346,6 @@ ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame() {
   return views::WidgetDelegateView::CreateNonClientFrameView(widget());
 }
 
-apps::AppWindowFrameView*
-ChromeNativeAppWindowViews::CreateNonStandardAppFrame() {
-  apps::AppWindowFrameView* frame =
-      new apps::AppWindowFrameView(widget(),
-                                   this,
-                                   has_frame_color_,
-                                   active_frame_color_,
-                                   inactive_frame_color_);
-  frame->Init();
-#if defined(USE_ASH)
-  // For Aura windows on the Ash desktop the sizes are different and the user
-  // can resize the window from slightly outside the bounds as well.
-  if (chrome::IsNativeWindowInAsh(widget()->GetNativeWindow())) {
-    frame->SetResizeSizes(ash::kResizeInsideBoundsSize,
-                          ash::kResizeOutsideBoundsSize,
-                          ash::kResizeAreaCornerSize);
-  }
-#endif
-
-#if !defined(OS_CHROMEOS)
-  // For non-Ash windows, install an easy resize window targeter, which ensures
-  // that the root window (not the app) receives mouse events on the edges.
-  if (chrome::GetHostDesktopTypeForNativeWindow(widget()->GetNativeWindow()) !=
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    aura::Window* window = widget()->GetNativeWindow();
-    int resize_inside = frame->resize_inside_bounds_size();
-    gfx::Insets inset(
-        resize_inside, resize_inside, resize_inside, resize_inside);
-    // Add the EasyResizeWindowTargeter on the window, not its root window. The
-    // root window does not have a delegate, which is needed to handle the event
-    // in Linux.
-    window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
-        new wm::EasyResizeWindowTargeter(window, inset, inset)));
-  }
-#endif
-
-  return frame;
-}
-
 // ui::BaseWindow implementation.
 
 gfx::Rect ChromeNativeAppWindowViews::GetRestoredBounds() const {
@@ -712,4 +673,43 @@ void ChromeNativeAppWindowViews::InitializeWindow(
       widget()->GetFocusManager(),
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       NULL));
+}
+
+apps::AppWindowFrameView*
+ChromeNativeAppWindowViews::CreateNonStandardAppFrame() {
+  apps::AppWindowFrameView* frame =
+      new apps::AppWindowFrameView(widget(),
+                                   this,
+                                   has_frame_color_,
+                                   active_frame_color_,
+                                   inactive_frame_color_);
+  frame->Init();
+#if defined(USE_ASH)
+  // For Aura windows on the Ash desktop the sizes are different and the user
+  // can resize the window from slightly outside the bounds as well.
+  if (chrome::IsNativeWindowInAsh(widget()->GetNativeWindow())) {
+    frame->SetResizeSizes(ash::kResizeInsideBoundsSize,
+                          ash::kResizeOutsideBoundsSize,
+                          ash::kResizeAreaCornerSize);
+  }
+#endif
+
+#if !defined(OS_CHROMEOS)
+  // For non-Ash windows, install an easy resize window targeter, which ensures
+  // that the root window (not the app) receives mouse events on the edges.
+  if (chrome::GetHostDesktopTypeForNativeWindow(widget()->GetNativeWindow()) !=
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    aura::Window* window = widget()->GetNativeWindow();
+    int resize_inside = frame->resize_inside_bounds_size();
+    gfx::Insets inset(
+        resize_inside, resize_inside, resize_inside, resize_inside);
+    // Add the EasyResizeWindowTargeter on the window, not its root window. The
+    // root window does not have a delegate, which is needed to handle the event
+    // in Linux.
+    window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+        new wm::EasyResizeWindowTargeter(window, inset, inset)));
+  }
+#endif
+
+  return frame;
 }

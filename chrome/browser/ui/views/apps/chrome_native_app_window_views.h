@@ -47,12 +47,6 @@ class ChromeNativeAppWindowViews
       const extensions::AppWindow::CreateParams& create_params);
   virtual views::NonClientFrameView* CreateStandardDesktopAppFrame();
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
-                           ResizeInsetsWithinBounds);
-
-  apps::AppWindowFrameView* CreateNonStandardAppFrame();
-
   // ui::BaseWindow implementation.
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
@@ -89,6 +83,12 @@ class ChromeNativeAppWindowViews
   void InitializeWindow(
       extensions::AppWindow* app_window,
       const extensions::AppWindow::CreateParams& create_params) override;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
+                           ResizeInsetsWithinBounds);
+
+  apps::AppWindowFrameView* CreateNonStandardAppFrame();
 
   // True if the window is fullscreen or fullscreen is pending.
   bool is_fullscreen_;

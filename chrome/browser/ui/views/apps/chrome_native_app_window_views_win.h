@@ -44,6 +44,9 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   virtual void Show() override;
   virtual void Activate() override;
 
+  // Overridden from views::WidgetDelegate:
+  bool CanMinimize() const override;
+
   // Overridden from extensions::NativeAppWindow:
   virtual void UpdateShelfMenu() override;
 
@@ -56,6 +59,9 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   // The Windows Application User Model ID identifying the app.
   // Not set for windows running inside Ash.
   base::string16 app_model_id_;
+
+  // Whether the InitParams indicated that this window should be translucent.
+  bool is_translucent_;
 
   base::WeakPtrFactory<ChromeNativeAppWindowViewsWin> weak_ptr_factory_;
 

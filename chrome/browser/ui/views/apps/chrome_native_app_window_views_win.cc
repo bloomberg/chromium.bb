@@ -37,7 +37,7 @@
 #include "ui/views/win/hwnd_util.h"
 
 ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
-    : glass_frame_view_(NULL), weak_ptr_factory_(this) {
+    : glass_frame_view_(NULL), is_translucent_(false), weak_ptr_factory_(this) {
 }
 
 void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
@@ -103,6 +103,9 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
     init_params->context = ash::Shell::GetPrimaryRootWindow();
   else
     init_params->native_widget = new AppWindowDesktopNativeWidgetAuraWin(this);
+
+  is_translucent_ =
+      init_params->opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW;
 }
 
 void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
@@ -153,6 +156,13 @@ void ChromeNativeAppWindowViewsWin::Show() {
 void ChromeNativeAppWindowViewsWin::Activate() {
   ActivateParentDesktopIfNecessary();
   ChromeNativeAppWindowViews::Activate();
+}
+
+bool ChromeNativeAppWindowViewsWin::CanMinimize() const {
+  // Resizing on Windows breaks translucency if the window also has shape.
+  // See http://crbug.com/417947.
+  return ChromeNativeAppWindowViews::CanMinimize() &&
+         !(WidgetHasHitTestMask() && is_translucent_);
 }
 
 void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
