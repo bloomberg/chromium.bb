@@ -119,6 +119,54 @@ function testImportMedia(callback) {
   scanResult.finalize();
 }
 
+// Verifies that when files with duplicate names are imported, that they don't
+// overwrite one another.
+function testImportMediaWithDuplicateFilenames(callback) {
+  var media = setupFileSystem([
+    '/DCIM/photos0/IMG00001.jpg',
+    '/DCIM/photos0/IMG00002.jpg',
+    '/DCIM/photos0/IMG00003.jpg',
+    '/DCIM/photos1/IMG00001.jpg',
+    '/DCIM/photos1/IMG00002.jpg',
+    '/DCIM/photos1/IMG00003.jpg'
+  ]);
+
+  var scanResult = new TestScanResult(media);
+  var importTask = mediaImporter.importFromScanResult(
+        scanResult,
+        importer.Destination.GOOGLE_DRIVE,
+        destinationFactory);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.SUCCESS:
+                  resolve();
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
+
+  // Verify that we end up with 6, and not 3, destination entries.
+  reportPromise(
+      whenImportDone.then(
+        function() {
+          var copiedEntries = destinationFileSystem.root.getAllChildren();
+          assertEquals(media.length, copiedEntries.length);
+        }),
+      callback);
+
+  scanResult.finalize();
+}
+
 function testUpdatesHistoryAfterImport(callback) {
   var entries = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',

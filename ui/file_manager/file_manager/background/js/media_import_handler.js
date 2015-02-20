@@ -397,14 +397,24 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
     resolver.reject(error);
   };
 
-  this.cancelCallback_ = fileOperationUtil.copyTo(
-      entry,
-      destinationDirectory,
-      entry.name,  // TODO(kenobi): account for duplicate filenames
-      onEntryChanged.bind(this),
-      onProgress.bind(this),
-      onComplete.bind(this),
-      onError.bind(this));
+  fileOperationUtil.deduplicatePath(destinationDirectory, entry.name)
+      .then(
+          /**
+           * Performs the copy using the given deduped filename.
+           * @param {string} destinationFilename
+           * @this {importer.MediaImportHandler.ImportTask}
+           */
+          function(destinationFilename) {
+            this.cancelCallback_ = fileOperationUtil.copyTo(
+                entry,
+                destinationDirectory,
+                destinationFilename,
+                onEntryChanged.bind(this),
+                onProgress.bind(this),
+                onComplete.bind(this),
+                onError.bind(this));
+          }.bind(this),
+          resolver.reject);
 
   return resolver.promise;
 };
