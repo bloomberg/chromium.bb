@@ -41,7 +41,7 @@ void TreeToStringHelper(const AXNode* node, std::string* out_result) {
 
 std::string TreeToString(const AXTree& tree) {
   std::string result;
-  TreeToStringHelper(tree.GetRoot(), &result);
+  TreeToStringHelper(tree.root(), &result);
   return "(" + result + ")";
 }
 
@@ -125,7 +125,7 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
             tree0.CreateTreeSource());
         AXTreeSerializer<const AXNode*> serializer(tree0_source.get());
         AXTreeUpdate update0;
-        serializer.SerializeChanges(tree0.GetRoot(), &update0);
+        serializer.SerializeChanges(tree0.root(), &update0);
 
         AXTree dst_tree;
         ASSERT_TRUE(dst_tree.Unserialize(update0));

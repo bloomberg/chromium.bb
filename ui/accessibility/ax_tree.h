@@ -91,8 +91,10 @@ class AX_EXPORT AXTree {
 
   virtual void SetDelegate(AXTreeDelegate* delegate);
 
-  virtual AXNode* GetRoot() const;
-  virtual AXNode* GetFromId(int32 id) const;
+  AXNode* root() const { return root_; }
+
+  // Returns the AXNode with the given |id| if it is part of this AXTree.
+  AXNode* GetFromId(int32 id) const;
 
   // Returns true on success. If it returns false, it's a fatal error
   // and this tree should be destroyed, and the source of the tree update

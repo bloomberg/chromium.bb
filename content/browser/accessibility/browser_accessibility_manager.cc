@@ -114,7 +114,7 @@ void BrowserAccessibilityManager::Initialize(
   }
 
   if (!focus_)
-    SetFocus(tree_->GetRoot(), false);
+    SetFocus(tree_->root(), false);
 }
 
 // static
@@ -128,7 +128,7 @@ ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
-  return GetFromAXNode(tree_->GetRoot());
+  return GetFromAXNode(tree_->root());
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFromAXNode(
@@ -198,7 +198,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
     // Set focus to the root if it's not anywhere else.
     if (!focus_) {
-      SetFocus(tree_->GetRoot(), false);
+      SetFocus(tree_->root(), false);
       should_send_initial_focus = true;
     }
   }
@@ -420,8 +420,8 @@ BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
 
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXNode* node) {
   if (node == focus_ && tree_) {
-    if (node != tree_->GetRoot())
-      SetFocus(tree_->GetRoot(), false);
+    if (node != tree_->root())
+      SetFocus(tree_->root(), false);
     else
       focus_ = NULL;
   }
@@ -471,7 +471,7 @@ ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
       tree_->CreateTreeSource());
   ui::AXTreeSerializer<const ui::AXNode*> serializer(tree_source.get());
   ui::AXTreeUpdate update;
-  serializer.SerializeChanges(tree_->GetRoot(), &update);
+  serializer.SerializeChanges(tree_->root(), &update);
   return update;
 }
 

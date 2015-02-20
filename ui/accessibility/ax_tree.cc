@@ -22,7 +22,7 @@ std::string TreeToStringHelper(AXNode* node, int indent) {
   return result;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 // Intermediate state to keep track of during a tree update.
 struct AXTreeUpdateState {
@@ -65,10 +65,6 @@ AXTree::~AXTree() {
 
 void AXTree::SetDelegate(AXTreeDelegate* delegate) {
   delegate_ = delegate;
-}
-
-AXNode* AXTree::GetRoot() const {
-  return root_;
 }
 
 AXNode* AXTree::GetFromId(int32 id) const {

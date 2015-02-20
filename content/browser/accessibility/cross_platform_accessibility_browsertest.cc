@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   GURL url(url_str);
   NavigateToURL(shell(), url);
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
 
   // Check properties of the root element of the tree.
   EXPECT_STREQ(url_str,
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* body = root->ChildAtIndex(0);
   ASSERT_EQ(1, body->child_count());
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* body = root->ChildAtIndex(0);
   ASSERT_EQ(1, body->child_count());
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* table = root->ChildAtIndex(0);
   EXPECT_EQ(ui::AX_ROLE_TABLE, table->data().role);
@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   base::hash_set<int> ids;
   RecursiveAssertUniqueIds(root, &ids);
 }
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* body = root->ChildAtIndex(0);
   ASSERT_EQ(3, body->child_count());
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   base::hash_set<int> ids;
   RecursiveAssertUniqueIds(root, &ids);
 }
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   NavigateToURL(shell(), url);
 
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   const ui::AXNode* table = root->ChildAtIndex(0);
   EXPECT_EQ(ui::AX_ROLE_TABLE, table->data().role);
   ASSERT_GE(table->child_count(), 5);
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   GURL url(url_str);
   NavigateToURL(shell(), url);
   const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.GetRoot();
+  const ui::AXNode* root = tree.root();
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* textbox = root->ChildAtIndex(0);
   EXPECT_EQ(true, GetBoolAttr(textbox, ui::AX_ATTR_CAN_SET_VALUE));

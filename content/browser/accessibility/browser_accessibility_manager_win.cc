@@ -176,7 +176,7 @@ void BrowserAccessibilityManagerWin::OnWindowFocused() {
 
   // Try to fire a focus event on the root first and then the focused node.
   // This will clear focus_event_on_root_needed_ if successful.
-  if (focus_ != tree_->GetRoot())
+  if (focus_ != tree_->root())
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetRoot());
   BrowserAccessibilityManager::OnWindowFocused();
 }

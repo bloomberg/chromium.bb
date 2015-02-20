@@ -114,12 +114,12 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
       src_tree.CreateTreeSource());
   AXTreeSerializer<const AXNode*> serializer(tree_source.get());
   AXTreeUpdate update;
-  serializer.SerializeChanges(src_tree.GetRoot(), &update);
+  serializer.SerializeChanges(src_tree.root(), &update);
 
   AXTree dst_tree;
   ASSERT_TRUE(dst_tree.Unserialize(update));
 
-  const AXNode* root_node = dst_tree.GetRoot();
+  const AXNode* root_node = dst_tree.root();
   ASSERT_TRUE(root_node != NULL);
   EXPECT_EQ(root.id, root_node->id());
   EXPECT_EQ(root.role, root_node->data().role);

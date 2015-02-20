@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
 
   // Get the accessibility tree, ensure it reflects the final state of the
   // document.
-  const ui::AXNode* root = tree->GetRoot();
+  const ui::AXNode* root = tree->root();
 
   // Use this for debugging if the test fails.
   VLOG(1) << tree->ToString();

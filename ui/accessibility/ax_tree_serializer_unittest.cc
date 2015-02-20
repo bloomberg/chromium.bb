@@ -50,7 +50,7 @@ void AXTreeSerializerTest::CreateTreeSerializer() {
   tree0_source_.reset(tree0_->CreateTreeSource());
   serializer_.reset(new AXTreeSerializer<const AXNode*>(tree0_source_.get()));
   AXTreeUpdate unused_update;
-  serializer_->SerializeChanges(tree0_->GetRoot(), &unused_update);
+  serializer_->SerializeChanges(tree0_->root(), &unused_update);
 
   // Pretend that tree0_ turned into tree1_. The next call to
   // AXTreeSerializer will force it to consider these changes to

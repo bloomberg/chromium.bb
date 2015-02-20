@@ -237,10 +237,10 @@ class TreeSerializationState {
                        int routing_id,
                        BrowserContext* browser_context) {
     ui::AXTreeUpdate update;
-    serializer->SerializeChanges(tree->GetRoot(), &update);
+    serializer->SerializeChanges(tree->root(), &update);
     SendUpdate(update,
                ui::AX_EVENT_LAYOUT_COMPLETE,
-               tree->GetRoot()->id(),
+               tree->root()->id(),
                routing_id,
                browser_context);
   }
@@ -398,14 +398,14 @@ void TransformTree(TreeSerializer* source_serializer,
     ui::AXEvent event =
         is_last_update ? AX_EVENT_ASSERT_EQUAL : AX_EVENT_IGNORE;
     state.SendUpdate(
-        update, event, target_tree->GetRoot()->id(), kTab0Rid, browser_context);
+        update, event, target_tree->root()->id(), kTab0Rid, browser_context);
   }
 }
 
 // Helper method to send a no-op tree update to tab 0 with the given event.
 void SendEvent(ui::AXEvent event, content::BrowserContext* browser_context) {
   ui::AXTreeUpdate update;
-  ui::AXNode* root = state.tree0->GetRoot();
+  ui::AXNode* root = state.tree0->root();
   state.serializer0->SerializeChanges(root, &update);
   state.SendUpdate(update, event, root->id(), kTab0Rid, browser_context);
 }
