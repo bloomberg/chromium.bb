@@ -116,8 +116,11 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool FindGroupsForOrigin(
       const GURL& origin, std::vector<GroupRecord>* records);
   bool FindGroupForCache(int64 cache_id, GroupRecord* record);
-  bool UpdateGroupLastAccessTime(
+  bool UpdateLastAccessTime(
       int64 group_id, base::Time last_access_time);
+  bool LazyUpdateLastAccessTime(
+      int64 group_id, base::Time last_access_time);
+  bool CommitLazyLastAccessTimes();  // The destructor calls this too.
   bool InsertGroup(const GroupRecord* record);
   bool DeleteGroup(int64 group_id);
 
@@ -220,6 +223,7 @@ class CONTENT_EXPORT AppCacheDatabase {
   base::FilePath db_file_path_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<sql::MetaTable> meta_table_;
+  std::map<int64, base::Time> lazy_last_access_times_;
   bool is_disabled_;
   bool is_recreating_;
   bool was_corruption_detected_;

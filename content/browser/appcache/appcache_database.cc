@@ -210,6 +210,7 @@ AppCacheDatabase::AppCacheDatabase(const base::FilePath& path)
 }
 
 AppCacheDatabase::~AppCacheDatabase() {
+  CommitLazyLastAccessTimes();
 }
 
 void AppCacheDatabase::Disable() {
@@ -392,7 +393,7 @@ bool AppCacheDatabase::FindGroupForCache(int64 cache_id, GroupRecord* record) {
   return true;
 }
 
-bool AppCacheDatabase::UpdateGroupLastAccessTime(
+bool AppCacheDatabase::UpdateLastAccessTime(
     int64 group_id, base::Time time) {
   if (!LazyOpen(true))
     return false;
@@ -404,7 +405,30 @@ bool AppCacheDatabase::UpdateGroupLastAccessTime(
   statement.BindInt64(0, time.ToInternalValue());
   statement.BindInt64(1, group_id);
 
-  return statement.Run() && db_->GetLastChangeCount();
+  return statement.Run();
+}
+
+bool AppCacheDatabase::LazyUpdateLastAccessTime(
+    int64 group_id, base::Time time) {
+  if (!LazyOpen(true))
+    return false;
+  lazy_last_access_times_[group_id] = time;
+  return true;
+}
+
+bool AppCacheDatabase::CommitLazyLastAccessTimes() {
+  if (lazy_last_access_times_.empty())
+    return true;
+  if (!LazyOpen(false))
+    return false;
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
+  for (const auto& pair : lazy_last_access_times_)
+    UpdateLastAccessTime(pair.first, pair.second);
+  lazy_last_access_times_.clear();
+  return transaction.Commit();
 }
 
 bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
@@ -924,8 +948,14 @@ void AppCacheDatabase::ReadGroupRecord(
   record->manifest_url = GURL(statement.ColumnString(2));
   record->creation_time =
       base::Time::FromInternalValue(statement.ColumnInt64(3));
-  record->last_access_time =
-      base::Time::FromInternalValue(statement.ColumnInt64(4));
+
+  const auto found = lazy_last_access_times_.find(record->group_id);
+  if (found != lazy_last_access_times_.end()) {
+    record->last_access_time = found->second;
+  } else {
+    record->last_access_time =
+        base::Time::FromInternalValue(statement.ColumnInt64(4));
+  }
 }
 
 void AppCacheDatabase::ReadCacheRecord(

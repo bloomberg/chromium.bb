@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -285,6 +286,8 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
 };
 
 void AppCacheStorageImpl::InitTask::Run() {
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("AppCacheStorageImpl::InitTask"));
   // If there is no sql database, ensure there is no disk cache either.
   if (!db_file_path_.empty() &&
       !base::PathExists(db_file_path_) &&
@@ -512,14 +515,16 @@ class AppCacheStorageImpl::CacheLoadTask : public StoreOrLoadTask {
 };
 
 void AppCacheStorageImpl::CacheLoadTask::Run() {
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("AppCacheStorageImpl::CacheLoadTask"));
   success_ =
       database_->FindCache(cache_id_, &cache_record_) &&
       database_->FindGroup(cache_record_.group_id, &group_record_) &&
       FindRelatedCacheRecords(cache_id_);
 
   if (success_)
-    database_->UpdateGroupLastAccessTime(group_record_.group_id,
-                                         base::Time::Now());
+    database_->LazyUpdateLastAccessTime(group_record_.group_id,
+                                        base::Time::Now());
 }
 
 void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
@@ -527,6 +532,7 @@ void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
   scoped_refptr<AppCache> cache;
   scoped_refptr<AppCacheGroup> group;
   if (success_ && !storage_->is_disabled()) {
+    storage_->LazilyCommitLastAccessTimes();
     DCHECK(cache_record_.cache_id == cache_id_);
     CreateCacheAndGroupFromRecords(&cache, &group);
   }
@@ -554,14 +560,16 @@ class AppCacheStorageImpl::GroupLoadTask : public StoreOrLoadTask {
 };
 
 void AppCacheStorageImpl::GroupLoadTask::Run() {
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("AppCacheStorageImpl::GroupLoadTask"));
   success_ =
       database_->FindGroupForManifestUrl(manifest_url_, &group_record_) &&
       database_->FindCacheForGroup(group_record_.group_id, &cache_record_) &&
       FindRelatedCacheRecords(cache_record_.cache_id);
 
   if (success_)
-    database_->UpdateGroupLastAccessTime(group_record_.group_id,
-                                         base::Time::Now());
+    database_->LazyUpdateLastAccessTime(group_record_.group_id,
+                                        base::Time::Now());
 }
 
 void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
@@ -570,6 +578,7 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
   scoped_refptr<AppCache> cache;
   if (!storage_->is_disabled()) {
     if (success_) {
+      storage_->LazilyCommitLastAccessTimes();
       DCHECK(group_record_.manifest_url == manifest_url_);
       CreateCacheAndGroupFromRecords(&cache, &group);
     } else {
@@ -690,8 +699,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
     DCHECK(group_record_.manifest_url == existing_group.manifest_url);
     DCHECK(group_record_.origin == existing_group.origin);
 
-    database_->UpdateGroupLastAccessTime(group_record_.group_id,
-                                         base::Time::Now());
+    database_->UpdateLastAccessTime(group_record_.group_id,
+                                    base::Time::Now());
 
     AppCacheDatabase::CacheRecord cache;
     if (database_->FindCacheForGroup(group_record_.group_id, &cache)) {
@@ -931,6 +940,9 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
 };
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "AppCacheStorageImpl::FindMainResponseTask"));
   // NOTE: The heuristics around choosing amoungst multiple candidates
   // is underspecified, and just plain not fully understood. This needs
   // to be refined.
@@ -1286,12 +1298,12 @@ void AppCacheStorageImpl::DeleteDeletableResponseIdsTask::Run() {
   database_->DeleteDeletableResponseIds(response_ids_);
 }
 
-// UpdateGroupLastAccessTimeTask -------
+// LazyUpdateLastAccessTimeTask -------
 
-class AppCacheStorageImpl::UpdateGroupLastAccessTimeTask
+class AppCacheStorageImpl::LazyUpdateLastAccessTimeTask
     : public DatabaseTask {
  public:
-  UpdateGroupLastAccessTimeTask(
+  LazyUpdateLastAccessTimeTask(
       AppCacheStorageImpl* storage, AppCacheGroup* group, base::Time time)
       : DatabaseTask(storage), group_id_(group->group_id()),
         last_access_time_(time) {
@@ -1300,19 +1312,46 @@ class AppCacheStorageImpl::UpdateGroupLastAccessTimeTask
 
   // DatabaseTask:
   void Run() override;
+  void RunCompleted() override;
 
  protected:
-  ~UpdateGroupLastAccessTimeTask() override {}
+  ~LazyUpdateLastAccessTimeTask() override {}
 
  private:
   int64 group_id_;
   base::Time last_access_time_;
 };
 
-void AppCacheStorageImpl::UpdateGroupLastAccessTimeTask::Run() {
-  database_->UpdateGroupLastAccessTime(group_id_, last_access_time_);
+void AppCacheStorageImpl::LazyUpdateLastAccessTimeTask::Run() {
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "AppCacheStorageImpl::LazyUpdateLastAccessTimeTask"));
+  database_->LazyUpdateLastAccessTime(group_id_, last_access_time_);
 }
 
+void AppCacheStorageImpl::LazyUpdateLastAccessTimeTask::RunCompleted() {
+  storage_->LazilyCommitLastAccessTimes();
+}
+
+// CommitLastAccessTimesTask -------
+
+class AppCacheStorageImpl::CommitLastAccessTimesTask
+    : public DatabaseTask {
+ public:
+  CommitLastAccessTimesTask(AppCacheStorageImpl* storage)
+      : DatabaseTask(storage) {}
+
+  // DatabaseTask:
+  void Run() override {
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "AppCacheStorageImpl::CommitLastAccessTimesTask"));
+    database_->CommitLazyLastAccessTimes();
+  }
+
+ protected:
+  ~CommitLastAccessTimesTask() override {}
+};
 
 // AppCacheStorageImpl ---------------------------------------------------
 
@@ -1400,7 +1439,7 @@ void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
     delegate->OnCacheLoaded(cache, id);
     if (cache->owning_group()) {
       scoped_refptr<DatabaseTask> update_task(
-          new UpdateGroupLastAccessTimeTask(
+          new LazyUpdateLastAccessTimeTask(
               this, cache->owning_group(), base::Time::Now()));
       update_task->Schedule();
     }
@@ -1429,7 +1468,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
   if (group) {
     delegate->OnGroupLoaded(group, manifest_url);
     scoped_refptr<DatabaseTask> update_task(
-        new UpdateGroupLastAccessTimeTask(
+        new LazyUpdateLastAccessTimeTask(
             this, group, base::Time::Now()));
     update_task->Schedule();
     return;
@@ -1698,12 +1737,12 @@ void AppCacheStorageImpl::StartDeletingResponses(
 
 void AppCacheStorageImpl::ScheduleDeleteOneResponse() {
   DCHECK(!is_response_deletion_scheduled_);
-  const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  const base::TimeDelta kBriefDelay = base::TimeDelta::FromMilliseconds(10);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppCacheStorageImpl::DeleteOneResponse,
                  weak_factory_.GetWeakPtr()),
-      kDelay);
+      kBriefDelay);
   is_response_deletion_scheduled_ = true;
 }
 
@@ -1868,6 +1907,24 @@ void AppCacheStorageImpl::DeleteAndStartOverPart2() {
 void AppCacheStorageImpl::CallScheduleReinitialize() {
   service_->ScheduleReinitialize();
   // note: 'this' may be deleted at this point.
+}
+
+void AppCacheStorageImpl::LazilyCommitLastAccessTimes() {
+  if (lazy_commit_timer_.IsRunning())
+    return;
+  const base::TimeDelta kDelay = base::TimeDelta::FromMinutes(5);
+  lazy_commit_timer_.Start(
+      FROM_HERE, kDelay,
+      base::Bind(&AppCacheStorageImpl::OnLazyCommitTimer,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void AppCacheStorageImpl::OnLazyCommitTimer() {
+  lazy_commit_timer_.Stop();
+  if (is_disabled())
+    return;
+  scoped_refptr<DatabaseTask> task(new CommitLastAccessTimesTask(this));
+  task->Schedule();
 }
 
 }  // namespace content
