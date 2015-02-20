@@ -1453,7 +1453,6 @@ _x86_internal_release_boards = frozenset([
   'parrot_ivb',
   'parry',
   'peppy',
-  'peppy_freon',
   'quawks',
   'quawks_freon',
   'rambi',
@@ -1608,7 +1607,6 @@ _freon_boards = frozenset([
   'panther',
   'parrot_freon',
   'peppy',
-  'peppy_freon',
   'rambi_freon',
   'strago',
   'stumpy_freon',
@@ -1619,7 +1617,6 @@ _freon_boards = frozenset([
   'swanky_freon',
   'tidus',
   'tricky',
-  'tricky_freon',
   'zako',
   'samus',
 ])
@@ -1754,7 +1751,6 @@ internal_chromium_pfq.add_config('amd64-generic_freon-chromium-pfq',
 
 _chrome_pfq_important_boards = frozenset([
   'peppy',
-  'peppy_freon',
   'rush_ryu',
   'veyron_pinky',
   ])
@@ -2159,7 +2155,6 @@ _paladin_important_boards = frozenset([
   'parrot',
   'peach_pit',
   'peppy',
-  'peppy_freon',
   'rambi',
   'rush_ryu',
   'samus',
