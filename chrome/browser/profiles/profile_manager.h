@@ -74,6 +74,11 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
   // otherwise it will create and manage it.
+  // Because this method might synchronously create a new profile, it should
+  // only be called for the initial profile or in tests, where blocking is
+  // acceptable.
+  // TODO(bauerb): Migrate calls from other code to GetProfileByPath(), then
+  // make this method private.
   Profile* GetProfile(const base::FilePath& profile_dir);
 
   // Returns total number of profiles available on this machine.
@@ -113,13 +118,13 @@ class ProfileManager : public base::NonThreadSafe,
   std::vector<Profile*> GetLastOpenedProfiles(
       const base::FilePath& user_data_dir);
 
-  // Returns created profiles. Note, profiles order is NOT guaranteed to be
-  // related with the creation order.
+  // Returns created and fully initialized profiles. Note, profiles order is NOT
+  // guaranteed to be related with the creation order.
   std::vector<Profile*> GetLoadedProfiles() const;
 
-  // If a profile with the given path is currently managed by this object,
-  // return a pointer to the corresponding Profile object;
-  // otherwise return NULL.
+  // If a profile with the given path is currently managed by this object and
+  // fully initialized, return a pointer to the corresponding Profile object;
+  // otherwise return null.
   Profile* GetProfileByPath(const base::FilePath& path) const;
 
   // Creates a new profile in the next available multiprofile directory.
@@ -248,7 +253,7 @@ class ProfileManager : public base::NonThreadSafe,
   // and we can't create it.
   // The profile used can be overridden by using --login-profile on cros.
   Profile* GetActiveUserOrOffTheRecordProfileFromPath(
-               const base::FilePath& user_data_dir);
+      const base::FilePath& user_data_dir);
 
   // Adds a pre-existing Profile object to the set managed by this
   // ProfileManager. This ProfileManager takes ownership of the Profile.
@@ -267,9 +272,14 @@ class ProfileManager : public base::NonThreadSafe,
   // entry.
   ProfileInfo* RegisterProfile(Profile* profile, bool created);
 
-  // Returns ProfileInfo associated with given |path|, registred earlier with
+  // Returns ProfileInfo associated with given |path|, registered earlier with
   // RegisterProfile.
   ProfileInfo* GetProfileInfoByPath(const base::FilePath& path) const;
+
+  // Returns a registered profile. In contrast to GetProfileByPath(), this will
+  // also return a profile that is not fully initialized yet, so this method
+  // should be used carefully.
+  Profile* GetProfileByPathInternal(const base::FilePath& path) const;
 
   // Adds |profile| to the profile info cache if it hasn't been added yet.
   void AddProfileToCache(Profile* profile);

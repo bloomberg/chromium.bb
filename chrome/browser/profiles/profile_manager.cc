@@ -378,7 +378,7 @@ Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
-  if (NULL != profile)
+  if (profile)
     return profile;
   return CreateAndInitializeProfile(profile_dir);
 }
@@ -552,10 +552,18 @@ std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
   return profiles;
 }
 
+Profile* ProfileManager::GetProfileByPathInternal(
+    const base::FilePath& path) const {
+  TRACE_EVENT0("browser", "ProfileManager::GetProfileByPathInternal");
+  ProfileInfo* profile_info = GetProfileInfoByPath(path);
+  return profile_info ? profile_info->profile.get() : nullptr;
+}
+
 Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
   TRACE_EVENT0("browser", "ProfileManager::GetProfileByPath");
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
-  return profile_info ? profile_info->profile.get() : NULL;
+  return profile_info && profile_info->created ? profile_info->profile.get()
+                                               : nullptr;
 }
 
 // static
@@ -857,7 +865,7 @@ void ProfileManager::Observe(
       // Confirm that we hadn't loaded the new profile previously.
       base::FilePath default_profile_dir = user_data_dir_.Append(
           GetInitialProfileDir());
-      CHECK(!GetProfileByPath(default_profile_dir))
+      CHECK(!GetProfileByPathInternal(default_profile_dir))
           << "The default profile was loaded before we mounted the cryptohome.";
     }
     return;
@@ -1123,7 +1131,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
 
   // Make sure that we're not loading a profile with the same ID as a profile
   // that's already loaded.
-  if (GetProfileByPath(profile->GetPath())) {
+  if (GetProfileByPathInternal(profile->GetPath())) {
     NOTREACHED() << "Attempted to add profile with the same path (" <<
                     profile->GetPath().value() <<
                     ") as an already-loaded profile.";
@@ -1140,6 +1148,12 @@ Profile* ProfileManager::CreateAndInitializeProfile(
     const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::CreateAndInitializeProfile");
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Profile.CreateAndInitializeProfile");
+
+  // CHECK that we are not trying to load the same profile twice, to prevent
+  // profile corruption. Note that this check also covers the case when we have
+  // already started loading the profile but it is not fully initialized yet,
+  // which would make Bad Things happen if we returned it.
+  CHECK(!GetProfileByPathInternal(profile_dir));
   Profile* profile = CreateProfileHelper(profile_dir);
   DCHECK(profile);
   if (profile) {

@@ -893,18 +893,14 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
 // Called from the AppControllerProfileObserver every time a profile is deleted.
 - (void)profileWasRemoved:(const base::FilePath&)profilePath {
-  Profile* lastProfile = [self lastProfile];
-
   // If the lastProfile has been deleted, the profile manager has
   // already loaded a new one, so the pointer needs to be updated;
   // otherwise we will try to start up a browser window with a pointer
   // to the old profile.
-  if (profilePath == lastProfile->GetPath())
+  if (lastProfile_ && profilePath == lastProfile_->GetPath())
     lastProfile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
 
-  Profile* profile =
-      g_browser_process->profile_manager()->GetProfile(profilePath);
-  auto it = profileBookmarkMenuBridgeMap_.find(profile);
+  auto it = profileBookmarkMenuBridgeMap_.find(profilePath);
   if (it != profileBookmarkMenuBridgeMap_.end()) {
     delete it->second;
     profileBookmarkMenuBridgeMap_.erase(it);
@@ -1582,12 +1578,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // Rebuild the menus with the new profile.
   lastProfile_ = profile;
 
-  auto it = profileBookmarkMenuBridgeMap_.find(profile);
+  auto it = profileBookmarkMenuBridgeMap_.find(profile->GetPath());
   if (it == profileBookmarkMenuBridgeMap_.end()) {
     base::scoped_nsobject<NSMenu> submenu(
         [[[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu] copy]);
-    bookmarkMenuBridge_ = new BookmarkMenuBridge(lastProfile_, submenu);
-    profileBookmarkMenuBridgeMap_[profile] = bookmarkMenuBridge_;
+    bookmarkMenuBridge_ = new BookmarkMenuBridge(profile, submenu);
+    profileBookmarkMenuBridgeMap_[profile->GetPath()] = bookmarkMenuBridge_;
   } else {
     bookmarkMenuBridge_ = it->second;
   }

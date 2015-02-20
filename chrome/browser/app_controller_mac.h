@@ -10,6 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -57,7 +58,7 @@ class WorkAreaWatcherObserver;
   // a weak pointer that is updated to match the corresponding cache entry
   // during a profile switch.
   BookmarkMenuBridge* bookmarkMenuBridge_;
-  std::map<Profile*, BookmarkMenuBridge*> profileBookmarkMenuBridgeMap_;
+  std::map<base::FilePath, BookmarkMenuBridge*> profileBookmarkMenuBridgeMap_;
 
   scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
 
