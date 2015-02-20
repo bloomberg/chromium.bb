@@ -1,5 +1,5 @@
 Tests <select> text update when popup is visible and selectionIndex changes.
-Needs dump-render-tree.
+Needs run-layout-test.
 
 layer at (0,0) size 34x20 backgroundClip at (8,50) size 34x20 clip at (8,50) size 34x20 outlineClip at (8,50) size 34x20
   RenderBlock (positioned) {DIV} at (8,50) size 34x20

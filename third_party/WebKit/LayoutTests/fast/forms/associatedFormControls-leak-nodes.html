@@ -6,7 +6,7 @@
 <script src="../../resources/js-test.js"></script>
 <script>
 if (!window.internals) {
-    debug("This test only runs on \"content_shell --dump-render-tree\", as it requires existence of window.internals.");
+    debug("This test only runs on \"content_shell --run-layout-test\", as it requires existence of window.internals.");
 } else {
     testRunner.waitUntilDone();
     window.jsTestIsAsync = true;

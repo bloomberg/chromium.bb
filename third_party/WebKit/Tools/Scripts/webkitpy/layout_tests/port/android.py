@@ -180,7 +180,7 @@ class ContentShellDriverDetails():
         return '/data/local/tmp/content-shell-crash-dumps'
 
     def additional_command_line_flags(self, use_breakpad):
-        flags = ['--dump-render-tree', '--encode-binary']
+        flags = ['--run-layout-test', '--encode-binary']
         if use_breakpad:
             flags.extend(['--enable-crash-reporter', '--crash-dumps-dir=%s' % self.device_crash_dumps_directory()])
         return flags

@@ -223,7 +223,7 @@ class Port(object):
 
     def additional_drt_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            return ['--dump-render-tree']
+            return ['--run-layout-test']
         return []
 
     def supports_per_test_timeout(self):

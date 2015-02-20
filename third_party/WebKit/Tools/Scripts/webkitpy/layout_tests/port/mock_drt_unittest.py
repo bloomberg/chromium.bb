@@ -129,7 +129,7 @@ class MockDRTTest(unittest.TestCase):
         drt_input, drt_output = self.make_input_output(port, test_name,
             pixel_tests, expected_checksum, drt_output, drt_input=None, expected_text=expected_text)
 
-        args = ['--dump-render-tree', '--platform', port_name, '-']
+        args = ['--run-layout-test', '--platform', port_name, '-']
         stdin = io.BytesIO(drt_input)
         stdout = io.BytesIO()
         stderr = io.BytesIO()
@@ -149,7 +149,7 @@ class MockDRTTest(unittest.TestCase):
         stdin = io.BytesIO()
         stdout = io.BytesIO()
         stderr = io.BytesIO()
-        res = mock_drt.main(['--dump-render-tree', '--platform', 'test', '-'],
+        res = mock_drt.main(['--run-layout-test', '--platform', 'test', '-'],
                             host, stdin, stdout, stderr)
         self.assertEqual(res, 0)
         self.assertEqual(stdout.getvalue(), '')
