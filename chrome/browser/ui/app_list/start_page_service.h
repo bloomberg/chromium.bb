@@ -61,6 +61,11 @@ class StartPageService : public KeyedService,
   void AddObserver(StartPageObserver* observer);
   void RemoveObserver(StartPageObserver* observer);
 
+  void Init();
+
+  // Loads the start page WebContents if it hasn't already been loaded.
+  void LoadContentsIfNeeded();
+
   void AppListShown();
   void AppListHidden();
   void ToggleSpeechRecognition(

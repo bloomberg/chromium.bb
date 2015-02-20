@@ -18,6 +18,9 @@ class AppListServiceAsh : public AppListServiceImpl {
  public:
   static AppListServiceAsh* GetInstance();
 
+  // AppListService overrides:
+  void Init(Profile* initial_profile) override;
+
  private:
   friend struct DefaultSingletonTraits<AppListServiceAsh>;
 

@@ -690,6 +690,8 @@ views::View* AppListViewDelegate::CreateStartPageWebView(
   if (!service)
     return NULL;
 
+  service->LoadContentsIfNeeded();
+
   content::WebContents* web_contents = service->GetStartPageContents();
   if (!web_contents)
     return NULL;

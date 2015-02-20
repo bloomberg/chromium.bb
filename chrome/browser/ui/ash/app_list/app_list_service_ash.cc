@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "ui/app_list/app_list_switches.h"
@@ -50,6 +51,12 @@ void AppListServiceAsh::ShowAndSwitchToState(
       app_list_view->app_list_main_view()->contents_view();
   contents_view->SetActivePage(contents_view->GetPageIndexForState(state),
                                app_list_was_open /* animate */);
+}
+
+void AppListServiceAsh::Init(Profile* initial_profile) {
+  // Ensure the StartPageService is created here. This early initialization is
+  // necessary to allow the WebContents to load before the app list is shown.
+  app_list::StartPageService::Get(initial_profile)->Init();
 }
 
 base::FilePath AppListServiceAsh::GetProfilePath(

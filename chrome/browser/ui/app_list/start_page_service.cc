@@ -45,6 +45,7 @@
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -69,6 +70,9 @@ const char kDoodleJsonPath[] = "async/ddljson";
 
 // Delay between checking for a new doodle when no doodle is found.
 const int kDefaultDoodleRecheckDelayMinutes = 30;
+
+// Delay before loading the start page WebContents on initialization.
+const int kLoadContentsDelaySeconds = 5;
 
 bool InSpeechRecognition(SpeechRecognitionState state) {
   return state == SPEECH_RECOGNITION_RECOGNIZING ||
@@ -282,9 +286,6 @@ StartPageService::StartPageService(Profile* profile)
     state_ = app_list::SPEECH_RECOGNITION_READY;
   }
 
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    LoadContents();
-
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   const TemplateURL* default_provider =
@@ -325,6 +326,25 @@ void StartPageService::UpdateRecognitionState() {
   } else {
     OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_OFF);
   }
+}
+
+void StartPageService::Init() {
+  // Do not load the start page web contents in tests because many tests assume
+  // no WebContents exist except the ones they make.
+  if (switches::IsExperimentalAppListEnabled() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType)) {
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&StartPageService::LoadContentsIfNeeded,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kLoadContentsDelaySeconds));
+  }
+}
+
+void StartPageService::LoadContentsIfNeeded() {
+  if (!contents_)
+    LoadContents();
 }
 
 void StartPageService::AppListShown() {
