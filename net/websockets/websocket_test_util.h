@@ -29,7 +29,6 @@ class DeterministicMockClientSocketFactory;
 class DeterministicSocketData;
 class ProxyService;
 class URLRequestContext;
-class WebSocketHandshakeStreamCreateHelper;
 struct SSLSocketDataProvider;
 
 class LinearCongruentialGenerator {
@@ -40,20 +39,6 @@ class LinearCongruentialGenerator {
  private:
   uint64 current_;
 };
-
-// Alternate version of WebSocketStream::CreateAndConnectStream() for testing
-// use only. The differences are the use of a |create_helper| argument in place
-// of |requested_subprotocols| and taking |timer| as the handshake timeout
-// timer. Implemented in websocket_stream.cc.
-NET_EXPORT_PRIVATE scoped_ptr<WebSocketStreamRequest>
-CreateAndConnectStreamForTesting(
-    const GURL& socket_url,
-    scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
-    const url::Origin& origin,
-    URLRequestContext* url_request_context,
-    const BoundNetLog& net_log,
-    scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
-    scoped_ptr<base::Timer> timer);
 
 // Generates a standard WebSocket handshake request. The challenge key used is
 // "dGhlIHNhbXBsZSBub25jZQ==". Each header in |extra_headers| must be terminated

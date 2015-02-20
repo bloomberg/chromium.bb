@@ -39,8 +39,10 @@ component("dbus") {
   defines = [ "DBUS_IMPLEMENTATION" ]
 
   deps = [
-    "//base",
     "//third_party/protobuf:protobuf_lite",
+  ]
+  public_deps = [
+    "//base",
   ]
 
   public_configs = [ "//build/config/linux:dbus" ]

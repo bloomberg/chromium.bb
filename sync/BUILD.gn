@@ -540,8 +540,9 @@ static_library("test_support_sync_api") {
   defines = [ "SYNC_TEST" ]
 
   public_deps = [
-    "//testing/gmock",
+    "//base",
     "//sync",
+    "//testing/gmock",
   ]
 }
 
@@ -629,6 +630,8 @@ test("sync_unit_tests") {
   ]
 
   deps = [
+    ":test_support_sync_core",
+    ":test_support_sync_internal_api",
     "//base",
     "//base/allocator",
     "//base/test:run_all_unittests",
@@ -638,12 +641,11 @@ test("sync_unit_tests") {
     "//net:test_support",
     "//sql",
     "//sync",
+    "//sync/internal_api/attachments/proto",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",
     "//third_party/protobuf:protobuf_lite",
-    ":test_support_sync_core",
-    ":test_support_sync_internal_api",
   ]
 
   if (is_chromeos) {
@@ -694,6 +696,7 @@ static_library("test_support_sync_fake_server") {
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
     "//sync",
+    "//url",
   ]
 
   forward_dependent_configs_from = [ "//third_party/protobuf:protobuf_lite" ]
@@ -734,6 +737,7 @@ static_library("test_support_accounts_client") {
   deps = [
     "//base",
     "//net",
+    "//url",
   ]
 }
 
@@ -743,6 +747,7 @@ test("sync_endtoend_tests") {
     "test/accounts_client/test_accounts_client_unittest.cc",
   ]
   deps = [
+    "//base",
     "//base/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
@@ -802,6 +807,7 @@ if (is_android) {
     ]
     deps = [
       ":fake_server_jni",
+      ":sync_core",
       ":test_support_sync_fake_server",
       "//base",
       "//testing/gtest",

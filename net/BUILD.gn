@@ -84,6 +84,7 @@ component("net") {
   public_deps = [
     "//crypto",
     "//crypto:platform",
+    "//url",
   ]
   deps = [
     ":net_resources",
@@ -542,6 +543,7 @@ static_library("extras") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     ":net",
+    "//base",
     "//sql:sql",
   ]
 }
@@ -796,6 +798,7 @@ if (use_v8_in_net && !is_android) {
     public_deps = [
       ":mojo_type_converters",
       ":net",
+      "//base",
       "//net/interfaces",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
@@ -1021,6 +1024,7 @@ if (is_linux) {
       "tools/flip_server/spdy_interface_test.cc",
     ]
     deps = [
+      ":balsa",
       ":flip_in_mem_edsm_server_base",
       ":net",
       ":test_support",
@@ -1036,6 +1040,7 @@ if (is_linux) {
       "tools/flip_server/flip_in_mem_edsm_server.cc",
     ]
     deps = [
+      ":balsa",
       ":flip_in_mem_edsm_server_base",
       ":net",
       "//base",
@@ -1092,6 +1097,8 @@ if (is_linux) {
       "tools/quic/quic_client_bin.cc",
     ]
     deps = [
+      ":balsa",
+      ":epoll_server",
       ":quic_base",
       ":net",
       "//base",
@@ -1187,7 +1194,9 @@ if (!is_android && !is_win && !is_mac) {
       "//crypto",
       "//crypto:platform",
       "//crypto:test_support",
+      "//gin",
       "//net/base/registry_controlled_domains",
+      "//sql",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/zlib",

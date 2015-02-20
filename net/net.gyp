@@ -262,7 +262,6 @@
               'cert/sha256_legacy_support_openssl_win.cc',
               'cert/x509_util_openssl.cc',
               'cert/x509_util_openssl.h',
-              'crypto/scoped_openssl_types.h',
               'quic/crypto/aead_base_decrypter_openssl.cc',
               'quic/crypto/aead_base_encrypter_openssl.cc',
               'quic/crypto/aes_128_gcm_12_decrypter_openssl.cc',

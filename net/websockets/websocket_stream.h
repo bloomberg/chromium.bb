@@ -22,6 +22,10 @@
 
 class GURL;
 
+namespace base {
+class Timer;
+}
+
 namespace url {
 class Origin;
 }  // namespace url
@@ -31,6 +35,7 @@ namespace net {
 class BoundNetLog;
 class URLRequestContext;
 struct WebSocketFrame;
+class WebSocketHandshakeStreamCreateHelper;
 
 // WebSocketStreamRequest is the caller's handle to the process of creation of a
 // WebSocketStream. Deleting the object before the OnSuccess or OnFailure
@@ -209,6 +214,20 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     const GURL& gurl,
     const scoped_refptr<HttpResponseHeaders>& headers,
     base::Time response_time);
+
+// Alternate version of WebSocketStream::CreateAndConnectStream() for testing
+// use only. The differences are the use of a |create_helper| argument in place
+// of |requested_subprotocols| and taking |timer| as the handshake timeout
+// timer. Implemented in websocket_stream.cc.
+NET_EXPORT_PRIVATE scoped_ptr<WebSocketStreamRequest>
+CreateAndConnectStreamForTesting(
+    const GURL& socket_url,
+    scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+    const url::Origin& origin,
+    URLRequestContext* url_request_context,
+    const BoundNetLog& net_log,
+    scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
+    scoped_ptr<base::Timer> timer);
 
 }  // namespace net
 

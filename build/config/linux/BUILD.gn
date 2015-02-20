@@ -180,15 +180,17 @@ pkg_config("gio_config") {
   #ignore_libs = true  # Loader generated below.
 }
 
-# This generates a target named "gio".
-generate_library_loader("gio") {
-  name = "LibGioLoader"
-  output_h = "libgio.h"
-  output_cc = "libgio_loader.cc"
-  header = "<gio/gio.h>"
-  config = ":gio_config"
+if (is_desktop_linux) {
+  # This generates a target named "gio".
+  generate_library_loader("gio") {
+    name = "LibGioLoader"
+    output_h = "libgio.h"
+    output_cc = "libgio_loader.cc"
+    header = "<gio/gio.h>"
+    config = ":gio_config"
 
-  functions = gypi_values.libgio_functions
+    functions = gypi_values.libgio_functions
+  }
 }
 
 # This generates a target named "libpci".

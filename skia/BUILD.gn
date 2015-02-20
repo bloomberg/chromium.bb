@@ -311,6 +311,9 @@ component("skia") {
   sources += gypi_skia_utils.sources
   sources += gypi_values.skia_library_sources
 
+  # This and skia_opts are really the same conceptual target so share headers.
+  allow_circular_includes_from = [ ":skia_opts" ]
+
   if (current_cpu == "arm") {
     sources += [
       "//third_party/skia/src/core/SkUtilsArm.cpp",
@@ -624,6 +627,7 @@ test("skia_unittests") {
     ":skia",
     "//base",
     "//base/test:run_all_unittests",
+    "//cc:test_support",  # TODO: Fix this test to not depend on cc.
     "//testing/gtest",
     "//ui/gfx",
     "//ui/gfx/geometry",

@@ -346,9 +346,7 @@ template("java_cpp_enum") {
 
   action("${target_name}__generate_enum") {
     # The sources aren't compiled so don't check their dependencies.
-    # TODO(brettw) uncomment after GN binary rolled pas 314974 (which added
-    # support for this value on actions).
-    #check_includes = false
+    check_includes = false
 
     sources = invoker.sources
     script = "//build/android/gyp/java_cpp_enum.py"

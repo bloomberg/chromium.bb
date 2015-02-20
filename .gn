@@ -15,10 +15,60 @@ secondary_source = "//build/secondary/"
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
 check_targets = [
-  # Requires GN binary >= 314794 and to mark the "...__generate_enum" action in
-  # build/config/android/rules.gni "java_cpp_enum" template with
-  #   check_includes = false.
-  #"//base/*",
+  #"//apps/*",  # Medium-hard.
+  #"//ash/*",  # Medium-hard.
+  #"//base/*",  # Needs GN binary changes to work on Android.
+  "//blink/*",
+  "//breakpad/*",
+  "//build/*",
   "//cc/*",
+
+  #"//chrome/*",  # Epic number of errors.
+  "//chromecast/*",
+  "//chrome_elf/*",
+  "//cloud_print/*",
+
+  #"//components/*",  # Lots of errors.
+  #"//content/*",  # A whole lot of errors.
+  "//courgette/*",
+  "//crypto/*",
+  "//data/*",
+  "//dbus/*",
+  "//device/*",
+
+  #"//extensions/*",  # Lots of errors.
+  #"//gin/*",  # Easy.
+  #"//google_apis/*",  # Easy.
+  "//google_update/*",
+
+  #"//gpu/*",  # Lots of errors.
+  #"//ios/*",
   "//ipc/*",
+
+  #"//jingle/*",
+  #"//media/*",  # Lots of errors.
+  #"//mojo/*",
+  #"//native_client/*",
+  #"//net/*",  # Needs GN binary changes to work on Android.
+
+  #"//pdf/*",  # Medium-hard.
+  #"//ppapi/*",  # Lots of errors.
+  "//printing/*",
+
+  #"//remoting/*",  # Medium-hard.
+  #"//rlz/*",  # Needs checking on Windows.
+  #"//sandbox/*",  # Medium-hard.
+  "//sdch/*",
+  "//skia/*",
+  "//sql/*",
+  "//storage/*",
+  "//sync/*",
+  "//testing/*",
+
+  #"//third_party/*",  # May not ever want this.
+  "//tools/*",
+
+  #"//ui/*",  # Just a few problems.
+  "//url/*",
+  "//v8/*",
 ]

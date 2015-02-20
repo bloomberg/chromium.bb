@@ -12,4 +12,8 @@ source_set("common") {
     "net.cc",
     "net.h",
   ]
+
+  deps = [
+    "//base",
+  ]
 }

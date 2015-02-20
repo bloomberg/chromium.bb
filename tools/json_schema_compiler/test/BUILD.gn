@@ -42,5 +42,6 @@ source_set("test") {
 
   public_deps = [
     ":api",
+    "//base",
   ]
 }

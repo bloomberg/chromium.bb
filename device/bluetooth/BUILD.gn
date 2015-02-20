@@ -214,6 +214,8 @@ static_library("mocks") {
 
   deps = [
     ":bluetooth",
+    "//base",
+    "//net",
     "//testing/gmock",
   ]
 }

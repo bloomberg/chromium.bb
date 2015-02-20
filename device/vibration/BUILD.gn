@@ -33,6 +33,7 @@ component("vibration") {
       "//device/vibration/android",
       "//device/vibration/android:vibration_jni_headers",
     ]
+    allow_circular_includes_from = [ "//device/vibration/android" ]
   }
 }
 

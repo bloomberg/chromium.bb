@@ -24,7 +24,6 @@
 #include "net/websockets/websocket_handshake_constants.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
-#include "net/websockets/websocket_test_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -114,7 +113,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
 
   void Start(scoped_ptr<base::Timer> timer) {
     DCHECK(timer);
-    TimeDelta timeout(TimeDelta::FromSeconds(
+    base::TimeDelta timeout(base::TimeDelta::FromSeconds(
         kHandshakeTimeoutIntervalInSeconds));
     timer_ = timer.Pass();
     timer_->Start(FROM_HERE, timeout,

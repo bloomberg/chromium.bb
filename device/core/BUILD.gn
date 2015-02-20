@@ -9,4 +9,6 @@ source_set("core") {
     "device_monitor_win.cc",
     "device_monitor_win.h",
   ]
+
+  deps = [ "//base" ]
 }
