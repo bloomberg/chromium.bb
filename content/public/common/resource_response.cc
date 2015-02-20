@@ -31,7 +31,7 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.was_fetched_via_spdy = head.was_fetched_via_spdy;
   new_response->head.was_npn_negotiated = head.was_npn_negotiated;
   new_response->head.was_alternate_protocol_available =
-      new_response->head.was_alternate_protocol_available;
+      head.was_alternate_protocol_available;
   new_response->head.connection_info = head.connection_info;
   new_response->head.was_fetched_via_proxy = head.was_fetched_via_proxy;
   new_response->head.proxy_server = head.proxy_server;
