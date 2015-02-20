@@ -478,7 +478,14 @@ inline float toFloat(v8::Local<v8::Value> value)
 }
 
 // Convert a value to a double precision float, which might fail.
-double toDouble(v8::Handle<v8::Value>, ExceptionState&);
+double toDoubleSlow(v8::Handle<v8::Value>, ExceptionState&);
+
+inline double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    if (value->IsNumber())
+        return value->NumberValue();
+    return toDoubleSlow(value, exceptionState);
+}
 
 // Convert a value to a double precision float, throwing on non-finite values.
 double toRestrictedDouble(v8::Handle<v8::Value>, ExceptionState&);

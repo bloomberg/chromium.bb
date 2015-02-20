@@ -531,19 +531,16 @@ float toRestrictedFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionSt
     return numberValue;
 }
 
-double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+double toDoubleSlow(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    if (value->IsNumber())
-        return value->NumberValue();
-
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::TryCatch block(isolate);
-    v8::Local<v8::Number> numberObject(value->ToNumber(isolate));
+    double doubleValue = value->NumberValue();
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());
         return 0;
     }
-    return numberObject->NumberValue();
+    return doubleValue;
 }
 
 double toRestrictedDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
