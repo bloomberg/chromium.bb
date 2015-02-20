@@ -17,14 +17,13 @@
 #include "crypto/sha2.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 namespace net {
 
 namespace ct {
 
 namespace {
-
-typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
 
 void FreeX509_EXTENSIONS(X509_EXTENSIONS* ptr) {
   sk_X509_EXTENSION_pop_free(ptr, X509_EXTENSION_free);

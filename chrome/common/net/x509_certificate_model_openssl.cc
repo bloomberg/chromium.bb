@@ -1182,15 +1182,13 @@ std::string ProcessSecAlgorithmSignatureWrap(
 std::string ProcessSubjectPublicKeyInfo(
     net::X509Certificate::OSCertHandle cert_handle) {
   std::string rv;
-  crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free>::Type public_key(
-      X509_get_pubkey(cert_handle));
+  crypto::ScopedEVP_PKEY public_key(X509_get_pubkey(cert_handle));
   if (!public_key.get())
     return rv;
   switch (EVP_PKEY_type(public_key.get()->type)) {
     case EVP_PKEY_RSA: {
-      crypto::ScopedOpenSSL<RSA, RSA_free>::Type rsa_key(
-          EVP_PKEY_get1_RSA(public_key.get()));
-      if (!rsa_key.get())
+      crypto::ScopedRSA rsa_key(EVP_PKEY_get1_RSA(public_key.get()));
+      if (!rsa_key)
         return rv;
       rv = l10n_util::GetStringFUTF8(
           IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT,

@@ -8,13 +8,12 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_openssl.h"
+#include "net/ssl/scoped_openssl_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 namespace {
-
-typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
 
 // Verify that a given certificate was signed with the private key corresponding
 // to a given public key.

@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,9 +31,6 @@ extern "C" OPENSSL_EXPORT void ssl_update_cache(SSL* s, int mode);
 namespace net {
 
 namespace {
-
-typedef crypto::ScopedOpenSSL<SSL, SSL_free>::Type ScopedSSL;
-typedef crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>::Type ScopedSSL_CTX;
 
 // Helper class used to associate arbitrary std::string keys with SSL objects.
 class SSLKeyHelper {

@@ -17,6 +17,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_util.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 namespace net {
 
@@ -29,7 +30,6 @@ typedef crypto::ScopedOpenSSL<ASN1_OCTET_STRING, ASN1_OCTET_STRING_free>::Type
 typedef crypto::ScopedOpenSSL<ASN1_STRING, ASN1_STRING_free>::Type
     ScopedASN1_STRING;
 typedef crypto::ScopedOpenSSL<ASN1_TIME, ASN1_TIME_free>::Type ScopedASN1_TIME;
-typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
 typedef crypto::ScopedOpenSSL<X509_EXTENSION, X509_EXTENSION_free>::Type
     ScopedX509_EXTENSION;
 typedef crypto::ScopedOpenSSL<X509_NAME, X509_NAME_free>::Type ScopedX509_NAME;

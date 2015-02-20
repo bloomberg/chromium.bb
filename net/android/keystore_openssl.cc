@@ -23,6 +23,7 @@
 #include "crypto/openssl_util.h"
 #include "net/android/keystore.h"
 #include "net/android/legacy_openssl.h"
+#include "net/ssl/scoped_openssl_types.h"
 #include "net/ssl/ssl_client_cert_type.h"
 
 // IMPORTANT NOTE: The following code will currently only work when used
@@ -66,9 +67,6 @@ namespace net {
 namespace android {
 
 namespace {
-
-using ScopedPKCS8_PRIV_KEY_INFO =
-    crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type;
 
 extern const RSA_METHOD android_rsa_method;
 extern const ECDSA_METHOD android_ecdsa_method;

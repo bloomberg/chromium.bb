@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "crypto/openssl_util.h"
-#include "crypto/scoped_openssl_types.h"
 #include "net/android/network_library.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 namespace net {
 
@@ -30,9 +30,8 @@ bool OpenSSLPrivateKeyStore::StoreKeyPair(const GURL& url,
   // in a format that is incompatible with what the platform expects.
   unsigned char* private_key = NULL;
   int private_len = 0;
-  crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
-      pkcs8(EVP_PKEY2PKCS8(pkey));
-  if (pkcs8.get() != NULL) {
+  ScopedPKCS8_PRIV_KEY_INFO pkcs8(EVP_PKEY2PKCS8(pkey));
+  if (!pkcs8) {
     private_len = i2d_PKCS8_PRIV_KEY_INFO(pkcs8.get(), &private_key);
   }
   bool ret = false;

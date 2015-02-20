@@ -35,6 +35,7 @@
 #include "net/cert/x509_util_openssl.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/ssl_session_cache_openssl.h"
+#include "net/ssl/scoped_openssl_types.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -77,7 +78,6 @@ void FreeX509Stack(STACK_OF(X509)* ptr) {
   sk_X509_pop_free(ptr, X509_free);
 }
 
-typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
 typedef crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>::Type
     ScopedX509Stack;
 
@@ -252,7 +252,7 @@ class SSLClientSocketOpenSSL::SSLContext {
   // SSLClientSocketOpenSSL object from an SSL instance.
   int ssl_socket_data_index_;
 
-  crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>::Type ssl_ctx_;
+  ScopedSSL_CTX ssl_ctx_;
   // |session_cache_| must be destroyed before |ssl_ctx_|.
   SSLSessionCacheOpenSSL session_cache_;
 };

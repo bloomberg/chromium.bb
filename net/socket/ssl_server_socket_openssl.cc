@@ -14,6 +14,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/openssl_ssl_util.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 #define GotoState(s) next_handshake_state_ = s
 
@@ -606,9 +607,7 @@ int SSLServerSocketOpenSSL::Init() {
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>::Type ssl_ctx(
-      // It support SSLv2, SSLv3, and TLSv1.
-      SSL_CTX_new(SSLv23_server_method()));
+  ScopedSSL_CTX ssl_ctx(SSL_CTX_new(SSLv23_server_method()));
   ssl_ = SSL_new(ssl_ctx.get());
   if (!ssl_)
     return ERR_UNEXPECTED;
@@ -638,8 +637,7 @@ int SSLServerSocketOpenSSL::Init() {
   const unsigned char* der_string_array =
       reinterpret_cast<const unsigned char*>(der_string.data());
 
-  crypto::ScopedOpenSSL<X509, X509_free>::Type x509(
-      d2i_X509(NULL, &der_string_array, der_string.length()));
+  ScopedX509 x509(d2i_X509(NULL, &der_string_array, der_string.length()));
   if (!x509.get())
     return ERR_UNEXPECTED;
 
