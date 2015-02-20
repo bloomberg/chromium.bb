@@ -73,7 +73,7 @@ class StartPageView::StartPageTilesContainer
                           AllAppsTileItemView* all_apps_button);
   ~StartPageTilesContainer() override;
 
-  TileItemView* GetTileItemView(size_t index);
+  TileItemView* GetTileItemView(int index);
 
   const std::vector<SearchResultTileItemView*>& tile_views() const {
     return search_result_tile_views_;
@@ -125,9 +125,9 @@ StartPageView::StartPageTilesContainer::~StartPageTilesContainer() {
 }
 
 TileItemView* StartPageView::StartPageTilesContainer::GetTileItemView(
-    size_t index) {
-  DCHECK_GT(kNumStartPageTiles + 1, index);
-  if (index == kNumStartPageTiles)
+    int index) {
+  DCHECK_GT(num_results(), index);
+  if (index == num_results() - 1)
     return all_apps_button_;
 
   return search_result_tile_views_[index];
@@ -272,7 +272,7 @@ void StartPageView::Layout() {
 bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
   int selected_index = tiles_container_->selected_index();
   if (selected_index >= 0 &&
-      tiles_container_->child_at(selected_index)->OnKeyPressed(event))
+      tiles_container_->GetTileItemView(selected_index)->OnKeyPressed(event))
     return true;
 
   const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
