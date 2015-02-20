@@ -6,6 +6,8 @@
 
 #import <CoreVideo/CoreVideo.h>
 
+#include <cstring>  // For memchr.
+
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
@@ -28,6 +30,21 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
     default:
       return media::PIXEL_FORMAT_UNKNOWN;
   }
+}
+
+// TODO(magjed): Remove this when Chromium has the latest libyuv version.
+// Returns frame size by finding the End Of Image marker, or 0 if not found.
+size_t JpegFrameSize(const char* sample, size_t sampleSize) {
+  // Jump to next marker (0xff), check for End Of Image (0xd9), repeat.
+  const char* end = sample + sampleSize - 1;
+  for (const char* it = sample;
+       (it = static_cast<const char*>(memchr(it, 0xff, end - it)));
+       ++it) {
+    if (it[1] == static_cast<char>(0xd9))
+      return 2 + (it - sample);
+  }
+  DLOG(WARNING) << "JPEG End Of Image (EOI) marker not found.";
+  return 0;
 }
 
 @implementation VideoCaptureDeviceAVFoundation
@@ -306,6 +323,16 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
       // Expect the MJPEG data to be available as a contiguous reference, i.e.
       // not covered by multiple memory blocks.
       CHECK_EQ(lengthAtOffset, frameSize);
+
+      // TODO(magjed): Remove this when Chromium has the latest libyuv version.
+      // If |frameSize| is suspiciously high (>= 8 bpp), calculate the actual
+      // size by finding the end of image marker. The purpose is to speed up the
+      // jpeg decoding in the browser.
+      if (static_cast<int>(frameSize) >= dimensions.width * dimensions.height)
+        frameSize = JpegFrameSize(baseAddress, frameSize);
+
+      if (frameSize == 0)
+        return;
     }
   } else {
     videoFrame = CoreMediaGlue::CMSampleBufferGetImageBuffer(sampleBuffer);
