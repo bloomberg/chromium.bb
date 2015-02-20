@@ -308,6 +308,10 @@ void CSSTokenizer::tokenize(String string, Vector<CSSParserToken>& outTokens)
     if (string.isEmpty())
         return;
 
+    // To avoid resizing we err on the side of reserving too much space.
+    // Most strings we tokenize have about 3.5 to 5 characters per token.
+    outTokens.reserveInitialCapacity(string.length() / 3);
+
     CSSTokenizerInputStream input(string);
     CSSTokenizer tokenizer(input);
     while (true) {
