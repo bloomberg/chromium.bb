@@ -43,14 +43,8 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
       net::NetworkDelegate* network_delegate) const override;
 
  private:
-  // Must outlive |this|.
-  DataReductionProxyParams* params_;
-
   // Must outlive |this| if non-NULL.
   DataReductionProxyUsageStats* usage_stats_;
-
-  // Must outlive |this|.
-  DataReductionProxyEventStore* event_store_;
 
   // Object responsible for identifying cases when a response should cause the
   // data reduction proxy to be bypassed, and for triggering proxy bypasses in

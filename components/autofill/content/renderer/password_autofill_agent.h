@@ -20,7 +20,6 @@ namespace blink {
 class WebInputElement;
 class WebKeyboardEvent;
 class WebSecurityOrigin;
-class WebView;
 }
 
 namespace autofill {
@@ -238,9 +237,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
 
   // Used for UMA stats.
   OtherPossibleUsernamesUsage usernames_usage_;
-
-  // Pointer to the WebView. Used to access page scale factor.
-  blink::WebView* web_view_;
 
   // Set if the user might be submitting a password form on the current page,
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).

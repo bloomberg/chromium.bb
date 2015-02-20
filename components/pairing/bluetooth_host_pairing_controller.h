@@ -103,7 +103,6 @@ class BluetoothHostPairingController
   EnrollmentStatus enrollment_status_;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  device::BluetoothDevice* device_;
   scoped_refptr<device::BluetoothSocket> service_socket_;
   scoped_refptr<device::BluetoothSocket> controller_socket_;
   scoped_ptr<ProtoDecoder> proto_decoder_;

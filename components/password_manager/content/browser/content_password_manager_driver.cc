@@ -29,7 +29,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     : render_frame_host_(render_frame_host),
       client_(client),
       password_generation_manager_(client, this),
-      password_autofill_manager_(client, this, autofill_client),
+      password_autofill_manager_(this, autofill_client),
       next_free_key_(0) {
 }
 

@@ -21,11 +21,10 @@ DataReductionProxyInterceptor::DataReductionProxyInterceptor(
     DataReductionProxyParams* params,
     DataReductionProxyUsageStats* stats,
     DataReductionProxyEventStore* event_store)
-    : params_(params),
-      usage_stats_(stats),
-      event_store_(event_store),
+    : usage_stats_(stats),
       bypass_protocol_(
-          new DataReductionProxyBypassProtocol(params, event_store)) {}
+          new DataReductionProxyBypassProtocol(params, event_store)) {
+}
 
 DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {
 }

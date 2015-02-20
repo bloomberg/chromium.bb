@@ -59,7 +59,6 @@ BluetoothHostPairingController::BluetoothHostPairingController()
     : current_stage_(STAGE_NONE),
       update_status_(UPDATE_STATUS_UNKNOWN),
       enrollment_status_(ENROLLMENT_STATUS_UNKNOWN),
-      device_(NULL),
       proto_decoder_(new ProtoDecoder(this)),
       ptr_factory_(this) {
 }
