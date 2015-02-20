@@ -584,9 +584,6 @@
 
       # If no directory is specified then a temporary directory will be used.
       'test_isolation_outdir%': '',
-      # True if isolate should fail if the isolate files refer to files
-      # that are missing.
-      'test_isolation_fail_on_missing': 1,
 
       'wix_path%': '<(DEPTH)/third_party/wix',
 
@@ -1160,7 +1157,6 @@
     'use_canvas_skia%': '<(use_canvas_skia)',
     'test_isolation_mode%': '<(test_isolation_mode)',
     'test_isolation_outdir%': '<(test_isolation_outdir)',
-    'test_isolation_fail_on_missing': '<(test_isolation_fail_on_missing)',
     'enable_basic_printing%': '<(enable_basic_printing)',
     'enable_print_preview%': '<(enable_print_preview)',
     'enable_spellcheck%': '<(enable_spellcheck)',
