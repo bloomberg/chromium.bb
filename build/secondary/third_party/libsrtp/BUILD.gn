@@ -45,7 +45,7 @@ config("libsrtp_config") {
     ]
   }
 
-  if (cpu_arch == "x64" || cpu_arch == "x86" || cpu_arch == "arm") {
+  if (current_cpu == "x64" || current_cpu == "x86" || current_cpu == "arm") {
     defines += [
       # TODO(leozwang): CPU_RISC doesn"t work properly on android/arm
       # platform for unknown reasons, need to investigate the root cause
@@ -56,7 +56,7 @@ config("libsrtp_config") {
     ]
   }
 
-  if (cpu_arch == "mipsel") {
+  if (current_cpu == "mipsel") {
     defines += [ "CPU_RISC" ]
   }
 }

@@ -135,7 +135,7 @@ source_set("sandbox") {
     "src/window.h",
   ]
 
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     sources += [
       "src/interceptors_64.cc",
       "src/interceptors_64.h",
@@ -143,7 +143,7 @@ source_set("sandbox") {
       "src/service_resolver_64.cc",
       "src/Wow64_64.cc",
     ]
-  } else if (cpu_arch == "x86") {
+  } else if (current_cpu == "x86") {
     sources += [
       "src/resolver_32.cc",
       "src/service_resolver_32.cc",
@@ -164,12 +164,12 @@ source_set("sandbox") {
   deps = [
     "//base",
   ]
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     deps += [ ":copy_wow_helper" ]
   }
 }
 
-if (cpu_arch == "x86") {
+if (current_cpu == "x86") {
   # Make a target that copies the wow_helper files to the out dir.
   #
   # TODO(brettw) we can probably just build this now that we have proper

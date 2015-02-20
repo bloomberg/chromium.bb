@@ -42,13 +42,13 @@
 #   }
 
 if (is_mac || is_ios) {
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     _yasm_flags = [
       "-fmacho32",
       "-m",
       "x86",
     ]
-  } else if (cpu_arch == "x64") {
+  } else if (current_cpu == "x64") {
     _yasm_flags = [
       "-fmacho64",
       "-m",
@@ -56,13 +56,13 @@ if (is_mac || is_ios) {
     ]
   }
 } else if (is_posix) {
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     _yasm_flags = [
       "-felf32",
       "-m",
       "x86",
     ]
-  } else if (cpu_arch == "x64") {
+  } else if (current_cpu == "x64") {
     _yasm_flags = [
       "-DPIC",
       "-felf64",
@@ -71,14 +71,14 @@ if (is_mac || is_ios) {
     ]
   }
 } else if (is_win) {
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     _yasm_flags = [
       "-DPREFIX",
       "-fwin32",
       "-m",
       "x86",
     ]
-  } else if (cpu_arch == "x64") {
+  } else if (current_cpu == "x64") {
     _yasm_flags = [
       "-fwin64",
       "-m",
@@ -99,7 +99,7 @@ template("yasm_assemble") {
 
   # Only depend on YASM on x86 systems. Force compilation of .asm files for
   # ARM to fail.
-  assert(cpu_arch == "x86" || cpu_arch == "x64")
+  assert(current_cpu == "x86" || current_cpu == "x64")
 
   action_name = "${target_name}_action"
   source_set_name = target_name

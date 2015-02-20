@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//content/common/common.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-if (is_chromeos && cpu_arch != "arm") {
+if (is_chromeos && current_cpu != "arm") {
   action("libva_generate_stubs") {
     extra_header = "gpu/media/va_stub_header.fragment"
 
@@ -282,7 +282,7 @@ source_set("common") {
     include_dirs += [ "//third_party/khronos" ]
     configs += [ "//build/config/linux:xcomposite" ]
 
-    if (cpu_arch != "arm" || !is_chromeos) {
+    if (current_cpu != "arm" || !is_chromeos) {
       sources += [
         "gpu/x_util.cc",
         "gpu/x_util.h",
@@ -355,13 +355,13 @@ source_set("common") {
         "GLESv2",
       ]
     }
-    if (cpu_arch == "arm") {
+    if (current_cpu == "arm") {
       sources += [
         "gpu/media/tegra_v4l2_video_device.cc",
         "gpu/media/tegra_v4l2_video_device.h",
       ]
     }
-    if (cpu_arch != "arm") {
+    if (current_cpu != "arm") {
       sources += [
                    "gpu/media/va_surface.h",
                    "gpu/media/vaapi_h264_decoder.cc",
@@ -457,7 +457,7 @@ source_set("common") {
     }
   }
 
-  if (is_win && cpu_arch == "x64") {
+  if (is_win && current_cpu == "x64") {
     # TODO(jschuh): Remove this after crbug.com/173851 gets fixed.
     cflags = [ "/bigobj" ]
   }

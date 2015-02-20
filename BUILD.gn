@@ -170,7 +170,7 @@ group("root") {
     deps += [ "//rlz:rlz_lib" ]
   }
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (current_cpu == "x86" || current_cpu == "x64") {
     # YASM is x86/x64 only.
     deps += [ "//third_party/yasm($host_toolchain)" ]
   }

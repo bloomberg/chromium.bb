@@ -38,7 +38,7 @@ use_kerberos = !is_chromeos && !is_android && !is_ios
 # pretty confident that mmap-ing the index would not hurt any existing x86
 # android devices, but we cannot be so sure about the variety of ARM devices.
 # So enable it for x86 only for now.
-posix_avoid_mmap = is_android && cpu_arch != "x86"
+posix_avoid_mmap = is_android && current_cpu != "x86"
 
 # WebSockets and socket stream code are used everywhere except iOS.
 enable_websockets = !is_ios
@@ -75,6 +75,7 @@ component("net") {
     "DLOPEN_KERBEROS",
     "NET_IMPLEMENTATION",
   ]
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   public_configs = [ ":net_config" ]
@@ -820,6 +821,7 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/crash_cache/crash_cache.cc",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
@@ -834,6 +836,7 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/crl_set_dump/crl_set_dump.cc",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
@@ -847,6 +850,7 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/dns_fuzz_stub/dns_fuzz_stub.cc",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
@@ -872,6 +876,7 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/get_server_time/get_server_time.cc",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
@@ -924,6 +929,7 @@ if (!is_ios && !is_android) {
     sources = [
       "disk_cache/blockfile/stress_cache.cc",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
@@ -937,6 +943,7 @@ if (!is_ios && !is_android) {
     sources = [
       "tools/tld_cleanup/tld_cleanup.cc",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [

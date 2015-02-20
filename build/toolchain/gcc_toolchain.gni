@@ -14,10 +14,10 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - ar
 #  - ld
 # and the following which is used in the toolchain_args
-#  - toolchain_cpu_arch  (What "cpu_arch" should be set to when invoking a
-#                         build using this toolchain.)
-#  - toolchain_os  (What "os" should be set to when invoking a build using this
-#                   toolchain.)
+#  - toolchain_cpu  (What "current_cpu" should be set to when invoking a
+#                    build using this toolchain.)
+#  - toolchain_os  (What "current_os" should be set to when invoking a
+#                   build using this toolchain.)
 #
 # Optional parameters:
 #  - libs_section_prefix

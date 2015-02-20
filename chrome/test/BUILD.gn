@@ -1513,7 +1513,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       # static for simplicity.
       deps += [ "//third_party/cld_2:cld2_static" ]
     }
-    if (is_desktop_linux && cpu_arch == "x64") {
+    if (is_desktop_linux && current_cpu == "x64") {
       # Only add this test for 64 bit builds because otherwise we need the 32
       # bit library on 64 bit systems when running this test.
       sources +=
@@ -1534,7 +1534,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         "//ui/aura:test_support",
       ]
     }
-    if (is_linux && is_chrome_branded && cpu_arch == "x86") {
+    if (is_linux && is_chrome_branded && current_cpu == "x86") {
       ldflags = [ "-Wl,--strip-debug" ]
     }
     if (is_mac) {

@@ -109,7 +109,7 @@ if (is_nacl) {
 
 group("mojo_nacl") {
   deps = [
-    ":irt_mojo(//native_client/build/toolchain/nacl:irt_${cpu_arch})",
+    ":irt_mojo(//native_client/build/toolchain/nacl:irt_${current_cpu})",
   ]
 }
 
@@ -117,6 +117,6 @@ group("mojo_nacl_tests") {
   testonly = true
   deps = [
     ":monacl_shell",
-    ":monacl_test(//native_client/build/toolchain/nacl:clang_newlib_${cpu_arch})",
+    ":monacl_test(//native_client/build/toolchain/nacl:clang_newlib_${current_cpu})",
   ]
 }

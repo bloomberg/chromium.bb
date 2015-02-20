@@ -242,7 +242,7 @@ source_set("base") {
     defines += [ "DISABLE_USER_INPUT_MONITOR" ]
   }
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (current_cpu == "x86" || current_cpu == "x64") {
     sources += [ "simd/convert_yuv_to_rgb_x86.cc" ]
     deps += [
       ":media_yasm",
@@ -373,7 +373,7 @@ source_set("unittests") {
     deps += [ "//ui/gl" ]
   }
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (current_cpu == "x86" || current_cpu == "x64") {
     sources += [ "simd/convert_rgb_to_yuv_unittest.cc" ]
   }
 }
@@ -405,7 +405,7 @@ source_set("perftests") {
   }
 }
 
-if (cpu_arch == "x86" || cpu_arch == "x64") {
+if (current_cpu == "x86" || current_cpu == "x64") {
   source_set("media_sse2") {
     sources = [
       "simd/convert_rgb_to_yuv_sse2.cc",
@@ -452,9 +452,9 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
       "simd/scale_yuv_to_rgb_mmx.inc",
     ]
 
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       yasm_flags += [ "-DARCH_X86_32" ]
-    } else if (cpu_arch == "x64") {
+    } else if (current_cpu == "x64") {
       yasm_flags += [ "-DARCH_X86_64" ]
       sources += [
         "simd/linear_scale_yuv_to_rgb_mmx_x64.asm",
@@ -470,7 +470,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
     } else {
       if (is_posix) {
         yasm_flags += [ "-DELF" ]
-        if (cpu_arch == "x64") {
+        if (current_cpu == "x64") {
           # TODO(ajwong): Why isn't this true in mac?
           yasm_flags += [ "-DPIC" ]
         }

@@ -11,7 +11,7 @@ declare_args() {
   compile_credentials = is_linux
 
   compile_seccomp_bpf_demo =
-      is_linux && (cpu_arch == "x86" || cpu_arch == "x64")
+      is_linux && (current_cpu == "x86" || current_cpu == "x64")
 }
 
 # We have two principal targets: sandbox and sandbox_linux_unittests

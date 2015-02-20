@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   import("//build/config/arm.gni")
 }
 
@@ -191,7 +191,7 @@ config("skia_library_config") {
     defines += [ "SKIA_IMPLEMENTATION=1" ]
   }
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     if (arm_use_neon) {
       defines += [ "SK_ARM_HAS_NEON" ]
     }
@@ -311,7 +311,7 @@ component("skia") {
   sources += gypi_skia_utils.sources
   sources += gypi_values.skia_library_sources
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     sources += [
       "//third_party/skia/src/core/SkUtilsArm.cpp",
       "//third_party/skia/src/core/SkUtilsArm.h",
@@ -545,7 +545,7 @@ source_set("skia_opts") {
   cflags = []
   defines = []
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (current_cpu == "x86" || current_cpu == "x64") {
     sources = gypi_skia_opts.sse2_sources + gypi_skia_opts.ssse3_sources +
               gypi_skia_opts.sse41_sources +
               [
@@ -556,7 +556,7 @@ source_set("skia_opts") {
     if (is_linux || is_mac) {
       cflags += [ "-msse4.1" ]
     }
-  } else if (cpu_arch == "arm") {
+  } else if (current_cpu == "arm") {
     # The assembly uses the frame pointer register (r7 in Thumb/r11 in
     # ARM), the compiler doesn't like that.
     cflags += [ "-fomit-frame-pointer" ]
@@ -576,7 +576,7 @@ source_set("skia_opts") {
     } else {
       sources = gypi_skia_opts.none_sourcees
     }
-  } else if (cpu_arch == "mipsel") {
+  } else if (current_cpu == "mipsel") {
     cflags += [ "-fomit-frame-pointer" ]
     sources = gypi_skia_opts.none_sources
   } else {

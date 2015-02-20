@@ -179,7 +179,7 @@ source_set("thunk") {
   # nacl_win64 build (cross-compiled for a 32-bit Chrome), rather than all
   # 64-bit builds.
   # See also //ppapi/shared_impl
-  if (is_win && cpu_arch == "x64" && current_toolchain != default_toolchain) {
+  if (is_win && current_cpu == "x64" && current_toolchain != default_toolchain) {
     sources += [
       "ppb_graphics_3d_thunk.cc",
       "ppb_host_resolver_private_thunk.cc",

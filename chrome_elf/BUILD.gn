@@ -32,7 +32,7 @@ shared_library("chrome_elf") {
     "/NODEFAULTLIB:user32.lib",
     "/DEF:" + rebase_path("chrome_elf.def"),
   ]
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     # Don"t set an x64 base address (to avoid breaking HE-ASLR).
     ldflags += [ "/BASE:0x01c20000" ]
   }
@@ -96,7 +96,7 @@ if (is_component_build) {
     configs += [ "//build/config/win:windowed" ]
     ldflags = [ "/DEF:" + rebase_path("chrome_redirects.def") ]
 
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       # Don't set an x64 base address (to avoid breaking HE-ASLR).
       ldflags += [ "/BASE:0x01c20000" ]
     }

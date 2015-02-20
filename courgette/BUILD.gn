@@ -58,7 +58,7 @@ static_library("courgette_lib") {
 }
 
 executable("courgette") {
-  if (is_win && cpu_arch == "x64") {
+  if (is_win && current_cpu == "x64") {
     # The build infrastructure needs courgette to be named courgette64.
     output_name = "courgette64"
   }

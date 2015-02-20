@@ -72,11 +72,12 @@ declare_args() {
   is_debug = true
 
   # Whether we're a traditional desktop unix.
-  is_desktop_linux = os == "linux" && os != "chromeos"
+  is_desktop_linux = current_os == "linux" && current_os != "chromeos"
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
-  is_clang = os == "mac" || os == "ios" || os == "linux" || os == "chromeos"
+  is_clang = current_os == "mac" || current_os == "ios" ||
+             current_os == "linux" || current_os == "chromeos"
 
   # Selects the desired build flavor. Official builds get additional
   # processing to prepare for release. Normally you will want to develop and
@@ -100,21 +101,22 @@ declare_args() {
   # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
 
-  if (os == "chromeos") {
+  if (current_os == "chromeos") {
     # Allows the target toolchain to be injected as arguments. This is needed
     # to support the CrOS build system which supports per-build-configuration
     # toolchains.
     cros_use_custom_toolchain = false
   }
 
-  # TODO(cjhopman): Make target_arch work for all platforms.
+  # TODO(dpranke): Replace target_arch with target_cpu.
 
-  # Architecture of the target device. For Android builds, this will be equal to
-  # the cpu_arch of the default toolchain. When checking the CPU architecture
-  # for source files and build dependencies you should almost alway use cpu_arch
-  # instead. cpu_arch is the architecture of the current toolchain and allows
-  # cross-compiles (compiling the same target for multiple toolchains in the
-  # same build) to work.
+  # Architecture of the target device. For Android builds, this will be
+  # equal to the current_cpu of the default toolchain. When checking
+  # the CPU architecture for source files and build dependencies you
+  # should almost alway use current_cpu instead. current_cpu is the
+  # architecture of the current toolchain and allows cross-compiles
+  # (compiling the same target for multiple toolchains in the same build)
+  # to work.
   target_arch = "arm"
 
   # TODO(brettw) remove this flag (and therefore enable linking all targets) on
@@ -142,10 +144,10 @@ assert(current_os == os)
 #   generally too different despite being based on the Linux kernel).
 #
 # Do not add more is_* variants here for random lesser-used Unix systems like
-# aix or one of the BSDs. If you need to check these, just check the os value
-# directly.
+# aix or one of the BSDs. If you need to check these, just check the
+# current_os value directly.
 
-if (os == "win") {
+if (current_os == "win") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -154,7 +156,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = false
   is_win = true
-} else if (os == "mac") {
+} else if (current_os == "mac") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -163,7 +165,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "android") {
+} else if (current_os == "android") {
   is_android = true
   is_chromeos = false
   is_ios = false
@@ -172,7 +174,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "chromeos") {
+} else if (current_os == "chromeos") {
   is_android = false
   is_chromeos = true
   is_ios = false
@@ -181,9 +183,10 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "nacl") {
-  # os == "nacl" will be passed by the nacl toolchain definition. It is not
-  # set by default or on the command line. We treat is as a Posix variant.
+} else if (current_os == "nacl") {
+  # current_os == "nacl" will be passed by the nacl toolchain definition.
+  # It is not set by default or on the command line. We treat is as a
+  # Posix variant.
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -192,7 +195,7 @@ if (os == "win") {
   is_nacl = true
   is_posix = true
   is_win = false
-} else if (os == "ios") {
+} else if (current_os == "ios") {
   is_android = false
   is_chromeos = false
   is_ios = true
@@ -201,7 +204,7 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-} else if (os == "linux") {
+} else if (current_os == "linux") {
   is_android = false
   is_chromeos = false
   is_ios = false
@@ -218,10 +221,10 @@ if (os == "win") {
 
 if (is_android) {
   # TODO(cjhopman): enable this assert once bots are updated to not set
-  # cpu_arch.
-  #assert(cpu_arch == build_cpu_arch, "Android device target architecture should
-  #    be set with 'target_arch', not 'cpu_arch'")
-  cpu_arch = target_arch
+  # current_cpu.
+  #assert(current_cpu == host_cpu, "Android device target architecture should
+  #    be set with 'target_arch', not 'current_cpu'")
+  current_cpu = target_arch
 }
 
 # =============================================================================
@@ -530,28 +533,28 @@ set_defaults("test") {
 
 if (is_win) {
   # On windows we use the same toolchain for host and target by default.
-  # TODO(dpranke): rename the toolchains to x64 and x86 to match cpu_arch.
-  if (cpu_arch == "x64") {
+  # TODO(dpranke): rename the toolchains to x64 and x86 to match current_cpu.
+  if (current_cpu == "x64") {
     host_toolchain = "//build/toolchain/win:64"
-  } else if (cpu_arch == "x86") {
+  } else if (current_cpu == "x86") {
     host_toolchain = "//build/toolchain/win:32"
   }
   set_default_toolchain("$host_toolchain")
 } else if (is_android) {
   # Use clang for the x86/64 Linux host builds.
-  if (build_cpu_arch == "x86" || build_cpu_arch == "x64") {
-    host_toolchain = "//build/toolchain/linux:clang_$build_cpu_arch"
+  if (host_cpu == "x86" || host_cpu == "x64") {
+    host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
   } else {
-    host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
+    host_toolchain = "//build/toolchain/linux:$host_cpu"
   }
-  set_default_toolchain("//build/toolchain/android:$cpu_arch")
+  set_default_toolchain("//build/toolchain/android:$current_cpu")
 } else if (is_linux) {
   if (is_clang) {
-    host_toolchain = "//build/toolchain/linux:clang_$build_cpu_arch"
-    set_default_toolchain("//build/toolchain/linux:clang_$cpu_arch")
+    host_toolchain = "//build/toolchain/linux:clang_$host_cpu"
+    set_default_toolchain("//build/toolchain/linux:clang_$current_cpu")
   } else {
-    host_toolchain = "//build/toolchain/linux:$build_cpu_arch"
-    set_default_toolchain("//build/toolchain/linux:$cpu_arch")
+    host_toolchain = "//build/toolchain/linux:$host_cpu"
+    set_default_toolchain("//build/toolchain/linux:$current_cpu")
   }
   if (is_chromeos && cros_use_custom_toolchain) {
     set_default_toolchain("//build/toolchain/cros:target")

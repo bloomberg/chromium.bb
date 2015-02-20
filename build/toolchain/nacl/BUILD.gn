@@ -54,7 +54,7 @@ toolchain("x86_newlib") {
   toolchain_args() {
     # Override the default OS detection. The build config will set the is_*
     # flags accordingly.
-    os = "nacl"
+    current_os = "nacl"
 
     # Component build not supported in NaCl, since it does not support shared
     # libraries.

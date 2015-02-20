@@ -28,7 +28,7 @@ declare_args() {
   } else {
     use_system_harfbuzz = false
   }
-  if (is_linux && cpu_arch == "arm" && !is_chromeos) {
+  if (is_linux && current_cpu == "arm" && !is_chromeos) {
     # Override use_system_harfbuzz for ARM cross compiling so system
     # harfbuzz is not used because the corresponding package is not
     # available.
@@ -161,9 +161,7 @@ if (use_system_harfbuzz) {
       cflags += [ "-Wno-unused-value" ]
     }
     if (is_win) {
-      cflags += [
-        "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
-      ]
+      cflags += [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
     }
     if (is_mac) {
       sources += [

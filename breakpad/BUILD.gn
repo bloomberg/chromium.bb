@@ -511,7 +511,7 @@ if (is_linux || is_android) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     public_configs = [ ":client_config" ]
 
-    if (cpu_arch == "arm" && is_chromeos) {
+    if (current_cpu == "arm" && is_chromeos) {
       # Avoid running out of registers in
       # linux_syscall_support.h:sys_clone()'s inline assembly.
       cflags = [ "-marm" ]
@@ -630,7 +630,7 @@ if (is_linux) {
 
     include_dirs = [ "src" ]
 
-    if (cpu_arch == "mipsel" && is_android) {
+    if (current_cpu == "mipsel" && is_android) {
       include_dirs += [ "src/common/android/include" ]
     }
   }

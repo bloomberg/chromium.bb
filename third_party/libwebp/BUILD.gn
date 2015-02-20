@@ -9,8 +9,8 @@ config("libwebp_config") {
 }
 
 use_dsp_neon =
-    cpu_arch == "arm64" || (cpu_arch == "arm" && arm_version >= 7 &&
-                            (arm_use_neon || arm_optionally_use_neon))
+    current_cpu == "arm64" || (current_cpu == "arm" && arm_version >= 7 &&
+                               (arm_use_neon || arm_optionally_use_neon))
 
 source_set("libwebp_dec") {
   sources = [
@@ -102,11 +102,11 @@ if (use_dsp_neon) {
 
     include_dirs = [ "." ]
 
-    if (cpu_arch == "arm") {
+    if (current_cpu == "arm") {
       # behavior similar to *.c.neon in an Android.mk
       configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
       cflags = [ "-mfpu=neon" ]
-    } else if (cpu_arch == "arm64") {
+    } else if (current_cpu == "arm64") {
       # avoid an ICE with gcc-4.9: b/15574841
       cflags = [ "-frename-registers" ]
     }

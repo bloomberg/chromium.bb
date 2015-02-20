@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   import("//build/config/arm.gni")
 }
-if (cpu_arch == "mipsel" || cpu_arch == "mips64el") {
+if (current_cpu == "mipsel" || current_cpu == "mips64el") {
   import("//build/config/mips.gni")
 }
 if (is_posix) {
@@ -24,7 +24,7 @@ declare_args() {
   # These are not multi-arch so cannot be used except on x86 and x86-64 (the
   # only two architectures that are currently checked in). Turn this off when
   # you are using a custom toolchain and need to control -B in cflags.
-  linux_use_bundled_binutils = is_linux && cpu_arch == "x64"
+  linux_use_bundled_binutils = is_linux && current_cpu == "x64"
 
   # Compile in such a way as to enable profiling of the generated code. For
   # example, don't omit the frame pointer and leave in symbols.
@@ -39,7 +39,7 @@ declare_args() {
 
   # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
   # address space, and it doesn't support cross-compiling).
-  use_gold = is_linux && cpu_arch == "x64"
+  use_gold = is_linux && current_cpu == "x64"
 
   # use_debug_fission: whether to use split DWARF debug info
   # files. This can reduce link time significantly, but is incompatible
@@ -121,7 +121,7 @@ config("compiler") {
     }
 
     # Linker warnings.
-    if (!(is_chromeos && cpu_arch == "arm") && !is_mac) {
+    if (!(is_chromeos && current_cpu == "arm") && !is_mac) {
       # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
       ldflags += [ "-Wl,--fatal-warnings" ]
     }
@@ -172,12 +172,12 @@ config("compiler") {
     common_mac_flags = []
 
     # CPU architecture.
-    if (cpu_arch == "x64") {
+    if (current_cpu == "x64") {
       common_mac_flags += [
         "-arch",
         "x86_64",
       ]
-    } else if (cpu_arch == "x86") {
+    } else if (current_cpu == "x86") {
       common_mac_flags += [
         "-arch",
         "i386",
@@ -222,13 +222,13 @@ config("compiler") {
 
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
-    if (cpu_arch == "x64") {
+    if (current_cpu == "x64") {
       cflags += [
         "-m64",
         "-march=x86-64",
       ]
       ldflags += [ "-m64" ]
-    } else if (cpu_arch == "x86") {
+    } else if (current_cpu == "x86") {
       cflags += [ "-m32" ]
       ldflags += [ "-m32" ]
       if (is_clang) {
@@ -242,7 +242,7 @@ config("compiler") {
           "-mstackrealign",
         ]
       }
-    } else if (cpu_arch == "arm") {
+    } else if (current_cpu == "arm") {
       # Don't set the compiler flags for the WebView build. These will come
       # from the Android build system.
       if (!is_android_webview_build) {
@@ -275,7 +275,7 @@ config("compiler") {
           ]
         }
       }
-    } else if (cpu_arch == "mipsel") {
+    } else if (current_cpu == "mipsel") {
       # Don't set the compiler flags for the WebView build. These will come
       # from the Android build system.
       if (!is_android_webview_build) {
@@ -302,7 +302,7 @@ config("compiler") {
           ]
         }
       }
-    } else if (cpu_arch == "mips64el") {
+    } else if (current_cpu == "mips64el") {
       # Don't set the compiler flags for the WebView build. These will come
       # from the Android build system.
       if (!is_android_webview_build) {
@@ -437,7 +437,7 @@ config("compiler") {
     }
 
     # Use gold for Android for most CPU architectures.
-    if (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm") {
+    if (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm") {
       ldflags += [ "-fuse-ld=gold" ]
       if (is_clang) {
         # Let clang find the ld.gold in the NDK.
@@ -459,7 +459,7 @@ config("compiler") {
       # http://crbug.com/448386
       "-Wl,--exclude-libs=libvpx_assembly_arm.a",
     ]
-    if (cpu_arch == "arm") {
+    if (current_cpu == "arm") {
       ldflags += [
         # Enable identical code folding to reduce size.
         "-Wl,--icf=safe",
@@ -467,10 +467,10 @@ config("compiler") {
     }
 
     if (is_clang) {
-      if (cpu_arch == "arm") {
+      if (current_cpu == "arm") {
         cflags += [ "-target arm-linux-androideabi" ]
         ldflags += [ "-target arm-linux-androideabi" ]
-      } else if (cpu_arch == "x86") {
+      } else if (current_cpu == "x86") {
         cflags += [ "-target x86-linux-androideabi" ]
         ldflags += [ "-target x86-linux-androideabi" ]
       }
@@ -479,7 +479,7 @@ config("compiler") {
 }
 
 config("compiler_arm_fpu") {
-  if (cpu_arch == "arm" && !is_android_webview_build) {
+  if (current_cpu == "arm" && !is_android_webview_build) {
     cflags = [ "-mfpu=$arm_fpu" ]
   }
 }
@@ -577,7 +577,7 @@ config("runtime_library") {
       libs += [ "stlport_static" ]
     }
 
-    if (cpu_arch == "mipsel") {
+    if (current_cpu == "mipsel") {
       libs += [
         # ld linker is used for mips Android, and ld does not accept library
         # absolute path prefixed by "-l"; Since libgcc does not exist in mips
@@ -844,7 +844,7 @@ config("default_warnings") {
 
     # Suppress warnings about ABI changes on ARM (Clang doesn't give this
     # warning).
-    if (cpu_arch == "arm" && !is_clang) {
+    if (current_cpu == "arm" && !is_clang) {
       cflags += [ "-Wno-psabi" ]
     }
 
@@ -897,7 +897,7 @@ config("wexit_time_destructors") {
 # Note that this can be applied regardless of platform and architecture to
 # clean up the call sites. This will only apply the flag when necessary.
 config("no_size_t_to_int_warning") {
-  if (is_win && cpu_arch == "x64") {
+  if (is_win && current_cpu == "x64") {
     cflags = [ "/wd4267" ]
   }
 }

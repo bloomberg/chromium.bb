@@ -203,7 +203,7 @@ action("copy_locales") {
 
   args = [
            "-p",
-           os,
+           current_os,
            "-g",
            rebase_path(root_gen_dir, root_build_dir),
            "-x",

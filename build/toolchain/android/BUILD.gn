@@ -18,7 +18,7 @@ import("//build/toolchain/gcc_toolchain.gni")
 #      Subdirectory inside of android_ndk_sysroot where libs go.
 #  - tool_prefix
 #      Prefix to be added to the tool names.
-#  - toolchain_cpu_arch
+#  - toolchain_cpu
 #      Same as gcc_toolchain
 template("android_gcc_toolchain") {
   gcc_toolchain(target_name) {

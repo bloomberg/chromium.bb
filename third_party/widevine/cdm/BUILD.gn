@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-widevine_arch = cpu_arch
+widevine_arch = current_cpu
 if (widevine_arch == "x86") {
   widevine_arch = "ia32"
 }

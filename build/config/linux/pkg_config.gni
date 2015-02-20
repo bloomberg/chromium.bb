@@ -43,7 +43,7 @@ if (sysroot != "") {
     "-s",
     sysroot,
     "-a",
-    cpu_arch,
+    current_cpu,
   ]
 } else if (pkg_config != "") {
   pkg_config_args = [

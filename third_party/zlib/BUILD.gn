@@ -7,7 +7,7 @@ config("zlib_config") {
 }
 
 static_library("zlib_x86_simd") {
-  if (!is_ios && (cpu_arch == "x86" || cpu_arch == "x64")) {
+  if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     sources = [
       "crc_folding.c",
       "fill_window_sse.c",
@@ -65,7 +65,7 @@ static_library("zlib") {
     "zutil.h",
   ]
 
-  if (!is_ios && (cpu_arch == "x86" || cpu_arch == "x64")) {
+  if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     sources += [ "x86.c" ]
   }
 

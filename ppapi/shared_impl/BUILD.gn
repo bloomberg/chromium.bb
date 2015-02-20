@@ -143,7 +143,7 @@ component("shared_impl") {
   # nacl_win64 build (cross-compiled for a 32-bit Chrome), rather than the
   # native 64-bit Chrome build.
   # See also //ppapi/thunk
-  if (is_win && cpu_arch == "x64" && current_toolchain != default_toolchain) {
+  if (is_win && current_cpu == "x64" && current_toolchain != default_toolchain) {
     sources -= [
       "ppb_audio_shared.cc",
       "ppb_graphics_3d_shared.cc",

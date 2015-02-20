@@ -89,7 +89,7 @@ if (enable_configuration_policy) {
       app_resources_path,
     ]
 
-    if (os != "android") {
+    if (current_os != "android") {
       outputs -= [
         app_restrictions_path,
         app_resources_path,
@@ -111,7 +111,7 @@ if (enable_configuration_policy) {
           rebase_path(app_restrictions_path, root_build_dir),
       "--app-restrictions-resources=" +
           rebase_path(app_resources_path, root_build_dir),
-      os,
+      current_os,
       chromeos_flag,
       rebase_path("resources/policy_templates.json", root_build_dir),
     ]

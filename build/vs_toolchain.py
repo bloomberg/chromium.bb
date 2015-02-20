@@ -129,11 +129,11 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
                        source_x64)
 
 
-def CopyDlls(target_dir, configuration, cpu_arch):
+def CopyDlls(target_dir, configuration, target_cpu):
   """Copy the VS runtime DLLs into the requested directory as needed.
 
   configuration is one of 'Debug' or 'Release'.
-  cpu_arch is one of 'x86' or 'x64'.
+  target_cpu is one of 'x86' or 'x64'.
 
   The debug configuration gets both the debug and release DLLs; the
   release config only the latter.
@@ -143,7 +143,7 @@ def CopyDlls(target_dir, configuration, cpu_arch):
     return
 
   x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
-  runtime_dir = x64_runtime if cpu_arch == 'x64' else x86_runtime
+  runtime_dir = x64_runtime if target_cpu == 'x64' else x86_runtime
   _CopyRuntime(target_dir, runtime_dir, 'msvc%s120.dll')
   if configuration == 'Debug':
     _CopyRuntime(target_dir, runtime_dir, 'msvc%s120d.dll')

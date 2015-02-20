@@ -28,9 +28,9 @@ gypi_values =
 if (is_win) {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("boringssl_asm") {
-    if (cpu_arch == "x64") {
+    if (current_cpu == "x64") {
       sources = gypi_values.boringssl_win_x86_64_sources
-    } else if (cpu_arch == "x86") {
+    } else if (current_cpu == "x86") {
       sources = gypi_values.boringssl_win_x86_sources
     }
   }
@@ -54,6 +54,7 @@ component("boringssl") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
+
     # TODO(davidben): Fix size_t truncations in BoringSSL.
     # https://crbug.com/429039
     "//build/config/compiler:no_size_t_to_int_warning",
@@ -69,7 +70,7 @@ component("boringssl") {
     "src/crypto",
   ]
 
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     if (is_mac) {
       sources += gypi_values.boringssl_mac_x86_64_sources
     } else if (is_linux || is_android) {
@@ -79,7 +80,7 @@ component("boringssl") {
     } else {
       defines += [ "OPENSSL_NO_ASM" ]
     }
-  } else if (cpu_arch == "x86") {
+  } else if (current_cpu == "x86") {
     if (is_mac) {
       sources += gypi_values.boringssl_mac_x86_sources
     } else if (is_linux || is_android) {
@@ -89,9 +90,9 @@ component("boringssl") {
     } else {
       defines += [ "OPENSSL_NO_ASM" ]
     }
-  } else if (cpu_arch == "arm") {
+  } else if (current_cpu == "arm") {
     sources += gypi_values.boringssl_linux_arm_sources
-  } else if (cpu_arch == "arm64") {
+  } else if (current_cpu == "arm64") {
     sources += gypi_values.boringssl_linux_aarch64_sources
   } else {
     defines += [ "OPENSSL_NO_ASM" ]

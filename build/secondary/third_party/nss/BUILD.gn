@@ -231,9 +231,7 @@ if (is_linux) {
     include_dirs = [ "nspr/pr/include/private" ]
 
     if (is_win) {
-      cflags = [
-        "/wd4554",  # Check precidence.
-      ]
+      cflags = [ "/wd4554" ]  # Check precidence.
       defines += [
         "XP_PC",
         "WIN32",
@@ -283,9 +281,9 @@ if (is_linux) {
       ]
     }
 
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       defines += [ "_X86_" ]
-    } else if (cpu_arch == "x64") {
+    } else if (current_cpu == "x64") {
       defines += [ "_AMD64_" ]
     }
 
@@ -476,7 +474,7 @@ if (is_linux) {
     ]
   }
 
-  if (is_win && cpu_arch == "x86") {
+  if (is_win && current_cpu == "x86") {
     source_set("nss_static_avx") {
       sources = [
         "nss/lib/freebl/intel-gcm-wrap.c",
@@ -906,9 +904,7 @@ if (is_linux) {
     ]
 
     if (is_win) {
-      cflags += [
-        "/wd4101",  # Unreferenced local variable.
-      ]
+      cflags += [ "/wd4101" ]  # Unreferenced local variable.
     }
 
     if (include_nss_libpkix) {
@@ -1098,7 +1094,7 @@ if (is_linux) {
       defines += [ "NSS_DISABLE_ROOT_CERTS" ]
     }
 
-    if (cpu_arch == "x64" && !is_win) {
+    if (current_cpu == "x64" && !is_win) {
       sources -= [
         "nss/lib/freebl/chacha20/chacha20.c",
         "nss/lib/freebl/poly1305/poly1305.c",
@@ -1143,7 +1139,7 @@ if (is_linux) {
         "WIN95",
       ]
 
-      if (cpu_arch == "x86") {
+      if (current_cpu == "x86") {
         defines += [
           "NSS_X86_OR_X64",
           "NSS_X86",
@@ -1157,7 +1153,7 @@ if (is_linux) {
           "INTEL_GCM",
         ]
         sources -= [ "nss/lib/freebl/mpi/mpi_amd64.c" ]
-      } else if (cpu_arch == "x64") {
+      } else if (current_cpu == "x64") {
         sources -= [
           "nss/lib/freebl/intel-aes-x86-masm.asm",
           "nss/lib/freebl/mpi/mpi_amd64.c",
@@ -1208,7 +1204,7 @@ if (is_linux) {
       "//third_party/sqlite",
     ]
 
-    if (is_win && cpu_arch == "x86") {
+    if (is_win && current_cpu == "x86") {
       deps += [ ":nss_static_avx" ]
     }
   }

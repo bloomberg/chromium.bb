@@ -36,7 +36,7 @@ if (is_win) {
     args = [
       visual_studio_path + "/vc/lib",
       rebase_path("$target_gen_dir/allocator"),
-      cpu_arch,
+      current_cpu,
     ]
   }
 }

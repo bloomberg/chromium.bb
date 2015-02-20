@@ -30,18 +30,14 @@
 if (current_toolchain == host_toolchain) {
   # Various files referenced by multiple targets.
   yasm_gen_include_dir = "$target_gen_dir/include"
-  yasm_os = os
-  if (is_chromeos) {
-    yasm_os = "linux"
-  }
-  config_makefile = "source/config/$yasm_os/Makefile"
+  config_makefile = "source/config/$host_os/Makefile"
   version_file = "version.mac"
 
   import("//build/compiled_action.gni")
 
   config("yasm_config") {
     include_dirs = [
-      "source/config/$yasm_os",
+      "source/config/$host_os",
       "source/patched-yasm",
     ]
     defines = [ "HAVE_CONFIG_H" ]

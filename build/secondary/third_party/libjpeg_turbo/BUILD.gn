@@ -5,17 +5,17 @@
 # Do not use the targets in this file unless you need a certain libjpeg
 # implementation. Use the meta target //third_party:jpeg instead.
 
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   import("//build/config/arm.gni")
 }
 
-if (cpu_arch == "x86" || cpu_arch == "x64") {
+if (current_cpu == "x86" || current_cpu == "x64") {
   import("//third_party/yasm/yasm_assemble.gni")
 
   yasm_assemble("simd_asm") {
     defines = []
 
-    if (cpu_arch == "x86") {
+    if (current_cpu == "x86") {
       sources = [
         "simd/jccolmmx.asm",
         "simd/jccolss2.asm",
@@ -52,7 +52,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
         "simd/jsimdcpu.asm",
       ]
       defines += [ "__x86__" ]
-    } else if (cpu_arch == "x64") {
+    } else if (current_cpu == "x64") {
       sources = [
         "simd/jccolss2-64.asm",
         "simd/jcgrass2-64.asm",
@@ -76,7 +76,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
     if (is_win) {
       defines += [ "MSVC" ]
       include_dirs = [ "win" ]
-      if (cpu_arch == "x86") {
+      if (current_cpu == "x86") {
         defines += [ "WIN32" ]
       } else {
         defines += [ "WIN64" ]
@@ -92,7 +92,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
 }
 
 source_set("simd") {
-  if (cpu_arch == "x86") {
+  if (current_cpu == "x86") {
     deps = [
       ":simd_asm",
     ]
@@ -102,14 +102,14 @@ source_set("simd") {
     if (is_win) {
       cflags = [ "/wd4245" ]
     }
-  } else if (cpu_arch == "x64") {
+  } else if (current_cpu == "x64") {
     deps = [
       ":simd_asm",
     ]
     sources = [
       "simd/jsimd_x86_64.c",
     ]
-  } else if (cpu_arch == "arm" && arm_version >= 7 &&
+  } else if (current_cpu == "arm" && arm_version >= 7 &&
              (arm_use_neon || arm_optionally_use_neon)) {
     sources = [
       "simd/jsimd_arm.c",

@@ -198,7 +198,7 @@ if (!is_win || link_chrome_on_windows) {
       if (enable_configuration_policy) {
         deps += [ "//components/policy" ]
       }
-      if (cpu_arch == "x86") {
+      if (current_cpu == "x86") {
         # Add a dependency to custom import library for user32 delay imports only
         # in x86 builds.
         #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)

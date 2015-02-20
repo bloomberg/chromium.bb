@@ -3,37 +3,37 @@
 # found in the LICENSE file.
 
 if (is_chrome_branded) {
-  if (is_linux && cpu_arch == "x86") {
+  if (is_linux && current_cpu == "x86") {
     flapper_version_h_file = "symbols/ppapi/linux/flapper_version.h"
     flapper_binary_files = [
       "binaries/ppapi/linux/libpepflashplayer.so",
       "binaries/ppapi/linux/manifest.json",
     ]
-  } else if (is_linux && cpu_arch == "x64") {
+  } else if (is_linux && current_cpu == "x64") {
     flapper_version_h_file = "symbols/ppapi/linux_x64/flapper_version.h"
     flapper_binary_files = [
       "binaries/ppapi/linux_x64/libpepflashplayer.so",
       "binaries/ppapi/linux_x64/manifest.json",
     ]
-  } else if (is_mac && cpu_arch == "x86") {
+  } else if (is_mac && current_cpu == "x86") {
     flapper_version_h_file = "symbols/ppapi/mac/flapper_version.h"
     flapper_binary_files = [
       "binaries/ppapi/mac/PepperFlashPlayer.plugin",
       "binaries/ppapi/mac/manifest.json",
     ]
-  } else if (is_mac && cpu_arch == "x64") {
+  } else if (is_mac && current_cpu == "x64") {
     flapper_version_h_file = "symbols/ppapi/mac_64/flapper_version.h"
     flapper_binary_files = [
       "binaries/ppapi/mac_64/PepperFlashPlayer.plugin",
       "binaries/ppapi/mac_64/manifest.json",
     ]
-  } else if (is_win && cpu_arch == "x86") {
+  } else if (is_win && current_cpu == "x86") {
     flapper_version_h_file = "symbols/ppapi/win/flapper_version.h"
     flapper_binary_files = [
       "binaries/ppapi/win/pepflashplayer.dll",
       "binaries/ppapi/win/manifest.json",
     ]
-  } else if (is_win && cpu_arch == "x64") {
+  } else if (is_win && current_cpu == "x64") {
     flapper_version_h_file = "symbols/ppapi/win_x64/flapper_version.h"
     flapper_binary_files = [
       "binaries/ppapi/win_x64/pepflashplayer.dll",
