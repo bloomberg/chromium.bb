@@ -18,7 +18,6 @@
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
-#include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 
@@ -96,35 +95,21 @@ PolicyCompiler::~PolicyCompiler() {
 }
 
 scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
-  if (!policy_->InvalidSyscall()->IsDeny()) {
-    SANDBOX_DIE("Policies should deny invalid system calls.");
-  }
+  CHECK(policy_->InvalidSyscall()->IsDeny())
+      << "Policies should deny invalid system calls";
 
   // If our BPF program has unsafe traps, enable support for them.
   if (has_unsafe_traps_) {
-    // As support for unsafe jumps essentially defeats all the security
-    // measures that the sandbox provides, we print a big warning message --
-    // and of course, we make sure to only ever enable this feature if it
-    // is actually requested by the sandbox policy.
-
     CHECK_NE(0U, escapepc_) << "UnsafeTrap() requires a valid escape PC";
 
     for (int sysnum : kSyscallsRequiredForUnsafeTraps) {
-      if (!policy_->EvaluateSyscall(sysnum)->IsAllow()) {
-        SANDBOX_DIE(
-            "Policies that use UnsafeTrap() must unconditionally allow all "
-            "required system calls");
-      }
+      CHECK(policy_->EvaluateSyscall(sysnum)->IsAllow())
+          << "Policies that use UnsafeTrap() must unconditionally allow all "
+             "required system calls";
     }
 
-    if (!registry_->EnableUnsafeTraps()) {
-      // We should never be able to get here, as UnsafeTrap() should never
-      // actually return a valid ErrorCode object unless the user set the
-      // CHROME_SANDBOX_DEBUGGING environment variable; and therefore,
-      // "has_unsafe_traps" would always be false. But better double-check
-      // than enabling dangerous code.
-      SANDBOX_DIE("We'd rather die than enable unsafe traps");
-    }
+    CHECK(registry_->EnableUnsafeTraps())
+        << "We'd rather die than enable unsafe traps";
   }
 
   // Assemble the BPF filter program.
@@ -261,9 +246,9 @@ CodeGen::Node PolicyCompiler::AssembleJumpTable(Ranges::const_iterator start,
   // a binary search over the ranges.
   // As a sanity check, we need to have at least one distinct ranges for us
   // to be able to build a jump table.
-  if (stop - start <= 0) {
-    SANDBOX_DIE("Invalid set of system call ranges");
-  } else if (stop - start == 1) {
+  CHECK(start < stop) << "Invalid iterator range";
+  const auto n = stop - start;
+  if (n == 1) {
     // If we have narrowed things down to a single range object, we can
     // return from the BPF filter program.
     return start->node;
@@ -273,7 +258,7 @@ CodeGen::Node PolicyCompiler::AssembleJumpTable(Ranges::const_iterator start,
   // We compare our system call number against the lowest valid system call
   // number in this range object. If our number is lower, it is outside of
   // this range object. If it is greater or equal, it might be inside.
-  Ranges::const_iterator mid = start + (stop - start) / 2;
+  Ranges::const_iterator mid = start + n / 2;
 
   // Sub-divide the list of ranges and continue recursively.
   CodeGen::Node jf = AssembleJumpTable(start, mid);
@@ -293,31 +278,30 @@ CodeGen::Node PolicyCompiler::RetExpression(const ErrorCode& err) {
     case ErrorCode::ET_TRAP:
       return gen_.MakeInstruction(BPF_RET + BPF_K, err.err());
     default:
-      SANDBOX_DIE("ErrorCode is not suitable for returning from a BPF program");
+      LOG(FATAL)
+          << "ErrorCode is not suitable for returning from a BPF program";
+      return CodeGen::kNullNode;
   }
 }
 
 CodeGen::Node PolicyCompiler::CondExpression(const ErrorCode& cond) {
   // Sanity check that |cond| makes sense.
-  if (cond.argno_ < 0 || cond.argno_ >= 6) {
-    SANDBOX_DIE("sandbox_bpf: invalid argument number");
+  CHECK(cond.argno_ >= 0 && cond.argno_ < 6) << "Invalid argument number "
+                                             << cond.argno_;
+  CHECK(cond.width_ == ErrorCode::TP_32BIT ||
+        cond.width_ == ErrorCode::TP_64BIT)
+      << "Invalid argument width " << cond.width_;
+  CHECK_NE(0U, cond.mask_) << "Zero mask is invalid";
+  CHECK_EQ(cond.value_, cond.value_ & cond.mask_)
+      << "Value contains masked out bits";
+  if (sizeof(void*) == 4) {
+    CHECK_EQ(ErrorCode::TP_32BIT, cond.width_)
+        << "Invalid width on 32-bit platform";
   }
-  if (cond.width_ != ErrorCode::TP_32BIT &&
-      cond.width_ != ErrorCode::TP_64BIT) {
-    SANDBOX_DIE("sandbox_bpf: invalid argument width");
+  if (cond.width_ == ErrorCode::TP_32BIT) {
+    CHECK_EQ(0U, cond.mask_ >> 32) << "Mask exceeds argument size";
+    CHECK_EQ(0U, cond.value_ >> 32) << "Value exceeds argument size";
   }
-  if (cond.mask_ == 0) {
-    SANDBOX_DIE("sandbox_bpf: zero mask is invalid");
-  }
-  if ((cond.value_ & cond.mask_) != cond.value_) {
-    SANDBOX_DIE("sandbox_bpf: value contains masked out bits");
-  }
-  if (cond.width_ == ErrorCode::TP_32BIT &&
-      ((cond.mask_ >> 32) != 0 || (cond.value_ >> 32) != 0)) {
-    SANDBOX_DIE("sandbox_bpf: test exceeds argument size");
-  }
-  // TODO(mdempsky): Reject TP_64BIT on 32-bit platforms. For now we allow it
-  // because some SandboxBPF unit tests exercise it.
 
   CodeGen::Node passed = RetExpression(*cond.passed_);
   CodeGen::Node failed = RetExpression(*cond.failed_);
