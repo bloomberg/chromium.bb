@@ -499,10 +499,10 @@ void StrikeRegister::ValidateTree(
            j != bits.end(); j++) {
         unsigned byte = j->first / 8;
         DCHECK_LE(byte, 0xffu);
-        bit = j->first % 8;
+        unsigned new_bit = j->first % 8;
         static const uint8 kMasks[8] =
             {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
-        CHECK_EQ((bytes[byte] & kMasks[bit]) != 0, j->second);
+        CHECK_EQ((bytes[byte] & kMasks[new_bit]) != 0, j->second);
       }
     } else {
       uint32 inter = i->child(child);
