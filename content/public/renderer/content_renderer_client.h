@@ -53,6 +53,7 @@ struct WebURLError;
 }
 
 namespace media {
+class MediaLog;
 class RendererFactory;
 struct KeySystemInfo;
 }
@@ -260,7 +261,8 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows an embedder to provide a media::RendererFactory.
   virtual scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
-      RenderFrame* render_frame);
+      RenderFrame* render_frame,
+      const scoped_refptr<media::MediaLog>& media_log);
 
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.

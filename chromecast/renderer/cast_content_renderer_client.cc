@@ -142,7 +142,8 @@ void CastContentRendererClient::AddKeySystems(
 #if !defined(OS_ANDROID)
 scoped_ptr<::media::RendererFactory>
 CastContentRendererClient::CreateMediaRendererFactory(
-    ::content::RenderFrame* render_frame) {
+    ::content::RenderFrame* render_frame,
+    const scoped_refptr<media::MediaLog>& media_log) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
     return nullptr;
