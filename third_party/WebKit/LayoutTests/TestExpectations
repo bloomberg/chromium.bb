@@ -1579,9 +1579,6 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/fi
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-lr/002.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/positioning/vertical-rl/002.html [ Failure ImageOnlyFailure ]
 
-# Skip until V8's --harmony-scoping is shipped by default.
-crbug.com/433324 inspector/sources/debugger/debugger-es6-harmony-scopes.html [ Skip ]
-
 # These need a mac rebaseline after crbug.com/452967
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/pop-up-button-text-alignment-and-direction.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/008.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
