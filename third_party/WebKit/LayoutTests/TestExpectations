@@ -1515,8 +1515,6 @@ crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
 
-crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-reference-image.html [ ImageOnlyFailure ]
-crbug.com/458601 virtual/slimmingpaint/css3/filters/effect-reference-image-lazy-attach.html [ ImageOnlyFailure ]
 crbug.com/458601 virtual/slimmingpaint/css3/filters/root-renderer-with-opacity-filter.html [ ImageOnlyFailure ]
 
 # Updating Javascript spec.

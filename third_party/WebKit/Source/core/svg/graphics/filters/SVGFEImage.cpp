@@ -46,6 +46,7 @@ FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, PassRefPtrWillBeRawPtr
     , m_treeScope(0)
     , m_preserveAspectRatio(preserveAspectRatio)
 {
+    FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
 }
 
 FEImage::FEImage(Filter* filter, TreeScope& treeScope, const String& href, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatio)
@@ -54,6 +55,7 @@ FEImage::FEImage(Filter* filter, TreeScope& treeScope, const String& href, PassR
     , m_href(href)
     , m_preserveAspectRatio(preserveAspectRatio)
 {
+    FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
 }
 
 DEFINE_TRACE(FEImage)
@@ -187,8 +189,6 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     LayoutObject* renderer = referencedRenderer();
     if (!m_image && !renderer)
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
-
-    setOperatingColorSpace(ColorSpaceDeviceRGB);
 
     if (renderer)
         return createImageFilterForRenderer(renderer, builder);
