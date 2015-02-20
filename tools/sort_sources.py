@@ -7,6 +7,83 @@
 
 Shows a diff and prompts for confirmation before doing the deed.
 Works great with tools/git/for-all-touched-files.py.
+
+Limitations:
+
+1) Comments used as section headers
+
+If a comment (1+ lines starting with #) appears in a source list without a
+preceding blank line, the tool assumes that the comment is about the next
+line. For example, given the following source list,
+
+  sources = [
+    "b.cc",
+    # Comment.
+    "a.cc",
+    "c.cc",
+  ]
+
+the tool will produce the following output:
+
+  sources = [
+    # Comment.
+    "a.cc",
+    "b.cc",
+    "c.cc",
+  ]
+
+This is not correct if the comment is for starting a new section like:
+
+  sources = [
+    "b.cc",
+    # These are for Linux.
+    "a.cc",
+    "c.cc",
+  ]
+
+The tool cannot disambiguate the two types of comments. The problem can be
+worked around by inserting a blank line before the comment because the tool
+interprets a blank line as the end of a source list.
+
+2) Sources commented out
+
+Sometimes sources are commented out with their positions kept in the
+alphabetical order, but what if the list is not sorted correctly? For
+example, given the following source list,
+
+  sources = [
+    "a.cc",
+    # "b.cc",
+    "d.cc",
+    "c.cc",
+  ]
+
+the tool will produce the following output:
+
+  sources = [
+    "a.cc",
+    "c.cc",
+    # "b.cc",
+    "d.cc",
+  ]
+
+This is because the tool assumes that the comment (# "b.cc",) is about the
+next line ("d.cc",). This kind of errors should be fixed manually, or the
+commented-out code should be deleted.
+
+3) " and ' are used both used in the same source list (GYP only problem)
+
+If both " and ' are used in the same source list, sources quoted with " will
+appear first in the output. The problem is rare enough so the tool does not
+attempt to normalize them. Hence this kind of errors should be fixed
+manually.
+
+4) Spaces and tabs used in the same source list
+
+Similarly, if spaces and tabs are both used in the same source list, sources
+indented with tabs will appear first in the output. This kind of errors
+should be fixed manually.
+
 """
 
 import difflib
@@ -18,9 +95,10 @@ from yes_no import YesNo
 
 SUFFIXES = ['c', 'cc', 'cpp', 'h', 'mm', 'rc', 'rc.version', 'ico', 'def',
             'release']
-SOURCE_PATTERN = re.compile('^\s+[\'"].*\.(%s)[\'"],$' %
+SOURCE_PATTERN = re.compile(r'^\s+[\'"].*\.(%s)[\'"],$' %
                             '|'.join([re.escape(x) for x in SUFFIXES]))
-COMMENT_PATTERN = re.compile('^\s+#')
+COMMENT_PATTERN = re.compile(r'^\s+#')
+
 
 def SortSources(original_lines):
   """Sort source file names in |original_lines|.
@@ -33,9 +111,8 @@ def SortSources(original_lines):
 
   The algorithm is fairly naive. The code tries to find a list of C-ish
   source file names by a simple regex, then sort them. The code does not try
-  to understand the syntax of the build files, hence there are some cases
-  that the code cannot handle correctly (ex. blank lines within a list of
-  source file names).
+  to understand the syntax of the build files. See the file comment above for
+  details.
   """
 
   output_lines = []
@@ -45,7 +122,7 @@ def SortSources(original_lines):
     if re.search(COMMENT_PATTERN, line):
       comments.append(line)
     elif re.search(SOURCE_PATTERN, line):
-      # Associate the line with the preceeding comments.
+      # Associate the line with the preceding comments.
       sources.append([line, comments])
       comments = []
     else:
