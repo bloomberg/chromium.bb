@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
@@ -20,9 +21,13 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/onc/onc_utils.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -204,6 +209,17 @@ const struct TestParams {
   },
 };  // tests
 
+const char kEthernetPolicy[] =
+    "    { \"GUID\": \"{485d6076-dd44-6b6d-69787465725f5040}\","
+    "      \"Type\": \"Ethernet\","
+    "      \"Name\": \"MyEthernet\","
+    "      \"Ethernet\": {"
+    "        \"Authentication\": \"None\" },"
+    "      \"ProxySettings\": {"
+    "        \"PAC\": \"http://domain.com/x\","
+    "        \"Type\": \"PAC\" }"
+    "    }";
+
 const char kUserProfilePath[] = "user_profile";
 
 }  // namespace
@@ -218,14 +234,15 @@ class ProxyConfigServiceImplTest : public testing::Test {
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
 
-    SetUpNetwork();
-
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service_.registry());
+    chromeos::proxy_config::RegisterPrefs(pref_service_.registry());
+    PrefProxyConfigTrackerImpl::RegisterProfilePrefs(profile_prefs_.registry());
+    chromeos::proxy_config::RegisterProfilePrefs(profile_prefs_.registry());
+  }
 
-    // Create a ProxyConfigServiceImpl like for the system request context.
+  void SetUpProxyConfigService(PrefService* profile_prefs) {
     config_service_impl_.reset(
-        new ProxyConfigServiceImpl(NULL,  // no profile prefs
-                                   &pref_service_));
+        new ProxyConfigServiceImpl(profile_prefs, &pref_service_));
     proxy_config_service_ =
         config_service_impl_->CreateTrackingProxyConfigService(
             scoped_ptr<net::ProxyConfigService>());
@@ -236,7 +253,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
     loop_.RunUntilIdle();
   }
 
-  void SetUpNetwork() {
+  void SetUpPrivateWiFi() {
     ShillProfileClient::TestInterface* profile_test =
         DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
     ShillServiceClient::TestInterface* service_test =
@@ -259,6 +276,28 @@ class ProxyConfigServiceImplTest : public testing::Test {
     loop_.RunUntilIdle();
   }
 
+  void SetUpSharedEthernet() {
+    ShillProfileClient::TestInterface* profile_test =
+        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    ShillServiceClient::TestInterface* service_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+
+    // Process any pending notifications before clearing services.
+    loop_.RunUntilIdle();
+    service_test->ClearServices();
+
+    // Sends a notification about the added profile.
+    profile_test->AddProfile(kUserProfilePath, "user_hash");
+
+    service_test->AddService("/service/ethernet", "stub_ethernet" /* guid */,
+                             "eth0", shill::kTypeEthernet, shill::kStateOnline,
+                             true /* visible */);
+    profile_test->AddService(NetworkProfileHandler::GetSharedProfilePath(),
+                             "/service/ethernet");
+
+    loop_.RunUntilIdle();
+  }
+
   void TearDown() override {
     config_service_impl_->DetachFromPrefService();
     loop_.RunUntilIdle();
@@ -270,30 +309,28 @@ class ProxyConfigServiceImplTest : public testing::Test {
 
   void InitConfigWithTestInput(const Input& input,
                                base::DictionaryValue* result) {
-    base::DictionaryValue* new_config = NULL;
+    scoped_ptr<base::DictionaryValue> new_config;
     switch (input.mode) {
       case MK_MODE(DIRECT):
-        new_config = ProxyConfigDictionary::CreateDirect();
+        new_config.reset(ProxyConfigDictionary::CreateDirect());
         break;
       case MK_MODE(AUTO_DETECT):
-        new_config = ProxyConfigDictionary::CreateAutoDetect();
+        new_config.reset(ProxyConfigDictionary::CreateAutoDetect());
         break;
       case MK_MODE(PAC_SCRIPT):
-        new_config =
-            ProxyConfigDictionary::CreatePacScript(input.pac_url, false);
+        new_config.reset(
+            ProxyConfigDictionary::CreatePacScript(input.pac_url, false));
         break;
       case MK_MODE(SINGLE_PROXY):
       case MK_MODE(PROXY_PER_SCHEME):
-        new_config =
-          ProxyConfigDictionary::CreateFixedServers(input.server,
-                                                    input.bypass_rules);
+        new_config.reset(ProxyConfigDictionary::CreateFixedServers(
+            input.server, input.bypass_rules));
         break;
     }
-    result->Swap(new_config);
-    delete new_config;
+    result->Swap(new_config.get());
   }
 
-  void SetConfig(base::DictionaryValue* pref_proxy_config_dict) {
+  void SetUserConfigInShill(base::DictionaryValue* pref_proxy_config_dict) {
     std::string proxy_config;
     if (pref_proxy_config_dict)
       base::JSONWriter::Write(pref_proxy_config_dict, &proxy_config);
@@ -325,6 +362,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<ProxyConfigServiceImpl> config_service_impl_;
   TestingPrefServiceSimple pref_service_;
+  user_prefs::TestingPrefServiceSyncable profile_prefs_;
 
  private:
   ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -334,13 +372,16 @@ class ProxyConfigServiceImplTest : public testing::Test {
 };
 
 TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {
+  SetUpPrivateWiFi();
+  // Create a ProxyConfigServiceImpl like for the system request context.
+  SetUpProxyConfigService(nullptr /* no profile prefs */);
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "] %s", i,
                                     tests[i].description.c_str()));
 
     base::DictionaryValue test_config;
     InitConfigWithTestInput(tests[i].input, &test_config);
-    SetConfig(&test_config);
+    SetUserConfigInShill(&test_config);
 
     net::ProxyConfig config;
     SyncGetLatestProxyConfig(&config);
@@ -352,6 +393,9 @@ TEST_F(ProxyConfigServiceImplTest, NetworkProxy) {
 }
 
 TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
+  SetUpPrivateWiFi();
+  // Create a ProxyConfigServiceImpl like for the system request context.
+  SetUpProxyConfigService(nullptr /* no profile prefs */);
   // Groupings of 3 test inputs to use for managed, recommended and network
   // proxies respectively.  Only valid and non-direct test inputs are used.
   const size_t proxies[][3] = {
@@ -396,7 +440,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
 
     // Managed proxy pref should take effect over recommended proxy and
     // non-existent network proxy.
-    SetConfig(NULL);
+    SetUserConfigInShill(nullptr);
     pref_service_.SetManagedPref(prefs::kProxy, managed_config.DeepCopy());
     pref_service_.SetRecommendedPref(prefs::kProxy,
                                      recommended_config.DeepCopy());
@@ -417,7 +461,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
         actual_config.proxy_rules()));
 
     // Network proxy should take take effect over recommended proxy pref.
-    SetConfig(&network_config);
+    SetUserConfigInShill(&network_config);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(network_params.auto_detect, actual_config.auto_detect());
     EXPECT_EQ(network_params.pac_url, actual_config.pac_url());
@@ -449,6 +493,31 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     EXPECT_TRUE(network_params.proxy_rules.Matches(
         actual_config.proxy_rules()));
   }
+}
+
+// Tests whether the proxy settings from user policy are used for ethernet even
+// if 'UseSharedProxies' is set to false.
+// See https://crbug.com/454966 .
+TEST_F(ProxyConfigServiceImplTest, SharedEthernetAndUserPolicy) {
+  SetUpSharedEthernet();
+  SetUpProxyConfigService(&profile_prefs_);
+
+  scoped_ptr<base::DictionaryValue> ethernet_policy(
+      chromeos::onc::ReadDictionaryFromJson(kEthernetPolicy));
+
+  scoped_ptr<base::ListValue> network_configs(new base::ListValue);
+  network_configs->Append(ethernet_policy.release());
+
+  profile_prefs_.SetUserPref(prefs::kUseSharedProxies,
+                             new base::FundamentalValue(false));
+  profile_prefs_.SetManagedPref(prefs::kOpenNetworkConfiguration,
+                                network_configs.release());
+
+  net::ProxyConfig actual_config;
+  SyncGetLatestProxyConfig(&actual_config);
+  net::ProxyConfig expected_config =
+      net::ProxyConfig::CreateFromCustomPacURL(GURL("http://domain.com/x"));
+  EXPECT_TRUE(expected_config.Equals(actual_config));
 }
 
 }  // namespace chromeos

@@ -140,6 +140,13 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
     VLOG(1) << "Respect proxy of not-shared networks.";
     return false;
   }
+  if (onc_source == ::onc::ONC_SOURCE_USER_POLICY) {
+    // Note that this case can occur if the network is shared (e.g. ethernet)
+    // but the proxy is determined by user policy.
+    // See https://crbug.com/454966 .
+    VLOG(1) << "Respect proxy from user policy although network is shared.";
+    return false;
+  }
   if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     policy::BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
