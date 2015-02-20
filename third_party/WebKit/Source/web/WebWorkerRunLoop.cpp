@@ -61,7 +61,7 @@ WebWorkerRunLoop::WebWorkerRunLoop(WorkerThread* workerThread)
 
 bool WebWorkerRunLoop::postTask(Task* task)
 {
-    m_workerThread->postTask(FROM_HERE, TaskForwarder::create(adoptPtr(task)));
+    m_workerThread->postTask(TaskForwarder::create(adoptPtr(task)));
     return !m_workerThread->terminated();
 }
 
