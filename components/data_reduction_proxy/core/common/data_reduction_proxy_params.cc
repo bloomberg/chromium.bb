@@ -30,7 +30,8 @@ using base::FieldTrialList;
 namespace {
 
 const char kEnabled[] = "Enabled";
-const char kDefaultOrigin[] = "https://proxy.googlezip.net:443";
+const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
+const char kDefaultQuicOrigin[] = "quic://proxy.googlezip.net:443";
 const char kDevOrigin[] = "https://proxy-dev.googlezip.net:443";
 const char kDevFallbackOrigin[] = "proxy-dev.googlezip.net:80";
 const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
@@ -44,6 +45,8 @@ const char kDefaultProbeUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://www.gstatic.com/generate_204";
 
 const char kAndroidOneIdentifier[] = "sprout";
+
+const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -120,6 +123,24 @@ bool DataReductionProxyParams::CanProxyURLScheme(const GURL& url) {
   return url.SchemeIs(url::kHttpScheme);
 }
 
+// static
+bool DataReductionProxyParams::IsIncludedInQuicFieldTrial() {
+  return FieldTrialList::FindFullName(kQuicFieldTrial) == kEnabled;
+}
+
+// static
+std::string DataReductionProxyParams::GetQuicFieldTrialName() {
+  return kQuicFieldTrial;
+}
+
+void DataReductionProxyParams::EnableQuic(bool enable) {
+  quic_enabled_ = enable;
+  DCHECK(!quic_enabled_ || IsIncludedInQuicFieldTrial());
+  if (override_quic_origin_.empty() && quic_enabled_)
+    origin_ = net::ProxyServer::FromURI(kDefaultQuicOrigin,
+                                        net::ProxyServer::SCHEME_HTTP);
+}
+
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
     : proxy_servers(),
       is_fallback(false),
@@ -138,6 +159,7 @@ DataReductionProxyParams::DataReductionProxyParams(int flags)
           (flags & kAlternativeFallbackAllowed) == kAlternativeFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
+      quic_enabled_(false),
       configured_on_command_line_(false) {
   bool result = Init(
       allowed_, fallback_allowed_, alt_allowed_, alt_fallback_allowed_);
@@ -164,6 +186,8 @@ DataReductionProxyParams::DataReductionProxyParams(
       alt_fallback_allowed_(other.alt_fallback_allowed_),
       promo_allowed_(other.promo_allowed_),
       holdback_(other.holdback_),
+      quic_enabled_(other.quic_enabled_),
+      override_quic_origin_(other.override_quic_origin_),
       configured_on_command_line_(other.configured_on_command_line_) {
 }
 
@@ -196,6 +220,7 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
           (flags & kAlternativeFallbackAllowed) == kAlternativeFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
+      quic_enabled_(false),
       configured_on_command_line_(false) {
   if (should_call_init) {
     bool result = Init(
@@ -314,6 +339,7 @@ void DataReductionProxyParams::InitWithoutChecks() {
   // command line.
   if (origin.empty())
     origin = GetDefaultDevOrigin();
+  override_quic_origin_ = origin;
   if (origin.empty())
     origin = GetDefaultOrigin();
   if (fallback_origin.empty())
@@ -542,7 +568,8 @@ bool DataReductionProxyParams::IsProxyBypassed(
 
 // TODO(kundaji): Remove tests for macro definitions.
 std::string DataReductionProxyParams::GetDefaultOrigin() const {
-  return kDefaultOrigin;
+  return quic_enabled_ ?
+      kDefaultQuicOrigin : kDefaultSpdyOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {

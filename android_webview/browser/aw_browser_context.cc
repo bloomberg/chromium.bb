@@ -280,7 +280,8 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
         scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
         GetRequestContext(),
         GetAwURLRequestContext()->GetNetLog(),
-        data_reduction_proxy_io_data_->event_store());
+        data_reduction_proxy_io_data_->event_store(),
+        false /* disable QUIC for WebView */);
     data_reduction_proxy_settings_->MaybeActivateDataReductionProxy(true);
 
     SetDataReductionProxyEnabled(data_reduction_proxy_enabled_);

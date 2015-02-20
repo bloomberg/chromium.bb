@@ -420,6 +420,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
+  params_.enable_quic_for_proxies = true;
   proxy_service_.reset(
       ProxyService::CreateFixedFromPacResult("QUIC myproxy:70"));
 

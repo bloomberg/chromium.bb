@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/io_thread.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/quic/quic_protocol.h"
@@ -13,6 +15,16 @@
 namespace test {
 
 using ::testing::ElementsAre;
+
+class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
+ public:
+  ~BadEntropyProvider() override {}
+
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override {
+    return 0.5;
+  }
+};
 
 class IOThreadPeer {
  public:
@@ -114,6 +126,8 @@ TEST_F(IOThreadTest, DisableQuicByDefault) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_FALSE(params.enable_quic);
+  EXPECT_FALSE(params.enable_quic_for_proxies);
+  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
 TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
@@ -124,6 +138,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
+  EXPECT_TRUE(params.enable_quic_for_proxies);
   EXPECT_EQ(1350u, params.quic_max_packet_length);
   EXPECT_EQ(1.0, params.alternate_protocol_probability_threshold);
   EXPECT_EQ(default_params.quic_supported_versions,
@@ -135,6 +150,21 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(0.0f, params.quic_load_server_info_timeout_srtt_multiplier);
   EXPECT_FALSE(params.quic_enable_truncated_connection_ids);
   EXPECT_FALSE(params.quic_enable_connection_racing);
+  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
+}
+
+TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
+  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial(
+      data_reduction_proxy::DataReductionProxyParams::GetQuicFieldTrialName(),
+      "Enabled");
+
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_FALSE(params.enable_quic);
+  EXPECT_TRUE(params.enable_quic_for_proxies);
+  EXPECT_TRUE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
@@ -144,6 +174,8 @@ TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
+  EXPECT_TRUE(params.enable_quic_for_proxies);
+  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
 TEST_F(IOThreadTest, EnablePacingFromCommandLine) {

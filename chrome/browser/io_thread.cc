@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -1039,6 +1040,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->alternate_protocol_probability_threshold);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
+  globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
       &params->quic_always_require_handshake_confirmation);
   globals.quic_disable_connection_pooling.CopyToIfSet(
@@ -1168,6 +1170,9 @@ void IOThread::ConfigureQuicGlobals(
     IOThread::Globals* globals) {
   bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group);
   globals->enable_quic.set(enable_quic);
+  bool enable_quic_for_proxies = ShouldEnableQuicForProxies(command_line,
+                                                            quic_trial_group);
+  globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
   if (enable_quic) {
     globals->quic_always_require_handshake_confirmation.set(
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
@@ -1247,6 +1252,25 @@ bool IOThread::ShouldEnableQuic(const base::CommandLine& command_line,
 
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
       quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
+}
+
+// static
+bool IOThread::ShouldEnableQuicForProxies(const base::CommandLine& command_line,
+                                          base::StringPiece quic_trial_group) {
+  return ShouldEnableQuic(command_line, quic_trial_group) ||
+      ShouldEnableQuicForDataReductionProxy();
+}
+
+// static
+bool IOThread::ShouldEnableQuicForDataReductionProxy() {
+  const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableQuic))
+    return false;
+
+  return data_reduction_proxy::DataReductionProxyParams::
+      IsIncludedInQuicFieldTrial();
 }
 
 bool IOThread::ShouldEnableQuicPortSelection(

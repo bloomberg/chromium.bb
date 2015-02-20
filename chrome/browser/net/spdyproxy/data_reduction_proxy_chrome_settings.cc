@@ -79,14 +79,16 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
     PrefService* local_state_prefs,
-    net::URLRequestContextGetter* request_context) {
+    net::URLRequestContextGetter* request_context,
+    bool enable_quic) {
   SetProxyConfigurator(io_data->configurator());
   DataReductionProxySettings::InitDataReductionProxySettings(
       profile_prefs,
       io_data->PassStatisticsPrefs(),
       request_context,
       io_data->net_log(),
-      io_data->event_store());
+      io_data->event_store(),
+      enable_quic);
   DataReductionProxySettings::SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxyChromeSettings::RegisterSyntheticFieldTrial,
                  base::Unretained(this)));

@@ -182,6 +182,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<double> alternate_protocol_probability_threshold;
 
     Optional<bool> enable_quic;
+    Optional<bool> enable_quic_for_proxies;
     Optional<bool> enable_quic_port_selection;
     Optional<bool> quic_always_require_handshake_confirmation;
     Optional<bool> quic_disable_connection_pooling;
@@ -235,6 +236,10 @@ class IOThread : public content::BrowserThreadDelegate {
   void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
   base::TimeTicks creation_time() const;
+
+  // Returns true if QUIC should be enabled for data reduction proxy, either as
+  // a result of a field trial or a command line flag.
+  static bool ShouldEnableQuicForDataReductionProxy();
 
  private:
   // Map from name to value for all parameters associate with a field trial.
@@ -327,6 +332,12 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC should be enabled, either as a result
   // of a field trial or a command line flag.
   static bool ShouldEnableQuic(
+      const base::CommandLine& command_line,
+      base::StringPiece quic_trial_group);
+
+  // Returns true if QUIC should be enabled for proxies, either as a result
+  // of a field trial or a command line flag.
+  static bool ShouldEnableQuicForProxies(
       const base::CommandLine& command_line,
       base::StringPiece quic_trial_group);
 

@@ -671,10 +671,15 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
 
   if (result == OK) {
     // Remove unsupported proxies from the list.
-    proxy_info_.RemoveProxiesWithoutScheme(
-        ProxyServer::SCHEME_DIRECT | ProxyServer::SCHEME_QUIC |
-        ProxyServer::SCHEME_HTTP | ProxyServer::SCHEME_HTTPS |
-        ProxyServer::SCHEME_SOCKS4 | ProxyServer::SCHEME_SOCKS5);
+    int supported_proxies =
+        ProxyServer::SCHEME_DIRECT | ProxyServer::SCHEME_HTTP |
+        ProxyServer::SCHEME_HTTPS | ProxyServer::SCHEME_SOCKS4 |
+        ProxyServer::SCHEME_SOCKS5;
+
+    if (session_->params().enable_quic_for_proxies)
+      supported_proxies |= ProxyServer::SCHEME_QUIC;
+
+    proxy_info_.RemoveProxiesWithoutScheme(supported_proxies);
 
     if (proxy_info_.is_empty()) {
       // No proxies/direct to choose from. This happens when we don't support
@@ -747,11 +752,14 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   if (ShouldForceQuic())
     using_quic_ = true;
 
-  if (proxy_info_.is_quic())
+  DCHECK(!using_quic_ || session_->params().enable_quic);
+
+  if (proxy_info_.is_quic()) {
     using_quic_ = true;
+    DCHECK(session_->params().enable_quic_for_proxies);
+  }
 
   if (using_quic_) {
-    DCHECK(session_->params().enable_quic);
     if (proxy_info_.is_quic() && !request_info_.url.SchemeIs("http")) {
       NOTREACHED();
       // TODO(rch): support QUIC proxies for HTTPS urls.

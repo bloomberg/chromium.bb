@@ -100,7 +100,7 @@ void DataReductionProxyTestContext::InitSettings() {
          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
   settings_->InitDataReductionProxySettings(
       &simple_pref_service_, CreateStatisticsPrefs(), request_context_.get(),
-      io_data_->net_log(), io_data_->event_store());
+      io_data_->net_log(), io_data_->event_store(), false);
   io_data_->SetDataReductionProxyStatisticsPrefs(settings_->statistics_prefs());
 }
 

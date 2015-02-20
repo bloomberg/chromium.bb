@@ -595,7 +595,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     settings()->InitDataReductionProxySettings(
         test_context_->pref_service(), test_context_->CreateStatisticsPrefs(),
         test_context_->request_context(), test_context_->net_log(),
-        test_context_->event_store());
+        test_context_->event_store(), false);
     test_context_->io_data()->SetDataReductionProxyStatisticsPrefs(
         settings()->statistics_prefs());
 

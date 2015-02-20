@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
@@ -30,6 +31,16 @@ const char kProbeURLWithNoResponse[] = "http://no.org/";
 namespace data_reduction_proxy {
 
 class DataReductionProxyStatisticsPrefs;
+
+class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
+ public:
+  ~BadEntropyProvider() override {}
+
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32 randomization_seed) const override {
+    return 0.5;
+  }
+};
 
 class DataReductionProxySettingsTest
     : public ConcreteDataReductionProxySettingsTest<
@@ -428,13 +439,67 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
       scoped_ptr<DataReductionProxyStatisticsPrefs>(),
       request_context.get(),
       &net_log_,
-      event_store_.get());
+      event_store_.get(),
+      false);
   settings_->SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxySettingsTestBase::
                  RegisterSyntheticFieldTrialCallback,
                  base::Unretained(this)));
 
   base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
+  for (int i = 0; i < 2; ++i) {
+    bool enable_quic = i == 0;
+    // No call to |AddProxyToCommandLine()| was made, so the proxy feature
+    // should be unavailable.
+    base::MessageLoopForUI loop;
+    // Clear the command line. Setting flags can force the proxy to be allowed.
+    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+
+    ResetSettings(false, false, false, false, false);
+    MockSettings* settings = static_cast<MockSettings*>(settings_.get());
+    EXPECT_FALSE(settings->params()->allowed());
+    EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
+
+    scoped_ptr<DataReductionProxyConfigurator> configurator(
+        new TestDataReductionProxyConfigurator(
+            scoped_refptr<base::TestSimpleTaskRunner>(
+                new base::TestSimpleTaskRunner()),
+                &net_log_, event_store_.get()));
+    settings_->SetProxyConfigurator(configurator.get());
+    scoped_refptr<net::TestURLRequestContextGetter> request_context =
+        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
+
+    settings_->InitDataReductionProxySettings(
+         &pref_service_,
+         scoped_ptr<DataReductionProxyStatisticsPrefs>(),
+         request_context.get(),
+         &net_log_,
+         event_store_.get(),
+         false);
+
+    base::FieldTrialList field_trial_list(new BadEntropyProvider());
+    if (enable_quic) {
+      base::FieldTrialList::CreateFieldTrial(
+          DataReductionProxyParams::GetQuicFieldTrialName(),
+          "Enabled");
+    } else {
+      base::FieldTrialList::CreateFieldTrial(
+          DataReductionProxyParams::GetQuicFieldTrialName(),
+          "Disabled");
+    }
+    settings_->params()->EnableQuic(enable_quic);
+
+    settings_->SetOnDataReductionEnabledCallback(
+        base::Bind(&DataReductionProxySettingsTestBase::
+                   RegisterSyntheticFieldTrialCallback,
+                   base::Unretained(this)));
+
+    EXPECT_EQ(enable_quic,
+              settings->params()->origin().is_quic()) << i;
+  }
 }
 
 }  // namespace data_reduction_proxy

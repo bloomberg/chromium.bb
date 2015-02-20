@@ -90,6 +90,7 @@ HttpNetworkSession::Params::Params()
       use_alternate_protocols(false),
       alternate_protocol_probability_threshold(1),
       enable_quic(false),
+      enable_quic_for_proxies(false),
       enable_quic_port_selection(true),
       quic_always_require_handshake_confirmation(false),
       quic_disable_connection_pooling(false),
@@ -265,6 +266,7 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
+  dict->SetBoolean("quic_enabled_for_proxies", params_.enable_quic_for_proxies);
   dict->SetBoolean("enable_quic_port_selection",
                    params_.enable_quic_port_selection);
   base::ListValue* connection_options = new base::ListValue;

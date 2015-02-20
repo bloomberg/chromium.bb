@@ -280,7 +280,8 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
       scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
       request_context.get(),
       &net_log_,
-      event_store_.get());
+      event_store_.get(),
+      false);
   settings_->SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxySettingsTestBase::
                  RegisterSyntheticFieldTrialCallback,

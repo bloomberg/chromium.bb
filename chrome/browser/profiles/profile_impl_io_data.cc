@@ -179,11 +179,17 @@ void ProfileImplIOData::Handle::Init(
           BrowserThread::GetMessageLoopProxyForThread(
               BrowserThread::UI)).Pass());
 
+  // TODO(tbansal): Move this to IO thread once the data reduction proxy
+  // params are unified into a single object.
+  bool enable_quic_for_data_reduction_proxy =
+      IOThread::ShouldEnableQuicForDataReductionProxy();
+
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)->
       InitDataReductionProxySettings(io_data_->data_reduction_proxy_io_data(),
                                      profile_->GetPrefs(),
                                      g_browser_process->local_state(),
-                                     profile_->GetRequestContext());
+                                     profile_->GetRequestContext(),
+                                     enable_quic_for_data_reduction_proxy);
 }
 
 content::ResourceContext*

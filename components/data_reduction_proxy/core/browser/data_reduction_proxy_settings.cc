@@ -130,7 +130,8 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
     scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
     net::URLRequestContextGetter* url_request_context_getter,
     net::NetLog* net_log,
-    DataReductionProxyEventStore* event_store) {
+    DataReductionProxyEventStore* event_store,
+    bool enable_quic) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
   DCHECK(!statistics_prefs_);
@@ -147,6 +148,8 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   // Disable the proxy if it is not allowed to be used.
   if (!params()->allowed())
     return;
+
+  params()->EnableQuic(enable_quic);
 
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);

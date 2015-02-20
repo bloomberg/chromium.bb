@@ -49,7 +49,8 @@ class DataReductionProxyChromeSettings
       data_reduction_proxy::DataReductionProxyIOData* io_data,
       PrefService* profile_prefs,
       PrefService* local_state_prefs,
-      net::URLRequestContextGetter* request_context);
+      net::URLRequestContextGetter* request_context,
+      bool enable_quic);
 
   // Gets the client type for the data reduction proxy.
   static data_reduction_proxy::Client GetClient();

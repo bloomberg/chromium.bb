@@ -87,7 +87,8 @@ class DataReductionProxySettings
       scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
       net::URLRequestContextGetter* url_request_context_getter,
       net::NetLog* net_log,
-      DataReductionProxyEventStore* event_store);
+      DataReductionProxyEventStore* event_store,
+      bool enable_quic);
 
   // Constructs statistics prefs. This should not be called if a valid
   // statistics prefs is passed into the constructor.

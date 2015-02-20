@@ -111,6 +111,15 @@ class DataReductionProxyParams {
   // provided |url|.
   static bool CanProxyURLScheme(const GURL& url);
 
+  // Returns true if this client is part of a field trial that sets the origin
+  // proxy server as quic://proxy.googlezip.net.
+  static bool IsIncludedInQuicFieldTrial();
+
+  static std::string GetQuicFieldTrialName();
+
+  // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
+  void EnableQuic(bool enable);
+
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
   // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is
@@ -333,6 +342,8 @@ class DataReductionProxyParams {
   bool alt_fallback_allowed_;
   bool promo_allowed_;
   bool holdback_;
+  bool quic_enabled_;
+  std::string override_quic_origin_;
 
   bool configured_on_command_line_;
 };

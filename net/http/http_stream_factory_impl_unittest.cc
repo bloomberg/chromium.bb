@@ -627,6 +627,7 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
 
     HttpNetworkSession::Params params;
     params.enable_quic = true;
+    params.enable_quic_for_proxies = true;
     scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
         new SSLConfigServiceDefaults);
     HttpServerPropertiesImpl http_server_properties;
