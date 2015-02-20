@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_camera_capabilities_private.idl modified Tue Feb  3 19:54:34
+// From private/ppb_camera_capabilities_private.idl modified Thu Feb 19 09:06:18
 // 2015.
 
 #include "ppapi/c/pp_errors.h"
@@ -23,19 +23,21 @@ PP_Bool IsCameraCapabilities(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-void GetSupportedPreviewSizes(PP_Resource capabilities,
-                              int32_t* array_size,
-                              struct PP_Size** preview_sizes) {
-  VLOG(4) << "PPB_CameraCapabilities_Private::GetSupportedPreviewSizes()";
+void GetSupportedVideoCaptureFormats(PP_Resource capabilities,
+                                     uint32_t* array_size,
+                                     struct PP_VideoCaptureFormat** formats) {
+  VLOG(4)
+      << "PPB_CameraCapabilities_Private::GetSupportedVideoCaptureFormats()";
   EnterResource<PPB_CameraCapabilities_API> enter(capabilities, true);
   if (enter.failed())
     return;
-  enter.object()->GetSupportedPreviewSizes(array_size, preview_sizes);
+  enter.object()->GetSupportedVideoCaptureFormats(array_size, formats);
 }
 
 const PPB_CameraCapabilities_Private_0_1
-    g_ppb_cameracapabilities_private_thunk_0_1 = {&IsCameraCapabilities,
-                                                  &GetSupportedPreviewSizes};
+    g_ppb_cameracapabilities_private_thunk_0_1 = {
+        &IsCameraCapabilities,
+        &GetSupportedVideoCaptureFormats};
 
 }  // namespace
 

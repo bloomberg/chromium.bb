@@ -35,8 +35,8 @@ int32_t PepperImageCaptureHost::OnResourceMessageReceived(
   PPAPI_BEGIN_MESSAGE_MAP(PepperImageCaptureHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ImageCapture_Open, OnOpen)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_ImageCapture_GetSupportedPreviewSizes,
-        OnGetSupportedPreviewSizes)
+        PpapiHostMsg_ImageCapture_GetSupportedVideoCaptureFormats,
+        OnGetSupportedVideoCaptureFormats)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_ImageCapture_Close,
                                         OnClose)
   PPAPI_END_MESSAGE_MAP()
@@ -59,19 +59,20 @@ void PepperImageCaptureHost::OnInitialized(bool succeeded) {
   open_reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
-void PepperImageCaptureHost::OnPreviewSizesEnumerated(
-    const std::vector<PP_Size>& sizes) {
-  if (!preview_sizes_reply_context_.is_valid())
+void PepperImageCaptureHost::OnVideoCaptureFormatsEnumerated(
+    const std::vector<PP_VideoCaptureFormat>& formats) {
+  if (!video_capture_formats_reply_context_.is_valid())
     return;
 
-  if (sizes.size() > 0)
-    preview_sizes_reply_context_.params.set_result(PP_OK);
+  if (formats.size() > 0)
+    video_capture_formats_reply_context_.params.set_result(PP_OK);
   else
-    preview_sizes_reply_context_.params.set_result(PP_ERROR_FAILED);
+    video_capture_formats_reply_context_.params.set_result(PP_ERROR_FAILED);
   host()->SendReply(
-      preview_sizes_reply_context_,
-      PpapiPluginMsg_ImageCapture_GetSupportedPreviewSizesReply(sizes));
-  preview_sizes_reply_context_ = ppapi::host::ReplyMessageContext();
+      video_capture_formats_reply_context_,
+      PpapiPluginMsg_ImageCapture_GetSupportedVideoCaptureFormatsReply(
+          formats));
+  video_capture_formats_reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
 int32_t PepperImageCaptureHost::OnOpen(ppapi::host::HostMessageContext* context,
@@ -102,15 +103,15 @@ int32_t PepperImageCaptureHost::OnClose(
   return PP_OK;
 }
 
-int32_t PepperImageCaptureHost::OnGetSupportedPreviewSizes(
+int32_t PepperImageCaptureHost::OnGetSupportedVideoCaptureFormats(
     ppapi::host::HostMessageContext* context) {
-  if (preview_sizes_reply_context_.is_valid())
+  if (video_capture_formats_reply_context_.is_valid())
     return PP_ERROR_INPROGRESS;
   if (!platform_image_capture_)
     return PP_ERROR_FAILED;
 
-  preview_sizes_reply_context_ = context->MakeReplyMessageContext();
-  platform_image_capture_->GetPreviewSizes();
+  video_capture_formats_reply_context_ = context->MakeReplyMessageContext();
+  platform_image_capture_->GetSupportedVideoCaptureFormats();
 
   return PP_OK_COMPLETIONPENDING;
 }

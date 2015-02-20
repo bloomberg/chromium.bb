@@ -43,6 +43,7 @@
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
+#include "ppapi/c/private/pp_video_capture_format.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
@@ -227,6 +228,11 @@ IPC_STRUCT_TRAITS_BEGIN(PP_URLComponents_Dev)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(query)
   IPC_STRUCT_TRAITS_MEMBER(ref)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_VideoCaptureFormat)
+  IPC_STRUCT_TRAITS_MEMBER(frame_size)
+  IPC_STRUCT_TRAITS_MEMBER(frame_rate)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_FileInfo)
@@ -1549,9 +1555,11 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_ImageCapture_Open,
                      std::string /* camera_source_id */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_ImageCapture_OpenReply)
 
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_ImageCapture_GetSupportedPreviewSizes)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_ImageCapture_GetSupportedPreviewSizesReply,
-                     std::vector<PP_Size> /* preview_sizes */)
+IPC_MESSAGE_CONTROL0(
+    PpapiHostMsg_ImageCapture_GetSupportedVideoCaptureFormats)
+IPC_MESSAGE_CONTROL1(
+    PpapiPluginMsg_ImageCapture_GetSupportedVideoCaptureFormatsReply,
+    std::vector<PP_VideoCaptureFormat> /* video_capture_formats */)
 
 // IsolatedFileSystem ----------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_IsolatedFileSystem_Create)

@@ -48,12 +48,14 @@ class CameraCapabilities_Private : public Resource {
   // Destructor.
   ~CameraCapabilities_Private();
 
-  /// GetSupportedPreviewSizes() returns the supported preview sizes for the
-  /// given <code>CameraCapabilities_Private</code>.
+  /// GetSupportedVideoCaptureFormats() returns the supported video capture
+  /// formats.
   ///
-  /// @param[out] A vector of <code>Size</code> corresponding to the
-  /// supported preview sizes in pixels.
-  void GetSupportedPreviewSizes(std::vector<Size>* preview_sizes);
+  /// @param[out] formats A vector of <code>PP_VideoCaptureFormat</code>
+  /// corresponding to the supported video capture formats. This output vector
+  /// must be prepared by the caller beforehand.
+  void GetSupportedVideoCaptureFormats(
+      std::vector<PP_VideoCaptureFormat>* formats);
 
   /// IsCameraCapabilities() determines if the given resource is a
   /// <code>CameraCapabilities_Private</code>.

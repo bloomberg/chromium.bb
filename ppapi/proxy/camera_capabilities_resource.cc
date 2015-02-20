@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "ppapi/proxy/camera_capabilities_resource.h"
 
 namespace ppapi {
@@ -10,11 +11,12 @@ namespace proxy {
 
 CameraCapabilitiesResource::CameraCapabilitiesResource(
     PP_Instance instance,
-    const std::vector<PP_Size>& preview_sizes)
+    const std::vector<PP_VideoCaptureFormat>& formats)
     : Resource(OBJECT_IS_PROXY, instance),
-      num_preview_sizes_(static_cast<int32_t>(preview_sizes.size())),
-      preview_sizes_(new PP_Size[num_preview_sizes_]) {
-  std::copy(preview_sizes.begin(), preview_sizes.end(), preview_sizes_.get());
+      num_video_capture_formats_(formats.size()),
+      video_capture_formats_(
+          new PP_VideoCaptureFormat[num_video_capture_formats_]) {
+  std::copy(formats.begin(), formats.end(), video_capture_formats_.get());
 }
 
 CameraCapabilitiesResource::~CameraCapabilitiesResource() {
@@ -25,11 +27,11 @@ CameraCapabilitiesResource::AsPPB_CameraCapabilities_API() {
   return this;
 }
 
-void CameraCapabilitiesResource::GetSupportedPreviewSizes(
-    int32_t* array_size,
-    PP_Size** preview_sizes) {
-  *array_size = num_preview_sizes_;
-  *preview_sizes = preview_sizes_.get();
+void CameraCapabilitiesResource::GetSupportedVideoCaptureFormats(
+    uint32_t* array_size,
+    PP_VideoCaptureFormat** formats) {
+  *array_size = base::checked_cast<uint32_t>(num_video_capture_formats_);
+  *formats = video_capture_formats_.get();
 }
 
 }  // namespace proxy

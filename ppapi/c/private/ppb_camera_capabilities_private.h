@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_camera_capabilities_private.idl,
- *   modified Tue Feb  3 19:54:34 2015.
+ *   modified Thu Feb 19 09:06:18 2015.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CAMERA_CAPABILITIES_PRIVATE_H_
@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/private/pp_video_capture_format.h"
 
 #define PPB_CAMERACAPABILITIES_PRIVATE_INTERFACE_0_1 \
     "PPB_CameraCapabilities_Private;0.1"
@@ -51,21 +52,22 @@ struct PPB_CameraCapabilities_Private_0_1 {
    */
   PP_Bool (*IsCameraCapabilities)(PP_Resource resource);
   /**
-   * GetSupportedPreviewSizes() returns the supported preview sizes for the
-   * given <code>PPB_CameraCapabilities_Private</code>.
+   * GetSupportedVideoCaptureFormats() returns the supported video capture
+   * formats for the given <code>PPB_CameraCapabilities_Private</code>.
    *
    * @param[in] capabilities A <code>PP_Resource</code> corresponding to an
    * image capture capabilities resource.
    * @param[out] array_size The size of preview size array.
-   * @param[out] preview_sizes An array of <code>PP_Size</code> corresponding
-   * to the supported preview sizes in pixels. The ownership of the array
-   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
-   * should not free it. When a PPB_CameraCapabilities_Private is deleted,
-   * the array returning from this is no longer valid.
+   * @param[out] formats An array of <code>PP_VideoCaptureFormat</code>
+   * corresponding to the supported video capture formats. The ownership of the
+   * array belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
+   * should not free it. When a PPB_CameraCapabilities_Private is deleted, the
+   * array returning from this is no longer valid.
    */
-  void (*GetSupportedPreviewSizes)(PP_Resource capabilities,
-                                   int32_t* array_size,
-                                   struct PP_Size** preview_sizes);
+  void (*GetSupportedVideoCaptureFormats)(
+      PP_Resource capabilities,
+      uint32_t* array_size,
+      struct PP_VideoCaptureFormat** formats);
 };
 
 typedef struct PPB_CameraCapabilities_Private_0_1

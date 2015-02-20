@@ -78,10 +78,11 @@ int32_t ImageCaptureResource::GetCameraCapabilities(
   }
 
   get_capabilities_callback_ = callback;
-  Call<PpapiPluginMsg_ImageCapture_GetSupportedPreviewSizesReply>(
-      RENDERER, PpapiHostMsg_ImageCapture_GetSupportedPreviewSizes(),
-      base::Bind(&ImageCaptureResource::OnPluginMsgGetPreviewSizesReply,
+  Call<PpapiPluginMsg_ImageCapture_GetSupportedVideoCaptureFormatsReply>(
+      RENDERER, PpapiHostMsg_ImageCapture_GetSupportedVideoCaptureFormats(),
+      base::Bind(&ImageCaptureResource::OnPluginMsgGetVideoCaptureFormatsReply,
                  base::Unretained(this), capabilities));
+
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -96,10 +97,10 @@ void ImageCaptureResource::OnPluginMsgOpenReply(
   }
 }
 
-void ImageCaptureResource::OnPluginMsgGetPreviewSizesReply(
+void ImageCaptureResource::OnPluginMsgGetVideoCaptureFormatsReply(
     PP_Resource* capabilities_output,
     const ResourceMessageReplyParams& params,
-    const std::vector<PP_Size>& preview_sizes) {
+    const std::vector<PP_VideoCaptureFormat>& formats) {
   if (!TrackedCallback::IsPending(get_capabilities_callback_))
     return;
 
@@ -109,7 +110,7 @@ void ImageCaptureResource::OnPluginMsgGetPreviewSizesReply(
   callback.swap(get_capabilities_callback_);
   if (result == PP_OK) {
     camera_capabilities_ =
-        new CameraCapabilitiesResource(pp_instance(), preview_sizes);
+        new CameraCapabilitiesResource(pp_instance(), formats);
     *capabilities_output = camera_capabilities_->GetReference();
   }
   callback->Run(result == PP_OK ? PP_OK : PP_ERROR_FAILED);

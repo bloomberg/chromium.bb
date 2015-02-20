@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/private/pp_video_capture_format.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -42,10 +43,11 @@ class PPAPI_PROXY_EXPORT ImageCaptureResource
  private:
   enum class OpenState { BEFORE_OPEN, OPENED, CLOSED };
 
-  void OnPluginMsgGetPreviewSizesReply(
+  void OnPluginMsgGetVideoCaptureFormatsReply(
       PP_Resource* capabilities_output,
       const ResourceMessageReplyParams& params,
-      const std::vector<PP_Size>& preview_sizes);
+      const std::vector<PP_VideoCaptureFormat>& formats);
+
   void OnPluginMsgOpenReply(const ResourceMessageReplyParams& params);
 
   bool is_opened() const { return open_state_ == OpenState::OPENED; }

@@ -43,7 +43,7 @@ PepperPlatformImageCapture::PepperPlatformImageCapture(
   }
 }
 
-void PepperPlatformImageCapture::GetPreviewSizes() {
+void PepperPlatformImageCapture::GetSupportedVideoCaptureFormats() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VideoCaptureImplManager* manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
@@ -110,10 +110,14 @@ void PepperPlatformImageCapture::OnDeviceSupportedFormatsEnumerated(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(handler_);
 
-  std::vector<PP_Size> sizes;
-  for (const auto& format : formats)
-    sizes.push_back(PP_FromGfxSize(format.frame_size));
-  handler_->OnPreviewSizesEnumerated(sizes);
+  std::vector<PP_VideoCaptureFormat> output_formats;
+  for (const auto& format : formats) {
+    PP_VideoCaptureFormat output_format;
+    output_format.frame_size = PP_FromGfxSize(format.frame_size);
+    output_format.frame_rate = format.frame_rate;
+    output_formats.push_back(output_format);
+  }
+  handler_->OnVideoCaptureFormatsEnumerated(output_formats);
 }
 
 PepperMediaDeviceManager* PepperPlatformImageCapture::GetMediaDeviceManager() {

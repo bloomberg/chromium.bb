@@ -34,7 +34,7 @@ class PepperPlatformImageCapture {
   // Detaches the event handler and stops sending notifications to it.
   void DetachEventHandler();
 
-  void GetPreviewSizes();
+  void GetSupportedVideoCaptureFormats();
 
  private:
   void OnDeviceOpened(int request_id, bool succeeded, const std::string& label);

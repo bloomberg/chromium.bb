@@ -41,21 +41,21 @@ CameraCapabilities_Private::CameraCapabilities_Private(PassRef,
 CameraCapabilities_Private::~CameraCapabilities_Private() {
 }
 
-void CameraCapabilities_Private::GetSupportedPreviewSizes(
-    std::vector<Size>* preview_sizes) {
+void CameraCapabilities_Private::GetSupportedVideoCaptureFormats(
+    std::vector<PP_VideoCaptureFormat>* formats) {
   if (!has_interface<PPB_CameraCapabilities_Private_0_1>()) {
     PP_DCHECK(false);
     return;
   }
 
-  int32_t array_size;
-  PP_Size* array;
-  get_interface<PPB_CameraCapabilities_Private_0_1>()->GetSupportedPreviewSizes(
-      pp_resource(), &array_size, &array);
-  preview_sizes->clear();
-  preview_sizes->reserve(array_size);
-  for (int32_t i = 0; i < array_size; i++) {
-    preview_sizes->push_back(Size(array[i]));
+  uint32_t array_size;
+  PP_VideoCaptureFormat* array;
+  get_interface<PPB_CameraCapabilities_Private_0_1>()
+      ->GetSupportedVideoCaptureFormats(pp_resource(), &array_size, &array);
+  formats->clear();
+  formats->reserve(array_size);
+  for (uint32_t i = 0; i < array_size; i++) {
+    formats->push_back(array[i]);
   }
 }
 

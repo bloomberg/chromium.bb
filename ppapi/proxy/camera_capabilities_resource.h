@@ -23,7 +23,7 @@ class PPAPI_PROXY_EXPORT CameraCapabilitiesResource
       public thunk::PPB_CameraCapabilities_API {
  public:
   CameraCapabilitiesResource(PP_Instance instance,
-                             const std::vector<PP_Size>& preview_sizes);
+                             const std::vector<PP_VideoCaptureFormat>& formats);
 
   ~CameraCapabilitiesResource() override;
 
@@ -31,12 +31,13 @@ class PPAPI_PROXY_EXPORT CameraCapabilitiesResource
   thunk::PPB_CameraCapabilities_API* AsPPB_CameraCapabilities_API() override;
 
   // PPB_CameraCapabilities_API implementation.
-  void GetSupportedPreviewSizes(int32_t* array_size,
-                                PP_Size** preview_sizes) override;
+  void GetSupportedVideoCaptureFormats(
+      uint32_t* array_size,
+      PP_VideoCaptureFormat** formats) override;
 
  private:
-  int32_t num_preview_sizes_;
-  scoped_ptr<PP_Size[]> preview_sizes_;
+  size_t num_video_capture_formats_;
+  scoped_ptr<PP_VideoCaptureFormat[]> video_capture_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraCapabilitiesResource);
 };
