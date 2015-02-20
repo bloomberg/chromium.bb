@@ -78,8 +78,7 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
   if (!overscroll_enabled)
     return;
 
-  NavigationEntryImpl* entry =
-      NavigationEntryImpl::FromNavigationEntry(owner_->GetLastCommittedEntry());
+  NavigationEntryImpl* entry = owner_->GetLastCommittedEntry();
   if (!entry)
     return;
 
@@ -109,8 +108,7 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
 void NavigationEntryScreenshotManager::ClearAllScreenshots() {
   int count = owner_->GetEntryCount();
   for (int i = 0; i < count; ++i) {
-    ClearScreenshot(NavigationEntryImpl::FromNavigationEntry(
-        owner_->GetEntryAtIndex(i)));
+    ClearScreenshot(owner_->GetEntryAtIndex(i));
   }
   DCHECK_EQ(GetScreenshotCount(), 0);
 }
@@ -142,9 +140,9 @@ void NavigationEntryScreenshotManager::OnScreenshotTaken(
   NavigationEntryImpl* entry = NULL;
   int entry_count = owner_->GetEntryCount();
   for (int i = 0; i < entry_count; ++i) {
-    NavigationEntry* iter = owner_->GetEntryAtIndex(i);
+    NavigationEntryImpl* iter = owner_->GetEntryAtIndex(i);
     if (iter->GetUniqueID() == unique_id) {
-      entry = NavigationEntryImpl::FromNavigationEntry(iter);
+      entry = iter;
       break;
     }
   }
@@ -173,8 +171,7 @@ int NavigationEntryScreenshotManager::GetScreenshotCount() const {
   int screenshot_count = 0;
   int entry_count = owner_->GetEntryCount();
   for (int i = 0; i < entry_count; ++i) {
-    NavigationEntryImpl* entry =
-        NavigationEntryImpl::FromNavigationEntry(owner_->GetEntryAtIndex(i));
+    NavigationEntryImpl* entry = owner_->GetEntryAtIndex(i);
     if (entry->screenshot().get())
       screenshot_count++;
   }
@@ -187,9 +184,9 @@ void NavigationEntryScreenshotManager::OnScreenshotEncodeComplete(
   NavigationEntryImpl* entry = NULL;
   int entry_count = owner_->GetEntryCount();
   for (int i = 0; i < entry_count; ++i) {
-    NavigationEntry* iter = owner_->GetEntryAtIndex(i);
+    NavigationEntryImpl* iter = owner_->GetEntryAtIndex(i);
     if (iter->GetUniqueID() == unique_id) {
-      entry = NavigationEntryImpl::FromNavigationEntry(iter);
+      entry = iter;
       break;
     }
   }
@@ -224,8 +221,7 @@ void NavigationEntryScreenshotManager::PurgeScreenshotsIfNecessary() {
   const int current = owner_->GetCurrentEntryIndex();
   const int num_entries = owner_->GetEntryCount();
   int available_slots = kMaxScreenshots;
-  if (NavigationEntryImpl::FromNavigationEntry(owner_->GetEntryAtIndex(current))
-          ->screenshot().get()) {
+  if (owner_->GetEntryAtIndex(current)->screenshot().get()) {
     --available_slots;
   }
 
@@ -242,16 +238,14 @@ void NavigationEntryScreenshotManager::PurgeScreenshotsIfNecessary() {
   int forward = current + 1;
   while (available_slots > 0 && (back >= 0 || forward < num_entries)) {
     if (back >= 0) {
-      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-          owner_->GetEntryAtIndex(back));
+      NavigationEntryImpl* entry = owner_->GetEntryAtIndex(back);
       if (entry->screenshot().get())
         --available_slots;
       --back;
     }
 
     if (available_slots > 0 && forward < num_entries) {
-      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-          owner_->GetEntryAtIndex(forward));
+      NavigationEntryImpl* entry = owner_->GetEntryAtIndex(forward);
       if (entry->screenshot().get())
         --available_slots;
       ++forward;
@@ -261,16 +255,14 @@ void NavigationEntryScreenshotManager::PurgeScreenshotsIfNecessary() {
   // Purge any screenshot at |back| or lower indices, and |forward| or higher
   // indices.
   while (screenshot_count > kMaxScreenshots && back >= 0) {
-    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-        owner_->GetEntryAtIndex(back));
+    NavigationEntryImpl* entry = owner_->GetEntryAtIndex(back);
     if (ClearScreenshot(entry))
       --screenshot_count;
     --back;
   }
 
   while (screenshot_count > kMaxScreenshots && forward < num_entries) {
-    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-        owner_->GetEntryAtIndex(forward));
+    NavigationEntryImpl* entry = owner_->GetEntryAtIndex(forward);
     if (ClearScreenshot(entry))
       --screenshot_count;
     ++forward;

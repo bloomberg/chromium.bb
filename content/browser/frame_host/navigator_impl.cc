@@ -191,8 +191,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   render_process_host->FilterURL(false, &validated_url);
 
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  NavigationEntryImpl* pending_entry =
-      NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry());
+  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
   if (is_main_frame) {
     // If there is no browser-initiated pending entry for this navigation and it
     // is not for the error URL, create a pending entry using the current
@@ -421,10 +420,8 @@ bool NavigatorImpl::NavigateToEntry(
 bool NavigatorImpl::NavigateToPendingEntry(
     FrameTreeNode* frame_tree_node,
     NavigationController::ReloadType reload_type) {
-  return NavigateToEntry(
-      frame_tree_node,
-      *NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry()),
-      reload_type);
+  return NavigateToEntry(frame_tree_node, *controller_->GetPendingEntry(),
+                         reload_type);
 }
 
 void NavigatorImpl::DidNavigate(

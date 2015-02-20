@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
@@ -19,8 +20,7 @@
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
-class NavigationEntryImpl;
-class RenderViewHost;
+class RenderFrameHostImpl;
 class NavigationEntryScreenshotManager;
 class SiteInstance;
 struct LoadCommittedDetails;
@@ -40,19 +40,19 @@ class CONTENT_EXPORT NavigationControllerImpl
   void Restore(int selected_navigation,
                RestoreType type,
                std::vector<NavigationEntry*>* entries) override;
-  NavigationEntry* GetActiveEntry() const override;
-  NavigationEntry* GetVisibleEntry() const override;
+  NavigationEntryImpl* GetActiveEntry() const override;
+  NavigationEntryImpl* GetVisibleEntry() const override;
   int GetCurrentEntryIndex() const override;
-  NavigationEntry* GetLastCommittedEntry() const override;
+  NavigationEntryImpl* GetLastCommittedEntry() const override;
   int GetLastCommittedEntryIndex() const override;
   bool CanViewSource() const override;
   int GetEntryCount() const override;
-  NavigationEntry* GetEntryAtIndex(int index) const override;
-  NavigationEntry* GetEntryAtOffset(int offset) const override;
+  NavigationEntryImpl* GetEntryAtIndex(int index) const override;
+  NavigationEntryImpl* GetEntryAtOffset(int offset) const override;
   void DiscardNonCommittedEntries() override;
-  NavigationEntry* GetPendingEntry() const override;
+  NavigationEntryImpl* GetPendingEntry() const override;
   int GetPendingEntryIndex() const override;
-  NavigationEntry* GetTransientEntry() const override;
+  NavigationEntryImpl* GetTransientEntry() const override;
   void SetTransientEntry(NavigationEntry* entry) override;
   void LoadURL(const GURL& url,
                const Referrer& referrer,
@@ -134,7 +134,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // In the case that nothing has changed, the details structure is undefined
   // and it will return false.
   bool RendererDidNavigate(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       LoadCommittedDetails* details);
 
@@ -228,7 +228,7 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const;
 
   // Causes the controller to load the specified entry. The function assumes
@@ -249,24 +249,24 @@ class CONTENT_EXPORT NavigationControllerImpl
   // whether the last entry has been replaced or not.
   // See LoadCommittedDetails.did_replace_entry.
   void RendererDidNavigateToNewPage(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool replace_entry);
   void RendererDidNavigateToExistingPage(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   void RendererDidNavigateToSamePage(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   void RendererDidNavigateInPage(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool* did_replace_entry);
   void RendererDidNavigateNewSubframe(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
   bool RendererDidNavigateAutoSubframe(
-      RenderFrameHost* rfh,
+      RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // Helper function for code shared between Reload() and ReloadIgnoringCache().

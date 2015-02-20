@@ -208,8 +208,7 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
 
 ui::Layer* OverscrollNavigationOverlay::CreateSlideLayer(int offset) {
   const NavigationControllerImpl& controller = web_contents_->GetController();
-  const NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      controller.GetEntryAtOffset(offset));
+  const NavigationEntryImpl* entry = controller.GetEntryAtOffset(offset);
 
   gfx::Image image;
   if (entry && entry->screenshot().get()) {

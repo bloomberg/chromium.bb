@@ -126,11 +126,9 @@ class OverscrollWindowDelegate : public aura_extra::ImageWindowDelegate {
     const NavigationControllerImpl& controller = web_contents->GetController();
     const NavigationEntryImpl* entry = NULL;
     if (ShouldNavigateForward(controller, overscroll_mode)) {
-      entry = NavigationEntryImpl::FromNavigationEntry(
-          controller.GetEntryAtOffset(1));
+      entry = controller.GetEntryAtOffset(1);
     } else if (ShouldNavigateBack(controller, overscroll_mode)) {
-      entry = NavigationEntryImpl::FromNavigationEntry(
-          controller.GetEntryAtOffset(-1));
+      entry = controller.GetEntryAtOffset(-1);
     }
 
     gfx::Image image;

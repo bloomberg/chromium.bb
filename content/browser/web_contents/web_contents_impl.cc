@@ -1960,8 +1960,7 @@ bool WebContentsImpl::NavigateToPendingEntry(
   // is currently only used in --site-per-process and tests.
   // TODO(creis): Remove this method and NavigationEntryImpl::frame_tree_node_id
   // by using FrameNavigationEntries instead.  See https://crbug.com/236848.
-  NavigationEntryImpl* pending_entry =
-      NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry());
+  NavigationEntryImpl* pending_entry = controller_.GetPendingEntry();
   if (pending_entry->frame_tree_node_id() != -1) {
     FrameTreeNode* subframe =
         frame_tree_.FindByID(pending_entry->frame_tree_node_id());
