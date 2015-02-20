@@ -173,7 +173,7 @@ div.splitter {
   color: rgb(90, 90, 90);
   cursor: pointer;
   display: flex;
-  line-height: 40px;
+  height: 40px;
   padding: 0 3px;
 }
 
@@ -996,7 +996,7 @@ body[type='full-page'] .detail-name .detail-icon {
 
 .thumbnail-bottom .filename-label {
   flex: auto;
-  padding: 12px;
+  padding: 0 12px;
 }
 
 /* Styles specific for the grid view. */

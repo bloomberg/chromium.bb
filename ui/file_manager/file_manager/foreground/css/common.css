@@ -472,3 +472,29 @@ html[dir='rtl'] .entry-name {
 .cr-dialog-close:active {
   background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
 }
+
+/* Minor tweak of vertical position for texts which need to be vertically
+ * aligned with corresponding file-type icons. */
+.tree-row > .label,
+.table-row-cell .filename-label,
+.table-row-cell .size,
+.table-row-cell .type,
+.table-row-cell .date,
+.thumbnail-bottom .filename-label,
+.autocomplete-suggestions > li > .detail-text {
+  padding-top: 1px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+  .tree-row > .label,
+  .table-row-cell .filename-label,
+  .table-row-cell .size,
+  .table-row-cell .type,
+  .table-row-cell .date,
+  .thumbnail-bottom .filename-label,
+  .autocomplete-suggestions > li > .detail-text {
+    /* In HiDPI display, 13pt Roboto font is drawn upper than normal display,
+     * so add extra padding on top of it. */
+    padding-top: 3px;
+  }
+}
