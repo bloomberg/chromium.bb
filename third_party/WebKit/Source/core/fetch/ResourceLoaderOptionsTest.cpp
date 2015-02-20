@@ -25,7 +25,6 @@ TEST(ResourceLoaderOptionsTest, DeepCopy)
     static_assert(WTF::IsEnum<CredentialRequest>::value, "CredentialRequest should be an enum");
     static_assert(WTF::IsEnum<ContentSecurityPolicyDisposition>::value, "ContentSecurityPolicyDisposition should be an enum");
     static_assert(WTF::IsEnum<RequestInitiatorContext>::value, "RequestInitiatorContext should be an enum");
-    static_assert(WTF::IsEnum<MixedContentBlockingTreatment>::value, "MixedContentBlockingTreatment should be an enum");
     static_assert(WTF::IsEnum<SynchronousPolicy>::value, "SynchronousPolicy should be an enum");
     static_assert(WTF::IsEnum<CORSEnabled>::value, "CORSEnabled should be an enum");
 
@@ -46,7 +45,6 @@ TEST(ResourceLoaderOptionsTest, DeepCopy)
     EXPECT_EQ(original.initiatorInfo.position, copyData.initiatorInfo.position);
     EXPECT_EQ(original.initiatorInfo.startTime, copyData.initiatorInfo.startTime);
     EXPECT_EQ(original.requestInitiatorContext, copyData.requestInitiatorContext);
-    EXPECT_EQ(original.mixedContentBlockingTreatment, copyData.mixedContentBlockingTreatment);
     EXPECT_EQ(original.synchronousPolicy, copyData.synchronousPolicy);
     EXPECT_EQ(original.corsEnabled, copyData.corsEnabled);
     EXPECT_EQ(original.securityOrigin->protocol(), copyData.securityOrigin->protocol());
@@ -69,7 +67,6 @@ TEST(ResourceLoaderOptionsTest, DeepCopy)
     EXPECT_EQ(original.initiatorInfo.position, copy.initiatorInfo.position);
     EXPECT_EQ(original.initiatorInfo.startTime, copy.initiatorInfo.startTime);
     EXPECT_EQ(original.requestInitiatorContext, copy.requestInitiatorContext);
-    EXPECT_EQ(original.mixedContentBlockingTreatment, copy.mixedContentBlockingTreatment);
     EXPECT_EQ(original.synchronousPolicy, copy.synchronousPolicy);
     EXPECT_EQ(original.corsEnabled, copy.corsEnabled);
     EXPECT_EQ(original.securityOrigin->protocol(), copy.securityOrigin->protocol());
