@@ -46,6 +46,8 @@ class CONTENT_EXPORT DOMStorageMap
   size_t quota() const { return quota_; }
   void set_quota(size_t quota) { quota_ = quota; }
 
+  static size_t CountBytes(const DOMStorageValuesMap& values);
+
  private:
   friend class base::RefCountedThreadSafe<DOMStorageMap>;
   ~DOMStorageMap();

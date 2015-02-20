@@ -4,10 +4,13 @@
 
 #include "content/browser/dom_storage/dom_storage_area.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/process/process_info.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
@@ -25,13 +28,44 @@ using storage::DatabaseUtil;
 
 namespace content {
 
-static const int kCommitTimerSeconds = 1;
+namespace {
 
-DOMStorageArea::CommitBatch::CommitBatch()
-  : clear_all_first(false) {
+// Delay for a moment after a value is set in anticipation
+// of other values being set, so changes are batched.
+const int kCommitDefaultDelaySecs = 5;
+
+// To avoid excessive IO we apply limits to the amount of data being written
+// and the frequency of writes. The specific values used are somewhat arbitrary.
+const int kMaxBytesPerDay = kPerStorageAreaQuota * 2;
+const int kMaxCommitsPerHour = 6;
+
+}  // namespace
+
+DOMStorageArea::RateLimiter::RateLimiter(size_t desired_rate,
+                                         base::TimeDelta time_quantum)
+    : rate_(desired_rate), samples_(0), time_quantum_(time_quantum) {
+  DCHECK_GT(desired_rate, 0ul);
+}
+
+base::TimeDelta DOMStorageArea::RateLimiter::ComputeTimeNeeded() const {
+  return time_quantum_.multiply_by(samples_ / rate_);
+}
+
+base::TimeDelta DOMStorageArea::RateLimiter::ComputeDelayNeeded(
+    const base::TimeDelta elapsed_time) const {
+  base::TimeDelta time_needed = ComputeTimeNeeded();
+  if (time_needed > elapsed_time)
+    return time_needed - elapsed_time;
+  return base::TimeDelta();
+}
+
+DOMStorageArea::CommitBatch::CommitBatch() : clear_all_first(false) {
 }
 DOMStorageArea::CommitBatch::~CommitBatch() {}
 
+size_t DOMStorageArea::CommitBatch::GetDataSize() const {
+  return DOMStorageMap::CountBytes(changed_values);
+}
 
 // static
 const base::FilePath::CharType DOMStorageArea::kDatabaseFileExtension[] =
@@ -55,17 +89,21 @@ GURL DOMStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
   return storage::GetOriginFromIdentifier(origin_id);
 }
 
-DOMStorageArea::DOMStorageArea(
-    const GURL& origin, const base::FilePath& directory,
-    DOMStorageTaskRunner* task_runner)
-    : namespace_id_(kLocalStorageNamespaceId), origin_(origin),
+DOMStorageArea::DOMStorageArea(const GURL& origin,
+                               const base::FilePath& directory,
+                               DOMStorageTaskRunner* task_runner)
+    : namespace_id_(kLocalStorageNamespaceId),
+      origin_(origin),
       directory_(directory),
       task_runner_(task_runner),
       map_(new DOMStorageMap(kPerStorageAreaQuota +
                              kPerStorageAreaOverQuotaAllowance)),
       is_initial_import_done_(true),
       is_shutdown_(false),
-      commit_batches_in_flight_(0) {
+      commit_batches_in_flight_(0),
+      start_time_(base::TimeTicks::Now()),
+      data_rate_limiter_(kMaxBytesPerDay, base::TimeDelta::FromHours(24)),
+      commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
   if (!directory.empty()) {
     base::FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
     backing_.reset(new LocalStorageDatabaseAdapter(path));
@@ -73,12 +111,11 @@ DOMStorageArea::DOMStorageArea(
   }
 }
 
-DOMStorageArea::DOMStorageArea(
-    int64 namespace_id,
-    const std::string& persistent_namespace_id,
-    const GURL& origin,
-    SessionStorageDatabase* session_storage_backing,
-    DOMStorageTaskRunner* task_runner)
+DOMStorageArea::DOMStorageArea(int64 namespace_id,
+                               const std::string& persistent_namespace_id,
+                               const GURL& origin,
+                               SessionStorageDatabase* session_storage_backing,
+                               DOMStorageTaskRunner* task_runner)
     : namespace_id_(namespace_id),
       persistent_namespace_id_(persistent_namespace_id),
       origin_(origin),
@@ -88,7 +125,10 @@ DOMStorageArea::DOMStorageArea(
       session_storage_backing_(session_storage_backing),
       is_initial_import_done_(true),
       is_shutdown_(false),
-      commit_batches_in_flight_(0) {
+      commit_batches_in_flight_(0),
+      start_time_(base::TimeTicks::Now()),
+      data_rate_limiter_(kMaxBytesPerDay, base::TimeDelta::FromHours(24)),
+      commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
   DCHECK(namespace_id != kLocalStorageNamespaceId);
   if (session_storage_backing) {
     backing_.reset(new SessionStorageDatabaseAdapter(
@@ -137,7 +177,8 @@ bool DOMStorageArea::SetItem(const base::string16& key,
   if (!map_->HasOneRef())
     map_ = map_->DeepCopy();
   bool success = map_->SetItem(key, value, old_value);
-  if (success && backing_) {
+  if (success && backing_ &&
+      (old_value->is_null() || old_value->string() != value)) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
     commit_batch->changed_values[key] = base::NullableString16(value, false);
   }
@@ -212,17 +253,19 @@ DOMStorageArea* DOMStorageArea::ShallowCopy(
   copy->is_initial_import_done_ = true;
 
   // All the uncommitted changes to this area need to happen before the actual
-  // shallow copy is made (scheduled by the upper layer). Another OnCommitTimer
-  // call might be in the event queue at this point, but it's handled gracefully
-  // when it fires.
+  // shallow copy is made (scheduled by the upper layer sometime after return).
   if (commit_batch_)
-    OnCommitTimer();
+    ScheduleImmediateCommit();
   return copy;
 }
 
 bool DOMStorageArea::HasUncommittedChanges() const {
-  DCHECK(!is_shutdown_);
   return commit_batch_.get() || commit_batches_in_flight_;
+}
+
+void DOMStorageArea::ScheduleImmediateCommit() {
+  DCHECK(HasUncommittedChanges());
+  PostCommitTask();
 }
 
 void DOMStorageArea::DeleteOrigin() {
@@ -327,24 +370,43 @@ DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
     // started after the commits have happened.
     if (!commit_batches_in_flight_) {
       task_runner_->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&DOMStorageArea::OnCommitTimer, this),
-          base::TimeDelta::FromSeconds(kCommitTimerSeconds));
+          FROM_HERE, base::Bind(&DOMStorageArea::OnCommitTimer, this),
+          ComputeCommitDelay());
     }
   }
   return commit_batch_.get();
+}
+
+base::TimeDelta DOMStorageArea::ComputeCommitDelay() const {
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
+  base::TimeDelta delay = std::max(
+      base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs),
+      std::max(commit_rate_limiter_.ComputeDelayNeeded(elapsed_time),
+               data_rate_limiter_.ComputeDelayNeeded(elapsed_time)));
+  UMA_HISTOGRAM_LONG_TIMES("LocalStorage.CommitDelay", delay);
+  return delay;
 }
 
 void DOMStorageArea::OnCommitTimer() {
   if (is_shutdown_)
     return;
 
-  DCHECK(backing_.get());
-
-  // It's possible that there is nothing to commit, since a shallow copy occured
-  // before the timer fired.
+  // It's possible that there is nothing to commit if an immediate
+  // commit occured after the timer was scheduled but before it fired.
   if (!commit_batch_)
     return;
+
+  PostCommitTask();
+}
+
+void DOMStorageArea::PostCommitTask() {
+  if (is_shutdown_ || !commit_batch_)
+    return;
+
+  DCHECK(backing_.get());
+
+  commit_rate_limiter_.add_samples(1);
+  data_rate_limiter_.add_samples(commit_batch_->GetDataSize());
 
   // This method executes on the primary sequence, we schedule
   // a task for immediate execution on the commit sequence.
@@ -362,7 +424,7 @@ void DOMStorageArea::CommitChanges(const CommitBatch* commit_batch) {
   // This method executes on the commit sequence.
   DCHECK(task_runner_->IsRunningOnCommitSequence());
   backing_->CommitChanges(commit_batch->clear_all_first,
-                                         commit_batch->changed_values);
+                          commit_batch->changed_values);
   // TODO(michaeln): what if CommitChanges returns false (e.g., we're trying to
   // commit to a DB which is in an inconsistent state?)
   task_runner_->PostTask(
@@ -379,9 +441,8 @@ void DOMStorageArea::OnCommitComplete() {
   if (commit_batch_.get() && !commit_batches_in_flight_) {
     // More changes have accrued, restart the timer.
     task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&DOMStorageArea::OnCommitTimer, this),
-        base::TimeDelta::FromSeconds(kCommitTimerSeconds));
+        FROM_HERE, base::Bind(&DOMStorageArea::OnCommitTimer, this),
+        ComputeCommitDelay());
   }
 }
 

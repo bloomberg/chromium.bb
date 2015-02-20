@@ -14,17 +14,6 @@ size_t size_of_item(const base::string16& key, const base::string16& value) {
   return (key.length() + value.length()) * sizeof(base::char16);
 }
 
-size_t CountBytes(const DOMStorageValuesMap& values) {
-  if (values.size() == 0)
-    return 0;
-
-  size_t count = 0;
-  DOMStorageValuesMap::const_iterator it = values.begin();
-  for (; it != values.end(); ++it)
-    count += size_of_item(it->first, it->second.string());
-  return count;
-}
-
 }  // namespace
 
 DOMStorageMap::DOMStorageMap(size_t quota)
@@ -117,6 +106,16 @@ DOMStorageMap* DOMStorageMap::DeepCopy() const {
 void DOMStorageMap::ResetKeyIterator() {
   key_iterator_ = values_.begin();
   last_key_index_ = 0;
+}
+
+size_t DOMStorageMap::CountBytes(const DOMStorageValuesMap& values) {
+  if (values.empty())
+    return 0;
+
+  size_t count = 0;
+  for (const auto& pair : values)
+    count += size_of_item(pair.first, pair.second.string());
+  return count;
 }
 
 }  // namespace content

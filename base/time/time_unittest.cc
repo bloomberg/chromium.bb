@@ -867,6 +867,15 @@ TEST(TimeDelta, Magnitude) {
             TimeDelta::FromMicroseconds(min_int64_plus_two).magnitude());
 }
 
+
+TEST(TimeDelta, multiply_by) {
+  double d = 0.5;
+  EXPECT_EQ(TimeDelta::FromMilliseconds(500),
+            TimeDelta::FromMilliseconds(1000).multiply_by(d));
+  EXPECT_EQ(TimeDelta::FromMilliseconds(2000),
+            TimeDelta::FromMilliseconds(1000).divide_by(d));
+}
+
 TEST(TimeDeltaLogging, DCheckEqCompiles) {
   DCHECK_EQ(TimeDelta(), TimeDelta());
 }
