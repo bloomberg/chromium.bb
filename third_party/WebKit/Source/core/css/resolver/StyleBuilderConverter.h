@@ -68,10 +68,10 @@ public:
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static TabSize convertLengthOrTabSpaces(StyleResolverState&, CSSValue*);
-    static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
     static LineBoxContain convertLineBoxContain(StyleResolverState&, CSSValue*);
     static Length convertLineHeight(StyleResolverState&, CSSValue*);
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
+    static LengthPoint convertObjectPosition(StyleResolverState&, CSSValue*);
     static float convertPerspective(StyleResolverState&, CSSValue*);
     static LengthPoint convertPerspectiveOrigin(StyleResolverState&, CSSValue*);
     static Length convertQuirkyLength(StyleResolverState&, CSSValue*);

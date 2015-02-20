@@ -213,7 +213,7 @@ motion-path runtime_flag=CSSMotionPath, custom_all
 motion-position runtime_flag=CSSMotionPath, animatable, converter=convertLength
 motion-rotation runtime_flag=CSSMotionPath, animatable, custom_all
 object-fit type_name=ObjectFit
-object-position animatable, converter=convertLengthPoint
+object-position animatable, converter=convertObjectPosition
 opacity animatable, type_name=float
 order type_name=int
 orphans animatable, inherited, type_name=short, custom_all

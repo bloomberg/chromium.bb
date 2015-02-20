@@ -34,6 +34,9 @@
             shouldBeEqualToString('testComputedStyle("object-position: 10px 10px;")', '10px 10px');
             shouldBeEqualToString('testComputedStyle("object-position: right top;")', '100% 0%');
             shouldBeEqualToString('testComputedStyle("object-position: top right;")', '100% 0%');
+            shouldBeEqualToString('testComputedStyle("object-position: left 20px center;")', '20px 50%');
+            shouldBeEqualToString('testComputedStyle("object-position: center bottom 25%;")', '50% 75%');
+            shouldBeEqualToString('testComputedStyle("object-position: bottom 20px right 12px;")', 'calc(-12px + 100%) calc(-20px + 100%)');
 
             shouldBeEqualToString('test("object-position: inherit;")', 'inherit');
             shouldBeEqualToString('test("object-position: initial;")', 'initial');
@@ -58,6 +61,9 @@
             shouldBeEqualToString('test("object-position: 33px center;")', '33px 50%');
             shouldBeEqualToString('test("object-position: 33px bottom;")', '33px 100%');
             shouldBeEqualToString('test("object-position: 1vh 1vw;")', '1vh 1vw');
+            shouldBeEqualToString('test("object-position: left 20px center;")', 'left 20px top 50%');
+            shouldBeEqualToString('test("object-position: center bottom 25%;")', 'left 50% bottom 25%');
+            shouldBeEqualToString('test("object-position: bottom 20px right 12px;")', 'right 12px bottom 20px');
 
             shouldBeNull('test("object-position: 100px 100px 100px;")');
             shouldBeNull('test("object-position: 100px 100px 200px 200px;")');

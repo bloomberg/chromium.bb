@@ -554,15 +554,6 @@ TabSize StyleBuilderConverter::convertLengthOrTabSpaces(StyleResolverState& stat
     return TabSize(primitiveValue->computeLength<float>(state.cssToLengthConversionData()));
 }
 
-LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Pair* pair = primitiveValue->getPairValue();
-    Length x = pair->first()->convertToLength(state.cssToLengthConversionData());
-    Length y = pair->second()->convertToLength(state.cssToLengthConversionData());
-    return LengthPoint(x, y);
-}
-
 LineBoxContain StyleBuilderConverter::convertLineBoxContain(StyleResolverState&, CSSValue* value)
 {
     if (value->isPrimitiveValue()) {
@@ -607,6 +598,30 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
     if (primitiveValue->isNumber())
         return primitiveValue->getFloatValue();
     return primitiveValue->getFloatValue() / 100.0f;
+}
+
+template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
+static Length convertPositionLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+{
+    if (Pair* pair = primitiveValue->getPairValue()) {
+        Length length = StyleBuilderConverter::convertLength(state, pair->second());
+        if (pair->first()->getValueID() == cssValueFor0)
+            return length;
+        ASSERT(pair->first()->getValueID() == cssValueFor100);
+        return length.subtractFromOneHundredPercent();
+    }
+
+    return StyleBuilderConverter::convertLength(state, primitiveValue);
+}
+
+LengthPoint StyleBuilderConverter::convertObjectPosition(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Pair* pair = primitiveValue->getPairValue();
+    return LengthPoint(
+        convertPositionLength<CSSValueLeft, CSSValueRight>(state, pair->first()),
+        convertPositionLength<CSSValueTop, CSSValueBottom>(state, pair->second())
+    );
 }
 
 static float convertPerspectiveLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
