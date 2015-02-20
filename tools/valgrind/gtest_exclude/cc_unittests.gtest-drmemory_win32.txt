@@ -26,3 +26,6 @@ PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplica/5
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplica/6
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplicaOfClippedLayer/5
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfReplicaOfClippedLayer/6
+
+# https://crbug.com/460581
+LayerTreeHostPictureTestRSLLMembershipWithScale.RunMultiThread_DirectRenderer_ImplSidePaint
