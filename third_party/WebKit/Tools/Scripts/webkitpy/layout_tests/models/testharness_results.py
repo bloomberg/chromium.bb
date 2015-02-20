@@ -44,19 +44,28 @@ def is_testharness_output_passing(content_text):
     lines = [line.strip() for line in lines]
 
     # The check is very conservative and rejects any unexpected content in the output.
+    previousLineWasConsoleMessage = False
     for line in lines:
-        # There should be no empty lines.
+        # There should be no empty lines, unless the empty line follows a console message.
         if len(line) == 0:
-            return False
+            if previousLineWasConsoleMessage:
+                continue
+            else:
+                return False
 
         # Those lines are expected to be exactly equivalent.
         if line == TESTHARNESSREPORT_HEADER or \
            line == TESTHARNESSREPORT_FOOTER:
+            previousLineWasConsoleMessage = False
             continue
 
         # Those are expected passing output.
-        if line.startswith('CONSOLE') or \
-           line.startswith('PASS'):
+        if line.startswith('CONSOLE'):
+            previousLineWasConsoleMessage = True
+            continue
+
+        if line.startswith('PASS'):
+            previousLineWasConsoleMessage = False
             continue
 
         # Those are expected failing output.

@@ -943,7 +943,6 @@ crbug.com/390358 [ Debug SnowLeopard ] http/tests/security/mixedContent/insecure
 crbug.com/390358 [ Release Lion ] http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure Pass ]
 crbug.com/390358 [ Debug Lion ] http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure Pass ]
 crbug.com/390358 [ Release Retina ] http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure Pass ]
-crbug.com/450490 http/tests/security/mixedContent/insecure-picture-in-main-frame-blocked.html [ Failure Pass ]
 crbug.com/311812 [ Release XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 Bug(gardener) [ Release Linux ] http/tests/security/script-onerror-crossorigin-no-cors.html [ Failure Pass ]
 Bug(gardener) [ Debug Linux ] http/tests/security/script-onerror-crossorigin-no-cors.html [ Failure Pass ]
