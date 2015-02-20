@@ -15,7 +15,6 @@ class GbmWrapper : public DriWrapper {
  public:
   GbmWrapper(const base::FilePath& device_path);
   GbmWrapper(const base::FilePath& device_path, base::File file);
-  ~GbmWrapper() override;
 
   gbm_device* device() const { return device_; }
 
@@ -23,6 +22,8 @@ class GbmWrapper : public DriWrapper {
   void Initialize() override;
 
  private:
+  ~GbmWrapper() override;
+
   gbm_device* device_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmWrapper);
