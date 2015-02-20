@@ -229,15 +229,13 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       cast_browser_process_->pref_service(),
       cast_browser_process_->metrics_service_client(),
       url_request_context_factory_->GetSystemGetter()));
-
-  cast_browser_process_->metrics_service_client()
-      ->Initialize(cast_browser_process_->cast_service());
-
   cast_browser_process_->cast_service()->Initialize();
 
-  // Initializing network delegates must happen after cast service is
-  // initialized because CastNetworkDelegate may use components initialized by
-  // cast service.
+  // Initializing metrics service and network delegates must happen after cast
+  // service is intialized because CastMetricsServiceClient and
+  // CastNetworkDelegate may use components initialized by cast service.
+  cast_browser_process_->metrics_service_client()
+      ->Initialize(cast_browser_process_->cast_service());
   url_request_context_factory_->InitializeNetworkDelegates();
 }
 
