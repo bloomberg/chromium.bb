@@ -306,6 +306,7 @@ public:
     virtual WebString userAgent() { return WebString(); }
 
     // A suggestion to cache this metadata in association with this URL.
+    virtual void cacheMetadata(const WebURL&, int64 responseTime, const char* data, size_t dataSize) { }
     virtual void cacheMetadata(const WebURL&, double responseTime, const char* data, size_t dataSize) { }
 
     // Returns the decoded data url if url had a supported mimetype and parsing was successful.

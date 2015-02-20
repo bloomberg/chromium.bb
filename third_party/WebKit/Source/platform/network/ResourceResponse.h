@@ -177,6 +177,7 @@ public:
 
     double responseTime() const { return m_responseTime; }
     void setResponseTime(double responseTime) { m_responseTime = responseTime; }
+    void setResponseTime(int64 responseTime) { m_originalResponseTime = responseTime; }
 
     const AtomicString& remoteIPAddress() const { return m_remoteIPAddress; }
     void setRemoteIPAddress(const AtomicString& value) { m_remoteIPAddress = value; }
@@ -281,6 +282,7 @@ private:
     // The time at which the response headers were received.  For cached
     // responses, this time could be "far" in the past.
     double m_responseTime;
+    int64 m_originalResponseTime;
 
     // Remote IP address of the socket which fetched this resource.
     AtomicString m_remoteIPAddress;
@@ -330,6 +332,7 @@ public:
     WebServiceWorkerResponseType m_serviceWorkerResponseType;
     KURL m_originalURLViaServiceWorker;
     double m_responseTime;
+    int64 m_originalResponseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;
     String m_downloadedFilePath;

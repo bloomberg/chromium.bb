@@ -59,6 +59,7 @@ ResourceResponse::ResourceResponse()
     , m_wasFallbackRequiredByServiceWorker(false)
     , m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault)
     , m_responseTime(0)
+    , m_originalResponseTime(0)
     , m_remotePort(0)
 {
 }
@@ -94,6 +95,7 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_wasFallbackRequiredByServiceWorker(false)
     , m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault)
     , m_responseTime(0)
+    , m_originalResponseTime(0)
     , m_remotePort(0)
 {
 }
@@ -127,6 +129,7 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
     response->m_originalURLViaServiceWorker = data->m_originalURLViaServiceWorker;
     response->m_responseTime = data->m_responseTime;
+    response->m_originalResponseTime = data->m_originalResponseTime;
     response->m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
     response->m_remotePort = data->m_remotePort;
     response->m_downloadedFilePath = data->m_downloadedFilePath;
@@ -166,6 +169,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_serviceWorkerResponseType = m_serviceWorkerResponseType;
     data->m_originalURLViaServiceWorker = m_originalURLViaServiceWorker;
     data->m_responseTime = m_responseTime;
+    data->m_originalResponseTime = m_originalResponseTime;
     data->m_remoteIPAddress = m_remoteIPAddress.string().isolatedCopy();
     data->m_remotePort = m_remotePort;
     data->m_downloadedFilePath = m_downloadedFilePath.isolatedCopy();

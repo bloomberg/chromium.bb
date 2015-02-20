@@ -92,8 +92,8 @@ public:
     BLINK_PLATFORM_EXPORT WebHTTPLoadInfo httpLoadInfo();
     BLINK_PLATFORM_EXPORT void setHTTPLoadInfo(const WebHTTPLoadInfo&);
 
-    BLINK_PLATFORM_EXPORT double responseTime() const;
     BLINK_PLATFORM_EXPORT void setResponseTime(double);
+    BLINK_PLATFORM_EXPORT void setResponseTime(long long);
 
     BLINK_PLATFORM_EXPORT WebString mimeType() const;
     BLINK_PLATFORM_EXPORT void setMIMEType(const WebString&);
