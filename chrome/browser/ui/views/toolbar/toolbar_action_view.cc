@@ -229,6 +229,12 @@ scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
   return border.Pass();
 }
 
+bool ToolbarActionView::ShouldEnterPushedState(const ui::Event& event) {
+  return view_controller_->HasPopup(GetCurrentWebContents()) ?
+      MenuButton::ShouldEnterPushedState(event) :
+      LabelButton::ShouldEnterPushedState(event);
+}
+
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
 }

@@ -87,6 +87,10 @@ class ToolbarActionView : public views::MenuButton,
   // behavior.  MenuButton has the notion of a child popup being shown where the
   // button will stay in the pushed state until the "menu" (a popup in this
   // case) is dismissed.
+  // TODO(devlin): This is a good idea, but it has some funny UI side-effects,
+  // like the fact that label buttons enter a pressed state immediately, but
+  // menu buttons only enter a pressed state on release (if they're draggable).
+  // We should probably just pick a behavior, and stick to it.
   bool Activate() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -94,6 +98,7 @@ class ToolbarActionView : public views::MenuButton,
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
 
   // ToolbarActionViewDelegate: (public because called by others).
   void UpdateState() override;
