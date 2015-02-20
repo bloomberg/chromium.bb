@@ -472,7 +472,7 @@ void SVGElement::mapInstanceToElement(SVGElement* instance)
     ASSERT(instance);
     ASSERT(instance->inUseShadowTree());
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = ensureSVGRareData()->elementInstances();
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances = ensureSVGRareData()->elementInstances();
     ASSERT(!instances.contains(instance));
 
     instances.add(instance);
@@ -486,18 +486,18 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
     if (!hasSVGRareData())
         return;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = svgRareData()->elementInstances();
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances = svgRareData()->elementInstances();
 
     instances.remove(instance);
 }
 
-static WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& emptyInstances()
+static WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& emptyInstances()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > >, emptyInstances, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >())));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>>, emptyInstances, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>())));
     return *emptyInstances;
 }
 
-const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& SVGElement::instancesForElement() const
+const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& SVGElement::instancesForElement() const
 {
     if (!hasSVGRareData())
         return emptyInstances();
@@ -738,7 +738,7 @@ bool SVGElement::haveLoadedRequiredResources()
     return true;
 }
 
-static inline void collectInstancesForSVGElement(SVGElement* element, WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances)
+static inline void collectInstancesForSVGElement(SVGElement* element, WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances)
 {
     ASSERT(element);
     if (element->containingShadowRoot())
@@ -758,7 +758,7 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
         return false;
 
     // Add event listener to all shadow tree DOM element instances
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
     for (SVGElement* element : instances) {
         bool result = element->Node::addEventListener(eventType, listener, useCapture);
@@ -777,7 +777,7 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, PassRefPtr<E
         return false;
 
     // Remove event listener from all shadow tree DOM element instances
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
     for (SVGElement* shadowTreeElement : instances) {
         ASSERT(shadowTreeElement);
@@ -977,7 +977,7 @@ void SVGElement::invalidateInstances()
     if (instanceUpdatesBlocked())
         return;
 
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& set = instancesForElement();
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& set = instancesForElement();
     if (set.isEmpty())
         return;
 
@@ -1143,7 +1143,7 @@ void SVGElement::rebuildAllIncomingReferences()
     const SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
 
     // Iterate on a snapshot as |incomingReferences| may be altered inside loop.
-    WillBeHeapVector<RawPtrWillBeMember<SVGElement> > incomingReferencesSnapshot;
+    WillBeHeapVector<RawPtrWillBeMember<SVGElement>> incomingReferencesSnapshot;
     copyToVector(incomingReferences, incomingReferencesSnapshot);
 
     // Force rebuilding the |sourceElement| so it knows about this change.

@@ -377,7 +377,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, cons
 PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
     SVGElement* referenceElement, CheckIntersectionOrEnclosure mode) const
 {
-    WillBeHeapVector<RefPtrWillBeMember<Node> > nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> nodes;
 
     const SVGElement* root = this;
     if (referenceElement) {

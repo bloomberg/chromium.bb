@@ -227,7 +227,7 @@ static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElemen
     applyCSSPropertyToTarget(targetElement, id, valueAsString);
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances = targetElement->instancesForElement();
     for (SVGElement* shadowTreeElement : instances) {
         if (shadowTreeElement)
             applyCSSPropertyToTarget(shadowTreeElement, id, valueAsString);
@@ -246,7 +246,7 @@ static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetEle
     removeCSSPropertyFromTarget(targetElement, id);
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances = targetElement->instancesForElement();
     for (SVGElement* shadowTreeElement : instances) {
         if (shadowTreeElement)
             removeCSSPropertyFromTarget(shadowTreeElement, id);

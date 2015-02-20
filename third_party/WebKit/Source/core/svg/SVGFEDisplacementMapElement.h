@@ -57,8 +57,8 @@ private:
     RefPtrWillBeMember<SVGAnimatedNumber> m_scale;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
     RefPtrWillBeMember<SVGAnimatedString> m_in2;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<ChannelSelectorType> > m_xChannelSelector;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<ChannelSelectorType> > m_yChannelSelector;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ChannelSelectorType>> m_xChannelSelector;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ChannelSelectorType>> m_yChannelSelector;
 };
 
 } // namespace blink

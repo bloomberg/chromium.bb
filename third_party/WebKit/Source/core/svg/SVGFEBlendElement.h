@@ -71,7 +71,7 @@ private:
 
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
     RefPtrWillBeMember<SVGAnimatedString> m_in2;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<Mode> > m_mode;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<Mode>> m_mode;
 };
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGFEBlendElement::Mode>();

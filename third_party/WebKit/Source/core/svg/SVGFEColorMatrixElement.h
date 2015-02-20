@@ -53,7 +53,7 @@ private:
 
     RefPtrWillBeMember<SVGAnimatedNumberList> m_values;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<ColorMatrixType> > m_type;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ColorMatrixType>> m_type;
 };
 
 } // namespace blink

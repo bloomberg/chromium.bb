@@ -35,7 +35,7 @@ class LayoutObject;
 
 class SVGFilterBuilder final : public RefCountedWillBeGarbageCollectedFinalized<SVGFilterBuilder> {
 public:
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<FilterEffect> > FilterEffectSet;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<FilterEffect>> FilterEffectSet;
 
     static PassRefPtrWillBeRawPtr<SVGFilterBuilder> create(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha)
     {
@@ -73,7 +73,7 @@ private:
             m_effectReferences.add(entry.value, FilterEffectSet());
     }
 
-    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<FilterEffect> > NamedFilterEffectMap;
+    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<FilterEffect>> NamedFilterEffectMap;
 
     NamedFilterEffectMap m_builtinEffects;
     NamedFilterEffectMap m_namedEffects;

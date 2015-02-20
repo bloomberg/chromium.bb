@@ -249,7 +249,7 @@ protected:
 template <typename Property, typename TearOffType>
 class SVGAnimatedProperty<Property, TearOffType, void> : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
     {
         return adoptRefWillBeNoop(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
     }

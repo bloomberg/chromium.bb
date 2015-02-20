@@ -54,8 +54,8 @@ public:
     SVGElementSet& incomingReferences() { return m_incomingReferences; }
     const SVGElementSet& incomingReferences() const { return m_incomingReferences; }
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() { return m_elementInstances; }
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& elementInstances() const { return m_elementInstances; }
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& elementInstances() { return m_elementInstances; }
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& elementInstances() const { return m_elementInstances; }
 
     bool instanceUpdatesBlocked() const { return m_instancesUpdatesBlocked; }
     void setInstanceUpdatesBlocked(bool value) { m_instancesUpdatesBlocked = value; }
@@ -89,7 +89,7 @@ private:
 #endif
     SVGElementSet m_outgoingReferences;
     SVGElementSet m_incomingReferences;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementInstances;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> m_elementInstances;
     RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
     RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
     RefPtrWillBeMember<SVGElement> m_correspondingElement;

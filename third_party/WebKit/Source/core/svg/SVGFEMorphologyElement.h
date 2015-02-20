@@ -53,7 +53,7 @@ private:
 
     RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_radius;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<MorphologyOperatorType> > m_svgOperator;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<MorphologyOperatorType>> m_svgOperator;
 };
 
 } // namespace blink

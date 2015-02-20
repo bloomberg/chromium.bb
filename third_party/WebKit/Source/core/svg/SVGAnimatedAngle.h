@@ -64,7 +64,7 @@ protected:
     explicit SVGAnimatedAngle(SVGMarkerElement* contextElement);
 
 private:
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGMarkerOrientType>> m_orientType;
 };
 
 } // namespace blink

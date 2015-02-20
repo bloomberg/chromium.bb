@@ -48,7 +48,7 @@ class SVGLength;
 class SVGSVGElement;
 class SVGUseElement;
 
-typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement> > SVGElementSet;
+typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement>> SVGElementSet;
 
 class SVGElement : public Element {
     DEFINE_WRAPPERTYPEINFO();
@@ -111,7 +111,7 @@ public:
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
     void addSVGLengthPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, SVGLength&);
 
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instancesForElement() const;
+    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instancesForElement() const;
     void mapInstanceToElement(SVGElement*);
     void removeInstanceMapping(SVGElement*);
 
@@ -242,9 +242,9 @@ private:
 
     void buildPendingResourcesIfNeeded();
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementsWithRelativeLengths;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> m_elementsWithRelativeLengths;
 
-    typedef WillBeHeapHashMap<QualifiedName, RefPtrWillBeMember<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
+    typedef WillBeHeapHashMap<QualifiedName, RefPtrWillBeMember<SVGAnimatedPropertyBase>> AttributeToPropertyMap;
     AttributeToPropertyMap m_attributeToPropertyMap;
 
 #if ENABLE(ASSERT)

@@ -155,7 +155,7 @@ bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
     if (!renderer())
         return false;
 
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGGradientElement> > processedGradients;
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGGradientElement>> processedGradients;
     SVGGradientElement* current = this;
 
     setGradientAttributes(current, attributes);

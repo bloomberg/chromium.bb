@@ -40,7 +40,7 @@ class Element;
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
     WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<Element> > SVGPendingElements;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<Element>> SVGPendingElements;
     explicit SVGDocumentExtensions(Document*);
     ~SVGDocumentExtensions();
 
@@ -79,12 +79,12 @@ public:
 
 private:
     RawPtrWillBeMember<Document> m_document;
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_timeContainers; // For SVG 1.2 support this will need to be made more general.
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement>> m_timeContainers; // For SVG 1.2 support this will need to be made more general.
     HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
-    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> > m_pendingResources; // Resources that are pending.
-    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> > m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
+    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResources; // Resources that are pending.
+    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
     OwnPtr<SVGResourcesCache> m_resourcesCache;
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement>> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
 #if ENABLE(ASSERT)
     bool m_inRelativeLengthSVGRootsInvalidation;

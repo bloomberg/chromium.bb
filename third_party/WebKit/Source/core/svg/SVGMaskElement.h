@@ -69,8 +69,8 @@ private:
     RefPtrWillBeMember<SVGAnimatedLength> m_y;
     RefPtrWillBeMember<SVGAnimatedLength> m_width;
     RefPtrWillBeMember<SVGAnimatedLength> m_height;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_maskUnits;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_maskContentUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_maskUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_maskContentUnits;
 };
 
 } // namespace blink

@@ -75,11 +75,11 @@ private:
     RefPtrWillBeMember<SVGAnimatedLength> m_y;
     RefPtrWillBeMember<SVGAnimatedLength> m_width;
     RefPtrWillBeMember<SVGAnimatedLength> m_height;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_filterUnits;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_primitiveUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_filterUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_primitiveUnits;
     RefPtrWillBeMember<SVGAnimatedIntegerOptionalInteger> m_filterRes;
 
-    WillBeHeapHashSet<RefPtrWillBeMember<Node> > m_clientsToAdd;
+    WillBeHeapHashSet<RefPtrWillBeMember<Node>> m_clientsToAdd;
 };
 
 } // namespace blink

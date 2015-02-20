@@ -94,7 +94,7 @@ private:
     RefPtrWillBeMember<SVGAnimatedLength> m_markerWidth;
     RefPtrWillBeMember<SVGAnimatedLength> m_markerHeight;
     RefPtrWillBeMember<SVGAnimatedAngle> m_orientAngle;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGMarkerUnitsType> > m_markerUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGMarkerUnitsType>> m_markerUnits;
 };
 
 } // namespace blink

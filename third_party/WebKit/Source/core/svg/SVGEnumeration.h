@@ -103,7 +103,7 @@ template<typename Enum> unsigned short getMaxExposedEnumValue()
 template<typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
 public:
-    static PassRefPtrWillBeRawPtr<SVGEnumeration<Enum> > create(Enum newValue)
+    static PassRefPtrWillBeRawPtr<SVGEnumeration<Enum>> create(Enum newValue)
     {
         return adoptRefWillBeNoop(new SVGEnumeration<Enum>(newValue));
     }

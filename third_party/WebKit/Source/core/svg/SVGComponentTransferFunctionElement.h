@@ -63,7 +63,7 @@ private:
     RefPtrWillBeMember<SVGAnimatedNumber> m_amplitude;
     RefPtrWillBeMember<SVGAnimatedNumber> m_exponent;
     RefPtrWillBeMember<SVGAnimatedNumber> m_offset;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<ComponentTransferType> > m_type;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ComponentTransferType>> m_type;
 };
 
 } // namespace blink

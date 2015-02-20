@@ -65,8 +65,8 @@ private:
 
     RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
     RefPtrWillBeMember<SVGAnimatedNumber> m_seed;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGStitchOptions> > m_stitchTiles;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<TurbulenceType> > m_type;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGStitchOptions>> m_stitchTiles;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<TurbulenceType>> m_type;
     RefPtrWillBeMember<SVGAnimatedInteger> m_numOctaves;
 };
 

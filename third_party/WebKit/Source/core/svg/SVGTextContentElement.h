@@ -83,7 +83,7 @@ private:
 
     RefPtrWillBeMember<SVGAnimatedLength> m_textLength;
     bool m_textLengthIsSpecifiedByUser;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGLengthAdjustType> > m_lengthAdjust;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGLengthAdjustType>> m_lengthAdjust;
 };
 
 inline bool isSVGTextContentElement(const SVGElement& element)

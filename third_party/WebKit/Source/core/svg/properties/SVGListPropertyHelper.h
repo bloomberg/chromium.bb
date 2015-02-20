@@ -75,7 +75,7 @@ public:
 
     class ConstIterator {
     private:
-        typedef typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType> >::const_iterator WrappedType;
+        typedef typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>>::const_iterator WrappedType;
 
     public:
         ConstIterator(WrappedType it)
@@ -174,7 +174,7 @@ private:
     bool removeFromOldOwnerListAndAdjustIndex(PassRefPtrWillBeRawPtr<ItemPropertyType>, size_t* indexToModify);
     size_t findItem(PassRefPtrWillBeRawPtr<ItemPropertyType>);
 
-    WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType> > m_values;
+    WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>> m_values;
 
     static PassRefPtrWillBeRawPtr<Derived> toDerived(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
     {
@@ -206,8 +206,8 @@ template<typename Derived, typename ItemProperty>
 void SVGListPropertyHelper<Derived, ItemProperty>::clear()
 {
     // detach all list items as they are no longer part of this list
-    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType> >::const_iterator it = m_values.begin();
-    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType> >::const_iterator itEnd = m_values.end();
+    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>>::const_iterator it = m_values.begin();
+    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>>::const_iterator itEnd = m_values.end();
     for (; it != itEnd; ++it) {
         ASSERT((*it)->ownerList() == this);
         (*it)->setOwnerList(0);
@@ -381,8 +381,8 @@ void SVGListPropertyHelper<Derived, ItemProperty>::deepCopy(PassRefPtrWillBeRawP
     RefPtrWillBeRawPtr<Derived> from = passFrom;
 
     clear();
-    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType> >::const_iterator it = from->m_values.begin();
-    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType> >::const_iterator itEnd = from->m_values.end();
+    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>>::const_iterator it = from->m_values.begin();
+    typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>>::const_iterator itEnd = from->m_values.end();
     for (; it != itEnd; ++it) {
         append((*it)->clone());
     }

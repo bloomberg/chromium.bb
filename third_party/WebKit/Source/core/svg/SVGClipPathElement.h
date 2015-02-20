@@ -53,7 +53,7 @@ private:
 
     virtual LayoutObject* createRenderer(const LayoutStyle&) override;
 
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_clipPathUnits;
 };
 
 } // namespace blink

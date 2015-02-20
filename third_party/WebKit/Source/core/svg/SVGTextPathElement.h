@@ -85,8 +85,8 @@ private:
     virtual bool selfHasRelativeLengths() const override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_startOffset;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGTextPathMethodType> > m_method;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGTextPathSpacingType> > m_spacing;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGTextPathMethodType>> m_method;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGTextPathSpacingType>> m_spacing;
 };
 
 } // namespace blink

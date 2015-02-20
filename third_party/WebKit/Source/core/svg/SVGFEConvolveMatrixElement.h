@@ -67,7 +67,7 @@ private:
     RefPtrWillBeMember<SVGAnimatedNumber> m_bias;
     RefPtrWillBeMember<SVGAnimatedNumber> m_divisor;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<EdgeModeType> > m_edgeMode;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<EdgeModeType>> m_edgeMode;
     RefPtrWillBeMember<SVGAnimatedNumberList> m_kernelMatrix;
     RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
     RefPtrWillBeMember<SVGAnimatedIntegerOptionalInteger> m_order;

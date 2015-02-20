@@ -159,7 +159,7 @@ void SVGDocumentExtensions::addPendingResource(const AtomicString& id, Element* 
     if (id.isEmpty())
         return;
 
-    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::AddResult result = m_pendingResources.add(id, nullptr);
+    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>>::AddResult result = m_pendingResources.add(id, nullptr);
     if (result.isNewEntry)
         result.storedValue->value = adoptPtrWillBeNoop(new SVGPendingElements);
     result.storedValue->value->add(element);

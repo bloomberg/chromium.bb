@@ -61,7 +61,7 @@ private:
     RefPtrWillBeMember<SVGAnimatedNumber> m_k4;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
     RefPtrWillBeMember<SVGAnimatedString> m_in2;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<CompositeOperationType> > m_svgOperator;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<CompositeOperationType>> m_svgOperator;
 };
 
 } // namespace blink

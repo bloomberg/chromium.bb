@@ -73,8 +73,8 @@ private:
     virtual void childrenChanged(const ChildrenChange&) override final;
 
     RefPtrWillBeMember<SVGAnimatedTransformList> m_gradientTransform;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGSpreadMethodType>> m_spreadMethod;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_gradientUnits;
 };
 
 inline bool isSVGGradientElement(const SVGElement& element)
