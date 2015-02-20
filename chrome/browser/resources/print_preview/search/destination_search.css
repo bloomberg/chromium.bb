@@ -64,6 +64,10 @@
   padding: 0 14px 18px;
 }
 
+#destination-search .lists > :last-child {
+  padding-bottom: 0;
+}
+
 #destination-search .invitation-container {
   -webkit-animation: invitation-fadein 500ms;
   -webkit-box-align: center;

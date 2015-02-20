@@ -151,6 +151,14 @@ cr.define('print_preview', function() {
           DestinationList.HEIGHT_OF_ITEM_);
     },
 
+    /**
+     * @return {Element} The element that contains this one. Used for height
+     *     calculations.
+     */
+    getContainerElement: function() {
+      return this.getElement().parentNode;
+    },
+
     /** @param {boolean} isVisible Whether the throbber is visible. */
     setIsThrobberVisible: function(isVisible) {
       setIsVisible(this.getChildElement('.throbber-container'), isVisible);

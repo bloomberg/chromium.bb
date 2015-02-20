@@ -123,14 +123,6 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Padding at the bottom of a destination list in pixels.
-   * @type {number}
-   * @const
-   * @private
-   */
-  DestinationSearch.LIST_BOTTOM_PADDING_ = 18;
-
-  /**
    * Number of unregistered destinations that may be promoted to the top.
    * @type {number}
    * @const
@@ -390,8 +382,9 @@ cr.define('print_preview', function() {
 
       var getListsTotalHeight = function(lists, counts) {
         return lists.reduce(function(sum, list, index) {
+          var container = list.getContainerElement();
           return sum + list.getEstimatedHeightInPixels(counts[index]) +
-              DestinationSearch.LIST_BOTTOM_PADDING_;
+              parseInt(window.getComputedStyle(container).paddingBottom, 10);
         }, 0);
       };
       var getCounts = function(lists, count) {
