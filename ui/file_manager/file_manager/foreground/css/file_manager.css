@@ -218,7 +218,7 @@ div.splitter {
   visibility: hidden;
 }
 
-#directory-tree .tree-row > div.root-eject {
+#directory-tree .tree-row > .root-eject {
   background: -webkit-image-set(
       url(../images/files/ui/eject.png) 1x,
       url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
@@ -226,14 +226,14 @@ div.splitter {
   flex: none;
   height: 20px;
   margin-right: 6px;
-  opacity: 0.7;
-  transition: opacity 70ms linear;
   width: 20px;
   z-index: 1;  /* Make sure .root-eject is on upper layer than paper-ripple. */
 }
 
-#directory-tree:focus .tree-row[selected] > div.root-eject {
-  opacity: 1;
+#directory-tree .tree-row[selected] > .root-eject {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/eject_active.png) 1x,
+      url(../images/files/ui/2x/eject_active.png) 2x);
 }
 
 #directory-tree .root-item[disabled] {
