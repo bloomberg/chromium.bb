@@ -438,8 +438,9 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // Schedules a HistoryDBTask for running on the history backend thread. See
   // HistoryDBTask for details on what this does. Takes ownership of |task|.
-  virtual void ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
-                              base::CancelableTaskTracker* tracker);
+  virtual base::CancelableTaskTracker::TaskId ScheduleDBTask(
+      scoped_ptr<history::HistoryDBTask> task,
+      base::CancelableTaskTracker* tracker);
 
   // This callback is invoked when favicon change for urls.
   typedef base::Callback<void(const std::set<GURL>&)> OnFaviconChangedCallback;
@@ -519,9 +520,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
  private:
   class BackendDelegate;
-#if defined(OS_ANDROID)
-  friend class AndroidHistoryProviderService;
-#endif
   friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
   friend class FaviconService;

@@ -329,15 +329,17 @@ void HistoryService::RemoveObserver(history::HistoryServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void HistoryService::ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
-                                    base::CancelableTaskTracker* tracker) {
+base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
+    scoped_ptr<history::HistoryDBTask> task,
+    base::CancelableTaskTracker* tracker) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   base::CancelableTaskTracker::IsCanceledCallback is_canceled;
-  tracker->NewTrackedTaskId(&is_canceled);
+  base::CancelableTaskTracker::TaskId task_id =
+      tracker->NewTrackedTaskId(&is_canceled);
   // Use base::ThreadTaskRunnerHandler::Get() to get a message loop proxy to
   // the current message loop so that we can forward the call to the method
-  // HistoryDBTask::DoneRunOnMainThread in the correct thread.
+  // HistoryDBTask::DoneRunOnMainThread() in the correct thread.
   thread_->message_loop_proxy()->PostTask(
       FROM_HERE,
       base::Bind(&HistoryBackend::ProcessDBTask,
@@ -345,6 +347,7 @@ void HistoryService::ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
                  base::Passed(&task),
                  base::ThreadTaskRunnerHandle::Get(),
                  is_canceled));
+  return task_id;
 }
 
 void HistoryService::FlushForTest(const base::Closure& flushed) {

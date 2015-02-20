@@ -1525,7 +1525,6 @@
       'browser/history/delete_directive_handler.h',
       'browser/history/history_backend.cc',
       'browser/history/history_backend.h',
-      'browser/history/history_backend_android.cc',
       'browser/history/history_service.cc',
       'browser/history/history_service.h',
       'browser/history/history_service_factory.cc',

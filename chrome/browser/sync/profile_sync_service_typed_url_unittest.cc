@@ -115,8 +115,9 @@ class HistoryServiceMock : public HistoryService {
  public:
   HistoryServiceMock() : HistoryService(), backend_(nullptr) {}
 
-  void ScheduleDBTask(scoped_ptr<history::HistoryDBTask> task,
-                      base::CancelableTaskTracker* tracker) override {
+  base::CancelableTaskTracker::TaskId ScheduleDBTask(
+      scoped_ptr<history::HistoryDBTask> task,
+      base::CancelableTaskTracker* tracker) override {
     history::HistoryDBTask* task_raw = task.get();
     task_runner_->PostTaskAndReply(
         FROM_HERE,
@@ -124,6 +125,7 @@ class HistoryServiceMock : public HistoryService {
                    base::Unretained(this), task_raw),
         base::Bind(&base::DeletePointer<history::HistoryDBTask>,
                    task.release()));
+    return base::CancelableTaskTracker::kBadTaskId;  // unused
   }
 
   MOCK_METHOD0(Shutdown, void());

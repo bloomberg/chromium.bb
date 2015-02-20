@@ -27,10 +27,6 @@
 #include "components/history/core/browser/visit_tracker.h"
 #include "sql/init_status.h"
 
-#if defined(OS_ANDROID)
-#include "components/history/core/browser/android/android_history_types.h"
-#endif
-
 class HistoryURLProvider;
 struct HistoryURLProviderParams;
 class SkBitmap;
@@ -336,90 +332,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 #if defined(OS_ANDROID)
   // Android Provider ---------------------------------------------------------
 
-  // History and bookmarks ----------------------------------------------------
-  // Inserts the given values into history backend.
-  AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& row);
-
-  // Runs the given query on history backend and returns the result.
-  //
-  // |projections| is the vector of the result columns.
-  // |selection| is the SQL WHERE clause without 'WHERE'.
-  // |selection_args| is the arguments for WHERE clause.
-  // |sort_order| is the SQL ORDER clause.
-  history::AndroidStatement* QueryHistoryAndBookmarks(
-      const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
-      const std::string& selection,
-      const std::vector<base::string16>& selection_args,
-      const std::string& sort_order);
-
-  // Returns the number of row updated by the update query.
-  //
-  // |row| is the value to update.
-  // |selection| is the SQL WHERE clause without 'WHERE'.
-  // |selection_args| is the arguments for the WHERE clause.
-  int UpdateHistoryAndBookmarks(
-      const HistoryAndBookmarkRow& row,
-      const std::string& selection,
-      const std::vector<base::string16>& selection_args);
-
-  // Deletes the specified rows and returns the number of rows deleted.
-  //
-  // |selection| is the SQL WHERE clause without 'WHERE'.
-  // |selection_args| is the arguments for the WHERE clause.
-  //
-  // If |selection| is empty all history and bookmarks are deleted.
-  int DeleteHistoryAndBookmarks(
-      const std::string& selection,
-      const std::vector<base::string16>& selection_args);
-
-  // Deletes the matched history and returns the number of rows deleted.
-  int DeleteHistory(const std::string& selection,
-                    const std::vector<base::string16>& selection_args);
-
-  // Statement ----------------------------------------------------------------
-  // Move the statement's current position.
-  int MoveStatement(history::AndroidStatement* statement,
-                    int current_pos,
-                    int destination);
-
-  // Close the given statement. The ownership is transfered.
-  void CloseStatement(AndroidStatement* statement);
-
-  // Search terms -------------------------------------------------------------
-  // Inserts the given values and returns the SearchTermID of the inserted row.
-  SearchTermID InsertSearchTerm(const SearchRow& row);
-
-  // Returns the number of row updated by the update query.
-  //
-  // |row| is the value to update.
-  // |selection| is the SQL WHERE clause without 'WHERE'.
-  // |selection_args| is the arguments for the WHERE clause.
-  int UpdateSearchTerms(const SearchRow& row,
-                        const std::string& selection,
-                        const std::vector<base::string16> selection_args);
-
-  // Deletes the matched rows and returns the number of deleted rows.
-  //
-  // |selection| is the SQL WHERE clause without 'WHERE'.
-  // |selection_args| is the arguments for WHERE clause.
-  //
-  // If |selection| is empty all search terms will be deleted.
-  int DeleteSearchTerms(const std::string& selection,
-                        const std::vector<base::string16> selection_args);
-
-  // Returns the result of the given query.
-  //
-  // |projections| specifies the result columns.
-  // |selection| is the SQL WHERE clause without 'WHERE'.
-  // |selection_args| is the arguments for WHERE clause.
-  // |sort_order| is the SQL ORDER clause.
-  history::AndroidStatement* QuerySearchTerms(
-      const std::vector<SearchRow::ColumnID>& projections,
-      const std::string& selection,
-      const std::vector<base::string16>& selection_args,
-      const std::string& sort_order);
-
-#endif  // defined(OS_ANDROID)
+  // Returns the android provider backend associated with the HistoryBackend.
+  AndroidProviderBackend* android_provider_backend() {
+    return android_provider_backend_.get();
+  }
+#endif
 
   // Generic operations --------------------------------------------------------
 
