@@ -53,6 +53,7 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   content::AccessTokenStore* CreateAccessTokenStore() override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
+  void ResourceDispatcherHostCreated() override;
   std::string GetApplicationLocale() override;
   void AllowCertificateError(
       int render_process_id,

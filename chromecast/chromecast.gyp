@@ -73,6 +73,10 @@
       'target_name': 'cast_net',
       'type': '<(component)',
       'sources': [
+        'net/connectivity_checker.cc',
+        'net/connectivity_checker.h',
+        'net/net_switches.cc',
+        'net/net_switches.h',
         'net/network_change_notifier_cast.cc',
         'net/network_change_notifier_cast.h',
         'net/network_change_notifier_factory_cast.cc',
@@ -139,6 +143,7 @@
       'dependencies': [
         'cast_base',
         'cast_crash_client',
+        'cast_net',
         'cast_shell_pak',
         'cast_shell_resources',
         'cast_version_header',
@@ -181,6 +186,8 @@
         'browser/cast_http_user_agent_settings.h',
         'browser/cast_network_delegate.cc',
         'browser/cast_network_delegate.h',
+        'browser/cast_resource_dispatcher_host_delegate.cc',
+        'browser/cast_resource_dispatcher_host_delegate.h',
         'browser/devtools/cast_dev_tools_delegate.cc',
         'browser/devtools/cast_dev_tools_delegate.h',
         'browser/devtools/remote_debugging_server.cc',
@@ -496,7 +503,6 @@
           'target_name': 'cast_shell_core',
           'type': '<(component)',
           'dependencies': [
-            'cast_net',
             'cast_shell_media',
             'cast_shell_common',
             'media/media.gyp:cast_media',

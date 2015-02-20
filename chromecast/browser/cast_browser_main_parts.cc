@@ -28,6 +28,7 @@
 #include "chromecast/common/cast_paths.h"
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/platform_client_auth.h"
+#include "chromecast/net/connectivity_checker.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #include "content/public/browser/browser_thread.h"
@@ -207,6 +208,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
     ::media::SetBrowserCdmFactory(new media::CastBrowserCdmFactory);
 #endif  // !defined(OS_ANDROID)
+
+  cast_browser_process_->SetConnectivityChecker(
+      make_scoped_refptr(new ConnectivityChecker(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::FILE))));
 
   url_request_context_factory_->InitializeOnUIThread();
 

@@ -8,9 +8,11 @@
 #include "base/prefs/pref_service.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
+#include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/service/cast_service.h"
+#include "chromecast/net/connectivity_checker.h"
 
 #if defined(OS_ANDROID)
 #include "components/crash/browser/crash_dump_manager_android.h"
@@ -82,6 +84,12 @@ void CastBrowserProcess::SetRemoteDebuggingServer(
   remote_debugging_server_.swap(remote_debugging_server);
 }
 
+void CastBrowserProcess::SetResourceDispatcherHostDelegate(
+    scoped_ptr<CastResourceDispatcherHostDelegate> delegate) {
+  DCHECK(!resource_dispatcher_host_delegate_);
+  resource_dispatcher_host_delegate_.swap(delegate);
+}
+
 #if defined(OS_ANDROID)
 void CastBrowserProcess::SetCrashDumpManager(
     scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager) {
@@ -89,6 +97,12 @@ void CastBrowserProcess::SetCrashDumpManager(
   crash_dump_manager_.swap(crash_dump_manager);
 }
 #endif  // defined(OS_ANDROID)
+
+void CastBrowserProcess::SetConnectivityChecker(
+    scoped_refptr<ConnectivityChecker> connectivity_checker) {
+  DCHECK(!connectivity_checker_);
+  connectivity_checker_.swap(connectivity_checker);
+}
 
 }  // namespace shell
 }  // namespace chromecast

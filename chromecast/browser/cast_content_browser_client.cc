@@ -15,6 +15,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_network_delegate.h"
+#include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -158,6 +160,13 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
   // to retrieve media data chunks while running in a https page. This pref
   // should be disabled once all the content providers are no longer doing that.
   prefs->allow_running_insecure_content = true;
+}
+
+void CastContentBrowserClient::ResourceDispatcherHostCreated() {
+  CastBrowserProcess::GetInstance()->SetResourceDispatcherHostDelegate(
+      make_scoped_ptr(new CastResourceDispatcherHostDelegate));
+  content::ResourceDispatcherHost::Get()->SetDelegate(
+      CastBrowserProcess::GetInstance()->resource_dispatcher_host_delegate());
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {
