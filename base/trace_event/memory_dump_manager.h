@@ -50,16 +50,16 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void OnTraceLogDisabled() override;
 
  private:
+  friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
   friend class MemoryDumpManagerTest;
 
   static const char kTraceCategory[];
 
+  static void SetInstanceForTesting(MemoryDumpManager* instance);
+
   MemoryDumpManager();
   virtual ~MemoryDumpManager();
-
-  // Tears down the singleton instance.
-  static void DeleteForTesting();
 
   // Broadcasts the dump requests to the other processes.
   void BroadcastDumpRequest();

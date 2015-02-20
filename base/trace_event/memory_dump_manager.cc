@@ -10,20 +10,12 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
 
-// TODO(primiano): in a separate CL rename DeleteTraceLogForTesting into
-// something like base::internal::TeardownSingletonForTesting so we don't have
-// to add a new friend to singleton each time.
-class DeleteTraceLogForTesting {
- public:
-  static void Delete() {
-    Singleton<
-        base::trace_event::MemoryDumpManager,
-        LeakySingletonTraits<base::trace_event::MemoryDumpManager>>::OnExit(0);
-  }
-};
-
 namespace base {
 namespace trace_event {
+
+namespace {
+MemoryDumpManager* g_instance_for_testing = nullptr;
+}
 
 // TODO(primiano): this should be smarter and should do something similar to
 // trace event synthetic delays.
@@ -32,13 +24,16 @@ const char MemoryDumpManager::kTraceCategory[] =
 
 // static
 MemoryDumpManager* MemoryDumpManager::GetInstance() {
+  if (g_instance_for_testing)
+    return g_instance_for_testing;
+
   return Singleton<MemoryDumpManager,
                    LeakySingletonTraits<MemoryDumpManager>>::get();
 }
 
 // static
-void MemoryDumpManager::DeleteForTesting() {
-  DeleteTraceLogForTesting::Delete();
+void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
+  g_instance_for_testing = instance;
 }
 
 MemoryDumpManager::MemoryDumpManager() : memory_tracing_enabled_(0) {

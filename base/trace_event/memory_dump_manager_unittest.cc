@@ -17,14 +17,16 @@ namespace trace_event {
 class MemoryDumpManagerTest : public testing::Test {
  public:
   void SetUp() override {
+    mdm_.reset(new MemoryDumpManager());
+    MemoryDumpManager::SetInstanceForTesting(mdm_.get());
+    ASSERT_EQ(mdm_, MemoryDumpManager::GetInstance());
     MemoryDumpManager::GetInstance()->Initialize();
-    mdm_ = MemoryDumpManager::GetInstance();
   }
 
   void TearDown() override {
-    MemoryDumpManager::DeleteForTesting();
+    MemoryDumpManager::SetInstanceForTesting(nullptr);
+    mdm_.reset();
     TraceLog::DeleteForTesting();
-    mdm_ = NULL;
   }
 
  protected:
@@ -37,7 +39,7 @@ class MemoryDumpManagerTest : public testing::Test {
 
   void DisableTracing() { TraceLog::GetInstance()->SetDisabled(); }
 
-  MemoryDumpManager* mdm_;
+  scoped_ptr<MemoryDumpManager> mdm_;
 
  private:
   // We want our singleton torn down after each test.
