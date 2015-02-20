@@ -76,6 +76,7 @@ crbug.com/248938 [ Linux ] virtual/threaded/animations/missing-values-first-keyf
 
 crbug.com/385015 [ Linux ] editing/execCommand/window-open-insert-list-crash.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/frames/iframe-onload-remove-self-no-crash.html [ Failure ]
+crbug.com/385015 [ Linux ] virtual/slimmingpaint/fast/frames/iframe-onload-remove-self-no-crash.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/loader/create-frame-in-DOMContentLoaded.html [ Failure ]
 crbug.com/385015 [ Linux ] fast/loader/frame-creation-removal.html [ Failure ]
 

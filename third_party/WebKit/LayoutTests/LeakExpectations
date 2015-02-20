@@ -15,6 +15,15 @@ crbug.com/364398 fast/frames/viewsource/viewsource-6.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-1.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-2.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-3.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-4.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-5.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-6.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
+crbug.com/364398 virtual/slimmingpaint/fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
 crbug.com/364398 http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
 crbug.com/364398 http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
 
@@ -47,6 +56,7 @@ crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
 # -----------------------------------------------------------------
 
 crbug.com/364411 fast/frames/location-observe-callback-crash.html [ Leak ]
+crbug.com/364411 virtual/slimmingpaint/fast/frames/location-observe-callback-crash.html [ Leak ]
 
 crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak ]
 crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
