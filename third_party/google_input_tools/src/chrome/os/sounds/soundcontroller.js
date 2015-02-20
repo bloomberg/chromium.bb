@@ -11,15 +11,15 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.SoundController');
+goog.provide('i18n.input.chrome.sounds.SoundController');
 
 goog.require('goog.Disposable');
 goog.require('goog.dom');
-goog.require('i18n.input.chrome.inputview.Sounds');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('i18n.input.chrome.sounds.Sounds');
 
 goog.scope(function() {
-var Sounds = i18n.input.chrome.inputview.Sounds;
+var Sounds = i18n.input.chrome.sounds.Sounds;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var keyToSoundIdOnKeyUp = {};
 var keyToSoundIdOnKeyRepeat = {};
@@ -34,7 +34,7 @@ var keyToSoundIdOnKeyRepeat = {};
  * @constructor
  * @extends {goog.Disposable}
  */
-i18n.input.chrome.SoundController = function(enabled, opt_volume) {
+i18n.input.chrome.sounds.SoundController = function(enabled, opt_volume) {
 
   /**
    * Collection of all the sound pools.
@@ -58,10 +58,10 @@ i18n.input.chrome.SoundController = function(enabled, opt_volume) {
     this.initialize();
   }
 };
-goog.inherits(i18n.input.chrome.SoundController, goog.Disposable);
+goog.inherits(i18n.input.chrome.sounds.SoundController, goog.Disposable);
 
 
-var Controller = i18n.input.chrome.SoundController;
+var Controller = i18n.input.chrome.sounds.SoundController;
 
 
 /**

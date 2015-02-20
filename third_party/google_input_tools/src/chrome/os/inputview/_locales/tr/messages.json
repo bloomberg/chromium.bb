@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "\u015eu kelime i\u00e7in d\u00fczeltmeyi yoksay"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "\u0130branice Klavye Ayarlar\u0131 Sayfas\u0131"
   },
@@ -3282,7 +3285,7 @@
     "message": "Se\u00e7ileni Kald\u0131r"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "T\u00fcm S\u00f6zl\u00fck Giri\u015flerini S\u0131f\u0131rla"
   },
   "user_dict_save": {
     "message": "Kaydet"

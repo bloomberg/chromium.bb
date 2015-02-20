@@ -19,6 +19,8 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('i18n.input.chrome.DataSource');
+goog.require('i18n.input.chrome.inputview.FeatureName');
+goog.require('i18n.input.chrome.inputview.FeatureTracker');
 goog.require('i18n.input.chrome.inputview.GlobalFlags');
 goog.require('i18n.input.chrome.inputview.ReadyState');
 goog.require('i18n.input.chrome.inputview.StateType');
@@ -33,9 +35,11 @@ goog.require('i18n.input.chrome.message.Type');
 goog.scope(function() {
 var CandidatesBackEvent = i18n.input.chrome.DataSource.CandidatesBackEvent;
 var ContextType = i18n.input.chrome.message.ContextType;
-var Type = i18n.input.chrome.message.Type;
+var FeatureTracker = i18n.input.chrome.inputview.FeatureTracker;
+var FeatureName = i18n.input.chrome.inputview.FeatureName;
 var Name = i18n.input.chrome.message.Name;
 var SizeSpec = i18n.input.chrome.inputview.SizeSpec;
+var Type = i18n.input.chrome.message.Type;
 
 
 
@@ -63,6 +67,15 @@ i18n.input.chrome.inputview.Adapter = function(readyState) {
    * @private
    */
   this.modifierState_ = {};
+
+
+  /**
+   * Tracker for which FeatureName are enabled.
+   *
+   * @type {!FeatureTracker};
+   */
+  this.features = new FeatureTracker();
+
 
   /**
    * The system ready state.
@@ -113,6 +126,7 @@ Adapter.prototype.isVoiceInputEnabled = true;
 
 /** @type {boolean} */
 Adapter.prototype.showGlobeKey = false;
+
 
 /** @type {string} */
 Adapter.prototype.contextType = ContextType.DEFAULT;
@@ -359,19 +373,18 @@ Adapter.prototype.isGestureDeletionEnabled = function() {
   if (this.contextType == ContextType.URL) {
     return false;
   }
-  return this.isGestureEdittingEnabled();
+  return this.features.isEnabled(FeatureName.GESTURE_EDITTING);
 };
 
 
 /**
- * True to enable gesture editting.
+ * True to enable gesture typing.
  *
  * @return {boolean}
  */
-Adapter.prototype.isGestureEdittingEnabled = function() {
-  return this.isExperimental;
+Adapter.prototype.isGestureTypingEnabled = function() {
+  return this.features.isEnabled(FeatureName.GESTURE_TYPING);
 };
-
 
 /**
  * Callback when blurs in the context.
@@ -483,6 +496,7 @@ Adapter.prototype.initialize = function(languageCode) {
     inputview.getKeyboardConfig((function(config) {
       this.isA11yMode = !!config['a11ymode'];
       this.isExperimental = !!config['experimental'];
+      this.features.initialize(config);
       this.readyState_.markStateReady(StateType.KEYBOARD_CONFIG_READY);
       this.maybeDispatchSettingsReadyEvent_();
     }).bind(this));

@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignora la correcci\u00f3 de"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat hebreu"
   },
@@ -3282,7 +3285,7 @@
     "message": "Suprimeix les seleccionades"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Restableix totes les entrades de diccionari"
   },
   "user_dict_save": {
     "message": "Desa"

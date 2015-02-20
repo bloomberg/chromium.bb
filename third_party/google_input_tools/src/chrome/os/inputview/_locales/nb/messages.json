@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignorer korrigering av"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Innstillinger-side for hebraisk tastatur"
   },
@@ -3282,7 +3285,7 @@
     "message": "Fjern valgte"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Tilbakestill alle ordbokbidrag"
   },
   "user_dict_save": {
     "message": "Lagre"

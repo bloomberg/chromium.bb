@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignorera korrigeringen av"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Inst\u00e4llningssidan f\u00f6r hebreiskt tangentbord"
   },
@@ -3282,7 +3285,7 @@
     "message": "Ta bort markerade poster"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "\u00c5terst\u00e4ll alla \u00e4ndringar i ordlistan"
   },
   "user_dict_save": {
     "message": "Spara"

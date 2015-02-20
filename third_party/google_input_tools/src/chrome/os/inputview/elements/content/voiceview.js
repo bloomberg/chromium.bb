@@ -19,12 +19,12 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.Sounds');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
+goog.require('i18n.input.chrome.sounds.Sounds');
 
 
 goog.scope(function() {
@@ -32,7 +32,7 @@ var Css = i18n.input.chrome.inputview.Css;
 var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var FunctionalKey = i18n.input.chrome.inputview.elements.content.FunctionalKey;
 var Name = i18n.input.chrome.message.Name;
-var Sounds = i18n.input.chrome.inputview.Sounds;
+var Sounds = i18n.input.chrome.sounds.Sounds;
 var TagName = goog.dom.TagName;
 var Type = i18n.input.chrome.message.Type;
 
@@ -43,7 +43,7 @@ var Type = i18n.input.chrome.message.Type;
  *
  * @param {goog.events.EventTarget=} opt_eventTarget The parent event target.
  * @param {i18n.input.chrome.inputview.Adapter=} opt_adapter .
- * @param {i18n.input.chrome.SoundController=} opt_soundController .
+ * @param {i18n.input.chrome.sounds.SoundController=} opt_soundController .
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
  */
@@ -62,7 +62,7 @@ i18n.input.chrome.inputview.elements.content.VoiceView =
   /**
    * The sound controller.
    *
-   * @private {!i18n.input.chrome.SoundController}
+   * @private {!i18n.input.chrome.sounds.SoundController}
    */
   this.soundController_ = goog.asserts.assertObject(opt_soundController);
 
@@ -206,6 +206,7 @@ VoiceView.prototype.setVisible = function(visible) {
     goog.style.setElementShown(this.voicePanel_, false);
     goog.style.setElementShown(this.privacyDiv_, false);
   }
+  this.resize(this.width, this.height);
 };
 
 

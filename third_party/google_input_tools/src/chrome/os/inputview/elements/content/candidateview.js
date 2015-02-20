@@ -78,10 +78,8 @@ i18n.input.chrome.inputview.elements.content.CandidateView = function(id,
   this.iconButtons_[IconType.EXPAND_CANDIDATES] = new content.
       CandidateButton('', ElementType.EXPAND_CANDIDATES,
           Css.EXPAND_CANDIDATES_ICON, '', this);
-
-  this.iconButtons_[IconType.VOICE] = new content.
-      CandidateButton('', ElementType.VOICE_BTN, Css.VOICE_MIC_BAR, '', this,
-          true);
+  this.iconButtons_[IconType.VOICE] = new content.CandidateButton('',
+      ElementType.VOICE_BTN, Css.VOICE_MIC_BAR, '', this, true);
 
   /**
    * Toolbar buttons.
@@ -184,7 +182,7 @@ CandidateView.prototype.showingToolbar = false;
  * @type {number}
  * @private
  */
-CandidateView.WIDTH_FOR_THREE_CANDIDATES_ = 235;
+CandidateView.WIDTH_FOR_THREE_CANDIDATES_ = 200;
 
 
 /**
@@ -249,6 +247,9 @@ CandidateView.prototype.createDom = function() {
     var button = this.iconButtons_[i];
     button.render(elem);
     button.setVisible(false);
+    if (button.type == ElementType.VOICE_BTN) {
+      goog.dom.classlist.add(button.getElement(), Css.VOICE_BUTTON);
+    }
   }
 
   goog.a11y.aria.setState(/** @type {!Element} */
@@ -491,15 +492,14 @@ CandidateView.prototype.setToolbarVisible = function(visible) {
  */
 CandidateView.prototype.updateByKeyset = function(
     keyset, isPasswordBox, isRTL) {
-  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView) {
-    if (keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
-        keyset == CandidateView.EMOJI_VIEW_CODE_) {
-      this.switchToIcon(IconType.BACK, true);
-    } else {
-      this.switchToIcon(IconType.VOICE,
-          this.adapter_.isVoiceInputEnabled &&
-          this.adapter_.contextType != 'password');
-    }
+  if (!i18n.input.chrome.inputview.GlobalFlags.isQPInputView && (
+      keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
+      keyset == CandidateView.EMOJI_VIEW_CODE_)) {
+    this.switchToIcon(IconType.BACK, true);
+  } else {
+    this.switchToIcon(IconType.VOICE,
+        this.adapter_.isVoiceInputEnabled &&
+        this.adapter_.contextType != 'password');
   }
 
   if (isPasswordBox && keyset.indexOf('compact') != -1) {

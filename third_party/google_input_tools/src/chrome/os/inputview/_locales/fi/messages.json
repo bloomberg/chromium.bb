@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "\u00c4l\u00e4 korjaa:"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Hepreankielisen n\u00e4pp\u00e4imist\u00f6n asetukset"
   },
@@ -3282,7 +3285,7 @@
     "message": "Poista valitut"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Nollaa koko sanakirjan sis\u00e4lt\u00f6"
   },
   "user_dict_save": {
     "message": "Tallenna"

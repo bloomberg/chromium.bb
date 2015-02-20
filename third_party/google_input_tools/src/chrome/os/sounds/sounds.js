@@ -11,7 +11,7 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.inputview.Sounds');
+goog.provide('i18n.input.chrome.sounds.Sounds');
 
 
 /**
@@ -19,7 +19,7 @@ goog.provide('i18n.input.chrome.inputview.Sounds');
  *
  * @enum {string}
  */
-i18n.input.chrome.inputview.Sounds = {
+i18n.input.chrome.sounds.Sounds = {
   DELETE: 'keypress-delete',
   RETURN: 'keypress-return',
   SPACEBAR: 'keypress-spacebar',

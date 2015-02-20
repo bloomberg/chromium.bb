@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignorar corre\u00e7\u00e3o para"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "P\u00e1gina de configura\u00e7\u00f5es do teclado hebraico"
   },
@@ -3282,7 +3285,7 @@
     "message": "Remover entradas selecionadas"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Redefinir todas as entradas do dicion\u00e1rio"
   },
   "user_dict_save": {
     "message": "Salvar"

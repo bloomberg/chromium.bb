@@ -2571,7 +2571,7 @@
     "message": "Panua"
   },
   "expand_candidates": {
-    "message": "panua orodha ya wagombea"
+    "message": "panua orodha ya maneno yanayopendekezwa"
   },
   "fi_fin_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kifini"
@@ -2631,7 +2631,10 @@
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kiairishi"
   },
   "ignore_correction": {
-    "message": "Puuza marekebisho ya neno"
+    "message": "Puuza usahihishaji wa neno"
+  },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
   },
   "il_heb_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kiyahudi"
@@ -3105,7 +3108,7 @@
     "message": "Onyesha mapendekezo ya Hangul"
   },
   "shrink_candidates": {
-    "message": "punguza orodha ya wagombea"
+    "message": "punguza orodha ya maneno yanayopendekezwa"
   },
   "si_slv_settings_page": {
     "message": "Ukurasa wa Mipangilio ya Kibodi ya Kislovania"
@@ -3282,7 +3285,7 @@
     "message": "Ondoa Uliochaguliwa"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Weka Upya Mabadiliko Yote ya Kamusi"
   },
   "user_dict_save": {
     "message": "Hifadhi"

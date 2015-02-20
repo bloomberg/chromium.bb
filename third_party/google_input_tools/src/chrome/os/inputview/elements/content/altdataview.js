@@ -537,6 +537,7 @@ AltDataView.prototype.getCoverElement = function() {
 AltDataView.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
 
+  this.hide();
   goog.style.setSize(this.coverElement_, width, height);
 };
 

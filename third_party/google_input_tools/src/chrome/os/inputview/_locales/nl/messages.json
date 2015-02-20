@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Correctie negeren voor"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Pagina met instellingen voor Hebreeuws toetsenbord"
   },
@@ -3282,7 +3285,7 @@
     "message": "Selectie verwijderen"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Alle woordenboekvermeldingen opnieuw instellen"
   },
   "user_dict_save": {
     "message": "Opslaan"

@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignorer rettelsen af"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Side med indstillinger for hebraisk tastatur"
   },
@@ -3282,7 +3285,7 @@
     "message": "Fjern markering"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Nulstil alle opslag i ordbogen"
   },
   "user_dict_save": {
     "message": "Gem"

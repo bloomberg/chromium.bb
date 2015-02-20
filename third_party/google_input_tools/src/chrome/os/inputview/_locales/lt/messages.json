@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignoruoti pataisym\u0105"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Hebraji\u0161kos klaviat\u016bros nustatym\u0173 puslapis"
   },
@@ -3282,7 +3285,7 @@
     "message": "Pa\u0161alinti pasirinktus"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Nustatyti visus \u017eodyno \u012fra\u0161us i\u0161 naujo"
   },
   "user_dict_save": {
     "message": "I\u0161saugoti"

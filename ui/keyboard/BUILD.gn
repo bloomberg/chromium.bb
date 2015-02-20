@@ -76,12 +76,12 @@ grit("resources_grit") {
     "keyboard_resources.rc",
   ]
 
-  inputview_dir = "//third_party/google_input_tools/src/chrome/os/inputview"
+  input_tools_root_dir = "//third_party/google_input_tools/src/chrome/os"
   inputview_gen_js = "$root_gen_dir/ui/keyboard/resources/inputview.js"
   keyboard_mojom_gen_js = "$root_gen_dir/ui/keyboard/webui/keyboard.mojom.js"
   grit_flags = [
     "-E",
-    "inputview_dir=" + rebase_path(inputview_dir, "."),
+    "input_tools_root_dir=" + rebase_path(input_tools_root_dir, "."),
     "-E",
     "inputview_gen_js=" + rebase_path(inputview_gen_js, root_build_dir),
     "-E",

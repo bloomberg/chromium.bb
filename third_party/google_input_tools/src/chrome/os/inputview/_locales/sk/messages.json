@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignorova\u0165 opravu pre"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Str\u00e1nka s nastaveniami hebrejskej kl\u00e1vesnice"
   },
@@ -3282,7 +3285,7 @@
     "message": "Odstr\u00e1ni\u0165 vybran\u00e9"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Resetova\u0165 v\u0161etky polo\u017eky v slovn\u00edku"
   },
   "user_dict_save": {
     "message": "Ulo\u017ei\u0165"

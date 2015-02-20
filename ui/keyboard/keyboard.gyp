@@ -6,7 +6,7 @@
   'variables': {
     'chromium_code': 1,
     'keyboard_mojom_gen_js': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.js',
-    'inputview_dir': '../../third_party/google_input_tools/src/chrome/os/inputview',
+    'input_tools_root_dir': '../../third_party/google_input_tools/src/chrome/os',
     'inputview_gen_js': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/resources/inputview.js',
   },
   'targets': [
@@ -36,7 +36,7 @@
             'grit_grd_file': 'keyboard_resources.grd',
             'grit_additional_defines': [
               '-E', 'keyboard_mojom_gen_js=<(keyboard_mojom_gen_js)',
-              '-E', 'inputview_dir=<(inputview_dir)',
+              '-E', 'input_tools_root_dir=<(input_tools_root_dir)',
               '-E', 'inputview_gen_js=<(inputview_gen_js)',
             ],
           },

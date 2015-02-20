@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignor\u0113t labojumu v\u0101rdam"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Ebreju valodas tastat\u016bras iestat\u012bjumu lapa"
   },
@@ -3282,7 +3285,7 @@
     "message": "No\u0146emt atlas\u012btos"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Atiestat\u012bt visus v\u0101rdn\u012bcas ierakstus"
   },
   "user_dict_save": {
     "message": "Saglab\u0101t"

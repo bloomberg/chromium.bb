@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Korrektur ignorieren f\u00fcr"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr hebr\u00e4ische Tastatur"
   },
@@ -3282,7 +3285,7 @@
     "message": "Auswahl entfernen"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Alle W\u00f6rterbucheintr\u00e4ge zur\u00fccksetzen"
   },
   "user_dict_save": {
     "message": "Speichern"

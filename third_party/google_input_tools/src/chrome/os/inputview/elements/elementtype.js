@@ -77,6 +77,7 @@ i18n.input.chrome.inputview.elements.ElementType = {
   REDO: 54,
   UNDO: 55,
   SWIPE_VIEW: 56,
-  SELECT_VIEW: 57
+  SELECT_VIEW: 57,
+  GESTURE_CANVAS_VIEW: 58
 };
 

@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignore correction for"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Hebrew Keyboard Settings Page"
   },

@@ -346,8 +346,6 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
       {"keyboard/images/setting.png", IDR_KEYBOARD_IMAGES_SETTINGS},
       {"keyboard/images/shift.png", IDR_KEYBOARD_IMAGES_SHIFT},
       {"keyboard/images/space.png", IDR_KEYBOARD_IMAGES_SPACE},
-      {"keyboard/images/special_characters.png",
-       IDR_KEYBOARD_IMAGES_SPECIAL_CHARACTERS},
       {"keyboard/images/tab.png", IDR_KEYBOARD_IMAGES_TAB},
       {"keyboard/images/triangle.png", IDR_KEYBOARD_IMAGES_TRIANGLE},
       {"keyboard/images/up.png", IDR_KEYBOARD_IMAGES_UP},

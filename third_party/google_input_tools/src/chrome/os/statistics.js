@@ -57,6 +57,7 @@ Statistics.CommitTypes = {
   X_Y1: 3, // User types X, and chooses Y as non-top suggestion.
   PREDICTION: 4,
   REVERT: 5,
+  VOICE: 6,
   MAX: 7
 };
 
@@ -64,8 +65,7 @@ Statistics.CommitTypes = {
 /**
  * The current input method id.
  *
- * @type {string}
- * @private
+ * @private {string}
  */
 Statistics.prototype.inputMethodId_ = '';
 
@@ -73,10 +73,17 @@ Statistics.prototype.inputMethodId_ = '';
 /**
  * The current auto correct level.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
 Statistics.prototype.autoCorrectLevel_ = 0;
+
+
+/**
+ * Number of characters entered between each backspace.
+ *
+ * @private {number}
+ */
+Statistics.prototype.charactersBetweenBackspaces_ = 0;
 
 
 /**
@@ -152,7 +159,7 @@ Statistics.prototype.getTargetType_ = function(
  * @param {number} targetIndex The target index.
  * @param {number} triggerType The trigger type:
  *     0: BySpace; 1: ByReset; 2: ByCandidate; 3: BySymbolOrNumber;
- *     4: ByDoubleSpaceToPeriod; 5: ByRevert.
+ *     4: ByDoubleSpaceToPeriod; 5: ByRevert; 6: ByVoice.
  */
 Statistics.prototype.recordCommit = function(
     source, target, targetIndex, triggerType) {
@@ -173,6 +180,8 @@ Statistics.prototype.recordCommit = function(
     commitType = CommitTypes.PREDICTION;
   } else if (triggerType == 5) {
     commitType = CommitTypes.REVERT;
+  } else if (triggerType == 6) {
+    commitType = CommitTypes.VOICE;
   }
   if (commitType < 0) {
     return;
@@ -305,5 +314,27 @@ Statistics.prototype.recordValue = function(
       'buckets': bucketCount
     }, count);
   }
+};
+
+
+/**
+ * Records a key down.
+ */
+Statistics.prototype.recordCharacterKey = function() {
+  this.charactersBetweenBackspaces_++;
+};
+
+
+/**
+ * Records a backspace.
+ */
+Statistics.prototype.recordBackspace = function() {
+  // Ignore multiple backspaces typed in succession.
+  if (this.charactersBetweenBackspaces_ > 0) {
+    this.recordValue(
+        'InputMethod.VirtualKeyboard.CharactersBetweenBackspaces',
+        this.charactersBetweenBackspaces_, 4096, 50);
+  }
+  this.charactersBetweenBackspaces_ = 0;
 };
 });  // goog.scope

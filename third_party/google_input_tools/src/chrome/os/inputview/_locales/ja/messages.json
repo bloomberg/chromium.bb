@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "\u6b21\u306e\u8a9e\u306f\u4fee\u6b63\u3057\u306a\u3044:"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "\u30d8\u30d6\u30e9\u30a4\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
@@ -3282,7 +3285,7 @@
     "message": "\u9078\u629e\u9805\u76ee\u3092\u524a\u9664"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "\u3059\u3079\u3066\u306e\u8f9e\u66f8\u9805\u76ee\u3092\u30ea\u30bb\u30c3\u30c8"
   },
   "user_dict_save": {
     "message": "\u4fdd\u5b58"

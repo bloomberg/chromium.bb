@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "\uc790\ub3d9 \uc218\uc815 \uae30\ub2a5 \ubb34\uc2dc"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "\ud788\ube0c\ub9ac\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
@@ -3282,7 +3285,7 @@
     "message": "\uc120\ud0dd \ud56d\ubaa9 \uc0ad\uc81c"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "\ubaa8\ub4e0 \uc0ac\uc804 \ud56d\ubaa9 \ucd08\uae30\ud654"
   },
   "user_dict_save": {
     "message": "\uc800\uc7a5"

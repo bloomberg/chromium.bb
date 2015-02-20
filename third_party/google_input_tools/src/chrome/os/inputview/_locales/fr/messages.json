@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignorer la correction pour"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Page des param\u00e8tres du clavier h\u00e9breu"
   },
@@ -3282,7 +3285,7 @@
     "message": "Supprimer la s\u00e9lection"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "R\u00e9initialiser toutes les entr\u00e9es du dictionnaire"
   },
   "user_dict_save": {
     "message": "Enregistrer"

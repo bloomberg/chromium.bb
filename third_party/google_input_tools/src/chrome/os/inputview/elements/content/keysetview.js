@@ -344,9 +344,7 @@ KeysetView.prototype.resize = function(outerWidth, outerHeight, widthPercent,
     var elem = this.getElement();
     var margin = Math.round((outerWidth - outerWidth * widthPercent) / 2);
     var w = outerWidth - 2 * margin;
-    if (margin > 0) {
-      elem.style.marginLeft = elem.style.marginRight = margin + 'px';
-    }
+    elem.style.marginLeft = elem.style.marginRight = margin + 'px';
     goog.style.setSize(elem, w, outerHeight);
 
     this.resizeRows(w, outerHeight);

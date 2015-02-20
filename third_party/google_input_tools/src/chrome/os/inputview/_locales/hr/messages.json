@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Zanemari ispravak za"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Stranica postavki hebrejske tipkovnice"
   },
@@ -3282,7 +3285,7 @@
     "message": "Ukloni odabrano"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Vrati sve rje\u010dni\u010dke unose na zadano"
   },
   "user_dict_save": {
     "message": "Spremi"

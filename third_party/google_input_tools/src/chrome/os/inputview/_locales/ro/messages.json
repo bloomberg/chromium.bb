@@ -39,7 +39,7 @@
     "message": "Pagina de set\u0103ri pentru tastatura belgian\u0103 (german\u0103)"
   },
   "be_nld_settings_page": {
-    "message": "Pagina de set\u0103ri pentru tastatura belgian\u0103 (olandez\u0103)"
+    "message": "Pagina de set\u0103ri pentru tastatura belgian\u0103 (neerlandez\u0103)"
   },
   "bg_bul_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura bulgar\u0103"
@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignor\u0103 corectura pentru"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Pagina de set\u0103ri pentru tastatura ebraic\u0103"
   },
@@ -3282,7 +3285,7 @@
     "message": "Elimin\u0103-le pe cele selectate"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Reseteaz\u0103 toate intr\u0103rile din dic\u021bionar"
   },
   "user_dict_save": {
     "message": "Salveaz\u0103"

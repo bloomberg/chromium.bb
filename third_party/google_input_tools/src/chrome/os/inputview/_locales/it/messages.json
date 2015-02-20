@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignora correzione di:"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Pagina Impostazioni tastiera Ebraico"
   },
@@ -3282,7 +3285,7 @@
     "message": "Rimuovi selezionati"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Reimposta tutte le voci di dizionario"
   },
   "user_dict_save": {
     "message": "Salva"

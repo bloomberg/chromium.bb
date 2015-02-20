@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "B\u1ecf qua t\u00ednh n\u0103ng s\u1eeda cho"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Do Th\u00e1i"
   },
@@ -3282,7 +3285,7 @@
     "message": "X\u00f3a m\u1ee5c \u0111\u00e3 ch\u1ecdn"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "\u0110\u1eb7t l\u1ea1i t\u1ea5t c\u1ea3 c\u00e1c m\u1ee5c t\u1eeb \u0111i\u1ec3n"
   },
   "user_dict_save": {
     "message": "L\u01b0u"

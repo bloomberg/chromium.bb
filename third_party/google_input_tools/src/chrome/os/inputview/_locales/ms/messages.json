@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Abaikan pembetulan untuk"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Halaman Tetapan Papan Kekunci Ibrani"
   },
@@ -3282,7 +3285,7 @@
     "message": "Alih Keluar Pilihan"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Tetapkan Semula Semua Masukan Kamus"
   },
   "user_dict_save": {
     "message": "Simpan"

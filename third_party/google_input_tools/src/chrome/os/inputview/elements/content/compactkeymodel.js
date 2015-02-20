@@ -14,6 +14,7 @@
 goog.provide('i18n.input.chrome.inputview.elements.content.CompactKeyModel');
 
 goog.require('i18n.input.chrome.inputview.MoreKeysShiftOperation');
+goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 
 
 goog.scope(function() {

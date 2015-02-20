@@ -378,6 +378,9 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
  * @private
  */
 SwipeView.prototype.handlePointerAction_ = function(e) {
+  if (!e.view) {
+    return;
+  }
   switch (e.view.type) {
     case ElementType.BACKSPACE_KEY:
       var key = /** @type {!content.FunctionalKey} */ (e.view);

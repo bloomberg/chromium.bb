@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Huwag pansinin ang pagwawasto para sa"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Page ng Mga Setting ng Hebrew na Keyboard"
   },
@@ -3282,7 +3285,7 @@
     "message": "Alisin ang Napili"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "I-reset ang Lahat ng Entry sa Diksyunaryo"
   },
   "user_dict_save": {
     "message": "I-save"

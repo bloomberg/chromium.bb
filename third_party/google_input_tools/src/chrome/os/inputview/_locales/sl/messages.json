@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Prezri popravek za"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Stran z nastavitvami hebrejske tipkovnice"
   },
@@ -3282,7 +3285,7 @@
     "message": "Odstrani izbor"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "Ponastavi vse slovarske vnose"
   },
   "user_dict_save": {
     "message": "Shrani"

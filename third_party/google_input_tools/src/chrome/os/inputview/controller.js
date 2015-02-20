@@ -24,12 +24,12 @@ goog.require('goog.events.EventType');
 goog.require('goog.i18n.bidi');
 goog.require('goog.object');
 goog.require('i18n.input.chrome.DataSource');
-goog.require('i18n.input.chrome.SoundController');
 goog.require('i18n.input.chrome.Statistics');
 goog.require('i18n.input.chrome.inputview.Adapter');
 goog.require('i18n.input.chrome.inputview.CandidatesInfo');
 goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.FeatureName');
 goog.require('i18n.input.chrome.inputview.KeyboardContainer');
 goog.require('i18n.input.chrome.inputview.M17nModel');
 goog.require('i18n.input.chrome.inputview.Model');
@@ -45,6 +45,7 @@ goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
+goog.require('i18n.input.chrome.inputview.events.DragEvent');
 goog.require('i18n.input.chrome.inputview.events.EventType');
 goog.require('i18n.input.chrome.inputview.events.KeyCodes');
 goog.require('i18n.input.chrome.inputview.handler.PointerHandler');
@@ -52,6 +53,7 @@ goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.ContextType');
 goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
+goog.require('i18n.input.chrome.sounds.SoundController');
 goog.require('i18n.input.lang.InputToolCode');
 
 
@@ -67,6 +69,7 @@ var ElementType = i18n.input.chrome.inputview.elements.ElementType;
 var EventType = i18n.input.chrome.inputview.events.EventType;
 var ExpandedCandidateView = i18n.input.chrome.inputview.elements.content.
     ExpandedCandidateView;
+var FeatureName = i18n.input.chrome.inputview.FeatureName;
 var InputToolCode = i18n.input.lang.InputToolCode;
 var KeyCodes = i18n.input.chrome.inputview.events.KeyCodes;
 var MenuView = i18n.input.chrome.inputview.elements.content.MenuView;
@@ -76,8 +79,8 @@ var SizeSpec = i18n.input.chrome.inputview.SizeSpec;
 var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 var StateType = i18n.input.chrome.inputview.StateType;
 var content = i18n.input.chrome.inputview.elements.content;
-var SoundController = i18n.input.chrome.SoundController;
-var Sounds = i18n.input.chrome.inputview.Sounds;
+var SoundController = i18n.input.chrome.sounds.SoundController;
+var Sounds = i18n.input.chrome.sounds.Sounds;
 var Type = i18n.input.chrome.message.Type;
 var util = i18n.input.chrome.inputview.util;
 
@@ -179,7 +182,7 @@ i18n.input.chrome.inputview.Controller = function(keyset, languageCode,
   /** @private {!i18n.input.chrome.inputview.Adapter} */
   this.adapter_ = new i18n.input.chrome.inputview.Adapter(this.readyState_);
 
-  /** @private {!i18n.input.chrome.SoundController} */
+  /** @private {!SoundController} */
   this.soundController_ = new SoundController(false);
 
   /** @private {!i18n.input.chrome.inputview.KeyboardContainer} */
@@ -466,6 +469,9 @@ Controller.prototype.registerEventHandler_ = function() {
             EventType.POINTER_OUT,
             EventType.SWIPE
           ], this.onPointerEvent_).
+      listen(this.pointerHandler_,
+          EventType.DRAG,
+          this.onDragEvent_).
       listen(window, goog.events.EventType.RESIZE, this.resize).
       listen(this.adapter_,
           EventType.SURROUNDING_TEXT_CHANGED, this.onSurroundingTextChanged_).
@@ -603,7 +609,7 @@ Controller.prototype.onSettingsReady_ = function() {
     this.setDefaultKeyset_(newKeyset);
   }
   this.container_.selectView.setVisible(
-      this.adapter_.isGestureEdittingEnabled());
+      this.adapter_.features.isEnabled(FeatureName.GESTURE_EDITTING));
   // Loads resources in case the default keyset is changed.
   this.loadAllResources_();
   this.maybeCreateViews_();
@@ -725,6 +731,21 @@ Controller.prototype.onPointerEvent_ = function(e) {
 
 
 /**
+ * Handles the drag events. Generally, this will forward the event details to
+ * the components that handle drawing, decoding, etc.
+ *
+ * @param {!i18n.input.chrome.inputview.events.DragEvent} e .
+ * @private
+ */
+Controller.prototype.onDragEvent_ = function(e) {
+  if (this.adapter_.isGestureTypingEnabled() && e.type == EventType.DRAG) {
+    this.container_.gestureCanvasView.addPointAndDraw(e);
+    return;
+  }
+};
+
+
+/**
  * Handles the swipe action.
  *
  * @param {!i18n.input.chrome.inputview.elements.Element} view The view, for
@@ -824,6 +845,11 @@ Controller.prototype.executeCommand_ = function(command, opt_arg) {
  * @private
  */
 Controller.prototype.handlePointerAction_ = function(view, e) {
+  if (this.adapter_.isGestureTypingEnabled() &&
+      e.type == EventType.POINTER_UP) {
+    this.container_.gestureCanvasView.clear();
+  }
+
   // Listen for DOUBLE_CLICK as well to capture secondary taps on the spacebar.
   if (e.type == EventType.POINTER_UP || e.type == EventType.DOUBLE_CLICK) {
     this.recordStatsForClosing_(
@@ -1378,7 +1404,8 @@ Controller.prototype.resetAll_ = function() {
  * @private
  */
 Controller.prototype.shouldShowToolBar_ = function() {
-  return this.adapter_.isExperimental && this.adapter_.isGoogleDocument() &&
+  return this.adapter_.features.isEnabled(FeatureName.OPTIMIZED_LAYOUTS) &&
+      this.adapter_.isGoogleDocument() &&
       this.adapter_.contextType == ContextType.DEFAULT;
 };
 
@@ -1594,15 +1621,14 @@ Controller.prototype.clearCandidates_ = function() {
   if (this.container_.currentKeysetView) {
     this.container_.currentKeysetView.setVisible(true);
   }
-  if (!this.adapter_.isQPInputView) {
-    if (this.currentKeyset_ == Controller.HANDWRITING_VIEW_CODE_ ||
-        this.currentKeyset_ == Controller.EMOJI_VIEW_CODE_) {
-      this.container_.candidateView.switchToIcon(
-          CandidateView.IconType.BACK, true);
-    } else {
-      this.container_.candidateView.switchToIcon(CandidateView.IconType.VOICE,
-          this.adapter_.isVoiceInputEnabled);
-    }
+  if (!this.adapter_.isQPInputView &&
+      (this.currentKeyset_ == Controller.HANDWRITING_VIEW_CODE_ ||
+       this.currentKeyset_ == Controller.EMOJI_VIEW_CODE_)) {
+    this.container_.candidateView.switchToIcon(
+        CandidateView.IconType.BACK, true);
+  } else {
+    this.container_.candidateView.switchToIcon(CandidateView.IconType.VOICE,
+        this.adapter_.isVoiceInputEnabled);
   }
 };
 

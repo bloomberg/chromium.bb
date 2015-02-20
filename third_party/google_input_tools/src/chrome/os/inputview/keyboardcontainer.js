@@ -23,6 +23,7 @@ goog.require('i18n.input.chrome.inputview.elements.content.AltDataView');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiView');
 goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView');
+goog.require('i18n.input.chrome.inputview.elements.content.GestureCanvasView');
 goog.require('i18n.input.chrome.inputview.elements.content.HandwritingView');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
@@ -47,7 +48,7 @@ var content = i18n.input.chrome.inputview.elements.content;
  * The keyboard container.
  *
  * @param {!i18n.input.chrome.inputview.Adapter} adapter .
- * @param {!i18n.input.chrome.SoundController} soundController .
+ * @param {!i18n.input.chrome.sounds.SoundController} soundController .
  * @constructor
  * @extends {goog.ui.Container}
  */
@@ -67,6 +68,11 @@ i18n.input.chrome.inputview.KeyboardContainer =
 
   /** @type {!content.SelectView} */
   this.selectView = new content.SelectView(this);
+
+  if (adapter.isGestureTypingEnabled()) {
+    /** @type {!content.GestureCanvasView} */
+    this.gestureCanvasView = new content.GestureCanvasView(this);
+  }
 
   /** @type {!content.MenuView} */
   this.menuView = new content.MenuView(this);
@@ -132,10 +138,10 @@ KeyboardContainer.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
   var elem = this.getElement();
-  this.wrapperDiv_ = this.getDomHelper().createDom(
-      goog.dom.TagName.DIV, Css.WRAPPER);
+  var dom = this.getDomHelper();
+  this.wrapperDiv_ = dom.createDom(goog.dom.TagName.DIV, Css.WRAPPER);
   this.candidateView.render(this.wrapperDiv_);
-  this.getDomHelper().appendChild(elem, this.wrapperDiv_);
+  dom.appendChild(elem, this.wrapperDiv_);
   this.altDataView.render();
   this.swipeView.render();
   this.selectView.render();
@@ -144,6 +150,9 @@ KeyboardContainer.prototype.createDom = function() {
   this.voiceView.setVisible(false);
   this.expandedCandidateView.render(this.wrapperDiv_);
   this.expandedCandidateView.setVisible(false);
+  if (this.adapter_.isGestureTypingEnabled()) {
+    this.gestureCanvasView.render(this.wrapperDiv_);
+  }
   goog.dom.classlist.add(elem, Css.CONTAINER);
 };
 
@@ -318,6 +327,9 @@ KeyboardContainer.prototype.resize = function(width, height, widthPercent,
   this.selectView.resize(screen.width, height);
   this.menuView.resize(screen.width, height);
   this.voiceView.resize(w + padding, height);
+  if (this.adapter_.isGestureTypingEnabled()) {
+    this.gestureCanvasView.resize(screen.width, height);
+  }
 };
 
 
@@ -329,6 +341,9 @@ KeyboardContainer.prototype.disposeInternal = function() {
   goog.dispose(this.selectView);
   goog.dispose(this.menuView);
   goog.dispose(this.voiceView);
+  if (this.adapter_.isGestureTypingEnabled()) {
+    goog.dispose(this.gestureCanvasView);
+  }
   for (var key in this.keysetViewMap) {
     goog.dispose(this.keysetViewMap[key]);
   }

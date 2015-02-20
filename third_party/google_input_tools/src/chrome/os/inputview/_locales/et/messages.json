@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Ignoreeri parandust:"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "Heebrea klaviatuuri seadete leht"
   },
@@ -3282,7 +3285,7 @@
     "message": "Eemalda valitud"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "L\u00e4htesta s\u00f5nastiku k\u00f5ik kanded"
   },
   "user_dict_save": {
     "message": "Salvesta"

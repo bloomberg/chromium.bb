@@ -2633,6 +2633,9 @@
   "ignore_correction": {
     "message": "Jav\u00edt\u00e1s mell\u0151z\u00e9se enn\u00e9l a sz\u00f3n\u00e1l:"
   },
+  "ignore_correction_short": {
+    "message": "Ignore correction"
+  },
   "il_heb_settings_page": {
     "message": "H\u00e9ber billenty\u0171zet be\u00e1ll\u00edt\u00e1sainak oldala"
   },
@@ -3282,7 +3285,7 @@
     "message": "Kijel\u00f6lt(ek) elt\u00e1vol\u00edt\u00e1sa"
   },
   "user_dict_reset": {
-    "message": "Reset All Dictionary Entries"
+    "message": "A sz\u00f3t\u00e1rban v\u00e9grehajtott \u00f6sszes m\u00f3dos\u00edt\u00e1s vissza\u00e1ll\u00edt\u00e1sa"
   },
   "user_dict_save": {
     "message": "Ment\u00e9s"
