@@ -630,6 +630,9 @@
       # Enable LTO on code compiled with -O2.
       'use_lto_o2%': 0,
 
+      # Allowed level of identical code folding in the gold linker.
+      'gold_icf_level%': 'safe',
+
       # Libxkbcommon usage.
       'use_xkbcommon%': 0,
 
@@ -1199,6 +1202,7 @@
     'gomadir%': '<(gomadir)',
     'use_lto%': '<(use_lto)',
     'use_lto_o2%': '<(use_lto_o2)',
+    'gold_icf_level%': '<(gold_icf_level)',
     'video_hole%': '<(video_hole)',
     'support_pre_M6_history_database%': '<(support_pre_M6_history_database)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
@@ -2146,6 +2150,8 @@
         'clang%': 1,
         'use_allocator%': 'none',
         'use_sanitizer_options%': 1,
+        # Disable ICF in the linker to avoid debug info loss.
+        'gold_icf_level%': 'none',
       }],
       ['asan==1 and OS=="linux" and chromeos==0', {
         'use_custom_libcxx%': 1,
@@ -4407,7 +4413,7 @@
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
-                      '-Wl,--icf=safe',
+                      '-Wl,--icf=<(gold_icf_level)',
                     ],
                   }],
                 ],
@@ -4725,7 +4731,7 @@
               ['target_arch == "arm" and order_profiling==0', {
                 'ldflags': [
                   # Enable identical code folding to reduce size.
-                  '-Wl,--icf=safe',
+                  '-Wl,--icf=<(gold_icf_level)',
                 ],
               }],
               # NOTE: The stlport header include paths below are specified in
