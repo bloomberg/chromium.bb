@@ -58,6 +58,13 @@ bool CronetURLRequestAdapter::IsOnNetworkThread() const {
   return context_->IsOnNetworkThread();
 }
 
+void CronetURLRequestAdapter::SetUpload(
+    scoped_ptr<net::UploadDataStream> upload) {
+  DCHECK(!IsOnNetworkThread());
+  DCHECK(!upload_);
+  upload_ = upload.Pass();
+}
+
 void CronetURLRequestAdapter::Start() {
   DCHECK(IsOnNetworkThread());
   VLOG(1) << "Starting chromium request: "
@@ -69,6 +76,8 @@ void CronetURLRequestAdapter::Start() {
   url_request_->set_method(initial_method_);
   url_request_->SetExtraRequestHeaders(initial_request_headers_);
   url_request_->SetPriority(initial_priority_);
+  if (upload_)
+    url_request_->set_upload(upload_.Pass());
   url_request_->Start();
 }
 

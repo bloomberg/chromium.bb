@@ -11,13 +11,16 @@
 #include "mock_url_request_job_factory.h"
 #include "native_test_server.h"
 #include "network_change_notifier_util.h"
+#include "test_upload_data_stream_handler.h"
 
 namespace {
 
 const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
-  {"MockUrlRequestJobFactory", cronet::RegisterMockUrlRequestJobFactory},
-  {"RegisterNativeTestServer", cronet::RegisterNativeTestServer},
-  {"NetworkChangeNotifierUtil", cronet::RegisterNetworkChangeNotifierUtil},
+    {"MockUrlRequestJobFactory", cronet::RegisterMockUrlRequestJobFactory},
+    {"RegisterNativeTestServer", cronet::RegisterNativeTestServer},
+    {"NetworkChangeNotifierUtil", cronet::RegisterNetworkChangeNotifierUtil},
+    {"TestUploadDataStreamHandlerRegisterJni",
+     cronet::TestUploadDataStreamHandlerRegisterJni},
 };
 
 }  // namespace

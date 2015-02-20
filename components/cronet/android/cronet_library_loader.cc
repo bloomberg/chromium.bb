@@ -15,6 +15,7 @@
 #include "components/cronet/android/chromium_url_request.h"
 #include "components/cronet/android/chromium_url_request_context.h"
 #include "components/cronet/android/cronet_histogram_manager.h"
+#include "components/cronet/android/cronet_upload_data_stream_delegate.h"
 #include "components/cronet/android/cronet_url_request.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "jni/CronetLibraryLoader_jni.h"
@@ -37,6 +38,8 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"ChromiumUrlRequestContext", ChromiumUrlRequestContextRegisterJni},
     {"CronetHistogramManager", CronetHistogramManagerRegisterJni},
     {"CronetLibraryLoader", RegisterNativesImpl},
+    {"CronetUploadDataStreamDelegate",
+     CronetUploadDataStreamDelegateRegisterJni},
     {"CronetUrlRequest", CronetUrlRequestRegisterJni},
     {"CronetUrlRequestContextAdapter",
      CronetUrlRequestContextAdapterRegisterJni},

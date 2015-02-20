@@ -23,6 +23,7 @@ class SingleThreadTaskRunner;
 namespace net {
 class GrowableIOBuffer;
 class HttpResponseHeaders;
+class UploadDataStream;
 }  // namespace net
 
 namespace cronet {
@@ -79,6 +80,9 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
 
   // Adds a header to the request before it starts.
   void AddRequestHeader(const std::string& name, const std::string& value);
+
+  // Adds a request body to the request before it starts.
+  void SetUpload(scoped_ptr<net::UploadDataStream> upload);
 
   // Methods called on any thread.
 
@@ -145,6 +149,7 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   std::string initial_method_;
   int load_flags_;
   net::HttpRequestHeaders initial_request_headers_;
+  scoped_ptr<net::UploadDataStream> upload_;
 
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
   scoped_ptr<net::URLRequest> url_request_;

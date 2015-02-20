@@ -447,6 +447,385 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(listener.mResponseStep, ResponseStep.ON_RESPONSE_STARTED);
     }
 
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadSetDataProvider() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        try {
+            urlRequest.setUploadDataProvider(null, listener.getExecutor());
+            fail("Exception not thrown");
+        } catch (NullPointerException e) {
+            assertEquals("Invalid UploadDataProvider.", e.getMessage());
+        }
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        try {
+            urlRequest.start();
+            fail("Exception not thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Requests with upload data must have a Content-Type.", e.getMessage());
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadEmptyBodySync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(0, dataProvider.getLength());
+        assertEquals(0, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadSync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(4, dataProvider.getLength());
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadMultiplePiecesSync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.addRead("Y".getBytes());
+        dataProvider.addRead("et ".getBytes());
+        dataProvider.addRead("another ".getBytes());
+        dataProvider.addRead("test".getBytes());
+
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(16, dataProvider.getLength());
+        assertEquals(4, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("Yet another test", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadMultiplePiecesAsync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.ASYNC, listener.getExecutor());
+        dataProvider.addRead("Y".getBytes());
+        dataProvider.addRead("et ".getBytes());
+        dataProvider.addRead("another ".getBytes());
+        dataProvider.addRead("test".getBytes());
+
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(16, dataProvider.getLength());
+        assertEquals(4, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("Yet another test", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadChangesDefaultMethod() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoMethodURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("POST", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadWithSetMethod() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoMethodURL(), listener, listener.getExecutor());
+
+        final String method = "PUT";
+        urlRequest.setHttpMethod(method);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("PUT", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadRedirectSync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getRedirectToEchoBody(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        // 1 read call before the rewind, 1 after.
+        assertEquals(2, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadRedirectAsync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getRedirectToEchoBody(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.ASYNC, listener.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        // 1 read call before the rewind, 1 after.
+        assertEquals(2, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", listener.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadReadFailSync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.setReadFailure(0, TestUploadDataProvider.FailMode.CALLBACK_SYNC);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", listener.mError.getMessage());
+        assertEquals("Sync read failure", listener.mError.getCause().getMessage());
+        assertEquals(null, listener.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadReadFailAsync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.setReadFailure(0, TestUploadDataProvider.FailMode.CALLBACK_ASYNC);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", listener.mError.getMessage());
+        assertEquals("Async read failure", listener.mError.getCause().getMessage());
+        assertEquals(null, listener.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadReadFailThrown() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.setReadFailure(0, TestUploadDataProvider.FailMode.THROWN);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", listener.mError.getMessage());
+        assertEquals("Thrown read failure", listener.mError.getCause().getMessage());
+        assertEquals(null, listener.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadRewindFailSync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getRedirectToEchoBody(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.setRewindFailure(TestUploadDataProvider.FailMode.CALLBACK_SYNC);
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", listener.mError.getMessage());
+        assertEquals("Sync rewind failure", listener.mError.getCause().getMessage());
+        assertEquals(null, listener.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadRewindFailAsync() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getRedirectToEchoBody(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.ASYNC, listener.getExecutor());
+        dataProvider.setRewindFailure(TestUploadDataProvider.FailMode.CALLBACK_ASYNC);
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", listener.mError.getMessage());
+        assertEquals("Async rewind failure", listener.mError.getCause().getMessage());
+        assertEquals(null, listener.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadRewindFailThrown() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getRedirectToEchoBody(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.setRewindFailure(TestUploadDataProvider.FailMode.THROWN);
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals("Exception received from UploadDataProvider", listener.mError.getMessage());
+        assertEquals("Thrown rewind failure", listener.mError.getCause().getMessage());
+        assertEquals(null, listener.mResponseInfo);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadChunkedNotSupported() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getRedirectToEchoBody(), listener, listener.getExecutor());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.setChunked(true);
+        try {
+            urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+            fail("Exception not thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Chunked uploads not supported.", e.getMessage());
+        }
+    }
+
     private void throwOrCancel(FailureType failureType, ResponseStep failureStep,
             boolean expectResponseInfo, boolean expectError) {
         TestUrlRequestListener listener = new TestUrlRequestListener();

@@ -4,6 +4,8 @@
 
 package org.chromium.net;
 
+import java.util.concurrent.Executor;
+
 /**
  * HTTP request (GET, PUT or POST).
  * Note:  All methods must be called on the Executor passed in during creation.
@@ -43,6 +45,19 @@ public interface UrlRequest {
      * @param value Header value
      */
     public void addHeader(String header, String value);
+
+    /**
+     * Sets upload data. Must be done before request has started. May only be
+     * invoked once per request. Switches method to "POST" if not explicitly
+     * set. Starting the request will throw an exception if a Content-Type
+     * header is not set.
+     *
+     * @param uploadDataProvider responsible for providing the upload data.
+     * @param executor All {@code uploadDataProvider} methods will be called
+     *     using this {@code Executor}. May optionally be the same
+     *     {@code Executor} the request itself is using.
+     */
+    public void setUploadDataProvider(UploadDataProvider uploadDataProvider, Executor executor);
 
     /**
      * Starts the request, all callbacks go to listener. May only be called

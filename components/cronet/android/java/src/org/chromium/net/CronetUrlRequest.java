@@ -57,6 +57,8 @@ final class CronetUrlRequest implements UrlRequest {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
 
+    private CronetUploadDataStream mUploadDataStream;
+
     private NativeResponseInfo mResponseInfo;
 
     /*
@@ -258,28 +260,55 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @Override
+    public void setUploadDataProvider(UploadDataProvider uploadDataProvider, Executor executor) {
+        if (uploadDataProvider == null) {
+            throw new NullPointerException("Invalid UploadDataProvider.");
+        }
+        if (mInitialMethod == null) {
+            mInitialMethod = "POST";
+        }
+        mUploadDataStream = new CronetUploadDataStream(uploadDataProvider, executor);
+    }
+
+    @Override
     public void start() {
         synchronized (mUrlRequestAdapterLock) {
             checkNotStarted();
-            mUrlRequestAdapter = nativeCreateRequestAdapter(
-                    mRequestContext.getUrlRequestContextAdapter(),
-                    mInitialUrl,
-                    mPriority);
-            mRequestContext.onRequestStarted(this);
-            if (mInitialMethod != null) {
-                if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
-                    destroyRequestAdapter();
-                    throw new IllegalArgumentException("Invalid http method "
-                            + mInitialMethod);
+
+            try {
+                mUrlRequestAdapter = nativeCreateRequestAdapter(
+                        mRequestContext.getUrlRequestContextAdapter(), mInitialUrl, mPriority);
+                mRequestContext.onRequestStarted(this);
+                if (mInitialMethod != null) {
+                    if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
+                        throw new IllegalArgumentException("Invalid http method " + mInitialMethod);
+                    }
                 }
-            }
-            for (Pair<String, String> header : mRequestHeaders) {
-                if (!nativeAddHeader(mUrlRequestAdapter, header.first,
-                        header.second)) {
-                    destroyRequestAdapter();
-                    throw new IllegalArgumentException("Invalid header "
-                            + header.first + "=" + header.second);
+
+                boolean hasContentType = false;
+                for (Pair<String, String> header : mRequestHeaders) {
+                    if (header.first.equalsIgnoreCase("Content-Type")
+                            && !header.second.isEmpty()) {
+                        hasContentType = true;
+                    }
+                    if (!nativeAddHeader(mUrlRequestAdapter, header.first, header.second)) {
+                        destroyRequestAdapter();
+                        throw new IllegalArgumentException(
+                                "Invalid header " + header.first + "=" + header.second);
+                    }
                 }
+                if (mUploadDataStream != null) {
+                    if (!hasContentType) {
+                        throw new IllegalArgumentException(
+                                "Requests with upload data must have a Content-Type.");
+                    }
+                    mUploadDataStream.attachToRequest(this, mUrlRequestAdapter);
+                }
+            } catch (RuntimeException e) {
+                // If there's an exception, cleanup and then throw the
+                // exception to the caller.
+                destroyRequestAdapter();
+                throw e;
             }
             if (mDisableCache) {
                 nativeDisableCache(mUrlRequestAdapter);
@@ -422,6 +451,28 @@ final class CronetUrlRequest implements UrlRequest {
         } catch (Exception failException) {
             Log.e(CronetUrlRequestContext.LOG_TAG,
                     "Exception notifying of failed request", failException);
+        }
+    }
+
+    /**
+     * Called when UploadDataProvider encounters an error.
+     */
+    void onUploadException(Exception e) {
+        UrlRequestException uploadError =
+                new UrlRequestException("Exception received from UploadDataProvider", e);
+        Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in upload method", e);
+        // Do not call into listener if request is canceled.
+        synchronized (mUrlRequestAdapterLock) {
+            if (isCanceled()) {
+                return;
+            }
+            cancel();
+        }
+        try {
+            mListener.onFailed(this, mResponseInfo, uploadError);
+        } catch (Exception failException) {
+            Log.e(CronetUrlRequestContext.LOG_TAG, "Exception notifying of failed upload",
+                    failException);
         }
     }
 
