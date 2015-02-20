@@ -245,6 +245,9 @@ EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     int process_id) {
+  if (!context_)
+    return SERVICE_WORKER_ERROR_ABORT;
+
   // The ServiceWorkerDispatcherHost is supposed to be created when the process
   // is created, and keep an entry in process_sender_map_ for its whole
   // lifetime.

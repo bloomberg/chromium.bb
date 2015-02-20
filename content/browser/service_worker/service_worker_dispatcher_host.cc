@@ -120,6 +120,8 @@ void ServiceWorkerDispatcherHost::Init(
   }
 
   context_wrapper_ = context_wrapper;
+  if (!GetContext())
+    return;
   GetContext()->embedded_worker_registry()->AddChildProcessSender(
       render_process_id_, this, message_port_message_filter_);
 }
