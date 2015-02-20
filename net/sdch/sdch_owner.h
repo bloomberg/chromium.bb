@@ -87,6 +87,11 @@ class NET_EXPORT SdchOwner : public net::SdchObserver {
   size_t max_total_dictionary_size_;
   size_t min_space_for_dictionary_fetch_;
 
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  unsigned int destroyed_;
+#endif
+
   base::MemoryPressureListener memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchOwner);

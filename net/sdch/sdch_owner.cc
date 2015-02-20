@@ -86,22 +86,40 @@ SdchOwner::SdchOwner(net::SdchManager* sdch_manager,
       clock_(new base::DefaultClock),
       max_total_dictionary_size_(kMaxTotalDictionarySize),
       min_space_for_dictionary_fetch_(kMinSpaceForDictionaryFetch),
+#if defined(OS_CHROMEOS)
+      // For debugging http://crbug.com/454198; remove when resolved.
+      destroyed_(0),
+#endif
       memory_pressure_listener_(
           base::Bind(&SdchOwner::OnMemoryPressure,
                      // Because |memory_pressure_listener_| is owned by
                      // SdchOwner, the SdchOwner object will be available
                      // for the lifetime of |memory_pressure_listener_|.
                      base::Unretained(this))) {
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK(clock_.get());
+#endif
   manager_->AddObserver(this);
 }
 
 SdchOwner::~SdchOwner() {
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK_EQ(0u, destroyed_);
+  CHECK(clock_.get());
+  clock_.reset();
+#endif
+
   for (auto it = local_dictionary_info_.begin();
        it != local_dictionary_info_.end(); ++it) {
     RecordDictionaryEviction(it->second.use_count,
                              DICTIONARY_FATE_EVICT_FOR_DESTRUCTION);
   }
   manager_->RemoveObserver(this);
+#if defined(OS_CHROMEOS)
+  destroyed_ = 0xdeadbeef;
+#endif
 }
 
 void SdchOwner::SetMaxTotalDictionarySize(size_t max_total_dictionary_size) {
@@ -138,6 +156,12 @@ void SdchOwner::OnDictionaryFetched(const std::string& dictionary_text,
     }
   };
 
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK_EQ(0u, destroyed_);
+  CHECK(clock_.get());
+#endif
+
   std::vector<DictionaryItem> stale_dictionary_list;
   size_t recoverable_bytes = 0;
   base::Time stale_boundary(clock_->Now() - base::TimeDelta::FromDays(1));
@@ -150,6 +174,12 @@ void SdchOwner::OnDictionaryFetched(const std::string& dictionary_text,
       recoverable_bytes += used_it->second.size;
     }
   }
+
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK_EQ(0u, destroyed_);
+  CHECK(clock_.get());
+#endif
 
   if (total_dictionary_bytes_ + dictionary_text.size() - recoverable_bytes >
       max_total_dictionary_size_) {
@@ -198,6 +228,12 @@ void SdchOwner::OnDictionaryFetched(const std::string& dictionary_text,
       // to avoid taking too much time/space with useless dictionaries/one-off
       // visits to web sites.
       clock_->Now() - base::TimeDelta::FromHours(23), dictionary_text.size());
+
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK_EQ(0u, destroyed_);
+  CHECK(clock_.get());
+#endif
 }
 
 void SdchOwner::OnDictionaryUsed(SdchManager* manager,
@@ -212,6 +248,12 @@ void SdchOwner::OnDictionaryUsed(SdchManager* manager,
 void SdchOwner::OnGetDictionary(net::SdchManager* manager,
                                 const GURL& request_url,
                                 const GURL& dictionary_url) {
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK_EQ(0u, destroyed_);
+  CHECK(clock_.get());
+#endif
+
   base::Time stale_boundary(clock_->Now() - base::TimeDelta::FromDays(1));
   size_t avail_bytes = 0;
   for (auto it = local_dictionary_info_.begin();
@@ -245,6 +287,12 @@ void SdchOwner::OnClearDictionaries(net::SdchManager* manager) {
 
 void SdchOwner::SetClockForTesting(scoped_ptr<base::Clock> clock) {
   clock_ = clock.Pass();
+
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+  CHECK_EQ(0u, destroyed_);
+  CHECK(clock_.get());
+#endif
 }
 
 void SdchOwner::OnMemoryPressure(

@@ -259,6 +259,12 @@ SdchManager::~SdchManager() {
     auto it = dictionaries_.begin();
     dictionaries_.erase(it->first);
   }
+#if defined(OS_CHROMEOS)
+  // For debugging http://crbug.com/454198; remove when resolved.
+
+  // Explicitly confirm that we can't notify any observers anymore.
+  CHECK(!observers_.might_have_observers());
+#endif
 }
 
 void SdchManager::ClearData() {
