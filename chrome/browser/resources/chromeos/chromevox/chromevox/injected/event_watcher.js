@@ -252,15 +252,11 @@ cvox.ChromeVoxEventWatcher.readFrom = function(store) {
  * event was received.
  *
  * @param {Event} evt The event to be added to the events queue.
- * @param {boolean=} opt_ignoreVisibility Whether to ignore visibility
- * checking on the document. By default, this is set to false (so an
- * invisible document would result in this event not being added).
  */
-cvox.ChromeVoxEventWatcher.addEvent = function(evt, opt_ignoreVisibility) {
+cvox.ChromeVoxEventWatcher.addEvent = function(evt) {
   // Don't add any events to the events queue if ChromeVox is inactive or the
-  // page is hidden unless specified to not do so.
-  if (!cvox.ChromeVox.isActive ||
-      (document.webkitHidden && !opt_ignoreVisibility)) {
+  // page is hidden.
+  if (!cvox.ChromeVox.isActive || document.webkitHidden) {
     return;
   }
   cvox.ChromeVoxEventWatcher.events_.push(evt);
@@ -486,7 +482,7 @@ cvox.ChromeVoxEventWatcher.mutationHandler = function(mutations) {
         var evt = new window.Event('LiveRegion');
         evt.navDescriptions = navDescriptions;
         evt.assertive = assertive;
-        cvox.ChromeVoxEventWatcher.addEvent(evt, true);
+        cvox.ChromeVoxEventWatcher.addEvent(evt);
         return true;
       });
 };

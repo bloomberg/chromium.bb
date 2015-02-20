@@ -61,14 +61,6 @@ cvox.LiveRegions.lastAnnouncedMap = {};
 cvox.LiveRegions.MAX_DISCARD_DUPS_MS = 2000;
 
 /**
- * Maximum time interval in which to discard duplicate live region announcement
- * when document.webkitHidden.
- * @type {number}
- * @const
- */
-cvox.LiveRegions.HIDDEN_DOC_MAX_DISCARD_DUPS_MS = 60000;
-
-/**
  * @type {Date}
 */
 cvox.LiveRegions.lastAnnouncedTime = null;
@@ -367,14 +359,11 @@ cvox.LiveRegions.announceChange = function(
     }
   }
 
-  var discardDupsMs = document.webkitHidden ?
-      cvox.LiveRegions.HIDDEN_DOC_MAX_DISCARD_DUPS_MS :
-      cvox.LiveRegions.MAX_DISCARD_DUPS_MS;
-
   // First, evict expired entries.
   var now = new Date();
   for (var announced in cvox.LiveRegions.lastAnnouncedMap) {
-    if (now - cvox.LiveRegions.lastAnnouncedMap[announced] > discardDupsMs) {
+    if (now - cvox.LiveRegions.lastAnnouncedMap[announced] >
+        cvox.LiveRegions.MAX_DISCARD_DUPS_MS) {
       delete cvox.LiveRegions.lastAnnouncedMap[announced];
     }
   }
