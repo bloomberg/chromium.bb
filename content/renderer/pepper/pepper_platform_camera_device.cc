@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_platform_image_capture.h"
+#include "content/renderer/pepper/pepper_platform_camera_device.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/pepper/gfx_conversion.h"
-#include "content/renderer/pepper/pepper_image_capture_host.h"
+#include "content/renderer/pepper/pepper_camera_device_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -19,11 +19,11 @@
 
 namespace content {
 
-PepperPlatformImageCapture::PepperPlatformImageCapture(
+PepperPlatformCameraDevice::PepperPlatformCameraDevice(
     int render_frame_id,
     const std::string& device_id,
     const GURL& document_url,
-    PepperImageCaptureHost* handler)
+    PepperCameraDeviceHost* handler)
     : render_frame_id_(render_frame_id),
       device_id_(device_id),
       session_id_(0),
@@ -37,24 +37,24 @@ PepperPlatformImageCapture::PepperPlatformImageCapture(
   if (device_manager) {
     pending_open_device_id_ = device_manager->OpenDevice(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE, device_id, document_url,
-        base::Bind(&PepperPlatformImageCapture::OnDeviceOpened,
+        base::Bind(&PepperPlatformCameraDevice::OnDeviceOpened,
                    weak_factory_.GetWeakPtr()));
     pending_open_device_ = true;
   }
 }
 
-void PepperPlatformImageCapture::GetSupportedVideoCaptureFormats() {
+void PepperPlatformCameraDevice::GetSupportedVideoCaptureFormats() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VideoCaptureImplManager* manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   manager->GetDeviceSupportedFormats(
       session_id_,
       media::BindToCurrentLoop(base::Bind(
-          &PepperPlatformImageCapture::OnDeviceSupportedFormatsEnumerated,
+          &PepperPlatformCameraDevice::OnDeviceSupportedFormatsEnumerated,
           weak_factory_.GetWeakPtr())));
 }
 
-void PepperPlatformImageCapture::DetachEventHandler() {
+void PepperPlatformCameraDevice::DetachEventHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
   handler_ = NULL;
   if (!release_device_cb_.is_null()) {
@@ -75,14 +75,14 @@ void PepperPlatformImageCapture::DetachEventHandler() {
   }
 }
 
-PepperPlatformImageCapture::~PepperPlatformImageCapture() {
+PepperPlatformCameraDevice::~PepperPlatformCameraDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(release_device_cb_.is_null());
   DCHECK(label_.empty());
   DCHECK(!pending_open_device_);
 }
 
-void PepperPlatformImageCapture::OnDeviceOpened(int request_id,
+void PepperPlatformCameraDevice::OnDeviceOpened(int request_id,
                                                 bool succeeded,
                                                 const std::string& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -105,7 +105,7 @@ void PepperPlatformImageCapture::OnDeviceOpened(int request_id,
   handler_->OnInitialized(succeeded);
 }
 
-void PepperPlatformImageCapture::OnDeviceSupportedFormatsEnumerated(
+void PepperPlatformCameraDevice::OnDeviceSupportedFormatsEnumerated(
     const media::VideoCaptureFormats& formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(handler_);
@@ -120,7 +120,7 @@ void PepperPlatformImageCapture::OnDeviceSupportedFormatsEnumerated(
   handler_->OnVideoCaptureFormatsEnumerated(output_formats);
 }
 
-PepperMediaDeviceManager* PepperPlatformImageCapture::GetMediaDeviceManager() {
+PepperMediaDeviceManager* PepperPlatformCameraDevice::GetMediaDeviceManager() {
   RenderFrameImpl* const render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_id_);
   return render_frame

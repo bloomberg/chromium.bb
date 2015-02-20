@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_THUNK_PPB_IMAGE_CAPTURE_API_H_
-#define PPAPI_THUNK_PPB_IMAGE_CAPTURE_API_H_
+#ifndef PPAPI_THUNK_PPB_CAMERA_DEVICE_API_H_
+#define PPAPI_THUNK_PPB_CAMERA_DEVICE_API_H_
 
 #include <string>
 
-#include "ppapi/c/private/ppb_image_capture_private.h"
+#include "ppapi/c/private/ppb_camera_device_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -16,9 +16,9 @@ class TrackedCallback;
 
 namespace thunk {
 
-class PPAPI_THUNK_EXPORT PPB_ImageCapture_API {
+class PPAPI_THUNK_EXPORT PPB_CameraDevice_API {
  public:
-  virtual ~PPB_ImageCapture_API() {}
+  virtual ~PPB_CameraDevice_API() {}
   virtual int32_t Open(PP_Var device_id,
                        const scoped_refptr<TrackedCallback>& callback) = 0;
   virtual void Close() = 0;
@@ -30,4 +30,4 @@ class PPAPI_THUNK_EXPORT PPB_ImageCapture_API {
 }  // namespace thunk
 }  // namespace ppapi
 
-#endif  // PPAPI_THUNK_PPB_IMAGE_CAPTURE_API_H_
+#endif  // PPAPI_THUNK_PPB_CAMERA_DEVICE_API_H_

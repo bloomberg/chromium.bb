@@ -7,6 +7,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/proxy/audio_input_resource.h"
+#include "ppapi/proxy/camera_device_resource.h"
 #include "ppapi/proxy/compositor_resource.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
@@ -19,7 +20,6 @@
 #include "ppapi/proxy/graphics_2d_resource.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
 #include "ppapi/proxy/host_resolver_resource.h"
-#include "ppapi/proxy/image_capture_resource.h"
 #include "ppapi/proxy/media_stream_video_track_resource.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/network_monitor_resource.h"
@@ -432,6 +432,11 @@ PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
 }
 
+PP_Resource ResourceCreationProxy::CreateCameraDevicePrivate(
+    PP_Instance instance) {
+  return (new CameraDeviceResource(GetConnection(), instance))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateFlashDRM(PP_Instance instance) {
   return (new FlashDRMResource(GetConnection(), instance))->GetReference();
 }
@@ -457,11 +462,6 @@ PP_Resource ResourceCreationProxy::CreateFlashMenu(
 PP_Resource ResourceCreationProxy::CreateFlashMessageLoop(
     PP_Instance instance) {
   return PPB_Flash_MessageLoop_Proxy::CreateProxyResource(instance);
-}
-
-PP_Resource ResourceCreationProxy::CreateImageCapturePrivate(
-    PP_Instance instance) {
-  return (new ImageCaptureResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreatePlatformVerificationPrivate(

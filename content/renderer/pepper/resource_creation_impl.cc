@@ -82,6 +82,11 @@ PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
   return PPB_Buffer_Impl::Create(instance, size);
 }
 
+PP_Resource ResourceCreationImpl::CreateCameraDevicePrivate(
+    PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateFlashDRM(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
@@ -124,11 +129,6 @@ PP_Resource ResourceCreationImpl::CreateHostResolver(PP_Instance instance) {
 }
 
 PP_Resource ResourceCreationImpl::CreateHostResolverPrivate(
-    PP_Instance instance) {
-  return 0;  // Not supported in-process.
-}
-
-PP_Resource ResourceCreationImpl::CreateImageCapturePrivate(
     PP_Instance instance) {
   return 0;  // Not supported in-process.
 }

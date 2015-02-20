@@ -16,8 +16,6 @@
 namespace ppapi {
 namespace proxy {
 
-class ImageCaptureResource;
-
 class PPAPI_PROXY_EXPORT CameraCapabilitiesResource
     : public Resource,
       public thunk::PPB_CameraCapabilities_API {

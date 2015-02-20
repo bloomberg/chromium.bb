@@ -1547,18 +1547,18 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
 
-// ImageCapture ----------------------------------------------------------------
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_ImageCapture_Create)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_ImageCapture_Close)
+// CameraDevice ----------------------------------------------------------------
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_CameraDevice_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_CameraDevice_Close)
 
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_ImageCapture_Open,
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_CameraDevice_Open,
                      std::string /* camera_source_id */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_ImageCapture_OpenReply)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_CameraDevice_OpenReply)
 
 IPC_MESSAGE_CONTROL0(
-    PpapiHostMsg_ImageCapture_GetSupportedVideoCaptureFormats)
+    PpapiHostMsg_CameraDevice_GetSupportedVideoCaptureFormats)
 IPC_MESSAGE_CONTROL1(
-    PpapiPluginMsg_ImageCapture_GetSupportedVideoCaptureFormatsReply,
+    PpapiPluginMsg_CameraDevice_GetSupportedVideoCaptureFormatsReply,
     std::vector<PP_VideoCaptureFormat> /* video_capture_formats */)
 
 // IsolatedFileSystem ----------------------------------------------------------

@@ -182,6 +182,7 @@ class ResourceCreationAPI {
       PP_Instance instance,
       const PP_BrowserFont_Trusted_Description* description) = 0;
   virtual PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) = 0;
+  virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashDRM(PP_Instance instance) = 0;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
@@ -190,7 +191,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
-  virtual PP_Resource CreateImageCapturePrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreatePlatformVerificationPrivate(
       PP_Instance instance) = 0;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,

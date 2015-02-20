@@ -55184,6 +55184,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1218354710" label="PPB_VideoFrame;0.1"/>
   <int value="1260990020" label="PPB_Ext_Socket(Dev);0.2"/>
   <int value="1262240942" label="PPB_FileIO;1.1"/>
+  <int value="1262834677" label="PPB_CameraDevice_Private;0.1"/>
   <int value="1272679676" label="PPB_TCPSocket_Private;0.5"/>
   <int value="1296231808" label="PPB_VideoDecoder;0.1"/>
   <int value="1316246754" label="PPB_KeyboardInputEvent;1.0"/>

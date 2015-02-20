@@ -39,6 +39,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   PP_Resource CreateCompositor(PP_Instance instance) override;
   PP_Resource CreateBroker(PP_Instance instance) override;
   PP_Resource CreateBuffer(PP_Instance instance, uint32_t size) override;
+  PP_Resource CreateCameraDevicePrivate(PP_Instance instance) override;
   PP_Resource CreateFlashDRM(PP_Instance instance) override;
   PP_Resource CreateFlashFontFile(
       PP_Instance instance,
@@ -58,7 +59,6 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
       base::SharedMemoryHandle* shared_state) override;
   PP_Resource CreateHostResolver(PP_Instance instance) override;
   PP_Resource CreateHostResolverPrivate(PP_Instance instance) override;
-  PP_Resource CreateImageCapturePrivate(PP_Instance instance) override;
   PP_Resource CreateImageData(PP_Instance instance,
                               PP_ImageDataFormat format,
                               const PP_Size* size,

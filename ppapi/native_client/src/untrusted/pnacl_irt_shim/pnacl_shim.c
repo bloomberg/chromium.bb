@@ -53,6 +53,7 @@
 #include "ppapi/c/ppb_video_encoder.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_messaging.h"
+#include "ppapi/c/private/ppb_camera_device_private.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/c/private/ppb_display_color_profile_private.h"
 #include "ppapi/c/private/ppb_ext_crx_file_system_private.h"
@@ -64,7 +65,6 @@
 #include "ppapi/c/private/ppb_flash_drm.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
-#include "ppapi/c/private/ppb_image_capture_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -166,6 +166,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_13;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1;
@@ -183,7 +184,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
@@ -2946,6 +2946,35 @@ static struct PP_Var Pnacl_M13_PPP_Selection_Dev_GetSelectedText(PP_Instance ins
 
 /* Not generating wrapper methods for PPB_CameraCapabilities_Private_0_1 */
 
+/* Begin wrapper methods for PPB_CameraDevice_Private_0_1 */
+
+static PP_Resource Pnacl_M42_PPB_CameraDevice_Private_Create(PP_Instance instance) {
+  const struct PPB_CameraDevice_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M42_PPB_CameraDevice_Private_IsCameraDevice(PP_Resource resource) {
+  const struct PPB_CameraDevice_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1.real_iface;
+  return iface->IsCameraDevice(resource);
+}
+
+static int32_t Pnacl_M42_PPB_CameraDevice_Private_Open(PP_Resource camera_device, struct PP_Var* device_id, struct PP_CompletionCallback* callback) {
+  const struct PPB_CameraDevice_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1.real_iface;
+  return iface->Open(camera_device, *device_id, *callback);
+}
+
+static void Pnacl_M42_PPB_CameraDevice_Private_Close(PP_Resource camera_device) {
+  const struct PPB_CameraDevice_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1.real_iface;
+  iface->Close(camera_device);
+}
+
+static int32_t Pnacl_M42_PPB_CameraDevice_Private_GetCameraCapabilities(PP_Resource camera_device, PP_Resource* capabilities, struct PP_CompletionCallback* callback) {
+  const struct PPB_CameraDevice_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1.real_iface;
+  return iface->GetCameraCapabilities(camera_device, capabilities, *callback);
+}
+
+/* End wrapper methods for PPB_CameraDevice_Private_0_1 */
+
 /* Begin wrapper methods for PPB_ContentDecryptor_Private_0_13 */
 
 static void Pnacl_M41_PPB_ContentDecryptor_Private_PromiseResolved(PP_Instance instance, uint32_t promise_id) {
@@ -3590,35 +3619,6 @@ static PP_Bool Pnacl_M19_PPB_HostResolver_Private_GetNetAddress(PP_Resource host
 }
 
 /* End wrapper methods for PPB_HostResolver_Private_0_1 */
-
-/* Begin wrapper methods for PPB_ImageCapture_Private_0_1 */
-
-static PP_Resource Pnacl_M42_PPB_ImageCapture_Private_Create(PP_Instance instance) {
-  const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  return iface->Create(instance);
-}
-
-static PP_Bool Pnacl_M42_PPB_ImageCapture_Private_IsImageCapture(PP_Resource resource) {
-  const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  return iface->IsImageCapture(resource);
-}
-
-static int32_t Pnacl_M42_PPB_ImageCapture_Private_Open(PP_Resource image_capture, struct PP_Var* device_id, struct PP_CompletionCallback* callback) {
-  const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  return iface->Open(image_capture, *device_id, *callback);
-}
-
-static void Pnacl_M42_PPB_ImageCapture_Private_Close(PP_Resource image_capture) {
-  const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  iface->Close(image_capture);
-}
-
-static int32_t Pnacl_M42_PPB_ImageCapture_Private_GetCameraCapabilities(PP_Resource image_capture, PP_Resource* capabilities, struct PP_CompletionCallback* callback) {
-  const struct PPB_ImageCapture_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1.real_iface;
-  return iface->GetCameraCapabilities(image_capture, capabilities, *callback);
-}
-
-/* End wrapper methods for PPB_ImageCapture_Private_0_1 */
 
 /* Not generating wrapper methods for PPB_InputEvent_Private_0_1 */
 
@@ -5319,6 +5319,14 @@ static const struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 =
 
 /* Not generating wrapper interface for PPB_CameraCapabilities_Private_0_1 */
 
+static const struct PPB_CameraDevice_Private_0_1 Pnacl_Wrappers_PPB_CameraDevice_Private_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M42_PPB_CameraDevice_Private_Create,
+    .IsCameraDevice = (PP_Bool (*)(PP_Resource resource))&Pnacl_M42_PPB_CameraDevice_Private_IsCameraDevice,
+    .Open = (int32_t (*)(PP_Resource camera_device, struct PP_Var device_id, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_CameraDevice_Private_Open,
+    .Close = (void (*)(PP_Resource camera_device))&Pnacl_M42_PPB_CameraDevice_Private_Close,
+    .GetCameraCapabilities = (int32_t (*)(PP_Resource camera_device, PP_Resource* capabilities, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_CameraDevice_Private_GetCameraCapabilities
+};
+
 static const struct PPB_ContentDecryptor_Private_0_13 Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_13 = {
     .PromiseResolved = (void (*)(PP_Instance instance, uint32_t promise_id))&Pnacl_M41_PPB_ContentDecryptor_Private_PromiseResolved,
     .PromiseResolvedWithSession = (void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var session_id))&Pnacl_M41_PPB_ContentDecryptor_Private_PromiseResolvedWithSession,
@@ -5493,14 +5501,6 @@ static const struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver
     .GetCanonicalName = (struct PP_Var (*)(PP_Resource host_resolver))&Pnacl_M19_PPB_HostResolver_Private_GetCanonicalName,
     .GetSize = (uint32_t (*)(PP_Resource host_resolver))&Pnacl_M19_PPB_HostResolver_Private_GetSize,
     .GetNetAddress = (PP_Bool (*)(PP_Resource host_resolver, uint32_t index, struct PP_NetAddress_Private* addr))&Pnacl_M19_PPB_HostResolver_Private_GetNetAddress
-};
-
-static const struct PPB_ImageCapture_Private_0_1 Pnacl_Wrappers_PPB_ImageCapture_Private_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M42_PPB_ImageCapture_Private_Create,
-    .IsImageCapture = (PP_Bool (*)(PP_Resource resource))&Pnacl_M42_PPB_ImageCapture_Private_IsImageCapture,
-    .Open = (int32_t (*)(PP_Resource image_capture, struct PP_Var device_id, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_ImageCapture_Private_Open,
-    .Close = (void (*)(PP_Resource image_capture))&Pnacl_M42_PPB_ImageCapture_Private_Close,
-    .GetCameraCapabilities = (int32_t (*)(PP_Resource image_capture, PP_Resource* capabilities, struct PP_CompletionCallback callback))&Pnacl_M42_PPB_ImageCapture_Private_GetCameraCapabilities
 };
 
 /* Not generating wrapper interface for PPB_InputEvent_Private_0_1 */
@@ -6160,6 +6160,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1 = {
+  .iface_macro = PPB_CAMERADEVICE_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_CameraDevice_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_13 = {
   .iface_macro = PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_13,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_13,
@@ -6259,12 +6265,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1 = {
   .iface_macro = PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_HostResolver_Private_0_1,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1 = {
-  .iface_macro = PPB_IMAGECAPTURE_PRIVATE_INTERFACE_0_1,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_ImageCapture_Private_0_1,
   .real_iface = NULL
 };
 
@@ -6481,6 +6481,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,
+  &Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1,
   &Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_13,
   &Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1,
@@ -6498,7 +6499,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_DRM_1_1,
   &Pnacl_WrapperInfo_PPB_Flash_Menu_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
-  &Pnacl_WrapperInfo_PPB_ImageCapture_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
   &Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_2,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,

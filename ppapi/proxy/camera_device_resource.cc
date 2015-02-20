@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/image_capture_resource.h"
+#include "ppapi/proxy/camera_device_resource.h"
 
 #include "ppapi/proxy/camera_capabilities_resource.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -12,17 +12,17 @@
 namespace ppapi {
 namespace proxy {
 
-ImageCaptureResource::ImageCaptureResource(Connection connection,
+CameraDeviceResource::CameraDeviceResource(Connection connection,
                                            PP_Instance instance)
     : PluginResource(connection, instance),
       open_state_(OpenState::BEFORE_OPEN) {
-  SendCreate(RENDERER, PpapiHostMsg_ImageCapture_Create());
+  SendCreate(RENDERER, PpapiHostMsg_CameraDevice_Create());
 }
 
-ImageCaptureResource::~ImageCaptureResource() {
+CameraDeviceResource::~CameraDeviceResource() {
 }
 
-int32_t ImageCaptureResource::Open(
+int32_t CameraDeviceResource::Open(
     PP_Var device_id,
     const scoped_refptr<TrackedCallback>& callback) {
   if (open_state_ != OpenState::BEFORE_OPEN)
@@ -37,14 +37,14 @@ int32_t ImageCaptureResource::Open(
 
   open_callback_ = callback;
 
-  Call<PpapiPluginMsg_ImageCapture_OpenReply>(
-      RENDERER, PpapiHostMsg_ImageCapture_Open(source_string_var->value()),
-      base::Bind(&ImageCaptureResource::OnPluginMsgOpenReply,
+  Call<PpapiPluginMsg_CameraDevice_OpenReply>(
+      RENDERER, PpapiHostMsg_CameraDevice_Open(source_string_var->value()),
+      base::Bind(&CameraDeviceResource::OnPluginMsgOpenReply,
                  base::Unretained(this)));
   return PP_OK_COMPLETIONPENDING;
 }
 
-void ImageCaptureResource::Close() {
+void CameraDeviceResource::Close() {
   if (open_state_ == OpenState::CLOSED)
     return;
 
@@ -58,12 +58,12 @@ void ImageCaptureResource::Close() {
     get_capabilities_callback_ = nullptr;
   }
 
-  Post(RENDERER, PpapiHostMsg_ImageCapture_Close());
+  Post(RENDERER, PpapiHostMsg_CameraDevice_Close());
 
   open_state_ = OpenState::CLOSED;
 }
 
-int32_t ImageCaptureResource::GetCameraCapabilities(
+int32_t CameraDeviceResource::GetCameraCapabilities(
     PP_Resource* capabilities,
     const scoped_refptr<TrackedCallback>& callback) {
   if (!is_opened())
@@ -78,15 +78,15 @@ int32_t ImageCaptureResource::GetCameraCapabilities(
   }
 
   get_capabilities_callback_ = callback;
-  Call<PpapiPluginMsg_ImageCapture_GetSupportedVideoCaptureFormatsReply>(
-      RENDERER, PpapiHostMsg_ImageCapture_GetSupportedVideoCaptureFormats(),
-      base::Bind(&ImageCaptureResource::OnPluginMsgGetVideoCaptureFormatsReply,
+  Call<PpapiPluginMsg_CameraDevice_GetSupportedVideoCaptureFormatsReply>(
+      RENDERER, PpapiHostMsg_CameraDevice_GetSupportedVideoCaptureFormats(),
+      base::Bind(&CameraDeviceResource::OnPluginMsgGetVideoCaptureFormatsReply,
                  base::Unretained(this), capabilities));
 
   return PP_OK_COMPLETIONPENDING;
 }
 
-void ImageCaptureResource::OnPluginMsgOpenReply(
+void CameraDeviceResource::OnPluginMsgOpenReply(
     const ResourceMessageReplyParams& params) {
   // The callback may have been aborted by Close().
   if (TrackedCallback::IsPending(open_callback_)) {
@@ -97,7 +97,7 @@ void ImageCaptureResource::OnPluginMsgOpenReply(
   }
 }
 
-void ImageCaptureResource::OnPluginMsgGetVideoCaptureFormatsReply(
+void CameraDeviceResource::OnPluginMsgGetVideoCaptureFormatsReply(
     PP_Resource* capabilities_output,
     const ResourceMessageReplyParams& params,
     const std::vector<PP_VideoCaptureFormat>& formats) {

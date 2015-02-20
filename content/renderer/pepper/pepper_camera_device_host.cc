@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/pepper_image_capture_host.h"
+#include "content/renderer/pepper/pepper_camera_device_host.h"
 
-#include "content/renderer/pepper/pepper_platform_image_capture.h"
+#include "content/renderer/pepper/pepper_platform_camera_device.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -12,54 +12,54 @@
 
 namespace content {
 
-PepperImageCaptureHost::PepperImageCaptureHost(RendererPpapiHostImpl* host,
+PepperCameraDeviceHost::PepperCameraDeviceHost(RendererPpapiHostImpl* host,
                                                PP_Instance instance,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host) {
 }
 
-PepperImageCaptureHost::~PepperImageCaptureHost() {
-  DetachPlatformImageCapture();
+PepperCameraDeviceHost::~PepperCameraDeviceHost() {
+  DetachPlatformCameraDevice();
 }
 
-bool PepperImageCaptureHost::Init() {
+bool PepperCameraDeviceHost::Init() {
   return !!renderer_ppapi_host_->GetPluginInstance(pp_instance());
 }
 
-int32_t PepperImageCaptureHost::OnResourceMessageReceived(
+int32_t PepperCameraDeviceHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
   int32_t result = PP_ERROR_FAILED;
 
-  PPAPI_BEGIN_MESSAGE_MAP(PepperImageCaptureHost, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_ImageCapture_Open, OnOpen)
+  PPAPI_BEGIN_MESSAGE_MAP(PepperCameraDeviceHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_CameraDevice_Open, OnOpen)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_ImageCapture_GetSupportedVideoCaptureFormats,
+        PpapiHostMsg_CameraDevice_GetSupportedVideoCaptureFormats,
         OnGetSupportedVideoCaptureFormats)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_ImageCapture_Close,
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_CameraDevice_Close,
                                         OnClose)
   PPAPI_END_MESSAGE_MAP()
   return result;
 }
 
-void PepperImageCaptureHost::OnInitialized(bool succeeded) {
+void PepperCameraDeviceHost::OnInitialized(bool succeeded) {
   if (!open_reply_context_.is_valid())
     return;
 
   if (succeeded) {
     open_reply_context_.params.set_result(PP_OK);
   } else {
-    DetachPlatformImageCapture();
+    DetachPlatformCameraDevice();
     open_reply_context_.params.set_result(PP_ERROR_FAILED);
   }
 
   host()->SendReply(open_reply_context_,
-                    PpapiPluginMsg_ImageCapture_OpenReply());
+                    PpapiPluginMsg_CameraDevice_OpenReply());
   open_reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
-void PepperImageCaptureHost::OnVideoCaptureFormatsEnumerated(
+void PepperCameraDeviceHost::OnVideoCaptureFormatsEnumerated(
     const std::vector<PP_VideoCaptureFormat>& formats) {
   if (!video_capture_formats_reply_context_.is_valid())
     return;
@@ -70,24 +70,24 @@ void PepperImageCaptureHost::OnVideoCaptureFormatsEnumerated(
     video_capture_formats_reply_context_.params.set_result(PP_ERROR_FAILED);
   host()->SendReply(
       video_capture_formats_reply_context_,
-      PpapiPluginMsg_ImageCapture_GetSupportedVideoCaptureFormatsReply(
+      PpapiPluginMsg_CameraDevice_GetSupportedVideoCaptureFormatsReply(
           formats));
   video_capture_formats_reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
-int32_t PepperImageCaptureHost::OnOpen(ppapi::host::HostMessageContext* context,
+int32_t PepperCameraDeviceHost::OnOpen(ppapi::host::HostMessageContext* context,
                                        const std::string& device_id) {
   if (open_reply_context_.is_valid())
     return PP_ERROR_INPROGRESS;
 
-  if (platform_image_capture_.get())
+  if (platform_camera_device_.get())
     return PP_ERROR_FAILED;
 
   GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
   if (!document_url.is_valid())
     return PP_ERROR_FAILED;
 
-  platform_image_capture_.reset(new PepperPlatformImageCapture(
+  platform_camera_device_.reset(new PepperPlatformCameraDevice(
       renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance())
           ->GetRoutingID(),
       device_id, document_url, this));
@@ -97,29 +97,29 @@ int32_t PepperImageCaptureHost::OnOpen(ppapi::host::HostMessageContext* context,
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PepperImageCaptureHost::OnClose(
+int32_t PepperCameraDeviceHost::OnClose(
     ppapi::host::HostMessageContext* context) {
-  DetachPlatformImageCapture();
+  DetachPlatformCameraDevice();
   return PP_OK;
 }
 
-int32_t PepperImageCaptureHost::OnGetSupportedVideoCaptureFormats(
+int32_t PepperCameraDeviceHost::OnGetSupportedVideoCaptureFormats(
     ppapi::host::HostMessageContext* context) {
   if (video_capture_formats_reply_context_.is_valid())
     return PP_ERROR_INPROGRESS;
-  if (!platform_image_capture_)
+  if (!platform_camera_device_)
     return PP_ERROR_FAILED;
 
   video_capture_formats_reply_context_ = context->MakeReplyMessageContext();
-  platform_image_capture_->GetSupportedVideoCaptureFormats();
+  platform_camera_device_->GetSupportedVideoCaptureFormats();
 
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PepperImageCaptureHost::DetachPlatformImageCapture() {
-  if (platform_image_capture_) {
-    platform_image_capture_->DetachEventHandler();
-    platform_image_capture_.reset();
+void PepperCameraDeviceHost::DetachPlatformCameraDevice() {
+  if (platform_camera_device_) {
+    platform_camera_device_->DetachEventHandler();
+    platform_camera_device_.reset();
   }
 }
 

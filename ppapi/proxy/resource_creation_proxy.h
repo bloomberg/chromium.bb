@@ -169,6 +169,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_BrowserFont_Trusted_Description* description) override;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) override;
+  virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) override;
   virtual PP_Resource CreateFlashDRM(PP_Instance instance) override;
   virtual PP_Resource CreateFlashFontFile(
       PP_Instance instance,
@@ -177,7 +178,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) override;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) override;
-  virtual PP_Resource CreateImageCapturePrivate(PP_Instance instance) override;
   virtual PP_Resource CreatePlatformVerificationPrivate(
       PP_Instance instance) override;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,

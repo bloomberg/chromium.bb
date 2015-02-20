@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PROXY_IMAGE_CAPTURE_RESOURCE_H_
-#define PPAPI_PROXY_IMAGE_CAPTURE_RESOURCE_H_
+#ifndef PPAPI_PROXY_CAMERA_DEVICE_RESOURCE_H_
+#define PPAPI_PROXY_CAMERA_DEVICE_RESOURCE_H_
 
 #include "base/basictypes.h"
 #include "ppapi/c/pp_size.h"
@@ -12,27 +12,26 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_image_capture_api.h"
+#include "ppapi/thunk/ppb_camera_device_api.h"
 
 namespace ppapi {
 namespace proxy {
 
 class CameraCapabilitiesResource;
-class ImageCaptureConfigResource;
 
-class PPAPI_PROXY_EXPORT ImageCaptureResource
+class PPAPI_PROXY_EXPORT CameraDeviceResource
     : public PluginResource,
-      public thunk::PPB_ImageCapture_API {
+      public thunk::PPB_CameraDevice_API {
  public:
-  ImageCaptureResource(Connection connection, PP_Instance instance);
-  ~ImageCaptureResource() override;
+  CameraDeviceResource(Connection connection, PP_Instance instance);
+  ~CameraDeviceResource() override;
 
   // Resource overrides:
-  thunk::PPB_ImageCapture_API* AsPPB_ImageCapture_API() override {
+  thunk::PPB_CameraDevice_API* AsPPB_CameraDevice_API() override {
     return this;
   }
 
-  // PPB_ImageCapture_API implementation.
+  // PPB_CameraDevice_API implementation.
   int32_t Open(PP_Var device_id,
                const scoped_refptr<TrackedCallback>& callback) override;
   void Close() override;
@@ -59,10 +58,10 @@ class PPAPI_PROXY_EXPORT ImageCaptureResource
   scoped_refptr<TrackedCallback> get_capabilities_callback_;
   scoped_refptr<CameraCapabilitiesResource> camera_capabilities_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageCaptureResource);
+  DISALLOW_COPY_AND_ASSIGN(CameraDeviceResource);
 };
 
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PROXY_IMAGE_CAPTURE_RESOURCE_H_
+#endif  // PPAPI_PROXY_CAMERA_DEVICE_RESOURCE_H_

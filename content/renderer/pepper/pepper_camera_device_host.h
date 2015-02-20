@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_IMAGE_CAPTURE_HOST_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_IMAGE_CAPTURE_HOST_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_CAMERA_DEVICE_HOST_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_CAMERA_DEVICE_HOST_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -14,16 +14,16 @@
 #include "ppapi/host/resource_host.h"
 
 namespace content {
-class PepperPlatformImageCapture;
+class PepperPlatformCameraDevice;
 class RendererPpapiHostImpl;
 
-class PepperImageCaptureHost : public ppapi::host::ResourceHost {
+class PepperCameraDeviceHost : public ppapi::host::ResourceHost {
  public:
-  PepperImageCaptureHost(RendererPpapiHostImpl* host,
+  PepperCameraDeviceHost(RendererPpapiHostImpl* host,
                          PP_Instance instance,
                          PP_Resource resource);
 
-  ~PepperImageCaptureHost() override;
+  ~PepperCameraDeviceHost() override;
 
   bool Init();
 
@@ -31,9 +31,9 @@ class PepperImageCaptureHost : public ppapi::host::ResourceHost {
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
-  // These methods are called by PepperPlatformImageCapture only.
+  // These methods are called by PepperPlatformCameraDevice only.
 
-  // Called when image capture is initialized.
+  // Called when camera device is initialized.
   void OnInitialized(bool succeeded);
 
   // Called when the video capture formats are enumerated.
@@ -49,9 +49,9 @@ class PepperImageCaptureHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context);
 
   // Utility methods.
-  void DetachPlatformImageCapture();
+  void DetachPlatformCameraDevice();
 
-  scoped_ptr<PepperPlatformImageCapture> platform_image_capture_;
+  scoped_ptr<PepperPlatformCameraDevice> platform_camera_device_;
 
   RendererPpapiHostImpl* renderer_ppapi_host_;
 
@@ -59,9 +59,9 @@ class PepperImageCaptureHost : public ppapi::host::ResourceHost {
 
   ppapi::host::ReplyMessageContext video_capture_formats_reply_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperImageCaptureHost);
+  DISALLOW_COPY_AND_ASSIGN(PepperCameraDeviceHost);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_IMAGE_CAPTURE_HOST_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_CAMERA_DEVICE_HOST_H_

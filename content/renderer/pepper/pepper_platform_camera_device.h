@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_H_
-#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_H_
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_CAMERA_DEVICE_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_CAMERA_DEVICE_H_
 
 #include <string>
 
@@ -20,16 +20,16 @@ class GURL;
 
 namespace content {
 class PepperMediaDeviceManager;
-class PepperImageCaptureHost;
+class PepperCameraDeviceHost;
 
 // This object must only be used on the thread it's constructed on.
-class PepperPlatformImageCapture {
+class PepperPlatformCameraDevice {
  public:
-  PepperPlatformImageCapture(int render_frame_id,
+  PepperPlatformCameraDevice(int render_frame_id,
                              const std::string& device_id,
                              const GURL& document_url,
-                             PepperImageCaptureHost* handler);
-  ~PepperPlatformImageCapture();
+                             PepperCameraDeviceHost* handler);
+  ~PepperPlatformCameraDevice();
 
   // Detaches the event handler and stops sending notifications to it.
   void DetachEventHandler();
@@ -54,7 +54,7 @@ class PepperPlatformImageCapture {
   int session_id_;
   base::Closure release_device_cb_;
 
-  PepperImageCaptureHost* handler_;
+  PepperCameraDeviceHost* handler_;
 
   // Whether we have a pending request to open a device. We have to make sure
   // there isn't any pending request before this object goes away.
@@ -63,11 +63,11 @@ class PepperPlatformImageCapture {
 
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<PepperPlatformImageCapture> weak_factory_;
+  base::WeakPtrFactory<PepperPlatformCameraDevice> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperPlatformImageCapture);
+  DISALLOW_COPY_AND_ASSIGN(PepperPlatformCameraDevice);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_VIDEO_CAPTURE_H_
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_PLATFORM_CAMERA_DEVICE_H_

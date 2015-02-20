@@ -10,12 +10,12 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
+#include "content/renderer/pepper/pepper_camera_device_host.h"
 #include "content/renderer/pepper/pepper_compositor_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
-#include "content/renderer/pepper/pepper_image_capture_host.h"
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
@@ -204,9 +204,9 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
   // Private interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
     switch (message.type()) {
-      case PpapiHostMsg_ImageCapture_Create::ID: {
-        scoped_ptr<PepperImageCaptureHost> host(
-            new PepperImageCaptureHost(host_, instance, resource));
+      case PpapiHostMsg_CameraDevice_Create::ID: {
+        scoped_ptr<PepperCameraDeviceHost> host(
+            new PepperCameraDeviceHost(host_, instance, resource));
         return host->Init() ? host.Pass() : nullptr;
       }
     }
