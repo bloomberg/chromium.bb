@@ -22,6 +22,10 @@ enum WidevineCdmType {
 void AddWidevineWithCodecs(
     WidevineCdmType widevine_cdm_type,
     media::SupportedCodecs supported_codecs,
+    media::EmeSessionTypeSupport persistent_license_support,
+    media::EmeSessionTypeSupport persistent_release_message_support,
+    media::EmeFeatureSupport persistent_state_support,
+    media::EmeFeatureSupport distinctive_identifier_support,
     std::vector<media::KeySystemInfo>* concrete_key_systems);
 
 }  // namespace cdm

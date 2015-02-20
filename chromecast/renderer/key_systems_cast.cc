@@ -17,25 +17,31 @@
 namespace chromecast {
 namespace shell {
 
-void AddKeySystemWithCodecs(
-    const std::string& key_system_name,
-    std::vector< ::media::KeySystemInfo>* concrete_key_systems) {
-  ::media::KeySystemInfo info(key_system_name);
-  info.supported_codecs = ::media::EME_CODEC_MP4_ALL;
-  concrete_key_systems->push_back(info);
-}
-
 void AddChromecastKeySystems(
-    std::vector< ::media::KeySystemInfo>* key_systems_info) {
+    std::vector<::media::KeySystemInfo>* key_systems_info) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
-  AddWidevineWithCodecs(cdm::WIDEVINE,
-                        ::media::EME_CODEC_MP4_ALL,
-                        key_systems_info);
+  AddWidevineWithCodecs(
+      cdm::WIDEVINE,
+      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1,
+      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
+      ::media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
+      ::media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
+      ::media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
+      key_systems_info);
 #endif
 
 #if defined(PLAYREADY_CDM_AVAILABLE)
-  AddKeySystemWithCodecs(media::kChromecastPlayreadyKeySystem,
-                         key_systems_info);
+  ::media::KeySystemInfo info;
+  info.key_system = ::media::kChromecastPlayreadyKeySystem;
+  info.supported_codecs =
+      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
+  info.supported_init_data_types = ::media::EME_INIT_DATA_TYPE_CENC;
+  info.persistent_license_support = ::media::EME_SESSION_TYPE_NOT_SUPPORTED;
+  info.persistent_release_message_support =
+      ::media::EME_SESSION_TYPE_NOT_SUPPORTED;
+  info.persistent_state_support = ::media::EME_FEATURE_ALWAYS_ENABLED;
+  info.distinctive_identifier_support = ::media::EME_FEATURE_ALWAYS_ENABLED;
+  key_systems_info->push_back(info);
 #endif
 }
 

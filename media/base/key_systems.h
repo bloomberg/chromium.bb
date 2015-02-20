@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -83,6 +84,28 @@ MEDIA_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
 MEDIA_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
+
+// Returns whether |key_system| supports persistent-license sessions.
+MEDIA_EXPORT bool IsPersistentLicenseSessionSupported(
+    const std::string& key_system,
+    bool is_permission_granted);
+
+// Returns whether |key_system| supports persistent-release-message sessions.
+MEDIA_EXPORT bool IsPersistentReleaseMessageSessionSupported(
+    const std::string& key_system,
+    bool is_permission_granted);
+
+// Returns whether |key_system| supports persistent state as requested.
+MEDIA_EXPORT bool IsPersistentStateRequirementSupported(
+    const std::string& key_system,
+    EmeFeatureRequirement requirement,
+    bool is_permission_granted);
+
+// Returns whether |key_system| supports distinctive identifiers as requested.
+MEDIA_EXPORT bool IsDistinctiveIdentifierRequirementSupported(
+    const std::string& key_system,
+    EmeFeatureRequirement requirement,
+    bool is_permission_granted);
 
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.

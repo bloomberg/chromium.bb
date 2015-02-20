@@ -28,25 +28,97 @@ static bool IsSupportedContentType(
     const std::string& key_system,
     const std::string& mime_type,
     const std::string& codecs) {
-  // Per RFC 6838, "Both top-level type and subtype names are case-insensitive."
-  // TODO(sandersd): Check that |container| matches the capability:
-  //   - audioCapabilitys: audio/mp4 or audio/webm.
-  //   - videoCapabilitys: video/mp4 or video/webm.
-  // http://crbug.com/457384.
+  // TODO(sandersd): Move contentType parsing from Blink to here so that invalid
+  // parameters can be rejected. http://crbug.com/417561
+  // TODO(sandersd): Pass in the media type (audio or video) and check that the
+  // container type matches. http://crbug.com/457384
   std::string container = base::StringToLowerASCII(mime_type);
 
-  // Check that |codecs| are supported as specified (e.g. "mp4a.40.2").
+  // Check that |codecs| are supported by the CDM. This check does not handle
+  // extended codecs, so extended codec information is stripped.
+  // TODO(sandersd): Reject codecs that do not match the media type.
+  // http://crbug.com/457386
   std::vector<std::string> codec_vector;
-  net::ParseCodecString(codecs, &codec_vector, false);
-  if (!net::AreSupportedMediaCodecs(codec_vector))
-    return false;
-
-  // IsSupportedKeySystemWithMediaMimeType() only works with base codecs
-  // (e.g. "mp4a"), so reparse |codecs| to get the base only.
-  codec_vector.clear();
   net::ParseCodecString(codecs, &codec_vector, true);
-  return IsSupportedKeySystemWithMediaMimeType(container, codec_vector,
-                                               key_system);
+  if (!IsSupportedKeySystemWithMediaMimeType(container, codec_vector,
+                                             key_system)) {
+    return false;
+  }
+
+  // Check that |codecs| are supported by Chrome. This is done primarily to
+  // validate extended codecs, but it also ensures that the CDM cannot support
+  // codecs that Chrome does not (which would be bad because it would require
+  // considering the accumulated configuration, and could affect whether secure
+  // decode is required).
+  // TODO(sandersd): Reject ambiguous codecs. http://crbug.com/374751
+  codec_vector.clear();
+  net::ParseCodecString(codecs, &codec_vector, false);
+  return net::AreSupportedMediaCodecs(codec_vector);
+}
+
+static bool GetSupportedCapabilities(
+    const std::string& key_system,
+    const blink::WebVector<blink::WebMediaKeySystemMediaCapability>&
+        capabilities,
+    std::vector<blink::WebMediaKeySystemMediaCapability>*
+        media_type_capabilities) {
+  // From https://w3c.github.io/encrypted-media/#get-supported-capabilities-for-media-type
+  // 1. Let accumulated capabilities be partial configuration.
+  //    (Skipped as there are no configuration-based codec restrictions.)
+  // 2. Let media type capabilities be empty.
+  DCHECK_EQ(media_type_capabilities->size(), 0ul);
+  // 3. For each value in capabilities:
+  for (size_t i = 0; i < capabilities.size(); i++) {
+    // 3.1. Let contentType be the value's contentType member.
+    // 3.2. Let robustness be the value's robustness member.
+    const blink::WebMediaKeySystemMediaCapability& capability = capabilities[i];
+    // 3.3. If contentType is the empty string, return null.
+    if (capability.mimeType.isEmpty())
+      return false;
+    // 3.4-3.11. (Implemented by IsSupportedContentType().)
+    if (!base::IsStringASCII(capability.mimeType) ||
+        !base::IsStringASCII(capability.codecs) ||
+        !IsSupportedContentType(key_system,
+                                base::UTF16ToASCII(capability.mimeType),
+                                base::UTF16ToASCII(capability.codecs))) {
+      continue;
+    }
+    // 3.12. If robustness is not the empty string, run the following steps:
+    //       (Robustness is not supported.)
+    // TODO(sandersd): Implement robustness. http://crbug.com/442586
+    if (!capability.robustness.isEmpty()) {
+      LOG(WARNING) << "Configuration rejected because rubustness strings are "
+                   << "not yet supported.";
+      continue;
+    }
+    // 3.13. If the user agent and implementation do not support playback of
+    //       encrypted media data as specified by configuration, including all
+    //       media types, in combination with accumulated capabilities,
+    //       continue to the next iteration.
+    //       (Skipped as there are no configuration-based codec restrictions.)
+    // 3.14. Add configuration to media type capabilities.
+    media_type_capabilities->push_back(capability);
+    // 3.15. Add configuration to accumulated capabilities.
+    //       (Skipped as there are no configuration-based codec restrictions.)
+  }
+  // 4. If media type capabilities is empty, return null.
+  // 5. Return media type capabilities.
+  return !media_type_capabilities->empty();
+}
+
+static EmeFeatureRequirement ConvertRequirement(
+    blink::WebMediaKeySystemConfiguration::Requirement requirement) {
+  switch (requirement) {
+    case blink::WebMediaKeySystemConfiguration::Requirement::Required:
+      return EME_FEATURE_REQUIRED;
+    case blink::WebMediaKeySystemConfiguration::Requirement::Optional:
+      return EME_FEATURE_OPTIONAL;
+    case blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed:
+      return EME_FEATURE_NOT_ALLOWED;
+  }
+
+  NOTREACHED();
+  return EME_FEATURE_NOT_ALLOWED;
 }
 
 static bool GetSupportedConfiguration(
@@ -54,92 +126,180 @@ static bool GetSupportedConfiguration(
     const blink::WebMediaKeySystemConfiguration& candidate,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebMediaKeySystemConfiguration* accumulated_configuration) {
-  if (!candidate.initDataTypes.isEmpty()) {
-    std::vector<blink::WebString> init_data_types;
+  // When determining support, assume that permission could be granted.
+  // TODO(sandersd): Set to false if the permission is rejected.
+  bool is_permission_possible = true;
 
+  // From https://w3c.github.io/encrypted-media/#get-supported-configuration
+  // 1. Let accumulated configuration be empty. (Done by caller.)
+  // 2. If candidate configuration's initDataTypes attribute is not empty, run
+  //    the following steps:
+  if (!candidate.initDataTypes.isEmpty()) {
+    // 2.1. Let supported types be empty.
+    std::vector<blink::WebString> supported_types;
+
+    // 2.2. For each value in candidate configuration's initDataTypes attribute:
     for (size_t i = 0; i < candidate.initDataTypes.size(); i++) {
+      // 2.2.1. Let initDataType be the value.
       const blink::WebString& init_data_type = candidate.initDataTypes[i];
+      // 2.2.2. If initDataType is the empty string, return null.
       if (init_data_type.isEmpty())
         return false;
+      // 2.2.3. If the implementation supports generating requests based on
+      //        initDataType, add initDataType to supported types. String
+      //        comparison is case-sensitive.
       if (base::IsStringASCII(init_data_type) &&
           IsSupportedKeySystemWithInitDataType(
               key_system, base::UTF16ToASCII(init_data_type))) {
-        init_data_types.push_back(init_data_type);
+        supported_types.push_back(init_data_type);
       }
     }
 
-    if (init_data_types.empty())
+    // 2.3. If supported types is empty, return null.
+    if (supported_types.empty())
       return false;
 
-    accumulated_configuration->initDataTypes = init_data_types;
+    // 2.4. Add supported types to accumulated configuration.
+    accumulated_configuration->initDataTypes = supported_types;
   }
 
-  // TODO(sandersd): Implement distinctiveIdentifier and persistentState checks.
-  if (candidate.distinctiveIdentifier !=
-      blink::WebMediaKeySystemConfiguration::Requirement::Optional ||
-      candidate.persistentState !=
-      blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
+  // 3. Follow the steps for the value of candidate configuration's
+  //    distinctiveIdentifier attribute from the following list:
+  //     - "required": If the implementation does not support a persistent
+  //       Distinctive Identifier in combination with accumulated configuration,
+  //       return null.
+  //     - "optional": Continue.
+  //     - "not-allowed": If the implementation requires a Distinctive
+  //       Identifier in combination with accumulated configuration, return
+  //       null.
+  EmeFeatureRequirement di_requirement =
+      ConvertRequirement(candidate.distinctiveIdentifier);
+  if (!IsDistinctiveIdentifierRequirementSupported(key_system, di_requirement,
+                                                   is_permission_possible)) {
     return false;
   }
 
-  if (!candidate.audioCapabilities.isEmpty()) {
-    std::vector<blink::WebMediaKeySystemMediaCapability> audio_capabilities;
+  // 4. Add the value of the candidate configuration's distinctiveIdentifier
+  //    attribute to accumulated configuration.
+  accumulated_configuration->distinctiveIdentifier =
+      candidate.distinctiveIdentifier;
 
-    for (size_t i = 0; i < candidate.audioCapabilities.size(); i++) {
-      const blink::WebMediaKeySystemMediaCapability& capabilities =
-          candidate.audioCapabilities[i];
-      if (capabilities.mimeType.isEmpty())
-        return false;
-      if (!base::IsStringASCII(capabilities.mimeType) ||
-          !base::IsStringASCII(capabilities.codecs) ||
-          !IsSupportedContentType(
-              key_system, base::UTF16ToASCII(capabilities.mimeType),
-              base::UTF16ToASCII(capabilities.codecs))) {
-        continue;
-      }
-      // TODO(sandersd): Support robustness.
-      if (!capabilities.robustness.isEmpty())
-        continue;
-      audio_capabilities.push_back(capabilities);
-    }
-
-    if (audio_capabilities.empty())
-      return false;
-
-    accumulated_configuration->audioCapabilities = audio_capabilities;
+  // 5. Follow the steps for the value of candidate configuration's
+  //    persistentState attribute from the following list:
+  //     - "required": If the implementation does not support persisting state
+  //       in combination with accumulated configuration, return null.
+  //     - "optional": Continue.
+  //     - "not-allowed": If the implementation requires persisting state in
+  //       combination with accumulated configuration, return null.
+  EmeFeatureRequirement ps_requirement =
+      ConvertRequirement(candidate.persistentState);
+  if (!IsPersistentStateRequirementSupported(key_system, ps_requirement,
+                                             is_permission_possible)) {
+    return false;
   }
 
-  if (!candidate.videoCapabilities.isEmpty()) {
-    std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities;
+  // 6. Add the value of the candidate configuration's persistentState
+  //    attribute to accumulated configuration.
+  accumulated_configuration->persistentState = candidate.persistentState;
 
-    for (size_t i = 0; i < candidate.videoCapabilities.size(); i++) {
-      const blink::WebMediaKeySystemMediaCapability& capabilities =
-          candidate.videoCapabilities[i];
-      if (capabilities.mimeType.isEmpty())
-        return false;
-      if (!base::IsStringASCII(capabilities.mimeType) ||
-          !base::IsStringASCII(capabilities.codecs) ||
-          !IsSupportedContentType(
-              key_system, base::UTF16ToASCII(capabilities.mimeType),
-              base::UTF16ToASCII(capabilities.codecs))) {
-        continue;
-      }
-      // TODO(sandersd): Support robustness.
-      if (!capabilities.robustness.isEmpty())
-        continue;
-      video_capabilities.push_back(capabilities);
+  // 7. If candidate configuration's videoCapabilities attribute is not empty,
+  //    run the following steps:
+  if (!candidate.videoCapabilities.isEmpty()) {
+    // 7.1. Let video capabilities be the result of executing the Get Supported
+    //      Capabilities for Media Type algorithm on Video, candidate
+    //      configuration's videoCapabilities attribute, and accumulated
+    //      configuration.
+    // 7.2. If video capabilities is null, return null.
+    std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities;
+    if (!GetSupportedCapabilities(key_system, candidate.videoCapabilities,
+                                  &video_capabilities)) {
+      return false;
     }
 
-    if (video_capabilities.empty())
-      return false;
-
+    // 7.3. Add video capabilities to accumulated configuration.
     accumulated_configuration->videoCapabilities = video_capabilities;
   }
 
-  // TODO(sandersd): Prompt for distinctive identifiers and/or persistent state
-  // if required. Make sure that future checks are silent.
-  // http://crbug.com/446263.
+  // 8. If candidate configuration's audioCapabilities attribute is not empty,
+  //    run the following steps:
+  if (!candidate.audioCapabilities.isEmpty()) {
+    // 8.1. Let audio capabilities be the result of executing the Get Supported
+    //      Capabilities for Media Type algorithm on Audio, candidate
+    //      configuration's audioCapabilities attribute, and accumulated
+    //      configuration.
+    // 8.2. If audio capabilities is null, return null.
+    std::vector<blink::WebMediaKeySystemMediaCapability> audio_capabilities;
+    if (!GetSupportedCapabilities(key_system, candidate.audioCapabilities,
+                                  &audio_capabilities)) {
+      return false;
+    }
 
+    // 8.3. Add audio capabilities to accumulated configuration.
+    accumulated_configuration->audioCapabilities = audio_capabilities;
+  }
+
+  // 9. If accumulated configuration's distinctiveIdentifier value is
+  //    "optional", follow the steps for the first matching condition from the
+  //    following list:
+  //      - If the implementation requires a Distinctive Identifier for any of
+  //        the combinations in accumulated configuration, change accumulated
+  //        configuration's distinctiveIdentifier value to "required".
+  //      - Otherwise, change accumulated configuration's distinctiveIdentifier
+  //        value to "not-allowed".
+  //    (Without robustness support, capabilities do not affect this.)
+  // TODO(sandersd): Implement robustness. http://crbug.com/442586
+  if (accumulated_configuration->distinctiveIdentifier ==
+      blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
+    if (IsDistinctiveIdentifierRequirementSupported(key_system,
+                                                    EME_FEATURE_NOT_ALLOWED,
+                                                    is_permission_possible)) {
+      accumulated_configuration->distinctiveIdentifier =
+          blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed;
+    } else {
+      accumulated_configuration->distinctiveIdentifier =
+          blink::WebMediaKeySystemConfiguration::Requirement::Required;
+    }
+  }
+
+  // 10. If accumulated configuration's persistentState value is "optional",
+  //     follow the steps for the first matching condition from the following
+  //     list:
+  //       - If the implementation requires persisting state for any of the
+  //         combinations in accumulated configuration, change accumulated
+  //         configuration's persistentState value to "required".
+  //       - Otherwise, change accumulated configuration's persistentState value
+  //         to "not-allowed".
+  if (accumulated_configuration->persistentState ==
+      blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
+    if (IsPersistentStateRequirementSupported(key_system,
+                                              EME_FEATURE_NOT_ALLOWED,
+                                              is_permission_possible)) {
+      accumulated_configuration->persistentState =
+          blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed;
+    } else {
+      accumulated_configuration->persistentState =
+          blink::WebMediaKeySystemConfiguration::Requirement::Required;
+    }
+  }
+
+  // 11. If implementation in the configuration specified by the combination of
+  //     the values in accumulated configuration is not supported or not allowed
+  //     in the origin, return null.
+  // TODO(sandersd): Implement prompting. http://crbug.com/446263
+  // For now, assume that the permission was not granted.
+  di_requirement =
+      ConvertRequirement(accumulated_configuration->distinctiveIdentifier);
+  if (!IsDistinctiveIdentifierRequirementSupported(key_system, di_requirement,
+                                                   false)) {
+    return false;
+  }
+
+  ps_requirement =
+      ConvertRequirement(accumulated_configuration->persistentState);
+  if (!IsPersistentStateRequirementSupported(key_system, ps_requirement, false))
+    return false;
+
+  // 12. Return accumulated configuration.
   return true;
 }
 
@@ -212,9 +372,9 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   // Continued from requestMediaKeySystemAccess(), step 7, from
   // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
   //
-  // 7.1 If keySystem is not one of the Key Systems supported by the user
-  //     agent, reject promise with with a new DOMException whose name is
-  //     NotSupportedError. String comparison is case-sensitive.
+  // 7.1. If keySystem is not one of the Key Systems supported by the user
+  //      agent, reject promise with with a new DOMException whose name is
+  //      NotSupportedError. String comparison is case-sensitive.
   if (!base::IsStringASCII(request.keySystem())) {
     request.requestNotSupported("Only ASCII keySystems are supported");
     return;
@@ -231,27 +391,21 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     return;
   }
 
-  // 7.2 Let implementation be the implementation of keySystem.
-  // 7.3 For each value in supportedConfigurations, run the GetSupported
-  //     Configuration algorithm and if successful, resolve promise with access
-  //     and abort these steps.
+  // 7.2. Let implementation be the implementation of keySystem.
+  // 7.3. For each value in supportedConfigurations:
   const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
       configurations = request.supportedConfigurations();
-
-  // TODO(sandersd): Remove once Blink requires the configurations parameter for
-  // requestMediaKeySystemAccess().
-  if (configurations.isEmpty()) {
-    reporter->ReportSupported();
-    request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-        request.keySystem(), blink::WebMediaKeySystemConfiguration(),
-        request.securityOrigin(), weak_factory_.GetWeakPtr()));
-    return;
-  }
-
   for (size_t i = 0; i < configurations.size(); i++) {
-    const blink::WebMediaKeySystemConfiguration& candidate = configurations[i];
+    // 7.3.1. Let candidate configuration be the value.
+    const blink::WebMediaKeySystemConfiguration& candidate_configuration =
+        configurations[i];
+    // 7.3.2. Let supported configuration be the result of executing the Get
+    //        Supported Configuration algorithm on implementation, candidate
+    //        configuration, and origin.
+    // 7.3.3. If supported configuration is not null, [initialize and return a
+    //        new MediaKeySystemAccess object.]
     blink::WebMediaKeySystemConfiguration accumulated_configuration;
-    if (GetSupportedConfiguration(key_system, candidate,
+    if (GetSupportedConfiguration(key_system, candidate_configuration,
                                   request.securityOrigin(),
                                   &accumulated_configuration)) {
       reporter->ReportSupported();
@@ -262,7 +416,8 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     }
   }
 
-  // 7.4 Reject promise with a new DOMException whose name is NotSupportedError.
+  // 7.4. Reject promise with a new DOMException whose name is
+  //      NotSupportedError.
   request.requestNotSupported(
       "None of the requested configurations were supported.");
 }

@@ -24,10 +24,32 @@ class TestContentRendererClient : public ContentRendererClient {
   // ContentRendererClient implementation.
   void AddKeySystems(
       std::vector<media::KeySystemInfo>* key_systems_info) override {
-    media::KeySystemInfo key_system_info("test.keysystem");
+    // TODO(sandersd): Was this supposed to be added to the list?
+    media::KeySystemInfo key_system_info;
+    key_system_info.key_system = "test.keysystem";
+    key_system_info.persistent_license_support =
+        media::EME_SESSION_TYPE_NOT_SUPPORTED;
+    key_system_info.persistent_release_message_support =
+        media::EME_SESSION_TYPE_NOT_SUPPORTED;
+    key_system_info.persistent_state_support =
+        media::EME_FEATURE_NOT_SUPPORTED;
+    key_system_info.distinctive_identifier_support =
+        media::EME_FEATURE_NOT_SUPPORTED;
+    key_systems_info->push_back(key_system_info);
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-    if (is_extra_key_system_enabled_)
-      key_systems_info->push_back(media::KeySystemInfo(kWidevineKeySystem));
+    if (is_extra_key_system_enabled_) {
+      media::KeySystemInfo wv_key_system_info;
+      wv_key_system_info.key_system = kWidevineKeySystem;
+      wv_key_system_info.persistent_license_support =
+          media::EME_SESSION_TYPE_NOT_SUPPORTED;
+      wv_key_system_info.persistent_release_message_support =
+          media::EME_SESSION_TYPE_NOT_SUPPORTED;
+      wv_key_system_info.persistent_state_support =
+          media::EME_FEATURE_NOT_SUPPORTED;
+      wv_key_system_info.distinctive_identifier_support =
+          media::EME_FEATURE_NOT_SUPPORTED;
+      key_systems_info->push_back(wv_key_system_info);
+    }
 #endif
   }
 

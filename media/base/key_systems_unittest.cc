@@ -160,20 +160,30 @@ void TestMediaClient::DisableExternalKeySystemSupport() {
 
 void TestMediaClient::AddUsesAesKeySystem(
     std::vector<KeySystemInfo>* key_systems) {
-  KeySystemInfo aes(kUsesAes);
+  KeySystemInfo aes;
+  aes.key_system = kUsesAes;
   aes.supported_codecs = EME_CODEC_WEBM_ALL;
   aes.supported_codecs |= TEST_CODEC_FOO_ALL;
   aes.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  aes.persistent_license_support = EME_SESSION_TYPE_NOT_SUPPORTED;
+  aes.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
+  aes.persistent_state_support = EME_FEATURE_NOT_SUPPORTED;
+  aes.distinctive_identifier_support = EME_FEATURE_NOT_SUPPORTED;
   aes.use_aes_decryptor = true;
   key_systems->push_back(aes);
 }
 
 void TestMediaClient::AddExternalKeySystem(
     std::vector<KeySystemInfo>* key_systems) {
-  KeySystemInfo ext(kExternal);
+  KeySystemInfo ext;
+  ext.key_system = kExternal;
   ext.supported_codecs = EME_CODEC_WEBM_ALL;
   ext.supported_codecs |= TEST_CODEC_FOO_ALL;
   ext.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  ext.persistent_license_support = EME_SESSION_TYPE_SUPPORTED;
+  ext.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
+  ext.persistent_state_support = EME_FEATURE_ALWAYS_ENABLED;
+  ext.distinctive_identifier_support = EME_FEATURE_ALWAYS_ENABLED;
   ext.parent_key_system = kExternalParent;
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";

@@ -49,6 +49,37 @@ enum EmeCodec {
 typedef uint32_t SupportedInitDataTypes;
 typedef uint32_t SupportedCodecs;
 
+enum EmeSessionTypeSupport {
+  // Invalid default value.
+  EME_SESSION_TYPE_INVALID,
+  // The session type is not supported.
+  EME_SESSION_TYPE_NOT_SUPPORTED,
+  // The session type is supported if the encrypted media permission is granted.
+  EME_SESSION_TYPE_SUPPORTED_WITH_PERMISSION,
+  // The session type is always supported.
+  EME_SESSION_TYPE_SUPPORTED,
+};
+
+enum EmeFeatureSupport {
+  // Invalid default value.
+  EME_FEATURE_INVALID,
+  // Access to the feature is not supported at all.
+  EME_FEATURE_NOT_SUPPORTED,
+  // Access to the feature may be requested if the encrypted media permission is
+  // granted.
+  EME_FEATURE_REQUESTABLE_WITH_PERMISSION,
+  // Access to the feature may be requested.
+  EME_FEATURE_REQUESTABLE,
+  // Access to the feature cannot be blocked.
+  EME_FEATURE_ALWAYS_ENABLED,
+};
+
+enum EmeFeatureRequirement {
+  EME_FEATURE_NOT_ALLOWED,
+  EME_FEATURE_OPTIONAL,
+  EME_FEATURE_REQUIRED,
+};
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_EME_CONSTANTS_H_

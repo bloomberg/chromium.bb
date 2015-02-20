@@ -43,13 +43,22 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
     AddWidevineWithCodecs(
         WIDEVINE,
         static_cast<SupportedCodecs>(response.compositing_codecs),
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
+        media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
+        media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
         concrete_key_systems);
   }
 
   if (response.non_compositing_codecs != media::EME_CODEC_NONE) {
+    // TODO(ddorwin): Remove with unprefixed. http://crbug.com/249976
     AddWidevineWithCodecs(
         WIDEVINE_HR_NON_COMPOSITING,
         static_cast<SupportedCodecs>(response.non_compositing_codecs),
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
+        media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
+        media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
+        media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
         concrete_key_systems);
   }
 }
@@ -64,7 +73,8 @@ void AddAndroidPlatformKeySystems(
        it != key_system_names.end(); ++it) {
     SupportedKeySystemResponse response = QueryKeySystemSupport(*it);
     if (response.compositing_codecs != media::EME_CODEC_NONE) {
-      KeySystemInfo info(*it);
+      KeySystemInfo info;
+      info.key_system = *it;
       info.supported_codecs = response.compositing_codecs;
       // Here we assume that support for a container implies support for the
       // associated initialization data type. KeySystems handles validating
@@ -75,6 +85,12 @@ void AddAndroidPlatformKeySystems(
       if (response.compositing_codecs & media::EME_CODEC_MP4_ALL)
         info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
 #endif  // defined(USE_PROPRIETARY_CODECS)
+      // Assume the worst case (from a user point of view).
+      info.persistent_license_support = media::EME_SESSION_TYPE_NOT_SUPPORTED;
+      info.persistent_release_message_support =
+          media::EME_SESSION_TYPE_NOT_SUPPORTED;
+      info.persistent_state_support = media::EME_FEATURE_ALWAYS_ENABLED;
+      info.distinctive_identifier_support = media::EME_FEATURE_ALWAYS_ENABLED;
       concrete_key_systems->push_back(info);
     }
   }
