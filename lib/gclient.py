@@ -136,7 +136,7 @@ def _GetGclientSolutions(internal, rev, template):
   return solutions
 
 
-def _GetGclientSpec(internal, rev, template):
+def _GetGclientSpec(internal, rev, template, use_cache):
   """Return a formatted gclient spec.
 
   See WriteConfigFile below.
@@ -148,12 +148,13 @@ def _GetGclientSpec(internal, rev, template):
   # Horrible hack, I will go to hell for this.  The bots need to have a git
   # cache set up; but how can we tell whether this code is running on a bot
   # or a developer's machine?
-  if cros_build_lib.HostIsCIBuilder():
+  if cros_build_lib.HostIsCIBuilder() and use_cache:
     result += "cache_dir = '/b/git-cache'\n"
 
   return result
 
-def WriteConfigFile(gclient, cwd, internal, rev, template=None):
+def WriteConfigFile(gclient, cwd, internal, rev, template=None,
+                    use_cache=True):
   """Initialize the specified directory as a gclient checkout.
 
   For gclient documentation, see:
@@ -172,8 +173,11 @@ def WriteConfigFile(gclient, cwd, internal, rev, template=None):
               by the template and performs appropriate modifications such as
               filling information like url and revision and adding extra
               solutions.
+    use_cache: An optional Boolean flag to indicate if the git cache should
+               be used when available (on a continuous-integration builder).
   """
-  spec = _GetGclientSpec(internal=internal, rev=rev, template=template)
+  spec = _GetGclientSpec(internal=internal, rev=rev, template=template,
+                         use_cache=use_cache)
   cmd = [gclient, 'config', '--spec', spec]
   cros_build_lib.RunCommand(cmd, cwd=cwd)
 

@@ -20,8 +20,8 @@ class TestGclientWriteConfigFile(
 
   _TEST_CWD = '/work/chrome'
 
-  def _AssertGclientConfigSpec(self, expected_spec):
-    if cros_build_lib.HostIsCIBuilder():
+  def _AssertGclientConfigSpec(self, expected_spec, use_cache=True):
+    if cros_build_lib.HostIsCIBuilder() and use_cache:
       expected_spec += "cache_dir = '/b/git-cache'\n"
     self.rc.assertCommandContains(('gclient', 'config', '--spec',
                                    expected_spec),
@@ -41,6 +41,17 @@ class TestGclientWriteConfigFile(
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
 """)
+
+  def testChromiumSpecNotUseCache(self):
+    """Test WriteConfigFile with chromium checkout and no revision."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, False, None,
+                            use_cache=False)
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'name': 'src',
+  'url': 'https://chromium.googlesource.com/chromium/src.git'}]
+""", use_cache=False)
 
   def testChromeSpec(self):
     """Test WriteConfigFile with chrome checkout and no revision."""
