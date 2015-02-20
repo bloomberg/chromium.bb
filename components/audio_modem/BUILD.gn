@@ -27,3 +27,19 @@ static_library("audio_modem") {
     "//third_party/webrtc/common_audio",
   ]
 }
+
+static_library("audio_modem_test_support") {
+  sources = [
+    "test/random_samples.cc",
+    "test/random_samples.h",
+    "test/stub_modem.cc",
+    "test/stub_modem.h",
+    "test/stub_whispernet_client.cc",
+    "test/stub_whispernet_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+  ]
+}

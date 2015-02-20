@@ -110,6 +110,8 @@
       'browser/extensions/activity_log/uma_policy.h',
       'browser/extensions/api/activity_log_private/activity_log_private_api.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_api.h',
+      'browser/extensions/api/audio_modem/audio_modem_api.cc',
+      'browser/extensions/api/audio_modem/audio_modem_api.h',
       'browser/extensions/api/automation_internal/automation_action_adapter.h',
       'browser/extensions/api/automation_internal/automation_internal_api.cc',
       'browser/extensions/api/automation_internal/automation_internal_api.h',

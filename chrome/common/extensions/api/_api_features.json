@@ -75,6 +75,10 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []
   },
+  "audioModem": {
+    "dependencies": ["permission:audioModem"],
+    "contexts": ["blessed_extension"]
+  },
   "automationInternal": {
     "internal": true,
     "dependencies": ["manifest:automation"],

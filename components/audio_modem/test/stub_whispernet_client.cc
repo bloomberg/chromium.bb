@@ -18,14 +18,16 @@ StubWhispernetClient::~StubWhispernetClient() {}
 void StubWhispernetClient::Initialize(const SuccessCallback& init_callback) {}
 
 void StubWhispernetClient::EncodeToken(const std::string& token,
-                                       AudioType type) {
+                                       AudioType type,
+                                       const TokenParameters token_params[2]) {
   if (!samples_cb_.is_null())
     samples_cb_.Run(type, token, samples_);
 }
 
-void StubWhispernetClient::DecodeSamples(AudioType type,
-                                         const std::string& samples,
-                                         const size_t token_length[2]) {
+void StubWhispernetClient::DecodeSamples(
+    AudioType type,
+    const std::string& samples,
+    const TokenParameters token_params[2]) {
   if (!tokens_cb_.is_null())
     tokens_cb_.Run(tokens_);
 }
@@ -46,10 +48,6 @@ TokensCallback StubWhispernetClient::GetTokensCallback() {
 
 SamplesCallback StubWhispernetClient::GetSamplesCallback() {
   return samples_cb_;
-}
-
-SuccessCallback StubWhispernetClient::GetDetectBroadcastCallback() {
-  return SuccessCallback();
 }
 
 SuccessCallback StubWhispernetClient::GetInitializedCallback() {

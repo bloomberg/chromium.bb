@@ -11,6 +11,7 @@
       'accessibility_features.json',
       'accessibility_private.json',
       'activity_log_private.json',
+      'audio_modem.idl',
       'automation.idl',
       'automation_internal.idl',
       'autotest_private.idl',

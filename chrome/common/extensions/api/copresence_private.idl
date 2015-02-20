@@ -10,19 +10,26 @@ namespace copresencePrivate {
     boolean audible;
   };
 
+  dictionary TokenParameters {
+    long length;
+    boolean crc;
+    boolean parity;
+  };
+
   dictionary DecodeSamplesParameters {
     ArrayBuffer samples;
 
     boolean decodeAudible;
     boolean decodeInaudible;
 
-    long audibleTokenLength;
-    long inaudibleTokenLength;
+    TokenParameters audibleTokenParams;
+    TokenParameters inaudibleTokenParams;
   };
 
   dictionary EncodeTokenParameters {
     Token token;
     long repetitions;
+    TokenParameters tokenParams;
   };
 
   dictionary AudioParameters {
@@ -35,22 +42,26 @@ namespace copresencePrivate {
   interface Functions {
     // Send a boolean indicating whether our initialization was successful.
     static void sendInitialized(boolean success);
+
     // Sends an array of found tokens to Chrome.
-    static void sendFound(Token[] tokens);
+    static void sendFound(DOMString clientId, Token[] tokens);
+
     // Send an array buffer of samples encoded for the specified token.
-    static void sendSamples(Token token, ArrayBuffer samples);
-    // Send a boolean indicating whether we detected a broadcast or not.
-    static void sendDetect(boolean detected);
+    static void sendSamples(DOMString clientId,
+                            Token token,
+                            ArrayBuffer samples);
   };
 
   interface Events {
     // Fired to request audio configuration of the whisper.net library.
-    static void onConfigAudio(AudioParameters audioParams);
+    static void onConfigAudio(DOMString clientId, AudioParameters audioParams);
+
     // Fired to request encoding of the given token.
-    static void onEncodeTokenRequest(EncodeTokenParameters encodeParams);
+    static void onEncodeTokenRequest(DOMString clientId,
+                                     EncodeTokenParameters encodeParams);
+
     // Fired when we have new samples to decode.
-    static void onDecodeSamplesRequest(DecodeSamplesParameters decodeParams);
-    // Fired to request a DetectBroadcast.
-    static void onDetectBroadcastRequest();
+    static void onDecodeSamplesRequest(DOMString clientId,
+                                       DecodeSamplesParameters decodeParams);
   };
 };

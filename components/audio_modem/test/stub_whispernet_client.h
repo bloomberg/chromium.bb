@@ -30,20 +30,18 @@ class StubWhispernetClient final : public WhispernetClient {
 
   void Initialize(const SuccessCallback& init_callback) override;
 
-  void EncodeToken(const std::string& token, AudioType type) override;
+  void EncodeToken(const std::string& token,
+                   AudioType type,
+                   const TokenParameters token_params[2]) override;
   void DecodeSamples(AudioType type,
                      const std::string& samples,
-                     const size_t token_length[2]) override;
-  void DetectBroadcast() override {}
+                     const TokenParameters token_params[2]) override;
 
   void RegisterTokensCallback(const TokensCallback& tokens_cb) override;
   void RegisterSamplesCallback(const SamplesCallback& samples_cb) override;
-  void RegisterDetectBroadcastCallback(
-      const SuccessCallback& /* db_cb */) override {}
 
   TokensCallback GetTokensCallback() override;
   SamplesCallback GetSamplesCallback() override;
-  SuccessCallback GetDetectBroadcastCallback() override;
   SuccessCallback GetInitializedCallback() override;
 
  private:

@@ -641,6 +641,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kAlwaysOnTopWindows);
   skip.insert(APIPermission::kAppView);
   skip.insert(APIPermission::kAudio);
+  skip.insert(APIPermission::kAudioModem);
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kCastStreaming);
   skip.insert(APIPermission::kCommandsAccessibility);

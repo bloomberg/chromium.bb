@@ -22,6 +22,7 @@
 
 using audio_modem::AUDIBLE;
 using audio_modem::INAUDIBLE;
+using audio_modem::TokenParameters;
 
 namespace copresence {
 
@@ -102,12 +103,13 @@ void AudioDirectiveHandlerImpl::AddInstruction(
       DCHECK_GT(token_length, 0u);
       switch (instruction.medium()) {
         case AUDIO_ULTRASOUND_PASSBAND:
-          audio_modem_->SetTokenLength(INAUDIBLE, token_length);
+          audio_modem_->SetTokenParams(INAUDIBLE,
+                                       TokenParameters(token_length));
           transmits_lists_[INAUDIBLE]->AddDirective(op_id, directive);
           audio_modem_->SetToken(INAUDIBLE, instruction.token_id());
           break;
         case AUDIO_AUDIBLE_DTMF:
-          audio_modem_->SetTokenLength(AUDIBLE, token_length);
+          audio_modem_->SetTokenParams(AUDIBLE, TokenParameters(token_length));
           transmits_lists_[AUDIBLE]->AddDirective(op_id, directive);
           audio_modem_->SetToken(AUDIBLE, instruction.token_id());
           break;
@@ -123,11 +125,12 @@ void AudioDirectiveHandlerImpl::AddInstruction(
       DCHECK_GT(token_length, 0u);
       switch (instruction.medium()) {
         case AUDIO_ULTRASOUND_PASSBAND:
-          audio_modem_->SetTokenLength(INAUDIBLE, token_length);
+          audio_modem_->SetTokenParams(INAUDIBLE,
+                                       TokenParameters(token_length));
           receives_lists_[INAUDIBLE]->AddDirective(op_id, directive);
           break;
         case AUDIO_AUDIBLE_DTMF:
-          audio_modem_->SetTokenLength(AUDIBLE, token_length);
+          audio_modem_->SetTokenParams(AUDIBLE, TokenParameters(token_length));
           receives_lists_[AUDIBLE]->AddDirective(op_id, directive);
           break;
         default:

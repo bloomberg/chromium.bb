@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_PRIVATE_COPRESENCE_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_COPRESENCE_PRIVATE_COPRESENCE_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include <string>
+
+#include "extensions/browser/extension_function.h"
 
 namespace audio_modem {
 class WhispernetClient;
@@ -13,13 +15,15 @@ class WhispernetClient;
 
 namespace extensions {
 
-class CopresencePrivateFunction : public ChromeUIThreadExtensionFunction {
- protected:
-  audio_modem::WhispernetClient* GetWhispernetClient();
-  ~CopresencePrivateFunction() override {}
-};
+namespace copresence_private {
 
-class CopresencePrivateSendFoundFunction : public CopresencePrivateFunction {
+// Register a client to receive events from Whispernet.
+const std::string
+RegisterWhispernetClient(audio_modem::WhispernetClient* client);
+
+}  // namespace copresence_private
+
+class CopresencePrivateSendFoundFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("copresencePrivate.sendFound",
                              COPRESENCEPRIVATE_SENDFOUND);
@@ -29,7 +33,7 @@ class CopresencePrivateSendFoundFunction : public CopresencePrivateFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class CopresencePrivateSendSamplesFunction : public CopresencePrivateFunction {
+class CopresencePrivateSendSamplesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("copresencePrivate.sendSamples",
                              COPRESENCEPRIVATE_SENDSAMPLES);
@@ -39,7 +43,7 @@ class CopresencePrivateSendSamplesFunction : public CopresencePrivateFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class CopresencePrivateSendDetectFunction : public CopresencePrivateFunction {
+class CopresencePrivateSendDetectFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("copresencePrivate.sendDetect",
                              COPRESENCEPRIVATE_SENDDETECT);
@@ -50,7 +54,7 @@ class CopresencePrivateSendDetectFunction : public CopresencePrivateFunction {
 };
 
 class CopresencePrivateSendInitializedFunction
-    : public CopresencePrivateFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("copresencePrivate.sendInitialized",
                              COPRESENCEPRIVATE_SENDINITIALIZED);

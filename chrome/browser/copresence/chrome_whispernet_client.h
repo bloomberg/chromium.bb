@@ -45,21 +45,19 @@ class ChromeWhispernetClient final : public audio_modem::WhispernetClient {
   // WhispernetClient overrides:
   void Initialize(const audio_modem::SuccessCallback& init_callback) override;
   void EncodeToken(const std::string& token_str,
-                   audio_modem::AudioType type) override;
-  void DecodeSamples(audio_modem::AudioType type,
-                     const std::string& samples,
-                     const size_t token_length[2]) override;
-  void DetectBroadcast() override;
+                   audio_modem::AudioType type,
+                   const audio_modem::TokenParameters token_params[2]) override;
+  void DecodeSamples(
+      audio_modem::AudioType type,
+      const std::string& samples,
+      const audio_modem::TokenParameters token_params[2]) override;
   void RegisterTokensCallback(
       const audio_modem::TokensCallback& tokens_callback) override;
   void RegisterSamplesCallback(
       const audio_modem::SamplesCallback& samples_callback) override;
-  void RegisterDetectBroadcastCallback(
-      const audio_modem::SuccessCallback& db_callback) override;
 
   audio_modem::TokensCallback GetTokensCallback() override;
   audio_modem::SamplesCallback GetSamplesCallback() override;
-  audio_modem::SuccessCallback GetDetectBroadcastCallback() override;
   audio_modem::SuccessCallback GetInitializedCallback() override;
 
   static const char kWhispernetProxyExtensionId[];
@@ -70,19 +68,18 @@ class ChromeWhispernetClient final : public audio_modem::WhispernetClient {
 
   void SendEventIfLoaded(scoped_ptr<extensions::Event> event);
 
-  // This gets called twice; once when the proxy extension loads, the second
-  // time when we have initialized the proxy extension's encoder and decoder.
+  // This gets called when the proxy extension loads.
   void OnExtensionLoaded(bool success);
 
   content::BrowserContext* const browser_context_;
   extensions::EventRouter* const event_router_;
+  std::string client_id_;
 
   audio_modem::SuccessCallback extension_loaded_callback_;
   audio_modem::SuccessCallback init_callback_;
 
   audio_modem::TokensCallback tokens_callback_;
   audio_modem::SamplesCallback samples_callback_;
-  audio_modem::SuccessCallback db_callback_;
 
   ScopedVector<extensions::Event> queued_events_;
   bool extension_loaded_;

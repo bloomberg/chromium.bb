@@ -50,6 +50,22 @@ struct AudioToken final {
   bool audible;
 };
 
+// Struct to hold the encoding parameters for tokens.
+// Parity is on by default.
+struct TokenParameters {
+  TokenParameters() : TokenParameters(0, false, true) {}
+
+  explicit TokenParameters(size_t length)
+      : TokenParameters(length, false, true) {}
+
+  TokenParameters(size_t length, bool crc, bool parity)
+      : length(length), crc(crc), parity(parity) {}
+
+  size_t length;
+  bool crc;
+  bool parity;
+};
+
 // Callback to pass around found tokens.
 using TokensCallback = base::Callback<void(const std::vector<AudioToken>&)>;
 

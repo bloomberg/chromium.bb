@@ -4,58 +4,76 @@
 
 #include "chrome/browser/extensions/api/copresence_private/copresence_private_api.h"
 
+#include <map>
+#include <string>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
-#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/common/extensions/api/copresence_private.h"
 #include "media/base/audio_bus.h"
+
+using audio_modem::WhispernetClient;
+
+namespace {
+
+base::LazyInstance<std::map<std::string, WhispernetClient*>>
+g_whispernet_clients = LAZY_INSTANCE_INITIALIZER;
+
+WhispernetClient* GetWhispernetClient(const std::string& id) {
+  WhispernetClient* client = g_whispernet_clients.Get()[id];
+  DCHECK(client);
+  return client;
+}
+
+}  // namespace
 
 namespace extensions {
 
 namespace SendFound = api::copresence_private::SendFound;
 namespace SendSamples = api::copresence_private::SendSamples;
-namespace SendDetect = api::copresence_private::SendDetect;
 namespace SendInitialized = api::copresence_private::SendInitialized;
+
+namespace copresence_private {
+
+const std::string RegisterWhispernetClient(WhispernetClient* client) {
+  std::string id = base::GenerateGUID();
+  g_whispernet_clients.Get()[id] = client;
+  return id;
+}
+
+}  // namespace copresence_private
 
 // Copresence Private functions.
 
-audio_modem::WhispernetClient*
-CopresencePrivateFunction::GetWhispernetClient() {
-  CopresenceService* service =
-      CopresenceService::GetFactoryInstance()->Get(browser_context());
-  return service ? service->whispernet_client() : NULL;
-}
-
 // CopresenceSendFoundFunction implementation:
 ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
-  if (!GetWhispernetClient() ||
-      GetWhispernetClient()->GetTokensCallback().is_null()) {
-    return RespondNow(NoArguments());
-  }
-
   scoped_ptr<SendFound::Params> params(SendFound::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  WhispernetClient* whispernet_client = GetWhispernetClient(params->client_id);
+  if (whispernet_client->GetTokensCallback().is_null())
+    return RespondNow(NoArguments());
+
   std::vector<audio_modem::AudioToken> tokens;
   for (size_t i = 0; i < params->tokens.size(); ++i) {
     tokens.push_back(audio_modem::AudioToken(params->tokens[i]->token,
                                             params->tokens[i]->audible));
   }
-  GetWhispernetClient()->GetTokensCallback().Run(tokens);
+  whispernet_client->GetTokensCallback().Run(tokens);
   return RespondNow(NoArguments());
 }
 
 // CopresenceSendEncodedFunction implementation:
 ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
-  if (!GetWhispernetClient() ||
-      GetWhispernetClient()->GetSamplesCallback().is_null()) {
-    return RespondNow(NoArguments());
-  }
-
   scoped_ptr<SendSamples::Params> params(SendSamples::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  WhispernetClient* whispernet_client = GetWhispernetClient(params->client_id);
+  if (whispernet_client->GetSamplesCallback().is_null())
+    return RespondNow(NoArguments());
 
   scoped_refptr<media::AudioBusRefCounted> samples =
       media::AudioBusRefCounted::Create(1,  // Mono
@@ -64,39 +82,28 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
   memcpy(samples->channel(0), vector_as_array(&params->samples),
          params->samples.size());
 
-  GetWhispernetClient()->GetSamplesCallback().Run(
+  whispernet_client->GetSamplesCallback().Run(
       params->token.audible ? audio_modem::AUDIBLE : audio_modem::INAUDIBLE,
       params->token.token, samples);
-  return RespondNow(NoArguments());
-}
-
-// CopresenceSendDetectFunction implementation:
-ExtensionFunction::ResponseAction CopresencePrivateSendDetectFunction::Run() {
-  if (!GetWhispernetClient() ||
-      GetWhispernetClient()->GetDetectBroadcastCallback().is_null()) {
-    return RespondNow(NoArguments());
-  }
-
-  scoped_ptr<SendDetect::Params> params(SendDetect::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  GetWhispernetClient()->GetDetectBroadcastCallback().Run(params->detected);
   return RespondNow(NoArguments());
 }
 
 // CopresenceSendInitializedFunction implementation:
 ExtensionFunction::ResponseAction
 CopresencePrivateSendInitializedFunction::Run() {
-  if (!GetWhispernetClient() ||
-      GetWhispernetClient()->GetInitializedCallback().is_null()) {
-    return RespondNow(NoArguments());
-  }
-
   scoped_ptr<SendInitialized::Params> params(
       SendInitialized::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  GetWhispernetClient()->GetInitializedCallback().Run(params->success);
+  DVLOG(2) << "Forwarding init callback to "
+           << g_whispernet_clients.Get().size() << " clients";
+  for (auto client_entry : g_whispernet_clients.Get()) {
+    audio_modem::SuccessCallback init_callback =
+        client_entry.second->GetInitializedCallback();
+    if (!init_callback.is_null())
+      init_callback.Run(params->success);
+  }
+
   return RespondNow(NoArguments());
 }
 

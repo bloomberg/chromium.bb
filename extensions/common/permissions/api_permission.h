@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -54,6 +55,7 @@ class APIPermission {
     kAppView,
     kAudio,
     kAudioCapture,
+    kAudioModem,
     kAutomation,
     kAutoTestPrivate,
     kBackground,

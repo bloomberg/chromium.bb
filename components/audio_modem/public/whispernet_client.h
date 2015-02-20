@@ -34,27 +34,24 @@ class WhispernetClient {
   virtual void Initialize(const SuccessCallback& init_callback) = 0;
 
   // Fires an event to request a token encode.
-  virtual void EncodeToken(const std::string& token, AudioType type) = 0;
+  virtual void EncodeToken(const std::string& token,
+                           AudioType type,
+                           const TokenParameters token_params[2]) = 0;
   // Fires an event to request a decode for the given samples.
   virtual void DecodeSamples(AudioType type,
                              const std::string& samples,
-                             const size_t token_length[2]) = 0;
-  // Fires an event to request detection of a whispernet broadcast.
-  virtual void DetectBroadcast() = 0;
+                             const TokenParameters token_params[2]) = 0;
 
   // Callback registration methods. The modem will set these to receive data.
   virtual void RegisterTokensCallback(
       const TokensCallback& tokens_callback) = 0;
   virtual void RegisterSamplesCallback(
       const SamplesCallback& samples_callback) = 0;
-  virtual void RegisterDetectBroadcastCallback(
-      const SuccessCallback& db_callback) = 0;
 
   // Don't cache these callbacks, as they may become invalid at any time.
   // Always invoke callbacks directly through these accessors.
   virtual TokensCallback GetTokensCallback() = 0;
   virtual SamplesCallback GetSamplesCallback() = 0;
-  virtual SuccessCallback GetDetectBroadcastCallback() = 0;
   virtual SuccessCallback GetInitializedCallback() = 0;
 
   virtual ~WhispernetClient() {}

@@ -86,6 +86,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        "accessibilityPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kActiveTab, "activeTab"},
+      {APIPermission::kAudioModem, "audioModem"},
       {APIPermission::kBookmark,
        "bookmarks",
        APIPermissionInfo::kFlagNone,

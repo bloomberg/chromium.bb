@@ -45,9 +45,9 @@ class ModemImpl final : public Modem {
   void StartRecording(AudioType type) override;
   void StopRecording(AudioType type) override;
   void SetToken(AudioType type, const std::string& url_safe_token) override;
-  const std::string GetToken(AudioType type) override;
-  bool IsPlayingTokenHeard(AudioType type) override;
-  void SetTokenLength(AudioType type, size_t token_length) override;
+  const std::string GetToken(AudioType type) const override;
+  bool IsPlayingTokenHeard(AudioType type) const override;
+  void SetTokenParams(AudioType type, const TokenParameters& params) override;
 
   void set_player_for_testing(AudioType type, AudioPlayer* player) {
     player_[type] = player;
@@ -108,7 +108,7 @@ class ModemImpl final : public Modem {
 
   // Indexed using enum AudioType.
   std::string playing_token_[2];
-  size_t token_length_[2];
+  TokenParameters token_params_[2];
   base::Time started_playing_[2];
   base::Time heard_own_token_[2];
 

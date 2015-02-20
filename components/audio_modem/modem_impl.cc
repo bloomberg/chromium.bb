@@ -92,8 +92,6 @@ ModemImpl::ModemImpl() : client_(nullptr), recorder_(nullptr) {
       switches::kAudioModemEnableInaudibleBroadcast, true);
   player_[AUDIBLE] = nullptr;
   player_[INAUDIBLE] = nullptr;
-  token_length_[0] = 0;
-  token_length_[1] = 0;
 
   samples_caches_.resize(2);
   samples_caches_[AUDIBLE] = new SamplesMap(kMaxSamples);
@@ -191,21 +189,21 @@ void ModemImpl::StopRecording(AudioType type) {
 }
 
 void ModemImpl::SetToken(AudioType type,
-                                const std::string& url_safe_token) {
+                         const std::string& url_safe_token) {
   DCHECK(type == AUDIBLE || type == INAUDIBLE);
   std::string token = FromUrlSafe(url_safe_token);
   if (samples_caches_[type]->Get(token) == samples_caches_[type]->end()) {
-    client_->EncodeToken(token, type);
+    client_->EncodeToken(token, type, token_params_);
   } else {
     UpdateToken(type, token);
   }
 }
 
-const std::string ModemImpl::GetToken(AudioType type) {
+const std::string ModemImpl::GetToken(AudioType type) const {
   return playing_token_[type];
 }
 
-bool ModemImpl::IsPlayingTokenHeard(AudioType type) {
+bool ModemImpl::IsPlayingTokenHeard(AudioType type) const {
   base::TimeDelta tokenTimeout =
       base::TimeDelta::FromMilliseconds(kTokenTimeoutMs);
 
@@ -217,8 +215,12 @@ bool ModemImpl::IsPlayingTokenHeard(AudioType type) {
   return base::Time::Now() - heard_own_token_[type] < tokenTimeout;
 }
 
-void ModemImpl::SetTokenLength(AudioType type, size_t token_length) {
-  token_length_[type] = token_length;
+void ModemImpl::SetTokenParams(AudioType type, const TokenParameters& params) {
+  DCHECK_GT(params.length, 0u);
+  token_params_[type] = params;
+
+  // TODO(ckehoe): Make whispernet handle different token lengths
+  // simultaneously without reinitializing the decoder over and over.
 }
 
 // static
@@ -294,11 +296,11 @@ void ModemImpl::DecodeSamplesConnector(const std::string& samples) {
       should_be_recording_[INAUDIBLE] || should_be_playing_[INAUDIBLE];
 
   if (decode_audible && decode_inaudible) {
-    client_->DecodeSamples(BOTH, samples, token_length_);
+    client_->DecodeSamples(BOTH, samples, token_params_);
   } else if (decode_audible) {
-    client_->DecodeSamples(AUDIBLE, samples, token_length_);
+    client_->DecodeSamples(AUDIBLE, samples, token_params_);
   } else if (decode_inaudible) {
-    client_->DecodeSamples(INAUDIBLE, samples, token_length_);
+    client_->DecodeSamples(INAUDIBLE, samples, token_params_);
   }
 }
 

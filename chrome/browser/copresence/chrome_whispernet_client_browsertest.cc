@@ -23,6 +23,7 @@
 using audio_modem::WhispernetClient;
 using audio_modem::AUDIBLE;
 using audio_modem::INAUDIBLE;
+using audio_modem::TokenParameters;
 
 namespace {
 
@@ -31,13 +32,7 @@ const char kSixZeros[] = "MDAwMDAw";
 const char kEightZeros[] = "MDAwMDAwMDA";
 const char kNineZeros[] = "MDAwMDAwMDAw";
 
-const size_t kTokenLengths[] = {6, 6};
-
-WhispernetClient* GetWhispernetClient(content::BrowserContext* context) {
-  extensions::CopresenceService* service =
-      extensions::CopresenceService::GetFactoryInstance()->Get(context);
-  return service ? service->whispernet_client() : NULL;
-}
+const size_t kTokenLengths[2] = {6, 6};
 
 // Copied from src/components/copresence/mediums/audio/audio_recorder.cc
 std::string AudioBusToString(scoped_refptr<media::AudioBusRefCounted> source) {
@@ -54,29 +49,38 @@ std::string AudioBusToString(scoped_refptr<media::AudioBusRefCounted> source) {
   return buffer;
 }
 
+void GetTokenParamsForLengths(const size_t token_lengths[2],
+                              TokenParameters* params) {
+  params[0].length = token_lengths[0];
+  params[1].length = token_lengths[1];
+}
+
+void IgnoreResult(bool success) {}
+
 }  // namespace
 
 class ChromeWhispernetClientTest : public ExtensionBrowserTest {
  protected:
   ChromeWhispernetClientTest()
-      : context_(NULL), expected_audible_(false), initialized_(false) {}
+      : initialized_(false), expected_audible_(false) {}
 
   ~ChromeWhispernetClientTest() override {}
 
   void InitializeWhispernet() {
-    context_ = browser()->profile();
-    run_loop_.reset(new base::RunLoop());
-    GetWhispernetClient(context_)->Initialize(base::Bind(
+    scoped_ptr<WhispernetClient> client(
+        new ChromeWhispernetClient(browser()->profile()));
+    client->Initialize(base::Bind(
         &ChromeWhispernetClientTest::InitCallback, base::Unretained(this)));
+
+    run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
 
     EXPECT_TRUE(initialized_);
   }
 
-  void EncodeTokenAndSaveSamples(bool audible, const std::string& token) {
-    WhispernetClient* client = GetWhispernetClient(context_);
-    ASSERT_TRUE(client);
-
+  void EncodeTokenAndSaveSamples(WhispernetClient* client,
+                                 bool audible,
+                                 const std::string& token) {
     run_loop_.reset(new base::RunLoop());
     client->RegisterSamplesCallback(
         base::Bind(&ChromeWhispernetClientTest::SamplesCallback,
@@ -84,18 +88,17 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     expected_token_ = token;
     expected_audible_ = audible;
 
-    client->EncodeToken(token, audible ? AUDIBLE : INAUDIBLE);
+    TokenParameters token_params[2];
+    client->EncodeToken(token, audible ? AUDIBLE : INAUDIBLE, token_params);
     run_loop_->Run();
 
     EXPECT_GT(saved_samples_->frames(), 0);
   }
 
-  void DecodeSamplesAndVerifyToken(bool expect_audible,
+  void DecodeSamplesAndVerifyToken(WhispernetClient* client,
+                                   bool expect_audible,
                                    const std::string& expected_token,
-                                   const size_t token_length[2]) {
-    WhispernetClient* client = GetWhispernetClient(context_);
-    ASSERT_TRUE(client);
-
+                                   const TokenParameters token_params[2]) {
     run_loop_.reset(new base::RunLoop());
     client->RegisterTokensCallback(base::Bind(
         &ChromeWhispernetClientTest::TokensCallback, base::Unretained(this)));
@@ -115,21 +118,9 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
            saved_samples_->channel(0),
            sizeof(float) * saved_samples_->frames());
 
-    client->DecodeSamples(
-        expect_audible ? AUDIBLE : INAUDIBLE,
-        AudioBusToString(samples_bus), token_length);
-    run_loop_->Run();
-  }
-
-  void DetectBroadcast() {
-    WhispernetClient* client = GetWhispernetClient(context_);
-    ASSERT_TRUE(client);
-
-    run_loop_.reset(new base::RunLoop());
-    client->RegisterDetectBroadcastCallback(
-        base::Bind(&ChromeWhispernetClientTest::DetectBroadcastCallback,
-                   base::Unretained(this)));
-    client->DetectBroadcast();
+    client->DecodeSamples(expect_audible ? AUDIBLE : INAUDIBLE,
+                          AudioBusToString(samples_bus),
+                          token_params);
     run_loop_->Run();
   }
 
@@ -159,21 +150,13 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
     EXPECT_EQ(expected_audible_, tokens[0].audible);
   }
 
-  void DetectBroadcastCallback(bool success) {
-    EXPECT_TRUE(success);
-    ASSERT_TRUE(run_loop_);
-    run_loop_->Quit();
-  }
+  scoped_ptr<base::RunLoop> run_loop_;
+  bool initialized_;
 
  private:
-  scoped_ptr<base::RunLoop> run_loop_;
-  content::BrowserContext* context_;
-
   std::string expected_token_;
   bool expected_audible_;
   scoped_refptr<media::AudioBusRefCounted> saved_samples_;
-
-  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWhispernetClientTest);
 };
@@ -181,55 +164,69 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
 // These tests are irrelevant if NACL is disabled. See crbug.com/449198
 #if defined(DISABLE_NACL)
 #define MAYBE_Initialize DISABLED_Initialize
-#define MAYBE_EncodeToken DISABLED_EncodeToken
-#define MAYBE_DecodeSamples DISABLED_DecodeSamples
-#define MAYBE_DetectBroadcast DISABLED_DetectBroadcast
-#define MAYBE_Audible DISABLED_Audible
+#define MAYBE_EncodeAndDecode DISABLED_EncodeAndDecode
 #define MAYBE_TokenLengths DISABLED_TokenLengths
+#define MAYBE_MultipleClients DISABLED_MultipleClients
 #else
 #define MAYBE_Initialize Initialize
-#define MAYBE_EncodeToken EncodeToken
-#define MAYBE_DecodeSamples DecodeSamples
-#define MAYBE_DetectBroadcast DetectBroadcast
-#define MAYBE_Audible Audible
+#define MAYBE_EncodeAndDecode EncodeAndDecode
 #define MAYBE_TokenLengths TokenLengths
+#define MAYBE_MultipleClients MultipleClients
 #endif
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Initialize) {
   InitializeWhispernet();
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeToken) {
-  InitializeWhispernet();
-  EncodeTokenAndSaveSamples(false, kSixZeros);
-}
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_EncodeAndDecode) {
+  scoped_ptr<WhispernetClient> client(
+      new ChromeWhispernetClient(browser()->profile()));
+  client->Initialize(base::Bind(&IgnoreResult));
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_DecodeSamples) {
-  InitializeWhispernet();
-  EncodeTokenAndSaveSamples(false, kSixZeros);
-  DecodeSamplesAndVerifyToken(false, kSixZeros, kTokenLengths);
-}
+  TokenParameters token_params[2];
+  GetTokenParamsForLengths(kTokenLengths, token_params);
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_DetectBroadcast) {
-  InitializeWhispernet();
-  EncodeTokenAndSaveSamples(false, kSixZeros);
-  DecodeSamplesAndVerifyToken(false, kSixZeros, kTokenLengths);
-  DetectBroadcast();
-}
+  EncodeTokenAndSaveSamples(client.get(), true, kSixZeros);
+  DecodeSamplesAndVerifyToken(client.get(), true, kSixZeros, token_params);
 
-IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_Audible) {
-  InitializeWhispernet();
-  EncodeTokenAndSaveSamples(true, kSixZeros);
-  DecodeSamplesAndVerifyToken(true, kSixZeros, kTokenLengths);
+  EncodeTokenAndSaveSamples(client.get(), false, kSixZeros);
+  DecodeSamplesAndVerifyToken(client.get(), false, kSixZeros, token_params);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_TokenLengths) {
-  InitializeWhispernet();
-  size_t kLongTokenLengths[2] = {8, 9};
+  scoped_ptr<WhispernetClient> client(
+      new ChromeWhispernetClient(browser()->profile()));
+  client->Initialize(base::Bind(&IgnoreResult));
 
-  EncodeTokenAndSaveSamples(true, kEightZeros);
-  DecodeSamplesAndVerifyToken(true, kEightZeros, kLongTokenLengths);
+  const size_t kLongTokenLengths[2] = {8, 9};
+  TokenParameters token_params[2];
+  GetTokenParamsForLengths(kLongTokenLengths, token_params);
+  EncodeTokenAndSaveSamples(client.get(), true, kEightZeros);
+  DecodeSamplesAndVerifyToken(client.get(), true, kEightZeros, token_params);
 
-  EncodeTokenAndSaveSamples(false, kNineZeros);
-  DecodeSamplesAndVerifyToken(false, kNineZeros, kLongTokenLengths);
+  EncodeTokenAndSaveSamples(client.get(), false, kNineZeros);
+  DecodeSamplesAndVerifyToken(client.get(), false, kNineZeros, token_params);
 }
+
+IN_PROC_BROWSER_TEST_F(ChromeWhispernetClientTest, MAYBE_MultipleClients) {
+  scoped_ptr<WhispernetClient> client_1(
+      new ChromeWhispernetClient(browser()->profile()));
+  scoped_ptr<WhispernetClient> client_2(
+      new ChromeWhispernetClient(browser()->profile()));
+
+  TokenParameters token_params[2];
+  GetTokenParamsForLengths(kTokenLengths, token_params);
+
+  client_1->Initialize(base::Bind(&IgnoreResult));
+
+  EncodeTokenAndSaveSamples(client_1.get(), true, kSixZeros);
+  DecodeSamplesAndVerifyToken(client_1.get(), true, kSixZeros, token_params);
+
+  client_2->Initialize(base::Bind(&IgnoreResult));
+
+  EncodeTokenAndSaveSamples(client_2.get(), true, kSixZeros);
+  DecodeSamplesAndVerifyToken(client_2.get(), true, kSixZeros, token_params);
+}
+
+// TODO(ckehoe): Test crc and parity
+// TODO(ckehoe): More multi-client testing

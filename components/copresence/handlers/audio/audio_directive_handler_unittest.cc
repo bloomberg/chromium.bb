@@ -12,6 +12,7 @@
 #include "base/timer/mock_timer.h"
 #include "components/audio_modem/public/modem.h"
 #include "components/audio_modem/test/random_samples.h"
+#include "components/audio_modem/test/stub_modem.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
 #include "components/copresence/proto/data.pb.h"
@@ -20,6 +21,7 @@
 using audio_modem::AUDIBLE;
 using audio_modem::AudioType;
 using audio_modem::INAUDIBLE;
+using audio_modem::StubModem;
 
 namespace copresence {
 
@@ -38,34 +40,6 @@ const Directive CreateDirective(TokenInstructionType type,
 }
 
 }  // namespace
-
-class StubModem final : public audio_modem::Modem {
- public:
-  StubModem() {}
-  ~StubModem() override {}
-
-  // AudioManager overrides:
-  void Initialize(audio_modem::WhispernetClient* whispernet_client,
-                  const audio_modem::TokensCallback& tokens_cb) override {}
-  void StartPlaying(AudioType type) override { playing_[type] = true; }
-  void StopPlaying(AudioType type) override { playing_[type] = false; }
-  void StartRecording(AudioType type) override { recording_[type] = true; }
-  void StopRecording(AudioType type) override { recording_[type] = false; }
-  void SetToken(AudioType type, const std::string& url_unsafe_token) override {}
-  const std::string GetToken(AudioType type) override { return std::string(); }
-  bool IsPlayingTokenHeard(AudioType type) override { return false; }
-  void SetTokenLength(AudioType type, size_t token_length) override {}
-
-  bool IsRecording(AudioType type) { return recording_[type]; }
-  bool IsPlaying(AudioType type) { return playing_[type]; }
-
- private:
-  // Indexed using enum AudioType.
-  bool playing_[2];
-  bool recording_[2];
-
-  DISALLOW_COPY_AND_ASSIGN(StubModem);
-};
 
 class AudioDirectiveHandlerTest : public testing::Test {
  public:

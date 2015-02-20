@@ -43,6 +43,8 @@
       'sources': [
         'audio_modem/test/random_samples.cc',
         'audio_modem/test/random_samples.h',
+        'audio_modem/test/stub_modem.cc',
+        'audio_modem/test/stub_modem.h',
         'audio_modem/test/stub_whispernet_client.cc',
         'audio_modem/test/stub_whispernet_client.h',
       ],
