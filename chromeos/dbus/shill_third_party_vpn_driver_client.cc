@@ -19,8 +19,8 @@ namespace {
 const char* kSetParametersKeyList[] = {
     shill::kAddressParameterThirdPartyVpn,
     shill::kBroadcastAddressParameterThirdPartyVpn,
-    shill::kGatewayParameterThirdPartyVpn,
-    shill::kBypassTunnelForIpParameterThirdPartyVpn,
+    shill::kExclusionListParameterThirdPartyVpn,
+    shill::kInclusionListParameterThirdPartyVpn,
     shill::kSubnetPrefixParameterThirdPartyVpn,
     shill::kMtuParameterThirdPartyVpn,
     shill::kDomainSearchParameterThirdPartyVpn,
