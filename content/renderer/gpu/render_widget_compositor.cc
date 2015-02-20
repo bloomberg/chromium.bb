@@ -523,6 +523,10 @@ int RenderWidgetCompositor::GetSourceFrameNumber() const {
   return layer_tree_host_->source_frame_number();
 }
 
+void RenderWidgetCompositor::SetNeedsUpdateLayers() {
+  layer_tree_host_->SetNeedsUpdateLayers();
+}
+
 void RenderWidgetCompositor::SetNeedsCommit() {
   layer_tree_host_->SetNeedsCommit();
 }

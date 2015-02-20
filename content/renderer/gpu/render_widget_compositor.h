@@ -63,9 +63,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetNeedsForcedRedraw();
   // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
   // LatencyInfoSwapPromiseMonitor. During the life time of the
-  // LatencyInfoSwapPromiseMonitor, if SetNeedsCommit() or SetNeedsUpdateLayer()
-  // is called on LayerTreeHost, the original latency info will be turned
-  // into a LatencyInfoSwapPromise.
+  // LatencyInfoSwapPromiseMonitor, if SetNeedsCommit() or
+  // SetNeedsUpdateLayers() is called on LayerTreeHost, the original latency
+  // info will be turned into a LatencyInfoSwapPromise.
   scoped_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency);
   // Calling QueueSwapPromise() to directly queue a SwapPromise into
@@ -73,6 +73,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void QueueSwapPromise(scoped_ptr<cc::SwapPromise> swap_promise);
   int GetLayerTreeId() const;
   int GetSourceFrameNumber() const;
+  void SetNeedsUpdateLayers();
   void SetNeedsCommit();
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;

@@ -1440,7 +1440,13 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
 
   if (swap_promise) {
     compositor_->QueueSwapPromise(swap_promise.Pass());
-    compositor_->SetNeedsCommit();
+    // Request a commit. This might either A) request a commit ahead of time
+    // or B) request a commit which is not needed because there are not
+    // pending updates. If B) then the commit will be skipped and the swap
+    // promises will be broken (see EarlyOut_NoUpdates). To achieve that we
+    // call SetNeedsUpdateLayers instead of SetNeedsCommit so that
+    // can_cancel_commit is not unset.
+    compositor_->SetNeedsUpdateLayers();
   }
 }
 
