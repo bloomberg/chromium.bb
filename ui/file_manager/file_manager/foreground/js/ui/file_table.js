@@ -776,7 +776,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
       filelist.updateListItemExternalProps(
           listItem,
           this.fileSystemMetadata_.getCache(
-              [entry], ['availableOffline', 'customIconUrl'])[0]);
+              [entry], ['availableOffline', 'customIconUrl', 'shared'])[0]);
     });
   } else if (type === 'import-history') {
     forEachCell('.table-row-cell > .status', function(item, entry, unused) {
@@ -874,7 +874,7 @@ filelist.decorateListItem = function(li, entry, fileSystemMetadata) {
   // updated when the metadata is ready via updateListItemsMetadata. For files
   // not on an external backend, externalProps is not available.
   var externalProps = fileSystemMetadata.getCache(
-      [entry], ['hosted', 'availableOffline'])[0];
+      [entry], ['hosted', 'availableOffline', 'customIconUrl', 'shared'])[0];
   filelist.updateListItemExternalProps(li, externalProps);
 
   // Overriding the default role 'list' to 'listbox' for better
