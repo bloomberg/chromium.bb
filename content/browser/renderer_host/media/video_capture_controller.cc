@@ -506,6 +506,10 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
       NOTREACHED();
   }
 
+  // The input |length| can be greater than the required buffer size because of
+  // paddings and/or alignments, but it cannot be less.
+  DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
+
   if (libyuv::ConvertToI420(data,
                             length,
                             yplane,

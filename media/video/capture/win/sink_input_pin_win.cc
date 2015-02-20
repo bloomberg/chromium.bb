@@ -68,8 +68,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
       pvi->bmiHeader.biBitCount = 12;  // bit per pixel
       pvi->bmiHeader.biWidth = requested_info_header_.biWidth;
       pvi->bmiHeader.biHeight = requested_info_header_.biHeight;
-      pvi->bmiHeader.biSizeImage =
-        GetArea(requested_info_header_) * 3 / 2;
+      pvi->bmiHeader.biSizeImage = GetArea(requested_info_header_) * 3 / 2;
       media_type->subtype = kMediaSubTypeI420;
       break;
     }
@@ -151,6 +150,12 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
 HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   const int length = sample->GetActualDataLength();
   uint8* buffer = NULL;
+
+  if (length <= 0) {
+    DLOG(WARNING) << "Media sample length is 0 or less.";
+    return S_FALSE;
+  }
+
   if (FAILED(sample->GetPointer(&buffer)))
     return S_FALSE;
 

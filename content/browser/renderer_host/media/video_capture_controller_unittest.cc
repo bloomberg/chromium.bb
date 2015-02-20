@@ -654,11 +654,12 @@ TEST_F(VideoCaptureControllerTest, DataCaptureInEachVideoFormatInSequence) {
                            100,
                            params);
     ASSERT_EQ(1, controller_->GetClientCount());
-    device_->OnIncomingCapturedData(data,
-                                    0  /* length */,
-                                    params.requested_format,
-                                    0 /* rotation */,
-                                    base::TimeTicks());
+    device_->OnIncomingCapturedData(
+      data,
+      params.requested_format.ImageAllocationSize(),
+      params.requested_format,
+      0 /* rotation */,
+      base::TimeTicks());
     EXPECT_EQ(100, controller_->RemoveClient(route, client_a_.get()));
     Mock::VerifyAndClearExpectations(client_a_.get());
   }

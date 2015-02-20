@@ -263,6 +263,8 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), 640);
   EXPECT_EQ(last_format().frame_size.height(), 480);
+  EXPECT_EQ(static_cast<size_t>(640 * 480 * 3 / 2),
+            last_format().ImageAllocationSize());
   device->StopAndDeAllocate();
 }
 
@@ -286,6 +288,10 @@ TEST_F(VideoCaptureDeviceTest, Capture720p) {
   device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
+  EXPECT_EQ(last_format().frame_size.width(), 1280);
+  EXPECT_EQ(last_format().frame_size.height(), 720);
+  EXPECT_EQ(static_cast<size_t>(1280 * 720 * 3 / 2),
+            last_format().ImageAllocationSize());
   device->StopAndDeAllocate();
 }
 
@@ -310,6 +316,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   device->StopAndDeAllocate();
   EXPECT_EQ(last_format().frame_size.width(), 640);
   EXPECT_EQ(last_format().frame_size.height(), 480);
+  EXPECT_EQ(static_cast<size_t>(640 * 480 * 3 / 2),
+            last_format().ImageAllocationSize());
 }
 
 // Cause hangs on Windows Debug. http://crbug.com/417824
@@ -412,6 +420,8 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   // Verify we get MJPEG from the device. Not all devices can capture 1280x720
   // @ 30 fps, so we don't care about the exact resolution we get.
   EXPECT_EQ(last_format().pixel_format, PIXEL_FORMAT_MJPEG);
+  EXPECT_GE(static_cast<size_t>(1280 * 720),
+            last_format().ImageAllocationSize());
   device->StopAndDeAllocate();
 }
 
