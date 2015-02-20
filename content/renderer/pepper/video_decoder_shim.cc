@@ -483,7 +483,7 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
       for (TextureIdMap::const_iterator it = texture_id_map_.begin();
            it != texture_id_map_.end();
            ++it) {
-        textures_to_dismiss_.insert(it->second);
+        textures_to_dismiss_.insert(it->first);
       }
       for (TextureIdSet::const_iterator it = available_textures_.begin();
            it != available_textures_.end();
