@@ -519,7 +519,6 @@
           'target_name': 'chromium_builder_nacl_win_integration',
           'type': 'none',
           'dependencies': [
-            'chromium_builder_qa', # needed for pyauto
             'chromium_builder_tests',
           ],
         }, # target_name: chromium_builder_nacl_win_integration
@@ -636,42 +635,10 @@
           ],
         }, # target_name: chromium_gpu_debug_builder
         {
-          'target_name': 'chromium_builder_qa',
-          'type': 'none',
-          'dependencies': [
-            '../chrome/chrome.gyp:chrome',
-            # Dependencies of pyauto_functional tests.
-            '../remoting/remoting.gyp:remoting_webapp',
-          ],
-          'conditions': [
-            ['OS=="mac"', {
-              'dependencies': [
-                '../remoting/remoting.gyp:remoting_me2me_host_archive',
-              ],
-            }],
-            ['OS=="win"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
-              ],
-            }],
-            ['OS=="win" and target_arch=="ia32"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service_win64',
-              ],
-            }],
-            ['OS=="win" and component != "shared_library" and wix_exists == "True" and sas_dll_exists == "True"', {
-              'dependencies': [
-                '../remoting/remoting.gyp:remoting_host_installation',
-              ],
-            }],
-          ],
-        }, # target_name: chromium_builder_qa
-        {
           'target_name': 'chromium_builder_perf_av',
           'type': 'none',
           'dependencies': [
             'blink_tests', # to run layout tests
-            'chromium_builder_qa',  # needed for perf pyauto tests
           ],
         },  # target_name: chromium_builder_perf_av
         {
