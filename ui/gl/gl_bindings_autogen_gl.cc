@@ -212,6 +212,7 @@ void DriverGL::InitializeStaticBindings() {
       GetGLProcAddress("glGetProgramInfoLog"));
   fn.glGetProgramivFn =
       reinterpret_cast<glGetProgramivProc>(GetGLProcAddress("glGetProgramiv"));
+  fn.glGetProgramResourceLocationFn = 0;
   fn.glGetQueryivFn = 0;
   fn.glGetQueryivARBFn = 0;
   fn.glGetQueryObjecti64vFn = 0;
@@ -1271,6 +1272,14 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetProgramBinaryFn = reinterpret_cast<glGetProgramBinaryProc>(
         GetGLProcAddress("glGetProgramBinaryOES"));
     DCHECK(fn.glGetProgramBinaryFn);
+  }
+
+  debug_fn.glGetProgramResourceLocationFn = 0;
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 1u)) {
+    fn.glGetProgramResourceLocationFn =
+        reinterpret_cast<glGetProgramResourceLocationProc>(
+            GetGLProcAddress("glGetProgramResourceLocation"));
+    DCHECK(fn.glGetProgramResourceLocationFn);
   }
 
   debug_fn.glGetQueryivFn = 0;
@@ -3252,6 +3261,20 @@ Debug_glGetProgramiv(GLuint program, GLenum pname, GLint* params) {
                  << "(" << program << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
   g_driver_gl.debug_fn.glGetProgramivFn(program, pname, params);
+}
+
+static GLint GL_BINDING_CALL
+Debug_glGetProgramResourceLocation(GLuint program,
+                                   GLenum programInterface,
+                                   const char* name) {
+  GL_SERVICE_LOG("glGetProgramResourceLocation"
+                 << "(" << program << ", "
+                 << GLEnums::GetStringEnum(programInterface) << ", " << name
+                 << ")");
+  GLint result = g_driver_gl.debug_fn.glGetProgramResourceLocationFn(
+      program, programInterface, name);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
 }
 
 static void GL_BINDING_CALL
@@ -5261,6 +5284,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetProgramivFn = fn.glGetProgramivFn;
     fn.glGetProgramivFn = Debug_glGetProgramiv;
   }
+  if (!debug_fn.glGetProgramResourceLocationFn) {
+    debug_fn.glGetProgramResourceLocationFn = fn.glGetProgramResourceLocationFn;
+    fn.glGetProgramResourceLocationFn = Debug_glGetProgramResourceLocation;
+  }
   if (!debug_fn.glGetQueryivFn) {
     debug_fn.glGetQueryivFn = fn.glGetQueryivFn;
     fn.glGetQueryivFn = Debug_glGetQueryiv;
@@ -6672,6 +6699,13 @@ void GLApiBase::glGetProgramInfoLogFn(GLuint program,
 
 void GLApiBase::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   driver_->fn.glGetProgramivFn(program, pname, params);
+}
+
+GLint GLApiBase::glGetProgramResourceLocationFn(GLuint program,
+                                                GLenum programInterface,
+                                                const char* name) {
+  return driver_->fn.glGetProgramResourceLocationFn(program, programInterface,
+                                                    name);
 }
 
 void GLApiBase::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
@@ -8476,6 +8510,15 @@ void TraceGLApi::glGetProgramInfoLogFn(GLuint program,
 void TraceGLApi::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetProgramiv")
   gl_api_->glGetProgramivFn(program, pname, params);
+}
+
+GLint TraceGLApi::glGetProgramResourceLocationFn(GLuint program,
+                                                 GLenum programInterface,
+                                                 const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glGetProgramResourceLocation")
+  return gl_api_->glGetProgramResourceLocationFn(program, programInterface,
+                                                 name);
 }
 
 void TraceGLApi::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
@@ -10568,6 +10611,16 @@ void NoContextGLApi::glGetProgramivFn(GLuint program,
                                       GLint* params) {
   NOTREACHED() << "Trying to call glGetProgramiv() without current GL context";
   LOG(ERROR) << "Trying to call glGetProgramiv() without current GL context";
+}
+
+GLint NoContextGLApi::glGetProgramResourceLocationFn(GLuint program,
+                                                     GLenum programInterface,
+                                                     const char* name) {
+  NOTREACHED() << "Trying to call glGetProgramResourceLocation() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glGetProgramResourceLocation() without current "
+                "GL context";
+  return 0;
 }
 
 void NoContextGLApi::glGetQueryivFn(GLenum target,

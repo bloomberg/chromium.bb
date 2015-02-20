@@ -343,6 +343,9 @@ void glGetProgramInfoLogFn(GLuint program,
                            GLsizei* length,
                            char* infolog) override;
 void glGetProgramivFn(GLuint program, GLenum pname, GLint* params) override;
+GLint glGetProgramResourceLocationFn(GLuint program,
+                                     GLenum programInterface,
+                                     const char* name) override;
 void glGetQueryivFn(GLenum target, GLenum pname, GLint* params) override;
 void glGetQueryivARBFn(GLenum target, GLenum pname, GLint* params) override;
 void glGetQueryObjecti64vFn(GLuint id, GLenum pname, GLint64* params) override;

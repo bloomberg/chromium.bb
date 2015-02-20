@@ -346,6 +346,8 @@ MOCK_METHOD4(
     GetProgramInfoLog,
     void(GLuint program, GLsizei bufsize, GLsizei* length, char* infolog));
 MOCK_METHOD3(GetProgramiv, void(GLuint program, GLenum pname, GLint* params));
+MOCK_METHOD3(GetProgramResourceLocation,
+             GLint(GLuint program, GLenum programInterface, const char* name));
 MOCK_METHOD3(GetQueryiv, void(GLenum target, GLenum pname, GLint* params));
 MOCK_METHOD3(GetQueryivARB, void(GLenum target, GLenum pname, GLint* params));
 MOCK_METHOD3(GetQueryObjecti64v,

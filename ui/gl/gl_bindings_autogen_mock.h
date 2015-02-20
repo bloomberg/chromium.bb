@@ -441,6 +441,10 @@ static void GL_BINDING_CALL Mock_glGetProgramInfoLog(GLuint program,
                                                      GLsizei bufsize,
                                                      GLsizei* length,
                                                      char* infolog);
+static GLint GL_BINDING_CALL
+Mock_glGetProgramResourceLocation(GLuint program,
+                                  GLenum programInterface,
+                                  const char* name);
 static void GL_BINDING_CALL
 Mock_glGetProgramiv(GLuint program, GLenum pname, GLint* params);
 static void GL_BINDING_CALL

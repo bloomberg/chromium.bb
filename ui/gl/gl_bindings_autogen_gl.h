@@ -406,6 +406,10 @@ typedef void(GL_BINDING_CALL* glGetProgramInfoLogProc)(GLuint program,
 typedef void(GL_BINDING_CALL* glGetProgramivProc)(GLuint program,
                                                   GLenum pname,
                                                   GLint* params);
+typedef GLint(GL_BINDING_CALL* glGetProgramResourceLocationProc)(
+    GLuint program,
+    GLenum programInterface,
+    const char* name);
 typedef void(GL_BINDING_CALL* glGetQueryivProc)(GLenum target,
                                                 GLenum pname,
                                                 GLint* params);
@@ -1074,6 +1078,7 @@ struct ProcsGL {
   glGetProgramBinaryProc glGetProgramBinaryFn;
   glGetProgramInfoLogProc glGetProgramInfoLogFn;
   glGetProgramivProc glGetProgramivFn;
+  glGetProgramResourceLocationProc glGetProgramResourceLocationFn;
   glGetQueryivProc glGetQueryivFn;
   glGetQueryivARBProc glGetQueryivARBFn;
   glGetQueryObjecti64vProc glGetQueryObjecti64vFn;
@@ -1582,6 +1587,9 @@ class GL_EXPORT GLApi {
   virtual void glGetProgramivFn(GLuint program,
                                 GLenum pname,
                                 GLint* params) = 0;
+  virtual GLint glGetProgramResourceLocationFn(GLuint program,
+                                               GLenum programInterface,
+                                               const char* name) = 0;
   virtual void glGetQueryivFn(GLenum target, GLenum pname, GLint* params) = 0;
   virtual void glGetQueryivARBFn(GLenum target,
                                  GLenum pname,
@@ -2185,6 +2193,8 @@ class GL_EXPORT GLApi {
 #define glGetProgramBinary ::gfx::g_current_gl_context->glGetProgramBinaryFn
 #define glGetProgramInfoLog ::gfx::g_current_gl_context->glGetProgramInfoLogFn
 #define glGetProgramiv ::gfx::g_current_gl_context->glGetProgramivFn
+#define glGetProgramResourceLocation \
+  ::gfx::g_current_gl_context->glGetProgramResourceLocationFn
 #define glGetQueryiv ::gfx::g_current_gl_context->glGetQueryivFn
 #define glGetQueryivARB ::gfx::g_current_gl_context->glGetQueryivARBFn
 #define glGetQueryObjecti64v ::gfx::g_current_gl_context->glGetQueryObjecti64vFn

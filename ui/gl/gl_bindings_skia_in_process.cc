@@ -617,6 +617,13 @@ GLvoid StubGLVertexAttribPointer(GLuint indx, GLint size, GLenum type,
 GLvoid StubGLViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   glViewport(x, y, width, height);
 }
+
+GLint StubGLGetProgramResourceLocation(GLuint program,
+                                       GLenum programInterface,
+                                       const char* name) {
+  return glGetProgramResourceLocation(program, programInterface, name);
+}
+
 }  // extern "C"
 }  // namespace
 
@@ -794,6 +801,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   functions->fUnmapBuffer = StubGLUnmapBuffer;
   functions->fBindFragDataLocationIndexed =
     StubGLBindFragDataLocationIndexed;
+  functions->fGetProgramResourceLocation = StubGLGetProgramResourceLocation;
 
   return interface;
 }
