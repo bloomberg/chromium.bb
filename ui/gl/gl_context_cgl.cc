@@ -122,12 +122,15 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
 void GLContextCGL::Destroy() {
   if (discrete_pixelformat_) {
-    // Delay releasing the pixel format for 10 seconds to reduce the number of
-    // unnecessary GPU switches.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CGLReleasePixelFormat, discrete_pixelformat_),
-        base::TimeDelta::FromSeconds(10));
+    if (base::MessageLoop::current() != NULL) {
+      // Delay releasing the pixel format for 10 seconds to reduce the number of
+      // unnecessary GPU switches.
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&CGLReleasePixelFormat, discrete_pixelformat_),
+          base::TimeDelta::FromSeconds(10));
+    } else {
+      CGLReleasePixelFormat(discrete_pixelformat_);
+    }
     discrete_pixelformat_ = NULL;
   }
   if (context_) {
