@@ -162,7 +162,7 @@ TEST_F('AppListStartPageWebUITest', 'LoadDoodle', function() {
 
 TEST_F('AppListStartPageWebUITest', 'SpeechRecognitionState', function() {
   this.mockHandler.expects(once()).setSpeechRecognitionState('READY');
-  appList.startPage.onAppListShown();
+  appList.startPage.onAppListShown(false, true);
   this.mockHandler.expects(once()).setSpeechRecognitionState('RECOGNIZING');
   appList.startPage.toggleSpeechRecognition();
   Mock4JS.verifyAllMocks();
@@ -191,7 +191,7 @@ TEST_F('AppListStartPageWebUITest', 'SpeechRecognitionState', function() {
 
 TEST_F('AppListStartPageWebUITest', 'SpeechRecognition', function() {
   this.mockHandler.expects(once()).setSpeechRecognitionState('READY');
-  appList.startPage.onAppListShown();
+  appList.startPage.onAppListShown(false, true);
   this.mockHandler.expects(once()).setSpeechRecognitionState('RECOGNIZING');
   appList.startPage.toggleSpeechRecognition();
   Mock4JS.verifyAllMocks();

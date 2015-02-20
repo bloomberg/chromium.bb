@@ -353,14 +353,15 @@ void StartPageService::AppListShown() {
     LoadContents();
   } else if (contents_->IsCrashed()) {
     LoadStartPageURL();
-  } else if (contents_->GetWebUI() &&
-             !HotwordService::IsExperimentalHotwordingEnabled()) {
-    // If experimental hotwording is enabled, don't call onAppListShown.
-    // onAppListShown() initializes the web speech API, which is not used with
+  } else if (contents_->GetWebUI()) {
+    // If experimental hotwording is enabled, don't initialize the web speech
+    // API, which is not used with
     // experimental hotwording.
     contents_->GetWebUI()->CallJavascriptFunction(
         "appList.startPage.onAppListShown",
-        base::FundamentalValue(HotwordEnabled()));
+        base::FundamentalValue(HotwordEnabled()),
+        base::FundamentalValue(
+            !HotwordService::IsExperimentalHotwordingEnabled()));
   }
 
 #if defined(OS_CHROMEOS)

@@ -465,6 +465,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListDoodleAction" enum="AppListDoodleAction">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The number of user interactions with the app list doodle. This is logged
+    once per action.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListHowEnabled" enum="AppListEnableSource">
   <owner>tapted@chromium.org</owner>
   <summary>
@@ -43724,6 +43732,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="16" label="SOURCE_KIOSK"/>
   <int value="17" label="SOURCE_CHROME_INTERNAL"/>
   <int value="18" label="SOURCE_TEST"/>
+</enum>
+
+<enum name="AppListDoodleAction" type="int">
+  <int value="0" label="DOODLE_SHOWN"/>
+  <int value="1" label="DOODLE_CLICKED"/>
 </enum>
 
 <enum name="AppListEnableSource" type="int">

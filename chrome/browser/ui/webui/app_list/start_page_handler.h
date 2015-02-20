@@ -47,6 +47,8 @@ class StartPageHandler : public content::WebUIMessageHandler,
 #endif
 
   // JS callbacks.
+  void HandleAppListShown(const base::ListValue* args);
+  void HandleDoodleClicked(const base::ListValue* args);
   void HandleInitialize(const base::ListValue* args);
   void HandleLaunchApp(const base::ListValue* args);
   void HandleSpeechResult(const base::ListValue* args);

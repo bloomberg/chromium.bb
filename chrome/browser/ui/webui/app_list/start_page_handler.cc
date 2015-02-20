@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +34,18 @@ namespace app_list {
 
 namespace {
 
+const char kAppListDoodleActionHistogram[] = "Apps.AppListDoodleAction";
+
+// Interactions a user has with the app list doodle. This enum must not have its
+// order altered as it is used in histograms.
+enum DoodleAction {
+  DOODLE_SHOWN = 0,
+  DOODLE_CLICKED,
+  // Add values here.
+
+  DOODLE_ACTION_LAST,
+};
+
 #if defined(OS_CHROMEOS)
 const char kOldHotwordExtensionVersionString[] = "0.1.1.5023";
 #endif
@@ -46,6 +59,12 @@ StartPageHandler::~StartPageHandler() {
 }
 
 void StartPageHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "appListShown", base::Bind(&StartPageHandler::HandleAppListShown,
+                                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "doodleClicked", base::Bind(&StartPageHandler::HandleDoodleClicked,
+                                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "initialize",
       base::Bind(&StartPageHandler::HandleInitialize, base::Unretained(this)));
@@ -112,6 +131,19 @@ void StartPageHandler::OnHotwordEnabledChanged() {
   }
 }
 #endif
+
+void StartPageHandler::HandleAppListShown(const base::ListValue* args) {
+  bool doodle_shown = false;
+  if (args->GetBoolean(0, &doodle_shown) && doodle_shown) {
+    UMA_HISTOGRAM_ENUMERATION(kAppListDoodleActionHistogram, DOODLE_SHOWN,
+                              DOODLE_ACTION_LAST);
+  }
+}
+
+void StartPageHandler::HandleDoodleClicked(const base::ListValue* args) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListDoodleActionHistogram, DOODLE_CLICKED,
+                            DOODLE_ACTION_LAST);
+}
 
 void StartPageHandler::HandleInitialize(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());

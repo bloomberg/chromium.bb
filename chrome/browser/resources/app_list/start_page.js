@@ -46,8 +46,11 @@ cr.define('appList.startPage', function() {
    *
    * @param {boolean} hotwordEnabled Whether the hotword is enabled or not.
    */
-  function onAppListShown(hotwordEnabled) {
-    speechManager.onShown(hotwordEnabled);
+  function onAppListShown(hotwordEnabled, legacySpeechEnabled) {
+    if (legacySpeechEnabled)
+      speechManager.onShown(hotwordEnabled);
+
+    chrome.send('appListShown', [this.doodle != null]);
   }
 
   /**
@@ -112,6 +115,10 @@ cr.define('appList.startPage', function() {
       doodleLink.href = doodleData.target_url;
       doodleLink.target = '_blank';
       doodleLink.appendChild(doodleImage);
+      doodleLink.onclick = function() {
+        chrome.send('doodleClicked');
+        return true;
+      };
       this.doodle.appendChild(doodleLink);
     } else {
       this.doodle.appendChild(doodleImage);
