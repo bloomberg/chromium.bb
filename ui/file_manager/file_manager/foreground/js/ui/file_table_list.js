@@ -25,5 +25,14 @@ FileTableList.prototype.__proto__ = cr.ui.table.TableList.prototype;
 FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
   cr.ui.table.TableList.prototype.mergeItems.call(this, beginIndex, endIndex);
 
+  // Make sure that list item's selected attribute is updated just after the
+  // mergeItems operation is done. This prevents checkmarks on selected items
+  // from being animated unintentinally by redraw.
+  for (var i = beginIndex; i < endIndex; i++) {
+    var isSelected = this.selectionModel.getIndexSelected(i);
+    if (this.cachedItems_[i].selected != isSelected)
+      this.cachedItems_[i].selected = isSelected;
+  }
+
   this.table.updateHighPriorityRange(beginIndex, endIndex);
 }
