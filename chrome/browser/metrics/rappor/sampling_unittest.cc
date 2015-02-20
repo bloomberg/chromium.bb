@@ -19,6 +19,18 @@ TEST(RapporSamplingTest, GetDomainAndRegistrySampleFromGURLTest) {
       GURL("chrome-extension://abc1234/foo.html")));
   EXPECT_EQ("chrome-search://local-ntp", GetDomainAndRegistrySampleFromGURL(
       GURL("chrome-search://local-ntp/local-ntp.html")));
+  EXPECT_EQ("localhost", GetDomainAndRegistrySampleFromGURL(
+      GURL("http://localhost:8000/foo.html")));
+  EXPECT_EQ("localhost", GetDomainAndRegistrySampleFromGURL(
+      GURL("http://127.0.0.1/foo.html")));
+  EXPECT_EQ("ip_address", GetDomainAndRegistrySampleFromGURL(
+      GURL("http://192.168.0.1/foo.html")));
+  EXPECT_EQ("ip_address", GetDomainAndRegistrySampleFromGURL(
+      GURL("http://[2001:db8::1]/")));
+  EXPECT_EQ("", GetDomainAndRegistrySampleFromGURL(
+      GURL("http://www/")));
+  EXPECT_EQ("www.corp", GetDomainAndRegistrySampleFromGURL(
+      GURL("http://www.corp/")));
 }
 
 // Make sure recording a sample during tests, when the Rappor service is NULL,

@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/rappor/sampling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/rappor/rappor_service.h"
@@ -69,11 +70,9 @@ void SecurityInterstitialMetricsHelper::RecordUserDecision(
   rappor::RapporService* rappor_service = g_browser_process->rappor_service();
   if (rappor_service && rappor_reporting_ == REPORT_RAPPOR &&
       (decision == PROCEED || decision == DONT_PROCEED)) {
-    // |domain| will be empty for hosts w/o TLDs (localhost, ip addrs)
-    const std::string domain =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            request_url_,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    // |domain| will be empty for hosts w/o TLDs
+    const std::string domain = rappor::GetDomainAndRegistrySampleFromGURL(
+        request_url_);
 
     // e.g. "interstitial.malware.domain" or "interstitial.ssl.domain"
     const std::string metric_name =
