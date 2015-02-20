@@ -241,7 +241,7 @@ WebViewImpl.prototype.executeCode = function(func, args) {
   }
 
   var webviewSrc = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
-  if (this.baseUrlForDataUrl != '') {
+  if (this.baseUrlForDataUrl) {
     webviewSrc = this.baseUrlForDataUrl;
   }
 
