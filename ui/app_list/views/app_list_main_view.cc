@@ -267,9 +267,13 @@ void AppListMainView::UpdateCustomLauncherPageVisibility() {
 }
 
 void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {
+  views::View* custom_page = contents_view_->custom_page_view();
+  if (!custom_page)
+    return;
+
   if (enabled) {
     // Make the custom page view visible again.
-    contents_view_->custom_page_view()->SetVisible(true);
+    custom_page->SetVisible(true);
   } else if (contents_view_->IsStateActive(
                  AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
     // Animate to the start page if currently on the custom page view. The view
@@ -278,7 +282,7 @@ void AppListMainView::OnCustomLauncherPageEnabledStateChanged(bool enabled) {
         contents_view_->GetPageIndexForState(AppListModel::STATE_START));
   } else {
     // Hide the view immediately otherwise.
-    contents_view_->custom_page_view()->SetVisible(false);
+    custom_page->SetVisible(false);
   }
 }
 
