@@ -137,8 +137,19 @@ void HidConnectionWin::PlatformRead(
 void HidConnectionWin::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                                      size_t size,
                                      const WriteCallback& callback) {
-  // The Windows API always wants either a report ID (if supported) or
-  // zero at the front of every output report.
+  size_t expected_size = device_info()->max_output_report_size() + 1;
+  DCHECK(size <= expected_size);
+  // The Windows API always wants either a report ID (if supported) or zero at
+  // the front of every output report and requires that the buffer size be equal
+  // to the maximum output report size supported by this collection.
+  if (size < expected_size) {
+    scoped_refptr<net::IOBuffer> tmp_buffer = new net::IOBuffer(
+        base::checked_cast<int>(expected_size));
+    memcpy(tmp_buffer->data(), buffer->data(), size);
+    memset(tmp_buffer->data() + size, 0, expected_size - size);
+    buffer = tmp_buffer;
+    size = expected_size;
+  }
   scoped_refptr<PendingHidTransfer> transfer(new PendingHidTransfer(
       buffer, base::Bind(&HidConnectionWin::OnWriteComplete, this, callback)));
   transfers_.insert(transfer);

@@ -58,7 +58,7 @@ class MockHidConnection : public HidConnection {
   void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                      size_t size,
                      const WriteCallback& callback) override {
-    const char kExpected[] = "This is a HID output report.";
+    const char kExpected[] = "o-report";  // 8 bytes
     bool result = false;
     if (size == sizeof(kExpected)) {
       uint8_t report_id = buffer->data()[0];

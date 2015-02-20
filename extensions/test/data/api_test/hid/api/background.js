@@ -234,9 +234,20 @@ function testSendWithInvalidConnectionId() {
   });
 }
 
+function testSendOversizeReport() {
+  openDeviceWithReportId(function (connection) {
+    var buffer = stringToArrayBuffer("oversize report");
+    chrome.hid.send(connection, 1, buffer, function () {
+      chrome.test.assertLastError("Transfer failed.");
+      chrome.hid.disconnect(connection);
+      chrome.test.succeed("Caught oversize report.");
+    });
+  });
+}
+
 function testSendWithReportId() {
   openDeviceWithReportId(function (connection) {
-    var buffer = stringToArrayBuffer("This is a HID output report.");
+    var buffer = stringToArrayBuffer("o-report");
     chrome.hid.send(connection, 1, buffer, function () {
       chrome.test.assertNoLastError();
       chrome.hid.disconnect(connection);
@@ -247,7 +258,7 @@ function testSendWithReportId() {
 
 function testSendWithoutReportId() {
   openDeviceWithoutReportId(function (connection) {
-    var buffer = stringToArrayBuffer("This is a HID output report.");
+    var buffer = stringToArrayBuffer("o-report");
     chrome.hid.send(connection, 0, buffer, function () {
       chrome.test.assertNoLastError();
       chrome.hid.disconnect(connection);
@@ -258,7 +269,7 @@ function testSendWithoutReportId() {
 
 function testSendWithInvalidReportId() {
   openDeviceWithReportId(function (connection) {
-    var buffer = stringToArrayBuffer("This is a HID output report.");
+    var buffer = stringToArrayBuffer("o-report");
     chrome.hid.send(connection, 0, buffer, function () {
       chrome.test.assertLastError("Transfer failed.");
       chrome.hid.disconnect(connection);
@@ -269,7 +280,7 @@ function testSendWithInvalidReportId() {
 
 function testSendWithUnexpectedReportId() {
   openDeviceWithoutReportId(function (connection) {
-    var buffer = stringToArrayBuffer("This is a HID output report.");
+    var buffer = stringToArrayBuffer("o-report");
     chrome.hid.send(connection, 1, buffer, function () {
       chrome.test.assertLastError("Transfer failed.");
       chrome.hid.disconnect(connection);
@@ -396,6 +407,7 @@ chrome.test.runTests([
   testReceiveWithReportId,
   testReceiveWithoutReportId,
   testSendWithInvalidConnectionId,
+  testSendOversizeReport,
   testSendWithReportId,
   testSendWithoutReportId,
   testSendWithInvalidReportId,
