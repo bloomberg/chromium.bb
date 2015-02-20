@@ -889,7 +889,7 @@ jmethodID g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME} = NULL;""")
 
   def GetJNINativeMethodsString(self):
     """Returns the implementation of the array of native methods."""
-    if self.options.native_exports:
+    if self.options.native_exports and not self.options.native_exports_optional:
       return ''
     template = Template("""\
 static const JNINativeMethod kMethods${JAVA_CLASS}[] = {
@@ -922,7 +922,7 @@ ${KMETHODS}
     """Returns the code for RegisterNatives."""
     template = Template("""\
 ${REGISTER_NATIVES_SIGNATURE} {
-${CLASSES}
+${EARLY_EXIT}${CLASSES}
 ${NATIVES}
 ${CALLED_BY_NATIVES}
   return true;
@@ -934,9 +934,16 @@ ${CALLED_BY_NATIVES}
     else:
       signature += ')'
 
+    early_exit = ''
+    if self.options.native_exports_optional:
+      early_exit = """\
+  if (base::android::IsManualJniRegistrationDisabled()) return true;
+"""
+
     natives = self.GetRegisterNativesImplString()
     called_by_natives = self.GetRegisterCalledByNativesImplString()
     values = {'REGISTER_NATIVES_SIGNATURE': signature,
+              'EARLY_EXIT': early_exit,
               'CLASSES': self.GetFindClasses(),
               'NATIVES': natives,
               'CALLED_BY_NATIVES': called_by_natives,
@@ -945,7 +952,7 @@ ${CALLED_BY_NATIVES}
 
   def GetRegisterNativesImplString(self):
     """Returns the shared implementation for RegisterNatives."""
-    if self.options.native_exports:
+    if self.options.native_exports and not self.options.native_exports_optional:
       return ''
 
     template = Template("""\
@@ -1513,7 +1520,12 @@ See SampleForTests.java for more details.
   option_parser.add_option('--native_exports', action='store_true',
                            help='Native method registration through .so '
                            'exports.')
+  option_parser.add_option('--native_exports_optional', action='store_true',
+                           help='Support both explicit and native method'
+                           'registration.')
   options, args = option_parser.parse_args(argv)
+  if options.native_exports_optional:
+    options.native_exports = True
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,
                                      options.output_dir)

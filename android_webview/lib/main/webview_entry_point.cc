@@ -9,6 +9,10 @@
 // This is called by the VM when the shared library is first loaded.
 // Most of the initialization is done in LibraryLoadedOnMainThread(), not here.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+  // WebView uses native JNI exports; disable manual JNI registration to
+  // improve startup peformance.
+  base::android::DisableManualJniRegistration();
+
   if (!android_webview::OnJNIOnLoad(vm))
     return -1;
 

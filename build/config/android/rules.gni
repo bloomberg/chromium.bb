@@ -74,6 +74,12 @@ template("generate_jni") {
         rebase_path(jni_generator_jarjar_file, root_build_dir),
       ]
     }
+    if (!is_clang) {
+      # Clang builds currently fail with --native_exports_optional due to
+      # http://llvm.org/bugs/show_bug.cgi?id=22602 - only enable for gcc.
+      # http://crbug.com/442327
+      args += [ "--native_exports_optional" ]
+    }
   }
 
   config("jni_includes_${target_name}") {
@@ -184,6 +190,12 @@ template("generate_jar_jni") {
         "--includes",
         rebase_path(jni_generator_include, root_build_dir),
       ]
+      if (!is_clang) {
+        # Clang builds currently fail with --native_exports_optional due to
+        # http://llvm.org/bugs/show_bug.cgi?id=22602 - only enable for gcc.
+        # http://crbug.com/442327
+        args += [ "--native_exports_optional" ]
+      }
     }
   }
 

@@ -73,5 +73,13 @@
         '<(DEPTH)/build/android/android_exports.gyp:android_exports',
       ],
     }],
+    ['clang==0', {
+      # Clang builds currently fail with --native_exports_optional due to
+      # http://llvm.org/bugs/show_bug.cgi?id=22602 - only enable for gcc.
+      # http://crbug.com/442327
+      'variables': {
+        'native_exports%': '--native_exports_optional',
+      },
+    }],
   ],
 }

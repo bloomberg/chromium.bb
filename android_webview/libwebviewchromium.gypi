@@ -7,6 +7,9 @@
   'dependencies': [
     'android_webview_common',
   ],
+  'variables': {
+    'use_native_jni_exports': 1,
+  },
   'conditions': [
     [ 'android_webview_build==1', {
       'dependencies': [

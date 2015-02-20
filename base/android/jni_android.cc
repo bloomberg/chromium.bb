@@ -17,6 +17,8 @@ using base::android::GetClass;
 using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
+bool g_disable_manual_jni_registration = false;
+
 JavaVM* g_jvm = NULL;
 // Leak the global app context, as it is used from a non-joinable worker thread
 // that may still be running at shutdown. There is no harm in doing this.
@@ -76,6 +78,15 @@ std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
 
 namespace base {
 namespace android {
+
+bool IsManualJniRegistrationDisabled() {
+  return g_disable_manual_jni_registration;
+}
+
+void DisableManualJniRegistration() {
+  DCHECK(!g_disable_manual_jni_registration);
+  g_disable_manual_jni_registration = true;
+}
 
 JNIEnv* AttachCurrentThread() {
   DCHECK(g_jvm);

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_onload_delegate.h"
+#include "base/android/jni_utils.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 
 namespace base {
@@ -25,6 +26,11 @@ bool BaseJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
 }
 
 bool BaseJNIOnLoadDelegate::Init() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  base::android::InitReplacementClassLoader(env,
+                                            base::android::GetClassLoader(env));
+
   return true;
 }
 

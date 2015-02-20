@@ -8,7 +8,6 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "base/android/jni_utils.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "content/public/app/content_jni_onload.h"
@@ -42,10 +41,6 @@ bool WebViewJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
 }
 
 bool WebViewJNIOnLoadDelegate::Init() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::InitReplacementClassLoader(env,
-                                            base::android::GetClassLoader(env));
-
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 
   // Initialize url lib here while we are still single-threaded, in case we use
