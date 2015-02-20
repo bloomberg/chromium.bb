@@ -16,8 +16,6 @@ source_set("android") {
   defines = [ "DEVICE_VIBRATION_IMPLEMENTATION" ]
 
   deps = [
-    "//base",
-
     # vibration_jni_registrar.cc includes a header from device/vibration
     # that includes a mojo-generated header file.  Make sure the header
     # is generated before vibration_jni_registrar.cc is compiled.

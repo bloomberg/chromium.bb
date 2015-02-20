@@ -69,7 +69,6 @@ source_set("test_support") {
 
   public_deps = [
     ":dbus",
-    "//base",
   ]
   deps = [
     "//testing/gmock",

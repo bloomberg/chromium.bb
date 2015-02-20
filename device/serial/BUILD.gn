@@ -43,17 +43,11 @@ static_library("serial") {
 
   public_deps = [
     ":serial_mojo",
-    "//base",
   ]
-  deps = [
-    "//third_party/mojo/src/mojo/public/cpp/system",
-  ]
+  deps = []
 
   if (is_linux) {
     deps += [ "//device/udev_linux" ]
-  }
-  if (is_chromeos) {
-    deps += [ "//chromeos" ]
   }
 }
 

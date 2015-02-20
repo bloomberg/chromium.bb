@@ -19,12 +19,6 @@ check_targets = [
   # build/config/android/rules.gni "java_cpp_enum" template with
   #   check_includes = false.
   #"//base/*",
-  "//build/*",
   "//cc/*",
-  "//dbus/*",
-  "//device/*",
   "//ipc/*",
-  "//sql/*",
-  "//storage/*",
-  "//url/*",
 ]
