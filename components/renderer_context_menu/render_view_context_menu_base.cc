@@ -169,7 +169,7 @@ RenderViewContextMenuBase::RenderViewContextMenuBase(
     const content::ContextMenuParams& params)
     : params_(params),
       source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
-      embedded_web_contents_(GetWebContentsToUse(source_web_contents_)),
+      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)),
       browser_context_(source_web_contents_->GetBrowserContext()),
       menu_model_(this),
       render_frame_id_(render_frame_host->GetRoutingID()),
