@@ -102,6 +102,13 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a, const
     return a.second->cueIndex() - b.second->cueIndex() < 0;
 }
 
+static PassRefPtrWillBeRawPtr<Event> createEventWithTarget(const AtomicString& eventName, PassRefPtrWillBeRawPtr<EventTarget> eventTarget)
+{
+    RefPtrWillBeRawPtr<Event> event = Event::create(eventName);
+    event->setTarget(eventTarget);
+    return event.release();
+}
+
 void CueTimeline::updateActiveCues(double movieTime)
 {
     // 4.8.10.8 Playing the media resource
@@ -263,28 +270,18 @@ void CueTimeline::updateActiveCues(double movieTime)
             affectedTracks.append(eventTasks[i].second->track());
 
         // 13 - Queue each task in events, in list order.
-        RefPtrWillBeRawPtr<Event> event = nullptr;
 
         // Each event in eventTasks may be either an enterEvent or an exitEvent,
         // depending on the time that is associated with the event. This
         // correctly identifies the type of the event, if the startTime is
         // less than the endTime in the cue.
         if (eventTasks[i].second->startTime() >= eventTasks[i].second->endTime()) {
-            event = Event::create(EventTypeNames::enter);
-            event->setTarget(eventTasks[i].second);
-            mediaElement.scheduleEvent(event.release());
-
-            event = Event::create(EventTypeNames::exit);
-            event->setTarget(eventTasks[i].second);
-            mediaElement.scheduleEvent(event.release());
+            mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::enter, eventTasks[i].second));
+            mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::exit, eventTasks[i].second));
         } else {
-            if (eventTasks[i].first == eventTasks[i].second->startTime())
-                event = Event::create(EventTypeNames::enter);
-            else
-                event = Event::create(EventTypeNames::exit);
-
-            event->setTarget(eventTasks[i].second);
-            mediaElement.scheduleEvent(event.release());
+            bool isEnterEvent = eventTasks[i].first == eventTasks[i].second->startTime();
+            AtomicString eventName = isEnterEvent ? EventTypeNames::enter : EventTypeNames::exit;
+            mediaElement.scheduleEvent(createEventWithTarget(eventName, eventTasks[i].second));
         }
     }
 
@@ -295,20 +292,14 @@ void CueTimeline::updateActiveCues(double movieTime)
     // 15 - For each text track in affected tracks, in the list order, queue a
     // task to fire a simple event named cuechange at the TextTrack object, and, ...
     for (size_t i = 0; i < affectedTracks.size(); ++i) {
-        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::cuechange);
-        event->setTarget(affectedTracks[i]);
-
-        mediaElement.scheduleEvent(event.release());
+        mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::cuechange, affectedTracks[i]));
 
         // ... if the text track has a corresponding track element, to then fire a
         // simple event named cuechange at the track element as well.
         if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
-            RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::cuechange);
             HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i].get())->trackElement();
             ASSERT(trackElement);
-            event->setTarget(trackElement);
-
-            mediaElement.scheduleEvent(event.release());
+            mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::cuechange, trackElement));
         }
     }
 
