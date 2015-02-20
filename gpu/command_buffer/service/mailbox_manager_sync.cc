@@ -22,18 +22,6 @@ namespace gles2 {
 
 namespace {
 
-bool SkipTextureWorkarounds(const Texture* texture) {
-  // TODO(sievers): crbug.com/352274
-  // Should probably only fail if it already *has* mipmaps, while allowing
-  // incomplete textures here.
-  bool needs_mips =
-      texture->min_filter() != GL_NEAREST && texture->min_filter() != GL_LINEAR;
-  if (texture->target() != GL_TEXTURE_2D || needs_mips || !texture->IsDefined())
-    return true;
-
-  return false;
-}
-
 base::LazyInstance<base::Lock> g_lock = LAZY_INSTANCE_INITIALIZER;
 
 typedef std::map<uint32, linked_ptr<gfx::GLFence>> SyncPointToFenceMap;
@@ -196,6 +184,15 @@ MailboxManagerSync::~MailboxManagerSync() {
   DCHECK_EQ(0U, texture_to_group_.size());
 }
 
+// static
+bool MailboxManagerSync::SkipTextureWorkarounds(const Texture* texture) {
+  // Cannot support mips due to support mismatch between
+  // EGL_KHR_gl_texture_2D_image and glEGLImageTargetTexture2DOES for
+  // texture levels.
+  bool has_mips = texture->NeedsMips() && texture->texture_complete();
+  return texture->target() != GL_TEXTURE_2D || has_mips;
+}
+
 bool MailboxManagerSync::UsesSync() {
   return true;
 }
@@ -294,6 +291,7 @@ void MailboxManagerSync::UpdateDefinitionLocked(
   if (definition.Matches(texture))
     return;
 
+  DCHECK_IMPLIES(gl_image, image_buffer.get());
   if (gl_image && !image_buffer->IsClient(gl_image)) {
     LOG(ERROR) << "MailboxSync: Incompatible attachment";
     return;

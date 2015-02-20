@@ -61,6 +61,7 @@ class TextureDefinition {
   bool SafeToRenderFrom() const;
 
   struct LevelInfo {
+    LevelInfo();
     LevelInfo(GLenum target,
               GLenum internal_format,
               GLsizei width,
@@ -83,8 +84,6 @@ class TextureDefinition {
     bool cleared;
   };
 
-  typedef std::vector<std::vector<LevelInfo> > LevelInfos;
-
   unsigned int version_;
   GLenum target_;
   scoped_refptr<NativeImageBuffer> image_buffer_;
@@ -94,7 +93,10 @@ class TextureDefinition {
   GLenum wrap_t_;
   GLenum usage_;
   bool immutable_;
-  LevelInfos level_infos_;
+  bool defined_;
+
+  // Only support textures with one face and one level.
+  LevelInfo level_info_;
 };
 
 }  // namespage gles2

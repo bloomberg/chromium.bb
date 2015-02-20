@@ -40,6 +40,8 @@ class GPU_EXPORT MailboxManagerSync : public MailboxManager {
  private:
   friend class base::RefCounted<MailboxManager>;
 
+  static bool SkipTextureWorkarounds(const Texture* texture);
+
   ~MailboxManagerSync() override;
 
   class TextureGroup : public base::RefCounted<TextureGroup> {
