@@ -150,6 +150,8 @@ if (enable_webrtc || !is_android) {
       ]
     }
 
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
     public_deps = [
       "//third_party/libjingle",
     ]

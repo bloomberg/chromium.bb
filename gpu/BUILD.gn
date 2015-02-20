@@ -99,6 +99,8 @@ if (!is_win || link_chrome_on_windows) {
 
     defines = [ "GL_GLEXT_PROTOTYPES" ]
 
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
     deps = [
       ":gpu",
       ":test_support",
@@ -227,6 +229,8 @@ if (!is_win || link_chrome_on_windows) {
       "config/gpu_test_expectations_parser_unittest.cc",
       "config/gpu_util_unittest.cc",
     ]
+
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
     deps = [
       ":gpu",

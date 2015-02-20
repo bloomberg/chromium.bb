@@ -286,7 +286,11 @@ source_set("unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-  configs += [ "//media:media_config" ]
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//media:media_config",
+  ]
 
   if (is_android) {
     sources += [ "android/audio_android_unittest.cc" ]

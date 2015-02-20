@@ -312,6 +312,8 @@ source_set("test_support") {
     ]
   }
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (enable_extensions) {
     sources += [
       "extensions/extension_test_util.cc",

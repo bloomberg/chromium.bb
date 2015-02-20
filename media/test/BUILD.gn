@@ -33,6 +33,8 @@ source_set("pipeline_integration_tests") {
       "pipeline_integration_test.cc",
     ]
 
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
     deps = [
       ":pipeline_integration_test_base",
       "//base",
@@ -82,6 +84,8 @@ if (!is_component_build) {
       ]
 
       defines = [ "MOJO_RENDERER" ]
+
+      configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
       deps = [
         ":pipeline_integration_test_base",

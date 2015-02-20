@@ -234,6 +234,8 @@ if (!is_win || link_chrome_on_windows) {
       "test/run_all_unittests.cc",
     ]
 
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
     deps = [
       ":app_list",
       ":test_support",

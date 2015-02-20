@@ -183,6 +183,7 @@ template("json_schema_api") {
       sources += get_target_outputs(":$schema_generator_name")
       public_deps += [ ":$schema_generator_name" ]
       deps += [ "//tools/json_schema_compiler:generated_api_util" ]
+      configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     }
 
     if (bundle) {

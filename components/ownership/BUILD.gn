@@ -32,6 +32,8 @@ source_set("unit_tests") {
     "owner_key_util_impl_unittest.cc",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":ownership",
     "//testing/gtest",

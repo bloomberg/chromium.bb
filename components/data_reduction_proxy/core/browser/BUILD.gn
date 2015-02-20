@@ -94,6 +94,8 @@ source_set("unit_tests") {
     "data_reduction_proxy_usage_stats_unittest.cc",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":browser",
     ":test_support",

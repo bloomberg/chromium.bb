@@ -201,6 +201,8 @@ test("printing_unittests") {
     "units_unittest.cc",
   ]
 
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   if (use_cups) {
     configs += [ ":cups" ]
     sources += [ "backend/cups_helper_unittest.cc" ]

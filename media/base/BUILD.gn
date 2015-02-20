@@ -270,7 +270,10 @@ source_set("base_for_cast_ios") {
     "video_frame.cc",
     "video_frame.h",
   ]
-  configs += [ "//media:media_config" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//media:media_config",
+  ]
   all_dependent_configs = [ ":base_for_cast_ios_dependent_config" ]
 }
 
@@ -351,7 +354,10 @@ source_set("unittests") {
     "wall_clock_time_source_unittest.cc",
     "yuv_convert_unittest.cc",
   ]
-  configs += [ "//media:media_config" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//media:media_config",
+  ]
   deps = [
     ":base",
     ":test_support",
