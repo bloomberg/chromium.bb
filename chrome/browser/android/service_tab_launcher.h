@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback_forward.h"
+#include "base/id_map.h"
 #include "base/memory/singleton.h"
 
 namespace content {
@@ -19,8 +20,12 @@ namespace chrome {
 namespace android {
 
 // Launcher for creating new tabs on Android from a background service, where
-// there may not necessarily be an Activity or a tab model at all.
+// there may not necessarily be an Activity or a tab model at all. When the
+// tab has been launched, the user of this class will be informed with the
+// content::WebContents instance associated with the tab.
 class ServiceTabLauncher {
+  using TabLaunchedCallback = base::Callback<void(content::WebContents*)>;
+
  public:
   // Returns the singleton instance of the service tab launcher.
   static ServiceTabLauncher* GetInstance();
@@ -30,7 +35,12 @@ class ServiceTabLauncher {
   // the tab is avialable. This method must only be called from the UI thread.
   void LaunchTab(content::BrowserContext* browser_context,
                  const content::OpenURLParams& params,
-                 const base::Callback<void(content::WebContents*)>& callback);
+                 const TabLaunchedCallback& callback);
+
+  // To be called when the tab for |request_id| has launched, with the
+  // associated |web_contents|. The WebContents must not yet have started
+  // the provisional load for the main frame of the navigation.
+  void OnTabLaunched(int request_id, content::WebContents* web_contents);
 
   static bool RegisterServiceTabLauncher(JNIEnv* env);
 
@@ -39,6 +49,8 @@ class ServiceTabLauncher {
 
   ServiceTabLauncher();
   ~ServiceTabLauncher();
+
+  IDMap<TabLaunchedCallback> tab_launched_callbacks_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 

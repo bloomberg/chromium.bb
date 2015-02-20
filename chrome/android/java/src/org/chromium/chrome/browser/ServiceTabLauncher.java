@@ -11,6 +11,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Tab Launcher to be used to launch new tabs from background Android Services, when it is not
@@ -22,6 +23,10 @@ public abstract class ServiceTabLauncher {
     private static final String TAG = ServiceTabLauncher.class.getSimpleName();
     private static final String SERVICE_TAB_LAUNCHER_KEY =
             "org.chromium.chrome.browser.SERVICE_TAB_LAUNCHER";
+
+    // Name of the extra containing the Id of a tab launch request id.
+    public static final String LAUNCH_REQUEST_ID_EXTRA =
+            "org.chromium.chrome.browser.ServiceTabLauncher.LAUNCH_REQUEST_ID";
 
     private static ServiceTabLauncher sInstance;
 
@@ -88,4 +93,19 @@ public abstract class ServiceTabLauncher {
 
         return null;
     }
+
+    /**
+     * To be called by the activity when the WebContents for |requestId| has been created, or has
+     * been recycled from previous use. The |webContents| must not yet have started provisional
+     * load for the main frame.
+     *
+     * @param requestId Id of the tab launching request which has been fulfilled.
+     * @param webContents The WebContents instance associated with this request.
+     */
+    public static void onWebContentsForRequestAvailable(int requestId, WebContents webContents) {
+        nativeOnWebContentsForRequestAvailable(requestId, webContents);
+    }
+
+    private static native void nativeOnWebContentsForRequestAvailable(
+            int requestId, WebContents webContents);
 }

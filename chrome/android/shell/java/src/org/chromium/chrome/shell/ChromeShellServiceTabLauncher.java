@@ -43,6 +43,8 @@ public class ChromeShellServiceTabLauncher extends ServiceTabLauncher {
                 break;
         }
 
+        intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, requestId);
+
         // TODO(peter): Support |incognito| when ChromeShell supports that.
         // TODO(peter): Support the referrer information, extra headers and post data if
         // ChromeShell gets support for those properties from intent extras.

@@ -31,4 +31,7 @@ public class PendingDocumentData {
 
     /** The original intent */
     public Intent originalIntent;
+
+    /** The tab launch request Id from the service tab launcher. **/
+    public int requestId;
 }

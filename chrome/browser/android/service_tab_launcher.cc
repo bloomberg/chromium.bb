@@ -8,11 +8,20 @@
 #include "base/callback.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ServiceTabLauncher_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
+
+// Called by Java when the WebContents instance for a request Id is available.
+void OnWebContentsForRequestAvailable(
+    JNIEnv* env, jclass clazz, jint request_id, jobject android_web_contents) {
+  chrome::android::ServiceTabLauncher::GetInstance()->OnTabLaunched(
+      request_id,
+      content::WebContents::FromJavaWebContents(android_web_contents));
+}
 
 namespace chrome {
 namespace android {
@@ -33,7 +42,7 @@ ServiceTabLauncher::~ServiceTabLauncher() {}
 void ServiceTabLauncher::LaunchTab(
     content::BrowserContext* browser_context,
     const content::OpenURLParams& params,
-    const base::Callback<void(content::WebContents*)>& callback) {
+    const TabLaunchedCallback& callback) {
   if (!java_object_.obj()) {
     LOG(ERROR) << "No ServiceTabLauncher is available to launch a new tab.";
     callback.Run(nullptr);
@@ -58,10 +67,14 @@ void ServiceTabLauncher::LaunchTab(
 
   ScopedJavaLocalRef<jbyteArray> post_data;
 
+  int request_id = tab_launched_callbacks_.Add(
+      new TabLaunchedCallback(callback));
+  DCHECK_GE(request_id, 1);
+
   Java_ServiceTabLauncher_launchTab(env,
                                     java_object_.obj(),
                                     GetApplicationContext(),
-                                    0 /* request_id */,
+                                    request_id,
                                     browser_context->IsOffTheRecord(),
                                     url.obj(),
                                     disposition,
@@ -69,11 +82,17 @@ void ServiceTabLauncher::LaunchTab(
                                     params.referrer.policy,
                                     headers.obj(),
                                     post_data.obj());
+}
 
-  // TODO(peter): We need to wait for the Android Activity to reply to the
-  // launch intent with the ID of the launched Web Contents, so that the Java
-  // side can invoke a method on the native side with the request id and the
-  // WebContents enabling us to invoke |callback|. See https://crbug.com/454809.
+void ServiceTabLauncher::OnTabLaunched(int request_id,
+                                       content::WebContents* web_contents) {
+  TabLaunchedCallback* callback = tab_launched_callbacks_.Lookup(request_id);
+  DCHECK(callback);
+
+  if (callback)
+    callback->Run(web_contents);
+
+  tab_launched_callbacks_.Remove(request_id);
 }
 
 bool ServiceTabLauncher::RegisterServiceTabLauncher(JNIEnv* env) {

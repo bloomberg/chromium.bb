@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -29,6 +30,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.FileProviderHelper;
+import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -244,10 +246,23 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
         if (MemoryPressureListener.handleDebugIntent(this, intent.getAction())) return;
 
         String url = getUrlFromIntent(intent);
-        if (!TextUtils.isEmpty(url)) {
-            ChromeShellTab tab = getActiveTab();
-            if (tab != null) tab.loadUrlWithSanitization(url);
+        if (TextUtils.isEmpty(url)) return;
+
+        if (intent.getBooleanExtra(Browser.EXTRA_CREATE_NEW_TAB, false)) {
+            if (mTabManager == null) return;
+
+            Tab newTab = mTabManager.createTab(url, TabLaunchType.FROM_LINK);
+            if (newTab != null && intent.hasExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA)) {
+                ServiceTabLauncher.onWebContentsForRequestAvailable(
+                        intent.getIntExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, 0),
+                        newTab.getWebContents());
+            }
+
+            return;
         }
+
+        ChromeShellTab tab = getActiveTab();
+        if (tab != null) tab.loadUrlWithSanitization(url);
     }
 
     @Override
