@@ -131,19 +131,6 @@ class SK_API PlatformDevice {
   // have to be created twice.  If src_rect is null, then the entirety of the
   // source device will be copied.
   virtual void DrawToHDC(HDC, int x, int y, const RECT* src_rect);
-    
-#elif defined(OS_MACOSX)
-  // Loads a SkPath into the CG context. The path can there after be used for
-  // clipping or as a stroke.
-  static void LoadPathToCGContext(CGContextRef context, const SkPath& path);
-
-  // Initializes the default settings and colors in a device context.
-  static void InitializeCGContext(CGContextRef context);
-
-  // Loads a SkRegion into the CG context.
-  static void LoadClippingRegionToCGContext(CGContextRef context,
-                                            const SkRegion& region,
-                                            const SkMatrix& transformation);
 #endif
 
  protected:
@@ -161,10 +148,6 @@ class SK_API PlatformDevice {
 
   // Transforms SkPath's paths into a series of cubic path.
   static bool SkPathToCubicPaths(CubicPaths* paths, const SkPath& skpath);
-#elif defined(OS_MACOSX)
-  // Loads the specified Skia transform into the device context
-  static void LoadTransformToCGContext(CGContextRef context,
-                                       const SkMatrix& matrix);
 #endif
 };
 

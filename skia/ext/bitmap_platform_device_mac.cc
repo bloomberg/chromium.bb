@@ -71,6 +71,78 @@ void BitmapPlatformDevice::SetMatrixClip(
   config_dirty_ = true;
 }
 
+// Loads the specified Skia transform into the device context
+static void LoadTransformToCGContext(CGContextRef context,
+                                     const SkMatrix& matrix) {
+  // CoreGraphics can concatenate transforms, but not reset the current one.
+  // So in order to get the required behavior here, we need to first make
+  // the current transformation matrix identity and only then load the new one.
+
+  // Reset matrix to identity.
+  CGAffineTransform orig_cg_matrix = CGContextGetCTM(context);
+  CGAffineTransform orig_cg_matrix_inv =
+      CGAffineTransformInvert(orig_cg_matrix);
+  CGContextConcatCTM(context, orig_cg_matrix_inv);
+
+  // assert that we have indeed returned to the identity Matrix.
+  SkASSERT(CGAffineTransformIsIdentity(CGContextGetCTM(context)));
+
+  // Convert xform to CG-land.
+  // Our coordinate system is flipped to match WebKit's so we need to modify
+  // the xform to match that.
+  SkMatrix transformed_matrix = matrix;
+  SkScalar sy = -matrix.getScaleY();
+  transformed_matrix.setScaleY(sy);
+  size_t height = CGBitmapContextGetHeight(context);
+  SkScalar ty = -matrix.getTranslateY();  // y axis is flipped.
+  transformed_matrix.setTranslateY(ty + (SkScalar)height);
+
+  CGAffineTransform cg_matrix =
+      gfx::SkMatrixToCGAffineTransform(transformed_matrix);
+
+  // Load final transform into context.
+  CGContextConcatCTM(context, cg_matrix);
+}
+
+// Loads a SkRegion into the CG context.
+static void LoadClippingRegionToCGContext(CGContextRef context,
+                                          const SkRegion& region,
+                                          const SkMatrix& transformation) {
+  if (region.isEmpty()) {
+    // region can be empty, in which case everything will be clipped.
+    SkRect rect;
+    rect.setEmpty();
+    CGContextClipToRect(context, gfx::SkRectToCGRect(rect));
+  } else if (region.isRect()) {
+    // CoreGraphics applies the current transform to clip rects, which is
+    // unwanted. Inverse-transform the rect before sending it to CG. This only
+    // works for translations and scaling, but not for rotations (but the
+    // viewport is never rotated anyway).
+    SkMatrix t;
+    bool did_invert = transformation.invert(&t);
+    if (!did_invert)
+      t.reset();
+    // Do the transformation.
+    SkRect rect;
+    rect.set(region.getBounds());
+    t.mapRect(&rect);
+    SkIRect irect;
+    rect.round(&irect);
+    CGContextClipToRect(context, gfx::SkIRectToCGRect(irect));
+  } else {
+    // It is complex.
+    SkPath path;
+    region.getBoundaryPath(&path);
+    // Clip. Note that windows clipping regions are not affected by the
+    // transform so apply it manually.
+    path.transform(transformation);
+    // TODO(playmobil): Implement.
+    SkASSERT(false);
+    // LoadPathToDC(context, path);
+    // hrgn = PathToRegion(context);
+  }
+}
+
 void BitmapPlatformDevice::LoadConfig() {
   if (!config_dirty_ || !bitmap_context_)
     return;  // Nothing to do.
