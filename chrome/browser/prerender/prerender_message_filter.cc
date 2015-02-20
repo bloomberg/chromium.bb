@@ -5,40 +5,60 @@
 #include "chrome/browser/prerender/prerender_message_filter.h"
 
 #include "base/bind.h"
-#include "chrome/browser/browser_process.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/prerender_messages.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
+namespace prerender {
+
 namespace {
 
-void OnChannelClosingInUIThread(Profile* profile, int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return;
-  prerender::PrerenderLinkManager* prerender_link_manager =
-      prerender::PrerenderLinkManagerFactory::GetForProfile(profile);
-  if (!prerender_link_manager)
-    return;
-  prerender_link_manager->OnChannelClosing(render_process_id);
-}
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "PrerenderMessageFilter") {
+    DependsOn(PrerenderLinkManagerFactory::GetInstance());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
 
 }  // namespace
-
-namespace prerender {
 
 PrerenderMessageFilter::PrerenderMessageFilter(int render_process_id,
                                                Profile* profile)
     : BrowserMessageFilter(PrerenderMsgStart),
       render_process_id_(render_process_id),
-      profile_(profile) {
+      prerender_link_manager_(
+          PrerenderLinkManagerFactory::GetForProfile(profile)) {
+  shutdown_notifier_ =
+      ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
+          base::Bind(&PrerenderMessageFilter::ShutdownOnUIThread,
+                     base::Unretained(this)));
 }
 
 PrerenderMessageFilter::~PrerenderMessageFilter() {
+}
+
+// static
+void PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt() {
+  ShutdownNotifierFactory::GetInstance();
 }
 
 bool PrerenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -67,7 +87,7 @@ void PrerenderMessageFilter::OverrideThreadForMessage(
 void PrerenderMessageFilter::OnChannelClosing() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnChannelClosingInUIThread, profile_, render_process_id_));
+      base::Bind(&PrerenderMessageFilter::OnChannelClosingInUIThread, this));
 }
 
 void PrerenderMessageFilter::OnAddPrerender(
@@ -77,11 +97,9 @@ void PrerenderMessageFilter::OnAddPrerender(
     const gfx::Size& size,
     int render_view_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrerenderLinkManager* prerender_link_manager =
-      PrerenderLinkManagerFactory::GetForProfile(profile_);
-  if (!prerender_link_manager)
+  if (!prerender_link_manager_)
     return;
-  prerender_link_manager->OnAddPrerender(
+  prerender_link_manager_->OnAddPrerender(
       render_process_id_, prerender_id,
       attributes.url, attributes.rel_types, referrer,
       size, render_view_route_id);
@@ -90,21 +108,29 @@ void PrerenderMessageFilter::OnAddPrerender(
 void PrerenderMessageFilter::OnCancelPrerender(
     int prerender_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrerenderLinkManager* prerender_link_manager =
-      PrerenderLinkManagerFactory::GetForProfile(profile_);
-  if (!prerender_link_manager)
+  if (!prerender_link_manager_)
     return;
-  prerender_link_manager->OnCancelPrerender(render_process_id_, prerender_id);
+  prerender_link_manager_->OnCancelPrerender(render_process_id_, prerender_id);
 }
 
 void PrerenderMessageFilter::OnAbandonPrerender(
     int prerender_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrerenderLinkManager* prerender_link_manager =
-      PrerenderLinkManagerFactory::GetForProfile(profile_);
-  if (!prerender_link_manager)
+  if (!prerender_link_manager_)
     return;
-  prerender_link_manager->OnAbandonPrerender(render_process_id_, prerender_id);
+  prerender_link_manager_->OnAbandonPrerender(render_process_id_, prerender_id);
+}
+
+void PrerenderMessageFilter::ShutdownOnUIThread() {
+  prerender_link_manager_ = nullptr;
+  shutdown_notifier_.reset();
+}
+
+void PrerenderMessageFilter::OnChannelClosingInUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!prerender_link_manager_)
+    return;
+  prerender_link_manager_->OnChannelClosing(render_process_id_);
 }
 
 }  // namespace prerender

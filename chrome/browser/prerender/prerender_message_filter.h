@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_MESSAGE_FILTER_H_
 
 #include "base/compiler_specific.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "url/gurl.h"
 
@@ -26,9 +27,13 @@ class Message;
 
 namespace prerender {
 
+class PrerenderLinkManager;
+
 class PrerenderMessageFilter : public content::BrowserMessageFilter {
  public:
   PrerenderMessageFilter(int render_process_id, Profile* profile);
+
+  static void EnsureShutdownNotifierFactoryBuilt();
 
  private:
   ~PrerenderMessageFilter() override;
@@ -47,8 +52,15 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   void OnCancelPrerender(int prerender_id);
   void OnAbandonPrerender(int prerender_id);
 
+  void ShutdownOnUIThread();
+
+  void OnChannelClosingInUIThread();
+
   const int render_process_id_;
-  Profile* const profile_;
+
+  PrerenderLinkManager* prerender_link_manager_;
+
+  scoped_ptr<KeyedServiceShutdownNotifier::Subscription> shutdown_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderMessageFilter);
 };

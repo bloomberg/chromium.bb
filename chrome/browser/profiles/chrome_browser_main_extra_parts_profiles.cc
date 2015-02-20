@@ -30,6 +30,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -261,8 +262,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   predictors::AutocompleteActionPredictorFactory::GetInstance();
   predictors::PredictorDatabaseFactory::GetInstance();
   predictors::ResourcePrefetchPredictorFactory::GetInstance();
-  prerender::PrerenderManagerFactory::GetInstance();
   prerender::PrerenderLinkManagerFactory::GetInstance();
+  prerender::PrerenderManagerFactory::GetInstance();
+  prerender::PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt();
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
 #if defined(ENABLE_SESSION_SERVICE)
