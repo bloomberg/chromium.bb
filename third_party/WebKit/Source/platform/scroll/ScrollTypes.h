@@ -160,6 +160,36 @@ enum ScrollbarOverlayStyle {
     ScrollbarOverlayStyleLight
 };
 
+// The result of an attempt to scroll. If didScroll is true, then unusedScrollDelta gives
+// the amount of the scroll delta that was not consumed by scrolling. If didScroll is false
+// then unusedScrollDelta is zero.
+struct ScrollResultOneDimensional {
+    explicit ScrollResultOneDimensional(bool didScroll)
+        : didScroll(didScroll)
+        , unusedScrollDelta(0) { }
+    ScrollResultOneDimensional(bool didScroll, float unusedScrollDelta)
+        : didScroll(didScroll)
+        , unusedScrollDelta(unusedScrollDelta) { }
+
+    bool didScroll;
+    float unusedScrollDelta;
+};
+
+struct ScrollResult {
+    explicit ScrollResult(bool didScroll)
+        : didScroll(didScroll)
+        , unusedScrollDeltaX(0)
+        , unusedScrollDeltaY(0) { }
+    ScrollResult(bool didScroll, float unusedScrollDeltaX, float unusedScrollDeltaY)
+        : didScroll(didScroll)
+        , unusedScrollDeltaX(unusedScrollDeltaX)
+        , unusedScrollDeltaY(unusedScrollDeltaY) { }
+
+    bool didScroll;
+    float unusedScrollDeltaX;
+    float unusedScrollDeltaY;
+};
+
 typedef unsigned ScrollbarControlPartMask;
 
 }

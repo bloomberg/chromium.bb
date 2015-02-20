@@ -114,6 +114,8 @@ public:
     void registerLayersWithTreeView(blink::WebLayerTreeView*) const;
     void clearLayersForTreeView(blink::WebLayerTreeView*) const;
 
+    ScrollResult wheelEvent(const PlatformWheelEvent&);
+
     // The portion of the unzoomed frame visible in the inner "pinch" viewport,
     // in partial CSS pixels. Relative to the main frame.
     FloatRect visibleRect() const;

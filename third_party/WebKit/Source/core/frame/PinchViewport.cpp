@@ -411,6 +411,30 @@ void PinchViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) cons
     layerTreeView->clearViewportLayers();
 }
 
+ScrollResult PinchViewport::wheelEvent(const PlatformWheelEvent& event)
+{
+    FrameView* view = mainFrame()->view();
+    ScrollResult viewScrollResult = view->wheelEvent(event);
+
+    // The virtual viewport will only accept pixel scrolls.
+    if (!event.canScroll() || event.granularity() == ScrollByPageWheelEvent)
+        return viewScrollResult;
+
+    // Move the location by the negative of the remaining scroll delta.
+    FloatPoint oldOffset = m_offset;
+    FloatPoint locationDelta = viewScrollResult.didScroll ?
+        -FloatPoint(viewScrollResult.unusedScrollDeltaX, viewScrollResult.unusedScrollDeltaY) :
+        -FloatPoint(event.deltaX(), event.deltaY());
+    move(locationDelta);
+
+    FloatPoint usedLocationDelta(m_offset - oldOffset);
+    if (!viewScrollResult.didScroll && usedLocationDelta == FloatPoint::zero())
+        return ScrollResult(false);
+
+    FloatPoint unusedLocationDelta(locationDelta - usedLocationDelta);
+    return ScrollResult(true, -unusedLocationDelta.x(), -unusedLocationDelta.y());
+}
+
 bool PinchViewport::shouldUseIntegerScrollOffset() const
 {
     LocalFrame* frame = mainFrame();

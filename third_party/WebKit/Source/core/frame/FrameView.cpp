@@ -2980,17 +2980,17 @@ void FrameView::removeChild(Widget* child)
     m_children.remove(child);
 }
 
-bool FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
+ScrollResult FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     // Note that to allow for rubber-band over-scroll behavior, even non-scrollable views
     // should handle wheel events.
 #if !USE(RUBBER_BANDING)
     if (!isScrollable())
-        return false;
+        return ScrollResult(false);
 #endif
 
     if (m_frame->settings()->rootLayerScrolls())
-        return false;
+        return ScrollResult(false);
 
     return ScrollableArea::handleWheelEvent(wheelEvent);
 }

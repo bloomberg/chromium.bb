@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/DoublePoint.h"
 #include "platform/scroll/ScrollAnimator.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -77,7 +78,7 @@ public:
 
     static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 
-    bool handleWheelEvent(const PlatformWheelEvent&);
+    ScrollResult handleWheelEvent(const PlatformWheelEvent&);
 
     // Functions for controlling if you can scroll past the end of the document.
     bool constrainsScrollingToContentEdge() const { return m_constrainsScrollingToContentEdge; }

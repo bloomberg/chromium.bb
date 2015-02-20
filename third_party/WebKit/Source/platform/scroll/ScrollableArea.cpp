@@ -157,7 +157,7 @@ bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granula
     if (direction == ScrollUp || direction == ScrollLeft)
         delta = -delta;
 
-    return scrollAnimator()->scroll(orientation, granularity, step, delta);
+    return scrollAnimator()->scroll(orientation, granularity, step, delta).didScroll;
 }
 
 void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollBehavior behavior)
@@ -245,11 +245,11 @@ bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, Scro
     return true;
 }
 
-bool ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
+ScrollResult ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     // Wheel events which do not scroll are used to trigger zooming.
     if (!wheelEvent.canScroll())
-        return false;
+        return ScrollResult(false);
 
     cancelProgrammaticScrollAnimation();
     return scrollAnimator()->handleWheelEvent(wheelEvent);

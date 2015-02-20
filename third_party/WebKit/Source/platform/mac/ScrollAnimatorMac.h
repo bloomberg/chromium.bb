@@ -85,11 +85,11 @@ private:
     Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
+    virtual ScrollResultOneDimensional scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
 #if USE(RUBBER_BANDING)
-    virtual bool handleWheelEvent(const PlatformWheelEvent&) override;
+    virtual ScrollResult handleWheelEvent(const PlatformWheelEvent&) override;
 #endif
 
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) override;

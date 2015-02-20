@@ -2035,12 +2035,13 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!view)
         return false;
 
-    if (view->wheelEvent(event))
-        RETURN_WHEEL_EVENT_HANDLED();
-
-    // If the main frame didn't scroll, pass it up to the pinch viewport.
-    if (m_frame->settings()->pinchVirtualViewportEnabled() && m_frame->isMainFrame()) {
-        if (m_frame->page()->frameHost().pinchViewport().handleWheelEvent(event))
+    // If this is the main frame, then the pinch viewport is responsible for
+    // scrolling the frame.
+    if (m_frame->isMainFrame()) {
+        if (m_frame->page()->frameHost().pinchViewport().wheelEvent(event).didScroll)
+            RETURN_WHEEL_EVENT_HANDLED();
+    } else {
+        if (view->wheelEvent(event).didScroll)
             RETURN_WHEEL_EVENT_HANDLED();
     }
 

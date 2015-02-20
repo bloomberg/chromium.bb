@@ -50,17 +50,19 @@ ScrollAnimator::~ScrollAnimator()
 {
 }
 
-bool ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float delta)
+ScrollResultOneDimensional ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float delta)
 {
     float& currentPos = (orientation == HorizontalScrollbar) ? m_currentPosX : m_currentPosY;
     float newPos = clampScrollPosition(orientation, currentPos + step * delta);
     if (currentPos == newPos)
-        return false;
+        return ScrollResultOneDimensional(false);
+
+    float usedDelta = (newPos - currentPos) / step;
     currentPos = newPos;
 
     notifyPositionChanged();
 
-    return true;
+    return ScrollResultOneDimensional(true, delta - usedDelta);
 }
 
 void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
@@ -70,7 +72,7 @@ void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
     notifyPositionChanged();
 }
 
-bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
+ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
 {
     bool canScrollX = m_scrollableArea->userInputScrollable(HorizontalScrollbar);
     bool canScrollY = m_scrollableArea->userInputScrollable(VerticalScrollbar);
@@ -80,7 +82,7 @@ bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
     float deltaX = canScrollX ? e.deltaX() : 0;
     float deltaY = canScrollY ? e.deltaY() : 0;
 
-    bool handled = false;
+    ScrollResult result(false);
 
 #if !OS(MACOSX)
     ScrollGranularity granularity = e.hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
@@ -94,7 +96,7 @@ bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
         || (deltaX > 0 && maxBackwardScrollDelta.width() > 0)
         || (deltaY < 0 && maxForwardScrollDelta.height() > 0)
         || (deltaY > 0 && maxBackwardScrollDelta.height() > 0)) {
-        handled = true;
+        result.didScroll = true;
 
         if (deltaY) {
             if (e.granularity() == ScrollByPageWheelEvent) {
@@ -104,7 +106,15 @@ bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
                     deltaY = -deltaY;
             }
 
-            scroll(VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
+            ScrollResultOneDimensional resultY = scroll(
+                VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
+
+            if (e.granularity() != ScrollByPageWheelEvent) {
+                if (resultY.didScroll)
+                    result.unusedScrollDeltaY = -resultY.unusedScrollDelta;
+                else
+                    result.unusedScrollDeltaY = deltaY;
+            }
         }
 
         if (deltaX) {
@@ -115,10 +125,19 @@ bool ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
                     deltaX = -deltaX;
             }
 
-            scroll(HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
+            ScrollResultOneDimensional resultX = scroll(
+                HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
+
+            if (e.granularity() != ScrollByPageWheelEvent) {
+                if (resultX.didScroll)
+                    result.unusedScrollDeltaX = -resultX.unusedScrollDelta;
+                else
+                    result.unusedScrollDeltaX = deltaX;
+            }
         }
     }
-    return handled;
+
+    return result;
 }
 
 void ScrollAnimator::setCurrentPosition(const FloatPoint& position)

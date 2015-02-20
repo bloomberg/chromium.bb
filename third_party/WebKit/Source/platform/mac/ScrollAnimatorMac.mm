@@ -718,7 +718,7 @@ static bool rubberBandingEnabledForSystem()
 }
 #endif
 
-bool ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
+ScrollResultOneDimensional ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
     m_haveScrolledSincePageLoad = true;
 
@@ -731,7 +731,7 @@ bool ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranulari
     float currentPos = orientation == HorizontalScrollbar ? m_currentPosX : m_currentPosY;
     float newPos = std::max<float>(std::min<float>(currentPos + (step * delta), m_scrollableArea->maximumScrollPosition(orientation)), m_scrollableArea->minimumScrollPosition(orientation));
     if (currentPos == newPos)
-        return false;
+        return ScrollResultOneDimensional(false);
 
     NSPoint newPoint;
     if ([m_scrollAnimationHelper.get() _isAnimating]) {
@@ -741,7 +741,9 @@ bool ScrollAnimatorMac::scroll(ScrollbarOrientation orientation, ScrollGranulari
         newPoint = orientation == HorizontalScrollbar ? NSMakePoint(newPos, m_currentPosY) : NSMakePoint(m_currentPosX, newPos);
 
     [m_scrollAnimationHelper.get() scrollToPoint:newPoint];
-    return true;
+
+    float usedDelta = (newPos - currentPos) / step;
+    return ScrollResultOneDimensional(true, delta - usedDelta);
 }
 
 void ScrollAnimatorMac::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
@@ -1075,7 +1077,7 @@ void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase)
 }
 
 #if USE(RUBBER_BANDING)
-bool ScrollAnimatorMac::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
+ScrollResult ScrollAnimatorMac::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     m_haveScrolledSincePageLoad = true;
 
@@ -1101,7 +1103,9 @@ bool ScrollAnimatorMac::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
     if (didHandleEvent || wheelEvent.phase() == PlatformWheelEventPhaseEnded || wheelEvent.phase() == PlatformWheelEventPhaseCancelled)
         handleWheelEventPhase(wheelEvent.phase());
 
-    return didHandleEvent;
+    // Rubber banding in Blink does not exist anymore, so the fact that this does not compute the unused
+    // scroll deltas does not matter. This code will be deleted soon.
+    return ScrollResult(didHandleEvent);
 }
 
 bool ScrollAnimatorMac::pinnedInDirection(float deltaX, float deltaY)
