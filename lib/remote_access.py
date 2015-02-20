@@ -526,15 +526,20 @@ class RemoteDevice(object):
 
   DEFAULT_BASE_DIR = '/tmp/remote-access'
 
-  def __init__(self, hostname, port=None, username=None,
+  def __init__(self, hostname, port=None, username=None, connect=True,
                base_dir=DEFAULT_BASE_DIR, connect_settings=None,
                private_key=None, debug_level=logging.DEBUG, ping=True):
     """Initializes a RemoteDevice object.
+
+    By default (connect=True), setup ssh connection and working directory on the
+    device. If connect=False, must call Connect() explicitly in order to have
+    ssh connections with the device.
 
     Args:
       hostname: The hostname of the device.
       port: The ssh port of the device.
       username: The ssh login username.
+      connect: Whether to set up the ssh connection on initialization.
       base_dir: The base directory of the working directory on the device.
       connect_settings: Default SSH connection settings.
       private_key: The identify file to pass to `ssh -i`.
@@ -549,24 +554,18 @@ class RemoteDevice(object):
     self.connect_settings = (connect_settings if connect_settings else
                              CompileSSHConnectSettings())
     self.private_key = private_key
-    self.agent = self._SetupSSH()
     self.debug_level = debug_level
-    # Setup a working directory on the device.
+    # The working directory on the device.
     self.base_dir = base_dir
+    self.agent = None
+    self.work_dir = None
+    self.cleanup_cmds = []
 
     if ping and not self.Pingable():
       raise DeviceNotPingable('Device %s is not pingable.' % self.hostname)
 
-    # Do not call RunCommand here because we have not set up work directory yet.
-    self.BaseRunCommand(['mkdir', '-p', self.base_dir])
-    self.work_dir = self.BaseRunCommand(
-        ['mktemp', '-d', '--tmpdir=%s' % base_dir],
-        capture_output=True).output.strip()
-    logging.debug(
-        'The tempory working directory on the device is %s', self.work_dir)
-
-    self.cleanup_cmds = []
-    self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
+    if connect:
+      self.Connect()
 
   def Pingable(self, timeout=20):
     """Returns True if the device is pingable.
@@ -583,10 +582,39 @@ class RemoteDevice(object):
         capture_output=True)
     return result.returncode == 0
 
+  def Connect(self, setup_work_dir=True):
+    """The ssh connection and working directory setup for the device.
+
+    This method must be called in order to have ssh connections with the remote
+    device. And BaseRunCommand() will only be available after this method is
+    called. If |setup_work_dir| is true, a working directory will be setup on
+    the remote device and RunCommand() will also be available after this method
+    is called.
+
+    By default, this method is called in __init__().
+
+    Args:
+      setup_work_dir: Whether to setup working directory on the remote device.
+    """
+    self.agent = self._SetupSSH()
+    if setup_work_dir:
+      self._SetupRemoteWorkDir()
+
   def _SetupSSH(self):
     """Setup the ssh connection with device."""
     return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port,
                         username=self.username, private_key=self.private_key)
+
+  def _SetupRemoteWorkDir(self):
+    """Setup working directory on the remote device."""
+    self.BaseRunCommand(['mkdir', '-p', self.base_dir])
+    self.work_dir = self.BaseRunCommand(
+        ['mktemp', '-d', '--tmpdir=%s' % self.base_dir],
+        capture_output=True).output.strip()
+    logging.debug(
+        'The temporary working directory on the device is %s', self.work_dir)
+
+    self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
 
   def HasRsync(self):
     """Checks if rsync exists on the device."""
