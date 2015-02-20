@@ -1837,3 +1837,29 @@ crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline
 crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
+
+crbug.com/460356 fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
+
+crbug.com/458813 [ XP ] virtual/slimmingpaint/fast/frames/frame-set-scaling-rotate.html [ ImageOnlyFailure ]
+crbug.com/458813 [ XP ] virtual/slimmingpaint/fast/frames/frame-set-scaling-skew.html [ ImageOnlyFailure ]
+crbug.com/458813 [ XP ] virtual/slimmingpaint/fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure ]
+
+crbug.com/460374 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ ImageOnlyFailure ]
+
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/45621.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-2.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug1188.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug4382.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-3.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug59354.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-2.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug4527.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug24200.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug55545.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug51037.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug18359.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
