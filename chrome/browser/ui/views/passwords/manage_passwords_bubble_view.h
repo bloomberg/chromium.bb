@@ -56,6 +56,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   class BlacklistedView;
   class ConfirmNeverView;
   class ManageView;
+  class ManageAccountsView;
   class PendingView;
   class SaveConfirmationView;
   class WebContentMouseHandler;

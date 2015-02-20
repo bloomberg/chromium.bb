@@ -13532,6 +13532,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE" desc="The title of the auto-signin toast.">
         Signing in with Google Smart Lock as '<ph name="FULL_NAME">$1<ex>Brad Pitt</ex></ph>'
       </message>
+      <message name="IDS_MANAGE_PASSWORDS_DELETED_ACCOUNT" desc="The text that is used in the manage accounts bubble when an account is deleted.">
+        Account removed
+      </message>
 
       <message name="IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL" desc="The text for the choice to allow autofilling in about:flags">
         Allow

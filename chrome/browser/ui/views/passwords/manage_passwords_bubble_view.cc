@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
+#include "chrome/browser/ui/views/passwords/manage_credential_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -695,6 +696,40 @@ void ManagePasswordsBubbleView::ManageView::LinkClicked(views::Link* source,
   DCHECK_EQ(source, manage_link_);
   parent_->model()->OnManageLinkClicked();
   parent_->Close();
+}
+
+// ManagePasswordsBubbleView::ManageAccountsView ------------------------------
+
+// A view offering the user a list of his currently saved through the Credential
+// Manager API accounts for the current page.
+class ManagePasswordsBubbleView::ManageAccountsView : public views::View {
+ public:
+   explicit ManageAccountsView(ManagePasswordsBubbleView* parent);
+
+ private:
+   ManagePasswordsBubbleView* parent_;
+};
+
+ManagePasswordsBubbleView::ManageAccountsView::ManageAccountsView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
+  SetLayoutManager(layout);
+
+  // Add the title.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  AddTitleRow(layout, parent_->model());
+
+  for (const autofill::PasswordForm* form :
+           parent_->model()->local_pending_credentials()) {
+    // Add the title to the layout with appropriate padding.
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->AddView(new ManageCredentialItemView(parent_->model(), form));
+  }
+
+  // Extra padding for visual awesomeness.
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
 // ManagePasswordsBubbleView::BlacklistedView ---------------------------------
