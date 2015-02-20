@@ -30,39 +30,36 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 
-struct PerformTaskContext {
-    WTF_MAKE_NONCOPYABLE(PerformTaskContext); WTF_MAKE_FAST_ALLOCATED;
+class MainThreadTask : public WebThread::Task {
+    WTF_MAKE_NONCOPYABLE(MainThreadTask); WTF_MAKE_FAST_ALLOCATED;
 public:
-    PerformTaskContext(WeakPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
+    MainThreadTask(WeakPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
         : m_runner(runner)
         , m_task(task)
         , m_isInspectorTask(isInspectorTask)
     {
     }
 
+    void run() override;
+
+private:
     WeakPtr<MainThreadTaskRunner> m_runner;
     OwnPtr<ExecutionContextTask> m_task;
     bool m_isInspectorTask;
-
-    static void didReceiveTask(void* untypedContext);
 };
 
-void PerformTaskContext::didReceiveTask(void* untypedContext)
+void MainThreadTask::run()
 {
     ASSERT(isMainThread());
 
-    OwnPtr<PerformTaskContext> self = adoptPtr(static_cast<PerformTaskContext*>(untypedContext));
-    ASSERT(self);
-
-    MainThreadTaskRunner* runner = self->m_runner.get();
-    if (!runner)
+    if (!m_runner.get())
         return;
-    runner->perform(self->m_task.release(), self->m_isInspectorTask);
+    m_runner->perform(m_task.release(), m_isInspectorTask);
 }
 
 MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
@@ -77,16 +74,16 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 {
 }
 
-void MainThreadTaskRunner::postTask(PassOwnPtr<ExecutionContextTask> task)
+void MainThreadTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
     if (!task->taskNameForInstrumentation().isEmpty())
         InspectorInstrumentation::didPostExecutionContextTask(m_context, task.get());
-    callOnMainThread(PerformTaskContext::didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task, false));
+    Platform::current()->mainThread()->postTask(location, new MainThreadTask(m_weakFactory.createWeakPtr(), task, false));
 }
 
-void MainThreadTaskRunner::postInspectorTask(PassOwnPtr<ExecutionContextTask> task)
+void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    callOnMainThread(PerformTaskContext::didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task, true));
+    Platform::current()->mainThread()->postTask(location, new MainThreadTask(m_weakFactory.createWeakPtr(), task, true));
 }
 
 void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)

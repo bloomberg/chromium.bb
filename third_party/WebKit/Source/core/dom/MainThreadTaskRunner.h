@@ -50,8 +50,8 @@ public:
 
     ~MainThreadTaskRunner();
 
-    void postTask(PassOwnPtr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
-    void postInspectorTask(PassOwnPtr<ExecutionContextTask>);
+    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
+    void postInspectorTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
     void perform(PassOwnPtr<ExecutionContextTask>, bool);
 
     void suspend();

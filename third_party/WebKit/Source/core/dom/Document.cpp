@@ -4900,7 +4900,7 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
 void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     if (!isContextThread()) {
-        m_taskRunner->postTask(AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
+        m_taskRunner->postTask(FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
     }
 
@@ -4921,12 +4921,12 @@ void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleM
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
 void Document::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postTask(task);
+    m_taskRunner->postTask(FROM_HERE, task);
 }
 
 void Document::postInspectorTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postInspectorTask(task);
+    m_taskRunner->postInspectorTask(FROM_HERE, task);
 }
 
 void Document::tasksWereSuspended()
@@ -5475,7 +5475,7 @@ void Document::setAutofocusElement(Element* element)
     m_hasAutofocused = true;
     ASSERT(!m_autofocusElement);
     m_autofocusElement = element;
-    m_taskRunner->postTask(AutofocusTask::create());
+    m_taskRunner->postTask(FROM_HERE, AutofocusTask::create());
 }
 
 Element* Document::activeElement() const
