@@ -60,13 +60,12 @@ leveldb::Status MakeIOError(leveldb::Slice filename,
 enum ErrorParsingResult {
   METHOD_ONLY,
   METHOD_AND_PFE,
-  METHOD_AND_ERRNO,
   NONE,
 };
 
 ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
                                        MethodID* method,
-                                       int* error);
+                                       base::File::Error* error);
 int GetCorruptionCode(const leveldb::Status& status);
 int GetNumCorruptionCodes();
 std::string GetCorruptionMessage(const leveldb::Status& status);

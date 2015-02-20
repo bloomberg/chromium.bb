@@ -31,10 +31,10 @@ TEST(ErrorEncoding, OnlyAMethod) {
   const MethodID in_method = leveldb_env::kSequentialFileRead;
   const Status s = MakeIOError("Somefile.txt", "message", in_method);
   MethodID method;
-  int error = -75;
+  base::File::Error error = base::File::FILE_ERROR_MAX;
   EXPECT_EQ(leveldb_env::METHOD_ONLY, ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(in_method, method);
-  EXPECT_EQ(-75, error);
+  EXPECT_EQ(base::File::FILE_ERROR_MAX, error);
 }
 
 TEST(ErrorEncoding, FileError) {
@@ -42,7 +42,7 @@ TEST(ErrorEncoding, FileError) {
   const base::File::Error fe = base::File::FILE_ERROR_INVALID_OPERATION;
   const Status s = MakeIOError("Somefile.txt", "message", in_method, fe);
   MethodID method;
-  int error;
+  base::File::Error error;
   EXPECT_EQ(leveldb_env::METHOD_AND_PFE,
             ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(in_method, method);
@@ -52,10 +52,10 @@ TEST(ErrorEncoding, FileError) {
 TEST(ErrorEncoding, NoEncodedMessage) {
   Status s = Status::IOError("Some message", "from leveldb itself");
   MethodID method = leveldb_env::kRandomAccessFileRead;
-  int error = 4;
+  base::File::Error error = base::File::FILE_ERROR_MAX;
   EXPECT_EQ(leveldb_env::NONE, ParseMethodAndError(s, &method, &error));
   EXPECT_EQ(leveldb_env::kRandomAccessFileRead, method);
-  EXPECT_EQ(4, error);
+  EXPECT_EQ(base::File::FILE_ERROR_MAX, error);
 }
 
 template <typename T>

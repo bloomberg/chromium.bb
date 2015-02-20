@@ -183,7 +183,7 @@ static int CheckFreeSpace(const char* const type,
 static void ParseAndHistogramIOErrorDetails(const std::string& histogram_name,
                                             const leveldb::Status& s) {
   leveldb_env::MethodID method;
-  int error = -1;
+  base::File::Error error = base::File::FILE_OK;
   leveldb_env::ErrorParsingResult result =
       leveldb_env::ParseMethodAndError(s, &method, &error);
   if (result == leveldb_env::NONE)
@@ -209,15 +209,6 @@ static void ParseAndHistogramIOErrorDetails(const std::string& histogram_name,
         -base::File::FILE_ERROR_MAX,
         -base::File::FILE_ERROR_MAX + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag)->Add(-error);
-  } else if (result == leveldb_env::METHOD_AND_ERRNO) {
-    error_histogram_name.append(std::string(".Errno.") +
-                                leveldb_env::MethodIDToString(method));
-    base::LinearHistogram::FactoryGet(
-        error_histogram_name,
-        1,
-        ERANGE + 1,
-        ERANGE + 2,
-        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(error);
   }
 }
 

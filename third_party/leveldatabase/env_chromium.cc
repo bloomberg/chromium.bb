@@ -412,7 +412,7 @@ Status MakeIOError(Slice filename,
 
 ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
                                        MethodID* method_param,
-                                       int* error) {
+                                       base::File::Error* error) {
   const std::string status_string = status.ToString();
   int method;
   if (RE2::PartialMatch(status_string.c_str(), "ChromeMethodOnly: (\\d+)",
@@ -420,18 +420,15 @@ ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
     *method_param = static_cast<MethodID>(method);
     return METHOD_ONLY;
   }
+  int parsed_error;
   if (RE2::PartialMatch(status_string.c_str(),
                         "ChromeMethodPFE: (\\d+)::.*::(\\d+)", &method,
-                        error)) {
-    *error = -*error;
+                        &parsed_error)) {
     *method_param = static_cast<MethodID>(method);
+    *error = static_cast<base::File::Error>(-parsed_error);
+    DCHECK_LT(*error, base::File::FILE_OK);
+    DCHECK_GT(*error, base::File::FILE_ERROR_MAX);
     return METHOD_AND_PFE;
-  }
-  if (RE2::PartialMatch(status_string.c_str(),
-                        "ChromeMethodErrno: (\\d+)::.*::(\\d+)", &method,
-                        error)) {
-    *method_param = static_cast<MethodID>(method);
-    return METHOD_AND_ERRNO;
   }
   return NONE;
 }
@@ -507,13 +504,12 @@ bool IndicatesDiskFull(const leveldb::Status& status) {
   if (status.ok())
     return false;
   leveldb_env::MethodID method;
-  int error = -1;
+  base::File::Error error = base::File::FILE_OK;
   leveldb_env::ErrorParsingResult result =
       leveldb_env::ParseMethodAndError(status, &method, &error);
   return (result == leveldb_env::METHOD_AND_PFE &&
           static_cast<base::File::Error>(error) ==
-              base::File::FILE_ERROR_NO_SPACE) ||
-         (result == leveldb_env::METHOD_AND_ERRNO && error == ENOSPC);
+              base::File::FILE_ERROR_NO_SPACE);
 }
 
 bool ChromiumEnv::MakeBackup(const std::string& fname) {
