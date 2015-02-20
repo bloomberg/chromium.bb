@@ -251,6 +251,10 @@ bool Trap::TrapKey::operator<(const TrapKey& o) const {
   }
 }
 
+uint16_t Trap::MakeTrap(TrapFnc fnc, const void* aux, bool safe) {
+  return Registry()->Add(fnc, aux, safe);
+}
+
 uint16_t Trap::Add(TrapFnc fnc, const void* aux, bool safe) {
   if (!safe && !SandboxDebuggingAllowedByUser()) {
     // Unless the user set the CHROME_SANDBOX_DEBUGGING environment variable,
@@ -349,9 +353,13 @@ uint16_t Trap::Add(TrapFnc fnc, const void* aux, bool safe) {
   return id;
 }
 
-bool Trap::SandboxDebuggingAllowedByUser() {
+bool Trap::SandboxDebuggingAllowedByUser() const {
   const char* debug_flag = getenv(kSandboxDebuggingEnv);
   return debug_flag && *debug_flag;
+}
+
+bool Trap::EnableUnsafeTrapsInSigSysHandler() {
+  return Registry()->EnableUnsafeTraps();
 }
 
 bool Trap::EnableUnsafeTraps() {
