@@ -53,18 +53,10 @@ remoting.onVisibilityChanged = function() {
  * @return {void} Nothing.
  */
 remoting.disconnect = function() {
-  if (!remoting.desktopConnectedView) {
+  if (!remoting.clientSession) {
     return;
   }
-  if (remoting.desktopConnectedView.getMode() ==
-      remoting.DesktopConnectedView.Mode.IT2ME) {
-    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
-  } else {
-    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
-  }
-  remoting.app.onDisconnected();
-  remoting.clientSession = null;
-  remoting.desktopConnectedView = null;
+  remoting.clientSession.disconnect(remoting.Error.NONE);
   console.log('Disconnected.');
 };
 
@@ -111,6 +103,7 @@ function onClientStateChange_(state) {
                                              onClientStateChange_);
   remoting.clientSession.cleanup();
   remoting.clientSession = null;
+  remoting.desktopConnectedView = null;
 }
 
 /**
