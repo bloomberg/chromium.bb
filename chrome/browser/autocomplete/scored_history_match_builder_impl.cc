@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -124,6 +126,10 @@ void InitDaysAgoToRecencyScoreArray() {
 int ScoredHistoryMatchBuilderImpl::bookmark_value_ = 1;
 bool ScoredHistoryMatchBuilderImpl::allow_tld_matches_ = false;
 bool ScoredHistoryMatchBuilderImpl::allow_scheme_matches_ = false;
+bool ScoredHistoryMatchBuilderImpl::hqp_experimental_scoring_enabled_ = false;
+float ScoredHistoryMatchBuilderImpl::topicality_threshold_ = -1;
+std::vector<ScoredHistoryMatchBuilderImpl::ScoreMaxRelevance>*
+    ScoredHistoryMatchBuilderImpl::hqp_relevance_buckets_ = NULL;
 
 ScoredHistoryMatchBuilderImpl::ScoredHistoryMatchBuilderImpl(
     const IsBookmarkedCallback& is_bookmarked)
@@ -247,7 +253,8 @@ history::ScoredHistoryMatch ScoredHistoryMatchBuilderImpl::Build(
   const float frequency_score = GetFrequency(
       now, (!is_bookmarked_.is_null() && is_bookmarked_.Run(gurl)), visits);
   scored_history_match.raw_score = base::saturated_cast<int>(
-      GetFinalRelevancyScore(topicality_score, frequency_score));
+      GetFinalRelevancyScore(topicality_score, frequency_score,
+                             *hqp_relevance_buckets_));
 
   if (kAlsoDoHupLikeScoring && scored_history_match.can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
@@ -384,6 +391,7 @@ void ScoredHistoryMatchBuilderImpl::Init() {
 
   InitRawTermScoreToTopicalityScoreArray();
   InitDaysAgoToRecencyScoreArray();
+  InitHQPExperimentalParams();
 }
 
 // static
@@ -522,7 +530,15 @@ float ScoredHistoryMatchBuilderImpl::GetTopicalityScore(
   // TODO(mpearson): If there are multiple terms, consider taking the
   // geometric mean of per-term scores rather than the arithmetic mean.
 
-  return topicality_score / num_terms;
+  const float final_topicality_score = topicality_score / num_terms;
+
+  // Demote the URL if the topicality score is less than threshold.
+  if (hqp_experimental_scoring_enabled_ &&
+      (final_topicality_score < topicality_threshold_)) {
+    return 0.0;
+  }
+
+  return final_topicality_score;
 }
 
 // static
@@ -566,7 +582,11 @@ float ScoredHistoryMatchBuilderImpl::GetFrequency(
 // static
 float ScoredHistoryMatchBuilderImpl::GetFinalRelevancyScore(
     float topicality_score,
-    float frequency_score) {
+    float frequency_score,
+    const std::vector<ScoreMaxRelevance>& hqp_relevance_buckets) {
+  DCHECK(hqp_relevance_buckets.size() > 0);
+  DCHECK_EQ(hqp_relevance_buckets[0].first, 0.0);
+
   if (topicality_score == 0)
     return 0;
   // Here's how to interpret intermediate_score: Suppose the omnibox
@@ -582,25 +602,93 @@ float ScoredHistoryMatchBuilderImpl::GetFinalRelevancyScore(
   // - a typed visit once a week -> 11.77
   // - a typed visit every three days -> 14.12
   // - at least ten typed visits today -> 20.0 (maximum score)
-  const float intermediate_score = topicality_score * frequency_score;
+  //
   // The below code maps intermediate_score to the range [0, 1399].
-  // The score maxes out at 1400 (i.e., cannot beat a good inline result).
-  if (intermediate_score <= 1) {
-    // Linearly extrapolate between 0 and 1.5 so 0 has a score of 400
-    // and 1.5 has a score of 600.
-    const float slope = (600 - 400) / (1.5f - 0.0f);
-    return 400 + slope * intermediate_score;
+  // For example:
+  // HQP default scoring buckets: "0.0:400,1.5:600,12.0:1300,20.0:1399"
+  // We will linearly interpolate the scores between:
+  //      0 to 1.5    --> 400 to 600
+  //    1.5 to 12.0   --> 600 to 1300
+  //    12.0 to 20.0  --> 1300 to 1399
+  //       >= 20.0    --> 1399
+  //
+  // The score maxes out at 1399 (i.e., cannot beat a good inlineable result
+  // from HistoryURL provider).
+  const float intermediate_score = topicality_score * frequency_score;
+
+  // Find the threshold where intermediate score is greater than bucket.
+  size_t i = 1;
+  for (; i < hqp_relevance_buckets.size(); ++i) {
+    const ScoreMaxRelevance& hqp_bucket = hqp_relevance_buckets[i];
+    if (intermediate_score >= hqp_bucket.first) {
+      continue;
+    }
+    const ScoreMaxRelevance& previous_bucket = hqp_relevance_buckets[i-1];
+    const float slope = ((hqp_bucket.second - previous_bucket.second) /
+                         (hqp_bucket.first - previous_bucket.first));
+    return (previous_bucket.second +
+            (slope * (intermediate_score - previous_bucket.first)));
   }
-  if (intermediate_score <= 12.0) {
-    // Linearly extrapolate up to 12 so 12 has a score of 1300.
-    const float slope = (1300 - 600) / (12.0f - 1.5f);
-    return 600 + slope * (intermediate_score - 1.5);
+  // It will reach this stage when the score is > highest bucket score.
+  // Return the highest bucket score.
+  return hqp_relevance_buckets[i-1].second;
+}
+
+// static
+void ScoredHistoryMatchBuilderImpl::InitHQPExperimentalParams() {
+  // These are default HQP relevance scoring buckets.
+  // See GetFinalRelevancyScore() for details.
+  std::string hqp_relevance_buckets_str = "0.0:400,1.5:600,12.0:1300,20.0:1399";
+
+  // Fetch the experiment params if they are any.
+  hqp_experimental_scoring_enabled_ =
+    OmniboxFieldTrial::HQPExperimentalScoringEnabled();
+
+  if (hqp_experimental_scoring_enabled_) {
+    // Add the topicality threshold from experiment params.
+    float hqp_experimental_topicality_threhold =
+      OmniboxFieldTrial::HQPExperimentalTopicalityThreshold();
+      topicality_threshold_ = hqp_experimental_topicality_threhold;
+
+    // Add the HQP experimental scoring buckets.
+    std::string hqp_experimental_scoring_buckets =
+      OmniboxFieldTrial::HQPExperimentalScoringBuckets();
+    if (!hqp_experimental_scoring_buckets.empty())
+      hqp_relevance_buckets_str = hqp_experimental_scoring_buckets;
   }
-  // Linearly extrapolate so a score of 20 (or more) has a score of 1399.
-  // (Scores above 20 are possible for URLs that have multiple term hits
-  // in the URL and/or title and that are visited practically all
-  // the time using typed visits.  We don't attempt to distinguish
-  // between these very good results.)
-  const float slope = (1399 - 1300) / (20.0f - 12.0f);
-  return std::min(1399.0, 1300 + slope * (intermediate_score - 12.0));
+
+  // Parse the hqp_relevance_buckets_str string once and store them in vector
+  // which is easy to access.
+  hqp_relevance_buckets_ =
+      new std::vector<ScoredHistoryMatchBuilderImpl::ScoreMaxRelevance>();
+
+  bool is_valid_bucket_str = GetHQPBucketsFromString(hqp_relevance_buckets_str,
+                                                     hqp_relevance_buckets_);
+  DCHECK(is_valid_bucket_str);
+}
+
+// static
+bool ScoredHistoryMatchBuilderImpl::GetHQPBucketsFromString(
+    const std::string& buckets_str,
+    std::vector<ScoreMaxRelevance>* hqp_buckets) {
+  DCHECK(hqp_buckets != NULL);
+  DCHECK(!buckets_str.empty());
+
+  base::StringPairs kv_pairs;
+  if (base::SplitStringIntoKeyValuePairs(buckets_str,
+                                         ':', ',', &kv_pairs)) {
+    for (base::StringPairs::const_iterator it = kv_pairs.begin();
+         it != kv_pairs.end(); ++it) {
+      ScoreMaxRelevance bucket;
+      bool is_valid_intermediate_score = base::StringToDouble(it->first,
+                                                              &bucket.first);
+      DCHECK(is_valid_intermediate_score);
+      bool is_valid_hqp_score = base::StringToInt(it->second,
+                                                  &bucket.second);
+      DCHECK(is_valid_hqp_score);
+      hqp_buckets->push_back(bucket);
+    }
+    return true;
+  }
+  return false;
 }

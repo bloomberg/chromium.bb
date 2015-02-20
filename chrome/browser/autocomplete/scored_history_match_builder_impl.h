@@ -36,6 +36,12 @@ class ScoredHistoryMatchBuilderImpl
   // support being called multiple times.
   typedef base::Callback<bool(const GURL& url)> IsBookmarkedCallback;
 
+  // ScoreMaxRelevance maps from an intermediate-score to the maximum
+  // final-relevance score given to a URL for this intermediate score.
+  // This is used to store the score ranges of HQP relevance buckets.
+  // Please see GetFinalRelevancyScore() for details.
+  typedef std::pair<double, int> ScoreMaxRelevance;
+
   explicit ScoredHistoryMatchBuilderImpl(
       const IsBookmarkedCallback& is_bookmarked);
   ~ScoredHistoryMatchBuilderImpl() override;
@@ -65,6 +71,10 @@ class ScoredHistoryMatchBuilderImpl
 
  private:
   friend class ScoredHistoryMatchBuilderImplTest;
+  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchBuilderImplTest,
+                           GetFinalRelevancyScore);
+  FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchBuilderImplTest,
+                           GetHQPBucketsFromString);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchBuilderImplTest, ScoringBookmarks);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchBuilderImplTest, ScoringScheme);
   FRIEND_TEST_ALL_PREFIXES(ScoredHistoryMatchBuilderImplTest, ScoringTLD);
@@ -98,9 +108,28 @@ class ScoredHistoryMatchBuilderImpl
                             const history::VisitInfoVector& visits);
 
   // Combines the two component scores into a final score that's
-  // an appropriate value to use as a relevancy score.
-  static float GetFinalRelevancyScore(float topicality_score,
-                                      float frequency_score);
+  // an appropriate value to use as a relevancy score. Scoring buckets are
+  // specified through |hqp_relevance_buckets|. Please see the function
+  // implementation for more details.
+  static float GetFinalRelevancyScore(
+      float topicality_score,
+      float frequency_score,
+      const std::vector<ScoreMaxRelevance>& hqp_relevance_buckets);
+
+  // Initializes the HQP experimental params: |hqp_relevance_buckets_|
+  // to default buckets. If hqp experimental scoring is enabled, it
+  // fetches the |hqp_experimental_scoring_enabled_|, |topicality_threshold_|
+  // and |hqp_relevance_buckets_| from omnibox field trials.
+  static void InitHQPExperimentalParams();
+
+  // Helper function to parse the string containing the scoring buckets.
+  // For example,
+  // String: "0.0:400,1.5:600,12.0:1300,20.0:1399"
+  // Buckets: vector[(0.0, 400),(1.5,600),(12.0,1300),(20.0,1399)]
+  // Returns false, in case if it fail to parse the string.
+  static bool GetHQPBucketsFromString(
+      const std::string& buckets_str,
+      std::vector<ScoreMaxRelevance>* hqp_buckets);
 
   // Untyped visits to bookmarked pages score this, compared to 1 for
   // untyped visits to non-bookmarked pages and 20 for typed visits.
@@ -115,6 +144,19 @@ class ScoredHistoryMatchBuilderImpl
   // The IsBookmarkedCallback to use to check whether an URL is bookmarked. May
   // be unset during testing.
   IsBookmarkedCallback is_bookmarked_;
+
+  // True, if hqp experimental scoring is enabled.
+  static bool hqp_experimental_scoring_enabled_;
+
+  // |topicality_threshold_| is used to control the topicality scoring.
+  // If |topicality_threshold_| > 0, then URLs with topicality-score < threshold
+  // are given topicality score of 0. By default it is initalized to -1.
+  static float topicality_threshold_;
+
+  // |hqp_relevance_buckets_| gives mapping from (topicality*frequency)
+  // to the final relevance scoring. Please see GetFinalRelevancyScore()
+  // for more details and scoring method.
+  static std::vector<ScoreMaxRelevance>* hqp_relevance_buckets_;
 
   DISALLOW_COPY_AND_ASSIGN(ScoredHistoryMatchBuilderImpl);
 };
