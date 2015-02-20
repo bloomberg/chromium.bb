@@ -38,13 +38,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -170,26 +165,24 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->domain_reliability_monitor_)
     io_data_->domain_reliability_monitor_->MoveToNetworkThread();
 
-  ChromeNetLog* const net_log = g_browser_process->io_thread()->net_log();
-
-  io_data_->set_data_reduction_proxy_io_data(
-      CreateDataReductionProxyChromeIOData(
-          net_log, profile_, profile_->GetPrefs(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::UI)).Pass());
-
   // TODO(tbansal): Move this to IO thread once the data reduction proxy
   // params are unified into a single object.
   bool enable_quic_for_data_reduction_proxy =
       IOThread::ShouldEnableQuicForDataReductionProxy();
 
+  io_data_->set_data_reduction_proxy_io_data(
+      CreateDataReductionProxyChromeIOData(
+          g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          enable_quic_for_data_reduction_proxy)
+          .Pass());
+
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)->
-      InitDataReductionProxySettings(io_data_->data_reduction_proxy_io_data(),
-                                     profile_->GetPrefs(),
-                                     g_browser_process->local_state(),
-                                     profile_->GetRequestContext(),
-                                     enable_quic_for_data_reduction_proxy);
+      InitDataReductionProxySettings(
+          io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
+          profile_->GetRequestContext(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
 }
 
 content::ResourceContext*
@@ -464,8 +457,6 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_transport_security_state(transport_security_state());
 
   main_context->set_net_log(io_thread->net_log());
-
-  data_reduction_proxy_io_data()->Init();
 
   network_delegate_ = data_reduction_proxy_io_data()->CreateNetworkDelegate(
       chrome_network_delegate.Pass(), true).Pass();

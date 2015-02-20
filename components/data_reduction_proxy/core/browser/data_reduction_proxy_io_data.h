@@ -20,10 +20,10 @@ class URLRequestInterceptor;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
-class DataReductionProxyParams;
-class DataReductionProxySettings;
+class DataReductionProxyService;
 class DataReductionProxyStatisticsPrefs;
 class DataReductionProxyUsageStats;
 
@@ -31,25 +31,18 @@ class DataReductionProxyUsageStats;
 // the IO thread.
 class DataReductionProxyIOData {
  public:
-  // Constructs a DataReductionProxyIOData object and takes ownership of
-  // |params| and |statistics_prefs|. |params| contains information about the
-  // DNS names used by the proxy, and allowable configurations.
-  // |statistics_prefs| maintains compression statistics during use of the
-  // proxy. |settings| provides a UI hook to signal when the proxy is
-  // unavailable. Only |statistics_prefs.get()| may be null.
+  // Constructs a DataReductionProxyIOData object. |param_flags| is used to
+  // set information about the DNS names used by the proxy, and allowable
+  // configurations.
   DataReductionProxyIOData(
       const Client& client,
-      scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
-      DataReductionProxySettings* settings,
+      int param_flags,
       net::NetLog* net_log,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      bool enable_quic);
 
   virtual ~DataReductionProxyIOData();
-
-  // Initializes IOData objects on the IO thread. Must be called before using
-  // members.
-  void Init();
 
   // Initializes preferences, including a preference to track whether the
   // Data Reduction Proxy is enabled.
@@ -58,11 +51,9 @@ class DataReductionProxyIOData {
   // Destroys the statistics preferences.
   void ShutdownOnUIThread();
 
-  void SetDataReductionProxyStatisticsPrefs(
-      base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs);
-
-  // Passes ownership of |statistics_prefs_|.
-  scoped_ptr<DataReductionProxyStatisticsPrefs> PassStatisticsPrefs();
+  // Sets the Data Reduction Proxy service after it has been created.
+  void SetDataReductionProxyService(
+      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
@@ -83,6 +74,10 @@ class DataReductionProxyIOData {
     return configurator_.get();
   }
 
+  DataReductionProxyConfig* config() const {
+    return config_.get();
+  }
+
   DataReductionProxyEventStore* event_store() const {
     return event_store_.get();
   }
@@ -99,13 +94,13 @@ class DataReductionProxyIOData {
     return net_log_;
   }
 
+  base::WeakPtr<DataReductionProxyService> service() const {
+    return service_;
+  }
+
   // Used for testing.
   DataReductionProxyUsageStats* usage_stats() const {
     return usage_stats_.get();
-  }
-
-  DataReductionProxyParams* params() const {
-    return params_.get();
   }
 
   DataReductionProxyDebugUIService* debug_ui_service() const {
@@ -127,14 +122,7 @@ class DataReductionProxyIOData {
   Client client_;
 
   // Parameters including DNS names and allowable configurations.
-  scoped_ptr<DataReductionProxyParams> params_;
-
-  // Tracker of compression statistics to be displayed to the user.
-  base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
-
-  // |temporary_statistics_prefs_| is used only until DataReductionProxySettings
-  // initialization and is dead after.
-  scoped_ptr<DataReductionProxyStatisticsPrefs> temporary_statistics_prefs_;
+  scoped_ptr<DataReductionProxyConfig> config_;
 
   // Holds the DataReductionProxyDebugUIManager for Data Reduction Proxy bypass
   // interstitials.
@@ -150,8 +138,8 @@ class DataReductionProxyIOData {
   // request.
   scoped_ptr<DataReductionProxyDelegate> proxy_delegate_;
 
-  // User-facing settings object.
-  DataReductionProxySettings* settings_;
+  // Data Reduction Proxy objects with a UI based lifetime.
+  base::WeakPtr<DataReductionProxyService> service_;
 
   // Tracker of various metrics to be reported in UMA.
   scoped_ptr<DataReductionProxyUsageStats> usage_stats_;
@@ -168,8 +156,6 @@ class DataReductionProxyIOData {
 
   // Used
   bool shutdown_on_ui_;
-  bool initialized_;
-  bool network_delegate_created_;
 
   // Preference that determines if the Data Reduction Proxy has been enabled
   // by the user. In practice, this can be overridden by the command line.

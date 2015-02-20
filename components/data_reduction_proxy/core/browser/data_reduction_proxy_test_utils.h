@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,14 +35,28 @@ class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
 class TestDataReductionProxyConfigurator;
 
+// Test version of |DataReductionProxyService|, which permits mocking of various
+// methods.
+class MockDataReductionProxyService : public DataReductionProxyService {
+ public:
+  MockDataReductionProxyService(
+      scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
+      DataReductionProxySettings* settings,
+      net::URLRequestContextGetter* request_context);
+  ~MockDataReductionProxyService() override;
+
+  MOCK_METHOD2(CheckProbeURL,
+      void(const GURL& probe_url, FetcherResponseCallback fetcher_callback));
+};
+
 // Test version of |DataReductionProxyIOData|, which bypasses initialization in
 // the constructor in favor of explicitly passing in its owned classes. This
 // permits the use of test/mock versions of those classes.
 class TestDataReductionProxyIOData : public DataReductionProxyIOData {
  public:
   TestDataReductionProxyIOData(
-      DataReductionProxySettings* settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_ptr<TestDataReductionProxyConfig> config,
       scoped_ptr<DataReductionProxyEventStore> event_store,
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
       scoped_ptr<DataReductionProxyConfigurator> configurator);
@@ -49,10 +64,6 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
 
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
-  }
-
-  TestDataReductionProxyParams* test_params() const {
-    return reinterpret_cast<TestDataReductionProxyParams*>(params_.get());
   }
 };
 
@@ -93,9 +104,9 @@ class DataReductionProxyTestContext {
   // |SKIP_SETTINGS_INITIALIZATION| was specified.
   void InitSettings();
 
-  // Creates a |DataReductionProxyStatisticsPrefs| object. Can only be called if
+  // Creates a |MockDataReductionProxyService| object. Can only be called if
   // |SKIP_SETTINGS_INITIALIZATION| was specified.
-  scoped_ptr<DataReductionProxyStatisticsPrefs> CreateStatisticsPrefs();
+  scoped_ptr<MockDataReductionProxyService> CreateDataReductionProxyService();
 
   // Returns the underlying |TestDataReductionProxyConfigurator|. This can only
   // be called if |USE_TEST_CONFIGURATOR| was specified.
@@ -105,9 +116,9 @@ class DataReductionProxyTestContext {
   // called if |USE_MOCK_CONFIG| was specified.
   MockDataReductionProxyConfig* mock_config() const;
 
-  // Returns the underlying |DataReductionProxyStatisticsPrefs|. This can only
+  // Returns the underlying |MockDataReductionProxyService|. This can only
   // be called if |SKIP_SETTINGS_INITIALIZATION| was not specified.
-  DataReductionProxyStatisticsPrefs* statistics_prefs() const;
+  MockDataReductionProxyService* data_reduction_proxy_service() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
     return task_runner_;
@@ -134,8 +145,7 @@ class DataReductionProxyTestContext {
   }
 
   TestDataReductionProxyConfig* config() const {
-    return reinterpret_cast<TestDataReductionProxyConfig*>(
-        settings_->config_.get());
+    return reinterpret_cast<TestDataReductionProxyConfig*>(io_data_->config());
   }
 
   TestDataReductionProxyIOData* io_data() const {
@@ -159,7 +169,7 @@ class DataReductionProxyTestContext {
   scoped_ptr<TestDataReductionProxyIOData> io_data_;
   scoped_ptr<DataReductionProxySettings> settings_;
 
-  DataReductionProxyStatisticsPrefs* statistics_prefs_pointer_;
+  MockDataReductionProxyService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyTestContext);
 };

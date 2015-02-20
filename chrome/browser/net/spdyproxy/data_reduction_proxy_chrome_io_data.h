@@ -15,14 +15,8 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace content {
-class BrowserContext;
-}
-
 namespace data_reduction_proxy {
-class DataReductionProxyConfigurator;
 class DataReductionProxyIOData;
-class DataReductionProxySettings;
 }
 
 namespace net {
@@ -34,9 +28,9 @@ class NetLog;
 scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(
     net::NetLog* net_log,
-    content::BrowserContext* browser_context,
     PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_runner);
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_runner,
+    bool enable_quic);
 
 #endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_IO_DATA_H_

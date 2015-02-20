@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
@@ -47,47 +48,71 @@ void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
 namespace data_reduction_proxy {
 
 DataReductionProxyConfig::DataReductionProxyConfig(
-    scoped_ptr<DataReductionProxyParams> params)
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    net::NetLog* net_log,
+    scoped_ptr<DataReductionProxyParams> params,
+    DataReductionProxyConfigurator* configurator,
+    DataReductionProxyEventStore* event_store)
     : restricted_by_carrier_(false),
       disabled_on_vpn_(false),
       unreachable_(false),
       enabled_by_user_(false),
       alternative_enabled_by_user_(false),
-      net_log_(nullptr),
-      url_request_context_getter_(nullptr),
-      configurator_(nullptr),
-      event_store_(nullptr) {
-  params_.reset(params.release());
+      params_(params.release()),
+      io_task_runner_(io_task_runner),
+      ui_task_runner_(ui_task_runner),
+      net_log_(net_log),
+      configurator_(configurator),
+      event_store_(event_store) {
+  DCHECK(io_task_runner);
+  DCHECK(ui_task_runner);
+  DCHECK(configurator);
+  DCHECK(event_store);
+  InitOnIOThread();
 }
 
 DataReductionProxyConfig::~DataReductionProxyConfig() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void DataReductionProxyConfig::InitDataReductionProxyConfig(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    net::URLRequestContextGetter* url_request_context_getter,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventStore* event_store) {
-  DCHECK(io_task_runner);
-  DCHECK(configurator);
-  DCHECK(event_store);
-  DCHECK(io_task_runner->BelongsToCurrentThread());
-  io_task_runner_ = io_task_runner;
-  net_log_ = net_log;
-  url_request_context_getter_ = url_request_context_getter;
-  configurator_ = configurator;
-  event_store_ = event_store;
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+void DataReductionProxyConfig::SetDataReductionProxyService(
+    base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
+  data_reduction_proxy_service_ = data_reduction_proxy_service;
 }
 
-void DataReductionProxyConfig::SetProxyConfigs(bool enabled,
-                                               bool alternative_enabled,
-                                               bool restricted,
-                                               bool at_startup) {
-  DCHECK(configurator_);
+void DataReductionProxyConfig::SetProxyPrefs(bool enabled,
+                                             bool alternative_enabled,
+                                             bool at_startup) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DataReductionProxyConfig::SetProxyConfigOnIOThread,
+                            base::Unretained(this), enabled,
+                            alternative_enabled, at_startup));
+}
 
+void DataReductionProxyConfig::SetProxyConfigOnIOThread(
+    bool enabled, bool alternative_enabled, bool at_startup) {
+  enabled_by_user_ = enabled;
+  alternative_enabled_by_user_ = alternative_enabled;
+  UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
+                     restricted_by_carrier_, at_startup);
+
+  // Check if the proxy has been restricted explicitly by the carrier.
+  if (enabled &&
+      !(alternative_enabled && !params()->alternative_fallback_allowed())) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartProbe,
+                              base::Unretained(this)));
+  }
+}
+
+void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
+                                                  bool alternative_enabled,
+                                                  bool restricted,
+                                                  bool at_startup) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(configurator_);
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
@@ -126,11 +151,17 @@ void DataReductionProxyConfig::LogProxyState(bool enabled,
                << (at_startup ? kAtStartup : kByUser);
 }
 
-void DataReductionProxyConfig::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK(source == fetcher_.get());
-  net::URLRequestStatus status = source->GetStatus();
+void DataReductionProxyConfig::HandleProbeResponse(
+    const std::string& response, const net::URLRequestStatus& status) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyConfig::HandleProbeResponseOnIOThread,
+                 base::Unretained(this), response, status));
+}
 
+void DataReductionProxyConfig::HandleProbeResponseOnIOThread(
+    const std::string& response, const net::URLRequestStatus& status) {
   if (event_store_) {
     event_store_->EndCanaryRequest(bound_net_log_, status.error());
   }
@@ -147,9 +178,6 @@ void DataReductionProxyConfig::OnURLFetchComplete(
                                 std::abs(status.error()));
   }
 
-  std::string response;
-  source->GetResponseAsString(&response);
-
   if ("OK" == response.substr(0, 2)) {
     DVLOG(1) << "The data reduction proxy is unrestricted.";
 
@@ -159,8 +187,8 @@ void DataReductionProxyConfig::OnURLFetchComplete(
         // the network operator had blocked the canary and restricted the user.
         // The current network doesn't block the canary, so don't restrict the
         // proxy configurations.
-        SetProxyConfigs(true /* enabled */, false /* alternative_enabled */,
-                        false /* restricted */, false /* at_startup */);
+        UpdateConfigurator(true /* enabled */, false /* alternative_enabled */,
+                           false /* restricted */, false /* at_startup */);
         RecordProbeURLFetchResult(SUCCEEDED_PROXY_ENABLED);
       } else {
         RecordProbeURLFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
@@ -174,8 +202,8 @@ void DataReductionProxyConfig::OnURLFetchComplete(
   if (enabled_by_user_) {
     if (!restricted_by_carrier_) {
       // Restrict the proxy.
-      SetProxyConfigs(true /* enabled */, false /* alternative_enabled */,
-                      true /* restricted */, false /* at_startup */);
+      UpdateConfigurator(true /* enabled */, false /* alternative_enabled */,
+                         true /* restricted */, false /* at_startup */);
       RecordProbeURLFetchResult(FAILED_PROXY_DISABLED);
     } else {
       RecordProbeURLFetchResult(FAILED_PROXY_ALREADY_DISABLED);
@@ -185,6 +213,7 @@ void DataReductionProxyConfig::OnURLFetchComplete(
 }
 
 void DataReductionProxyConfig::OnIPAddressChanged() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (enabled_by_user_) {
     DCHECK(params()->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
@@ -194,8 +223,26 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
         !params()->alternative_fallback_allowed()) {
       return;
     }
-    ProbeWhetherDataReductionProxyIsAvailable();
+
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::StartProbe,
+                              base::Unretained(this)));
   }
+}
+
+void DataReductionProxyConfig::InitOnIOThread() {
+  if (!io_task_runner_->BelongsToCurrentThread()) {
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DataReductionProxyConfig::InitOnIOThread,
+                              base::Unretained(this)));
+    return;
+  }
+
+  if (!params_->allowed())
+    return;
+
+  AddDefaultProxyBypassRules();
+  net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
 void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
@@ -230,33 +277,19 @@ void DataReductionProxyConfig::RecordProbeURLFetchResult(
                             PROBE_URL_FETCH_RESULT_COUNT);
 }
 
-net::URLFetcher* DataReductionProxyConfig::GetURLFetcherForProbe() {
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(params_->probe_url(), net::URLFetcher::GET, this);
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
-  DCHECK(url_request_context_getter_);
-  fetcher->SetRequestContext(url_request_context_getter_);
-  // Configure max retries to be at most kMaxRetries times for 5xx errors.
-  static const int kMaxRetries = 5;
-  fetcher->SetMaxRetriesOn5xx(kMaxRetries);
-  fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
-  return fetcher;
-}
-
-void DataReductionProxyConfig::ProbeWhetherDataReductionProxyIsAvailable() {
-  net::URLFetcher* fetcher = GetURLFetcherForProbe();
-  if (!fetcher)
-    return;
-  fetcher_.reset(fetcher);
-
+void DataReductionProxyConfig::StartProbe() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
-  if (event_store_) {
-    event_store_->BeginCanaryRequest(bound_net_log_,
-                                     fetcher_->GetOriginalURL());
-  }
+  if (data_reduction_proxy_service_) {
+    if (event_store_)
+      event_store_->BeginCanaryRequest(bound_net_log_, params_->probe_url());
 
-  fetcher_->Start();
+    data_reduction_proxy_service_->CheckProbeURL(
+        params_->probe_url(),
+        base::Bind(&DataReductionProxyConfig::HandleProbeResponse,
+                   base::Unretained(this)));
+  }
 }
 
 void DataReductionProxyConfig::GetNetworkList(
@@ -278,15 +311,15 @@ bool DataReductionProxyConfig::DisableIfVPN() {
             interface_name.begin(),
             interface_name.begin() + vpn_interface_name_prefix.size(),
             vpn_interface_name_prefix.c_str())) {
-      SetProxyConfigs(false, alternative_enabled_by_user_, false, false);
+      UpdateConfigurator(false, alternative_enabled_by_user_, false, false);
       disabled_on_vpn_ = true;
       RecordNetworkChangeEvent(DISABLED_ON_VPN);
       return true;
     }
   }
   if (disabled_on_vpn_) {
-    SetProxyConfigs(enabled_by_user_, alternative_enabled_by_user_,
-                    restricted_by_carrier_, false);
+    UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
+                       restricted_by_carrier_, false);
   }
   disabled_on_vpn_ = false;
   return false;

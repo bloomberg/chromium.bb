@@ -18,8 +18,8 @@ using data_reduction_proxy::DataReductionProxySettings;
 class DataReductionProxyChromeSettingsTest : public testing::Test {
  public:
   void SetUp() override {
-    drp_chrome_settings_ = make_scoped_ptr(new DataReductionProxyChromeSettings(
-        make_scoped_ptr(new DataReductionProxyParams(0))));
+    drp_chrome_settings_ =
+        make_scoped_ptr(new DataReductionProxyChromeSettings());
     dict_ = make_scoped_ptr(new DictionaryValue());
     mock_pref_service_ = make_scoped_ptr(new TestingPrefServiceSimple());
 

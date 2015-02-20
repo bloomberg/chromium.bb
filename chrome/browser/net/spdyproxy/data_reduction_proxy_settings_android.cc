@@ -31,12 +31,12 @@ DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyAllowed(
     JNIEnv* env, jobject obj) {
-  return Settings()->params()->allowed();
+  return Settings()->Allowed();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyPromoAllowed(
     JNIEnv* env, jobject obj) {
-  return Settings()->params()->promo_allowed();
+  return Settings()->PromoAllowed();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsIncludedInAltFieldTrial(
@@ -47,7 +47,7 @@ jboolean DataReductionProxySettingsAndroid::IsIncludedInAltFieldTrial(
 ScopedJavaLocalRef<jstring>
 DataReductionProxySettingsAndroid::GetDataReductionProxyOrigin(
     JNIEnv* env, jobject obj) {
-  return ConvertUTF8ToJavaString(env, Settings()->params()->origin().ToURI());
+  return ConvertUTF8ToJavaString(env, Settings()->PrimaryOrigin());
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(

@@ -32,6 +32,7 @@ class WebContents;
 namespace data_reduction_proxy {
 class DataReductionProxyConfigurator;
 class DataReductionProxyIOData;
+class DataReductionProxyService;
 class DataReductionProxySettings;
 }
 
@@ -94,9 +95,6 @@ class AwBrowserContext : public content::BrowserContext,
   data_reduction_proxy::DataReductionProxyIOData*
       GetDataReductionProxyIOData();
 
-  data_reduction_proxy::DataReductionProxyConfigurator*
-      GetDataReductionProxyConfigurator();
-
   AwURLRequestContextGetter* GetAwURLRequestContext();
 
   void CreateUserPrefServiceIfNecessary();
@@ -157,6 +155,8 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
+  scoped_ptr<data_reduction_proxy::DataReductionProxyService>
+      data_reduction_proxy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

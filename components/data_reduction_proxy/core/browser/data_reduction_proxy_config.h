@@ -13,7 +13,6 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -21,8 +20,7 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class NetLog;
-class URLFetcher;
-class URLRequestContextGetter;
+class URLRequestStatus;
 }
 
 namespace data_reduction_proxy {
@@ -30,6 +28,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyParams;
+class DataReductionProxyService;
 
 // Values of the UMA DataReductionProxy.ProbeURL histogram.
 // This enum must remain synchronized with
@@ -61,45 +60,43 @@ enum ProbeURLFetchResult {
 // This object lives on the IO thread and all of its methods are expected to be
 // called from there.
 class DataReductionProxyConfig
-    : public net::URLFetcherDelegate,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+    : public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  // DataReductionProxyConfig will take ownership of |params|.
-  DataReductionProxyConfig(scoped_ptr<DataReductionProxyParams> params);
-  ~DataReductionProxyConfig() override;
-
-  // Initializes the Data Reduction Proxy config with an |io_task_runner|,
-  // |net_log|, a |UrlRequestContextGetter| for canary probes, a
-  // |DataReductionProxyConfigurator| for setting the proxy configuration, and a
-  // |DataReductionProxyEventStore| for logging event changes. The caller must
-  // ensure that all parameters remain alive for the lifetime of the
-  // |DataReductionProxyConfig| instance.
-  void InitDataReductionProxyConfig(
+  // The caller must ensure that all parameters remain alive for the lifetime
+  // of the |DataReductionProxyConfig| instance, with the exception of |params|
+  // which this instance will own.
+  DataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       net::NetLog* net_log,
-      net::URLRequestContextGetter* url_request_context_getter,
+      scoped_ptr<DataReductionProxyParams> params,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventStore* event_store);
+  ~DataReductionProxyConfig() override;
 
   // Returns the underlying |DataReductionProxyParams| instance.
   DataReductionProxyParams* params() const {
     return params_.get();
   }
 
- protected:
-  // Virtualized for testing. Returns a fetcher for the probe to check if OK for
-  // the proxy to use TLS.
-  virtual net::URLFetcher* GetURLFetcherForProbe();
+  void SetDataReductionProxyService(
+      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
+  // This method expects to run on the UI thread. It permits the data reduction
+  // proxy configuration to change based on changes initiated by the user.
+  virtual void SetProxyPrefs(bool enabled,
+                             bool alternative_enabled,
+                             bool at_startup);
+
+ protected:
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled| and |alternative_enabled|. Use the alternative
   // configuration only if |enabled| and |alternative_enabled| are true. If
   // |restricted| is true, only enable the fallback proxy. |at_startup| is true
   // when this method is called from InitDataReductionProxySettings.
-  virtual void SetProxyConfigs(bool enabled,
-                               bool alternative_enabled,
-                               bool restricted,
-                               bool at_startup);
+  void SetProxyConfigOnIOThread(bool enabled,
+                                bool alternative_enabled,
+                                bool at_startup);
 
   // Writes a warning to the log that is used in backend processing of
   // customer feedback. Virtual so tests can mock it for verification.
@@ -116,26 +113,38 @@ class DataReductionProxyConfig
 
  private:
   friend class DataReductionProxyConfigTest;
+  friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestOnIPAddressChanged);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, TestSetProxyConfigs);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestSetProxyConfigsHoldback);
-
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
 
+  // Performs initialization on the IO thread.
+  void InitOnIOThread();
+
+  // Updates the Data Reduction Proxy configurator with the current config.
+  virtual void UpdateConfigurator(bool enabled,
+                                  bool alternative_enabled,
+                                  bool restricted,
+                                  bool at_startup);
+
+  // Begins a probe request to determine if the Data Reduction Proxy is
+  // permitted to use the HTTPS proxy servers.
+  void StartProbe();
+
+  // Parses the probe responses and appropriately configures the Data Reduction
+  // Proxy rules.
+  virtual void HandleProbeResponse(const std::string& response,
+                                   const net::URLRequestStatus& status);
+  virtual void HandleProbeResponseOnIOThread(
+      const std::string& response, const net::URLRequestStatus& status);
+
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
   void AddDefaultProxyBypassRules();
-
-  // Requests the proxy probe URL, if one is set.  If unable to do so, disables
-  // the proxy, if enabled. Otherwise enables the proxy if disabled by a probe
-  // failure.
-  void ProbeWhetherDataReductionProxyIsAvailable();
 
   // Disables use of the Data Reduction Proxy on VPNs. Returns true if the
   // Data Reduction Proxy has been disabled.
@@ -154,6 +163,10 @@ class DataReductionProxyConfig
   // IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
+  // |ui_task_runner_| should be the task runner for running operations on the
+  // UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
   // It is used to create new instances of |bound_net_log_| on canary
   // requests. |bound_net_log_| permits the correlation of the begin and end
@@ -161,9 +174,6 @@ class DataReductionProxyConfig
   // canary check (with |net_log_| as a parameter).
   net::NetLog* net_log_;
   net::BoundNetLog bound_net_log_;
-
-  // Used to retrieve a URLRequestContext for performing the canary check.
-  net::URLRequestContextGetter* url_request_context_getter_;
 
   // The caller must ensure that the |configurator_| outlives this instance.
   DataReductionProxyConfigurator* configurator_;
@@ -173,8 +183,10 @@ class DataReductionProxyConfig
 
   base::ThreadChecker thread_checker_;
 
-  // The URLFetcher being used for the canary check.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  // A weak pointer to a |DataReductionProxyService| to perform probe requests.
+  // The weak pointer is required since the |DataReductionProxyService| is
+  // destroyed before this instance of the |DataReductionProxyConfig|.
+  base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);
 };

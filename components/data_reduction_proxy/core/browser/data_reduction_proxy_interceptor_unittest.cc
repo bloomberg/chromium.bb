@@ -190,10 +190,10 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
         DataReductionProxyTestContext::DEFAULT_TEST_CONTEXT_OPTIONS));
     std::string spec;
     base::TrimString(proxy_.GetURL("/").spec(), "/", &spec);
-    test_context_->io_data()->test_params()->set_origin(
+    test_context_->config()->test_params()->set_origin(
         net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP));
     std::string proxy_name =
-        test_context_->io_data()->params()->origin().ToURI();
+        test_context_->config()->params()->origin().ToURI();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
             "PROXY " + proxy_name + "; DIRECT"));

@@ -13,9 +13,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/net_log.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
@@ -54,13 +52,6 @@ namespace data_reduction_proxy {
 class DataReductionProxyIODataTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_ptr<TestDataReductionProxyParams> params;
-    params.reset(new TestDataReductionProxyParams(
-        TestDataReductionProxyParams::kAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING &
-            ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-            ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
-    settings_.reset(new DataReductionProxySettings(params.Pass()));
     RegisterSimpleProfilePrefs(prefs_.registry());
   }
 
@@ -88,39 +79,24 @@ class DataReductionProxyIODataTest : public testing::Test {
     return &prefs_;
   }
 
-  DataReductionProxySettings* settings() const {
-    return settings_.get();
-  }
-
  private:
   base::MessageLoopForIO loop_;
   net::TestDelegate delegate_;
   net::TestURLRequestContext context_;
   net::NetLog net_log_;
   TestingPrefServiceSimple prefs_;
-  scoped_ptr<DataReductionProxySettings> settings_;
 };
 
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
-  DataReductionProxyStatisticsPrefs* statistics_prefs =
-      new DataReductionProxyStatisticsPrefs(
-          prefs(), message_loop_proxy(), base::TimeDelta());
-  scoped_ptr<DataReductionProxyIOData> io_data(
-      new DataReductionProxyIOData(
-          Client::UNKNOWN, make_scoped_ptr(statistics_prefs), settings(),
-          net_log(), message_loop_proxy(), message_loop_proxy()));
-  settings()->SetDataReductionProxyStatisticsPrefs(
-      io_data->PassStatisticsPrefs());
+  scoped_ptr<DataReductionProxyIOData> io_data(new DataReductionProxyIOData(
+      Client::UNKNOWN, DataReductionProxyParams::kAllowed, net_log(),
+      message_loop_proxy(), message_loop_proxy(), false /* enable_quic */));
 
   // Check that io_data creates an interceptor. Such an interceptor is
   // thoroughly tested by DataReductionProxyInterceptoTest.
   scoped_ptr<net::URLRequestInterceptor> interceptor =
       io_data->CreateInterceptor();
   EXPECT_NE(nullptr, interceptor.get());
-
-  // At this point io_data->statistics_prefs() should be set and compression
-  // statistics logging should be enabled.
-  EXPECT_EQ(statistics_prefs, settings()->statistics_prefs().get());
 
   // When creating a network delegate, expect that it properly wraps a
   // network delegate. Such a network delegate is thoroughly tested by

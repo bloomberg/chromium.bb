@@ -5,17 +5,24 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace net {
-class URLFetcher;
+class NetLog;
 }
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfigurator;
+class DataReductionProxyEventStore;
 class TestDataReductionProxyParams;
 
 // Test version of |DataReductionProxyConfig|, which uses an underlying
@@ -24,12 +31,14 @@ class TestDataReductionProxyParams;
 // change the underlying state.
 class TestDataReductionProxyConfig : public DataReductionProxyConfig {
  public:
-  // Creates a default |TestDataReductionProxyConfig| which uses the following
-  // |DataReductionProxyParams| flags:
-  // kAllowed | kFallbackAllowed | kPromoAllowed
-  TestDataReductionProxyConfig();
-  // Creates a |TestDataReductionProxyConfig| with the provided |flags|.
-  TestDataReductionProxyConfig(int flags);
+  // Creates a |TestDataReductionProxyConfig| with the provided |params_flags|.
+  TestDataReductionProxyConfig(
+      int params_flags,
+      unsigned int params_definitions,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      net::NetLog* net_log,
+      DataReductionProxyConfigurator* configurator,
+      DataReductionProxyEventStore* event_store);
   ~TestDataReductionProxyConfig() override;
 
   void GetNetworkList(net::NetworkInterfaceList* interfaces,
@@ -59,20 +68,32 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 // testing.
 class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
  public:
-  // Creates a |MockDataReductionProxyConfig| with the provided |flags|.
-  MockDataReductionProxyConfig(int flags);
-  ~MockDataReductionProxyConfig() override;
+  // Creates a |MockDataReductionProxyConfig| with the provided |params_flags|.
+  MockDataReductionProxyConfig(
+      int params_flags,
+      unsigned int params_definitions,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      net::NetLog* net_log,
+      DataReductionProxyConfigurator* configurator,
+      DataReductionProxyEventStore* event_store);
+  ~MockDataReductionProxyConfig();
 
-  MOCK_METHOD0(GetURLFetcherForProbe, net::URLFetcher*());
   MOCK_METHOD1(RecordProbeURLFetchResult, void(ProbeURLFetchResult result));
   MOCK_METHOD3(LogProxyState,
                void(bool enabled, bool restricted, bool at_startup));
+  MOCK_METHOD3(SetProxyPrefs,
+               void(bool enabled, bool alternative_enabled, bool at_startup));
 
-  // SetProxyConfigs should always call LogProxyState exactly once.
-  void SetProxyConfigs(bool enabled,
-                       bool alternative_enabled,
-                       bool restricted,
-                       bool at_startup) override;
+  // UpdateConfigurator should always call LogProxyState exactly once.
+  void UpdateConfigurator(bool enabled,
+                          bool alternative_enabled,
+                          bool restricted,
+                          bool at_startup) override;
+
+  // HandleProbeResponse should always call RecordProbeURLFetchResult exactly
+  // once.
+  void HandleProbeResponse(const std::string& response,
+                           const net::URLRequestStatus& status) override;
 };
 
 }  // namespace data_reduction_proxy

@@ -6,17 +6,17 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 
@@ -26,28 +26,11 @@ using testing::Return;
 
 namespace {
 
-const char kProbeURLWithOKResponse[] = "http://ok.org/";
-
 const char kProxy[] = "proxy";
 
 }  // namespace
 
 namespace data_reduction_proxy {
-
-namespace {
-
-ProbeURLFetchResult FetchResult(bool enabled, bool success) {
-  if (enabled) {
-    if (success)
-      return SUCCEEDED_PROXY_ALREADY_ENABLED;
-    return FAILED_PROXY_DISABLED;
-  }
-  if (success)
-    return SUCCEEDED_PROXY_ENABLED;
-  return FAILED_PROXY_ALREADY_DISABLED;
-}
-
-}  // namespace
 
 DataReductionProxySettingsTestBase::DataReductionProxySettingsTestBase()
     : testing::Test() {
@@ -57,7 +40,17 @@ DataReductionProxySettingsTestBase::~DataReductionProxySettingsTestBase() {}
 
 // testing::Test implementation:
 void DataReductionProxySettingsTestBase::SetUp() {
-  PrefRegistrySimple* registry = pref_service_.registry();
+  test_context_.reset(new DataReductionProxyTestContext(
+      DataReductionProxyParams::kAllowed |
+          DataReductionProxyParams::kFallbackAllowed |
+          DataReductionProxyParams::kPromoAllowed,
+      TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+          ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN,
+      DataReductionProxyTestContext::USE_MOCK_CONFIG |
+          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION));
+
+  PrefRegistrySimple* registry = test_context_->pref_service()->registry();
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterListPref(prefs::kDailyHttpReceivedContentLength);
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate,
@@ -68,16 +61,12 @@ void DataReductionProxySettingsTestBase::SetUp() {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
 
-  event_store_.reset(new DataReductionProxyEventStore(
-      scoped_refptr<base::TestSimpleTaskRunner>(
-          new base::TestSimpleTaskRunner())));
-
   //AddProxyToCommandLine();
   ResetSettings(true, true, false, true, false);
 
-  ListPrefUpdate original_update(&pref_service_,
+  ListPrefUpdate original_update(test_context_->pref_service(),
                                  prefs::kDailyHttpOriginalContentLength);
-  ListPrefUpdate received_update(&pref_service_,
+  ListPrefUpdate received_update(test_context_->pref_service(),
                                  prefs::kDailyHttpReceivedContentLength);
   for (int64 i = 0; i < kNumDaysInHistory; i++) {
     original_update->Insert(0,
@@ -85,24 +74,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
     received_update->Insert(0, new base::StringValue(base::Int64ToString(i)));
   }
   last_update_time_ = base::Time::Now().LocalMidnight();
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs(
-      new DataReductionProxyStatisticsPrefs(
-          &pref_service_,
-          scoped_refptr<base::TestSimpleTaskRunner>(
-              new base::TestSimpleTaskRunner()),
-              base::TimeDelta()));
-  statistics_prefs->SetInt64(
+  settings_->data_reduction_proxy_service()->statistics_prefs()->SetInt64(
       prefs::kDailyHttpContentLengthLastUpdateDate,
       last_update_time_.ToInternalValue());
-  settings_->SetDataReductionProxyStatisticsPrefs(
-        statistics_prefs.Pass());
-  expected_params_.reset(new TestDataReductionProxyParams(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING &
-      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN));
 }
 
 template <class C>
@@ -123,20 +97,19 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   if (holdback)
     flags |= DataReductionProxyParams::kHoldback;
   MockDataReductionProxySettings<C>* settings =
-      new MockDataReductionProxySettings<C>(flags);
+      new MockDataReductionProxySettings<C>();
+  settings->config_ = test_context_->config();
+  settings->data_reduction_proxy_service_ =
+      test_context_->CreateDataReductionProxyService();
+  test_context_->config()->ResetParamFlagsForTest(flags);
+  settings->UpdateConfigValues();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
       .Times(AnyNumber())
-      .WillRepeatedly(Return(&pref_service_));
+      .WillRepeatedly(Return(test_context_->pref_service()));
   EXPECT_CALL(*settings, GetLocalStatePrefs())
       .Times(AnyNumber())
-      .WillRepeatedly(Return(&pref_service_));
-  EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
-  EXPECT_CALL(*settings, LogProxyState(_, _, _)).Times(0);
+      .WillRepeatedly(Return(test_context_->pref_service()));
   settings_.reset(settings);
-  configurator_.reset(new TestDataReductionProxyConfigurator(
-      scoped_refptr<base::TestSimpleTaskRunner>(
-          new base::TestSimpleTaskRunner()), &net_log_, event_store_.get()));
-  settings_->configurator_ = configurator_.get();
 }
 
 // Explicitly generate required instantiations.
@@ -148,146 +121,44 @@ DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>(
     bool promo_allowed,
     bool holdback);
 
-template <class C>
-void DataReductionProxySettingsTestBase::SetProbeResult(
-    const std::string& test_url,
-    const std::string& response,
-    ProbeURLFetchResult result,
-    bool success,
-    int expected_calls)  {
-  MockDataReductionProxySettings<C>* settings =
-      static_cast<MockDataReductionProxySettings<C>*>(settings_.get());
-  if (0 == expected_calls) {
-    EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck()).Times(0);
-    EXPECT_CALL(*settings, RecordProbeURLFetchResult(_)).Times(0);
-  } else {
-    EXPECT_CALL(*settings, RecordProbeURLFetchResult(result)).Times(1);
-    EXPECT_CALL(*settings, GetURLFetcherForAvailabilityCheck())
-        .Times(expected_calls)
-        .WillRepeatedly(Return(new net::FakeURLFetcher(
-            GURL(test_url),
-            settings,
-            response,
-            success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR,
-            success ? net::URLRequestStatus::SUCCESS :
-                      net::URLRequestStatus::FAILED)));
-  }
-}
-
-// Explicitly generate required instantiations.
-template void
-DataReductionProxySettingsTestBase::SetProbeResult<DataReductionProxySettings>(
-    const std::string& test_url,
-    const std::string& response,
-    ProbeURLFetchResult result,
-    bool success,
-    int expected_calls);
-
-void DataReductionProxySettingsTestBase::CheckProxyConfigs(
+void DataReductionProxySettingsTestBase::ExpectSetProxyPrefs(
     bool expected_enabled,
-    bool expected_restricted,
-    bool expected_fallback_restricted) {
-  TestDataReductionProxyConfigurator* config =
-      static_cast<TestDataReductionProxyConfigurator*>(
-          settings_->configurator_);
-  ASSERT_EQ(expected_restricted, config->restricted());
-  ASSERT_EQ(expected_fallback_restricted, config->fallback_restricted());
-  ASSERT_EQ(expected_enabled, config->enabled());
-}
-
-void DataReductionProxySettingsTestBase::CheckProbe(
-    bool initially_enabled,
-    const std::string& probe_url,
-    const std::string& response,
-    bool request_succeeded,
-    bool expected_enabled,
-    bool expected_restricted,
-    bool expected_fallback_restricted) {
-  pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled,
-                           initially_enabled);
-  if (initially_enabled)
-    settings_->enabled_by_user_ = true;
-  settings_->restricted_by_carrier_ = false;
-  SetProbeResult(probe_url,
-                 response,
-                 FetchResult(initially_enabled,
-                             request_succeeded && (response == "OK")),
-                 request_succeeded,
-                 initially_enabled ? 1 : 0);
-  settings_->MaybeActivateDataReductionProxy(false);
-  base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(expected_enabled,
-                    expected_restricted,
-                    expected_fallback_restricted);
-}
-
-void DataReductionProxySettingsTestBase::CheckProbeOnIPChange(
-    const std::string& probe_url,
-    const std::string& response,
-    bool request_succeeded,
-    bool expected_restricted,
-    bool expected_fallback_restricted) {
-  SetProbeResult(probe_url,
-                 response,
-                 FetchResult(!settings_->restricted_by_carrier_,
-                             request_succeeded && (response == "OK")),
-                 request_succeeded,
-                 1);
-  settings_->OnIPAddressChanged();
-  base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(true, expected_restricted, expected_fallback_restricted);
+    bool expected_alternate_enabled,
+    bool expected_at_startup) {
+  MockDataReductionProxyConfig* config =
+      static_cast<MockDataReductionProxyConfig*>(test_context_->config());
+  EXPECT_CALL(*config,
+              SetProxyPrefs(expected_enabled, expected_alternate_enabled,
+                            expected_at_startup));
 }
 
 void DataReductionProxySettingsTestBase::CheckOnPrefChange(
     bool enabled,
     bool expected_enabled,
     bool managed) {
-  // Always have a sucessful probe for pref change tests.
-  SetProbeResult(kProbeURLWithOKResponse,
-                 "OK",
-                 FetchResult(enabled, true),
-                 true,
-                 expected_enabled ? 1 : 0);
+  ExpectSetProxyPrefs(expected_enabled, false, false);
   if (managed) {
-    pref_service_.SetManagedPref(prefs::kDataReductionProxyEnabled,
-                                 new base::FundamentalValue(enabled));
+    test_context_->pref_service()->SetManagedPref(
+        prefs::kDataReductionProxyEnabled, new base::FundamentalValue(enabled));
   } else {
-    pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, enabled);
+    test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                              enabled);
   }
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
   // Never expect the proxy to be restricted for pref change tests.
-  CheckProxyConfigs(expected_enabled, false, false);
 }
 
 void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
-  base::MessageLoopForUI loop;
-  scoped_ptr<DataReductionProxyConfigurator> configurator(
-      new TestDataReductionProxyConfigurator(
-          scoped_refptr<base::TestSimpleTaskRunner>(
-              new base::TestSimpleTaskRunner()), &net_log_,
-              event_store_.get()));
-  settings_->SetProxyConfigurator(configurator.get());
-  scoped_refptr<net::TestURLRequestContextGetter> request_context =
-      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
-
-  // Delete statistics prefs, otherwise the DCHECK in
-  // InitDataReductionProxySettings fails.
-  settings_->SetDataReductionProxyStatisticsPrefs(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>());
   settings_->InitDataReductionProxySettings(
-      &pref_service_,
-      scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
-      request_context.get(),
-      &net_log_,
-      event_store_.get(),
-      false);
+      test_context_->pref_service(), test_context_->io_data(),
+      test_context_->CreateDataReductionProxyService());
   settings_->SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxySettingsTestBase::
                  RegisterSyntheticFieldTrialCallback,
                  base::Unretained(this)));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
   EXPECT_EQ(enabled_at_startup, proxy_enabled_);
 }
 

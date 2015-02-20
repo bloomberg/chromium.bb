@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -75,7 +76,6 @@ class DataReductionProxyConfigTest : public testing::Test {
     if (holdback)
       flags |= DataReductionProxyParams::kHoldback;
     config()->ResetParamFlagsForTest(flags);
-    EXPECT_CALL(*config(), GetURLFetcherForProbe()).Times(0);
     EXPECT_CALL(*config(), LogProxyState(_, _, _)).Times(0);
   }
 
@@ -85,17 +85,9 @@ class DataReductionProxyConfigTest : public testing::Test {
                       bool success,
                       int expected_calls) {
     if (0 == expected_calls) {
-      EXPECT_CALL(*config(), GetURLFetcherForProbe()).Times(0);
       EXPECT_CALL(*config(), RecordProbeURLFetchResult(_)).Times(0);
     } else {
       EXPECT_CALL(*config(), RecordProbeURLFetchResult(result)).Times(1);
-      EXPECT_CALL(*config(), GetURLFetcherForProbe())
-          .Times(expected_calls)
-          .WillRepeatedly(Return(new net::FakeURLFetcher(
-              GURL(test_url), config(), response,
-              success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR,
-              success ? net::URLRequestStatus::SUCCESS
-                      : net::URLRequestStatus::FAILED)));
     }
   }
 
@@ -108,6 +100,16 @@ class DataReductionProxyConfigTest : public testing::Test {
     ASSERT_EQ(expected_enabled, configurator()->enabled());
   }
 
+  class TestResponder {
+   public:
+    void ExecuteCallback(FetcherResponseCallback callback) {
+      callback.Run(response, status);
+    }
+
+    std::string response;
+    net::URLRequestStatus status;
+  };
+
   void CheckProbeOnIPChange(const std::string& probe_url,
                             const std::string& response,
                             bool request_succeeded,
@@ -117,6 +119,16 @@ class DataReductionProxyConfigTest : public testing::Test {
                    FetchResult(!config()->restricted_by_carrier_,
                                request_succeeded && (response == "OK")),
                    request_succeeded, 1);
+    MockDataReductionProxyService* service =
+        test_context_->data_reduction_proxy_service();
+    TestResponder responder;
+    responder.response = response;
+    responder.status =
+        net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK);
+    EXPECT_CALL(*service, CheckProbeURL(_, _))
+        .Times(1)
+        .WillRepeatedly(testing::WithArgs<1>(
+            testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
     config()->OnIPAddressChanged();
     test_context_->RunUntilIdle();
     CheckProxyConfigs(true, expected_restricted, expected_fallback_restricted);
@@ -179,7 +191,7 @@ TEST_F(DataReductionProxyConfigTest, TestGetDataReductionProxies) {
             proxies[1]);
 }
 
-TEST_F(DataReductionProxyConfigTest, TestSetProxyConfigs) {
+TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAlt, params()->DefaultAltOrigin());
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -189,7 +201,7 @@ TEST_F(DataReductionProxyConfigTest, TestSetProxyConfigs) {
       switches::kDataReductionSSLProxy, params()->DefaultSSLOrigin());
   ResetSettings(true, true, true, true, false);
 
-  config()->SetProxyConfigs(true, true, false, false);
+  config()->UpdateConfigurator(true, true, false, false);
   EXPECT_TRUE(configurator()->enabled());
 
   EXPECT_EQ(
@@ -207,7 +219,7 @@ TEST_F(DataReductionProxyConfigTest, TestSetProxyConfigs) {
             net::ProxyServer::FromURI(configurator()->ssl_origin(),
                                       net::ProxyServer::SCHEME_HTTP));
 
-  config()->SetProxyConfigs(true, false, false, false);
+  config()->UpdateConfigurator(true, false, false, false);
   EXPECT_TRUE(configurator()->enabled());
   EXPECT_TRUE(
       net::HostPortPair::FromString(params()->DefaultOrigin())
@@ -217,23 +229,23 @@ TEST_F(DataReductionProxyConfigTest, TestSetProxyConfigs) {
                       configurator()->fallback_origin())));
   EXPECT_TRUE(configurator()->ssl_origin().empty());
 
-  config()->SetProxyConfigs(false, true, false, false);
+  config()->UpdateConfigurator(false, true, false, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->origin().empty());
   EXPECT_TRUE(configurator()->fallback_origin().empty());
   EXPECT_TRUE(configurator()->ssl_origin().empty());
 
-  config()->SetProxyConfigs(false, false, false, false);
+  config()->UpdateConfigurator(false, false, false, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->origin().empty());
   EXPECT_TRUE(configurator()->fallback_origin().empty());
   EXPECT_TRUE(configurator()->ssl_origin().empty());
 }
 
-TEST_F(DataReductionProxyConfigTest, TestSetProxyConfigsHoldback) {
+TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
   ResetSettings(true, true, true, true, true);
 
-  config()->SetProxyConfigs(true, true, false, false);
+  config()->UpdateConfigurator(true, true, false, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_EQ("", configurator()->origin());
   EXPECT_EQ("", configurator()->fallback_origin());
@@ -244,7 +256,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->restricted_by_carrier_ = false;
-  config()->SetProxyConfigs(true, false, false, true);
+  config()->UpdateConfigurator(true, false, false, true);
   // IP address change triggers a probe that succeeds. Proxy remains
   // unrestricted.
   CheckProbeOnIPChange(kProbeURLWithOKResponse, "OK", true, false, false);

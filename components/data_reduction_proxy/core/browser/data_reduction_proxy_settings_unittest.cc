@@ -6,12 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/md5.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/test_simple_task_runner.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -20,17 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-const char kProbeURLWithOKResponse[] = "http://ok.org/";
-const char kProbeURLWithBadResponse[] = "http://bad.org/";
-const char kProbeURLWithNoResponse[] = "http://no.org/";
-
-}  // namespace
-
 namespace data_reduction_proxy {
-
-class DataReductionProxyStatisticsPrefs;
 
 class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
  public:
@@ -45,121 +36,26 @@ class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
 class DataReductionProxySettingsTest
     : public ConcreteDataReductionProxySettingsTest<
           DataReductionProxySettings> {
+ public:
+  void CheckMaybeActivateDataReductionProxy(bool initially_enabled,
+                                            bool request_succeeded,
+                                            bool expected_enabled,
+                                            bool expected_restricted,
+                                            bool expected_fallback_restricted) {
+    test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                              initially_enabled);
+    test_context_->config()->SetStateForTest(initially_enabled, false,
+                                             !request_succeeded, false);
+    ExpectSetProxyPrefs(expected_enabled, false, false);
+    settings_->MaybeActivateDataReductionProxy(false);
+    test_context_->RunUntilIdle();
+  }
 };
-
-TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
-  // SetUp() adds the origin to the command line, which should be returned here.
-  std::string result =
-      settings_->params()->origin().ToURI();
-  EXPECT_EQ(expected_params_->DefaultOrigin(), result);
-}
-
-TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyDevOrigin) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyDev, expected_params_->DefaultDevOrigin());
-  ResetSettings(true, true, false, true, false);
-  std::string result =
-      settings_->params()->origin().ToURI();
-  EXPECT_EQ(expected_params_->DefaultDevOrigin(), result);
-}
-
-
-TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxies) {
-  DataReductionProxyParams::DataReductionProxyList proxies =
-      expected_params_->GetAllowedProxies();
-
-  unsigned int expected_proxy_size = 2u;
-  EXPECT_EQ(expected_proxy_size, proxies.size());
-
-  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultOrigin(),
-                                      net::ProxyServer::SCHEME_HTTP),
-            proxies[0]);
-  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultFallbackOrigin(),
-                                      net::ProxyServer::SCHEME_HTTP),
-            proxies[1]);
-}
-
-TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
-  TestDataReductionProxyParams drp_params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
-      DataReductionProxyParams::kPromoAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING &
-      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
-      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyAlt, drp_params.DefaultAltOrigin());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyAltFallback,
-      drp_params.DefaultAltFallbackOrigin());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionSSLProxy, drp_params.DefaultSSLOrigin());
-  ResetSettings(true, true, true, true, false);
-  TestDataReductionProxyConfigurator* configurator =
-      static_cast<TestDataReductionProxyConfigurator*>(
-          settings_->configurator());
-
-  settings_->SetProxyConfigs(true, true, false, false);
-  EXPECT_TRUE(configurator->enabled());
-  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultAltOrigin(),
-                                      net::ProxyServer::SCHEME_HTTP),
-            net::ProxyServer::FromURI(configurator->origin(),
-                                      net::ProxyServer::SCHEME_HTTP));
-  EXPECT_TRUE(
-      net::ProxyServer::FromURI(expected_params_->DefaultAltFallbackOrigin(),
-                                net::ProxyServer::SCHEME_HTTP).is_valid());
-  EXPECT_TRUE(configurator->fallback_origin().empty());
-  EXPECT_EQ(net::ProxyServer::FromURI(expected_params_->DefaultSSLOrigin(),
-                                      net::ProxyServer::SCHEME_HTTP),
-            net::ProxyServer::FromURI(configurator->ssl_origin(),
-                                      net::ProxyServer::SCHEME_HTTP));
-
-  settings_->SetProxyConfigs(true, false, false, false);
-  EXPECT_TRUE(configurator->enabled());
-  EXPECT_EQ(net::ProxyServer::FromURI(drp_params.DefaultOrigin(),
-                                      net::ProxyServer::SCHEME_HTTP),
-            net::ProxyServer::FromURI(configurator->origin(),
-                                      net::ProxyServer::SCHEME_HTTP));
-  EXPECT_EQ(net::ProxyServer::FromURI(drp_params.DefaultFallbackOrigin(),
-                                      net::ProxyServer::SCHEME_HTTP),
-            net::ProxyServer::FromURI(
-                configurator->fallback_origin(),
-                net::ProxyServer::SCHEME_HTTP));
-  EXPECT_TRUE(configurator->ssl_origin().empty());
-
-  settings_->SetProxyConfigs(false, true, false, false);
-  EXPECT_FALSE(configurator->enabled());
-  EXPECT_TRUE(configurator->origin().empty());
-  EXPECT_TRUE(configurator->fallback_origin().empty());
-  EXPECT_TRUE(configurator->ssl_origin().empty());
-
-  settings_->SetProxyConfigs(false, false, false, false);
-  EXPECT_FALSE(configurator->enabled());
-  EXPECT_TRUE(configurator->origin().empty());
-  EXPECT_TRUE(configurator->fallback_origin().empty());
-  EXPECT_TRUE(configurator->ssl_origin().empty());
-}
-
-TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigsHoldback) {
-  ResetSettings(true, true, true, true, true);
-  TestDataReductionProxyConfigurator* configurator =
-      static_cast<TestDataReductionProxyConfigurator*>(
-          settings_->configurator());
-
-   // Holdback.
-  settings_->SetProxyConfigs(true, true, false, false);
-  EXPECT_FALSE(configurator->enabled());
-  EXPECT_EQ("", configurator->origin());
-  EXPECT_EQ("", configurator->fallback_origin());
-  EXPECT_EQ("", configurator->ssl_origin());
-}
 
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   settings_->InitPrefMembers();
-  base::MessageLoopForUI loop;
   // The proxy is disabled initially.
-  settings_->enabled_by_user_ = false;
-  settings_->SetProxyConfigs(false, false, false, false);
+  test_context_->config()->SetStateForTest(false, false, false, false);
 
   EXPECT_FALSE(settings_->IsDataReductionProxyEnabled());
   EXPECT_FALSE(settings_->IsDataReductionProxyManaged());
@@ -172,7 +68,7 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   EXPECT_TRUE(settings_->IsDataReductionProxyEnabled());
   EXPECT_TRUE(settings_->IsDataReductionProxyManaged());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
 }
 
 TEST_F(DataReductionProxySettingsTest, TestResetDataReductionStatistics) {
@@ -252,121 +148,22 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
       settings_->GetOriginalProfilePrefs());
 
   // TODO(bengr): Test enabling/disabling while a probe is outstanding.
-  base::MessageLoopForUI loop;
   // The proxy is enabled and unrestructed initially.
   // Request succeeded but with bad response, expect proxy to be restricted.
-  CheckProbe(true,
-             kProbeURLWithBadResponse,
-             "Bad",
-             true,
-             true,
-             true,
-             false);
+  CheckMaybeActivateDataReductionProxy(true, true, true, true, false);
   // Request succeeded with valid response, expect proxy to be unrestricted.
-  CheckProbe(true,
-             kProbeURLWithOKResponse,
-             "OK",
-             true,
-             true,
-             false,
-             false);
+  CheckMaybeActivateDataReductionProxy(true, true, true, false, false);
   // Request failed, expect proxy to be enabled but restricted.
-  CheckProbe(true,
-             kProbeURLWithNoResponse,
-             "",
-             false,
-             true,
-             true,
-             false);
+  CheckMaybeActivateDataReductionProxy(true, false, true, true, false);
   // The proxy is disabled initially. Probes should not be emitted to change
   // state.
-  CheckProbe(false,
-             kProbeURLWithOKResponse,
-             "OK",
-             true,
-             false,
-             false,
-             false);
-}
-
-TEST_F(DataReductionProxySettingsTest, TestOnIPAddressChanged) {
-  base::MessageLoopForUI loop;
-  // The proxy is enabled initially.
-  pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, true);
-  settings_->spdy_proxy_auth_enabled_.Init(
-      prefs::kDataReductionProxyEnabled,
-      settings_->GetOriginalProfilePrefs());
-  settings_->data_reduction_proxy_alternative_enabled_.Init(
-      prefs::kDataReductionProxyAltEnabled,
-      settings_->GetOriginalProfilePrefs());
-  settings_->enabled_by_user_ = true;
-  settings_->restricted_by_carrier_ = false;
-  settings_->SetProxyConfigs(true, false, false, true);
-  // IP address change triggers a probe that succeeds. Proxy remains
-  // unrestricted.
-  CheckProbeOnIPChange(kProbeURLWithOKResponse,
-                       "OK",
-                       true,
-                       false,
-                       false);
-  // IP address change triggers a probe that fails. Proxy is restricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse,
-                       "Bad",
-                       true,
-                       true,
-                       false);
-  // IP address change triggers a probe that fails. Proxy remains restricted.
-  CheckProbeOnIPChange(kProbeURLWithBadResponse,
-                       "Bad",
-                       true,
-                       true,
-                       false);
-  // IP address change triggers a probe that succeeds. Proxy is unrestricted.
-  CheckProbeOnIPChange(kProbeURLWithOKResponse,
-                       "OK",
-                       true,
-                       false,
-                       false);
-  // Simulate a VPN connection. The proxy should be disabled.
-  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-  settings->network_interfaces_.reset(new net::NetworkInterfaceList());
-  settings->network_interfaces_->push_back(net::NetworkInterface(
-      "tun0", /* network interface name */
-      "tun0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI,
-      net::IPAddressNumber(),        /* IP address */
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  settings_->OnIPAddressChanged();
-  base::MessageLoop::current()->RunUntilIdle();
-  CheckProxyConfigs(false, false, false);
-
-  // Check that the proxy is re-enabled if a non-VPN connection is later used.
-  settings->network_interfaces_.reset(new net::NetworkInterfaceList());
-  settings->network_interfaces_->push_back(net::NetworkInterface(
-      "eth0", /* network interface name */
-      "eth0", /* network interface friendly name */
-      0,      /* interface index */
-      net::NetworkChangeNotifier::CONNECTION_WIFI,
-      net::IPAddressNumber(),
-      0,                             /* network prefix */
-      net::IP_ADDRESS_ATTRIBUTE_NONE /* ip address attribute */
-      ));
-  CheckProbeOnIPChange(kProbeURLWithOKResponse,
-                       "OK",
-                       true,
-                       false,
-                       false);
+  CheckMaybeActivateDataReductionProxy(false, true, false, false, false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {
   settings_->InitPrefMembers();
-  base::MessageLoopForUI loop;
   // The proxy is enabled initially.
-  settings_->enabled_by_user_ = true;
-  settings_->SetProxyConfigs(true, false, false, true);
+  test_context_->config()->SetStateForTest(true, false, false, true);
   // The pref is disabled, so correspondingly should be the proxy.
   CheckOnPrefChange(false, false, false);
   // The pref is enabled, so correspondingly should be the proxy.
@@ -377,7 +174,8 @@ TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOn) {
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
 
-  pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, true);
+  test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                            true);
   CheckInitDataReductionProxy(true);
 }
 
@@ -387,7 +185,8 @@ TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOff) {
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_CALL(*settings, RecordStartupState(PROXY_DISABLED));
 
-  pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, false);
+  test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
+                                            false);
   CheckInitDataReductionProxy(false);
 }
 
@@ -417,36 +216,23 @@ TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
 TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   // No call to |AddProxyToCommandLine()| was made, so the proxy feature
   // should be unavailable.
-  base::MessageLoopForUI loop;
   // Clear the command line. Setting flags can force the proxy to be allowed.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
   ResetSettings(false, false, false, false, false);
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-  EXPECT_FALSE(settings->params()->allowed());
+  EXPECT_FALSE(settings->allowed_);
   EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
 
-  scoped_ptr<DataReductionProxyConfigurator> configurator(
-      new TestDataReductionProxyConfigurator(
-          scoped_refptr<base::TestSimpleTaskRunner>(
-              new base::TestSimpleTaskRunner()),
-          &net_log_, event_store_.get()));
-  settings_->SetProxyConfigurator(configurator.get());
-  scoped_refptr<net::TestURLRequestContextGetter> request_context =
-      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
   settings_->InitDataReductionProxySettings(
-      &pref_service_,
-      scoped_ptr<DataReductionProxyStatisticsPrefs>(),
-      request_context.get(),
-      &net_log_,
-      event_store_.get(),
-      false);
+      test_context_->pref_service(), test_context_->io_data(),
+      test_context_->CreateDataReductionProxyService());
   settings_->SetOnDataReductionEnabledCallback(
       base::Bind(&DataReductionProxySettingsTestBase::
                  RegisterSyntheticFieldTrialCallback,
                  base::Unretained(this)));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  test_context_->RunUntilIdle();
 }
 
 TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
@@ -454,31 +240,17 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
     bool enable_quic = i == 0;
     // No call to |AddProxyToCommandLine()| was made, so the proxy feature
     // should be unavailable.
-    base::MessageLoopForUI loop;
     // Clear the command line. Setting flags can force the proxy to be allowed.
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
     ResetSettings(false, false, false, false, false);
     MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-    EXPECT_FALSE(settings->params()->allowed());
+    EXPECT_FALSE(settings->Allowed());
     EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
 
-    scoped_ptr<DataReductionProxyConfigurator> configurator(
-        new TestDataReductionProxyConfigurator(
-            scoped_refptr<base::TestSimpleTaskRunner>(
-                new base::TestSimpleTaskRunner()),
-                &net_log_, event_store_.get()));
-    settings_->SetProxyConfigurator(configurator.get());
-    scoped_refptr<net::TestURLRequestContextGetter> request_context =
-        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
-
     settings_->InitDataReductionProxySettings(
-         &pref_service_,
-         scoped_ptr<DataReductionProxyStatisticsPrefs>(),
-         request_context.get(),
-         &net_log_,
-         event_store_.get(),
-         false);
+         test_context_->pref_service(), test_context_->io_data(),
+         test_context_->CreateDataReductionProxyService());
 
     base::FieldTrialList field_trial_list(new BadEntropyProvider());
     if (enable_quic) {
@@ -490,7 +262,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
           DataReductionProxyParams::GetQuicFieldTrialName(),
           "Disabled");
     }
-    settings_->params()->EnableQuic(enable_quic);
+    test_context_->config()->params()->EnableQuic(enable_quic);
 
     settings_->SetOnDataReductionEnabledCallback(
         base::Bind(&DataReductionProxySettingsTestBase::
@@ -498,7 +270,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
                    base::Unretained(this)));
 
     EXPECT_EQ(enable_quic,
-              settings->params()->origin().is_quic()) << i;
+              test_context_->config()->params()->origin().is_quic()) << i;
   }
 }
 

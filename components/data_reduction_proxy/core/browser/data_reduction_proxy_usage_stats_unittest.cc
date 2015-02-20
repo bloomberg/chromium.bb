@@ -182,7 +182,8 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
 
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
         new DataReductionProxyUsageStats(
-            &mock_params_, test_context_->settings(),
+            &mock_params_,
+            test_context_->data_reduction_proxy_service()->GetWeakPtr(),
             test_context_->task_runner()));
 
     usage_stats->OnProxyFallback(fallback_proxy_server,
@@ -199,7 +200,8 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyUnreachableThenReachable) {
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
   scoped_ptr<DataReductionProxyUsageStats> usage_stats(
       new DataReductionProxyUsageStats(
-          &mock_params_, test_context_->settings(),
+          &mock_params_,
+          test_context_->data_reduction_proxy_service()->GetWeakPtr(),
           test_context_->task_runner()));
   EXPECT_CALL(mock_params_, IsDataReductionProxy(testing::_, testing::_))
       .WillOnce(testing::Return(true));
@@ -224,7 +226,8 @@ TEST_F(DataReductionProxyUsageStatsTest, ProxyReachableThenUnreachable) {
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
   scoped_ptr<DataReductionProxyUsageStats> usage_stats(
       new DataReductionProxyUsageStats(
-          &mock_params_, test_context_->settings(),
+          &mock_params_,
+          test_context_->data_reduction_proxy_service()->GetWeakPtr(),
           test_context_->task_runner()));
   EXPECT_CALL(mock_params_,
               WasDataReductionProxyUsed(mock_url_request_.get(), testing::_))
@@ -430,7 +433,8 @@ TEST_F(DataReductionProxyUsageStatsTest, RecordMissingViaHeaderBytes) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
         new DataReductionProxyUsageStats(
-            &mock_params_, test_context_->settings(),
+            &mock_params_,
+            test_context_->data_reduction_proxy_service()->GetWeakPtr(),
             test_context_->task_runner()));
 
     std::string raw_headers(test_cases[i].headers);
@@ -500,7 +504,8 @@ TEST_F(DataReductionProxyUsageStatsTest, RequestCompletionErrorCodes) {
     base::HistogramTester histogram_tester;
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
         new DataReductionProxyUsageStats(
-            &mock_params_, test_context_->settings(),
+            &mock_params_,
+            test_context_->data_reduction_proxy_service()->GetWeakPtr(),
             test_context_->task_runner()));
 
     std::string raw_headers("HTTP/1.1 200 OK\n"
@@ -591,13 +596,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     enabled.SetValue(true);
     enabled.Destroy();
 
-    settings()->SetProxyConfigurator(test_context_->configurator());
-    settings()->InitDataReductionProxySettings(
-        test_context_->pref_service(), test_context_->CreateStatisticsPrefs(),
-        test_context_->request_context(), test_context_->net_log(),
-        test_context_->event_store(), false);
-    test_context_->io_data()->SetDataReductionProxyStatisticsPrefs(
-        settings()->statistics_prefs());
+    test_context_->InitSettings();
 
     network_delegate_ = test_context_->io_data()->CreateNetworkDelegate(
         scoped_ptr<net::NetworkDelegate>(new net::TestNetworkDelegate()), true);
@@ -674,7 +673,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     context_.set_host_resolver(host_resolver);
   }
 
-  DataReductionProxySettings* settings() const {
+  const DataReductionProxySettings* settings() const {
     return test_context_->settings();
   }
 
@@ -942,7 +941,7 @@ TEST_F(DataReductionProxyUsageStatsEndToEndTest, BypassedBytesNetErrorOther) {
   // Make the data reduction proxy host fail to resolve.
   scoped_ptr<net::MockHostResolver> host_resolver(new net::MockHostResolver());
   host_resolver->rules()->AddSimulatedFailure(
-      settings()->params()->origin().host_port_pair().host());
+      params()->origin().host_port_pair().host());
   set_host_resolver(host_resolver.get());
   InitializeContext();
 

@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle.h"
 
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -30,13 +31,12 @@ DataReductionProxyDebugResourceThrottle::MaybeCreate(
   if (io_data && io_data->IsEnabled() &&
       data_reduction_proxy::DataReductionProxyParams::
           WarnIfNoDataReductionProxy()) {
-    DCHECK(io_data->params());
     DCHECK(io_data->debug_ui_service());
     DCHECK(request);
     return scoped_ptr<DataReductionProxyDebugResourceThrottle>(
-        new DataReductionProxyDebugResourceThrottle(request, resource_type,
-                                                    io_data->debug_ui_service(),
-                                                    io_data->params()));
+        new DataReductionProxyDebugResourceThrottle(
+            request, resource_type, io_data->debug_ui_service(),
+            io_data->config()->params()));
   }
   return nullptr;
 }

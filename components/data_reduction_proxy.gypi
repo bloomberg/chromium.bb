@@ -78,6 +78,8 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_request_options.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_service.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_service.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_settings.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_settings.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.cc',

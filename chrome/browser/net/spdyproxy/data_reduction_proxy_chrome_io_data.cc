@@ -4,64 +4,55 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 
-#include "base/bind.h"
-#include "base/prefs/pref_service.h"
-#include "base/time/time.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
 #include "chrome/browser/browser_process.h"
 #include "components/data_reduction_proxy/content/browser/content_data_reduction_proxy_debug_ui_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #endif
 
 namespace content {
 class BrowserContext;
 }
 
+using data_reduction_proxy::DataReductionProxyParams;
+
 scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(
     net::NetLog* net_log,
-    content::BrowserContext* browser_context,
     PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+    bool enable_quic) {
   DCHECK(net_log);
   DCHECK(prefs);
-  DCHECK(browser_context);
-  DataReductionProxyChromeSettings* settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          browser_context);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // On mobile we write data reduction proxy prefs directly to the pref service.
-  // On desktop we store data reduction proxy prefs in memory, writing to disk
-  // every 60 minutes and on termination. Shutdown hooks must be added for
-  // Android and iOS in order for non-zero delays to be supported.
-  // (http://crbug.com/408264)
-  base::TimeDelta commit_delay = base::TimeDelta();
-#else
-  base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
+  int flags = DataReductionProxyParams::kAllowed |
+      DataReductionProxyParams::kFallbackAllowed |
+      DataReductionProxyParams::kAlternativeAllowed;
+  if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
+    flags |= DataReductionProxyParams::kPromoAllowed;
+  if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())
+    flags |= DataReductionProxyParams::kHoldback;
+#if defined(OS_ANDROID)
+  if (DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
+          base::android::BuildInfo::GetInstance()->android_build_fp())) {
+    flags |= DataReductionProxyParams::kPromoAllowed;
+  }
 #endif
-
-  data_reduction_proxy::DataReductionProxyStatisticsPrefs*
-      data_reduction_proxy_statistics_prefs =
-          new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
-              prefs, ui_task_runner, commit_delay);
 
   scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
-              DataReductionProxyChromeSettings::GetClient(),
-              make_scoped_ptr(data_reduction_proxy_statistics_prefs),
-              settings,
-              net_log,
-              io_task_runner,
-              ui_task_runner));
+              DataReductionProxyChromeSettings::GetClient(), flags, net_log,
+              io_task_runner, ui_task_runner, enable_quic));
   data_reduction_proxy_io_data->InitOnUIThread(prefs);
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)

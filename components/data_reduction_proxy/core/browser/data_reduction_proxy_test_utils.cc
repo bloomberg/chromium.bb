@@ -16,15 +16,25 @@
 
 namespace data_reduction_proxy {
 
-TestDataReductionProxyIOData::TestDataReductionProxyIOData(
+MockDataReductionProxyService::MockDataReductionProxyService(
+    scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
     DataReductionProxySettings* settings,
+    net::URLRequestContextGetter* request_context)
+    : DataReductionProxyService(
+        statistics_prefs.Pass(), settings, request_context) {
+}
+
+MockDataReductionProxyService::~MockDataReductionProxyService() {
+}
+
+TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_ptr<TestDataReductionProxyConfig> config,
     scoped_ptr<DataReductionProxyEventStore> event_store,
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
     scoped_ptr<DataReductionProxyConfigurator> configurator)
     : DataReductionProxyIOData() {
-  settings_ = settings;
-  params_ = settings_->params()->Clone();
+  config_ = config.Pass();
   event_store_ = event_store.Pass();
   request_options_ = request_options.Pass();
   configurator_ = configurator.Pass();
@@ -44,7 +54,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       task_runner_(base::MessageLoopProxy::current()),
       request_context_(scoped_refptr<net::URLRequestContextGetter>(
           new net::TestURLRequestContextGetter(task_runner_))),
-      statistics_prefs_pointer_(nullptr) {
+      service_(nullptr) {
   scoped_ptr<DataReductionProxyEventStore> event_store =
       make_scoped_ptr(new DataReductionProxyEventStore(task_runner_));
   scoped_ptr<DataReductionProxyConfigurator> configurator;
@@ -59,33 +69,37 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
 
   scoped_ptr<TestDataReductionProxyConfig> config;
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_CONFIG) {
-    config.reset(new MockDataReductionProxyConfig(params_flags));
+    config.reset(new MockDataReductionProxyConfig(
+        params_flags, params_definitions, task_runner_, &net_log_,
+        configurator.get(), event_store.get()));
   } else {
-    config.reset(new TestDataReductionProxyConfig(params_flags));
+    config.reset(new TestDataReductionProxyConfig(
+        params_flags, params_definitions, task_runner_, &net_log_,
+        configurator.get(), event_store.get()));
   }
-
-  settings_.reset(new DataReductionProxySettings(make_scoped_ptr(
-      new DataReductionProxyParams(params_flags))));
-  settings_->config_ = config.Pass();
-
   scoped_ptr<DataReductionProxyRequestOptions> request_options =
       make_scoped_ptr(new DataReductionProxyRequestOptions(
-          Client::UNKNOWN, settings_->config_->params(), task_runner_));
+          Client::UNKNOWN, config->params(), task_runner_));
+  settings_.reset(new DataReductionProxySettings());
+
   io_data_.reset(new TestDataReductionProxyIOData(
-      settings_.get(), task_runner_.get(), event_store.Pass(),
+      task_runner_.get(), config.Pass(), event_store.Pass(),
       request_options.Pass(), configurator.Pass()));
-  settings_->config_->InitDataReductionProxyConfig(
-      task_runner_, &net_log_, request_context_.get(),
-      io_data_->configurator(), io_data_->event_store());
   if (!(test_context_flags_ &
         DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION)) {
     scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs =
         make_scoped_ptr(new DataReductionProxyStatisticsPrefs(
             &simple_pref_service_, task_runner_, base::TimeDelta()));
-    statistics_prefs_pointer_ = statistics_prefs.get();
-    io_data_->SetDataReductionProxyStatisticsPrefs(
-        statistics_prefs_pointer_->GetWeakPtr());
+    scoped_ptr<MockDataReductionProxyService> data_reduction_proxy_service =
+        make_scoped_ptr(new MockDataReductionProxyService(
+            statistics_prefs.Pass(), settings_.get(), request_context_.get()));
+    service_ = data_reduction_proxy_service.get();
+    settings_->data_reduction_proxy_service_ =
+        data_reduction_proxy_service.Pass();
+    io_data_->SetDataReductionProxyService(service_->GetWeakPtr());
   }
+
+  settings_->config_ = io_data_->config();
 }
 
 DataReductionProxyTestContext::~DataReductionProxyTestContext() {
@@ -99,17 +113,22 @@ void DataReductionProxyTestContext::InitSettings() {
   DCHECK(test_context_flags_ &
          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
   settings_->InitDataReductionProxySettings(
-      &simple_pref_service_, CreateStatisticsPrefs(), request_context_.get(),
-      io_data_->net_log(), io_data_->event_store(), false);
-  io_data_->SetDataReductionProxyStatisticsPrefs(settings_->statistics_prefs());
+      &simple_pref_service_, io_data_.get(), CreateDataReductionProxyService());
+  io_data_->SetDataReductionProxyService(
+      settings_->data_reduction_proxy_service()->GetWeakPtr());
 }
 
-scoped_ptr<DataReductionProxyStatisticsPrefs>
-DataReductionProxyTestContext::CreateStatisticsPrefs() {
+scoped_ptr<MockDataReductionProxyService>
+DataReductionProxyTestContext::CreateDataReductionProxyService() {
   DCHECK(test_context_flags_ &
          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
-  return make_scoped_ptr(new DataReductionProxyStatisticsPrefs(
-      &simple_pref_service_, task_runner_, base::TimeDelta()));
+  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs =
+      make_scoped_ptr(new DataReductionProxyStatisticsPrefs(
+          &simple_pref_service_, task_runner_, base::TimeDelta()));
+  scoped_ptr<MockDataReductionProxyService> service =
+      make_scoped_ptr(new MockDataReductionProxyService(
+          statistics_prefs.Pass(), settings_.get(), request_context_.get()));
+  return service.Pass();
 }
 
 TestDataReductionProxyConfigurator*
@@ -123,16 +142,15 @@ DataReductionProxyTestContext::test_configurator() const {
 MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()
     const {
   DCHECK(test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_CONFIG);
-  return reinterpret_cast<MockDataReductionProxyConfig*>(
-      settings_->config_.get());
+  return reinterpret_cast<MockDataReductionProxyConfig*>(io_data_->config());
 }
 
-DataReductionProxyStatisticsPrefs*
-DataReductionProxyTestContext::statistics_prefs()
+MockDataReductionProxyService*
+DataReductionProxyTestContext::data_reduction_proxy_service()
     const {
   DCHECK(!(test_context_flags_ &
            DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION));
-  return statistics_prefs_pointer_;
+  return service_;
 }
 
 }  // namespace data_reduction_proxy

@@ -40,9 +40,9 @@ class URLRequest;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
+class DataReductionProxyIOData;
 class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyStatisticsPrefs;
 class DataReductionProxyUsageStats;
 
 // DataReductionProxyNetworkDelegate is a LayeredNetworkDelegate that wraps a
@@ -68,9 +68,9 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   // Initializes member variables to record data reduction proxy prefs and
   // report UMA.
-  void InitStatisticsPrefsAndUMA(
+  void InitIODataAndUMA(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      const base::WeakPtr<DataReductionProxyStatisticsPrefs>& statistics_prefs,
+      DataReductionProxyIOData* io_data,
       BooleanPrefMember* data_reduction_proxy_enabled,
       DataReductionProxyUsageStats* usage_stats);
 
@@ -142,16 +142,14 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // Weak, owned by our owner.
   BooleanPrefMember* data_reduction_proxy_enabled_;
 
-  // Must outlive this DataReductionProxyNetworkDelegate.
+  // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyParams* data_reduction_proxy_params_;
 
-  // Must outlive this DataReductionProxyNetworkDelegate.
   DataReductionProxyUsageStats* data_reduction_proxy_usage_stats_;
 
   DataReductionProxyRequestOptions* data_reduction_proxy_request_options_;
 
-  base::WeakPtr<DataReductionProxyStatisticsPrefs>
-      data_reduction_proxy_statistics_prefs_;
+  DataReductionProxyIOData* data_reduction_proxy_io_data_;
 
   const DataReductionProxyConfigurator* configurator_;
 

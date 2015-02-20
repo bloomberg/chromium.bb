@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_USAGE_STATS_H_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -23,7 +24,7 @@ class ProxyServer;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxySettings;
+class DataReductionProxyService;
 
 // TODO(bengr): Rename as DataReductionProxyBypassStats.
 class DataReductionProxyUsageStats
@@ -45,13 +46,12 @@ class DataReductionProxyUsageStats
       bool is_primary,
       const net::HttpResponseHeaders* headers);
 
-  // |params| outlives this class instance. |settings| provides a hook to inform
+  // |params| outlives this class instance. |service| provides a hook to inform
   // the user that the Data Reduction Proxy is unreachable, which occurs on the
-  // UI thread, hence the |ui_task_runner|. |settings| and |params| must not be
-  // null.
+  // UI thread, hence the |ui_task_runner|. |params| must not be null.
   DataReductionProxyUsageStats(
       DataReductionProxyParams* params,
-      DataReductionProxySettings* settings,
+      base::WeakPtr<DataReductionProxyService> service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~DataReductionProxyUsageStats() override;
@@ -137,7 +137,7 @@ class DataReductionProxyUsageStats
 
   DataReductionProxyParams* data_reduction_proxy_params_;
 
-  DataReductionProxySettings* settings_;
+  base::WeakPtr<DataReductionProxyService> service_;
 
   // The last reason for bypass as determined by
   // MaybeBypassProxyAndPrepareToRetry
