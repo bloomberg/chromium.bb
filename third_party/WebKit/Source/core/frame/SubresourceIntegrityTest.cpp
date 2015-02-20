@@ -286,12 +286,12 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
 
 TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
 {
-    // The same checks as CheckSubresourceIntegrityInSecureOrigin should fail here.
+    // The same checks as CheckSubresourceIntegrityInSecureOrigin should pass here.
     document->updateSecurityOrigin(insecureOrigin->isolatedCopy());
 
-    expectIntegrityFailure(kSha256Integrity, kBasicScript, secureURL);
-    expectIntegrityFailure(kSha384Integrity, kBasicScript, secureURL);
-    expectIntegrityFailure(kSha512Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha256Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha384Integrity, kBasicScript, secureURL);
+    expectIntegrity(kSha512Integrity, kBasicScript, secureURL);
     expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL);
     expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL);
 }

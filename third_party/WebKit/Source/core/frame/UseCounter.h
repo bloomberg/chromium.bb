@@ -477,8 +477,6 @@ public:
         SRIElementWithMatchingIntegrityAttribute = 540,
         SRIElementWithNonMatchingIntegrityAttribute = 541,
         SRIElementWithUnparsableIntegrityAttribute = 542,
-        SRIElementWithIntegrityAttributeAndInsecureOrigin = 543,
-        SRIElementWithIntegrityAttributeAndInsecureResource = 544,
         AnimationPlayerGetStartTime = 545,
         AnimationPlayerSetStartTime = 546,
         AnimationPlayerGetCurrentTime = 547,

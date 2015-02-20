@@ -92,26 +92,6 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 
     Document& document = element.document();
 
-    // Instead of just checking SecurityOrigin::isSecure on resourceUrl, this
-    // checks canAccessFeatureRequiringSecureOrigin so that file:// protocols
-    // and localhost resources can be allowed. These may be useful for testing
-    // and are allowed for features requiring authenticated origins, so Chrome
-    // allows them here.
-    String insecureOriginMsg = "";
-    RefPtr<SecurityOrigin> resourceSecurityOrigin = SecurityOrigin::create(resourceUrl);
-    if (!document.securityOrigin()->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)) {
-        UseCounter::count(document, UseCounter::SRIElementWithIntegrityAttributeAndInsecureOrigin);
-        // FIXME: This console message should probably utilize
-        // inesecureOriginMsg to give a more helpful message to the user.
-        logErrorToConsole("The 'integrity' attribute may only be used in documents in secure origins.", document);
-        return false;
-    }
-    if (!resourceSecurityOrigin->canAccessFeatureRequiringSecureOrigin(insecureOriginMsg)) {
-        UseCounter::count(document, UseCounter::SRIElementWithIntegrityAttributeAndInsecureResource);
-        logErrorToConsole("The 'integrity' attribute may only be used with resources on secure origins.", document);
-        return false;
-    }
-
     String integrity;
     HashAlgorithm algorithm;
     String type;
