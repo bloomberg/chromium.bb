@@ -52,7 +52,6 @@ public:
 
     bool add(PassRefPtrWillBeRawPtr<TextTrackCue>);
     bool remove(TextTrackCue*);
-    bool contains(TextTrackCue*) const;
 
     bool updateCueIndex(TextTrackCue*);
 

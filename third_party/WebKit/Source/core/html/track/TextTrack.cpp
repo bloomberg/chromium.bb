@@ -274,6 +274,9 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
         return;
     }
 
+    cue->setIsActive(false);
+    cue->removeDisplayTree();
+
     cue->setTrack(0);
     if (cueTimeline())
         cueTimeline()->removeCue(this, cue);
