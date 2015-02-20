@@ -2279,7 +2279,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 - (void)smartMagnifyWithEvent:(NSEvent*)event {
   const WebGestureEvent& smartMagnifyEvent =
       WebInputEventFactory::gestureEvent(event, self);
-  ignore_result(smartMagnifyEvent);
+  if (renderWidgetHostView_ && renderWidgetHostView_->render_widget_host_) {
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(
+        smartMagnifyEvent);
+  }
 }
 
 // This is invoked only on 10.8 or newer when the user taps a word using
