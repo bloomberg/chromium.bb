@@ -500,7 +500,7 @@ void RenderText::SetMultiline(bool multiline) {
     multiline_ = multiline;
     cached_bounds_and_offset_valid_ = false;
     lines_.clear();
-    OnDisplayTextAttributeChanged();
+    OnTextAttributeChanged();
   }
 }
 

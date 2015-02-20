@@ -2120,6 +2120,29 @@ TEST_F(RenderTextTest, Multiline_IgnoreElide) {
             render_text.GetDisplayText().find(base::WideToUTF16(kEllipsis)));
 }
 
+TEST_F(RenderTextTest, Multiline_NewlineCharacterReplacement) {
+  const wchar_t* kTestStrings[] = {
+    L"abc\ndef", L"a \n b ", L"ab\n", L"a\n\nb", L"\nab", L"\n",
+  };
+
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    RenderTextHarfBuzz render_text;
+    render_text.SetDisplayRect(Rect(200, 1000));
+    render_text.SetText(WideToUTF16(kTestStrings[i]));
+
+    base::string16 display_text = render_text.GetDisplayText();
+    // If RenderText is not multiline, the newline characters are replaced
+    // by symbols, therefore the character should be changed.
+    EXPECT_NE(WideToUTF16(kTestStrings[i]), render_text.GetDisplayText());
+
+    // Setting multiline will fix this, the newline characters will be back
+    // to the original text.
+    render_text.SetMultiline(true);
+    EXPECT_EQ(WideToUTF16(kTestStrings[i]), render_text.GetDisplayText());
+  }
+}
+
 TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
   const wchar_t* kTestStrings[] = {
     L"abc\ndef", L"a \n b ", L"ab\n", L"a\n\nb", L"\nab", L"\n",
