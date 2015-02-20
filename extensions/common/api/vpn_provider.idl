@@ -20,12 +20,21 @@ namespace vpnProvider {
     // server.
     // When many rules match a destination, the rule with the longest matching
     // prefix wins.
+    // Entries that correspond to the same CIDR block are treated as duplicates.
+    // Such duplicates in the collated (exclusionList + inclusionList) list are
+    // eliminated and the exact duplicate entry that will be eliminated is
+    // undefined.
     DOMString[] exclusionList;
     // Include network traffic to the list of IP blocks in CIDR notation to the
-    // tunnel. By default all user traffic is routed to the tunnel. This
-    // parameter can be used to setup split tunnel.
+    // tunnel. This parameter can be used to set up a split tunnel. By default
+    // no traffic is directed to the tunnel. Adding the entry "0.0.0.0/0" to
+    // this list gets all the user traffic redirected to the tunnel.
     // When many rules match a destination, the rule with the longest matching
     // prefix wins.
+    // Entries that correspond to the same CIDR block are treated as duplicates.
+    // Such duplicates in the collated (exclusionList + inclusionList) list are
+    // eliminated and the exact duplicate entry that will be eliminated is
+    // undefined.
     DOMString[] inclusionList;
     // A list of search domains. (default: no search domain)
     DOMString[]? domainSearch;
