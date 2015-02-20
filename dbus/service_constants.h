@@ -846,7 +846,6 @@ const char kDefaultServiceProperty[] = "DefaultService";
 const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
 const char kHostNameProperty[] = "HostName";
 const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
-const char kPrependDNSServersProperty[] = "PrependDNSServers";
 const char kLinkMonitorTechnologiesProperty[] =
     "LinkMonitorTechnologies";
 const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
