@@ -473,11 +473,14 @@ void ExternalProviderImpl::CreateExternalProviders(
     int external_apps_path_id = profile->IsSupervised() ?
         chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS :
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS;
+    ExternalPrefLoader::Options pref_load_flags = profile->IsNewProfile() ?
+        ExternalPrefLoader::DELAY_LOAD_UNTIL_PRIORITY_SYNC :
+        ExternalPrefLoader::NONE;
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(new ExternalProviderImpl(
             service,
             new ExternalPrefLoader(external_apps_path_id,
-                                   ExternalPrefLoader::NONE,
+                                   pref_load_flags,
                                    profile),
             profile,
             Manifest::EXTERNAL_PREF,
