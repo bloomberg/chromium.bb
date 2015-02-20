@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/singleton.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
 
 namespace {
