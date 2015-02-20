@@ -16,6 +16,8 @@
 #include "media/base/key_system_info.h"
 #include "media/base/key_systems_support_uma.h"
 #include "media/base/media_client.h"
+#include "media/cdm/key_system_names.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace media {
 
@@ -107,6 +109,56 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   info.use_aes_decryptor = true;
 
   concrete_key_systems->push_back(info);
+}
+
+// Returns whether the |key_system| is known to Chromium and is thus likely to
+// be implemented in an interoperable way.
+// True is always returned for a |key_system| that begins with "x-".
+//
+// As with other web platform features, advertising support for a key system
+// implies that it adheres to a defined and interoperable specification.
+//
+// To ensure interoperability, implementations of a specific |key_system| string
+// must conform to a specification for that identifier that defines
+// key system-specific behaviors not fully defined by the EME specification.
+// That specification should be provided by the owner of the domain that is the
+// reverse of the |key_system| string.
+// This involves more than calling a library, SDK, or platform API. KeySystems
+// must be populated appropriately, and there will likely be glue code to adapt
+// to the API of the library, SDK, or platform API.
+//
+// Chromium mainline contains this data and glue code for specific key systems,
+// which should help ensure interoperability with other implementations using
+// these key systems.
+//
+// If you need to add support for other key systems, ensure that you have
+// obtained the specification for how to integrate it with EME, implemented the
+// appropriate glue/adapter code, and added all the appropriate data to
+// KeySystems. Only then should you change this function.
+static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
+  // Known and supported key systems.
+  if (key_system == kWidevineKeySystem)
+    return true;
+  if (key_system == kClearKey)
+    return true;
+
+  // External Clear Key is known and supports suffixes for testing.
+  if (IsExternalClearKey(key_system))
+    return true;
+
+  // Chromecast defines behaviors for Cast clients within its reverse domain.
+  const char kChromecastRoot[] = "com.chromecast";
+  if (IsParentKeySystemOf(kChromecastRoot, key_system))
+    return true;
+
+  // Implementations that do not have a specification or appropriate glue code
+  // can use the "x-" prefix to avoid conflicting with and advertising support
+  // for real key system names. Use is discouraged.
+  const char kExcludedPrefix[] = "x-";
+  if (key_system.find(kExcludedPrefix, 0, arraysize(kExcludedPrefix) - 1) == 0)
+    return true;
+
+  return false;
 }
 
 class KeySystems {
@@ -726,7 +778,19 @@ bool PrefixedIsSupportedConcreteKeySystem(const std::string& key_system) {
 }
 
 bool IsSupportedKeySystem(const std::string& key_system) {
-  return KeySystems::GetInstance().IsSupportedKeySystem(key_system);
+  if (!KeySystems::GetInstance().IsSupportedKeySystem(key_system))
+    return false;
+
+  // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
+  // removed (crbug.com/249976).
+  if (!IsPotentiallySupportedKeySystem(key_system)) {
+    // If you encounter this path, see the comments for the above function.
+    NOTREACHED() << "Unrecognized key system " << key_system
+                 << ". See code comments.";
+    return false;
+  }
+
+  return true;
 }
 
 bool IsSupportedKeySystemWithInitDataType(

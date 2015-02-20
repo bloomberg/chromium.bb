@@ -35,11 +35,11 @@ namespace media {
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
 // kExternal uses an external CDM, such as Pepper-based or Android platform CDM.
-const char kUsesAes[] = "org.example.clear";
-const char kUsesAesParent[] = "org.example";  // Not registered.
+const char kUsesAes[] = "x-org.example.clear";
+const char kUsesAesParent[] = "x-org.example";  // Not registered.
 const char kUseAesNameForUMA[] = "UseAes";
-const char kExternal[] = "com.example.test";
-const char kExternalParent[] = "com.example";
+const char kExternal[] = "x-com.example.test";
+const char kExternalParent[] = "x-com.example";
 const char kExternalNameForUMA[] = "External";
 
 const char kClearKey[] = "org.w3.clearkey";
@@ -91,14 +91,14 @@ static void AddContainerAndCodecMasksForTest() {
 class TestMediaClient : public MediaClient {
  public:
   TestMediaClient();
-  ~TestMediaClient() final;
+  ~TestMediaClient() override;
 
   // MediaClient implementation.
   void AddKeySystemsInfoForUMA(
       std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) final;
   bool IsKeySystemsUpdateNeeded() final;
   void AddSupportedKeySystems(
-      std::vector<KeySystemInfo>* key_systems_info) final;
+      std::vector<KeySystemInfo>* key_systems_info) override;
 
   // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
   // after AddSupportedKeySystems() is called.
@@ -109,8 +109,8 @@ class TestMediaClient : public MediaClient {
   void DisableExternalKeySystemSupport();
 
  protected:
-  void AddUsesAesKeySystem(
-      std::vector<KeySystemInfo>* key_systems_info);
+  void AddUsesAesKeySystem(const std::string& name,
+                           std::vector<KeySystemInfo>* key_systems_info);
   void AddExternalKeySystem(
       std::vector<KeySystemInfo>* key_systems_info);
 
@@ -142,7 +142,7 @@ void TestMediaClient::AddSupportedKeySystems(
     std::vector<KeySystemInfo>* key_systems) {
   DCHECK(is_update_needed_);
 
-  AddUsesAesKeySystem(key_systems);
+  AddUsesAesKeySystem(kUsesAes, key_systems);
 
   if (supports_external_key_system_)
     AddExternalKeySystem(key_systems);
@@ -159,18 +159,19 @@ void TestMediaClient::DisableExternalKeySystemSupport() {
 }
 
 void TestMediaClient::AddUsesAesKeySystem(
+    const std::string& name,
     std::vector<KeySystemInfo>* key_systems) {
-  KeySystemInfo aes;
-  aes.key_system = kUsesAes;
-  aes.supported_codecs = EME_CODEC_WEBM_ALL;
-  aes.supported_codecs |= TEST_CODEC_FOO_ALL;
-  aes.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
-  aes.persistent_license_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  aes.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
-  aes.persistent_state_support = EME_FEATURE_NOT_SUPPORTED;
-  aes.distinctive_identifier_support = EME_FEATURE_NOT_SUPPORTED;
-  aes.use_aes_decryptor = true;
-  key_systems->push_back(aes);
+  KeySystemInfo system;
+  system.key_system = name;
+  system.supported_codecs = EME_CODEC_WEBM_ALL;
+  system.supported_codecs |= TEST_CODEC_FOO_ALL;
+  system.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  system.persistent_license_support = EME_SESSION_TYPE_NOT_SUPPORTED;
+  system.persistent_release_message_support = EME_SESSION_TYPE_NOT_SUPPORTED;
+  system.persistent_state_support = EME_FEATURE_NOT_SUPPORTED;
+  system.distinctive_identifier_support = EME_FEATURE_NOT_SUPPORTED;
+  system.use_aes_decryptor = true;
+  key_systems->push_back(system);
 }
 
 void TestMediaClient::AddExternalKeySystem(
@@ -190,6 +191,36 @@ void TestMediaClient::AddExternalKeySystem(
 #endif  // defined(ENABLE_PEPPER_CDMS)
   key_systems->push_back(ext);
 }
+
+class PotentiallySupportedNamesTestMediaClient : public TestMediaClient {
+  void AddSupportedKeySystems(
+      std::vector<KeySystemInfo>* key_systems_info) final;
+};
+
+void PotentiallySupportedNamesTestMediaClient::AddSupportedKeySystems(
+    std::vector<KeySystemInfo>* key_systems) {
+  // org.w3.clearkey is automatically registered.
+  AddUsesAesKeySystem("com.widevine.alpha", key_systems);
+  AddUsesAesKeySystem("org.chromium.externalclearkey", key_systems);
+  AddUsesAesKeySystem("org.chromium.externalclearkey.something", key_systems);
+  AddUsesAesKeySystem("com.chromecast.something", key_systems);
+  AddUsesAesKeySystem("x-something", key_systems);
+}
+
+class KeySystemsPotentiallySupportedNamesTest : public testing::Test {
+ protected:
+  KeySystemsPotentiallySupportedNamesTest() {
+    SetMediaClient(&test_media_client_);
+  }
+
+  ~KeySystemsPotentiallySupportedNamesTest() override {
+    // Clear the use of |test_media_client_|, which was set in SetUp().
+    SetMediaClient(nullptr);
+  }
+
+ private:
+  PotentiallySupportedNamesTestMediaClient test_media_client_;
+};
 
 // TODO(sandersd): Refactor. http://crbug.com/417444
 class KeySystemsTest : public testing::Test {
@@ -325,7 +356,7 @@ TEST_F(KeySystemsTest, ClearKey) {
 
 // The key system is not registered and therefore is unrecognized.
 TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
-  static const char* const kUnrecognized = "org.example.unrecognized";
+  static const char* const kUnrecognized = "x-org.example.unrecognized";
 
   EXPECT_FALSE(IsSupportedKeySystem(kUnrecognized));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -336,13 +367,14 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
   bool can_use = false;
   EXPECT_DEBUG_DEATH_PORTABLE(
       can_use = CanUseAesDecryptor(kUnrecognized),
-      "org.example.unrecognized is not a known concrete system");
+      "x-org.example.unrecognized is not a known concrete system");
   EXPECT_FALSE(can_use);
 
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
-  EXPECT_DEBUG_DEATH(type = GetPepperType(kUnrecognized),
-                     "org.example.unrecognized is not a known concrete system");
+  EXPECT_DEBUG_DEATH(
+      type = GetPepperType(kUnrecognized),
+      "x-org.example.unrecognized is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -359,7 +391,7 @@ TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
   EXPECT_DEBUG_DEATH(type = GetPepperType(kUsesAes),
-                     "org.example.clear is not Pepper-based");
+                     "x-org.example.clear is not Pepper-based");
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -421,21 +453,21 @@ TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUsesAesParent));
   bool result = false;
   EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kUsesAesParent),
-                              "org.example is not a known concrete system");
+                              "x-org.example is not a known concrete system");
   EXPECT_FALSE(result);
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
   EXPECT_DEBUG_DEATH(type = GetPepperType(kUsesAesParent),
-                     "org.example is not a known concrete system");
+                     "x-org.example is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif
 }
 
 TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
   // Case sensitive.
-  EXPECT_FALSE(IsSupportedKeySystem("org.example.ClEaR"));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), "org.example.ClEaR"));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example.ClEaR"));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
+                                                     "x-org.example.ClEaR"));
 
   // TLDs are not allowed.
   EXPECT_FALSE(IsSupportedKeySystem("org."));
@@ -446,24 +478,27 @@ TEST_F(KeySystemsTest, IsSupportedKeySystem_InvalidVariants) {
       kVideoWebM, no_codecs(), "com"));
 
   // Extra period.
-  EXPECT_FALSE(IsSupportedKeySystem("org.example."));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), "org.example."));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example.clear."));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
+                                                     "x-org.example.clear."));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example."));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
+                                                     "x-org.example."));
 
   // Incomplete.
-  EXPECT_FALSE(IsSupportedKeySystem("org.example.clea"));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), "org.example.clea"));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example.clea"));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
+                                                     "x-org.example.clea"));
 
   // Extra character.
-  EXPECT_FALSE(IsSupportedKeySystem("org.example.clearz"));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), "org.example.clearz"));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example.clearz"));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(kVideoWebM, no_codecs(),
+                                                     "x-org.example.clearz"));
 
   // There are no child key systems for UsesAes.
-  EXPECT_FALSE(IsSupportedKeySystem("org.example.clear.foo"));
+  EXPECT_FALSE(IsSupportedKeySystem("x-org.example.clear.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), "org.example.clear.foo"));
+      kVideoWebM, no_codecs(), "x-org.example.clear.foo"));
 }
 
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_NoType) {
@@ -472,10 +507,10 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_NoType) {
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       std::string(), no_codecs(), kUsesAesParent));
 
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(std::string(), no_codecs(),
+                                                     "x-org.example.foo"));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "org.example.foo"));
-  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      std::string(), no_codecs(), "org.example.clear.foo"));
+      std::string(), no_codecs(), "x-org.example.clear.foo"));
 }
 
 // Tests the second registered container type.
@@ -556,12 +591,12 @@ TEST_F(KeySystemsTest, Parent_ParentRegistered) {
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalParent));
   bool result = false;
   EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kExternalParent),
-                              "com.example is not a known concrete system");
+                              "x-com.example is not a known concrete system");
   EXPECT_FALSE(result);
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
   EXPECT_DEBUG_DEATH(type = GetPepperType(kExternalParent),
-                     "com.example is not a known concrete system");
+                     "x-com.example is not a known concrete system");
   EXPECT_TRUE(type.empty());
 #endif
 }
@@ -786,6 +821,45 @@ TEST_F(KeySystemsTest, PrefixedKeySystemsUpdate) {
   EXPECT_FALSE(IsSupportedKeySystem(kExternal));
   EXPECT_FALSE(PrefixedIsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kExternal));
+}
+
+TEST_F(KeySystemsPotentiallySupportedNamesTest, PotentiallySupportedNames) {
+  EXPECT_FALSE(IsSupportedKeySystem("org.w3"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.w3."));
+  EXPECT_FALSE(IsSupportedKeySystem("org.w3.clearke"));
+  EXPECT_TRUE(IsSupportedKeySystem("org.w3.clearkey"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.w3.clearkeys"));
+
+  EXPECT_FALSE(IsSupportedKeySystem("com.widevine"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.widevine."));
+  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.alph"));
+  EXPECT_TRUE(IsSupportedKeySystem("com.widevine.alpha"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.beta"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.alphabeta"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.widevine.alpha.beta"));
+
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium."));
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearke"));
+  EXPECT_TRUE(IsSupportedKeySystem("org.chromium.externalclearkey"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearkeys"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearkey."));
+  EXPECT_TRUE(IsSupportedKeySystem("org.chromium.externalclearkey.something"));
+  EXPECT_FALSE(
+      IsSupportedKeySystem("org.chromium.externalclearkey.something.else"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.externalclearkey.other"));
+  EXPECT_FALSE(IsSupportedKeySystem("org.chromium.other"));
+
+  EXPECT_FALSE(IsSupportedKeySystem("com.chromecast"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.chromecast."));
+  EXPECT_TRUE(IsSupportedKeySystem("com.chromecast.something"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.chromecast.something.else"));
+  EXPECT_FALSE(IsSupportedKeySystem("com.chromecast.other"));
+
+  EXPECT_FALSE(IsSupportedKeySystem("x-"));
+  EXPECT_TRUE(IsSupportedKeySystem("x-something"));
+  EXPECT_FALSE(IsSupportedKeySystem("x-something.else"));
+  EXPECT_FALSE(IsSupportedKeySystem("x-other"));
 }
 
 }  // namespace media
