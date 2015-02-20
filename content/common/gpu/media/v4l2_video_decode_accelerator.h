@@ -201,10 +201,8 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Handle the various device queues.
   void Enqueue();
   void Dequeue();
-
-  // Return true if there is a resolution change event pending.
-  bool DequeueResolutionChangeEvent();
-
+  // Handle incoming events.
+  void DequeueEvents();
   // Enqueue a buffer on the corresponding queue.
   bool EnqueueInputRecord();
   bool EnqueueOutputRecord();
@@ -235,16 +233,13 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Device destruction task.
   void DestroyTask();
 
-  // Start |device_poll_thread_|.
+  // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
+  // If |keep_input_state| is true, don't reset input state; used during
+  // resolution change.
+  bool StopDevicePoll(bool keep_input_state);
 
-  // Stop |device_poll_thread_|.
-  bool StopDevicePoll();
-
-  bool StopInputStream();
-  bool StopOutputStream();
-
-  void StartResolutionChange();
+  void StartResolutionChangeIfNeeded();
   void FinishResolutionChange();
 
   // Try to get output format, detected after parsing the beginning
@@ -303,6 +298,12 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Callback that indicates a picture has been cleared.
   void PictureCleared();
 
+  // This method determines whether a resolution change event processing
+  // is indeed required by returning true iff:
+  // - width or height of the new format is different than previous format; or
+  // - V4L2_CID_MIN_BUFFERS_FOR_CAPTURE has changed.
+  bool IsResolutionChangeNecessary();
+
   // Our original calling message loop for the child thread.
   scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
 
@@ -355,6 +356,9 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   int decoder_frames_at_client_;
   // Are we flushing?
   bool decoder_flushing_;
+  // Got a notification from driver that it reached resolution change point
+  // in the stream.
+  bool resolution_change_pending_;
   // Got a reset request while we were performing resolution change.
   bool resolution_change_reset_pending_;
   // Input queue for decoder_thread_: BitstreamBuffers in.
