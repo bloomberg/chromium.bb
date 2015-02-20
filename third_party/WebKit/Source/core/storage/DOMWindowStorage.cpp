@@ -26,7 +26,7 @@ DOMWindowStorage::DOMWindowStorage(LocalDOMWindow& window)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorage);
 
-void DOMWindowStorage::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowStorage)
 {
     visitor->trace(m_sessionStorage);
     visitor->trace(m_localStorage);

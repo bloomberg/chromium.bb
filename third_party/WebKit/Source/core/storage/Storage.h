@@ -66,7 +66,7 @@ public:
     void namedPropertyEnumerator(Vector<String>&, ExceptionState&);
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     Storage(LocalFrame*, PassOwnPtrWillBeRawPtr<StorageArea>);

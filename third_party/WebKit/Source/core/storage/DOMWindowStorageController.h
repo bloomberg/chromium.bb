@@ -18,7 +18,7 @@ class DOMWindowStorageController final : public NoBaseWillBeGarbageCollectedFina
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
 public:
     virtual ~DOMWindowStorageController();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     static const char* supplementName();
     static DOMWindowStorageController& from(Document&);

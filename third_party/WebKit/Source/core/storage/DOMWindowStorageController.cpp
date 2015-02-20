@@ -23,7 +23,7 @@ DOMWindowStorageController::~DOMWindowStorageController()
 {
 }
 
-void DOMWindowStorageController::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowStorageController)
 {
     visitor->trace(m_document);
     WillBeHeapSupplement<Document>::trace(visitor);

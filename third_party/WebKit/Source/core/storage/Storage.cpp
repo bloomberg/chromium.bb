@@ -122,7 +122,7 @@ bool Storage::namedPropertyQuery(const AtomicString& name, ExceptionState& excep
     return true;
 }
 
-void Storage::trace(Visitor* visitor)
+DEFINE_TRACE(Storage)
 {
     visitor->trace(m_storageArea);
     DOMWindowProperty::trace(visitor);

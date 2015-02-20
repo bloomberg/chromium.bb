@@ -64,7 +64,7 @@ StorageArea::~StorageArea()
 {
 }
 
-void StorageArea::trace(Visitor* visitor)
+DEFINE_TRACE(StorageArea)
 {
     FrameDestructionObserver::trace(visitor);
 }

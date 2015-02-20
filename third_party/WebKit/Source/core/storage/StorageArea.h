@@ -72,7 +72,7 @@ public:
         SecurityOrigin*, const KURL& pageURL, const WebStorageNamespace&,
         WebStorageArea* sourceAreaInstance, bool originatedInProcess);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     StorageArea(PassOwnPtr<WebStorageArea>, StorageType);

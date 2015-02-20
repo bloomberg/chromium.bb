@@ -28,7 +28,7 @@ public:
     Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
     Storage* optionalLocalStorage() const { return m_localStorage.get(); }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowStorage(LocalDOMWindow&);

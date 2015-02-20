@@ -24,7 +24,7 @@ public:
     static void provideStorageNamespaceTo(Page&, StorageClient*);
     static StorageNamespaceController* from(Page* page) { return static_cast<StorageNamespaceController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
 
-    virtual void trace(Visitor* visitor) override { WillBeHeapSupplement<Page>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit StorageNamespaceController(StorageClient*);

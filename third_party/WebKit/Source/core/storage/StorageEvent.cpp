@@ -98,7 +98,7 @@ const AtomicString& StorageEvent::interfaceName() const
     return EventNames::StorageEvent;
 }
 
-void StorageEvent::trace(Visitor* visitor)
+DEFINE_TRACE(StorageEvent)
 {
     visitor->trace(m_storageArea);
     Event::trace(visitor);
