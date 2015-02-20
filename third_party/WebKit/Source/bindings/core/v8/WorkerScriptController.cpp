@@ -216,7 +216,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(m_isolate, compiledScript, &m_workerGlobalScope);
 
     if (!block.CanContinue()) {
-        m_workerGlobalScope.script()->forbidExecution();
+        forbidExecution();
         return ScriptValue();
     }
 
@@ -247,6 +247,8 @@ bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
 
     WorkerGlobalScopeExecutionState state(this);
     evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), cacheHandler, v8CacheOptions);
+    if (isExecutionForbidden())
+        return false;
     if (state.hadException) {
         if (errorEvent) {
             if (state.m_errorEventFromImportedScript) {

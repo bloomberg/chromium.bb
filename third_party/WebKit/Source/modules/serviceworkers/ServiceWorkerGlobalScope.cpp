@@ -192,6 +192,8 @@ void ServiceWorkerGlobalScope::dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Ev
 
     observer->willDispatchEvent();
     dispatchEvent(event);
+    if (thread()->terminated())
+        m_hadErrorInTopLevelEventHandler = true;
     observer->didDispatchEvent(m_hadErrorInTopLevelEventHandler);
 }
 
