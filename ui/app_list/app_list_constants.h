@@ -15,6 +15,9 @@ namespace app_list {
 
 APP_LIST_EXPORT extern const SkColor kContentsBackgroundColor;
 APP_LIST_EXPORT extern const SkColor kSearchBoxBackground;
+
+APP_LIST_EXPORT extern const SkColor kSearchTextColor;
+
 APP_LIST_EXPORT extern const SkColor kLabelBackgroundColor;
 APP_LIST_EXPORT extern const SkColor kTopSeparatorColor;
 APP_LIST_EXPORT extern const SkColor kBottomSeparatorColor;

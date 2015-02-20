@@ -152,6 +152,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   layout->set_minimum_cross_axis_size(kPreferredHeight);
 
   search_box_->SetBorder(views::Border::NullBorder());
+  search_box_->SetTextColor(kSearchTextColor);
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->set_controller(this);
   content_container_->AddChildView(search_box_);

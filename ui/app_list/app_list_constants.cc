@@ -9,6 +9,8 @@ namespace app_list {
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF2, 0xF2, 0xF2);
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
 
+const SkColor kSearchTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+
 // In Windows, transparent background color will cause ugly text rendering,
 // therefore kContentsBackgroundColor should be used. See crbug.com/406989
 #if defined(OS_CHROMEOS)
@@ -42,7 +44,7 @@ const SkColor kPagerSelectedColor = SkColorSetRGB(0x46, 0x8F, 0xFC);
 
 const SkColor kResultBorderColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 const SkColor kResultDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
-const SkColor kResultDimmedTextColor = SkColorSetRGB(0x96, 0x96, 0x96);
+const SkColor kResultDimmedTextColor = SkColorSetRGB(0x84, 0x84, 0x84);
 const SkColor kResultURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
 const SkColor kGridTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
