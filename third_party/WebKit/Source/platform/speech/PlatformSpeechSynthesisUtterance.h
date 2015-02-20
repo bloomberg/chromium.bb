@@ -70,7 +70,7 @@ public:
 
     PlatformSpeechSynthesisUtteranceClient* client() const { return m_client; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit PlatformSpeechSynthesisUtterance(PlatformSpeechSynthesisUtteranceClient*);

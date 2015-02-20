@@ -24,7 +24,7 @@ public:
     virtual bool isLocal() { return false; }
     virtual bool isFederated() { return false; }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     PlatformCredential(const String& id, const String& name, const KURL& avatarURL);

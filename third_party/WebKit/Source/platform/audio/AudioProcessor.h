@@ -52,7 +52,7 @@ public:
     }
 
     virtual ~AudioProcessor();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     // Full initialization can be done here instead of in the constructor.
     virtual void initialize() = 0;

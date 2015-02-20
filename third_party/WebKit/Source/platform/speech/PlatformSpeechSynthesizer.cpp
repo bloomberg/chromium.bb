@@ -89,7 +89,7 @@ void PlatformSpeechSynthesizer::initializeVoiceList()
         m_webSpeechSynthesizer->updateVoiceList();
 }
 
-void PlatformSpeechSynthesizer::trace(Visitor* visitor)
+DEFINE_TRACE(PlatformSpeechSynthesizer)
 {
     visitor->trace(m_speechSynthesizerClient);
     visitor->trace(m_voiceList);

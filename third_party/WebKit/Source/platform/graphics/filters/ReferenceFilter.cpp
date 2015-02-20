@@ -47,7 +47,7 @@ ReferenceFilter::~ReferenceFilter()
 {
 }
 
-void ReferenceFilter::trace(Visitor* visitor)
+DEFINE_TRACE(ReferenceFilter)
 {
     visitor->trace(m_sourceGraphic);
     visitor->trace(m_lastEffect);

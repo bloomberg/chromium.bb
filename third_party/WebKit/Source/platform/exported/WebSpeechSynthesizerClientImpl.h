@@ -51,7 +51,7 @@ public:
     virtual void wordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex);
     virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Member<PlatformSpeechSynthesizer> m_synthesizer;

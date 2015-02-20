@@ -251,7 +251,7 @@ void MHTMLArchive::addSubframeArchive(PassRefPtrWillBeRawPtr<MHTMLArchive> subfr
     m_subframeArchives.append(subframeArchive);
 }
 
-void MHTMLArchive::trace(Visitor* visitor)
+DEFINE_TRACE(MHTMLArchive)
 {
     visitor->trace(m_mainResource);
     visitor->trace(m_subresources);

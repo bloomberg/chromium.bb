@@ -62,7 +62,7 @@ public:
 
     float databaseSampleRate() const { return m_databaseSampleRate; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     // Both constructor and destructor must be called from the main thread.

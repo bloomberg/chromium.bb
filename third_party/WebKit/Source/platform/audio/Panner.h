@@ -61,7 +61,7 @@ public:
     virtual double tailTime() const = 0;
     virtual double latencyTime() const = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     Panner(PanningModel model) : m_panningModel(model) { }

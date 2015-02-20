@@ -47,7 +47,7 @@ FilterEffect::~FilterEffect()
 {
 }
 
-void FilterEffect::trace(Visitor* visitor)
+DEFINE_TRACE(FilterEffect)
 {
     visitor->trace(m_inputEffects);
     visitor->trace(m_filter);

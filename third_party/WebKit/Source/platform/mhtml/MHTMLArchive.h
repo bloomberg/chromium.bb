@@ -67,7 +67,7 @@ public:
     const SubArchiveResources& subresources() const { return m_subresources; }
     const SubFrameArchives& subframeArchives() const { return m_subframeArchives; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     friend class MHTMLParser;

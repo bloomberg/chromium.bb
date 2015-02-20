@@ -48,7 +48,7 @@ FilterOperations::FilterOperations()
 {
 }
 
-void FilterOperations::trace(Visitor* visitor)
+DEFINE_TRACE(FilterOperations)
 {
     visitor->trace(m_operations);
 }

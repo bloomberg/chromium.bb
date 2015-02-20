@@ -49,7 +49,7 @@ public:
     virtual MediaStreamComponent* component() = 0;
     virtual void requestSucceeded(RTCStatsResponseBase*) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     RTCStatsRequest() { }

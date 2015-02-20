@@ -41,7 +41,7 @@ PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(PlatformSpeec
 {
 }
 
-void PlatformSpeechSynthesisUtterance::trace(Visitor* visitor)
+DEFINE_TRACE(PlatformSpeechSynthesisUtterance)
 {
     visitor->trace(m_client);
     visitor->trace(m_voice);

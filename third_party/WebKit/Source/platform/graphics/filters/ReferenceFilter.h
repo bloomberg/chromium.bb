@@ -50,7 +50,7 @@ public:
     }
 
     virtual ~ReferenceFilter();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual IntRect sourceImageRect() const override { return IntRect(); };
 

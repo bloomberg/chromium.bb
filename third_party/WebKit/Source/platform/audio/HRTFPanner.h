@@ -49,7 +49,7 @@ public:
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     // Given an azimuth angle in the range -180 -> +180, returns the corresponding azimuth index for the database,

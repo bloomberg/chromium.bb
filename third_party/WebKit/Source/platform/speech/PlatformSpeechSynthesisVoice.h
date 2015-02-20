@@ -52,7 +52,7 @@ public:
     bool isDefault() const { return m_default; }
     void setIsDefault(bool isDefault) { m_default = isDefault; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     PlatformSpeechSynthesisVoice(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault);

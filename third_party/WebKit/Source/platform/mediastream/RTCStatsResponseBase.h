@@ -36,7 +36,7 @@ public:
     virtual size_t addReport(const String& id, const String& type, double timestamp) = 0;
     virtual void addStatistic(size_t report, const String& name, const String& value) = 0;
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink

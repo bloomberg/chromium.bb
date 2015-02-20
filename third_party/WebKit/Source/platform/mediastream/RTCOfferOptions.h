@@ -21,7 +21,7 @@ public:
     bool voiceActivityDetection() const { return m_voiceActivityDetection; }
     bool iceRestart() const { return m_iceRestart; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     RTCOfferOptions(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)

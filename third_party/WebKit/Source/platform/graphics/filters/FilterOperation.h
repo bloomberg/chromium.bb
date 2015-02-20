@@ -82,7 +82,7 @@ public:
     }
 
     virtual ~FilterOperation() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     static PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, const FilterOperation* to, double progress);
     virtual bool operator==(const FilterOperation&) const = 0;
@@ -127,7 +127,7 @@ public:
     ReferenceFilter* filter() const { return m_filter.get(); }
     void setFilter(PassRefPtrWillBeRawPtr<ReferenceFilter> filter) { m_filter = filter; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override

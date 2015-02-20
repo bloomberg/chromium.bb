@@ -39,7 +39,7 @@ PassRefPtrWillBeRawPtr<FilterOperation> FilterOperation::blend(const FilterOpera
     return from->blend(0, 1 - progress);
 }
 
-void ReferenceFilterOperation::trace(Visitor* visitor)
+DEFINE_TRACE(ReferenceFilterOperation)
 {
     visitor->trace(m_filter);
     FilterOperation::trace(visitor);

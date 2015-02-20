@@ -50,7 +50,7 @@ public:
     const String& username() { return m_username; }
     const String& credential() { return m_credential; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     RTCIceServer(const KURL& uri, const String& username, const String& credential)
@@ -89,7 +89,7 @@ public:
     void setBundlePolicy(RTCBundlePolicy bundlePolicy) { m_bundlePolicy = bundlePolicy; }
     RTCBundlePolicy bundlePolicy() { return m_bundlePolicy; }
 
-    void trace(Visitor* visitor) { visitor->trace(m_servers); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
 
 private:
     RTCConfiguration() : m_iceTransports(RTCIceTransportsAll), m_bundlePolicy(RTCBundlePolicyBalanced) { }

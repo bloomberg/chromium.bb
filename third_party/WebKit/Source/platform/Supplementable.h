@@ -123,7 +123,7 @@ public:
     //
     // When that transition type is removed (or its use is substantially
     // reduced), remove this dummy trace method also.
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 template<typename T, bool isGarbageCollected = false>
@@ -155,7 +155,7 @@ class SupplementableTracing;
 template<typename T>
 class SupplementableTracing<T, true> : public GarbageCollectedMixin {
 public:
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_supplements);
     }

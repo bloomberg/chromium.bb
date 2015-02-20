@@ -54,7 +54,7 @@ public:
     const AtomicString& textEncoding() const { return m_textEncoding; }
     const String& frameName() const { return m_frameName; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     ArchiveResource(PassRefPtr<SharedBuffer>, const KURL&, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse&);

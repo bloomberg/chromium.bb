@@ -107,7 +107,7 @@ private:
 class TextCheckingRequest : public RefCountedWillBeGarbageCollectedFinalized<TextCheckingRequest> {
 public:
     virtual ~TextCheckingRequest() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual const TextCheckingRequestData& data() const = 0;
     virtual void didSucceed(const Vector<TextCheckingResult>&) = 0;

@@ -314,7 +314,7 @@ double HRTFPanner::latencyTime() const
     return (fftSize() / 2) / static_cast<double>(sampleRate());
 }
 
-void HRTFPanner::trace(Visitor* visitor)
+DEFINE_TRACE(HRTFPanner)
 {
     visitor->trace(m_databaseLoader);
     Panner::trace(visitor);

@@ -98,7 +98,7 @@ PassRefPtrWillBeRawPtr<MHTMLArchive> ArchiveResourceCollection::popSubframeArchi
     return m_subframes.take(url.string());
 }
 
-void ArchiveResourceCollection::trace(Visitor* visitor)
+DEFINE_TRACE(ArchiveResourceCollection)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_subresources);

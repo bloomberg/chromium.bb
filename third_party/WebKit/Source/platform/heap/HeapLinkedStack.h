@@ -49,7 +49,7 @@ public:
 
     size_t size();
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         for (Node* current = m_head; current; current = current->m_next)
             visitor->trace(current);
@@ -60,7 +60,7 @@ private:
     public:
         Node(const T&, Node* next);
 
-        void trace(Visitor* visitor) { visitor->trace(m_data); }
+        DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
 
         T m_data;
         Member<Node> m_next;

@@ -41,7 +41,7 @@ public:
     {
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         LifecycleNotifier<DummyContext>::trace(visitor);
     }
@@ -71,7 +71,7 @@ public:
         m_contextDestroyedCalled = true;
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         LifecycleObserver<DummyContext>::trace(visitor);
     }

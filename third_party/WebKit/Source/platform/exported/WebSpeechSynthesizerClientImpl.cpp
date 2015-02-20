@@ -84,7 +84,7 @@ void WebSpeechSynthesizerClientImpl::sentenceBoundaryEventOccurred(const WebSpee
     m_client->boundaryEventOccurred(utterance, SpeechSentenceBoundary, charIndex);
 }
 
-void WebSpeechSynthesizerClientImpl::trace(Visitor* visitor)
+DEFINE_TRACE(WebSpeechSynthesizerClientImpl)
 {
     visitor->trace(m_synthesizer);
     visitor->trace(m_client);

@@ -125,7 +125,7 @@ public:
     // Notifies this widget that it will no longer be receiving events.
     virtual void eventListenersRemoved() { }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
     virtual void dispose() { }
 
 private:

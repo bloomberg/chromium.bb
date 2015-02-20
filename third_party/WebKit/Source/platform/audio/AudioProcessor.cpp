@@ -37,7 +37,7 @@ AudioProcessor::~AudioProcessor()
 {
 }
 
-void AudioProcessor::trace(Visitor*)
+DEFINE_TRACE(AudioProcessor)
 {
 }
 

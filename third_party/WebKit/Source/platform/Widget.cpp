@@ -46,7 +46,7 @@ Widget::~Widget()
 #endif
 }
 
-void Widget::trace(Visitor* visitor)
+DEFINE_TRACE(Widget)
 {
     visitor->trace(m_parent);
 }

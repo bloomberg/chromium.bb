@@ -33,7 +33,7 @@ class IntSize;
 class PopupMenu : public RefCountedWillBeGarbageCollectedFinalized<PopupMenu> {
 public:
     virtual ~PopupMenu() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) = 0;
     virtual void hide() = 0;
     virtual void updateFromElement() = 0;

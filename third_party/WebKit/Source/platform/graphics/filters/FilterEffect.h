@@ -63,7 +63,7 @@ typedef int DetermineSubregionFlags;
 class PLATFORM_EXPORT FilterEffect : public RefCountedWillBeGarbageCollectedFinalized<FilterEffect> {
 public:
     virtual ~FilterEffect();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     void clearResult();
     void clearResultsRecursive();

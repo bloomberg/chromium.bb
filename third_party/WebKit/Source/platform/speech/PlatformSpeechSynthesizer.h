@@ -73,7 +73,7 @@ public:
 
     void setVoiceList(HeapVector<Member<PlatformSpeechSynthesisVoice>>&);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient*);

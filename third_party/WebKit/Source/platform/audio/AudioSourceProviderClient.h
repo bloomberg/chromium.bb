@@ -35,7 +35,7 @@ public:
     // Oilpan: Callers should keep this object alive during lock() and unlock().
     virtual void lock() { }
     virtual void unlock() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 protected:
     virtual ~AudioSourceProviderClient() { }
 };

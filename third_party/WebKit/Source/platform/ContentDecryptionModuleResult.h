@@ -29,7 +29,7 @@ public:
         return WebContentDecryptionModuleResult(this);
     }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink
