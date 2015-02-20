@@ -35,8 +35,8 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/CSSPropertyNames.h"
 #include "core/InputTypeNames.h"
-#include "core/events/MouseEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/MouseEvent.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLDivElement.h"
@@ -274,7 +274,7 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const
 
 AXObject* ColorInputType::popupRootAXObject()
 {
-    return m_chooser ? m_chooser->rootAXObject() : 0;
+    return m_chooser ? m_chooser->rootAXObject() : nullptr;
 }
 
 ColorChooserClient* ColorInputType::colorChooserClient()

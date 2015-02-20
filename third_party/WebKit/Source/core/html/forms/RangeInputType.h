@@ -44,34 +44,35 @@ public:
 
 private:
     RangeInputType(HTMLInputElement&);
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
-    virtual double valueAsDouble() const override;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
-    virtual bool typeMismatchFor(const String&) const override;
-    virtual bool supportsRequired() const override;
-    virtual StepRange createStepRange(AnyStepHandling) const override;
-    virtual bool isSteppable() const override;
-    virtual void handleMouseDownEvent(MouseEvent*) override;
-    virtual void handleTouchEvent(TouchEvent*) override;
-    virtual bool hasTouchEventHandler() const override;
-    virtual void handleKeydownEvent(KeyboardEvent*) override;
-    virtual LayoutObject* createRenderer(const LayoutStyle&) const override;
-    virtual void createShadowSubtree() override;
-    virtual Decimal parseToNumber(const String&, const Decimal&) const override;
-    virtual String serialize(const Decimal&) const override;
-    virtual void accessKeyAction(bool sendMouseEvents) override;
-    virtual void sanitizeValueInResponseToMinOrMaxAttributeChange() override;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
-    virtual String fallbackValue() const override;
-    virtual String sanitizeValue(const String& proposedValue) const override;
-    virtual bool shouldRespectListAttribute() override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
+    double valueAsDouble() const override;
+    void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
+    bool typeMismatchFor(const String&) const override;
+    bool supportsRequired() const override;
+    StepRange createStepRange(AnyStepHandling) const override;
+    bool isSteppable() const override;
+    void handleMouseDownEvent(MouseEvent*) override;
+    void handleTouchEvent(TouchEvent*) override;
+    bool hasTouchEventHandler() const override;
+    void handleKeydownEvent(KeyboardEvent*) override;
+    LayoutObject* createRenderer(const LayoutStyle&) const override;
+    void createShadowSubtree() override;
+    Decimal parseToNumber(const String&, const Decimal&) const override;
+    String serialize(const Decimal&) const override;
+    void accessKeyAction(bool sendMouseEvents) override;
+    void sanitizeValueInResponseToMinOrMaxAttributeChange() override;
+    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    String fallbackValue() const override;
+    String sanitizeValue(const String& proposedValue) const override;
+    bool shouldRespectListAttribute() override;
+    void disabledAttributeChanged() override;
+    void listAttributeTargetChanged() override;
+    Decimal findClosestTickMarkValue(const Decimal&) override;
+
     SliderThumbElement* sliderThumbElement() const;
     Element* sliderTrackElement() const;
-    virtual void disabledAttributeChanged() override;
-    virtual void listAttributeTargetChanged() override;
     void updateTickMarkValues();
-    virtual Decimal findClosestTickMarkValue(const Decimal&) override;
 
     // InputTypeView function:
     virtual void updateView() override;

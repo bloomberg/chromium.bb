@@ -41,14 +41,14 @@ public:
 
 private:
     PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
-    virtual bool shouldSaveAndRestoreFormControlState() const override;
-    virtual FormControlState saveFormControlState() const override;
-    virtual void restoreFormControlState(const FormControlState&) override;
-    virtual bool shouldRespectListAttribute() override;
-    virtual void enableSecureTextInput() override;
-    virtual void disableSecureTextInput() override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
+    bool shouldSaveAndRestoreFormControlState() const override;
+    FormControlState saveFormControlState() const override;
+    void restoreFormControlState(const FormControlState&) override;
+    bool shouldRespectListAttribute() override;
+    void enableSecureTextInput() override;
+    void disableSecureTextInput() override;
 };
 
 } // namespace blink

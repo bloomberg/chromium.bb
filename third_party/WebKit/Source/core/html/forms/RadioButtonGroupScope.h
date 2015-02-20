@@ -46,7 +46,7 @@ public:
     bool isInRequiredGroup(HTMLInputElement*) const;
 
 private:
-    typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<RadioButtonGroup>, CaseFoldingHash> NameToGroupMap;
+    using NameToGroupMap = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<RadioButtonGroup>, CaseFoldingHash>;
     OwnPtrWillBeMember<NameToGroupMap> m_nameToGroupMap;
 };
 

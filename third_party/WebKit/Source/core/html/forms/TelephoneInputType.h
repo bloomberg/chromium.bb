@@ -41,8 +41,8 @@ public:
 
 private:
     TelephoneInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
 };
 
 } // namespace blink

@@ -47,24 +47,22 @@ public:
 
 protected:
     TextFieldInputType(HTMLInputElement&);
-    virtual ~TextFieldInputType();
-    virtual bool canSetSuggestedValue() override;
-    virtual void handleKeydownEvent(KeyboardEvent*) override;
-    void handleKeydownEventForSpinButton(KeyboardEvent*);
+    ~TextFieldInputType() override;
+    bool canSetSuggestedValue() override;
+    void handleKeydownEvent(KeyboardEvent*) override;
+
+    void createShadowSubtree() override;
+    void destroyShadowSubtree() override;
+    void attributeChanged() override;
+    void disabledAttributeChanged() override;
+    void readonlyAttributeChanged() override;
+    bool supportsReadOnly() const override;
+    void handleFocusEvent(Element* oldFocusedNode, WebFocusType) final;
+    void handleBlurEvent() final;
+    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    void updateView() override;
 
     virtual bool needsContainer() const { return false; }
-    bool shouldHaveSpinButton() const;
-    virtual void createShadowSubtree() override;
-    virtual void destroyShadowSubtree() override;
-    virtual void attributeChanged() override;
-    virtual void disabledAttributeChanged() override;
-    virtual void readonlyAttributeChanged() override;
-    virtual bool supportsReadOnly() const override;
-    virtual void handleFocusEvent(Element* oldFocusedNode, WebFocusType) override final;
-    virtual void handleBlurEvent() override final;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
-    virtual void updateView() override;
-
     virtual String convertFromVisibleValue(const String&) const;
     enum ValueChangeState {
         ValueChangeStateNone,
@@ -72,30 +70,32 @@ protected:
     };
     virtual void didSetValueByUserEdit(ValueChangeState);
 
+    void handleKeydownEventForSpinButton(KeyboardEvent*);
+    bool shouldHaveSpinButton() const;
     Element* containerElement() const;
 
 private:
-    virtual bool shouldShowFocusRingOnMouseFocus() const override final;
-    virtual bool isTextField() const override final;
-    virtual bool valueMissing(const String&) const override;
-    virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
-    virtual void forwardEvent(Event*) override final;
-    virtual bool shouldSubmitImplicitly(Event*) override final;
-    virtual LayoutObject* createRenderer(const LayoutStyle&) const override;
-    virtual String sanitizeValue(const String&) const override;
-    virtual bool shouldRespectListAttribute() override;
-    virtual void listAttributeTargetChanged() override;
-    virtual void updatePlaceholderText() override final;
-    virtual bool appendFormData(FormDataList&, bool multipart) const override;
-    virtual void subtreeHasChanged() override final;
+    bool shouldShowFocusRingOnMouseFocus() const final;
+    bool isTextField() const final;
+    bool valueMissing(const String&) const override;
+    void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
+    void forwardEvent(Event*) final;
+    bool shouldSubmitImplicitly(Event*) final;
+    LayoutObject* createRenderer(const LayoutStyle&) const override;
+    String sanitizeValue(const String&) const override;
+    bool shouldRespectListAttribute() override;
+    void listAttributeTargetChanged() override;
+    void updatePlaceholderText() final;
+    bool appendFormData(FormDataList&, bool multipart) const override;
+    void subtreeHasChanged() final;
 
     // SpinButtonElement::SpinButtonOwner functions.
-    virtual void focusAndSelectSpinButtonOwner() override final;
-    virtual bool shouldSpinButtonRespondToMouseEvents() override final;
-    virtual bool shouldSpinButtonRespondToWheelEvents() override final;
-    virtual void spinButtonStepDown() override final;
-    virtual void spinButtonStepUp() override final;
-    virtual void spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch) override final;
+    void focusAndSelectSpinButtonOwner() final;
+    bool shouldSpinButtonRespondToMouseEvents() final;
+    bool shouldSpinButtonRespondToWheelEvents() final;
+    void spinButtonStepDown() final;
+    void spinButtonStepUp() final;
+    void spinButtonDidReleaseMouseCapture(SpinButtonElement::EventDispatch) final;
 
     SpinButtonElement* spinButtonElement() const;
 };

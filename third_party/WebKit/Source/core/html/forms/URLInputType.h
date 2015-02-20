@@ -41,11 +41,11 @@ public:
 
 private:
     URLInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
-    virtual bool typeMismatchFor(const String&) const override;
-    virtual bool typeMismatch() const override;
-    virtual String typeMismatchText() const override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
+    bool typeMismatchFor(const String&) const override;
+    bool typeMismatch() const override;
+    String typeMismatchText() const override;
 };
 
 } // namespace blink

@@ -78,7 +78,7 @@ private:
         // FIXME: We should dispatch mousedown events even in such case.
         if (event->type() == EventTypeNames::mousedown)
             event->stopPropagation();
-        return 0;
+        return nullptr;
     }
 
     virtual void defaultEventHandler(Event* event) override

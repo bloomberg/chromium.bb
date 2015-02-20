@@ -41,13 +41,13 @@ public:
 
 private:
     CheckboxInputType(HTMLInputElement& element) : BaseCheckableInputType(element) { }
-    virtual const AtomicString& formControlType() const override;
-    virtual bool valueMissing(const String&) const override;
-    virtual String valueMissingText() const override;
-    virtual void handleKeyupEvent(KeyboardEvent*) override;
-    virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
-    virtual void didDispatchClick(Event*, const ClickHandlingState&) override;
-    virtual bool shouldAppearIndeterminate() const override;
+    const AtomicString& formControlType() const override;
+    bool valueMissing(const String&) const override;
+    String valueMissingText() const override;
+    void handleKeyupEvent(KeyboardEvent*) override;
+    PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
+    void didDispatchClick(Event*, const ClickHandlingState&) override;
+    bool shouldAppearIndeterminate() const override;
 };
 
 } // namespace blink

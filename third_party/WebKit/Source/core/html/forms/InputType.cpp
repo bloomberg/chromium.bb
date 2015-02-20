@@ -75,8 +75,8 @@ namespace blink {
 using blink::WebLocalizedString;
 using namespace HTMLNames;
 
-typedef PassRefPtrWillBeRawPtr<InputType> (*InputTypeFactoryFunction)(HTMLInputElement&);
-typedef HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash> InputTypeFactoryMap;
+using InputTypeFactoryFunction = PassRefPtrWillBeRawPtr<InputType> (*)(HTMLInputElement&);
+using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash>;
 
 static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
 {

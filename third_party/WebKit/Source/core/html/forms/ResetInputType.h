@@ -41,11 +41,11 @@ public:
 
 private:
     ResetInputType(HTMLInputElement& element) : BaseButtonInputType(element) { }
-    virtual const AtomicString& formControlType() const override;
-    virtual bool supportsValidation() const override;
-    virtual void handleDOMActivateEvent(Event*) override;
-    virtual String defaultValue() const override;
-    virtual bool isTextButton() const override;
+    const AtomicString& formControlType() const override;
+    bool supportsValidation() const override;
+    void handleDOMActivateEvent(Event*) override;
+    String defaultValue() const override;
+    bool isTextButton() const override;
 };
 
 } // namespace blink

@@ -41,17 +41,18 @@ public:
 
 private:
     RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) { }
-    virtual const AtomicString& formControlType() const override;
-    virtual bool valueMissing(const String&) const override;
-    virtual String valueMissingText() const override;
-    virtual void handleClickEvent(MouseEvent*) override;
-    virtual void handleKeydownEvent(KeyboardEvent*) override;
-    virtual void handleKeyupEvent(KeyboardEvent*) override;
-    virtual bool isKeyboardFocusable() const override;
-    virtual bool shouldSendChangeEventAfterCheckedChanged() override;
-    virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
-    virtual void didDispatchClick(Event*, const ClickHandlingState&) override;
-    virtual bool shouldAppearIndeterminate() const override;
+    const AtomicString& formControlType() const override;
+    bool valueMissing(const String&) const override;
+    String valueMissingText() const override;
+    void handleClickEvent(MouseEvent*) override;
+    void handleKeydownEvent(KeyboardEvent*) override;
+    void handleKeyupEvent(KeyboardEvent*) override;
+    bool isKeyboardFocusable() const override;
+    bool shouldSendChangeEventAfterCheckedChanged() override;
+    PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
+    void didDispatchClick(Event*, const ClickHandlingState&) override;
+    bool shouldAppearIndeterminate() const override;
+
     HTMLInputElement* findNextFocusableRadioButtonInGroup(HTMLInputElement*, bool);
 };
 

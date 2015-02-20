@@ -41,18 +41,18 @@ public:
 
 private:
     HiddenInputType(HTMLInputElement& element) : InputType(element) { }
-    virtual const AtomicString& formControlType() const override;
-    virtual FormControlState saveFormControlState() const override;
-    virtual void restoreFormControlState(const FormControlState&) override;
-    virtual bool supportsValidation() const override;
-    virtual LayoutObject* createRenderer(const LayoutStyle&) const override;
-    virtual void accessKeyAction(bool sendMouseEvents) override;
-    virtual bool rendererIsNeeded() override;
-    virtual bool storesValueSeparateFromAttribute() override;
-    virtual bool isInteractiveContent() const override { return false; }
-    virtual bool shouldRespectHeightAndWidthAttributes() override;
-    virtual void setValue(const String&, bool, TextFieldEventBehavior) override;
-    virtual bool appendFormData(FormDataList&, bool) const override;
+    const AtomicString& formControlType() const override;
+    FormControlState saveFormControlState() const override;
+    void restoreFormControlState(const FormControlState&) override;
+    bool supportsValidation() const override;
+    LayoutObject* createRenderer(const LayoutStyle&) const override;
+    void accessKeyAction(bool sendMouseEvents) override;
+    bool rendererIsNeeded() override;
+    bool storesValueSeparateFromAttribute() override;
+    bool isInteractiveContent() const override { return false; }
+    bool shouldRespectHeightAndWidthAttributes() override;
+    void setValue(const String&, bool, TextFieldEventBehavior) override;
+    bool appendFormData(FormDataList&, bool) const override;
 };
 
 } // namespace blink

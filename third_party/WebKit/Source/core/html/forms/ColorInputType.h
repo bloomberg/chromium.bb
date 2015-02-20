@@ -46,31 +46,31 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // ColorChooserClient implementation.
-    virtual void didChooseColor(const Color&) override;
-    virtual void didEndChooser() override;
-    virtual Element& ownerElement() const override;
-    virtual IntRect elementRectRelativeToRootView() const override;
-    virtual Color currentColor() override;
-    virtual bool shouldShowSuggestions() const override;
-    virtual Vector<ColorSuggestion> suggestions() const override;
+    void didChooseColor(const Color&) override;
+    void didEndChooser() override;
+    Element& ownerElement() const override;
+    IntRect elementRectRelativeToRootView() const override;
+    Color currentColor() override;
+    bool shouldShowSuggestions() const override;
+    Vector<ColorSuggestion> suggestions() const override;
     ColorChooserClient* colorChooserClient() override;
 
 private:
     ColorInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
-    virtual bool supportsRequired() const override;
-    virtual String fallbackValue() const override;
-    virtual String sanitizeValue(const String&) const override;
-    virtual void createShadowSubtree() override;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
-    virtual void handleDOMActivateEvent(Event*) override;
-    virtual void closePopupView() override;
-    virtual bool shouldRespectListAttribute() override;
-    virtual bool typeMismatchFor(const String&) const override;
-    virtual void warnIfValueIsInvalid(const String&) const override;
-    virtual void updateView() override;
-    virtual AXObject* popupRootAXObject() override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
+    bool supportsRequired() const override;
+    String fallbackValue() const override;
+    String sanitizeValue(const String&) const override;
+    void createShadowSubtree() override;
+    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    void handleDOMActivateEvent(Event*) override;
+    void closePopupView() override;
+    bool shouldRespectListAttribute() override;
+    bool typeMismatchFor(const String&) const override;
+    void warnIfValueIsInvalid(const String&) const override;
+    void updateView() override;
+    AXObject* popupRootAXObject() override;
 
     Color valueAsColor() const;
     void endColorChooser();

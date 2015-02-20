@@ -43,32 +43,32 @@ public:
 
 private:
     NumberInputType(HTMLInputElement& element) : TextFieldInputType(element) { }
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
-    virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
-    virtual double valueAsDouble() const override;
-    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
-    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const override;
-    virtual bool typeMismatchFor(const String&) const override;
-    virtual bool typeMismatch() const override;
-    virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const override;
-    virtual bool isSteppable() const override;
-    virtual StepRange createStepRange(AnyStepHandling) const override;
-    virtual void handleKeydownEvent(KeyboardEvent*) override;
-    virtual Decimal parseToNumber(const String&, const Decimal&) const override;
-    virtual String serialize(const Decimal&) const override;
-    virtual String localizeValue(const String&) const override;
-    virtual String visibleValue() const override;
-    virtual String convertFromVisibleValue(const String&) const override;
-    virtual String sanitizeValue(const String&) const override;
-    virtual bool hasBadInput() const override;
-    virtual String badInputText() const override;
-    virtual String rangeOverflowText(const Decimal& maxmum) const override;
-    virtual String rangeUnderflowText(const Decimal& minimum) const override;
-    virtual bool supportsPlaceholder() const override;
-    virtual void minOrMaxAttributeChanged() override;
-    virtual void stepAttributeChanged() override;
-    virtual bool supportsSelectionAPI() const override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
+    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
+    double valueAsDouble() const override;
+    void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
+    void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const override;
+    bool typeMismatchFor(const String&) const override;
+    bool typeMismatch() const override;
+    bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const override;
+    bool isSteppable() const override;
+    StepRange createStepRange(AnyStepHandling) const override;
+    void handleKeydownEvent(KeyboardEvent*) override;
+    Decimal parseToNumber(const String&, const Decimal&) const override;
+    String serialize(const Decimal&) const override;
+    String localizeValue(const String&) const override;
+    String visibleValue() const override;
+    String convertFromVisibleValue(const String&) const override;
+    String sanitizeValue(const String&) const override;
+    bool hasBadInput() const override;
+    String badInputText() const override;
+    String rangeOverflowText(const Decimal& maxmum) const override;
+    String rangeUnderflowText(const Decimal& minimum) const override;
+    bool supportsPlaceholder() const override;
+    void minOrMaxAttributeChanged() override;
+    void stepAttributeChanged() override;
+    bool supportsSelectionAPI() const override;
 };
 
 } // namespace blink

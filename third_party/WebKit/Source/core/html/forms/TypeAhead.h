@@ -52,7 +52,7 @@ public:
         CycleFirstChar = 1 << 1,
         MatchIndex = 1 << 2,
     };
-    typedef unsigned MatchModeFlags;
+    using MatchModeFlags = unsigned;
 
     // Returns the index for the matching option.
     int handleEvent(KeyboardEvent*, MatchModeFlags);

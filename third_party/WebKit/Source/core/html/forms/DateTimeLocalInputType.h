@@ -39,9 +39,9 @@ namespace blink {
 class ExceptionState;
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-typedef BaseMultipleFieldsDateAndTimeInputType BaseDateTimeLocalInputType;
+using BaseDateTimeLocalInputType = BaseMultipleFieldsDateAndTimeInputType;
 #else
-typedef BaseChooserOnlyDateAndTimeInputType BaseDateTimeLocalInputType;
+using BaseDateTimeLocalInputType = BaseChooserOnlyDateAndTimeInputType;
 #endif
 
 class DateTimeLocalInputType final : public BaseDateTimeLocalInputType {
@@ -50,19 +50,19 @@ public:
 
 private:
     DateTimeLocalInputType(HTMLInputElement& element) : BaseDateTimeLocalInputType(element) { }
-    virtual void countUsage() override;
-    virtual const AtomicString& formControlType() const override;
-    virtual double valueAsDate() const override;
-    virtual void setValueAsDate(double, ExceptionState&) const override;
-    virtual StepRange createStepRange(AnyStepHandling) const override;
-    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
-    virtual bool setMillisecondToDateComponents(double, DateComponents*) const override;
+    void countUsage() override;
+    const AtomicString& formControlType() const override;
+    double valueAsDate() const override;
+    void setValueAsDate(double, ExceptionState&) const override;
+    StepRange createStepRange(AnyStepHandling) const override;
+    bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
+    bool setMillisecondToDateComponents(double, DateComponents*) const override;
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // BaseMultipleFieldsDateAndTimeInputType functions
-    virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const override final;
-    virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override final;
-    virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;
+    String formatDateTimeFieldsState(const DateTimeFieldsState&) const override final;
+    void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override final;
+    bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;
 #endif
 };
 

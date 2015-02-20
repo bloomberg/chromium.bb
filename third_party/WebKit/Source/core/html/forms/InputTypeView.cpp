@@ -224,7 +224,7 @@ void InputTypeView::updatePlaceholderText()
 
 AXObject* InputTypeView::popupRootAXObject()
 {
-    return 0;
+    return nullptr;
 }
 
 DEFINE_TRACE(ClickHandlingState)
