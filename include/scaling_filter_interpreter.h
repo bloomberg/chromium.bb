@@ -101,6 +101,10 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   DoubleProperty pressure_translate_;
   DoubleProperty pressure_threshold_;
 
+  // If true, adjust touch count to match finger count when scaling
+  // input state. This can help avoid being considered a T5R2 pad.
+  BoolProperty force_touch_count_to_match_finger_count_;
+
   DoubleProperty mouse_cpi_;
 
   HardwareProperties friendly_props_;
