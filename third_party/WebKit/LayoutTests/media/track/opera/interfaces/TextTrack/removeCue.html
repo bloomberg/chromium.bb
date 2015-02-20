@@ -27,6 +27,15 @@ test(function() {
         t2.removeCue(c1);
     }, 'standalone, remove from t2');
 }, document.title+', two elementless tracks');
+
+test(function() {
+    var t1 = video.addTextTrack('subtitles');
+    assert_equals(t1.cues.length, 0);
+    assert_throws(new TypeError, function() { t1.removeCue(null); }, 'null');
+    assert_throws(new TypeError, function() { t1.removeCue([]); }, 'non-TextTrackCue');
+    assert_equals(t1.cues.length, 0);
+}, document.title+', invalid values');
+
 var t = async_test(document.title+', cue from track element');
 t.step(function(){
     var t1 = video.addTextTrack('subtitles');

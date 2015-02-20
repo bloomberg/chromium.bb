@@ -225,9 +225,7 @@ TextTrackCueList* TextTrack::activeCues() const
 
 void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
 {
-    if (!prpCue)
-        return;
-
+    ASSERT(prpCue);
     RefPtrWillBeRawPtr<TextTrackCue> cue = prpCue;
 
     // TODO(93143): Add spec-compliant behavior for negative time values.
@@ -254,8 +252,7 @@ void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
 
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
 {
-    if (!cue)
-        return;
+    ASSERT(cue);
 
     // 4.8.10.12.5 Text track API
 
