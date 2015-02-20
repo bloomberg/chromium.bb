@@ -224,7 +224,6 @@
       'WebScriptBindings.cpp',
       'WebScriptController.cpp',
       'WebScriptSource.cpp',
-      'WebScrollbarThemePainter.cpp',
       'WebSearchableFormData.cpp',
       'WebSecurityOrigin.cpp',
       'WebSecurityPolicy.cpp',

@@ -46,21 +46,21 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebScrollbarThemePainter&);
+    BLINK_PLATFORM_EXPORT void assign(const WebScrollbarThemePainter&);
 
-    BLINK_EXPORT void paintScrollbarBackground(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintTrackBackground(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintBackTrackPart(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintForwardTrackPart(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintBackButtonStart(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintBackButtonEnd(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintForwardButtonStart(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintForwardButtonEnd(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintTickmarks(WebCanvas*, const WebRect&);
-    BLINK_EXPORT void paintThumb(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintScrollbarBackground(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintTrackBackground(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintBackTrackPart(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintForwardTrackPart(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintBackButtonStart(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintBackButtonEnd(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintForwardButtonStart(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintForwardButtonEnd(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintTickmarks(WebCanvas*, const WebRect&);
+    BLINK_PLATFORM_EXPORT void paintThumb(WebCanvas*, const WebRect&);
 
-#if BLINK_IMPLEMENTATION
-    WebScrollbarThemePainter(ScrollbarTheme*, Scrollbar*);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebScrollbarThemePainter(ScrollbarTheme*, Scrollbar*);
 #endif
 
 private:
