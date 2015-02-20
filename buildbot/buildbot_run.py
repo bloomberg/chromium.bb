@@ -179,12 +179,12 @@ def GypTestFormat(title, format=None, msvs_version=None, tests=[]):
   if msvs_version:
     env['GYP_MSVS_VERSION'] = msvs_version
   command = ' '.join(
-      [sys.executable, 'trunk/gyptest.py',
+      [sys.executable, 'gyp/gyptest.py',
        '--all',
        '--passed',
        '--format', format,
        '--path', CMAKE_BIN_DIR,
-       '--chdir', 'trunk'] + tests)
+       '--chdir', 'gyp'] + tests)
   if format == 'android':
     # gyptest needs the environment setup from envsetup/lunch in order to build
     # using the 'android' backend, so this is done in a single shell.
