@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Common library methods used by both host and client controllers."""
+"""Common library methods used by both coordinator and task machines."""
 
 import argparse
 import logging

@@ -13,29 +13,29 @@ import logging
 import time
 import xmlrpclib
 
-import host_controller
+import test_controller
 
 
-class ExampleController(host_controller.HostController):
+class ExampleTestController(test_controller.TestController):
   """An example controller using the remote subprocess functions."""
 
   def __init__(self):
-    super(ExampleController, self).__init__()
-    self.client = None
+    super(ExampleTestController, self).__init__()
+    self.task = None
 
   def SetUp(self):
-    """Creates the client machine and waits until it connects."""
-    self.client = self.NewClient(
-        isolate_file='client.isolate',
+    """Creates the task machine and waits until it connects."""
+    self.task = self.CreateNewTask(
+        isolate_file='task.isolate',
         config_vars={'multi_machine': '1'},
         dimensions={'os': 'legion-linux'},
         idle_timeout_secs=90, connection_timeout_secs=90,
         verbosity=logging.DEBUG)
-    self.client.Create()
-    self.client.WaitForConnection()
+    self.task.Create()
+    self.task.WaitForConnection()
 
-  def Task(self):
-    """Main method to run the task code."""
+  def RunTest(self):
+    """Main method to run the test code."""
     self.TestLs()
     self.TestTerminate()
     self.TestMultipleProcesses()
@@ -43,37 +43,37 @@ class ExampleController(host_controller.HostController):
   def TestMultipleProcesses(self):
     start = time.time()
 
-    sleep20 = self.client.rpc.subprocess.Popen(['sleep', '20'])
-    sleep10 = self.client.rpc.subprocess.Popen(['sleep', '10'])
+    sleep20 = self.task.rpc.subprocess.Popen(['sleep', '20'])
+    sleep10 = self.task.rpc.subprocess.Popen(['sleep', '10'])
 
-    self.client.rpc.subprocess.Wait(sleep10)
+    self.task.rpc.subprocess.Wait(sleep10)
     elapsed = time.time() - start
     assert elapsed >= 10 and elapsed < 11
 
-    self.client.rpc.subprocess.Wait(sleep20)
+    self.task.rpc.subprocess.Wait(sleep20)
     elapsed = time.time() - start
     assert elapsed >= 20
 
-    self.client.rpc.subprocess.Delete(sleep20)
-    self.client.rpc.subprocess.Delete(sleep10)
+    self.task.rpc.subprocess.Delete(sleep20)
+    self.task.rpc.subprocess.Delete(sleep10)
 
   def TestTerminate(self):
     start = time.time()
-    proc = self.client.rpc.subprocess.Popen(['sleep', '20'])
-    self.client.rpc.subprocess.Terminate(proc)  # Implicitly deleted
+    proc = self.task.rpc.subprocess.Popen(['sleep', '20'])
+    self.task.rpc.subprocess.Terminate(proc)  # Implicitly deleted
     try:
-      self.client.rpc.subprocess.Wait(proc)
+      self.task.rpc.subprocess.Wait(proc)
     except xmlrpclib.Fault:
       pass
     assert time.time() - start < 20
 
   def TestLs(self):
-    proc = self.client.rpc.subprocess.Popen(['ls'])
-    self.client.rpc.subprocess.Wait(proc)
-    assert self.client.rpc.subprocess.GetReturncode(proc) == 0
-    assert 'client.isolate' in self.client.rpc.subprocess.ReadStdout(proc)
-    self.client.rpc.subprocess.Delete(proc)
+    proc = self.task.rpc.subprocess.Popen(['ls'])
+    self.task.rpc.subprocess.Wait(proc)
+    assert self.task.rpc.subprocess.GetReturncode(proc) == 0
+    assert 'task.isolate' in self.task.rpc.subprocess.ReadStdout(proc)
+    self.task.rpc.subprocess.Delete(proc)
 
 
 if __name__ == '__main__':
-  ExampleController().RunController()
+  ExampleTestController().RunController()

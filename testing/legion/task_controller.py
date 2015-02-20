@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Defines the client library."""
+"""Defines the task controller library."""
 
 import argparse
 import datetime
@@ -30,11 +30,24 @@ class ConnectionTimeoutError(Error):
   pass
 
 
-class ClientController(object):
-  """Creates, configures, and controls a client machine."""
+class TaskController(object):
+  """Provisions, configures, and controls a task machine.
 
-  _client_count = 0
-  _controllers = []
+  This class is an abstraction of a physical task machine. It provides an
+  end to end API for controlling a task machine. Operations on the task machine
+  are performed using the instance's "rpc" property. A simple end to end
+  scenario is as follows:
+
+  task = TaskController(...)
+  task.Create()
+  task.WaitForConnection()
+  proc = task.rpc.subprocess.Popen(['ls'])
+  print task.rpc.subprocess.GetStdout(proc)
+  task.Release()
+  """
+
+  _task_count = 0
+  _tasks = []
 
   def __init__(self, isolate_file, config_vars, dimensions, priority=100,
                idle_timeout_secs=common_lib.DEFAULT_TIMEOUT_SECS,
@@ -42,10 +55,10 @@ class ClientController(object):
                verbosity='ERROR', name=None):
     assert isinstance(config_vars, dict)
     assert isinstance(dimensions, dict)
-    type(self)._controllers.append(self)
-    type(self)._client_count += 1
+    type(self)._tasks.append(self)
+    type(self)._task_count += 1
     self.verbosity = verbosity
-    self._name = name or 'Client%d' % type(self)._client_count
+    self._name = name or 'Task%d' % type(self)._task_count
     self._priority = priority
     self._isolate_file = isolate_file
     self._isolated_file = isolate_file + 'd'
@@ -61,14 +74,14 @@ class ClientController(object):
     parser = argparse.ArgumentParser()
     parser.add_argument('--isolate-server')
     parser.add_argument('--swarming-server')
-    parser.add_argument('--client-connection-timeout-secs',
+    parser.add_argument('--task-connection-timeout-secs',
                         default=common_lib.DEFAULT_TIMEOUT_SECS)
     args, _ = parser.parse_known_args()
 
     self._isolate_server = args.isolate_server
     self._swarming_server = args.swarming_server
     self._connection_timeout_secs = (connection_timeout_secs or
-                                    args.client_connection_timeout_secs)
+                                    args.task_connection_timeout_secs)
 
   @property
   def name(self):
@@ -107,31 +120,31 @@ class ClientController(object):
     self._verbosity = level  #pylint: disable=attribute-defined-outside-init
 
   @classmethod
-  def ReleaseAllControllers(cls):
-    for controller in cls._controllers:
-      controller.Release()
+  def ReleaseAllTasks(cls):
+    for task in cls._tasks:
+      task.Release()
 
   def _CreateOTP(self):
     """Creates the OTP."""
-    host_name = socket.gethostname()
+    controller_name = socket.gethostname()
     test_name = os.path.basename(sys.argv[0])
     creation_time = datetime.datetime.utcnow()
-    otp = 'client:%s-host:%s-test:%s-creation:%s' % (
-        self._name, host_name, test_name, creation_time)
+    otp = 'task:%s controller:%s test:%s creation:%s' % (
+        self._name, controller_name, test_name, creation_time)
     return otp
 
   def Create(self):
-    """Creates the client machine."""
+    """Creates the task machine."""
     logging.info('Creating %s', self.name)
     self._connect_event.clear()
     self._ExecuteIsolate()
     self._ExecuteSwarming()
 
   def WaitForConnection(self):
-    """Waits for the client machine to connect.
+    """Waits for the task machine to connect.
 
     Raises:
-      ConnectionTimeoutError if the client doesn't connect in time.
+      ConnectionTimeoutError if the task doesn't connect in time.
     """
     logging.info('Waiting for %s to connect with a timeout of %d seconds',
                  self._name, self._connection_timeout_secs)
@@ -140,7 +153,7 @@ class ClientController(object):
       raise ConnectionTimeoutError('%s failed to connect' % self.name)
 
   def Release(self):
-    """Quits the client's RPC server so it can release the machine."""
+    """Quits the task's RPC server so it can release the machine."""
     if self._rpc is not None and self._connected:
       logging.info('Releasing %s', self._name)
       try:
@@ -186,7 +199,7 @@ class ClientController(object):
 
     cmd.extend([
         '--',
-        '--host', common_lib.MY_IP,
+        '--controller', common_lib.MY_IP,
         '--otp', self._otp,
         '--verbosity', self._verbosity,
         '--idle-timeout', str(self._idle_timeout_secs),
@@ -203,7 +216,7 @@ class ClientController(object):
       raise Error(stderr)
 
   def OnConnect(self, ip_address):
-    """Receives client ip address on connection."""
+    """Receives task ip address on connection."""
     self._ip_address = ip_address
     self._connected = True
     self._rpc = common_lib.ConnectToServer(self._ip_address)

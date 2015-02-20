@@ -11,10 +11,11 @@
       'variables': {
         'command': [
           'python',
-          '../../client_controller.py',
+          '../../run_task.py',
         ],
         'files': [
-          'client.isolate'
+          'task_test.isolate',
+          'task_test.py',
         ],
       },
     }],

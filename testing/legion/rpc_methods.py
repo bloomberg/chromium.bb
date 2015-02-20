@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Defines the client RPC methods."""
+"""Defines the task RPC methods."""
 
 import os
 import sys

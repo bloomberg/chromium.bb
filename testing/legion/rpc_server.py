@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""The client RPC server code.
+"""The task RPC server code.
 
 This server is an XML-RPC server which serves code from
-client_rpc_methods.RPCMethods.
+rpc_methods.RPCMethods.
 
 This server will run until shutdown is called on the server object. This can
 be achieved in 2 ways:
@@ -22,8 +22,8 @@ import SimpleXMLRPCServer
 import SocketServer
 
 #pylint: disable=relative-import
-import client_rpc_methods
 import common_lib
+import rpc_methods
 
 
 class RequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
@@ -33,10 +33,10 @@ class RequestHandler(SimpleXMLRPCServer.SimpleXMLRPCRequestHandler):
   """
 
   def do_POST(self):
-    """Verifies the client is authorized to perform RPCs."""
+    """Verifies the task is authorized to perform RPCs."""
     if self.client_address[0] != self.server.authorized_address:
       logging.error('Received unauthorized RPC request from %s',
-                    self.client_address[0])
+                    self.task_address[0])
       self.send_response(403)
       response = 'Forbidden'
       self.send_header('Content-type', 'text/plain')
@@ -60,7 +60,7 @@ class RPCServer(SimpleXMLRPCServer.SimpleXMLRPCServer,
 
     self.authorized_address = authorized_address
     self.idle_timeout_secs = idle_timeout_secs
-    self.register_instance(client_rpc_methods.RPCMethods(self))
+    self.register_instance(rpc_methods.RPCMethods(self))
 
     self._shutdown_requested_event = threading.Event()
     self._rpc_received_event = threading.Event()

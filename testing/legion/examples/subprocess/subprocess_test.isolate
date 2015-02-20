@@ -5,7 +5,7 @@
 {
   'includes': [
     '../../legion.isolate',
-    'client.isolate'
+    'task.isolate'
   ],
   'conditions': [
     ['multi_machine == 1', {

@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""The discovery server used to register clients.
+"""The registration server used to register tasks.
 
-The discovery server is started by the host controller and allows the clients
-to register themselves when they start. Authentication of the client controllers
-is based on an OTP passed to the client controller binary on startup.
+The registration server is started by the test controller and allows the tasks
+to register themselves when they start. Authentication of the tasks controllers
+is based on an OTP passed to the run_task binary on startup.
 """
 
 import logging
@@ -18,38 +18,38 @@ import SimpleXMLRPCServer
 import common_lib
 
 
-class DiscoveryServer(object):
+class TaskRegistrationServer(object):
   """Discovery server run on the host."""
 
   def __init__(self):
-    self._expected_clients = {}
+    self._expected_tasks = {}
     self._rpc_server = None
     self._thread = None
 
-  def _RegisterClientRPC(self, otp, ip):
-    """The RPC used by a client to register with the discovery server."""
-    assert otp in self._expected_clients
-    cb = self._expected_clients.pop(otp)
+  def _RegisterTaskRPC(self, otp, ip):
+    """The RPC used by a task to register with the registration server."""
+    assert otp in self._expected_tasks
+    cb = self._expected_tasks.pop(otp)
     cb(ip)
 
-  def RegisterClientCallback(self, otp, callback):
+  def RegisterTaskCallback(self, otp, callback):
     """Registers a callback associated with an OTP."""
     assert callable(callback)
-    self._expected_clients[otp] = callback
+    self._expected_tasks[otp] = callback
 
   def Start(self):
-    """Starts the discovery server."""
-    logging.debug('Starting discovery server')
+    """Starts the registration server."""
+    logging.debug('Starting task registration server')
     self._rpc_server = SimpleXMLRPCServer.SimpleXMLRPCServer(
         (common_lib.SERVER_ADDRESS, common_lib.SERVER_PORT),
         allow_none=True, logRequests=False)
     self._rpc_server.register_function(
-        self._RegisterClientRPC, 'RegisterClient')
+        self._RegisterTaskRPC, 'RegisterTask')
     self._thread = threading.Thread(target=self._rpc_server.serve_forever)
     self._thread.start()
 
   def Shutdown(self):
     """Shuts the discovery server down."""
     if self._thread and self._thread.is_alive():
-      logging.debug('Shutting down discovery server')
+      logging.debug('Shutting down task registration server')
       self._rpc_server.shutdown()
