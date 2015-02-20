@@ -285,6 +285,7 @@ class TemplateURLRef {
 
  private:
   friend class TemplateURL;
+  friend class TemplateURLTest;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, SetPrepopulatedAndParse);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
@@ -344,10 +345,15 @@ class TemplateURLRef {
     bool is_post_param;
   };
 
+  // Stores a single parameter for a POST.
+  struct PostParam {
+    std::string name;
+    std::string value;
+    std::string content_type;
+  };
+
   // The list of elements to replace.
   typedef std::vector<struct Replacement> Replacements;
-  // Type to store <key, value> pairs for POST URLs.
-  typedef std::pair<std::string, std::string> PostParam;
   typedef std::vector<PostParam> PostParams;
 
   // TemplateURLRef internally caches values to make replacement quick. This

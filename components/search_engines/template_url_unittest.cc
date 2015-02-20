@@ -23,6 +23,12 @@ class TemplateURLTest : public testing::Test {
   void CheckSuggestBaseURL(const std::string& base_url,
                            const std::string& base_suggest_url) const;
 
+  static void ExpectPostParamIs(
+      const TemplateURLRef::PostParam& param,
+      const std::string& name,
+      const std::string& value,
+      const std::string& content_type = std::string());
+
   TestingSearchTermsData search_terms_data_;
 };
 
@@ -31,6 +37,16 @@ void TemplateURLTest::CheckSuggestBaseURL(
     const std::string& base_suggest_url) const {
   TestingSearchTermsData search_terms_data(base_url);
   EXPECT_EQ(base_suggest_url, search_terms_data.GoogleBaseSuggestURLValue());
+}
+
+// static
+void TemplateURLTest::ExpectPostParamIs(const TemplateURLRef::PostParam& param,
+                                        const std::string& name,
+                                        const std::string& value,
+                                        const std::string& content_type) {
+  EXPECT_EQ(name, param.name);
+  EXPECT_EQ(value, param.value);
+  EXPECT_EQ(content_type, param.content_type);
 }
 
 TEST_F(TemplateURLTest, Defaults) {
@@ -158,10 +174,9 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
   const TemplateURLRef::PostParams& bad_post_params =
       url_bad.image_url_ref().post_params_;
   ASSERT_EQ(2U, bad_post_params.size());
-  EXPECT_EQ("unknown_template", bad_post_params[0].first);
-  EXPECT_EQ("{UnknownTemplate}", bad_post_params[0].second);
-  EXPECT_EQ("bad_value", bad_post_params[1].first);
-  EXPECT_EQ("bad{value}", bad_post_params[1].second);
+  ExpectPostParamIs(bad_post_params[0], "unknown_template",
+                    "{UnknownTemplate}");
+  ExpectPostParamIs(bad_post_params[1], "bad_value", "bad{value}");
 
   // Try to parse valid post parameters.
   data.image_url_post_params = kValidPostParamsString;
@@ -203,26 +218,24 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
           static_cast<size_t>(i - post_params.begin())) {
         switch (j->type) {
           case TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_WIDTH:
-            EXPECT_EQ("width", i->first);
-            EXPECT_EQ(
-                base::IntToString(search_args.image_original_size.width()),
-                i->second);
+            ExpectPostParamIs(*i, "width",
+                              base::IntToString(
+                                   search_args.image_original_size.width()));
             break;
           case TemplateURLRef::GOOGLE_IMAGE_SEARCH_SOURCE:
-            EXPECT_EQ("sbisrc", i->first);
-            EXPECT_EQ(search_terms_data.GoogleImageSearchSource(), i->second);
+            ExpectPostParamIs(*i, "sbisrc",
+                              search_terms_data.GoogleImageSearchSource());
             break;
           case TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL:
-            EXPECT_EQ("image_content", i->first);
-            EXPECT_EQ(search_args.image_thumbnail_content, i->second);
+            ExpectPostParamIs(*i, "image_content",
+                              search_args.image_thumbnail_content,
+                              "image/jpeg");
             break;
           case TemplateURLRef::GOOGLE_IMAGE_URL:
-            EXPECT_EQ("image_url", i->first);
-            EXPECT_EQ(search_args.image_url.spec(), i->second);
+            ExpectPostParamIs(*i, "image_url", search_args.image_url.spec());
             break;
           case TemplateURLRef::LANGUAGE:
-            EXPECT_EQ("language", i->first);
-            EXPECT_EQ("en", i->second);
+            ExpectPostParamIs(*i, "language", "en");
             break;
           default:
             ADD_FAILURE();  // Should never go here.
@@ -232,14 +245,10 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
     }
     if (j != replacements.end())
       continue;
-    if (i->first == "empty_param") {
-      EXPECT_TRUE(i->second.empty());
-    } else if (i->first == "sbisrc") {
-      EXPECT_FALSE(i->second.empty());
-    } else {
-      EXPECT_EQ("constant_param", i->first);
-      EXPECT_EQ("constant", i->second);
-    }
+    if (i->name == "empty_param")
+      ExpectPostParamIs(*i, "empty_param", std::string());
+    else
+      ExpectPostParamIs(*i, "constant_param", "constant");
   }
 }
 

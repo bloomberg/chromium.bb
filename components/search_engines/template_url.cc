@@ -323,11 +323,10 @@ bool TemplateURLRef::EncodeFormData(const PostParams& post_params,
   // Encodes the post parameters.
   std::string* post_data = &post_content->second;
   post_data->clear();
-  for (PostParams::const_iterator param = post_params.begin();
-       param != post_params.end(); ++param) {
-    DCHECK(!param->first.empty());
-    net::AddMultipartValueForUpload(param->first, param->second, boundary,
-                                    std::string(), post_data);
+  for (const auto& param : post_params) {
+    DCHECK(!param.name.empty());
+    net::AddMultipartValueForUpload(param.name, param.value, boundary,
+                                    param.content_type, post_data);
   }
   net::AddMultipartFinalDelimiterForUpload(boundary, post_data);
   return true;
@@ -714,7 +713,8 @@ std::string TemplateURLRef::ParseURL(const std::string& url,
       size_t replacements_size = replacements->size();
       if (IsTemplateParameterString(value))
         ParseParameter(0, value.length() - 1, &value, replacements);
-      post_params->push_back(std::make_pair(parts[0], value));
+      PostParam param = { parts[0], value };
+      post_params->push_back(param);
       // If there was a replacement added, points its index to last added
       // PostParam.
       if (replacements->size() > replacements_size) {
@@ -797,8 +797,8 @@ void TemplateURLRef::HandleReplacement(const std::string& name,
   size_t pos = replacement.index;
   if (replacement.is_post_param) {
     DCHECK_LT(pos, post_params_.size());
-    DCHECK(!post_params_[pos].first.empty());
-    post_params_[pos].second = value;
+    DCHECK(!post_params_[pos].name.empty());
+    post_params_[pos].value = value;
   } else {
     url->insert(pos, name.empty() ? value : (name + "=" + value + "&"));
   }
@@ -1097,6 +1097,7 @@ std::string TemplateURLRef::HandleReplacements(
       case GOOGLE_IMAGE_THUMBNAIL:
         HandleReplacement(
             std::string(), search_terms_args.image_thumbnail_content, *i, &url);
+        post_params_[i->index].content_type = "image/jpeg";
         break;
 
       case GOOGLE_IMAGE_URL:

@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 81
+    "kCurrentDataVersion": 82
   },
 
   // The following engines are included in country lists and are added to the
@@ -587,6 +587,8 @@
       "favicon_url": "http://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "http://yandex.ru/yandsearch?text={searchTerms}",
       "suggest_url": "http://suggest.yandex.net/suggest-ff.cgi?part={searchTerms}",
+      "image_url": "http://yandex.ru/images/search/?rpt=imageview",
+      "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",
       "id": 15
     },
@@ -597,6 +599,8 @@
       "favicon_url": "http://yastatic.net/islands-icons/_/6jyHGXR8-HAc8oJ1bU8qMUQQz_g.ico",
       "search_url": "http://www.yandex.com.tr/yandsearch?text={searchTerms}",
       "suggest_url": "http://suggest.yandex.com.tr/suggest-ff.cgi?part={searchTerms}",
+      "image_url": "http://yandex.com.tr/gorsel/search?rpt=imageview",
+      "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",
       "id": 15
     },
@@ -607,6 +611,8 @@
       "favicon_url": "http://yastatic.net/islands-icons/_/aKnllxm-gQhidpzbZqub7qe641g.ico",
       "search_url": "http://yandex.ua/yandsearch?text={searchTerms}",
       "suggest_url": "http://suggest.yandex.ua/suggest-ff.cgi?part={searchTerms}",
+      "image_url": "http://yandex.ua/images/search/?rpt=imageview",
+      "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",
       "id": 15
     },
