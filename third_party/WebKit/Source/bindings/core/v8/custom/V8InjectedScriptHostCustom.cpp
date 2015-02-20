@@ -132,6 +132,20 @@ void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::Functio
     v8SetReturnValue(info, result);
 }
 
+void V8InjectedScriptHost::isDOMAttributeWithNoSideEffectOnGetMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 2)
+        return;
+
+    // FIXME: Should support other DOM objects other than Node.
+    if (!V8Node::hasInstance(info[0], info.GetIsolate())) {
+        v8SetReturnValue(info, false);
+        return;
+    }
+
+    v8SetReturnValue(info, AttributesWithSideEffectOnGet::hasNoSideEffect(info[0], info[1]));
+}
+
 void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)

@@ -390,6 +390,41 @@ static void windowExposedAttributeAttributeSetterCallback(v8::Local<v8::String>,
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void attributeWithSideEffectAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    v8SetReturnValueInt(info, impl->attributeWithSideEffect());
+}
+
+static void attributeWithSideEffectAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
+    TestInterfaceImplementationV8Internal::attributeWithSideEffectAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void attributeWithSideEffectAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attributeWithSideEffect", "TestInterface", holder, info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+    int* cppValue = V8int::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+    if (!cppValue) {
+        exceptionState.throwTypeError("The provided value is not of type 'int'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    impl->setAttributeWithSideEffect(WTF::getPtr(cppValue));
+}
+
+static void attributeWithSideEffectAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
+    TestInterfaceImplementationV8Internal::attributeWithSideEffectAttributeSetter(v8Value, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void implementsStaticReadOnlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueInt(info, TestInterfaceImplementation::implementsStaticReadOnlyLongAttribute());
@@ -1985,6 +2020,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
     {"testEnumAttribute", TestInterfaceImplementationV8Internal::testEnumAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"stringOrDoubleAttribute", TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"alwaysExposedAttribute", TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"attributeWithSideEffect", TestInterfaceImplementationV8Internal::attributeWithSideEffectAttributeGetterCallback, TestInterfaceImplementationV8Internal::attributeWithSideEffectAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"implementsReadonlyStringAttribute", TestInterfaceImplementationV8Internal::implementsReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"implementsStringAttribute", TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"implementsNodeAttribute", TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
@@ -2193,6 +2229,11 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
+
+    // DOM attributes which have side effect when "get" is called.
+    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+        AttributesWithSideEffectOnGet::add(&V8TestInterface::wrapperTypeInfo, "attributeWithSideEffect");
+    }
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate)

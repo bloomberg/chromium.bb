@@ -583,6 +583,11 @@ InjectedScript.prototype = {
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;
+                        if ("get" in descriptor && "set" in descriptor && InjectedScriptHost.isDOMAttributeWithNoSideEffectOnGet(object, name)) {
+                            descriptor.value = InjectedScriptHost.suppressWarningsAndCallFunction(function(attribute) { return this[attribute]; }, object, [name]);
+                            delete descriptor.get;
+                            delete descriptor.set;
+                        }
                     } else {
                         // Not all bindings provide proper descriptors. Fall back to the writable, configurable property.
                         if (accessorPropertiesOnly)

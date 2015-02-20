@@ -30,7 +30,7 @@ enum RequestCredentials { "omit", "same-origin", "include" };
 
     // FIXME: Move this attribute into Body when the extended-attribute
     // is removed.
-    [RuntimeEnabled=ExperimentalStream] readonly attribute ReadableStream body;
+    [RuntimeEnabled=ExperimentalStream, HasSideEffectOnGet] readonly attribute ReadableStream body;
 
     // FIXME: Implement the following:
     // readonly attribute RequestContext context;

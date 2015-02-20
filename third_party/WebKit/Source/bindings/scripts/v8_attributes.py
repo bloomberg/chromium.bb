@@ -95,6 +95,7 @@ def attribute_context(interface, attribute):
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),
+        'has_side_effect_on_get': 'HasSideEffectOnGet' in extended_attributes,
         'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_state': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ScriptState'),

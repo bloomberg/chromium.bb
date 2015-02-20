@@ -58,6 +58,7 @@ ExposeJSAccessors
 Exposed=*
 GarbageCollected
 Global=|*
+HasSideEffectOnGet
 Immutable
 ImplementedAs=*
 ImplementedInPrivateScript
