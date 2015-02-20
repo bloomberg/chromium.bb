@@ -207,6 +207,16 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
       create_dir = true;
       break;
+#if defined(OS_WIN)
+    case chrome::DIR_WATCHER_DATA:
+      // The watcher data is always stored relative to the default user data
+      // directory.  This allows the watcher to be initialized before
+      // command-line options have been parsed.
+      if (!GetDefaultUserDataDirectory(&cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("Diagnostics"));
+      break;
+#endif
     case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)
       cur = base::mac::FrameworkBundlePath();

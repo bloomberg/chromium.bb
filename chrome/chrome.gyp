@@ -783,5 +783,41 @@
         },
       ],
     }],
+    ['syzyasan==1', {
+      'variables': {
+        'kasko_exe_dir': '<(DEPTH)/third_party/kasko',
+      },
+      'targets': [
+        {
+          'target_name': 'kasko_dll',
+          'type': 'none',
+          'outputs': [
+            '<(PRODUCT_DIR)/kasko.dll',
+            '<(PRODUCT_DIR)/kasko.dll.pdb',
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '<(kasko_exe_dir)/kasko.dll',
+                '<(kasko_exe_dir)/kasko.dll.pdb',
+              ],
+            },
+          ],
+          'direct_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalDependencies': [
+                  'kasko.dll.lib',
+                ],
+                'AdditionalLibraryDirectories': [
+                  '<(DEPTH)/third_party/kasko'
+                ],
+              },
+            },
+          },
+        },
+      ],
+    }],
   ],  # 'conditions'
 }

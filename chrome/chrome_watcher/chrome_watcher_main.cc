@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging_win.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,10 +21,15 @@
 #include "base/template_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/exit_funnel_win.h"
+
+#ifdef SYZYASAN
+#include "syzygy/kasko/api/reporter.h"
+#endif
 
 namespace {
 
@@ -197,7 +203,8 @@ void BrowserMonitor::BrowserExited() {
 // mangling.
 extern "C" int WatcherMain(const base::char16* registry_path,
                            HANDLE process_handle,
-                           HANDLE on_initialized_event_handle) {
+                           HANDLE on_initialized_event_handle,
+                           const base::char16* browser_data_directory) {
   base::Process process(process_handle);
   base::win::ScopedHandle on_initialized_event(on_initialized_event_handle);
 
@@ -212,6 +219,20 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   // chrome.exe in order to report its exit status.
   ::SetProcessShutdownParameters(0x100, SHUTDOWN_NORETRY);
 
+#ifdef SYZYASAN
+  bool launched_kasko = kasko::api::InitializeReporter(
+      GetKaskoEndpoint(process.Pid()).c_str(),
+      L"https://clients2.google.com/cr/staging_report",
+      base::FilePath(browser_data_directory)
+          .Append(L"Crash Reports")
+          .value()
+          .c_str(),
+      base::FilePath(browser_data_directory)
+          .Append(kPermanentlyFailedReportsSubdir)
+          .value()
+          .c_str());
+#endif  // SYZYASAN
+
   // Run a UI message loop on the main thread.
   base::MessageLoop msg_loop(base::MessageLoop::TYPE_UI);
   msg_loop.set_thread_name("WatcherMainThread");
@@ -224,6 +245,11 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   }
 
   run_loop.Run();
+
+#ifdef SYZYASAN
+  if (launched_kasko)
+    kasko::api::ShutdownReporter();
+#endif  // SYZYASAN
 
   // Wind logging down.
   logging::LogEventProvider::Uninitialize();

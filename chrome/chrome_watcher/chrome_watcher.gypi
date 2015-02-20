@@ -59,9 +59,17 @@
         'chrome_watcher_main.cc',
       ],
       'dependencies': [
+        'chrome_watcher_client',
         'chrome_watcher_resources',
         '../base/base.gyp:base',
         '../components/components.gyp:browser_watcher',
+      ],
+      'conditions': [
+        ['syzyasan==1', {
+          'dependencies': [
+            'kasko_dll',
+          ],
+        }],
       ],
       'msvs_settings': {
         'VCLinkerTool': {

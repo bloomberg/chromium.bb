@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <shlwapi.h>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
@@ -12,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +29,7 @@
 #include "chrome/app/image_pre_reader_win.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -179,12 +182,18 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   }
 
   if (process_type_ == "watcher") {
+    chrome::RegisterPathProvider();
+
     base::win::ScopedHandle parent_process;
     base::win::ScopedHandle on_initialized_event;
     if (!InterpretChromeWatcherCommandLine(cmd_line, &parent_process,
                                            &on_initialized_event)) {
       return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
     }
+
+    base::FilePath watcher_data_directory;
+    if (!PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory))
+      return chrome::RESULT_CODE_MISSING_DATA;
 
     // Intentionally leaked.
     HMODULE watcher_dll = Load(&version, &file);
@@ -195,7 +204,8 @@ int MainDllLoader::Launch(HINSTANCE instance) {
         reinterpret_cast<ChromeWatcherMainFunction>(
             ::GetProcAddress(watcher_dll, kChromeWatcherDLLEntrypoint));
     return watcher_main(chrome::kBrowserExitCodesRegistryPath,
-                        parent_process.Take(), on_initialized_event.Take());
+                        parent_process.Take(), on_initialized_event.Take(),
+                        watcher_data_directory.value().c_str());
   }
 
   // Initialize the sandbox services.
@@ -260,11 +270,14 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
 
     // Launch the watcher process if stats collection consent has been granted.
     if (g_chrome_crash_client.Get().GetCollectStatsConsent()) {
-      base::char16 exe_path[MAX_PATH];
-      ::GetModuleFileNameW(nullptr, exe_path, arraysize(exe_path));
-      ChromeWatcherClient watcher_client(base::Bind(
-          &GenerateChromeWatcherCommandLine, base::FilePath(exe_path)));
-      watcher_client.LaunchWatcher();
+      base::FilePath exe_path;
+      if (PathService::Get(base::FILE_EXE, &exe_path)) {
+        ChromeWatcherClient watcher_client(
+            base::Bind(&GenerateChromeWatcherCommandLine, exe_path));
+        watcher_client.LaunchWatcher();
+      } else {
+        NOTREACHED();
+      }
     }
   }
 }
