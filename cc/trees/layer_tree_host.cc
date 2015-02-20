@@ -562,19 +562,19 @@ void LayerTreeHost::SetAnimationEvents(
         animation_controllers.find(event_layer_id);
     if (iter != animation_controllers.end()) {
       switch ((*events)[event_index].type) {
-        case AnimationEvent::Started:
+        case AnimationEvent::STARTED:
           (*iter).second->NotifyAnimationStarted((*events)[event_index]);
           break;
 
-        case AnimationEvent::Finished:
+        case AnimationEvent::FINISHED:
           (*iter).second->NotifyAnimationFinished((*events)[event_index]);
           break;
 
-        case AnimationEvent::Aborted:
+        case AnimationEvent::ABORTED:
           (*iter).second->NotifyAnimationAborted((*events)[event_index]);
           break;
 
-        case AnimationEvent::PropertyUpdate:
+        case AnimationEvent::PROPERTY_UPDATE:
           (*iter).second->NotifyAnimationPropertyUpdate((*events)[event_index]);
           break;
       }
@@ -1219,8 +1219,7 @@ UIResourceId LayerTreeHost::CreateUIResource(UIResourceClient* client) {
          ui_resource_client_map_.end());
 
   bool resource_lost = false;
-  UIResourceRequest request(UIResourceRequest::UIResourceCreate,
-                            next_id,
+  UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, next_id,
                             client->GetBitmap(next_id, resource_lost));
   ui_resource_request_queue_.push_back(request);
 
@@ -1238,7 +1237,7 @@ void LayerTreeHost::DeleteUIResource(UIResourceId uid) {
   if (iter == ui_resource_client_map_.end())
     return;
 
-  UIResourceRequest request(UIResourceRequest::UIResourceDelete, uid);
+  UIResourceRequest request(UIResourceRequest::UI_RESOURCE_DELETE, uid);
   ui_resource_request_queue_.push_back(request);
   ui_resource_client_map_.erase(iter);
 }
@@ -1250,8 +1249,7 @@ void LayerTreeHost::RecreateUIResources() {
     UIResourceId uid = iter->first;
     const UIResourceClientData& data = iter->second;
     bool resource_lost = true;
-    UIResourceRequest request(UIResourceRequest::UIResourceCreate,
-                              uid,
+    UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, uid,
                               data.client->GetBitmap(uid, resource_lost));
     ui_resource_request_queue_.push_back(request);
   }

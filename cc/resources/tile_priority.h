@@ -24,7 +24,7 @@ enum WhichTree {
   // e.g. in Tile::priority_.
   ACTIVE_TREE = 0,
   PENDING_TREE = 1,
-  NUM_TREES = 2
+  LAST_TREE = 1
   // Be sure to update WhichTreeAsValue when adding new fields.
 };
 scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree);
@@ -118,7 +118,7 @@ enum TreePriority {
   SAME_PRIORITY_FOR_BOTH_TREES,
   SMOOTHNESS_TAKES_PRIORITY,
   NEW_CONTENT_TAKES_PRIORITY,
-  NUM_TREE_PRIORITIES
+  LAST_TREE_PRIORITY = NEW_CONTENT_TAKES_PRIORITY
   // Be sure to update TreePriorityAsValue when adding new fields.
 };
 std::string TreePriorityToString(TreePriority prio);

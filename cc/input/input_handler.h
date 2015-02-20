@@ -66,14 +66,14 @@ class CC_EXPORT InputHandler {
   // Note these are used in a histogram. Do not reorder or delete existing
   // entries.
   enum ScrollStatus {
-    ScrollOnMainThread = 0,
-    ScrollStarted,
-    ScrollIgnored,
-    ScrollUnknown,
+    SCROLL_ON_MAIN_THREAD = 0,
+    SCROLL_STARTED,
+    SCROLL_IGNORED,
+    SCROLL_UNKNOWN,
     // This must be the last entry.
     ScrollStatusCount
   };
-  enum ScrollInputType { Gesture, Wheel, NonBubblingGesture };
+  enum ScrollInputType { GESTURE, WHEEL, NON_BUBBLING_GESTURE };
 
   // Binds a client to this handler to receive notifications. Only one client
   // can be bound to an InputHandler. The client must live at least until the
@@ -81,10 +81,10 @@ class CC_EXPORT InputHandler {
   virtual void BindToClient(InputHandlerClient* client) = 0;
 
   // Selects a layer to be scrolled at a given point in viewport (logical
-  // pixel) coordinates. Returns ScrollStarted if the layer at the coordinates
-  // can be scrolled, ScrollOnMainThread if the scroll event should instead be
-  // delegated to the main thread, or ScrollIgnored if there is nothing to be
-  // scrolled at the given coordinates.
+  // pixel) coordinates. Returns SCROLL_STARTED if the layer at the coordinates
+  // can be scrolled, SCROLL_ON_MAIN_THREAD if the scroll event should instead
+  // be delegated to the main thread, or SCROLL_IGNORED if there is nothing to
+  // be scrolled at the given coordinates.
   virtual ScrollStatus ScrollBegin(const gfx::Point& viewport_point,
                                    ScrollInputType type) = 0;
 
@@ -102,7 +102,7 @@ class CC_EXPORT InputHandler {
   // If the scroll delta hits the root layer, and the layer can no longer move,
   // the root overscroll accumulated within this ScrollBegin() scope is reported
   // in the return value's |accumulated_overscroll| field.
-  // Should only be called if ScrollBegin() returned ScrollStarted.
+  // Should only be called if ScrollBegin() returned SCROLL_STARTED.
   virtual InputHandlerScrollResult ScrollBy(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) = 0;
@@ -110,14 +110,14 @@ class CC_EXPORT InputHandler {
   virtual bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                                       ScrollDirection direction) = 0;
 
-  // Returns ScrollStarted if a layer was being actively being scrolled,
-  // ScrollIgnored if not.
+  // Returns SCROLL_STARTED if a layer was being actively being scrolled,
+  // SCROLL_IGNORED if not.
   virtual ScrollStatus FlingScrollBegin() = 0;
 
   virtual void MouseMoveAt(const gfx::Point& mouse_position) = 0;
 
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()
-  // returned ScrollStarted.
+  // returned SCROLL_STARTED.
   virtual void ScrollEnd() = 0;
 
   virtual void SetRootLayerScrollOffsetDelegate(

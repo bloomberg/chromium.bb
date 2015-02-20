@@ -7975,11 +7975,11 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
   grand_parent->layer_animation_controller()->AbortAnimations(
-      Animation::Transform);
+      Animation::TRANSFORM);
   parent_raw->layer_animation_controller()->AbortAnimations(
-      Animation::Transform);
+      Animation::TRANSFORM);
   child_raw->layer_animation_controller()->AbortAnimations(
-      Animation::Transform);
+      Animation::TRANSFORM);
 
   TransformOperations perspective;
   perspective.AppendPerspective(10.f);
@@ -7999,7 +7999,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
   child_raw->layer_animation_controller()->AbortAnimations(
-      Animation::Transform);
+      Animation::TRANSFORM);
 
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);

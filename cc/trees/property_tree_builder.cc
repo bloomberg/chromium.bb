@@ -118,7 +118,7 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   const bool has_animated_transform =
       layer->layer_animation_controller()->IsAnimatingProperty(
-          Animation::Transform);
+          Animation::TRANSFORM);
 
   const bool has_transform_origin = layer->transform_origin() != gfx::Point3F();
 

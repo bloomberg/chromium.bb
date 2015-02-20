@@ -330,9 +330,6 @@ bool TilingSetEvictionQueue::IsSharedOutOfOrderTile(const Tile* tile) const {
       return false;
     case SAME_PRIORITY_FOR_BOTH_TREES:
       break;
-    case NUM_TREE_PRIORITIES:
-      NOTREACHED();
-      break;
   }
 
   // The priority for tile priority of a shared tile will be a combined

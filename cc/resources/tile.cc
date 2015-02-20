@@ -39,7 +39,7 @@ Tile::Tile(TileManager* tile_manager,
       id_(s_next_id_++),
       scheduled_priority_(0) {
   set_raster_source(raster_source);
-  for (int i = 0; i < NUM_TREES; i++)
+  for (int i = 0; i <= LAST_TREE; i++)
     is_occluded_[i] = false;
 }
 

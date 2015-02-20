@@ -49,15 +49,14 @@ STATIC_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::MayBeSupported,
 // TargetProperty
 STATIC_ASSERT_MATCHING_ENUM(
     blink::WebCompositorAnimation::TargetPropertyTransform,
-    cc::Animation::Transform);
+    cc::Animation::TRANSFORM);
 STATIC_ASSERT_MATCHING_ENUM(
     blink::WebCompositorAnimation::TargetPropertyOpacity,
-    cc::Animation::Opacity);
-STATIC_ASSERT_MATCHING_ENUM(
-    blink::WebCompositorAnimation::TargetPropertyFilter,
-    cc::Animation::Filter);
+    cc::Animation::OPACITY);
+STATIC_ASSERT_MATCHING_ENUM(blink::WebCompositorAnimation::TargetPropertyFilter,
+                            cc::Animation::FILTER);
 STATIC_ASSERT_MATCHING_ENUM(
     blink::WebCompositorAnimation::TargetPropertyScrollOffset,
-    cc::Animation::ScrollOffset);
+    cc::Animation::SCROLL_OFFSET);
 
 } // namespace content

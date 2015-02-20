@@ -68,11 +68,7 @@ class CC_EXPORT LayerSorter {
 
   void Sort(LayerImplList::iterator first, LayerImplList::iterator last);
 
-  enum ABCompareResult {
-    ABeforeB,
-    BBeforeA,
-    None
-  };
+  enum ABCompareResult { A_BEFORE_B, B_BEFORE_A, NONE };
 
   static ABCompareResult CheckOverlap(LayerShape* a,
                                       LayerShape* b,

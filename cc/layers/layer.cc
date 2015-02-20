@@ -71,7 +71,7 @@ Layer::Layer()
       force_render_surface_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
-      scroll_blocks_on_(ScrollBlocksOnNone),
+      scroll_blocks_on_(SCROLL_BLOCKS_ON_NONE),
       background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -471,7 +471,7 @@ void Layer::SetFilters(const FilterOperations& filters) {
 }
 
 bool Layer::FilterIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::Filter);
+  return layer_animation_controller_->IsAnimatingProperty(Animation::FILTER);
 }
 
 void Layer::SetBackgroundFilters(const FilterOperations& filters) {
@@ -491,7 +491,7 @@ void Layer::SetOpacity(float opacity) {
 }
 
 bool Layer::OpacityIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::Opacity);
+  return layer_animation_controller_->IsAnimatingProperty(Animation::OPACITY);
 }
 
 bool Layer::OpacityCanAnimateOnImplThread() const {
@@ -601,7 +601,7 @@ bool Layer::AnimationsPreserveAxisAlignment() const {
 }
 
 bool Layer::TransformIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::Transform);
+  return layer_animation_controller_->IsAnimatingProperty(Animation::TRANSFORM);
 }
 
 void Layer::SetScrollParent(Layer* parent) {
@@ -1181,7 +1181,7 @@ bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
   if (!layer_animation_controller_->animation_registrar())
     return false;
 
-  if (animation->target_property() == Animation::ScrollOffset &&
+  if (animation->target_property() == Animation::SCROLL_OFFSET &&
       !layer_animation_controller_->animation_registrar()
            ->supports_scroll_animations())
     return false;

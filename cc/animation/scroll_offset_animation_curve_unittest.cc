@@ -68,7 +68,7 @@ TEST(ScrollOffsetAnimationCurveTest, GetValue) {
   EXPECT_GT(curve->Duration().InSecondsF(), 0);
   EXPECT_LT(curve->Duration().InSecondsF(), 0.1);
 
-  EXPECT_EQ(AnimationCurve::ScrollOffset, curve->Type());
+  EXPECT_EQ(AnimationCurve::SCROLL_OFFSET, curve->Type());
   EXPECT_EQ(duration, curve->Duration());
 
   EXPECT_VECTOR2DF_EQ(initial_value,
@@ -101,7 +101,7 @@ TEST(ScrollOffsetAnimationCurveTest, Clone) {
 
   scoped_ptr<AnimationCurve> clone(curve->Clone().Pass());
 
-  EXPECT_EQ(AnimationCurve::ScrollOffset, clone->Type());
+  EXPECT_EQ(AnimationCurve::SCROLL_OFFSET, clone->Type());
   EXPECT_EQ(duration, clone->Duration());
 
   EXPECT_VECTOR2DF_EQ(initial_value,

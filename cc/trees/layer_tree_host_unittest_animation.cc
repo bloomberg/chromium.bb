@@ -130,7 +130,7 @@ class LayerTreeHostAnimationTestAddAnimation
 
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(Animation::Opacity);
+    Animation* animation = controller->GetAnimation(Animation::OPACITY);
     if (animation)
       controller->RemoveAnimation(animation->id());
 
@@ -471,8 +471,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
-    Animation* animation =
-        controller_impl->GetAnimation(Animation::Opacity);
+    Animation* animation = controller_impl->GetAnimation(Animation::OPACITY);
     if (!animation)
       return;
 
@@ -523,8 +522,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->children()[0]->
         layer_animation_controller();
-    Animation* animation =
-        controller->GetAnimation(Animation::Opacity);
+    Animation* animation = controller->GetAnimation(Animation::OPACITY);
     main_start_time_ = animation->start_time();
     controller->RemoveAnimation(animation->id());
     EndTest();
@@ -535,8 +533,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     LayerAnimationController* controller =
         impl_host->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
-    Animation* animation =
-        controller->GetAnimation(Animation::Opacity);
+    Animation* animation = controller->GetAnimation(Animation::OPACITY);
     if (!animation)
       return;
 
@@ -573,8 +570,7 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
                                int group) override {
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
-    Animation* animation =
-        controller->GetAnimation(Animation::Opacity);
+    Animation* animation = controller->GetAnimation(Animation::OPACITY);
     if (animation)
       controller->RemoveAnimation(animation->id());
     EndTest();
@@ -609,7 +605,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* animation_impl =
-        controller_impl->GetAnimation(Animation::Opacity);
+        controller_impl->GetAnimation(Animation::OPACITY);
     controller_impl->RemoveAnimation(animation_impl->id());
     EndTest();
   }
@@ -648,8 +644,7 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
       // Any valid AnimationCurve will do here.
       scoped_ptr<AnimationCurve> curve(new FakeFloatAnimationCurve());
       scoped_ptr<Animation> animation(
-          Animation::Create(curve.Pass(), 1, 1,
-                                  Animation::Opacity));
+          Animation::Create(curve.Pass(), 1, 1, Animation::OPACITY));
       layer->layer_animation_controller()->AddAnimation(animation.Pass());
 
       // We add the animation *before* attaching the layer to the tree.
@@ -986,7 +981,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
                 gfx::ScrollOffset(500.f, 550.f),
                 EaseInOutTimingFunction::Create()));
         scoped_ptr<Animation> animation(
-            Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+            Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
         animation->set_needs_synchronized_start_time(true);
         bool animation_added = scroll_layer_->AddAnimation(animation.Pass());
         bool impl_scrolling_supported =
@@ -1036,7 +1031,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
         ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
                                            EaseInOutTimingFunction::Create()));
     scoped_ptr<Animation> animation(
-        Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));
+        Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
     animation->set_needs_synchronized_start_time(true);
     scroll_layer_->AddAnimation(animation.Pass());
   }
@@ -1050,7 +1045,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
       case 1: {
         Animation* animation =
             scroll_layer_->layer_animation_controller()->GetAnimation(
-                Animation::ScrollOffset);
+                Animation::SCROLL_OFFSET);
         scroll_layer_->layer_animation_controller()->RemoveAnimation(
             animation->id());
         scroll_layer_->SetScrollOffset(final_postion_);
@@ -1080,9 +1075,9 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
         host_impl->active_tree()->root_layer()->children()[0];
     Animation* animation =
         scroll_layer_impl->layer_animation_controller()->GetAnimation(
-            Animation::ScrollOffset);
+            Animation::SCROLL_OFFSET);
 
-    if (!animation || animation->run_state() != Animation::Running) {
+    if (!animation || animation->run_state() != Animation::RUNNING) {
       host_impl->BlockNotifyReadyToActivateForTesting(false);
       return;
     }
@@ -1187,20 +1182,20 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     LayerAnimationController* root_controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* root_animation =
-        root_controller_impl->GetAnimation(Animation::Opacity);
-    if (!root_animation || root_animation->run_state() != Animation::Running)
+        root_controller_impl->GetAnimation(Animation::OPACITY);
+    if (!root_animation || root_animation->run_state() != Animation::RUNNING)
       return;
 
     LayerAnimationController* child_controller_impl =
         host_impl->active_tree()->root_layer()->children()
             [0]->layer_animation_controller();
     Animation* child_animation =
-        child_controller_impl->GetAnimation(Animation::Opacity);
-    EXPECT_EQ(Animation::Running, child_animation->run_state());
+        child_controller_impl->GetAnimation(Animation::OPACITY);
+    EXPECT_EQ(Animation::RUNNING, child_animation->run_state());
     EXPECT_EQ(root_animation->start_time(), child_animation->start_time());
-    root_controller_impl->AbortAnimations(Animation::Opacity);
-    root_controller_impl->AbortAnimations(Animation::Transform);
-    child_controller_impl->AbortAnimations(Animation::Opacity);
+    root_controller_impl->AbortAnimations(Animation::OPACITY);
+    root_controller_impl->AbortAnimations(Animation::TRANSFORM);
+    child_controller_impl->AbortAnimations(Animation::OPACITY);
     EndTest();
   }
 
@@ -1257,10 +1252,10 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
            ++iter) {
         int id = ((*iter).second->id());
         if (id == host_impl->RootLayer()->id()) {
-          Animation* anim = (*iter).second->GetAnimation(Animation::Transform);
+          Animation* anim = (*iter).second->GetAnimation(Animation::TRANSFORM);
           EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
         } else if (id == host_impl->RootLayer()->children()[0]->id()) {
-          Animation* anim = (*iter).second->GetAnimation(Animation::Opacity);
+          Animation* anim = (*iter).second->GetAnimation(Animation::OPACITY);
           EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
         }
       }

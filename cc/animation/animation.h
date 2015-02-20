@@ -19,43 +19,48 @@ class AnimationCurve;
 // loop count, last pause time, and the total time spent paused.
 class CC_EXPORT Animation {
  public:
-  // Animations begin in the 'WaitingForTargetAvailability' state. An Animation
-  // waiting for target availibility will run as soon as its target property
-  // is free (and all the animations animating with it are also able to run).
-  // When this time arrives, the controller will move the animation into the
-  // Starting state, and then into the Running state. Running animations may
-  // toggle between Running and Paused, and may be stopped by moving into either
-  // the Aborted or Finished states. A Finished animation was allowed to run to
-  // completion, but an Aborted animation was not.
+  // Animations begin in the 'WAITING_FOR_TARGET_AVAILABILITY' state. An
+  // Animation waiting for target availibility will run as soon as its target
+  // property is free (and all the animations animating with it are also able to
+  // run). When this time arrives, the controller will move the animation into
+  // the STARTING state, and then into the RUNNING state. RUNNING animations may
+  // toggle between RUNNING and PAUSED, and may be stopped by moving into either
+  // the ABORTED or FINISHED states. A FINISHED animation was allowed to run to
+  // completion, but an ABORTED animation was not.
   enum RunState {
-    WaitingForTargetAvailability = 0,
-    WaitingForDeletion,
-    Starting,
-    Running,
-    Paused,
-    Finished,
-    Aborted,
+    WAITING_FOR_TARGET_AVAILABILITY = 0,
+    WAITING_FOR_DELETION,
+    STARTING,
+    RUNNING,
+    PAUSED,
+    FINISHED,
+    ABORTED,
     // This sentinel must be last.
-    RunStateEnumSize
+    LAST_RUN_STATE = ABORTED
   };
 
   enum TargetProperty {
-    Transform = 0,
-    Opacity,
-    Filter,
-    ScrollOffset,
-    BackgroundColor,
+    TRANSFORM = 0,
+    OPACITY,
+    FILTER,
+    SCROLL_OFFSET,
+    BACKGROUND_COLOR,
     // This sentinel must be last.
-    TargetPropertyEnumSize
+    LAST_TARGET_PROPERTY = BACKGROUND_COLOR
   };
 
-  enum Direction { Normal, Reverse, Alternate, AlternateReverse };
+  enum Direction {
+    DIRECTION_NORMAL,
+    DIRECTION_REVERSE,
+    DIRECTION_ALTERNATE,
+    DIRECTION_ALTERNATE_REVERSE
+  };
 
   enum FillMode {
-    FillModeNone,
-    FillModeForwards,
-    FillModeBackwards,
-    FillModeBoth
+    FILL_MODE_NONE,
+    FILL_MODE_FORWARDS,
+    FILL_MODE_BACKWARDS,
+    FILL_MODE_BOTH
   };
 
   static scoped_ptr<Animation> Create(scoped_ptr<AnimationCurve> curve,
@@ -111,9 +116,8 @@ class CC_EXPORT Animation {
 
   bool IsFinishedAt(base::TimeTicks monotonic_time) const;
   bool is_finished() const {
-    return run_state_ == Finished ||
-        run_state_ == Aborted ||
-        run_state_ == WaitingForDeletion;
+    return run_state_ == FINISHED || run_state_ == ABORTED ||
+           run_state_ == WAITING_FOR_DELETION;
   }
 
   bool InEffect(base::TimeTicks monotonic_time) const;
@@ -131,7 +135,7 @@ class CC_EXPORT Animation {
     needs_synchronized_start_time_ = needs_synchronized_start_time;
   }
 
-  // This is true for animations running on the main thread when the Finished
+  // This is true for animations running on the main thread when the FINISHED
   // event sent by the corresponding impl animation has been received.
   bool received_finished_event() const {
     return received_finished_event_;
@@ -227,10 +231,10 @@ class CC_EXPORT Animation {
   // When pushed from a main-thread controller to a compositor-thread
   // controller, an animation will initially only affect pending observers
   // (corresponding to layers in the pending tree). Animations that only
-  // affect pending observers are able to reach the Starting state and tick
+  // affect pending observers are able to reach the STARTING state and tick
   // pending observers, but cannot proceed any further and do not tick active
   // observers. After activation, such animations affect both kinds of observers
-  // and are able to proceed past the Starting state. When the removal of
+  // and are able to proceed past the STARTING state. When the removal of
   // an animation is pushed from a main-thread controller to a
   // compositor-thread controller, this initially only makes the animation
   // stop affecting pending observers. After activation, such animations no

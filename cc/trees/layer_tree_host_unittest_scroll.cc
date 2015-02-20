@@ -582,12 +582,12 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     EXPECT_EQ(device_scale_factor_, impl->active_tree()->device_scale_factor());
     switch (impl->active_tree()->source_frame_number()) {
       case 0: {
-        // Gesture scroll on impl thread.
+        // GESTURE scroll on impl thread.
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             gfx::ToCeiledPoint(expected_scroll_layer_impl->position() -
                                gfx::Vector2dF(0.5f, 0.5f)),
-            InputHandler::Gesture);
-        EXPECT_EQ(InputHandler::ScrollStarted, status);
+            InputHandler::GESTURE);
+        EXPECT_EQ(InputHandler::SCROLL_STARTED, status);
         impl->ScrollBy(gfx::Point(), scroll_amount_);
         impl->ScrollEnd();
 
@@ -599,12 +599,12 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         break;
       }
       case 1: {
-        // Wheel scroll on impl thread.
+        // WHEEL scroll on impl thread.
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             gfx::ToCeiledPoint(expected_scroll_layer_impl->position() +
                                gfx::Vector2dF(0.5f, 0.5f)),
-            InputHandler::Wheel);
-        EXPECT_EQ(InputHandler::ScrollStarted, status);
+            InputHandler::WHEEL);
+        EXPECT_EQ(InputHandler::SCROLL_STARTED, status);
         impl->ScrollBy(gfx::Point(), scroll_amount_);
         impl->ScrollEnd();
 
@@ -1040,23 +1040,23 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     scroll_layer->SetBounds(
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
     EXPECT_EQ(
-        InputHandler::ScrollStarted,
-        scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::Gesture,
-                                ScrollBlocksOnNone));
+        InputHandler::SCROLL_STARTED,
+        scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE,
+                                SCROLL_BLOCKS_ON_NONE));
 
     // Set max_scroll_offset = (0, 0).
     scroll_layer->SetBounds(root->bounds());
     EXPECT_EQ(
-        InputHandler::ScrollIgnored,
-        scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::Gesture,
-                                ScrollBlocksOnNone));
+        InputHandler::SCROLL_IGNORED,
+        scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE,
+                                SCROLL_BLOCKS_ON_NONE));
 
     // Set max_scroll_offset = (-100, -100).
     scroll_layer->SetBounds(gfx::Size());
     EXPECT_EQ(
-        InputHandler::ScrollIgnored,
-        scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::Gesture,
-                                ScrollBlocksOnNone));
+        InputHandler::SCROLL_IGNORED,
+        scroll_layer->TryScroll(gfx::PointF(0.0f, 1.0f), InputHandler::GESTURE,
+                                SCROLL_BLOCKS_ON_NONE));
 
     EndTest();
   }

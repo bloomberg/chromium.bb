@@ -150,9 +150,9 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   gfx::Size desired_texture_size_;
   gfx::Rect content_rect_;
   float contents_scale_;
-  bool is_occluded_[NUM_TREES];
+  bool is_occluded_[LAST_TREE + 1];
 
-  TilePriority priority_[NUM_TREES];
+  TilePriority priority_[LAST_TREE + 1];
   TileDrawInfo draw_info_;
 
   int layer_id_;

@@ -57,8 +57,8 @@ TEST(ScopedResourceTest, CreateScopedResource) {
                                1));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::Create(resource_provider.get());
-  texture->Allocate(
-      gfx::Size(30, 30), ResourceProvider::TextureHintImmutable, RGBA_8888);
+  texture->Allocate(gfx::Size(30, 30), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+                    RGBA_8888);
 
   // The texture has an allocated byte-size now.
   size_t expected_bytes = 30 * 30 * 4;
@@ -89,8 +89,8 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
         ScopedResource::Create(resource_provider.get());
 
     EXPECT_EQ(0u, resource_provider->num_resources());
-    texture->Allocate(
-        gfx::Size(30, 30), ResourceProvider::TextureHintImmutable, RGBA_8888);
+    texture->Allocate(gfx::Size(30, 30),
+                      ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
     EXPECT_LT(0u, texture->id());
     EXPECT_EQ(1u, resource_provider->num_resources());
   }
@@ -100,8 +100,8 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::Create(resource_provider.get());
     EXPECT_EQ(0u, resource_provider->num_resources());
-    texture->Allocate(
-        gfx::Size(30, 30), ResourceProvider::TextureHintImmutable, RGBA_8888);
+    texture->Allocate(gfx::Size(30, 30),
+                      ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
     EXPECT_LT(0u, texture->id());
     EXPECT_EQ(1u, resource_provider->num_resources());
     texture->Free();

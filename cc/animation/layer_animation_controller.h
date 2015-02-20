@@ -179,10 +179,7 @@ class CC_EXPORT LayerAnimationController
 
   void TickAnimations(base::TimeTicks monotonic_time);
 
-  enum UpdateActivationType {
-    NormalActivation,
-    ForceActivation
-  };
+  enum UpdateActivationType { NORMAL_ACTIVATION, FORCE_ACTIVATION };
   void UpdateActivation(UpdateActivationType type);
 
   void NotifyObserversOpacityAnimated(float opacity,

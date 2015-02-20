@@ -127,11 +127,9 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   size_t num_pixels = static_cast<size_t>(rect.width()) * rect.height();
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
-  ResourceProvider::ResourceId resource =
-      resource_provider->CreateResource(rect.size(),
-                                        GL_CLAMP_TO_EDGE,
-                                        ResourceProvider::TextureHintImmutable,
-                                        RGBA_8888);
+  ResourceProvider::ResourceId resource = resource_provider->CreateResource(
+      rect.size(), GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+      RGBA_8888);
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
@@ -1324,10 +1322,8 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
 
   ResourceProvider::ResourceId mask_resource_id =
       this->resource_provider_->CreateResource(
-          mask_rect.size(),
-          GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureHintImmutable,
-          RGBA_8888);
+          mask_rect.size(), GL_CLAMP_TO_EDGE,
+          ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
   {
     SkAutoLockPixels lock(bitmap);
     this->resource_provider_->CopyToResource(
@@ -2111,9 +2107,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   gfx::Size tile_size(2, 2);
   ResourceProvider::ResourceId resource =
       this->resource_provider_->CreateResource(
-          tile_size,
-          GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureHintImmutable,
+          tile_size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
           RGBA_8888);
 
   {
@@ -2470,7 +2464,7 @@ TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
   };
   ResourceProvider::ResourceId resource =
       this->resource_provider_->CreateResource(
-          texture_size, GL_REPEAT, ResourceProvider::TextureHintImmutable,
+          texture_size, GL_REPEAT, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
           RGBA_8888);
   this->resource_provider_->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(pixels), texture_size);

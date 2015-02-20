@@ -411,10 +411,8 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
                                        target_,
                                        duration()));
     scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(animation_curve.Pass(),
-                              animation_id(),
-                              animation_group_id(),
-                              cc::Animation::Opacity));
+        cc::Animation::Create(animation_curve.Pass(), animation_id(),
+                              animation_group_id(), cc::Animation::OPACITY));
     return animation.Pass();
   }
 
@@ -466,10 +464,8 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
                                            target_,
                                            duration()));
     scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(animation_curve.Pass(),
-                              animation_id(),
-                              animation_group_id(),
-                              cc::Animation::Transform));
+        cc::Animation::Create(animation_curve.Pass(), animation_id(),
+                              animation_group_id(), cc::Animation::TRANSFORM));
     return animation.Pass();
   }
 
@@ -540,10 +536,8 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
 
   scoped_ptr<cc::Animation> CreateCCAnimation() override {
     scoped_ptr<cc::Animation> animation(
-        cc::Animation::Create(animation_curve_->Clone(),
-                              animation_id(),
-                              animation_group_id(),
-                              cc::Animation::Transform));
+        cc::Animation::Create(animation_curve_->Clone(), animation_id(),
+                              animation_group_id(), cc::Animation::TRANSFORM));
     return animation.Pass();
   }
 
@@ -738,9 +732,9 @@ LayerAnimationElement::AnimatableProperty
 LayerAnimationElement::ToAnimatableProperty(
     cc::Animation::TargetProperty property) {
   switch (property) {
-    case cc::Animation::Transform:
+    case cc::Animation::TRANSFORM:
       return TRANSFORM;
-    case cc::Animation::Opacity:
+    case cc::Animation::OPACITY:
       return OPACITY;
     default:
       NOTREACHED();

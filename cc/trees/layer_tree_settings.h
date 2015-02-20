@@ -43,9 +43,9 @@ class CC_EXPORT LayerTreeSettings {
   bool create_low_res_tiling;
 
   enum ScrollbarAnimator {
-    NoAnimator,
-    LinearFade,
-    Thinning,
+    NO_ANIMATOR,
+    LINEAR_FADE,
+    THINNING,
   };
   ScrollbarAnimator scrollbar_animator;
   int scrollbar_fade_delay_ms;

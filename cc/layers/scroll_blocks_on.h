@@ -6,12 +6,13 @@
 #define CC_LAYERS_SCROLL_BLOCKS_ON_H_
 
 enum ScrollBlocksOn {
-  ScrollBlocksOnNone = 0x0,
-  ScrollBlocksOnStartTouch = 0x1,
-  ScrollBlocksOnWheelEvent = 0x2,
-  ScrollBlocksOnScrollEvent = 0x4,
-  ScrollBlocksOnMax = ScrollBlocksOnStartTouch | ScrollBlocksOnWheelEvent |
-                      ScrollBlocksOnScrollEvent
+  SCROLL_BLOCKS_ON_NONE = 0x0,
+  SCROLL_BLOCKS_ON_START_TOUCH = 0x1,
+  SCROLL_BLOCKS_ON_WHEEL_EVENT = 0x2,
+  SCROLL_BLOCKS_ON_SCROLL_EVENT = 0x4,
+  SCROLL_BLOCKS_ON_MAX = SCROLL_BLOCKS_ON_START_TOUCH |
+                         SCROLL_BLOCKS_ON_WHEEL_EVENT |
+                         SCROLL_BLOCKS_ON_SCROLL_EVENT
 };
 
 inline ScrollBlocksOn operator|(ScrollBlocksOn a, ScrollBlocksOn b) {

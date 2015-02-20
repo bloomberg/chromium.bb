@@ -360,10 +360,10 @@ void RenderWidgetCompositor::Initialize() {
   settings.max_partial_texture_updates = 0;
   if (synchronous_compositor_factory) {
     // Android WebView uses system scrollbars, so make ours invisible.
-    settings.scrollbar_animator = cc::LayerTreeSettings::NoAnimator;
+    settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
   } else {
-    settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
+    settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
     settings.scrollbar_fade_delay_ms = 300;
     settings.scrollbar_fade_resize_delay_ms = 2000;
     settings.scrollbar_fade_duration_ms = 300;
@@ -400,13 +400,13 @@ void RenderWidgetCompositor::Initialize() {
 
 #elif !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
-    settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;
+    settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   } else if (cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport)) {
     // use_pinch_zoom_scrollbars is only true on desktop when non-overlay
     // scrollbars are in use.
     settings.use_pinch_zoom_scrollbars = true;
-    settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
+    settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
   settings.scrollbar_fade_delay_ms = 500;

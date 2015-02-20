@@ -14,32 +14,28 @@
 namespace {
 
 // This should match the RunState enum.
-static const char* const s_runStateNames[] = {
-  "WaitingForTargetAvailability",
-  "WaitingForDeletion",
-  "Starting",
-  "Running",
-  "Paused",
-  "Finished",
-  "Aborted"
-};
+static const char* const s_runStateNames[] = {"WAITING_FOR_TARGET_AVAILABILITY",
+                                              "WAITING_FOR_DELETION",
+                                              "STARTING",
+                                              "RUNNING",
+                                              "PAUSED",
+                                              "FINISHED",
+                                              "ABORTED"};
 
-static_assert(static_cast<int>(cc::Animation::RunStateEnumSize) ==
-              arraysize(s_runStateNames),
+static_assert(static_cast<int>(cc::Animation::LAST_RUN_STATE) + 1 ==
+                  arraysize(s_runStateNames),
               "RunStateEnumSize should equal the number of elements in "
               "s_runStateNames");
 
 // This should match the TargetProperty enum.
-static const char* const s_targetPropertyNames[] = {
-  "Transform",
-  "Opacity",
-  "Filter",
-  "ScrollOffset",
-  "BackgroundColor"
-};
+static const char* const s_targetPropertyNames[] = {"TRANSFORM",
+                                                    "OPACITY",
+                                                    "FILTER",
+                                                    "SCROLL_OFFSET",
+                                                    "BACKGROUND_COLOR"};
 
-static_assert(static_cast<int>(cc::Animation::TargetPropertyEnumSize) ==
-              arraysize(s_targetPropertyNames),
+static_assert(static_cast<int>(cc::Animation::LAST_TARGET_PROPERTY) + 1 ==
+                  arraysize(s_targetPropertyNames),
               "TargetPropertyEnumSize should equal the number of elements in "
               "s_targetPropertyNames");
 
@@ -65,12 +61,12 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
       id_(animation_id),
       group_(group_id),
       target_property_(target_property),
-      run_state_(WaitingForTargetAvailability),
+      run_state_(WAITING_FOR_TARGET_AVAILABILITY),
       iterations_(1),
       iteration_start_(0),
-      direction_(Normal),
+      direction_(DIRECTION_NORMAL),
       playback_rate_(1),
-      fill_mode_(FillModeBoth),
+      fill_mode_(FILL_MODE_BOTH),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
       suspended_(false),
@@ -81,8 +77,8 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
 }
 
 Animation::~Animation() {
-  if (run_state_ == Running || run_state_ == Paused)
-    SetRunState(Aborted, base::TimeTicks());
+  if (run_state_ == RUNNING || run_state_ == PAUSED)
+    SetRunState(ABORTED, base::TimeTicks());
 }
 
 void Animation::SetRunState(RunState run_state,
@@ -97,10 +93,10 @@ void Animation::SetRunState(RunState run_state,
                  s_targetPropertyNames[target_property_],
                  group_);
 
-  bool is_waiting_to_start = run_state_ == WaitingForTargetAvailability ||
-                             run_state_ == Starting;
+  bool is_waiting_to_start =
+      run_state_ == WAITING_FOR_TARGET_AVAILABILITY || run_state_ == STARTING;
 
-  if (is_controlling_instance_ && is_waiting_to_start && run_state == Running) {
+  if (is_controlling_instance_ && is_waiting_to_start && run_state == RUNNING) {
     TRACE_EVENT_ASYNC_BEGIN1(
         "cc", "Animation", this, "Name", TRACE_STR_COPY(name_buffer));
   }
@@ -109,9 +105,9 @@ void Animation::SetRunState(RunState run_state,
 
   const char* old_run_state_name = s_runStateNames[run_state_];
 
-  if (run_state == Running && run_state_ == Paused)
+  if (run_state == RUNNING && run_state_ == PAUSED)
     total_paused_time_ += (monotonic_time - pause_time_);
-  else if (run_state == Paused)
+  else if (run_state == PAUSED)
     pause_time_ = monotonic_time;
   run_state_ = run_state;
 
@@ -137,13 +133,13 @@ void Animation::SetRunState(RunState run_state,
 }
 
 void Animation::Suspend(base::TimeTicks monotonic_time) {
-  SetRunState(Paused, monotonic_time);
+  SetRunState(PAUSED, monotonic_time);
   suspended_ = true;
 }
 
 void Animation::Resume(base::TimeTicks monotonic_time) {
   suspended_ = false;
-  SetRunState(Running, monotonic_time);
+  SetRunState(RUNNING, monotonic_time);
 }
 
 bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
@@ -156,7 +152,7 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
   if (playback_rate_ == 0)
     return false;
 
-  return run_state_ == Running && iterations_ >= 0 &&
+  return run_state_ == RUNNING && iterations_ >= 0 &&
          TimeUtil::Scale(curve_->Duration(),
                          iterations_ / std::abs(playback_rate_)) <=
              (monotonic_time + time_offset_ - start_time_ - total_paused_time_);
@@ -164,7 +160,7 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
 
 bool Animation::InEffect(base::TimeTicks monotonic_time) const {
   return ConvertToActiveTime(monotonic_time) >= base::TimeDelta() ||
-         (fill_mode_ == FillModeBoth || fill_mode_ == FillModeBackwards);
+         (fill_mode_ == FILL_MODE_BOTH || fill_mode_ == FILL_MODE_BACKWARDS);
 }
 
 base::TimeDelta Animation::ConvertToActiveTime(
@@ -172,7 +168,7 @@ base::TimeDelta Animation::ConvertToActiveTime(
   base::TimeTicks trimmed = monotonic_time + time_offset_;
 
   // If we're paused, time is 'stuck' at the pause time.
-  if (run_state_ == Paused)
+  if (run_state_ == PAUSED)
     trimmed = pause_time_;
 
   // Returned time should always be relative to the start time and should
@@ -181,7 +177,7 @@ base::TimeDelta Animation::ConvertToActiveTime(
 
   // If we're just starting or we're waiting on receiving a start time,
   // time is 'stuck' at the initial state.
-  if ((run_state_ == Starting && !has_set_start_time()) ||
+  if ((run_state_ == STARTING && !has_set_start_time()) ||
       needs_synchronized_start_time())
     trimmed = base::TimeTicks() + time_offset_;
 
@@ -247,9 +243,10 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
 
   // Check if we are running the animation in reverse direction for the current
   // iteration
-  bool reverse = (direction_ == Reverse) ||
-                 (direction_ == Alternate && iteration % 2 == 1) ||
-                 (direction_ == AlternateReverse && iteration % 2 == 0);
+  bool reverse =
+      (direction_ == DIRECTION_REVERSE) ||
+      (direction_ == DIRECTION_ALTERNATE && iteration % 2 == 1) ||
+      (direction_ == DIRECTION_ALTERNATE_REVERSE && iteration % 2 == 0);
 
   // If we are running the animation in reverse direction, reverse the result
   if (reverse)
@@ -280,8 +277,8 @@ scoped_ptr<Animation> Animation::CloneAndInitialize(
 void Animation::PushPropertiesTo(Animation* other) const {
   // Currently, we only push changes due to pausing and resuming animations on
   // the main thread.
-  if (run_state_ == Animation::Paused ||
-      other->run_state_ == Animation::Paused) {
+  if (run_state_ == Animation::PAUSED ||
+      other->run_state_ == Animation::PAUSED) {
     other->run_state_ = run_state_;
     other->pause_time_ = pause_time_;
     other->total_paused_time_ = total_paused_time_;

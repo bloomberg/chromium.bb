@@ -156,11 +156,11 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     for (size_t i = 0; i < list->GetSize(); i++) {
       success &= list->GetString(i, &str);
       if (str == "StartTouch")
-        blocks |= ScrollBlocksOnStartTouch;
+        blocks |= SCROLL_BLOCKS_ON_START_TOUCH;
       else if (str == "WheelEvent")
-        blocks |= ScrollBlocksOnWheelEvent;
+        blocks |= SCROLL_BLOCKS_ON_WHEEL_EVENT;
       else if (str == "ScrollEvent")
-        blocks |= ScrollBlocksOnScrollEvent;
+        blocks |= SCROLL_BLOCKS_ON_SCROLL_EVENT;
       else
         success = false;
     }

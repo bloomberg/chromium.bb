@@ -33,7 +33,7 @@ LayerTreeSettings::LayerTreeSettings()
       gpu_rasterization_skewport_target_time_in_seconds(0.0f),
       threaded_gpu_rasterization_enabled(false),
       create_low_res_tiling(false),
-      scrollbar_animator(NoAnimator),
+      scrollbar_animator(NO_ANIMATOR),
       scrollbar_fade_delay_ms(0),
       scrollbar_fade_resize_delay_ms(0),
       scrollbar_fade_duration_ms(0),

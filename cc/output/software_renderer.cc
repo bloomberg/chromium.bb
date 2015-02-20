@@ -223,11 +223,11 @@ void SoftwareRenderer::SetDrawViewport(
 bool SoftwareRenderer::IsSoftwareResource(
     ResourceProvider::ResourceId resource_id) const {
   switch (resource_provider_->GetResourceType(resource_id)) {
-    case ResourceProvider::GLTexture:
+    case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE:
       return false;
-    case ResourceProvider::Bitmap:
+    case ResourceProvider::RESOURCE_TYPE_BITMAP:
       return true;
-    case ResourceProvider::InvalidType:
+    case ResourceProvider::RESOURCE_TYPE_INVALID:
       break;
   }
 

@@ -37,12 +37,12 @@ TEST(LayerSorterTest, BasicOverlap) {
 
   overlap_result =
       LayerSorter::CheckOverlap(&front, &back, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::BBeforeA, overlap_result);
+  EXPECT_EQ(LayerSorter::B_BEFORE_A, overlap_result);
   EXPECT_EQ(1.f, weight);
 
   overlap_result =
       LayerSorter::CheckOverlap(&back, &front, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::ABeforeB, overlap_result);
+  EXPECT_EQ(LayerSorter::A_BEFORE_B, overlap_result);
   EXPECT_EQ(1.f, weight);
 
   // One layer translated off to the right. No overlap should be detected.
@@ -51,7 +51,7 @@ TEST(LayerSorterTest, BasicOverlap) {
   LayerShape back_right(2.f, 2.f, right_translate);
   overlap_result =
       LayerSorter::CheckOverlap(&front, &back_right, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::None, overlap_result);
+  EXPECT_EQ(LayerSorter::NONE, overlap_result);
 
   // When comparing a layer with itself, z difference is always 0.
   overlap_result =
@@ -80,7 +80,7 @@ TEST(LayerSorterTest, RightAngleOverlap) {
 
   overlap_result =
       LayerSorter::CheckOverlap(&front_face, &left_face, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::BBeforeA, overlap_result);
+  EXPECT_EQ(LayerSorter::B_BEFORE_A, overlap_result);
 }
 
 TEST(LayerSorterTest, IntersectingLayerOverlap) {
@@ -107,7 +107,7 @@ TEST(LayerSorterTest, IntersectingLayerOverlap) {
                                              &rotated_face,
                                              z_threshold,
                                              &weight);
-  EXPECT_NE(LayerSorter::None, overlap_result);
+  EXPECT_NE(LayerSorter::NONE, overlap_result);
   EXPECT_EQ(0.f, weight);
 }
 
@@ -145,13 +145,13 @@ TEST(LayerSorterTest, LayersAtAngleOverlap) {
 
   overlap_result =
       LayerSorter::CheckOverlap(&layer_a, &layer_c, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::ABeforeB, overlap_result);
+  EXPECT_EQ(LayerSorter::A_BEFORE_B, overlap_result);
   overlap_result =
       LayerSorter::CheckOverlap(&layer_c, &layer_b, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::ABeforeB, overlap_result);
+  EXPECT_EQ(LayerSorter::A_BEFORE_B, overlap_result);
   overlap_result =
       LayerSorter::CheckOverlap(&layer_a, &layer_b, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::None, overlap_result);
+  EXPECT_EQ(LayerSorter::NONE, overlap_result);
 }
 
 TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform) {
@@ -192,7 +192,7 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform) {
 
   overlap_result =
       LayerSorter::CheckOverlap(&layer_a, &layer_b, z_threshold, &weight);
-  EXPECT_EQ(LayerSorter::ABeforeB, overlap_result);
+  EXPECT_EQ(LayerSorter::A_BEFORE_B, overlap_result);
 }
 
 TEST(LayerSorterTest, VerifyExistingOrderingPreservedWhenNoZDiff) {

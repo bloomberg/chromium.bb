@@ -90,7 +90,7 @@ LayerSorter::ABCompareResult LayerSorter::CheckOverlap(LayerShape* a,
 
   // Early out if the projected bounds don't overlap.
   if (!a->projected_bounds.Intersects(b->projected_bounds))
-    return None;
+    return NONE;
 
   gfx::PointF aPoints[4] = { a->projected_quad.p1(),
                              a->projected_quad.p2(),
@@ -123,7 +123,7 @@ LayerSorter::ABCompareResult LayerSorter::CheckOverlap(LayerShape* a,
         overlap_points.push_back(r);
 
   if (overlap_points.empty())
-    return None;
+    return NONE;
 
   // Check the corresponding layer depth value for all overlap points to
   // determine which layer is in front.
@@ -157,7 +157,7 @@ LayerSorter::ABCompareResult LayerSorter::CheckOverlap(LayerShape* a,
 
   // If we can't tell which should come first, we use document order.
   if (!accurate)
-    return ABeforeB;
+    return A_BEFORE_B;
 
   float max_diff =
       std::abs(max_positive) > std::abs(max_negative) ?
@@ -176,9 +176,9 @@ LayerSorter::ABCompareResult LayerSorter::CheckOverlap(LayerShape* a,
   // Maintain relative order if the layers have the same depth at all
   // intersection points.
   if (max_diff <= 0.f)
-    return ABeforeB;
+    return A_BEFORE_B;
 
-  return BBeforeA;
+  return B_BEFORE_A;
 }
 
 LayerShape::LayerShape() {}
@@ -320,10 +320,10 @@ void LayerSorter::CreateGraphEdges() {
                                                     &weight);
       GraphNode* start_node = NULL;
       GraphNode* end_node = NULL;
-      if (overlap_result == ABeforeB) {
+      if (overlap_result == A_BEFORE_B) {
         start_node = &node_a;
         end_node = &node_b;
-      } else if (overlap_result == BBeforeA) {
+      } else if (overlap_result == B_BEFORE_A) {
         start_node = &node_b;
         end_node = &node_a;
       }

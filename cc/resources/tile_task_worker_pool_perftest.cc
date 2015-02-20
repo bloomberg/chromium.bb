@@ -206,7 +206,7 @@ class TileTaskWorkerPoolPerfTestBase {
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
       scoped_ptr<ScopedResource> resource(
           ScopedResource::Create(resource_provider_.get()));
-      resource->Allocate(size, ResourceProvider::TextureHintImmutable,
+      resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                          RGBA_8888);
 
       ImageDecodeTask::Vector dependencies = image_decode_tasks;

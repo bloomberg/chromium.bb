@@ -376,47 +376,62 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const SolidColorProgram* GetSolidColorProgram();
   const SolidColorProgramAA* GetSolidColorProgramAA();
 
-  TileProgram tile_program_[NumTexCoordPrecisions][NumSamplerTypes];
+  TileProgram
+      tile_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
   TileProgramOpaque
-      tile_program_opaque_[NumTexCoordPrecisions][NumSamplerTypes];
-  TileProgramAA tile_program_aa_[NumTexCoordPrecisions][NumSamplerTypes];
-  TileProgramSwizzle
-      tile_program_swizzle_[NumTexCoordPrecisions][NumSamplerTypes];
+      tile_program_opaque_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
+  TileProgramAA
+      tile_program_aa_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
+  TileProgramSwizzle tile_program_swizzle_[LAST_TEX_COORD_PRECISION +
+                                           1][LAST_SAMPLER_TYPE + 1];
   TileProgramSwizzleOpaque
-      tile_program_swizzle_opaque_[NumTexCoordPrecisions][NumSamplerTypes];
-  TileProgramSwizzleAA
-      tile_program_swizzle_aa_[NumTexCoordPrecisions][NumSamplerTypes];
+      tile_program_swizzle_opaque_[LAST_TEX_COORD_PRECISION +
+                                   1][LAST_SAMPLER_TYPE + 1];
+  TileProgramSwizzleAA tile_program_swizzle_aa_[LAST_TEX_COORD_PRECISION +
+                                                1][LAST_SAMPLER_TYPE + 1];
 
   TileCheckerboardProgram tile_checkerboard_program_;
 
-  TextureProgram texture_program_[NumTexCoordPrecisions];
+  TextureProgram texture_program_[LAST_TEX_COORD_PRECISION + 1];
   NonPremultipliedTextureProgram
-      nonpremultiplied_texture_program_[NumTexCoordPrecisions];
-  TextureBackgroundProgram texture_background_program_[NumTexCoordPrecisions];
+      nonpremultiplied_texture_program_[LAST_TEX_COORD_PRECISION + 1];
+  TextureBackgroundProgram
+      texture_background_program_[LAST_TEX_COORD_PRECISION + 1];
   NonPremultipliedTextureBackgroundProgram
-      nonpremultiplied_texture_background_program_[NumTexCoordPrecisions];
-  TextureProgram texture_io_surface_program_[NumTexCoordPrecisions];
+      nonpremultiplied_texture_background_program_[LAST_TEX_COORD_PRECISION +
+                                                   1];
+  TextureProgram texture_io_surface_program_[LAST_TEX_COORD_PRECISION + 1];
 
-  RenderPassProgram render_pass_program_[NumTexCoordPrecisions][NumBlendModes];
-  RenderPassProgramAA
-      render_pass_program_aa_[NumTexCoordPrecisions][NumBlendModes];
-  RenderPassMaskProgram render_pass_mask_program_
-      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
-  RenderPassMaskProgramAA render_pass_mask_program_aa_
-      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
+  RenderPassProgram
+      render_pass_program_[LAST_TEX_COORD_PRECISION + 1][LAST_BLEND_MODE + 1];
+  RenderPassProgramAA render_pass_program_aa_[LAST_TEX_COORD_PRECISION +
+                                              1][LAST_BLEND_MODE + 1];
+  RenderPassMaskProgram
+      render_pass_mask_program_[LAST_TEX_COORD_PRECISION +
+                                1][LAST_SAMPLER_TYPE + 1][LAST_BLEND_MODE + 1];
+  RenderPassMaskProgramAA
+      render_pass_mask_program_aa_[LAST_TEX_COORD_PRECISION +
+                                   1][LAST_SAMPLER_TYPE + 1][LAST_BLEND_MODE +
+                                                             1];
   RenderPassColorMatrixProgram
-      render_pass_color_matrix_program_[NumTexCoordPrecisions][NumBlendModes];
-  RenderPassColorMatrixProgramAA render_pass_color_matrix_program_aa_
-      [NumTexCoordPrecisions][NumBlendModes];
-  RenderPassMaskColorMatrixProgram render_pass_mask_color_matrix_program_
-      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
-  RenderPassMaskColorMatrixProgramAA render_pass_mask_color_matrix_program_aa_
-      [NumTexCoordPrecisions][NumSamplerTypes][NumBlendModes];
+      render_pass_color_matrix_program_[LAST_TEX_COORD_PRECISION +
+                                        1][LAST_BLEND_MODE + 1];
+  RenderPassColorMatrixProgramAA
+      render_pass_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION +
+                                           1][LAST_BLEND_MODE + 1];
+  RenderPassMaskColorMatrixProgram
+      render_pass_mask_color_matrix_program_[LAST_TEX_COORD_PRECISION +
+                                             1][LAST_SAMPLER_TYPE +
+                                                1][LAST_BLEND_MODE + 1];
+  RenderPassMaskColorMatrixProgramAA
+      render_pass_mask_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION +
+                                                1][LAST_SAMPLER_TYPE +
+                                                   1][LAST_BLEND_MODE + 1];
 
-  VideoYUVProgram video_yuv_program_[NumTexCoordPrecisions];
-  VideoYUVAProgram video_yuva_program_[NumTexCoordPrecisions];
+  VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1];
+  VideoYUVAProgram video_yuva_program_[LAST_TEX_COORD_PRECISION + 1];
   VideoStreamTextureProgram
-      video_stream_texture_program_[NumTexCoordPrecisions];
+      video_stream_texture_program_[LAST_TEX_COORD_PRECISION + 1];
 
   DebugBorderProgram debug_border_program_;
   SolidColorProgram solid_color_program_;

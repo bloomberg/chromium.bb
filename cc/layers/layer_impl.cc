@@ -54,7 +54,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
-      scroll_blocks_on_(ScrollBlocksOnNone),
+      scroll_blocks_on_(SCROLL_BLOCKS_ON_NONE),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
       stacking_order_changed_(false),
@@ -425,12 +425,12 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     ScrollBlocksOn effective_block_mode) const {
   if (should_scroll_on_main_thread()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread");
-    return InputHandler::ScrollOnMainThread;
+    return InputHandler::SCROLL_ON_MAIN_THREAD;
   }
 
   if (!screen_space_transform().IsInvertible()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
-    return InputHandler::ScrollIgnored;
+    return InputHandler::SCROLL_IGNORED;
   }
 
   if (!non_fast_scrollable_region().IsEmpty()) {
@@ -440,7 +440,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     if (!screen_space_transform().GetInverse(&inverse_screen_space_transform)) {
       // TODO(shawnsingh): We shouldn't be applying a projection if screen space
       // transform is uninvertible here. Perhaps we should be returning
-      // ScrollOnMainThread in this case?
+      // SCROLL_ON_MAIN_THREAD in this case?
     }
 
     gfx::PointF hit_test_point_in_content_space =
@@ -456,25 +456,25 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
             gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
                    "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
-      return InputHandler::ScrollOnMainThread;
+      return InputHandler::SCROLL_ON_MAIN_THREAD;
     }
   }
 
   if (have_scroll_event_handlers() &&
-      effective_block_mode & ScrollBlocksOnScrollEvent) {
+      effective_block_mode & SCROLL_BLOCKS_ON_SCROLL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed ScrollEventHandlers");
-    return InputHandler::ScrollOnMainThread;
+    return InputHandler::SCROLL_ON_MAIN_THREAD;
   }
 
-  if (type == InputHandler::Wheel && have_wheel_event_handlers() &&
-      effective_block_mode & ScrollBlocksOnWheelEvent) {
+  if (type == InputHandler::WHEEL && have_wheel_event_handlers() &&
+      effective_block_mode & SCROLL_BLOCKS_ON_WHEEL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
-    return InputHandler::ScrollOnMainThread;
+    return InputHandler::SCROLL_ON_MAIN_THREAD;
   }
 
   if (!scrollable()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
-    return InputHandler::ScrollIgnored;
+    return InputHandler::SCROLL_IGNORED;
   }
 
   gfx::ScrollOffset max_scroll_offset = MaxScrollOffset();
@@ -482,10 +482,10 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
-    return InputHandler::ScrollIgnored;
+    return InputHandler::SCROLL_IGNORED;
   }
 
-  return InputHandler::ScrollStarted;
+  return InputHandler::SCROLL_STARTED;
 }
 
 gfx::Rect LayerImpl::LayerRectToContentRect(
@@ -672,7 +672,7 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
 
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetBoolean("Is3dSorted", Is3dSorted());
-  result->SetDouble("Opacity", opacity());
+  result->SetDouble("OPACITY", opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
 
   if (scrollable())
@@ -689,11 +689,11 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
 
   if (scroll_blocks_on_) {
     list = new base::ListValue;
-    if (scroll_blocks_on_ & ScrollBlocksOnStartTouch)
+    if (scroll_blocks_on_ & SCROLL_BLOCKS_ON_START_TOUCH)
       list->AppendString("StartTouch");
-    if (scroll_blocks_on_ & ScrollBlocksOnWheelEvent)
+    if (scroll_blocks_on_ & SCROLL_BLOCKS_ON_WHEEL_EVENT)
       list->AppendString("WheelEvent");
-    if (scroll_blocks_on_ & ScrollBlocksOnScrollEvent)
+    if (scroll_blocks_on_ & SCROLL_BLOCKS_ON_SCROLL_EVENT)
       list->AppendString("ScrollEvent");
     result->Set("ScrollBlocksOn", list);
   }
@@ -946,12 +946,12 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
 }
 
 bool LayerImpl::FilterIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::Filter);
+  return layer_animation_controller_->IsAnimatingProperty(Animation::FILTER);
 }
 
 bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
   Animation* filter_animation =
-      layer_animation_controller_->GetAnimation(Animation::Filter);
+      layer_animation_controller_->GetAnimation(Animation::FILTER);
   return filter_animation && filter_animation->is_impl_only();
 }
 
@@ -989,12 +989,12 @@ void LayerImpl::SetOpacity(float opacity) {
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::Opacity);
+  return layer_animation_controller_->IsAnimatingProperty(Animation::OPACITY);
 }
 
 bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
   Animation* opacity_animation =
-      layer_animation_controller_->GetAnimation(Animation::Opacity);
+      layer_animation_controller_->GetAnimation(Animation::OPACITY);
   return opacity_animation && opacity_animation->is_impl_only();
 }
 
@@ -1066,12 +1066,12 @@ void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,
 }
 
 bool LayerImpl::TransformIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::Transform);
+  return layer_animation_controller_->IsAnimatingProperty(Animation::TRANSFORM);
 }
 
 bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
   Animation* transform_animation =
-      layer_animation_controller_->GetAnimation(Animation::Transform);
+      layer_animation_controller_->GetAnimation(Animation::TRANSFORM);
   return transform_animation && transform_animation->is_impl_only();
 }
 
@@ -1332,7 +1332,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
 
 void LayerImpl::DidBecomeActive() {
   if (layer_tree_impl_->settings().scrollbar_animator ==
-      LayerTreeSettings::NoAnimator) {
+      LayerTreeSettings::NO_ANIMATOR) {
     return;
   }
 
@@ -1573,7 +1573,7 @@ void LayerImpl::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
     Animation::TargetProperty target_property,
     int group) {
-  if (target_property == Animation::ScrollOffset)
+  if (target_property == Animation::SCROLL_OFFSET)
     layer_tree_impl_->InputScrollAnimationFinished();
 }
 

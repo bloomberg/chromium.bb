@@ -3914,7 +3914,7 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
                                         WhichTree tree,
                                         size_t expected_occluded_tile_count) {
     WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
-    for (int priority_count = 0; priority_count < NUM_TREE_PRIORITIES;
+    for (int priority_count = 0; priority_count <= LAST_TREE_PRIORITY;
          ++priority_count) {
       TreePriority tree_priority = static_cast<TreePriority>(priority_count);
       size_t occluded_tile_count = 0u;
@@ -4014,9 +4014,6 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
               // Shared tiles should be returned only by a pending tree
               // eviction queue.
               EXPECT_EQ(ACTIVE_TREE, tree);
-              break;
-            case NUM_TREE_PRIORITIES:
-              NOTREACHED();
               break;
           }
         }

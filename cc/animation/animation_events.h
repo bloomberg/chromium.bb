@@ -15,7 +15,7 @@
 namespace cc {
 
 struct CC_EXPORT AnimationEvent {
-  enum Type { Started, Finished, Aborted, PropertyUpdate };
+  enum Type { STARTED, FINISHED, ABORTED, PROPERTY_UPDATE };
 
   AnimationEvent(Type type,
                  int layer_id,

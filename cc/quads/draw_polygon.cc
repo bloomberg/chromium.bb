@@ -93,7 +93,7 @@ float DrawPolygon::SignedPointDistance(const gfx::Point3F& point) const {
 
 // Checks whether or not shape a lies on the front or back side of b, or
 // whether they should be considered coplanar. If on the back side, we
-// say ABeforeB because it should be drawn in that order.
+// say A_BEFORE_B because it should be drawn in that order.
 // Assumes that layers are split and there are no intersecting planes.
 BspCompareResult DrawPolygon::SideCompare(const DrawPolygon& a,
                                           const DrawPolygon& b) {

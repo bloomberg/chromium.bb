@@ -24,39 +24,39 @@ class GLES2Interface;
 namespace cc {
 
 enum TexCoordPrecision {
-  TexCoordPrecisionNA = 0,
-  TexCoordPrecisionMedium = 1,
-  TexCoordPrecisionHigh = 2,
-  NumTexCoordPrecisions = 3
+  TEX_COORD_PRECISION_NA = 0,
+  TEX_COORD_PRECISION_MEDIUM = 1,
+  TEX_COORD_PRECISION_HIGH = 2,
+  LAST_TEX_COORD_PRECISION = 2
 };
 
 enum SamplerType {
-  SamplerTypeNA = 0,
-  SamplerType2D = 1,
-  SamplerType2DRect = 2,
-  SamplerTypeExternalOES = 3,
-  NumSamplerTypes = 4
+  SAMPLER_TYPE_NA = 0,
+  SAMPLER_TYPE_2D = 1,
+  SAMPLER_TYPE_2D_RECT = 2,
+  SAMPLER_TYPE_EXTERNAL_OES = 3,
+  LAST_SAMPLER_TYPE = 3
 };
 
 enum BlendMode {
-  BlendModeNone,
-  BlendModeNormal,
-  BlendModeScreen,
-  BlendModeOverlay,
-  BlendModeDarken,
-  BlendModeLighten,
-  BlendModeColorDodge,
-  BlendModeColorBurn,
-  BlendModeHardLight,
-  BlendModeSoftLight,
-  BlendModeDifference,
-  BlendModeExclusion,
-  BlendModeMultiply,
-  BlendModeHue,
-  BlendModeSaturation,
-  BlendModeColor,
-  BlendModeLuminosity,
-  NumBlendModes
+  BLEND_MODE_NONE,
+  BLEND_MODE_NORMAL,
+  BLEND_MODE_SCREEN,
+  BLEND_MODE_OVERLAY,
+  BLEND_MODE_DARKEN,
+  BLEND_MODE_LIGHTEN,
+  BLEND_MODE_COLOR_DODGE,
+  BLEND_MODE_COLOR_BURN,
+  BLEND_MODE_HARD_LIGHT,
+  BLEND_MODE_SOFT_LIGHT,
+  BLEND_MODE_DIFFERENCE,
+  BLEND_MODE_EXCLUSION,
+  BLEND_MODE_MULTIPLY,
+  BLEND_MODE_HUE,
+  BLEND_MODE_SATURATION,
+  BLEND_MODE_COLOR,
+  BLEND_MODE_LUMINOSITY,
+  LAST_BLEND_MODE = BLEND_MODE_LUMINOSITY
 };
 
 // Note: The highp_threshold_cache must be provided by the caller to make
@@ -329,7 +329,7 @@ class FragmentTexBlendMode {
 
   BlendMode blend_mode() const { return blend_mode_; }
   void set_blend_mode(BlendMode blend_mode) { blend_mode_ = blend_mode; }
-  bool has_blend_mode() const { return blend_mode_ != BlendModeNone; }
+  bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
 
  protected:
   FragmentTexBlendMode();

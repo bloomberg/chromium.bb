@@ -64,7 +64,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       height_(0),
       scale_factor_(-1.f),
       test_support_(NULL),
-      last_update_type_(NoUpdate),
+      last_update_type_(NO_UPDATE),
       next_insert_sync_point_(1),
       last_waited_sync_point_(0),
       unpack_alignment_(4),

@@ -97,7 +97,7 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
   scoped_ptr<ScopedResource> resource =
       ScopedResource::Create(resource_provider);
   resource->Allocate(internal_content_bounds_,
-                     ResourceProvider::TextureHintImmutable, RGBA_8888);
+                     ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
   resources_.push_back(resource.Pass());
 }
 

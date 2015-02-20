@@ -52,9 +52,6 @@ class PictureImageLayerImplTest : public testing::Test {
       case PENDING_TREE:
         tree = host_impl_.pending_tree();
         break;
-      case NUM_TREES:
-        NOTREACHED();
-        break;
     }
     TestablePictureImageLayerImpl* layer =
         new TestablePictureImageLayerImpl(tree, id);

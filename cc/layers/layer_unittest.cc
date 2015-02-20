@@ -738,8 +738,9 @@ TEST_F(LayerTest,
                                    1.0,
                                    0,
                                    100);
-  impl_layer->layer_animation_controller()->GetAnimation(Animation::Transform)->
-      set_is_impl_only(true);
+  impl_layer->layer_animation_controller()
+      ->GetAnimation(Animation::TRANSFORM)
+      ->set_is_impl_only(true);
   transform.Rotate(45.0);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
 
@@ -779,8 +780,9 @@ TEST_F(LayerTest,
                                    0.3f,
                                    0.7f,
                                    false);
-  impl_layer->layer_animation_controller()->GetAnimation(Animation::Opacity)->
-      set_is_impl_only(true);
+  impl_layer->layer_animation_controller()
+      ->GetAnimation(Animation::OPACITY)
+      ->set_is_impl_only(true);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.75f));
 
   EXPECT_FALSE(impl_layer->LayerPropertyChanged());
@@ -815,8 +817,9 @@ TEST_F(LayerTest,
   impl_layer->ResetAllChangeTrackingForSubtree();
   AddAnimatedFilterToController(
       impl_layer->layer_animation_controller(), 1.0, 1.f, 2.f);
-  impl_layer->layer_animation_controller()->GetAnimation(Animation::Filter)->
-      set_is_impl_only(true);
+  impl_layer->layer_animation_controller()
+      ->GetAnimation(Animation::FILTER)
+      ->set_is_impl_only(true);
   filters.Append(FilterOperation::CreateSepiaFilter(0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetFilters(filters));
 
@@ -1148,7 +1151,7 @@ static bool AddTestAnimation(Layer* layer) {
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.7f, nullptr));
   scoped_ptr<Animation> animation =
-      Animation::Create(curve.Pass(), 0, 0, Animation::Opacity);
+      Animation::Create(curve.Pass(), 0, 0, Animation::OPACITY);
 
   return layer->AddAnimation(animation.Pass());
 }

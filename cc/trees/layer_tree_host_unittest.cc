@@ -1322,7 +1322,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     // Make sure partial texture updates are turned off.
     settings->max_partial_texture_updates = 0;
     // Linear fade animator prevents scrollbars from drawing immediately.
-    settings->scrollbar_animator = LayerTreeSettings::NoAnimator;
+    settings->scrollbar_animator = LayerTreeSettings::NO_ANIMATOR;
   }
 
   void SetupTree() override {

@@ -942,7 +942,7 @@ LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(settings().scrollbar_fade_duration_ms);
   switch (settings().scrollbar_animator) {
-    case LayerTreeSettings::LinearFade: {
+    case LayerTreeSettings::LINEAR_FADE: {
       return ScrollbarAnimationControllerLinearFade::Create(
           scrolling_layer,
           layer_tree_host_impl_,
@@ -950,14 +950,14 @@ LayerTreeImpl::CreateScrollbarAnimationController(LayerImpl* scrolling_layer) {
           resize_delay,
           duration);
     }
-    case LayerTreeSettings::Thinning: {
+    case LayerTreeSettings::THINNING: {
       return ScrollbarAnimationControllerThinning::Create(scrolling_layer,
                                                           layer_tree_host_impl_,
                                                           delay,
                                                           resize_delay,
                                                           duration);
     }
-    case LayerTreeSettings::NoAnimator:
+    case LayerTreeSettings::NO_ANIMATOR:
       NOTREACHED();
       break;
   }
@@ -1191,13 +1191,13 @@ bool LayerTreeImpl::IsUIResourceOpaque(UIResourceId uid) const {
 void LayerTreeImpl::ProcessUIResourceRequestQueue() {
   for (const auto& req : ui_resource_request_queue_) {
     switch (req.GetType()) {
-      case UIResourceRequest::UIResourceCreate:
+      case UIResourceRequest::UI_RESOURCE_CREATE:
         layer_tree_host_impl_->CreateUIResource(req.GetId(), req.GetBitmap());
         break;
-      case UIResourceRequest::UIResourceDelete:
+      case UIResourceRequest::UI_RESOURCE_DELETE:
         layer_tree_host_impl_->DeleteUIResource(req.GetId());
         break;
-      case UIResourceRequest::UIResourceInvalidRequest:
+      case UIResourceRequest::UI_RESOURCE_INVALID_REQUEST:
         NOTREACHED();
         break;
     }

@@ -667,7 +667,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
 
-  static_assert(ScrollBlocksOnMax < (1 << 3), "ScrollBlocksOn too big");
+  static_assert(SCROLL_BLOCKS_ON_MAX < (1 << 3), "ScrollBlocksOn too big");
   ScrollBlocksOn scroll_blocks_on_ : 3;
 
   bool user_scrollable_horizontal_ : 1;

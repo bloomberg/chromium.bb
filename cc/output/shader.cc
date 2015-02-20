@@ -52,7 +52,7 @@ static std::string SetFragmentTexCoordPrecision(
     TexCoordPrecision requested_precision,
     std::string shader_string) {
   switch (requested_precision) {
-    case TexCoordPrecisionHigh:
+    case TEX_COORD_PRECISION_HIGH:
       DCHECK_NE(shader_string.find("TexCoordPrecision"), std::string::npos);
       return "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
              "  #define TexCoordPrecision highp\n"
@@ -60,10 +60,10 @@ static std::string SetFragmentTexCoordPrecision(
              "  #define TexCoordPrecision mediump\n"
              "#endif\n" +
              shader_string;
-    case TexCoordPrecisionMedium:
+    case TEX_COORD_PRECISION_MEDIUM:
       DCHECK_NE(shader_string.find("TexCoordPrecision"), std::string::npos);
       return "#define TexCoordPrecision mediump\n" + shader_string;
-    case TexCoordPrecisionNA:
+    case TEX_COORD_PRECISION_NA:
       DCHECK_EQ(shader_string.find("TexCoordPrecision"), std::string::npos);
       DCHECK_EQ(shader_string.find("texture2D"), std::string::npos);
       DCHECK_EQ(shader_string.find("texture2DRect"), std::string::npos);
@@ -104,34 +104,34 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
 
   int highp_threshold = std::max(*highp_threshold_cache, highp_threshold_min);
   if (x > highp_threshold || y > highp_threshold)
-    return TexCoordPrecisionHigh;
-  return TexCoordPrecisionMedium;
+    return TEX_COORD_PRECISION_HIGH;
+  return TEX_COORD_PRECISION_MEDIUM;
 }
 
 static std::string SetFragmentSamplerType(SamplerType requested_type,
                                           std::string shader_string) {
   switch (requested_type) {
-    case SamplerType2D:
+    case SAMPLER_TYPE_2D:
       DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
       DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
       return "#define SamplerType sampler2D\n"
              "#define TextureLookup texture2D\n" +
              shader_string;
-    case SamplerType2DRect:
+    case SAMPLER_TYPE_2D_RECT:
       DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
       DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
       return "#extension GL_ARB_texture_rectangle : require\n"
              "#define SamplerType sampler2DRect\n"
              "#define TextureLookup texture2DRect\n" +
              shader_string;
-    case SamplerTypeExternalOES:
+    case SAMPLER_TYPE_EXTERNAL_OES:
       DCHECK_NE(shader_string.find("SamplerType"), std::string::npos);
       DCHECK_NE(shader_string.find("TextureLookup"), std::string::npos);
       return "#extension GL_OES_EGL_image_external : require\n"
              "#define SamplerType samplerExternalOES\n"
              "#define TextureLookup texture2D\n" +
              shader_string;
-    case SamplerTypeNA:
+    case SAMPLER_TYPE_NA:
       DCHECK_EQ(shader_string.find("SamplerType"), std::string::npos);
       DCHECK_EQ(shader_string.find("TextureLookup"), std::string::npos);
       return shader_string;
@@ -734,7 +734,7 @@ std::string VertexShaderVideoTransform::GetShaderBody() {
 FragmentTexBlendMode::FragmentTexBlendMode()
     : backdrop_location_(-1),
       backdrop_rect_location_(-1),
-      blend_mode_(BlendModeNone) {
+      blend_mode_(BLEND_MODE_NONE) {
 }
 
 std::string FragmentTexBlendMode::SetBlendModeFunctions(
@@ -908,20 +908,20 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
   });
 
   switch (blend_mode_) {
-    case BlendModeOverlay:
-    case BlendModeHardLight:
+    case BLEND_MODE_OVERLAY:
+    case BLEND_MODE_HARD_LIGHT:
       return kFunctionHardLight;
-    case BlendModeColorDodge:
+    case BLEND_MODE_COLOR_DODGE:
       return kFunctionColorDodgeComponent;
-    case BlendModeColorBurn:
+    case BLEND_MODE_COLOR_BURN:
       return kFunctionColorBurnComponent;
-    case BlendModeSoftLight:
+    case BLEND_MODE_SOFT_LIGHT:
       return kFunctionSoftLightComponentPosDstAlpha;
-    case BlendModeHue:
-    case BlendModeSaturation:
+    case BLEND_MODE_HUE:
+    case BLEND_MODE_SATURATION:
       return kFunctionLum + kFunctionSat;
-    case BlendModeColor:
-    case BlendModeLuminosity:
+    case BLEND_MODE_COLOR:
+    case BLEND_MODE_LUMINOSITY:
       return kFunctionLum;
     default:
       return std::string();
@@ -939,29 +939,29 @@ std::string FragmentTexBlendMode::GetBlendFunction() const {
 
 std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
   switch (blend_mode_) {
-    case BlendModeNormal:
+    case BLEND_MODE_NORMAL:
       return "result.rgb = src.rgb + dst.rgb * (1.0 - src.a);";
-    case BlendModeScreen:
+    case BLEND_MODE_SCREEN:
       return "result.rgb = src.rgb + (1.0 - src.rgb) * dst.rgb;";
-    case BlendModeLighten:
+    case BLEND_MODE_LIGHTEN:
       return "result.rgb = max((1.0 - src.a) * dst.rgb + src.rgb,"
              "                 (1.0 - dst.a) * src.rgb + dst.rgb);";
-    case BlendModeOverlay:
+    case BLEND_MODE_OVERLAY:
       return "result.rgb = hardLight(dst, src);";
-    case BlendModeDarken:
+    case BLEND_MODE_DARKEN:
       return "result.rgb = min((1.0 - src.a) * dst.rgb + src.rgb,"
              "                 (1.0 - dst.a) * src.rgb + dst.rgb);";
-    case BlendModeColorDodge:
+    case BLEND_MODE_COLOR_DODGE:
       return "result.r = getColorDodgeComponent(src.r, src.a, dst.r, dst.a);"
              "result.g = getColorDodgeComponent(src.g, src.a, dst.g, dst.a);"
              "result.b = getColorDodgeComponent(src.b, src.a, dst.b, dst.a);";
-    case BlendModeColorBurn:
+    case BLEND_MODE_COLOR_BURN:
       return "result.r = getColorBurnComponent(src.r, src.a, dst.r, dst.a);"
              "result.g = getColorBurnComponent(src.g, src.a, dst.g, dst.a);"
              "result.b = getColorBurnComponent(src.b, src.a, dst.b, dst.a);";
-    case BlendModeHardLight:
+    case BLEND_MODE_HARD_LIGHT:
       return "result.rgb = hardLight(src, dst);";
-    case BlendModeSoftLight:
+    case BLEND_MODE_SOFT_LIGHT:
       return "if (0.0 == dst.a) {"
              "  result.rgb = src.rgb;"
              "} else {"
@@ -969,15 +969,15 @@ std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
              "  result.g = getSoftLightComponent(src.g, src.a, dst.g, dst.a);"
              "  result.b = getSoftLightComponent(src.b, src.a, dst.b, dst.a);"
              "}";
-    case BlendModeDifference:
+    case BLEND_MODE_DIFFERENCE:
       return "result.rgb = src.rgb + dst.rgb -"
              "    2.0 * min(src.rgb * dst.a, dst.rgb * src.a);";
-    case BlendModeExclusion:
+    case BLEND_MODE_EXCLUSION:
       return "result.rgb = dst.rgb + src.rgb - 2.0 * dst.rgb * src.rgb;";
-    case BlendModeMultiply:
+    case BLEND_MODE_MULTIPLY:
       return "result.rgb = (1.0 - src.a) * dst.rgb +"
              "    (1.0 - dst.a) * src.rgb + src.rgb * dst.rgb;";
-    case BlendModeHue:
+    case BLEND_MODE_HUE:
       return "vec4 dstSrcAlpha = dst * src.a;"
              "result.rgb ="
              "    set_luminance(set_saturation(src.rgb * dst.a,"
@@ -985,27 +985,26 @@ std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
              "                  dstSrcAlpha.a,"
              "                  dstSrcAlpha.rgb);"
              "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
-    case BlendModeSaturation:
+    case BLEND_MODE_SATURATION:
       return "vec4 dstSrcAlpha = dst * src.a;"
              "result.rgb = set_luminance(set_saturation(dstSrcAlpha.rgb,"
              "                                          src.rgb * dst.a),"
              "                           dstSrcAlpha.a,"
              "                           dstSrcAlpha.rgb);"
              "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
-    case BlendModeColor:
+    case BLEND_MODE_COLOR:
       return "vec4 srcDstAlpha = src * dst.a;"
              "result.rgb = set_luminance(srcDstAlpha.rgb,"
              "                           srcDstAlpha.a,"
              "                           dst.rgb * src.a);"
              "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
-    case BlendModeLuminosity:
+    case BLEND_MODE_LUMINOSITY:
       return "vec4 srcDstAlpha = src * dst.a;"
              "result.rgb = set_luminance(dst.rgb * src.a,"
              "                           srcDstAlpha.a,"
              "                           srcDstAlpha.rgb);"
              "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
-    case BlendModeNone:
-    case NumBlendModes:
+    case BLEND_MODE_NONE:
       NOTREACHED();
   }
   return "result = vec4(1.0, 0.0, 0.0, 1.0);";
