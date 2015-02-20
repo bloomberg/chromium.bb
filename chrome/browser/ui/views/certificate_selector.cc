@@ -97,6 +97,10 @@ void CertificateSelector::InitWithText(const base::string16& text) {
   views::GridLayout* const layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
+  // The dimensions of the certificate selector table view, in pixels.
+  const int kTableViewWidth = 400;
+  const int kTableViewHeight = 100;
+
   const int kColumnSetId = 0;
   views::ColumnSet* const column_set = layout->AddColumnSet(kColumnSetId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
@@ -107,13 +111,10 @@ void CertificateSelector::InitWithText(const base::string16& text) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetAllowCharacterBreak(true);
+  label->SizeToFit(kTableViewWidth);
   layout->AddView(label.release());
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  // The dimensions of the certificate selector table view, in pixels.
-  const int kTableViewWidth = 400;
-  const int kTableViewHeight = 100;
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());

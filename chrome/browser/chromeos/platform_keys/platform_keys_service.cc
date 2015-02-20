@@ -427,11 +427,13 @@ class PlatformKeysService::SelectTask : public Task {
              bool interactive,
              const std::string& extension_id,
              const SelectCertificatesCallback& callback,
+             content::WebContents* web_contents,
              PlatformKeysService* service)
       : request_(request),
         interactive_(interactive),
         extension_id_(extension_id),
         callback_(callback),
+        web_contents_(web_contents),
         service_(service),
         weak_factory_(this) {}
   ~SelectTask() override {}
@@ -512,12 +514,13 @@ class PlatformKeysService::SelectTask : public Task {
     }
     service_->select_delegate_->Select(
         extension_id_, matches_,
-        base::Bind(&SelectTask::GotSelection, base::Unretained(this)));
+        base::Bind(&SelectTask::GotSelection, base::Unretained(this)),
+        web_contents_, service_->browser_context_);
   }
 
   // Will be called by |SelectCerts()| with the selected cert or null if no cert
   // was selected.
-  void GotSelection(scoped_refptr<net::X509Certificate> selected_cert) {
+  void GotSelection(const scoped_refptr<net::X509Certificate>& selected_cert) {
     selected_cert_ = selected_cert;
     DoStep();
   }
@@ -601,6 +604,7 @@ class PlatformKeysService::SelectTask : public Task {
   const bool interactive_;
   const std::string extension_id_;
   const SelectCertificatesCallback callback_;
+  content::WebContents* const web_contents_;
   PlatformKeysService* const service_;
   base::WeakPtrFactory<SelectTask> weak_factory_;
 
@@ -684,10 +688,11 @@ void PlatformKeysService::SelectClientCertificates(
     const platform_keys::ClientCertificateRequest& request,
     bool interactive,
     const std::string& extension_id,
-    const SelectCertificatesCallback& callback) {
+    const SelectCertificatesCallback& callback,
+    content::WebContents* web_contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  StartOrQueueTask(make_scoped_ptr(
-      new SelectTask(request, interactive, extension_id, callback, this)));
+  StartOrQueueTask(make_scoped_ptr(new SelectTask(
+      request, interactive, extension_id, callback, web_contents, this)));
 }
 
 void PlatformKeysService::StartOrQueueTask(scoped_ptr<Task> task) {

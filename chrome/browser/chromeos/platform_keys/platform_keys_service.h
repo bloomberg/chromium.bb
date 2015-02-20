@@ -19,6 +19,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace base {
@@ -47,9 +48,8 @@ class PlatformKeysService : public KeyedService {
   // can happen by exposing UI to let the user select.
   class SelectDelegate {
    public:
-    // TODO(pneubeck): Handle if the selection was aborted, e.g. by the user.
-    using CertificateSelectedCallback =
-        base::Callback<void(scoped_refptr<net::X509Certificate> selection)>;
+    using CertificateSelectedCallback = base::Callback<void(
+        const scoped_refptr<net::X509Certificate>& selection)>;
 
     SelectDelegate();
     virtual ~SelectDelegate();
@@ -61,9 +61,13 @@ class PlatformKeysService : public KeyedService {
     // for this cert. By passing null to |callback|, no cert will be selected.
     // Must eventually call |callback| or be destructed. |callback| must not be
     // called after this delegate is destructed.
+    // |web_contents| and |context| provide the context in which the
+    // certificates were requested and are not null.
     virtual void Select(const std::string& extension_id,
                         const net::CertificateList& certs,
-                        const CertificateSelectedCallback& callback) = 0;
+                        const CertificateSelectedCallback& callback,
+                        content::WebContents* web_contents,
+                        content::BrowserContext* context) = 0;
 
    private:
     DISALLOW_ASSIGN(SelectDelegate);
@@ -165,11 +169,13 @@ class PlatformKeysService : public KeyedService {
   // returned.
   // |callback| will be invoked with these certificates or an error message.
   // Will only call back during the lifetime of this object.
+  // |web_contents| must not be null.
   void SelectClientCertificates(
       const platform_keys::ClientCertificateRequest& request,
       bool interactive,
       const std::string& extension_id,
-      const SelectCertificatesCallback& callback);
+      const SelectCertificatesCallback& callback,
+      content::WebContents* web_contents);
 
  private:
   using GetPlatformKeysCallback =

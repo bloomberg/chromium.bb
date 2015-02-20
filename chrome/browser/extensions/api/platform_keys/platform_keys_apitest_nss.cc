@@ -192,7 +192,11 @@ class TestSelectDelegate
 
   void Select(const std::string& extension_id,
               const net::CertificateList& certs,
-              const CertificateSelectedCallback& callback) override {
+              const CertificateSelectedCallback& callback,
+              content::WebContents* web_contents,
+              content::BrowserContext* context) override {
+    ASSERT_TRUE(web_contents);
+    ASSERT_TRUE(context);
     if (!cert_to_select_) {
       callback.Run(nullptr /* no cert */);
       return;

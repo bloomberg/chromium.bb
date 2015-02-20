@@ -158,7 +158,8 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
       request, params->details.interactive, extension_id(),
       base::Bind(&PlatformKeysInternalSelectClientCertificatesFunction::
                      OnSelectedCertificates,
-                 this));
+                 this),
+      GetAssociatedWebContents());
   return RespondLater();
 }
 
