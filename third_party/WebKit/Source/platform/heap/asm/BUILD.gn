@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (cpu_arch == "x86" || cpu_arch == "x64") {
+if (current_cpu == "x86" || current_cpu == "x64") {
 import("//third_party/yasm/yasm_assemble.gni")
 
 yasm_assemble("asm") {
-  assert(cpu_arch == "x86" || cpu_arch == "x64")
+  assert(current_cpu == "x86" || current_cpu == "x64")
 
   sources = [ "SaveRegisters_x86.asm" ]
 
@@ -16,33 +16,33 @@ yasm_assemble("asm") {
     # yasm_compile.gypi for Windows, but not Mac.
     yasm_flags += [ "-DPREFIX" ]
   }
-  if (cpu_arch == "x64") {
+  if (current_cpu == "x64") {
     if (is_win) {
       yasm_flags += [ "-DX64WIN=1" ]
     } else {
       yasm_flags += [ "-DX64POSIX=1" ]
     }
-  } else {  # cpu_arch == "x86"
+  } else {  # current_cpu == "x86"
     yasm_flags += [ "-DIA32=1" ]
   }
 }
 
-} else { # cpu_arch == "x86" || cpu_arch == "x64"
+} else { # current_cpu == "x86" || current_cpu == "x64"
 
 source_set("asm") {
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     sources = [ "SaveRegisters_arm.S" ]
-  } else if (cpu_arch == "arm64") {
+  } else if (current_cpu == "arm64") {
     sources = [ "SaveRegisters_arm64.S" ]
-  } else if (cpu_arch == "mipsel") {
+  } else if (current_cpu == "mipsel") {
     sources = [ "SaveRegisters_mips.S" ]
   }
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     defines = [ "ARM=1" ]
   }
 }
 
-} # cpu_arch == "x86" || cpu_arch == "x64"
+} # current_cpu == "x86" || current_cpu == "x64"
 
 

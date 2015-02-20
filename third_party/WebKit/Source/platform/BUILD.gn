@@ -300,7 +300,7 @@ component("platform") {
     ]
   }
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     deps += [ ":blink_arm_neon" ]
   }
 
@@ -385,7 +385,7 @@ if (!is_mac) {
 }
 
 
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   source_set("blink_arm_neon") {
     sources = blink_platform_neon_files
 
