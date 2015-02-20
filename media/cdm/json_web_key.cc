@@ -28,6 +28,7 @@ const char kBase64Plus[] = "+";
 const char kBase64UrlPlusReplacement[] = "-";
 const char kBase64Slash[] = "/";
 const char kBase64UrlSlashReplacement[] = "_";
+const char kBase64UrlInvalid[] = "+/=";
 const char kTypeTag[] = "type";
 const char kTemporarySession[] = "temporary";
 const char kPersistentLicenseSession[] = "persistent-license";
@@ -57,20 +58,11 @@ static std::string EncodeBase64Url(const uint8* input, int input_length) {
 
 // Decodes a base64url string. Returns empty string on error.
 static std::string DecodeBase64Url(const std::string& encoded_text) {
-  // EME spec doesn't allow padding characters.
-  if (encoded_text.find_first_of(kBase64Padding) != std::string::npos) {
-    DVLOG(1) << "Padding characters not allowed: " << encoded_text;
+  // EME spec doesn't allow '+', '/', or padding characters.
+  if (encoded_text.find_first_of(kBase64UrlInvalid) != std::string::npos) {
+    DVLOG(1) << "Invalid base64url format: " << encoded_text;
     return std::string();
   }
-  // TODO(jrummell): Enable once blink tests updated to use base64url encoding.
-  //if (encoded_text.find(kBase64Plus) != std::string::npos) {
-  //  DVLOG(1) << "Base64 '+' characters not allowed: " << encoded_text;
-  //  return std::string();
-  //}
-  //if (encoded_text.find(kBase64Slash) != std::string::npos) {
-  //  DVLOG(1) << "Base64 '/' characters not allowed: " << encoded_text;
-  //  return std::string();
-  //}
 
   // Since base::Base64Decode() requires padding characters, add them so length
   // of |encoded_text| is exactly a multiple of 4.
