@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "sandbox/sandbox_export.h"
 
 struct sock_filter;
 
@@ -20,7 +21,7 @@ class Policy;
 class PolicyCompiler;
 }
 
-class Verifier {
+class SANDBOX_EXPORT Verifier {
  public:
   // Evaluate the BPF program for all possible inputs and verify that it
   // computes the correct result. We use the "evaluators" to determine

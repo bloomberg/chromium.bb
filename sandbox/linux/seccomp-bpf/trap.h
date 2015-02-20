@@ -53,9 +53,9 @@ class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
   // automatically as needed.
   Trap();
 
-  // The destructor is unimplemented. Don't ever attempt to destruct this
-  // object. It'll break subsequent system calls that trigger a SIGSYS.
-  ~Trap();
+  // The destructor is unimplemented as destroying this object would
+  // break subsequent system calls that trigger a SIGSYS.
+  ~Trap() = delete;
 
   static void SigSysAction(int nr, siginfo_t* info, void* void_context);
 

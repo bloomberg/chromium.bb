@@ -21,6 +21,8 @@
 #endif
 #endif
 
+#include "sandbox/linux/system_headers/linux_seccomp.h"  // For AUDIT_ARCH_*
+
 // Impose some reasonable maximum BPF program size. Realistically, the
 // kernel probably has much lower limits. But by limiting to less than
 // 30 bits, we can ease requirements on some of our data types.
