@@ -20,7 +20,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT" file="network/statusbar_network_arcs_light.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK" file="network/statusbar_network_bars_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT" file="network/statusbar_network_bars_light.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_CONTROLLED" file="network/statusbar_network_roaming_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_CONTROLLED" file="network/status_captive_portal_access.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK" file="network/statusbar_network_edge_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT" file="network/statusbar_network_edge_light.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_EVDO_DARK" file="network/statusbar_network_evdo_dark.png" />
