@@ -252,6 +252,59 @@ String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
     return "";
 }
 
+bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM::PseudoType::Enum* type)
+{
+    switch (pseudoId) {
+    case FIRST_LINE:
+        *type = TypeBuilder::DOM::PseudoType::First_line;
+        return true;
+    case FIRST_LETTER:
+        *type = TypeBuilder::DOM::PseudoType::First_letter;
+        return true;
+    case BEFORE:
+        *type = TypeBuilder::DOM::PseudoType::Before;
+        return true;
+    case AFTER:
+        *type = TypeBuilder::DOM::PseudoType::After;
+        return true;
+    case BACKDROP:
+        *type = TypeBuilder::DOM::PseudoType::Backdrop;
+        return true;
+    case SELECTION:
+        *type = TypeBuilder::DOM::PseudoType::Selection;
+        return true;
+    case FIRST_LINE_INHERITED:
+        *type = TypeBuilder::DOM::PseudoType::First_line_inherited;
+        return true;
+    case SCROLLBAR:
+        *type = TypeBuilder::DOM::PseudoType::Scrollbar;
+        return true;
+    case SCROLLBAR_THUMB:
+        *type = TypeBuilder::DOM::PseudoType::Scrollbar_thumb;
+        return true;
+    case SCROLLBAR_BUTTON:
+        *type = TypeBuilder::DOM::PseudoType::Scrollbar_button;
+        return true;
+    case SCROLLBAR_TRACK:
+        *type = TypeBuilder::DOM::PseudoType::Scrollbar_track;
+        return true;
+    case SCROLLBAR_TRACK_PIECE:
+        *type = TypeBuilder::DOM::PseudoType::Scrollbar_track_piece;
+        return true;
+    case SCROLLBAR_CORNER:
+        *type = TypeBuilder::DOM::PseudoType::Scrollbar_corner;
+        return true;
+    case RESIZER:
+        *type = TypeBuilder::DOM::PseudoType::Resizer;
+        return true;
+    case INPUT_LIST_BUTTON:
+        *type = TypeBuilder::DOM::PseudoType::Input_list_button;
+        return true;
+    default:
+        return false;
+    }
+}
+
 InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorDOMAgent>("DOM")
     , m_pageAgent(pageAgent)
@@ -1709,21 +1762,16 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             forcePushChildren = true;
         }
 
-        switch (element->pseudoId()) {
-        case BEFORE:
-            value->setPseudoType(TypeBuilder::DOM::PseudoType::Before);
-            break;
-        case AFTER:
-            value->setPseudoType(TypeBuilder::DOM::PseudoType::After);
-            break;
-        default: {
+        if (element->pseudoId()) {
+            TypeBuilder::DOM::PseudoType::Enum pseudoType;
+            if (InspectorDOMAgent::getPseudoElementType(element->pseudoId(), &pseudoType))
+                value->setPseudoType(pseudoType);
+        } else {
             RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > pseudoElements = buildArrayForPseudoElements(element, nodesMap);
             if (pseudoElements) {
                 value->setPseudoElements(pseudoElements.release());
                 forcePushChildren = true;
             }
-            break;
-        }
         }
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);

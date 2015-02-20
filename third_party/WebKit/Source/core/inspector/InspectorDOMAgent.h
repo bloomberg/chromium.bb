@@ -100,6 +100,7 @@ public:
     }
 
     static String toErrorString(ExceptionState&);
+    static bool getPseudoElementType(PseudoId, TypeBuilder::DOM::PseudoType::Enum*);
 
     virtual ~InspectorDOMAgent();
     DECLARE_VIRTUAL_TRACE();
