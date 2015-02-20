@@ -423,7 +423,7 @@ public:
 
         // Stick a shutdown command at the end of the queue, so that we deal
         // with all the cleanup tasks the databases post first.
-        workerGlobalScope->postTask(FROM_HERE, WorkerThreadShutdownFinishTask::create());
+        workerGlobalScope->postTask(WorkerThreadShutdownFinishTask::create());
     }
 
     virtual bool isCleanupTask() const { return true; }

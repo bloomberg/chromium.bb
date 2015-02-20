@@ -33,7 +33,6 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "public/platform/WebTraceLocation.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -74,7 +73,7 @@ private:
 
 void StringCallback::scheduleCallback(StringCallback* callback, ExecutionContext* context, const String& data, const String& instrumentationName)
 {
-    context->postTask(FROM_HERE, DispatchCallbackTask::create(callback, data, instrumentationName));
+    context->postTask(DispatchCallbackTask::create(callback, data, instrumentationName));
 }
 
 } // namespace blink

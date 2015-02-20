@@ -43,7 +43,6 @@
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
-#include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 
@@ -162,7 +161,7 @@ void DatabaseTracker::removeOpenDatabase(Database* database)
 
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread())
-        executionContext->postTask(FROM_HERE, NotifyDatabaseObserverOnCloseTask::create(database));
+        executionContext->postTask(NotifyDatabaseObserverOnCloseTask::create(database));
     else
         databaseClosed(database);
 }
@@ -183,7 +182,7 @@ void DatabaseTracker::failedToOpenDatabase(Database* database)
 {
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread())
-        executionContext->postTask(FROM_HERE, NotifyDatabaseObserverOnCloseTask::create(database));
+        executionContext->postTask(NotifyDatabaseObserverOnCloseTask::create(database));
     else
         databaseClosed(database);
 }
@@ -239,7 +238,7 @@ void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, 
 
     // We have to call closeImmediately() on the context thread.
     for (DatabaseSet::iterator it = databaseSet->begin(); it != databaseSet->end(); ++it)
-        (*it)->databaseContext()->executionContext()->postTask(FROM_HERE, CloseOneDatabaseImmediatelyTask::create(originIdentifier, name, *it));
+        (*it)->databaseContext()->executionContext()->postTask(CloseOneDatabaseImmediatelyTask::create(originIdentifier, name, *it));
 }
 
 void DatabaseTracker::closeOneDatabaseImmediately(const String& originIdentifier, const String& name, Database* database)

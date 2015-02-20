@@ -229,7 +229,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
         } else if (context()->executionContext()) {
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
-            context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&ScriptProcessorNode::fireProcessEvent, this));
+            context()->executionContext()->postTask(createCrossThreadTask(&ScriptProcessorNode::fireProcessEvent, this));
         }
 
         swapBuffers();

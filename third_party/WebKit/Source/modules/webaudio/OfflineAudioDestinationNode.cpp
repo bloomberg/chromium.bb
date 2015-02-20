@@ -151,7 +151,7 @@ void OfflineAudioDestinationNode::offlineRenderInternal()
 
     // Our work is done. Let the AudioContext know.
     if (context()->executionContext())
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationNode::notifyComplete, this));
+        context()->executionContext()->postTask(createCrossThreadTask(&OfflineAudioDestinationNode::notifyComplete, this));
 }
 
 void OfflineAudioDestinationNode::notifyComplete()

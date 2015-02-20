@@ -766,7 +766,7 @@ void AudioContext::setContextState(AudioContextState newState)
 
     // Notify context that state changed
     if (executionContext())
-        executionContext()->postTask(FROM_HERE, createSameThreadTask(&AudioContext::notifyStateChange, this));
+        executionContext()->postTask(createSameThreadTask(&AudioContext::notifyStateChange, this));
 }
 
 void AudioContext::notifyStateChange()

@@ -143,14 +143,14 @@ void LocalFileSystem::fileSystemNotAvailable(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     CallbackWrapper* callbacks)
 {
-    context->postTask(FROM_HERE, createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
+    context->postTask(createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     CallbackWrapper* callbacks)
 {
-    context->postTask(FROM_HERE, createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
+    context->postTask(createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(
