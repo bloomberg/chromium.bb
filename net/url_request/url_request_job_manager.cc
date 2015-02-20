@@ -76,10 +76,10 @@ URLRequestJob* URLRequestJobManager::CreateJob(
   // See if the request should be handled by a built-in protocol factory.
   for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
     if (scheme == kBuiltinFactories[i].scheme) {
-      URLRequestJob* job = (kBuiltinFactories[i].factory)(
-          request, network_delegate, scheme);
-      DCHECK(job);  // The built-in factories are not expected to fail!
-      return job;
+      URLRequestJob* new_job =
+          (kBuiltinFactories[i].factory)(request, network_delegate, scheme);
+      DCHECK(new_job);  // The built-in factories are not expected to fail!
+      return new_job;
     }
   }
 
