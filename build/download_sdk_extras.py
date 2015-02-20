@@ -49,9 +49,6 @@ def main():
   if not os.environ.get('CHROME_HEADLESS'):
     # This is not a buildbot checkout.
     return 0
-  elif 'OS=android' not in os.environ.get('GYP_DEFINES', ''):
-    # Not an Android buildbot.
-    return 0
   # Update the android_sdk_extras.json file to update downloaded packages.
   with open(SDK_EXTRAS_JSON_FILE) as json_file:
     packages = json.load(json_file)
@@ -59,8 +56,13 @@ def main():
     local_zip = '%s/%s' % (SDK_EXTRAS_PATH, package['zip'])
     if not os.path.exists(local_zip):
       package_zip = '%s/%s' % (SDK_EXTRAS_BUCKET, package['zip'])
-      subprocess.check_call(['python', GSUTIL_PATH, '--force-version', '4.7',
-                             'cp', package_zip, local_zip])
+      try:
+        subprocess.check_call(['python', GSUTIL_PATH, '--force-version', '4.7',
+                               'cp', package_zip, local_zip])
+      except AccessDeniedException:
+        print ('WARNING: Bot does not have permission to download SDK packages.'
+               ' If this bot compiles for Android, it may have errors.')
+        return 0
     # Always clean dir and extract zip to ensure correct contents.
     clean_and_extract(package['dir_name'], package['package'], package['zip'])
 
