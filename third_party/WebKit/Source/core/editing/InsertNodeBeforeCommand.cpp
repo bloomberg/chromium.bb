@@ -63,7 +63,7 @@ void InsertNodeBeforeCommand::doUnapply()
     m_insertChild->remove(IGNORE_EXCEPTION);
 }
 
-void InsertNodeBeforeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(InsertNodeBeforeCommand)
 {
     visitor->trace(m_insertChild);
     visitor->trace(m_refChild);

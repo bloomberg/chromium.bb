@@ -142,7 +142,7 @@ public:
     static PassRefPtrWillBeRawPtr<EditingStyle> styleAtSelectionStart(const VisibleSelection&, bool shouldUseBackgroundColorInEffect = false);
     static WritingDirection textDirectionForSelection(const VisibleSelection&, EditingStyle* typingStyle, bool& hasNestedOrMultipleEmbeddings);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     EditingStyle();

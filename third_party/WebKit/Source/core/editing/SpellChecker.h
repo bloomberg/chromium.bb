@@ -48,7 +48,7 @@ public:
     static PassOwnPtrWillBeRawPtr<SpellChecker> create(LocalFrame&);
 
     ~SpellChecker();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     SpellCheckerClient& spellCheckerClient() const;
     TextCheckerClient& textChecker() const;

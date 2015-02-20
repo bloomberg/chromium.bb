@@ -52,7 +52,7 @@ public:
 
     virtual void doApply() = 0;
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit EditCommand(Document&);

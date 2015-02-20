@@ -39,7 +39,7 @@ public:
         return adoptRefWillBeNoop(new WrapContentsInDummySpanCommand(element));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element>);

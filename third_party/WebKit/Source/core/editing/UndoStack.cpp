@@ -120,7 +120,7 @@ void UndoStack::redo()
     }
 }
 
-void UndoStack::trace(Visitor* visitor)
+DEFINE_TRACE(UndoStack)
 {
     visitor->trace(m_undoStack);
     visitor->trace(m_redoStack);

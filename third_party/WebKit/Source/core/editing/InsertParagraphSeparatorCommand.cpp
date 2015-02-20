@@ -428,7 +428,7 @@ void InsertParagraphSeparatorCommand::doApply()
     applyStyleAfterInsertion(startBlock.get());
 }
 
-void InsertParagraphSeparatorCommand::trace(Visitor *visitor)
+DEFINE_TRACE(InsertParagraphSeparatorCommand)
 {
     visitor->trace(m_style);
     CompositeEditCommand::trace(visitor);

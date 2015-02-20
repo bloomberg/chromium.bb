@@ -96,7 +96,7 @@ public:
     // Microsoft Selection Object API
     void empty();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit DOMSelection(const TreeScope*);

@@ -29,7 +29,7 @@ protected:
     // Oilpan: wrapper object needed to be able to trace VisibleSelection.
     class VisibleSelectionWrapper : public NoBaseWillBeGarbageCollectedFinalized<VisibleSelectionWrapper> {
     public:
-        void trace(Visitor* visitor)
+        DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_selection);
         }

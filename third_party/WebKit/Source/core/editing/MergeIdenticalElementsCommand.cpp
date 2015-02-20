@@ -83,7 +83,7 @@ void MergeIdenticalElementsCommand::doUnapply()
         m_element1->appendChild(child.release(), exceptionState);
 }
 
-void MergeIdenticalElementsCommand::trace(Visitor* visitor)
+DEFINE_TRACE(MergeIdenticalElementsCommand)
 {
     visitor->trace(m_element1);
     visitor->trace(m_element2);

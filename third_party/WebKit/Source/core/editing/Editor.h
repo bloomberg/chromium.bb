@@ -234,7 +234,7 @@ public:
     };
     friend class RevealSelectionScope;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<LocalFrame> m_frame;

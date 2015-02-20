@@ -38,7 +38,7 @@ public:
         return adoptRefWillBeNoop(new InsertNodeBeforeCommand(childToInsert, childToInsertBefore, shouldAssumeContentIsAlwaysEditable));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     InsertNodeBeforeCommand(PassRefPtrWillBeRawPtr<Node> childToInsert, PassRefPtrWillBeRawPtr<Node> childToInsertBefore, ShouldAssumeContentIsAlwaysEditable);

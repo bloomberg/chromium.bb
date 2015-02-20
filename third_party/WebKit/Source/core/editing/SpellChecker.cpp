@@ -944,7 +944,7 @@ void SpellChecker::requestTextChecking(const Element& element)
     m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
-void SpellChecker::trace(Visitor* visitor)
+DEFINE_TRACE(SpellChecker)
 {
     visitor->trace(m_frame);
     visitor->trace(m_spellCheckRequester);

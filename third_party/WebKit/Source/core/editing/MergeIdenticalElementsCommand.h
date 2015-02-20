@@ -37,7 +37,7 @@ public:
         return adoptRefWillBeNoop(new MergeIdenticalElementsCommand(element1, element2));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>);

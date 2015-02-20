@@ -45,7 +45,7 @@ protected:
     PassRefPtrWillBeRawPtr<HTMLElement> createBlockElement() const;
     const QualifiedName tagName() const { return m_tagName; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     virtual void doApply() override final;

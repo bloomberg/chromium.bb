@@ -105,7 +105,7 @@ void SimpleEditCommand::doReapply()
     doApply();
 }
 
-void EditCommand::trace(Visitor* visitor)
+DEFINE_TRACE(EditCommand)
 {
     visitor->trace(m_document);
     visitor->trace(m_startingSelection);

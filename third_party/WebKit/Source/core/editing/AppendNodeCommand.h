@@ -37,7 +37,7 @@ public:
         return adoptRefWillBeNoop(new AppendNodeCommand(parent, node));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     AppendNodeCommand(PassRefPtrWillBeRawPtr<ContainerNode> parent, PassRefPtrWillBeRawPtr<Node>);

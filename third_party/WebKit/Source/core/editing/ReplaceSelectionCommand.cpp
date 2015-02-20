@@ -1539,7 +1539,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
     return true;
 }
 
-void ReplaceSelectionCommand::trace(Visitor* visitor)
+DEFINE_TRACE(ReplaceSelectionCommand)
 {
     visitor->trace(m_startOfInsertedContent);
     visitor->trace(m_endOfInsertedContent);

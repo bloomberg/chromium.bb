@@ -128,14 +128,14 @@ public:
         ChangeObserver();
         virtual ~ChangeObserver();
         virtual void didChangeVisibleSelection() = 0;
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
     void setChangeObserver(ChangeObserver&);
     void clearChangeObserver();
     void didChange(); // Fire the change observer, if any.
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void validatePositionsIfNeeded();
 

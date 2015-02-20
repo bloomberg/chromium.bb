@@ -48,7 +48,7 @@ public:
 
     HTMLSpanElement* spanElement() { return m_spanElement.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HTMLElement>);

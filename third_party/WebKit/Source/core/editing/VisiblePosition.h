@@ -101,7 +101,7 @@ public:
     // FIXME: navigation with transforms should be smarter.
     int lineDirectionPointForBlockDirectionNavigation() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 #ifndef NDEBUG
     void debugPosition(const char* msg = "") const;

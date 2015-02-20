@@ -65,7 +65,7 @@ public:
         return adoptRefWillBeNoop(new ApplyStyleCommand(document, style, isInlineElementToRemoveFunction, action));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ApplyStyleCommand(Document&, const EditingStyle*, EditAction, EPropertyLevel);

@@ -105,7 +105,7 @@ void SplitElementCommand::doReapply()
     executeApply();
 }
 
-void SplitElementCommand::trace(Visitor* visitor)
+DEFINE_TRACE(SplitElementCommand)
 {
     visitor->trace(m_element1);
     visitor->trace(m_element2);

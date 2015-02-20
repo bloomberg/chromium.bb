@@ -57,7 +57,7 @@ public:
     Element* startingRootEditableElement() const { return m_startingRootEditableElement.get(); }
     Element* endingRootEditableElement() const { return m_endingRootEditableElement.get(); }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     EditCommandComposition(Document*, const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, EditAction);
@@ -85,7 +85,7 @@ public:
     virtual void setShouldRetainAutocorrectionIndicator(bool);
     virtual bool shouldStopCaretBlinking() const { return false; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit CompositeEditCommand(Document&);

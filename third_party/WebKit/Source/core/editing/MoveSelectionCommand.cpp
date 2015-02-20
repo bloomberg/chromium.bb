@@ -83,7 +83,7 @@ EditAction MoveSelectionCommand::editingAction() const
     return EditActionDrag;
 }
 
-void MoveSelectionCommand::trace(Visitor* visitor)
+DEFINE_TRACE(MoveSelectionCommand)
 {
     visitor->trace(m_fragment);
     visitor->trace(m_position);

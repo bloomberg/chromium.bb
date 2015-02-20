@@ -39,7 +39,7 @@ public:
         return adoptRefWillBeNoop(new DeleteFromTextNodeCommand(node, offset, count));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     DeleteFromTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);

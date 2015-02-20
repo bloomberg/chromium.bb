@@ -39,7 +39,7 @@ public:
         return adoptRefWillBeNoop(new InsertParagraphSeparatorCommand(document, useDefaultParagraphElement, pasteBlockquoteIntoUnquotedArea));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     InsertParagraphSeparatorCommand(Document&, bool useDefaultParagraphElement, bool pasteBlockquoteIntoUnquotedArea);

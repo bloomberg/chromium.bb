@@ -22,7 +22,7 @@ PositionWithAffinity::~PositionWithAffinity()
 {
 }
 
-void PositionWithAffinity::trace(Visitor* visitor)
+DEFINE_TRACE(PositionWithAffinity)
 {
     visitor->trace(m_position);
 }

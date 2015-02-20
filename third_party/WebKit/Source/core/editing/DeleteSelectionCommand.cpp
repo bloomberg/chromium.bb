@@ -875,7 +875,7 @@ bool DeleteSelectionCommand::preservesTypingStyle() const
     return m_typingStyle;
 }
 
-void DeleteSelectionCommand::trace(Visitor* visitor)
+DEFINE_TRACE(DeleteSelectionCommand)
 {
     visitor->trace(m_selectionToDelete);
     visitor->trace(m_upstreamStart);

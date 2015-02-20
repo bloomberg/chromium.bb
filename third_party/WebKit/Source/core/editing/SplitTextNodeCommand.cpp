@@ -103,7 +103,7 @@ void SplitTextNodeCommand::insertText1AndTrimText2()
     m_text2->deleteData(0, m_offset, exceptionState, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
-void SplitTextNodeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(SplitTextNodeCommand)
 {
     visitor->trace(m_text1);
     visitor->trace(m_text2);

@@ -156,7 +156,7 @@ void EditCommandComposition::setEndingSelection(const VisibleSelection& selectio
     m_endingRootEditableElement = selection.rootEditableElement();
 }
 
-void EditCommandComposition::trace(Visitor* visitor)
+DEFINE_TRACE(EditCommandComposition)
 {
     visitor->trace(m_document);
     visitor->trace(m_startingSelection);
@@ -1497,7 +1497,7 @@ PassRefPtrWillBeRawPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, 
     return node.release();
 }
 
-void CompositeEditCommand::trace(Visitor* visitor)
+DEFINE_TRACE(CompositeEditCommand)
 {
     visitor->trace(m_commands);
     visitor->trace(m_composition);

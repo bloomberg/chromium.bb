@@ -54,7 +54,7 @@ void RemoveNodePreservingChildrenCommand::doApply()
     removeNode(m_node, m_shouldAssumeContentIsAlwaysEditable);
 }
 
-void RemoveNodePreservingChildrenCommand::trace(Visitor* visitor)
+DEFINE_TRACE(RemoveNodePreservingChildrenCommand)
 {
     visitor->trace(m_node);
     CompositeEditCommand::trace(visitor);

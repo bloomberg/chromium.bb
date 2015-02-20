@@ -92,7 +92,7 @@ public:
 
     void nodeWillBeRemoved(Node&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     DragCaretController();

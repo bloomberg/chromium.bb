@@ -781,7 +781,7 @@ void VisibleSelection::didChange()
         m_changeObserver->didChangeVisibleSelection();
 }
 
-void VisibleSelection::trace(Visitor* visitor)
+DEFINE_TRACE(VisibleSelection)
 {
     visitor->trace(m_base);
     visitor->trace(m_extent);

@@ -425,7 +425,7 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
     TypingCommand::deleteSelection(*frame().document());
 }
 
-void InputMethodController::trace(Visitor* visitor)
+DEFINE_TRACE(InputMethodController)
 {
     visitor->trace(m_frame);
     visitor->trace(m_compositionNode);

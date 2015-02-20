@@ -108,7 +108,7 @@ void DragCaretController::nodeWillBeRemoved(Node& node)
     clear();
 }
 
-void DragCaretController::trace(Visitor* visitor)
+DEFINE_TRACE(DragCaretController)
 {
     visitor->trace(m_position);
 }

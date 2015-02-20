@@ -412,7 +412,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
     return listElement;
 }
 
-void InsertListCommand::trace(Visitor* visitor)
+DEFINE_TRACE(InsertListCommand)
 {
     visitor->trace(m_listElement);
     CompositeEditCommand::trace(visitor);

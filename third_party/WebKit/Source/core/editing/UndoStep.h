@@ -42,7 +42,7 @@ class LocalFrame;
 class UndoStep : public RefCountedWillBeGarbageCollectedFinalized<UndoStep> {
 public:
     virtual ~UndoStep() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool belongsTo(const LocalFrame&) const = 0;
     virtual void unapply() = 0;

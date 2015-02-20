@@ -91,7 +91,7 @@ public:
         m_element->setAttribute(m_name, AtomicString(m_value));
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_element);
     }

@@ -289,7 +289,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> ApplyBlockElementCommand::createBlockElement
     return element.release();
 }
 
-void ApplyBlockElementCommand::trace(Visitor* visitor)
+DEFINE_TRACE(ApplyBlockElementCommand)
 {
     visitor->trace(m_endOfLastParagraph);
     CompositeEditCommand::trace(visitor);

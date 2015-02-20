@@ -58,7 +58,7 @@ void AppendNodeCommand::doUnapply()
     m_node->remove(IGNORE_EXCEPTION);
 }
 
-void AppendNodeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(AppendNodeCommand)
 {
     visitor->trace(m_parent);
     visitor->trace(m_node);

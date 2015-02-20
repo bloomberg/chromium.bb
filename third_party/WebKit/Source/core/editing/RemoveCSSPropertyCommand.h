@@ -40,7 +40,7 @@ public:
         return adoptRefWillBeNoop(new RemoveCSSPropertyCommand(document, element, property));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     RemoveCSSPropertyCommand(Document&, PassRefPtrWillBeRawPtr<Element>, CSSPropertyID);

@@ -121,7 +121,7 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<Ref
     return pastLastNodeToRemove - startNodeIndex - 1;
 }
 
-void SimplifyMarkupCommand::trace(Visitor* visitor)
+DEFINE_TRACE(SimplifyMarkupCommand)
 {
     visitor->trace(m_firstNode);
     visitor->trace(m_nodeAfterLast);

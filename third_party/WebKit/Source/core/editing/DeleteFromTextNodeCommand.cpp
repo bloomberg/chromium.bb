@@ -68,7 +68,7 @@ void DeleteFromTextNodeCommand::doUnapply()
     m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
-void DeleteFromTextNodeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(DeleteFromTextNodeCommand)
 {
     visitor->trace(m_node);
     SimpleEditCommand::trace(visitor);

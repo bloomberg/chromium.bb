@@ -44,7 +44,7 @@ public:
 
     virtual bool preservesTypingStyle() const override { return true; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     InsertListCommand(Document&, Type);

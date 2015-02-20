@@ -53,7 +53,7 @@ void SetNodeAttributeCommand::doUnapply()
     m_oldValue = nullAtom;
 }
 
-void SetNodeAttributeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(SetNodeAttributeCommand)
 {
     visitor->trace(m_element);
     SimpleEditCommand::trace(visitor);

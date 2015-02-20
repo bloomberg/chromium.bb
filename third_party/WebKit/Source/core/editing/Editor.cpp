@@ -1273,7 +1273,7 @@ void Editor::toggleOverwriteModeEnabled()
     frame().selection().setShouldShowBlockCursor(m_overwriteModeEnabled);
 }
 
-void Editor::trace(Visitor* visitor)
+DEFINE_TRACE(Editor)
 {
     visitor->trace(m_frame);
     visitor->trace(m_lastEditCommand);

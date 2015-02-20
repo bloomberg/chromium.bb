@@ -65,7 +65,7 @@ void RemoveNodeCommand::doUnapply()
     parent->insertBefore(m_node.get(), refChild.get(), IGNORE_EXCEPTION);
 }
 
-void RemoveNodeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(RemoveNodeCommand)
 {
     visitor->trace(m_node);
     visitor->trace(m_parent);

@@ -62,7 +62,7 @@ public:
 
     int requestNumber() const { return m_requestNumber; }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SpellCheckRequest(PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
@@ -84,7 +84,7 @@ public:
     }
 
     ~SpellCheckRequester();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool isAsynchronousEnabled() const;
     bool isCheckable(Range*) const;

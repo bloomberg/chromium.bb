@@ -52,7 +52,7 @@ public:
         return adoptRefWillBeNoop(new ReplaceSelectionCommand(document, fragment, options, action));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     ReplaceSelectionCommand(Document&, PassRefPtrWillBeRawPtr<DocumentFragment>, CommandOptions, EditAction);

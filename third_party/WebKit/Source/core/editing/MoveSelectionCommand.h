@@ -39,7 +39,7 @@ public:
         return adoptRefWillBeNoop(new MoveSelectionCommand(fragment, position, smartInsert, smartDelete));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     MoveSelectionCommand(PassRefPtrWillBeRawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);

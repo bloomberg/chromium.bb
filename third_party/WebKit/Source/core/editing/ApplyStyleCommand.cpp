@@ -750,7 +750,7 @@ public:
         return start && end && start->inDocument() && end->inDocument();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(start);
         visitor->trace(end);
@@ -1583,7 +1583,7 @@ void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& 
     updateStartEnd(newStart, newEnd);
 }
 
-void ApplyStyleCommand::trace(Visitor* visitor)
+DEFINE_TRACE(ApplyStyleCommand)
 {
     visitor->trace(m_style);
     visitor->trace(m_start);

@@ -37,7 +37,7 @@ public:
         return adoptRefWillBeNoop(new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable);

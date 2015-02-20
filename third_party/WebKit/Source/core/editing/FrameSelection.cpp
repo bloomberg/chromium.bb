@@ -1870,7 +1870,7 @@ void FrameSelection::showTreeForThis() const
 
 #endif
 
-void FrameSelection::trace(Visitor* visitor)
+DEFINE_TRACE(FrameSelection)
 {
     visitor->trace(m_frame);
     visitor->trace(m_selection);

@@ -66,7 +66,7 @@ void RemoveCSSPropertyCommand::doUnapply()
     m_element->style()->setPropertyInternal(m_property, m_oldValue, m_important, IGNORE_EXCEPTION);
 }
 
-void RemoveCSSPropertyCommand::trace(Visitor* visitor)
+DEFINE_TRACE(RemoveCSSPropertyCommand)
 {
     visitor->trace(m_element);
     SimpleEditCommand::trace(visitor);

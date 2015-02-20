@@ -83,7 +83,7 @@ void WrapContentsInDummySpanCommand::doReapply()
     executeApply();
 }
 
-void WrapContentsInDummySpanCommand::trace(Visitor* visitor)
+DEFINE_TRACE(WrapContentsInDummySpanCommand)
 {
     visitor->trace(m_element);
     visitor->trace(m_dummySpan);

@@ -39,7 +39,7 @@ public:
         return adoptRefWillBeNoop(new SplitTextNodeCommand(node, offset));
     }
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     SplitTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, int offset);

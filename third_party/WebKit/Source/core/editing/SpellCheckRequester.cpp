@@ -58,7 +58,7 @@ SpellCheckRequest::~SpellCheckRequest()
 {
 }
 
-void SpellCheckRequest::trace(Visitor* visitor)
+DEFINE_TRACE(SpellCheckRequest)
 {
     visitor->trace(m_requester);
     visitor->trace(m_checkingRange);
@@ -276,7 +276,7 @@ void SpellCheckRequester::didCheckCancel(int sequence)
     didCheck(sequence, results);
 }
 
-void SpellCheckRequester::trace(Visitor* visitor)
+DEFINE_TRACE(SpellCheckRequester)
 {
     visitor->trace(m_frame);
     visitor->trace(m_processingRequest);

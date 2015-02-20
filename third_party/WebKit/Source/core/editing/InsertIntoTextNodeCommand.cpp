@@ -71,7 +71,7 @@ void InsertIntoTextNodeCommand::doUnapply()
     m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION, CharacterData::DeprecatedRecalcStyleImmediatlelyForEditing);
 }
 
-void InsertIntoTextNodeCommand::trace(Visitor* visitor)
+DEFINE_TRACE(InsertIntoTextNodeCommand)
 {
     visitor->trace(m_node);
     SimpleEditCommand::trace(visitor);

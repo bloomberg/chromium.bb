@@ -82,7 +82,7 @@ void ReplaceNodeWithSpanCommand::doUnapply()
     swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(), *m_spanElement);
 }
 
-void ReplaceNodeWithSpanCommand::trace(Visitor* visitor)
+DEFINE_TRACE(ReplaceNodeWithSpanCommand)
 {
     visitor->trace(m_elementToReplace);
     visitor->trace(m_spanElement);

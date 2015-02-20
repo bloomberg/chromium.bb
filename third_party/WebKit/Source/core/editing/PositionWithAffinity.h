@@ -20,7 +20,7 @@ public:
     EAffinity affinity() const { return m_affinity; }
     const Position& position() const { return m_position; }
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     Position m_position;
