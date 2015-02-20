@@ -32,11 +32,14 @@
 #include "platform/PopupMenu.h"
 
 #include "core/dom/Element.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/page/EventHandler.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/KeyboardCodes.h"
@@ -145,6 +148,10 @@ private:
 class TestWebWidgetClient : public WebWidgetClient {
 public:
     ~TestWebWidgetClient() { }
+    virtual WebRect windowRect() { return m_windowRect; }
+    virtual void setWindowRect(const WebRect& rect) { m_windowRect = rect; }
+private:
+    WebRect m_windowRect;
 };
 
 class TestWebPopupMenuImpl : public WebPopupMenuImpl {
@@ -177,10 +184,17 @@ public:
         return screenInfo;
     }
 
+    WebWidgetClient* webWidgetClient() { return &m_webWidgetClient; }
+
 private:
     TestWebWidgetClient m_webWidgetClient;
     RefPtr<TestWebPopupMenuImpl> m_webPopupMenu;
 };
+
+static void configureSettings(WebSettings* settings)
+{
+    settings->setPinchVirtualViewportEnabled(true);
+}
 
 class SelectPopupMenuTest : public testing::Test {
 public:
@@ -192,7 +206,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_helper.initialize(false, 0, &m_webviewClient);
+        m_helper.initialize(false, 0, &m_webviewClient, configureSettings);
         m_popupMenu = adoptRefWillBeNoop(new PopupMenuChromium(*mainFrame()->frame(), &m_popupMenuClient));
     }
 
@@ -340,6 +354,20 @@ TEST_F(SelectPopupMenuTest, SelectWithKeys)
     simulateKeyDownEvent(VKEY_TAB);
     EXPECT_FALSE(popupOpen());
     EXPECT_EQ(4, selectedIndex());
+}
+
+TEST_F(SelectPopupMenuTest, PinchZoomedIn)
+{
+    FrameTestHelpers::loadFrame(webView()->mainFrame(), "about:blank");
+    webView()->resize(WebSize(1000, 1000));
+    webView()->layout();
+    webView()->setPageScaleFactor(2);
+    webView()->page()->frameHost().pinchViewport().setLocation(IntPoint(30, 50));
+
+    m_popupMenu->show(FloatQuad(FloatRect(80, 90, 100, 100)), IntSize(100, 100), 0);
+
+    EXPECT_EQ(100, m_webviewClient.webWidgetClient()->windowRect().x);
+    EXPECT_EQ(280, m_webviewClient.webWidgetClient()->windowRect().y);
 }
 
 // Tests that selecting an item with the mouse does select the item and close
