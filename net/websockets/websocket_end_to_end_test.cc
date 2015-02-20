@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "net/base/auth.h"
 #include "net/base/network_delegate.h"
 #include "net/base/test_data_directory.h"
@@ -32,6 +33,13 @@ namespace net {
 namespace {
 
 static const char kEchoServer[] = "echo-with-no-extension";
+
+// Simplify changing URL schemes.
+GURL ReplaceUrlScheme(const GURL& in_url, const base::StringPiece& scheme) {
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(scheme);
+  return in_url.ReplaceComponents(replacements);
+}
 
 // An implementation of WebSocketEventInterface that waits for and records the
 // results of the connect.
@@ -216,10 +224,10 @@ class TestNetworkDelegateWithProxyInfo : public TestNetworkDelegate {
 class WebSocketEndToEndTest : public ::testing::Test {
  protected:
   WebSocketEndToEndTest()
-      : event_interface_(new ConnectTestingEventInterface),
+      : event_interface_(),
         network_delegate_(new TestNetworkDelegateWithProxyInfo),
         context_(true),
-        channel_(make_scoped_ptr(event_interface_), &context_),
+        channel_(),
         initialised_context_(false) {}
 
   // Initialise the URLRequestContext. Normally done automatically by
@@ -239,7 +247,10 @@ class WebSocketEndToEndTest : public ::testing::Test {
     }
     std::vector<std::string> sub_protocols;
     url::Origin origin("http://localhost");
-    channel_.SendAddChannelRequest(GURL(socket_url), sub_protocols, origin);
+    event_interface_ = new ConnectTestingEventInterface;
+    channel_.reset(
+        new WebSocketChannel(make_scoped_ptr(event_interface_), &context_));
+    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols, origin);
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }
@@ -247,7 +258,7 @@ class WebSocketEndToEndTest : public ::testing::Test {
   ConnectTestingEventInterface* event_interface_;  // owned by channel_
   scoped_ptr<TestNetworkDelegateWithProxyInfo> network_delegate_;
   TestURLRequestContext context_;
-  WebSocketChannel channel_;
+  scoped_ptr<WebSocketChannel> channel_;
   bool initialised_context_;
 };
 
@@ -338,11 +349,9 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HttpsProxyUsed)) {
   // The test server doesn't have an unauthenticated proxy mode. WebSockets
   // cannot provide auth information that isn't already cached, so it's
   // necessary to preflight an HTTP request to authenticate against the proxy.
-  GURL::Replacements replacements;
-  replacements.SetSchemeStr("http");
   // It doesn't matter what the URL is, as long as it is an HTTP navigation.
   GURL http_page =
-      ws_server.GetURL("connect_check.html").ReplaceComponents(replacements);
+      ReplaceUrlScheme(ws_server.GetURL("connect_check.html"), "http");
   TestDelegate delegate;
   delegate.set_credentials(
       AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
@@ -375,6 +384,79 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(TruncatedResponse)) {
 
   GURL ws_url = ws_server.GetURL("truncated-headers");
   EXPECT_FALSE(ConnectAndWait(ws_url));
+}
+
+// Regression test for crbug.com/455215 "HSTS not applied to WebSocket"
+TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsHttpsToWebSocket)) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_server(
+      SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS, ssl_options,
+                               GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(https_server.StartInBackground());
+  ASSERT_TRUE(wss_server.StartInBackground());
+  ASSERT_TRUE(https_server.BlockUntilStarted());
+  ASSERT_TRUE(wss_server.BlockUntilStarted());
+  InitialiseContext();
+  // Set HSTS via https:
+  TestDelegate delegate;
+  GURL https_page = https_server.GetURL("files/hsts-headers.html");
+  scoped_ptr<URLRequest> request(
+      context_.CreateRequest(https_page, DEFAULT_PRIORITY, &delegate, NULL));
+  request->Start();
+  // TestDelegate exits the message loop when the request completes.
+  base::RunLoop().Run();
+  EXPECT_TRUE(request->status().is_success());
+
+  // Check HSTS with ws:
+  // Change the scheme from wss: to ws: to verify that it is switched back.
+  GURL ws_url = ReplaceUrlScheme(wss_server.GetURL(kEchoServer), "ws");
+  EXPECT_TRUE(ConnectAndWait(ws_url));
+}
+
+TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToHttps)) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_server(
+      SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS, ssl_options,
+                               GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(https_server.StartInBackground());
+  ASSERT_TRUE(wss_server.StartInBackground());
+  ASSERT_TRUE(https_server.BlockUntilStarted());
+  ASSERT_TRUE(wss_server.BlockUntilStarted());
+  InitialiseContext();
+  // Set HSTS via wss:
+  GURL wss_url = wss_server.GetURL("set-hsts");
+  EXPECT_TRUE(ConnectAndWait(wss_url));
+
+  // Verify via http:
+  TestDelegate delegate;
+  GURL http_page =
+      ReplaceUrlScheme(https_server.GetURL("files/simple.html"), "http");
+  scoped_ptr<URLRequest> request(
+      context_.CreateRequest(http_page, DEFAULT_PRIORITY, &delegate, NULL));
+  request->Start();
+  // TestDelegate exits the message loop when the request completes.
+  base::RunLoop().Run();
+  EXPECT_TRUE(request->status().is_success());
+  EXPECT_TRUE(request->url().SchemeIs("https"));
+}
+
+TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToWebSocket)) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS, ssl_options,
+                               GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(wss_server.Start());
+  InitialiseContext();
+  // Set HSTS via wss:
+  GURL wss_url = wss_server.GetURL("set-hsts");
+  EXPECT_TRUE(ConnectAndWait(wss_url));
+
+  // Verify via wss:
+  GURL ws_url = ReplaceUrlScheme(wss_server.GetURL(kEchoServer), "ws");
+  EXPECT_TRUE(ConnectAndWait(ws_url));
 }
 
 }  // namespace

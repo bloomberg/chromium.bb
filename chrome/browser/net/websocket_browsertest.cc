@@ -296,4 +296,49 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
   EXPECT_EQ("PASS", WaitAndGetTitle());
 }
 
+// Regression test for crbug.com/903553005
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(),
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  // This test sets HSTS on 127.0.0.1. To avoid being redirected to https, start
+  // the http server on "localhost" instead.
+  net::SpawnedTestServer http_server(
+      net::SpawnedTestServer::TYPE_HTTP,
+      "localhost",
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.StartInBackground());
+  ASSERT_TRUE(http_server.StartInBackground());
+  ASSERT_TRUE(wss_server_.StartInBackground());
+  ASSERT_TRUE(https_server.BlockUntilStarted());
+
+  // Set HSTS on 127.0.0.1.
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::ASCIIToUTF16("SET"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server.GetURL("files/websocket/set-hsts.html"));
+  const base::string16 result = title_watcher.WaitAndGetTitle();
+  EXPECT_TRUE(EqualsASCII(result, "SET"));
+
+  // Verify that it applies to WebSockets.
+  ASSERT_TRUE(wss_server_.BlockUntilStarted());
+  GURL wss_url = wss_server_.GetURL("echo-with-no-extension");
+  std::string scheme("ws");
+  GURL::Replacements scheme_replacement;
+  scheme_replacement.SetSchemeStr(scheme);
+  GURL ws_url = wss_url.ReplaceComponents(scheme_replacement);
+
+  // An https: URL won't work here here because the mixed content policy
+  // disallows connections to unencrypted WebSockets from encrypted pages.
+  ASSERT_TRUE(http_server.BlockUntilStarted());
+  GURL http_url =
+      http_server.GetURL("files/websocket/check-hsts.html#" + ws_url.spec());
+
+  ui_test_utils::NavigateToURL(browser(), http_url);
+
+  EXPECT_EQ("PASS", WaitAndGetTitle());
+}
+
 }  // namespace

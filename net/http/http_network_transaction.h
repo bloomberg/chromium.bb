@@ -142,7 +142,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
     STATE_NONE
   };
 
-  bool is_https_request() const;
+  bool IsSecureRequest() const;
 
   // Returns true if the request is using an HTTP(S) proxy without being
   // tunneled via the CONNECT method.

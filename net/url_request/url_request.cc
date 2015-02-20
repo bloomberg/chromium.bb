@@ -993,13 +993,14 @@ void URLRequest::SetPriority(RequestPriority priority) {
 
 bool URLRequest::GetHSTSRedirect(GURL* redirect_url) const {
   const GURL& url = this->url();
-  if (!url.SchemeIs("http"))
+  bool scheme_is_http = url.SchemeIs("http");
+  if (!scheme_is_http && !url.SchemeIs("ws"))
     return false;
   TransportSecurityState* state = context()->transport_security_state();
   if (state && state->ShouldUpgradeToSSL(url.host())) {
-    url::Replacements<char> replacements;
-    const char kNewScheme[] = "https";
-    replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
+    GURL::Replacements replacements;
+    const char* new_scheme = scheme_is_http ? "https" : "wss";
+    replacements.SetSchemeStr(new_scheme);
     *redirect_url = url.ReplaceComponents(replacements);
     return true;
   }

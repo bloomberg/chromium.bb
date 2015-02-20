@@ -12554,7 +12554,7 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
     return false;
   }
 
-  void GetSSLInfo(SSLInfo* ssl_info) override { NOTREACHED(); }
+  void GetSSLInfo(SSLInfo* ssl_info) override {}
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
     NOTREACHED();

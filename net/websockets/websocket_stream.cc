@@ -58,14 +58,7 @@ class Delegate : public URLRequest::Delegate {
   // Implementation of URLRequest::Delegate methods.
   void OnReceivedRedirect(URLRequest* request,
                           const RedirectInfo& redirect_info,
-                          bool* defer_redirect) override {
-    // HTTP status codes returned by HttpStreamParser are filtered by
-    // WebSocketBasicHandshakeStream, and only 101, 401 and 407 are permitted
-    // back up the stack to HttpNetworkTransaction. In particular, redirect
-    // codes are never allowed, and so URLRequest never sees a redirect on a
-    // WebSocket request.
-    NOTREACHED();
-  }
+                          bool* defer_redirect) override;
 
   void OnResponseStarted(URLRequest* request) override;
 
@@ -232,6 +225,31 @@ class SSLErrorCallbacks : public WebSocketEventInterface::SSLErrorCallbacks {
  private:
   URLRequest* url_request_;
 };
+
+void Delegate::OnReceivedRedirect(URLRequest* request,
+                                  const RedirectInfo& redirect_info,
+                                  bool* defer_redirect) {
+  // This code should never be reached for externally generated redirects,
+  // as WebSocketBasicHandshakeStream is responsible for filtering out
+  // all response codes besides 101, 401, and 407. As such, the URLRequest
+  // should never see a redirect sent over the network. However, internal
+  // redirects also result in this method being called, such as those
+  // caused by HSTS.
+  // Because it's security critical to prevent externally-generated
+  // redirects in WebSockets, perform additional checks to ensure this
+  // is only internal.
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("wss");
+  GURL expected_url = request->original_url().ReplaceComponents(replacements);
+  if (redirect_info.new_method != "GET" ||
+      redirect_info.new_url != expected_url) {
+    // This should not happen.
+    DLOG(FATAL) << "Unauthorized WebSocket redirect to "
+                << redirect_info.new_method << " "
+                << redirect_info.new_url.spec();
+    request->Cancel();
+  }
+}
 
 void Delegate::OnResponseStarted(URLRequest* request) {
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.

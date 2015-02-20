@@ -569,8 +569,8 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
   OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
 }
 
-bool HttpNetworkTransaction::is_https_request() const {
-  return request_->url.SchemeIs("https");
+bool HttpNetworkTransaction::IsSecureRequest() const {
+  return request_->url.SchemeIsSecure();
 }
 
 bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
@@ -969,7 +969,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     // TODO(wtc): Need a test case for this code path!
     DCHECK(stream_.get());
-    DCHECK(is_https_request());
+    DCHECK(IsSecureRequest());
     response_.cert_request_info = new SSLCertRequestInfo;
     stream_->GetSSLCertRequestInfo(response_.cert_request_info.get());
     result = HandleCertificateRequest(result);
@@ -1050,7 +1050,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   if (rv != OK)
     return rv;
 
-  if (is_https_request())
+  if (IsSecureRequest())
     stream_->GetSSLInfo(&response_.ssl_info);
 
   headers_valid_ = true;
