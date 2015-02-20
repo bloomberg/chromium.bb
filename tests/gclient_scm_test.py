@@ -804,6 +804,7 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
   """This class doesn't use pymox."""
   class OptionsObject(object):
     def __init__(self, verbose=False, revision=None):
+      self.auto_rebase = False
       self.verbose = verbose
       self.revision = revision
       self.manually_grab_svn_rev = True

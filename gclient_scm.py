@@ -606,15 +606,16 @@ class GitWrapper(SCMWrapper):
             self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
             printed_path = True
           while True:
-            try:
-              action = self._AskForData(
-                  'Cannot %s, attempt to rebase? '
-                  '(y)es / (q)uit / (s)kip : ' %
-                      ('merge' if options.merge else 'fast-forward merge'),
-                  options)
-            except ValueError:
-              raise gclient_utils.Error('Invalid Character')
-            if re.match(r'yes|y', action, re.I):
+            if not options.auto_rebase:
+              try:
+                action = self._AskForData(
+                    'Cannot %s, attempt to rebase? '
+                    '(y)es / (q)uit / (s)kip : ' %
+                        ('merge' if options.merge else 'fast-forward merge'),
+                    options)
+              except ValueError:
+                raise gclient_utils.Error('Invalid Character')
+            if options.auto_rebase or re.match(r'yes|y', action, re.I):
               self._AttemptRebase(upstream_branch, files, options,
                                   printed_path=printed_path, merge=False)
               printed_path = True
