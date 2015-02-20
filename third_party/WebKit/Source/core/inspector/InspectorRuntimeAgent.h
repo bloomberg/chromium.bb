@@ -50,7 +50,7 @@ class InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent>, 
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     virtual ~InspectorRuntimeAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Part of the protocol.
     virtual void enable(ErrorString*) override;

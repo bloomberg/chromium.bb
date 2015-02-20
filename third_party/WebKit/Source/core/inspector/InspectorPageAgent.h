@@ -178,7 +178,7 @@ public:
     void addEditedResourceContent(const String& url, const String& content);
     bool getEditedResourceContent(const String& url, String* content);
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     class GetResourceContentLoadListener;

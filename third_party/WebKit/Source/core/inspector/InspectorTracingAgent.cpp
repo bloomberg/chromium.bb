@@ -36,7 +36,7 @@ InspectorTracingAgent::InspectorTracingAgent(InspectorClient* client, InspectorW
 {
 }
 
-void InspectorTracingAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorTracingAgent)
 {
     visitor->trace(m_workerAgent);
     visitor->trace(m_pageAgent);

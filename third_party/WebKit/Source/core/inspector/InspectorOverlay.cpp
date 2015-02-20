@@ -354,7 +354,7 @@ InspectorOverlay::~InspectorOverlay()
     ASSERT(!m_overlayPage);
 }
 
-void InspectorOverlay::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorOverlay)
 {
     visitor->trace(m_page);
     visitor->trace(m_highlightNode);

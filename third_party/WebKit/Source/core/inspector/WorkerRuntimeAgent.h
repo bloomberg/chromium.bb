@@ -45,7 +45,7 @@ public:
         return adoptPtrWillBeNoop(new WorkerRuntimeAgent(injectedScriptManager, scriptDebugServer, context));
     }
     virtual ~WorkerRuntimeAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void init() override;
     virtual void enable(ErrorString*) override;

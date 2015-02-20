@@ -42,7 +42,7 @@ public:
         m_v8AsyncOperations.dispose();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_v8AsyncOperations);
@@ -70,7 +70,7 @@ V8AsyncCallTracker::~V8AsyncCallTracker()
     ASSERT(m_contextAsyncOperationMap.isEmpty());
 }
 
-void V8AsyncCallTracker::trace(Visitor* visitor)
+DEFINE_TRACE(V8AsyncCallTracker)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_contextAsyncOperationMap);

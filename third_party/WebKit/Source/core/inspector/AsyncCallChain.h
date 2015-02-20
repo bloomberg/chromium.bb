@@ -15,7 +15,7 @@ class AsyncCallStack final : public RefCountedWillBeGarbageCollectedFinalized<As
 public:
     AsyncCallStack(const String&, const ScriptValue&);
     ~AsyncCallStack();
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
     String description() const { return m_description; }
     ScriptValue callFrames() const { return m_callFrames; }
 private:
@@ -30,7 +30,7 @@ public:
     static PassRefPtrWillBeRawPtr<AsyncCallChain> create(PassRefPtrWillBeRawPtr<AsyncCallStack>, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength);
     ~AsyncCallChain();
     const AsyncCallStackVector& callStacks() const { return m_callStacks; }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     AsyncCallChain(PassRefPtrWillBeRawPtr<AsyncCallStack>, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength);

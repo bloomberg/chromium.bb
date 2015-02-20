@@ -65,7 +65,7 @@ XHRReplayData::XHRReplayData(ExecutionContext* executionContext, const AtomicStr
 {
 }
 
-void XHRReplayData::trace(Visitor* visitor)
+DEFINE_TRACE(XHRReplayData)
 {
     ContextLifecycleObserver::trace(visitor);
 }

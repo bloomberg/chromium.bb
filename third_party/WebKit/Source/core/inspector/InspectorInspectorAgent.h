@@ -53,7 +53,7 @@ public:
     }
 
     virtual ~InspectorInspectorAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Inspector front-end API.
     virtual void enable(ErrorString*) override;

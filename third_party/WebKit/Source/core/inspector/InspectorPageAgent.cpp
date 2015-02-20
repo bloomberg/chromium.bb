@@ -150,7 +150,7 @@ static float calculateFontScaleFactor(int width, int height, float deviceScaleFa
 class InspectorPageAgent::GetResourceContentLoadListener final : public VoidCallback {
 public:
     GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void handleEvent() override;
 private:
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
@@ -167,7 +167,7 @@ InspectorPageAgent::GetResourceContentLoadListener::GetResourceContentLoadListen
 {
 }
 
-void InspectorPageAgent::GetResourceContentLoadListener::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorPageAgent::GetResourceContentLoadListener)
 {
     visitor->trace(m_pageAgent);
     visitor->trace(m_callback);
@@ -1511,7 +1511,7 @@ bool InspectorPageAgent::getEditedResourceContent(const String& url, String* con
     return true;
 }
 
-void InspectorPageAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorPageAgent)
 {
     visitor->trace(m_page);
     visitor->trace(m_injectedScriptManager);

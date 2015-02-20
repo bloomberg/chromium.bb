@@ -37,7 +37,7 @@ public:
 
     int expiredCount() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     ConsoleMessageStorage();

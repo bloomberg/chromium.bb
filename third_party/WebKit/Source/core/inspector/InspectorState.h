@@ -73,7 +73,7 @@ public:
 
     void remove(const String&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     void updateCookie();
@@ -98,7 +98,7 @@ public:
     {
     }
     virtual ~InspectorCompositeState() { }
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void mute();
     void unmute();

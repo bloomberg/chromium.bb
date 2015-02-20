@@ -64,7 +64,7 @@ PageConsoleAgent::~PageConsoleAgent()
 #endif
 }
 
-void PageConsoleAgent::trace(Visitor* visitor)
+DEFINE_TRACE(PageConsoleAgent)
 {
     visitor->trace(m_inspectorDOMAgent);
     visitor->trace(m_pageAgent);

@@ -268,7 +268,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
     m_pageAgent->inspectedFrame()->eventHandler().handleTouchEvent(event);
 }
 
-void InspectorInputAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorInputAgent)
 {
     visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);

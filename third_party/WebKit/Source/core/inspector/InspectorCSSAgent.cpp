@@ -131,7 +131,7 @@ public:
 class InspectorCSSAgent::InspectorResourceContentLoaderCallback final : public VoidCallback {
 public:
     InspectorResourceContentLoaderCallback(InspectorCSSAgent*, PassRefPtrWillBeRawPtr<EnableCallback>);
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void handleEvent() override;
 
 private:
@@ -145,7 +145,7 @@ InspectorCSSAgent::InspectorResourceContentLoaderCallback::InspectorResourceCont
 {
 }
 
-void InspectorCSSAgent::InspectorResourceContentLoaderCallback::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorCSSAgent::InspectorResourceContentLoaderCallback)
 {
     visitor->trace(m_cssAgent);
     visitor->trace(m_callback);
@@ -202,7 +202,7 @@ public:
         m_text = other->m_text;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
@@ -264,7 +264,7 @@ public:
         m_text = other->m_text;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
@@ -308,7 +308,7 @@ public:
         return m_styleSheet->setRuleSelector(m_cssId, m_selector, exceptionState);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
@@ -350,7 +350,7 @@ public:
         return m_styleSheet->setMediaRuleText(m_cssId, m_text, exceptionState);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
@@ -397,7 +397,7 @@ public:
 
     InspectorCSSId newRuleId() { return m_newId; }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_styleSheet);
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
@@ -1548,7 +1548,7 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
-void InspectorCSSAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorCSSAgent)
 {
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);

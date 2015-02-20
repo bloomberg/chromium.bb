@@ -394,7 +394,7 @@ InspectorResourceAgent::~InspectorResourceAgent()
 #endif
 }
 
-void InspectorResourceAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorResourceAgent)
 {
     visitor->trace(m_pageAgent);
 #if ENABLE(OILPAN)

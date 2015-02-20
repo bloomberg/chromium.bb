@@ -214,7 +214,7 @@ v8::Local<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Isolate* i
     return exceptionDetails;
 }
 
-void JavaScriptCallFrame::trace(Visitor* visitor)
+DEFINE_TRACE(JavaScriptCallFrame)
 {
     visitor->trace(m_caller);
 }

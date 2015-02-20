@@ -55,7 +55,7 @@ WorkerRuntimeAgent::~WorkerRuntimeAgent()
 #endif
 }
 
-void WorkerRuntimeAgent::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerRuntimeAgent)
 {
     visitor->trace(m_workerGlobalScope);
     InspectorRuntimeAgent::trace(visitor);

@@ -53,7 +53,7 @@ void InspectorOverlayHost::stepOver()
         m_listener->overlaySteppedOver();
 }
 
-void InspectorOverlayHost::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorOverlayHost)
 {
     visitor->trace(m_listener);
 }

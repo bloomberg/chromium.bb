@@ -51,7 +51,7 @@ public:
     }
 
     ~DevToolsHost();
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void disconnectClient();
 
     float zoomFactor();

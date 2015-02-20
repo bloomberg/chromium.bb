@@ -851,7 +851,7 @@ Document* InspectorStyle::ownerDocument() const
     return m_parentStyleSheet->ownerDocument();
 }
 
-void InspectorStyle::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorStyle)
 {
     visitor->trace(m_style);
     visitor->trace(m_parentStyleSheet);
@@ -999,7 +999,7 @@ InspectorStyleSheet::~InspectorStyleSheet()
 {
 }
 
-void InspectorStyleSheet::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorStyleSheet)
 {
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
@@ -1987,7 +1987,7 @@ PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::get
     return ruleSourceDataResult.first().release();
 }
 
-void InspectorStyleSheetForInlineStyle::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorStyleSheetForInlineStyle)
 {
     visitor->trace(m_element);
     visitor->trace(m_ruleSourceData);

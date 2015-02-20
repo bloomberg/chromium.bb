@@ -81,7 +81,7 @@ public:
     }
 
     ~InspectorOverlay();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void update();
     void hide();

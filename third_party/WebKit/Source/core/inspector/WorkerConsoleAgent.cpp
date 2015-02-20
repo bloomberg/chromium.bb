@@ -49,7 +49,7 @@ WorkerConsoleAgent::~WorkerConsoleAgent()
 {
 }
 
-void WorkerConsoleAgent::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerConsoleAgent)
 {
     visitor->trace(m_workerGlobalScope);
     InspectorConsoleAgent::trace(visitor);

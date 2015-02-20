@@ -57,7 +57,7 @@ class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, 
 public:
     explicit InspectorConsoleAgent(InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;

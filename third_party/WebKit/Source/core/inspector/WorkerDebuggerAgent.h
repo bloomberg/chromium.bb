@@ -46,7 +46,7 @@ class WorkerDebuggerAgent final : public InspectorDebuggerAgent {
 public:
     static PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> create(WorkerScriptDebugServer*, WorkerGlobalScope*, InjectedScriptManager*);
     ~WorkerDebuggerAgent() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void interruptAndDispatchInspectorCommands();
 

@@ -1608,7 +1608,7 @@ void InspectorDebuggerAgent::reset()
         m_frontend->globalObjectCleared();
 }
 
-void InspectorDebuggerAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorDebuggerAgent)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_injectedScriptManager);

@@ -57,7 +57,7 @@ class WorkerInspectorController : public RefCountedWillBeGarbageCollectedFinaliz
 public:
     explicit WorkerInspectorController(WorkerGlobalScope*);
     ~WorkerInspectorController();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
     void connectFrontend();

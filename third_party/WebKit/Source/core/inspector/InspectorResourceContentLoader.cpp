@@ -156,7 +156,7 @@ InspectorResourceContentLoader::~InspectorResourceContentLoader()
     ASSERT(m_resources.isEmpty());
 }
 
-void InspectorResourceContentLoader::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorResourceContentLoader)
 {
     visitor->trace(m_callbacks);
     visitor->trace(m_inspectedFrame);

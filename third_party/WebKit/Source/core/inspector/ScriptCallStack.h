@@ -60,7 +60,7 @@ public:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
     void toTracedValue(TracedValue*, const char* name) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit ScriptCallStack(Vector<ScriptCallFrame>&);

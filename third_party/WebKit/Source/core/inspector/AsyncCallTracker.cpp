@@ -87,7 +87,7 @@ public:
         dispose();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_tracker);
 #if ENABLE(OILPAN)
@@ -421,7 +421,7 @@ AsyncCallTracker::ExecutionContextData* AsyncCallTracker::createContextDataIfNee
     return data;
 }
 
-void AsyncCallTracker::trace(Visitor* visitor)
+DEFINE_TRACE(AsyncCallTracker)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContextDataMap);

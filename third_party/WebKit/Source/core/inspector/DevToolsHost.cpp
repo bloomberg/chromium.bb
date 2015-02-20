@@ -69,7 +69,7 @@ public:
         ASSERT(!m_devtoolsHost);
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_devtoolsHost);
         ContextMenuProvider::trace(visitor);
@@ -138,7 +138,7 @@ DevToolsHost::~DevToolsHost()
     ASSERT(!m_client);
 }
 
-void DevToolsHost::trace(Visitor* visitor)
+DEFINE_TRACE(DevToolsHost)
 {
     visitor->trace(m_frontendFrame);
     visitor->trace(m_menuProvider);

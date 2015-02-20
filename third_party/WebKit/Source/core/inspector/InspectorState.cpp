@@ -121,7 +121,7 @@ PassRefPtr<JSONObject> InspectorState::getObject(const String& propertyName)
     return it->value->asObject();
 }
 
-void InspectorState::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorState)
 {
     visitor->trace(m_listener);
 }
@@ -172,7 +172,7 @@ void InspectorCompositeState::inspectorStateUpdated()
         m_client->updateInspectorStateCookie(m_stateObject->toJSONString());
 }
 
-void InspectorCompositeState::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorCompositeState)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_inspectorStateMap);

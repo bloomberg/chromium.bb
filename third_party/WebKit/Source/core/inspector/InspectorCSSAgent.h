@@ -102,7 +102,7 @@ public:
     static void collectAllDocumentStyleSheets(Document*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
 
     virtual ~InspectorCSSAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     bool forcePseudoState(Element*, CSSSelector::PseudoType);
     virtual void setFrontend(InspectorFrontend*) override;

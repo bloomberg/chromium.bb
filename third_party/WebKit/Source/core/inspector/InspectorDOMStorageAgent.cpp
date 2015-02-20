@@ -78,7 +78,7 @@ InspectorDOMStorageAgent::~InspectorDOMStorageAgent()
 {
 }
 
-void InspectorDOMStorageAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorDOMStorageAgent)
 {
     visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);

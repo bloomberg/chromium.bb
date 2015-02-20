@@ -54,7 +54,7 @@ class InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfiler
 public:
     static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void consoleProfile(ExecutionContext*, const String& title);
     void consoleProfileEnd(const String& title);

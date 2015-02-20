@@ -23,7 +23,7 @@ public:
     explicit InspectorResourceContentLoader(LocalFrame*);
     void ensureResourcesContentLoaded(VoidCallback*);
     ~InspectorResourceContentLoader();
-    void trace(Visitor*);
+    DECLARE_TRACE();
     void dispose();
     bool hasFinished();
     void stop();

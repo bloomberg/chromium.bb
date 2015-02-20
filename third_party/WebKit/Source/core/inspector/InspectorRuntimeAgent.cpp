@@ -60,7 +60,7 @@ InspectorRuntimeAgent::~InspectorRuntimeAgent()
 {
 }
 
-void InspectorRuntimeAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorRuntimeAgent)
 {
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);

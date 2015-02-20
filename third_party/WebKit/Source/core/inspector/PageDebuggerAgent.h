@@ -51,7 +51,7 @@ class PageDebuggerAgent final
 public:
     static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     ~PageDebuggerAgent() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);

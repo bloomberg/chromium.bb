@@ -183,7 +183,7 @@ void WorkerInspectorController::interruptAndDispatchInspectorCommands()
     m_workerDebuggerAgent->interruptAndDispatchInspectorCommands();
 }
 
-void WorkerInspectorController::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_workerGlobalScope);
     visitor->trace(m_state);

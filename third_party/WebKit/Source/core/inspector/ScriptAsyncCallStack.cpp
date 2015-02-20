@@ -35,7 +35,7 @@ PassRefPtr<TypeBuilder::Console::AsyncStackTrace> ScriptAsyncCallStack::buildIns
     return result.release();
 }
 
-void ScriptAsyncCallStack::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptAsyncCallStack)
 {
     visitor->trace(m_callStack);
     visitor->trace(m_asyncStackTrace);

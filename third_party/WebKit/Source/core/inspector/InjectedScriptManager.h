@@ -56,7 +56,7 @@ public:
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForPage();
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForWorker();
     ~InjectedScriptManager();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void disconnect();
 

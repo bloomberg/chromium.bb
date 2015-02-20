@@ -72,7 +72,7 @@ InspectorCanvasAgent::~InspectorCanvasAgent()
 {
 }
 
-void InspectorCanvasAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorCanvasAgent)
 {
     visitor->trace(m_pageAgent);
     visitor->trace(m_injectedScriptManager);

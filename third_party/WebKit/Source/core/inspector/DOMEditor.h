@@ -51,7 +51,7 @@ class DOMEditor final : public NoBaseWillBeGarbageCollected<DOMEditor> {
 public:
     explicit DOMEditor(InspectorHistory*);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool insertBefore(ContainerNode* parentNode, PassRefPtrWillBeRawPtr<Node>, Node* anchorNode, ExceptionState&);
     bool removeChild(ContainerNode* parentNode, Node*, ExceptionState&);

@@ -155,7 +155,7 @@ InspectorLayerTreeAgent::~InspectorLayerTreeAgent()
 {
 }
 
-void InspectorLayerTreeAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorLayerTreeAgent)
 {
     visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);

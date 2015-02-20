@@ -266,7 +266,7 @@ AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* err
     return player;
 }
 
-void InspectorAnimationAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorAnimationAgent)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_domAgent);

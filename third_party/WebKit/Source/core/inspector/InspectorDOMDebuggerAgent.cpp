@@ -101,7 +101,7 @@ InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 #endif
 }
 
-void InspectorDOMDebuggerAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorDOMDebuggerAgent)
 {
     visitor->trace(m_domAgent);
     visitor->trace(m_debuggerAgent);

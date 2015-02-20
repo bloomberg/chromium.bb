@@ -59,7 +59,7 @@ InjectedScriptHost::~InjectedScriptHost()
 {
 }
 
-void InjectedScriptHost::trace(Visitor* visitor)
+DEFINE_TRACE(InjectedScriptHost)
 {
     visitor->trace(m_instrumentingAgents);
 }

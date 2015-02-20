@@ -55,7 +55,7 @@ public:
         return adoptPtrWillBeNoop(new InspectorLayerTreeAgent(pageAgent));
     }
     virtual ~InspectorLayerTreeAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void setFrontend(InspectorFrontend*) override;
     virtual void clearFrontend() override;

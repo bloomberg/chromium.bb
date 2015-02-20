@@ -127,7 +127,7 @@ InspectorController::~InspectorController()
 {
 }
 
-void InspectorController::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorController)
 {
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);

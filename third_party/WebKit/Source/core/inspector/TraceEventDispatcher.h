@@ -137,7 +137,7 @@ public:
 #endif
         virtual void call(const TraceEventDispatcher::TraceEvent&) = 0;
         virtual void* target() = 0;
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
     static TraceEventDispatcher* instance()

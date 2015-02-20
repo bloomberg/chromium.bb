@@ -65,7 +65,7 @@ public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InspectorDOMAgent*, InspectorDebuggerAgent*);
 
     ~InspectorDOMDebuggerAgent() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // DOMDebugger API for InspectorFrontend
     void setXHRBreakpoint(ErrorString*, const String& url) override;

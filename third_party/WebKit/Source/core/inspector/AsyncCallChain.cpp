@@ -9,7 +9,7 @@
 
 namespace blink {
 
-void AsyncCallChain::trace(Visitor* visitor)
+DEFINE_TRACE(AsyncCallChain)
 {
     visitor->trace(m_callStacks);
 }

@@ -46,7 +46,7 @@ public:
         return adoptPtrWillBeNoop(new WorkerConsoleAgent(injectedScriptManager, workerGlobalScope));
     }
     virtual ~WorkerConsoleAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void enable(ErrorString*) override;
     virtual void clearMessages(ErrorString*) override;

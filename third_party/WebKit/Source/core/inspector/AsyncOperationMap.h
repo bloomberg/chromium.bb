@@ -73,7 +73,7 @@ public:
             m_debuggerAgent->traceAsyncOperationCompleted(operationId);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_debuggerAgent);
         visitor->trace(m_asyncOperations);

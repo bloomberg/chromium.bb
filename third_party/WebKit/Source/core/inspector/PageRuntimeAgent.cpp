@@ -64,7 +64,7 @@ PageRuntimeAgent::~PageRuntimeAgent()
 #endif
 }
 
-void PageRuntimeAgent::trace(Visitor* visitor)
+DEFINE_TRACE(PageRuntimeAgent)
 {
     visitor->trace(m_pageAgent);
     InspectorRuntimeAgent::trace(visitor);

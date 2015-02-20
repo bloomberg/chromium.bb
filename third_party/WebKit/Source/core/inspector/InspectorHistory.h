@@ -49,7 +49,7 @@ public:
     public:
         explicit Action(const String& name);
         virtual ~Action();
-        virtual void trace(Visitor*);
+        DECLARE_VIRTUAL_TRACE();
         virtual String toString();
 
         virtual String mergeId();
@@ -66,7 +66,7 @@ public:
     };
 
     InspectorHistory();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     bool perform(PassRefPtrWillBeRawPtr<Action>, ExceptionState&);
     void markUndoableState();

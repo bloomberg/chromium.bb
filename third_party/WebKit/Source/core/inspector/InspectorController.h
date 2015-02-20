@@ -71,7 +71,7 @@ class InspectorController : public NoBaseWillBeGarbageCollectedFinalized<Inspect
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     ~InspectorController();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     static PassOwnPtrWillBeRawPtr<InspectorController> create(Page*, InspectorClient*);
 

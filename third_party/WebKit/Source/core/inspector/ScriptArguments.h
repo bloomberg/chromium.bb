@@ -54,7 +54,7 @@ public:
 
     bool getFirstArgumentAsString(String&) const;
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     ScriptArguments(ScriptState*, Vector<ScriptValue>& arguments);

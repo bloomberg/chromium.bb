@@ -53,7 +53,7 @@ class InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeap
 public:
     static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(InjectedScriptManager*);
     virtual ~InspectorHeapProfilerAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void collectGarbage(ErrorString*) override;
 

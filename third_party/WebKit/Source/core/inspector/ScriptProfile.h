@@ -46,7 +46,7 @@ public:
         return adoptRefWillBeNoop(new ScriptProfile(profile, idleTime));
     }
     ~ScriptProfile();
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
     String title() const;
     double idleTime() const;

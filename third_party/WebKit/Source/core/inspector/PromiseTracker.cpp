@@ -79,7 +79,7 @@ public:
         return promiseDetails.release();
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_creationStack);
         visitor->trace(m_settlementStack);
@@ -188,7 +188,7 @@ public:
             map.remove(promiseHash);
     }
 
-    void trace(Visitor* visitor)
+    DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_data);
@@ -219,7 +219,7 @@ PromiseTracker::PromiseTracker(Listener* listener)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 
-void PromiseTracker::trace(Visitor* visitor)
+DEFINE_TRACE(PromiseTracker)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_promiseDataMap);

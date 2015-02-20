@@ -75,7 +75,7 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
 #endif
 }
 
-void InspectorConsoleAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorConsoleAgent)
 {
     visitor->trace(m_injectedScriptManager);
     InspectorBaseAgent::trace(visitor);

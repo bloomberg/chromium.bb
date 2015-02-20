@@ -72,7 +72,7 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_parentNode);
         visitor->trace(m_node);
@@ -126,7 +126,7 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_parentNode);
         visitor->trace(m_node);
@@ -170,7 +170,7 @@ public:
         return true;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_element);
         InspectorHistory::Action::trace(visitor);
@@ -218,7 +218,7 @@ public:
         return true;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_element);
         InspectorHistory::Action::trace(visitor);
@@ -270,7 +270,7 @@ public:
         return m_newNode;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_node);
         visitor->trace(m_nextSibling);
@@ -318,7 +318,7 @@ public:
         return true;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_textNode);
         InspectorHistory::Action::trace(visitor);
@@ -358,7 +358,7 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_parentNode);
         visitor->trace(m_newNode);
@@ -400,7 +400,7 @@ public:
         return true;
     }
 
-    virtual void trace(Visitor* visitor) override
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_node);
         InspectorHistory::Action::trace(visitor);
@@ -512,7 +512,7 @@ bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ErrorString
     return result;
 }
 
-void DOMEditor::trace(Visitor* visitor)
+DEFINE_TRACE(DOMEditor)
 {
     visitor->trace(m_history);
 }

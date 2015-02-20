@@ -87,7 +87,7 @@ void ScriptCallStack::toTracedValue(TracedValue* value, const char* name) const
     value->endArray();
 }
 
-void ScriptCallStack::trace(Visitor* visitor)
+DEFINE_TRACE(ScriptCallStack)
 {
     visitor->trace(m_asyncCallStack);
 }

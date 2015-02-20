@@ -45,7 +45,7 @@ public:
     // Methods for other agents to use.
     AnimationPlayer* assertAnimationPlayer(ErrorString*, const String& id);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     InspectorAnimationAgent(InspectorDOMAgent*);

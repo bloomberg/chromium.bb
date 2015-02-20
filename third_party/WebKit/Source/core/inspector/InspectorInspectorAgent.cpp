@@ -68,7 +68,7 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
 #endif
 }
 
-void InspectorInspectorAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorInspectorAgent)
 {
     visitor->trace(m_inspectorController);
     visitor->trace(m_injectedScriptManager);

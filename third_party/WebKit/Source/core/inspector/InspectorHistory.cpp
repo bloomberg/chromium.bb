@@ -62,7 +62,7 @@ InspectorHistory::Action::~Action()
 {
 }
 
-void InspectorHistory::Action::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorHistory::Action)
 {
 }
 
@@ -150,7 +150,7 @@ void InspectorHistory::reset()
     m_history.clear();
 }
 
-void InspectorHistory::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorHistory)
 {
     visitor->trace(m_history);
 }

@@ -48,7 +48,7 @@ public:
         return adoptPtrWillBeNoop(new InspectorApplicationCacheAgent(pageAgent));
     }
     virtual ~InspectorApplicationCacheAgent() { }
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // InspectorBaseAgent
     virtual void setFrontend(InspectorFrontend*) override;

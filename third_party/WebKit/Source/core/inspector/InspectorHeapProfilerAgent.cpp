@@ -54,7 +54,7 @@ public:
     void startTimer();
     void resetTimer() { m_timer.stop(); }
     void onTimer(Timer<HeapStatsUpdateTask>*);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<InspectorHeapProfilerAgent> m_heapProfilerAgent;
@@ -127,7 +127,7 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
     m_timer.startRepeating(0.05, FROM_HERE);
 }
 
-void InspectorHeapProfilerAgent::HeapStatsUpdateTask::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorHeapProfilerAgent::HeapStatsUpdateTask)
 {
     visitor->trace(m_heapProfilerAgent);
 }
@@ -319,7 +319,7 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
     *heapSnapshotObjectId = String::number(id);
 }
 
-void InspectorHeapProfilerAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorHeapProfilerAgent)
 {
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_heapStatsUpdateTask);

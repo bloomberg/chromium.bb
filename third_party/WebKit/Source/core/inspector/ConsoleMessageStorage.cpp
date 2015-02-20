@@ -81,7 +81,7 @@ int ConsoleMessageStorage::expiredCount() const
     return m_expiredCount;
 }
 
-void ConsoleMessageStorage::trace(Visitor* visitor)
+DEFINE_TRACE(ConsoleMessageStorage)
 {
     visitor->trace(m_messages);
 }

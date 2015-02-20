@@ -21,7 +21,7 @@ public:
 
     PassRefPtr<TypeBuilder::Console::AsyncStackTrace> buildInspectorObject() const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     ScriptAsyncCallStack(const String&, PassRefPtrWillBeRawPtr<ScriptCallStack>, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);

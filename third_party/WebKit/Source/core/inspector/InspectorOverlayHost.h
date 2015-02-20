@@ -43,7 +43,7 @@ public:
         return adoptRefWillBeNoop(new InspectorOverlayHost());
     }
     ~InspectorOverlayHost();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void resume();
     void stepOver();

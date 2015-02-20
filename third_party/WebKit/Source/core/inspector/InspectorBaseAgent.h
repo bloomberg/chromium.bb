@@ -49,7 +49,7 @@ class InspectorAgent : public NoBaseWillBeGarbageCollectedFinalized<InspectorAge
 public:
     explicit InspectorAgent(const String&);
     virtual ~InspectorAgent();
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void init() { }
     virtual void setFrontend(InspectorFrontend*) { }
@@ -85,7 +85,7 @@ public:
     void flushPendingProtocolNotifications();
     void didCommitLoadForMainFrame();
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;

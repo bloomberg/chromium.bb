@@ -58,7 +58,7 @@ class InjectedScriptHost : public RefCountedWillBeGarbageCollectedFinalized<Inje
 public:
     static PassRefPtrWillBeRawPtr<InjectedScriptHost> create();
     ~InjectedScriptHost();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     void init(InstrumentingAgents* instrumentingAgents, ScriptDebugServer* scriptDebugServer)
     {

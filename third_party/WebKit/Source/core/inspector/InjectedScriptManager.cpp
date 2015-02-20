@@ -65,7 +65,7 @@ InjectedScriptManager::~InjectedScriptManager()
 {
 }
 
-void InjectedScriptManager::trace(Visitor* visitor)
+DEFINE_TRACE(InjectedScriptManager)
 {
     visitor->trace(m_injectedScriptHost);
 }

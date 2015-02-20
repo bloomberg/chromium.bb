@@ -51,7 +51,7 @@ public:
     typedef WillBeHeapHashMap<int, PromiseDataVector> PromiseDataMap;
     typedef WillBeHeapHashMap<int, RefPtrWillBeMember<PromiseData> > PromiseIdToDataMap;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     PromiseDataMap& promiseDataMap() { return m_promiseDataMap; }
     PromiseIdToDataMap& promiseIdToDataMap() { return m_promiseIdToDataMap; }

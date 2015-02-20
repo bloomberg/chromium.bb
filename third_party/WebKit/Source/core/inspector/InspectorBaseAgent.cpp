@@ -48,7 +48,7 @@ InspectorAgent::~InspectorAgent()
 #endif
 }
 
-void InspectorAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorAgent)
 {
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_state);
@@ -109,7 +109,7 @@ void InspectorAgentRegistry::flushPendingProtocolNotifications()
         m_agents[i]->flushPendingProtocolNotifications();
 }
 
-void InspectorAgentRegistry::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorAgentRegistry)
 {
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_inspectorState);

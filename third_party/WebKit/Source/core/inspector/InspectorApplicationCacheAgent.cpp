@@ -201,7 +201,7 @@ PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> InspectorApp
     return value;
 }
 
-void InspectorApplicationCacheAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorApplicationCacheAgent)
 {
     visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);

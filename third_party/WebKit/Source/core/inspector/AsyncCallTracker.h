@@ -97,7 +97,7 @@ public:
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     class ExecutionContextData;
 

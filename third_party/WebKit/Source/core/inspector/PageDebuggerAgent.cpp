@@ -63,7 +63,7 @@ PageDebuggerAgent::~PageDebuggerAgent()
 {
 }
 
-void PageDebuggerAgent::trace(Visitor* visitor)
+DEFINE_TRACE(PageDebuggerAgent)
 {
     visitor->trace(m_pageScriptDebugServer);
     visitor->trace(m_pageAgent);

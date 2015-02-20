@@ -189,7 +189,7 @@ public:
     void scheduleContentDistributionRevalidationFor(Element*);
     void reset() { m_timer.stop(); }
     void onTimer(Timer<InspectorRevalidateDOMTask>*);
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
@@ -236,7 +236,7 @@ void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
     m_contentDistributionInvalidatedElements.clear();
 }
 
-void InspectorRevalidateDOMTask::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorRevalidateDOMTask)
 {
     visitor->trace(m_domAgent);
 #if ENABLE(OILPAN)
@@ -2290,7 +2290,7 @@ bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorSt
     return true;
 }
 
-void InspectorDOMAgent::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorDOMAgent)
 {
     visitor->trace(m_domListener);
     visitor->trace(m_pageAgent);

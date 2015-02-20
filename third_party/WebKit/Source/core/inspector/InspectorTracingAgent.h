@@ -28,7 +28,7 @@ public:
         return adoptPtrWillBeNoop(new InspectorTracingAgent(client, workerAgent, pageAgent));
     }
 
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Base agent methods.
     virtual void restore() override;

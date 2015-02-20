@@ -51,7 +51,7 @@ public:
         return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, pageAgent));
     }
     virtual ~PageConsoleAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual void enable(ErrorString*) override;
     virtual void disable(ErrorString*) override;

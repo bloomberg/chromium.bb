@@ -48,7 +48,7 @@ public:
         return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, scriptDebugServer, pageAgent));
     }
     virtual ~PageRuntimeAgent();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
     virtual void init() override;
     virtual void enable(ErrorString*) override;
     virtual void run(ErrorString*) override;

@@ -27,7 +27,7 @@ public:
     }
 
     ~V8AsyncCallTracker();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;

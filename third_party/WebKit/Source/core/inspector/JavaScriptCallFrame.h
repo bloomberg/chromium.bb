@@ -51,7 +51,7 @@ public:
         return adoptRefWillBeNoop(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     JavaScriptCallFrame* caller();
 

@@ -96,7 +96,7 @@ public:
 
     bool hasRawText() const { return !rawText.isEmpty(); }
 
-    void trace(Visitor* visitor) { visitor->trace(sourceData); }
+    DEFINE_INLINE_TRACE() { visitor->trace(sourceData); }
 
     CSSPropertySourceData sourceData;
     bool hasSource;
@@ -114,7 +114,7 @@ public:
     bool styleText(String* result) const;
     bool textForRange(const SourceRange&, String* result) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     InspectorStyle(const InspectorCSSId&, PassRefPtrWillBeRawPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
@@ -146,7 +146,7 @@ public:
         virtual void didReparseStyleSheet() = 0;
     };
     virtual ~InspectorStyleSheetBase() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     String id() const { return m_id; }
 
@@ -192,7 +192,7 @@ public:
     static PassRefPtrWillBeRawPtr<InspectorStyleSheet> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
 
     virtual ~InspectorStyleSheet();
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     String finalURL() const;
     virtual Document* ownerDocument() const override;
@@ -284,7 +284,7 @@ public:
     virtual InspectorCSSId styleId(CSSStyleDeclaration* style) const override { return InspectorCSSId(id(), 0); }
     virtual bool setStyleText(const InspectorCSSId&, const String&) override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) override;

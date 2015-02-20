@@ -81,7 +81,7 @@ public:
     static const char backtraceObjectGroup[];
 
     ~InspectorDebuggerAgent() override;
-    void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
     void canSetScriptSource(ErrorString*, bool* result) final { *result = true; }
 
@@ -182,7 +182,7 @@ public:
     class AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~AsyncCallTrackingListener() { }
-        virtual void trace(Visitor*) { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
         virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
         virtual void resetAsyncOperations() = 0;
     };
