@@ -41,6 +41,13 @@ class BluetoothRemoteGattServiceChromeOS;
 
 // The BluetoothAdapterChromeOS class implements BluetoothAdapter for the
 // Chrome OS platform.
+//
+// Methods tolerate a shutdown scenario where BluetoothAdapterChromeOS::Shutdown
+// causes IsPresent to return false just before the dbus system is shutdown but
+// while references to the BluetoothAdapterChromeOS object still exists.
+//
+// When adding methods to this class verify shutdown behavior in
+// BluetoothChromeOSTest, Shutdown.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
     : public device::BluetoothAdapter,
       public chromeos::BluetoothAdapterClient::Observer,
@@ -149,6 +156,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
  private:
   friend class base::DeleteHelper<BluetoothAdapterChromeOS>;
   friend class BluetoothChromeOSTest;
+  friend class BluetoothChromeOSTest_Shutdown_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStartDiscovery_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStartDiscoveryError_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStopDiscovery_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStopDiscoveryError_Test;
 
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while
@@ -212,6 +224,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // sink.
   void OnRegisterAudioSink(
       const device::BluetoothAdapter::AcquiredCallback& callback,
+      const device::BluetoothAudioSink::ErrorCallback& error_callback,
       scoped_refptr<device::BluetoothAudioSink> audio_sink);
 
   // Internal method to obtain a BluetoothPairingChromeOS object for the device
@@ -255,7 +268,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
                               const ErrorCallback& error_callback) override;
 
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
-  void OnStartDiscovery(const base::Closure& callback);
+  void OnStartDiscovery(const base::Closure& callback,
+                        const ErrorCallback& error_callback);
   void OnStartDiscoveryError(const base::Closure& callback,
                              const ErrorCallback& error_callback,
                              const std::string& error_name,
