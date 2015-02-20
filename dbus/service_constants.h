@@ -820,6 +820,7 @@ const char kOnPlatformMessageFunction[] = "OnPlatformMessage";
 const char kEapAuthenticationCompletedProperty[] = "EapAuthenticationCompleted";
 const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
+const char kLinkUpProperty[] = "Ethernet.LinkUp";
 const char kProviderRequiresRoamingProperty[] =
     "Cellular.ProviderRequiresRoaming";
 const char kPPPoEProperty[] = "Ethernet.PPPoE";
