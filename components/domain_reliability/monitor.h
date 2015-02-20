@@ -49,14 +49,14 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   // on which requests will actually be monitored and reported.
   DomainReliabilityMonitor(
       const std::string& upload_reporter_string,
-      scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> network_thread);
+      const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& network_thread);
 
   // Same, but specifies a mock interface for time functions for testing.
   DomainReliabilityMonitor(
       const std::string& upload_reporter_string,
-      scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> network_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& network_thread,
       scoped_ptr<MockableTime> time);
 
   // Must be called from the pref thread if |MoveToNetworkThread| was not
@@ -78,7 +78,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   // Same, but for unittests where the Getter is readily available.
   void InitURLRequestContext(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter);
 
   // Populates the monitor with contexts that were configured at compile time.
   void AddBakedInConfigs();

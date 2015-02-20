@@ -21,8 +21,8 @@ namespace domain_reliability {
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
-    scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> network_thread)
+    const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_thread)
     : time_(new ActualTime()),
       upload_reporter_string_(upload_reporter_string),
       scheduler_params_(
@@ -39,8 +39,8 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
-    scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> network_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_thread,
     scoped_ptr<MockableTime> time)
     : time_(time.Pass()),
       upload_reporter_string_(upload_reporter_string),
@@ -90,7 +90,8 @@ void DomainReliabilityMonitor::InitURLRequestContext(
 }
 
 void DomainReliabilityMonitor::InitURLRequestContext(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter) {
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 
@@ -114,10 +115,12 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
 
   base::Time now = base::Time::Now();
   for (size_t i = 0; kBakedInJsonConfigs[i]; ++i) {
-    std::string json(kBakedInJsonConfigs[i]);
+    base::StringPiece json(kBakedInJsonConfigs[i]);
     scoped_ptr<const DomainReliabilityConfig> config =
         DomainReliabilityConfig::FromJSON(json);
-    if (config && config->IsExpired(now)) {
+    if (!config) {
+      continue;
+    } else if (config->IsExpired(now)) {
       LOG(WARNING) << "Baked-in Domain Reliability config for "
                    << config->domain << " is expired.";
       continue;

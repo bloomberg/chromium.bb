@@ -94,13 +94,12 @@ scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
     const base::StringPiece& json) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   base::JSONValueConverter<DomainReliabilityConfig> converter;
-  DomainReliabilityConfig* config = new DomainReliabilityConfig();
+  scoped_ptr<DomainReliabilityConfig> config(new DomainReliabilityConfig());
 
   // If we can parse and convert the JSON into a valid config, return that.
-  if (value && converter.Convert(*value, config) && config->IsValid())
-    return scoped_ptr<const DomainReliabilityConfig>(config);
-  else
-    return scoped_ptr<const DomainReliabilityConfig>();
+  if (value && converter.Convert(*value, config.get()) && config->IsValid())
+    return config.Pass();
+  return scoped_ptr<const DomainReliabilityConfig>();
 }
 
 bool DomainReliabilityConfig::IsValid() const {
