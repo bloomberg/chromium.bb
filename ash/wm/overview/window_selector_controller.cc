@@ -23,8 +23,8 @@
 namespace ash {
 
 WindowSelectorController::WindowSelectorController()
-    : swipe_to_close_disabled_(base::CommandLine::ForCurrentProcess()->
-        HasSwitch(switches::kAshDisableSwipeToCloseInOverviewMode)) {
+    : swipe_to_close_enabled_(base::CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kAshEnableSwipeToCloseInOverviewMode)) {
 }
 
 WindowSelectorController::~WindowSelectorController() {

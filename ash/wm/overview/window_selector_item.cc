@@ -261,8 +261,8 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
 }
 
 void WindowSelectorItem::OnGestureEvent(ui::GestureEvent* event) {
-  if (Shell::GetInstance()->window_selector_controller()->
-      swipe_to_close_disabled())
+  if (!Shell::GetInstance()->window_selector_controller()->
+      swipe_to_close_enabled())
     return;
 
   int delta_x = 0;

@@ -6137,11 +6137,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag that disables additional visual feedback for touch.">
           Certain UI components will stop displaying visual feedback upon touch interactions.
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_NAME" desc="Title for the flag to disable swipe gestures to close windows while in overview mode.">
+        <message name="IDS_FLAGS_ASH_ENABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_NAME" desc="Title for the flag to enable swipe gestures to close windows while in overview mode.">
           Swipe to dismiss windows in overview mode.
         </message>
-        <message name="IDS_FLAGS_ASH_DISABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag to disable swipe gestures to close windows while in overview mode.">
-          Disable swipe gesture to dismiss windows in overview mode.
+        <message name="IDS_FLAGS_ASH_ENABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag to enable swipe gestures to close windows while in overview mode.">
+          Enable swipe gesture to dismiss windows in overview mode.
         </message>
         <message name="IDS_FLAGS_ASH_DISABLE_TEXT_FILTERING_IN_OVERVIEW_MODE_NAME" desc="Title for the flag to disable window filtering in overview mode by inputing text">
           Disable text filtering in Overview Mode.
@@ -10314,7 +10314,7 @@ Chrome ran out of memory.
           Manage search engines...
         </message>
         <message name="IDS_OPTIONS_ENABLE_GOOGLE_NOW" desc="The label of the 'Enable Google Now' checkbox in search options.">
-          Show Google Now cards in the launcher 
+          Show Google Now cards in the launcher
         </message>
         <message name="IDS_OPTIONS_HOMEPAGE_NTP" desc="The value displayed on the settings page to indicate that we're using the new tab page as the homepage">
           New Tab page

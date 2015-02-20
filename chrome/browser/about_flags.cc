@@ -954,12 +954,12 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
   },
   {
-    "ash-disable-swipe-to-close-in-overview-mode",
-    IDS_FLAGS_ASH_DISABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_NAME,
-    IDS_FLAGS_ASH_DISABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_DESCRIPTION,
+    "ash-enable-swipe-to-close-in-overview-mode",
+    IDS_FLAGS_ASH_ENABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_NAME,
+    IDS_FLAGS_ASH_ENABLE_SWIPE_TO_CLOSE_IN_OVERVIEW_MODE_DESCRIPTION,
     // TODO(bruthig): Add kOsWin when http://crbug.com/333758 is resolved.
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableSwipeToCloseInOverviewMode),
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableSwipeToCloseInOverviewMode),
   },
   { "ash-enable-touch-view-testing",
     IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME,

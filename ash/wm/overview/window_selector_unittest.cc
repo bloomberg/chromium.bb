@@ -279,21 +279,21 @@ class WindowSelectorTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
 
-class WindowSelectorSwipeToCloseDisabledTest : public WindowSelectorTest {
+class WindowSelectorSwipeToCloseEnabledTest : public WindowSelectorTest {
  public:
-  WindowSelectorSwipeToCloseDisabledTest() {}
-  ~WindowSelectorSwipeToCloseDisabledTest() override {}
+  WindowSelectorSwipeToCloseEnabledTest() {}
+  ~WindowSelectorSwipeToCloseEnabledTest() override {}
 
   // WindowSelectorTest:
   void SetUp() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WindowSelectorSwipeToCloseDisabledTest);
+  DISALLOW_COPY_AND_ASSIGN(WindowSelectorSwipeToCloseEnabledTest);
 };
 
-void WindowSelectorSwipeToCloseDisabledTest::SetUp() {
+void WindowSelectorSwipeToCloseEnabledTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshDisableSwipeToCloseInOverviewMode);
+      switches::kAshEnableSwipeToCloseInOverviewMode);
   WindowSelectorTest::SetUp();
 }
 
@@ -1274,8 +1274,8 @@ TEST_F(WindowSelectorTest, CancelOverviewOnTap) {
   EXPECT_FALSE(IsSelecting());
 }
 
-// Verify swipe to close doesn't work when swipe to close is disabled.
-TEST_F(WindowSelectorSwipeToCloseDisabledTest, WindowTapDragFarDistance) {
+// Verify swipe to close doesn't work when swipe to close is not enabled.
+TEST_F(WindowSelectorTest, WindowTapDragFarDistance) {
   scoped_ptr<views::Widget> widget =
       CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
 
@@ -1300,7 +1300,8 @@ TEST_F(WindowSelectorSwipeToCloseDisabledTest, WindowTapDragFarDistance) {
 }
 
 // Verify the window moves and fades as it is dragged.
-TEST_F(WindowSelectorTest, VerifyWindowBehaviourDuringTapDrag) {
+TEST_F(WindowSelectorSwipeToCloseEnabledTest,
+       VerifyWindowBehaviourDuringTapDrag) {
   scoped_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 400, 400)));
 
   ToggleOverview();
@@ -1351,7 +1352,7 @@ TEST_F(WindowSelectorTest, VerifyWindowBehaviourDuringTapDrag) {
 }
 
 // Test dragging a window a short distance.
-TEST_F(WindowSelectorTest, WindowTapDragShortDistance) {
+TEST_F(WindowSelectorSwipeToCloseEnabledTest, WindowTapDragShortDistance) {
   scoped_ptr<views::Widget> widget =
       CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
 
@@ -1375,7 +1376,7 @@ TEST_F(WindowSelectorTest, WindowTapDragShortDistance) {
 }
 
 // Test dragging a window a far distance.
-TEST_F(WindowSelectorTest, WindowTapDragFarDistance) {
+TEST_F(WindowSelectorSwipeToCloseEnabledTest, WindowTapDragFarDistance) {
   scoped_ptr<views::Widget> widget =
       CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
 
@@ -1400,7 +1401,7 @@ TEST_F(WindowSelectorTest, WindowTapDragFarDistance) {
 }
 
 // Test a slow velocity fling.
-TEST_F(WindowSelectorTest, SlowVelocityFling) {
+TEST_F(WindowSelectorSwipeToCloseEnabledTest, SlowVelocityFling) {
   scoped_ptr<views::Widget> widget =
       CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
 
@@ -1426,7 +1427,7 @@ TEST_F(WindowSelectorTest, SlowVelocityFling) {
 }
 
 // Test a fast velocity fling.
-TEST_F(WindowSelectorTest, FastVelocityFling) {
+TEST_F(WindowSelectorSwipeToCloseEnabledTest, FastVelocityFling) {
   scoped_ptr<views::Widget> widget =
       CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
 
@@ -1453,7 +1454,7 @@ TEST_F(WindowSelectorTest, FastVelocityFling) {
 }
 
 // Test a fast velocity fling.
-TEST_F(WindowSelectorTest, SlowVelocityFlingAtAFarDistance) {
+TEST_F(WindowSelectorSwipeToCloseEnabledTest, SlowVelocityFlingAtAFarDistance) {
   scoped_ptr<views::Widget> widget =
       CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
 
