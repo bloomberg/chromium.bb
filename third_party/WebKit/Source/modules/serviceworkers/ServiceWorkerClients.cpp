@@ -54,7 +54,7 @@ ServiceWorkerClients::ServiceWorkerClients()
 {
 }
 
-ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const ClientQueryOptions& options)
+ScriptPromise ServiceWorkerClients::matchAll(ScriptState* scriptState, const ClientQueryOptions& options)
 {
     ExecutionContext* executionContext = scriptState->executionContext();
     // FIXME: May be null due to worker termination: http://crbug.com/413518.

@@ -630,6 +630,7 @@ public:
         ServiceWorkerClientPostMessage = 690,
         CSSZoomNotEqualToOne = 691,
         SVGGraphicsElementGetTransformToElement = 692,
+        ServiceWorkerClientsGetAll = 693,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -862,6 +862,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ServiceWorkerClientPostMessage:
         return "'Client.postMessage()' is an experimental API and may change. See https://github.com/slightlyoff/ServiceWorker/issues/609.";
 
+    case ServiceWorkerClientsGetAll:
+        return "'Clients.getAll()' is deprecated and will be removed soon. Please use 'Clients.matchAll()' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
