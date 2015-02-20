@@ -241,6 +241,7 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
       "//chrome:packed_resources",
       "//content/app/resources",
       "//crypto:platform",
+      "//crypto:test_support",
       "//google_apis:test_support",
       "//net",
       "//net:net_resources",

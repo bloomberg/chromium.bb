@@ -2003,6 +2003,8 @@
       'browser/ui/views/bookmarks/bookmark_menu_delegate.h',
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.cc',
       'browser/ui/views/bookmarks/bookmark_sync_promo_view.h',
+      'browser/ui/views/certificate_selector.cc',
+      'browser/ui/views/certificate_selector.h',
       'browser/ui/views/certificate_viewer_win.cc',
       'browser/ui/views/chrome_javascript_native_dialog_factory_views.cc',
       'browser/ui/views/chrome_views_delegate_chromeos.cc',

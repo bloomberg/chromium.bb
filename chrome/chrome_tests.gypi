@@ -1008,6 +1008,7 @@
     'chrome_interactive_ui_test_views_non_mac_sources': [
       'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
+      'browser/ui/views/certificate_selector_browsertest.cc',
       'browser/ui/views/constrained_window_views_browsertest.cc',
       'browser/ui/views/find_bar_controller_interactive_uitest.cc',
       'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -1448,6 +1449,7 @@
         'renderer',
         'test_support_common',
         '../content/app/resources/content_resources.gyp:content_resources',
+        '../crypto/crypto.gyp:crypto_test_support',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
