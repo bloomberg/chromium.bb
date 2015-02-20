@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
 #define CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -199,6 +201,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& new_title,
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
+      const google_apis::drive::Properties& properties,
       const google_apis::FileResourceCallback& callback) override;
   google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,

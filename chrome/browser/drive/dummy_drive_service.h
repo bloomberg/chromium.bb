@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DRIVE_DUMMY_DRIVE_SERVICE_H_
 #define CHROME_BROWSER_DRIVE_DUMMY_DRIVE_SERVICE_H_
 
+#include <string>
+
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/auth_service_interface.h"
 
@@ -86,6 +88,7 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& new_title,
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
+      const google_apis::drive::Properties& properties,
       const google_apis::FileResourceCallback& callback) override;
   google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,

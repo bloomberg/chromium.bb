@@ -1163,11 +1163,10 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
-      kResourceId,
-      kParentResourceId,
-      "new title",
+      kResourceId, kParentResourceId, "new title",
       base::Time::FromUTCExploded(kModifiedDate),
       base::Time::FromUTCExploded(kViewedDate),
+      google_apis::drive::Properties(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1194,11 +1193,8 @@ TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
-      kResourceId,
-      "1_folder_resource_id",
-      "new title",
-      base::Time(),
-      base::Time(),
+      kResourceId, "1_folder_resource_id", "new title", base::Time(),
+      base::Time(), google_apis::drive::Properties(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1218,11 +1214,8 @@ TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
-      kResourceId,
-      std::string(),
-      "new title",
-      base::Time(),
-      base::Time(),
+      kResourceId, std::string(), "new title", base::Time(), base::Time(),
+      google_apis::drive::Properties(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1246,11 +1239,8 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
-      kResourceId,
-      std::string(),
-      "new title",
-      base::Time(),
-      base::Time(),
+      kResourceId, std::string(), "new title", base::Time(), base::Time(),
+      google_apis::drive::Properties(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1268,11 +1258,8 @@ TEST_F(FakeDriveServiceTest, UpdateResource_Forbidden) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   scoped_ptr<FileResource> entry;
   fake_service_.UpdateResource(
-      kResourceId,
-      std::string(),
-      "new title",
-      base::Time(),
-      base::Time(),
+      kResourceId, std::string(), "new title", base::Time(), base::Time(),
+      google_apis::drive::Properties(),
       test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 

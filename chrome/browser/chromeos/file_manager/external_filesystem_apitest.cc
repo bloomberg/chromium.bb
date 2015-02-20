@@ -180,8 +180,8 @@ scoped_ptr<google_apis::FileResource> UpdateDriveEntryTime(
       resource_id,
       std::string(),  // parent_resource_id
       std::string(),  // title
-      last_modified_time,
-      last_viewed_by_me_time,
+      last_modified_time, last_viewed_by_me_time,
+      google_apis::drive::Properties(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_SUCCESS)

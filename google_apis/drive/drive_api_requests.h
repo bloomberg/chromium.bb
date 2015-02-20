@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_DRIVE_DRIVE_API_REQUESTS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/location.h"
@@ -31,6 +32,38 @@ typedef base::Callback<void(DriveApiErrorCode error,
                             scoped_ptr<ChangeList> entry)> ChangeListCallback;
 
 namespace drive {
+
+// Represents a property for a file or a directory.
+// https://developers.google.com/drive/v2/reference/properties
+class Property {
+ public:
+  Property();
+  ~Property();
+
+  // Visibility of the property. Either limited to the same client, or to any.
+  enum Visibility { VISIBILITY_PRIVATE, VISIBILITY_PUBLIC };
+
+  // Whether the property is public or private.
+  Visibility visibility() const { return visibility_; }
+
+  // Name of the property.
+  const std::string& key() const { return key_; }
+
+  // Value of the property.
+  const std::string& value() const { return value_; }
+
+  void set_visibility(Visibility visibility) { visibility_ = visibility; }
+  void set_key(const std::string& key) { key_ = key; }
+  void set_value(const std::string& value) { value_ = value; }
+
+ private:
+  Visibility visibility_;
+  std::string key_;
+  std::string value_;
+};
+
+// List of properties for a single file or a directory.
+typedef std::vector<Property> Properties;
 
 //============================ DriveApiPartialFieldRequest ====================
 
@@ -306,6 +339,11 @@ class FilesPatchRequest : public DriveApiDataRequest<FileResource> {
   const std::vector<std::string>& parents() const { return parents_; }
   void add_parent(const std::string& parent) { parents_.push_back(parent); }
 
+  const Properties& properties() const { return properties_; }
+  void set_properties(const Properties& properties) {
+    properties_ = properties;
+  }
+
  protected:
   // Overridden from URLFetchRequestBase.
   net::URLFetcher::RequestType GetRequestType() const override;
@@ -327,6 +365,7 @@ class FilesPatchRequest : public DriveApiDataRequest<FileResource> {
   base::Time modified_date_;
   base::Time last_viewed_by_me_date_;
   std::vector<std::string> parents_;
+  Properties properties_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesPatchRequest);
 };

@@ -187,10 +187,9 @@ TEST_F(WebkitFileStreamReaderImplTest, LastModification) {
       entry->resource_id(),
       std::string(),  // parent_resource_id
       std::string(),  // title
-      expected_modification_time,
-      base::Time(),
-      google_apis::test_util::CreateCopyResultCallback(&status,
-                                                       &server_entry));
+      expected_modification_time, base::Time(),
+      google_apis::drive::Properties(),
+      google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
 

@@ -419,7 +419,6 @@ class ImageMediaMetadata {
   int rotation_;
 };
 
-
 // FileResource represents a file or folder metadata in Drive.
 // https://developers.google.com/drive/v2/reference/files
 class FileResource {

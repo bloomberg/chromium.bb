@@ -265,8 +265,6 @@ class DriveServiceInterface {
   // and it'll be named |new_title|.
   // If |last_modified| is not null, the modified date of the resource on the
   // server will be set to the date.
-  // This request is supported only on DriveAPIService, because GData WAPI
-  // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback CopyResource(
@@ -280,8 +278,7 @@ class DriveServiceInterface {
   // |parent_resource_id| with renaming to |new_title|.
   // If |last_modified| or |last_accessed| is not null, the modified/accessed
   // date of the resource on the server will be set to the date.
-  // This request is supported only on DriveAPIService, because GData WAPI
-  // doesn't support the function unfortunately.
+  // If |properties| are specified, then they will be set on |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback UpdateResource(
@@ -290,6 +287,7 @@ class DriveServiceInterface {
       const std::string& new_title,
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
+      const google_apis::drive::Properties& properties,
       const google_apis::FileResourceCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
@@ -427,7 +425,6 @@ class DriveServiceInterface {
       const google_apis::EntryActionCallback& callback) = 0;
 
   // Authorizes the account |email| to access |resource_id| as a |role|.
-  //
   // |callback| must not be null.
   virtual google_apis::CancelCallback AddPermission(
       const std::string& resource_id,

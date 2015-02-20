@@ -489,6 +489,7 @@ CancelCallback DriveAPIService::UpdateResource(
     const std::string& new_title,
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
+    const google_apis::drive::Properties& properties,
     const FileResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -511,6 +512,7 @@ CancelCallback DriveAPIService::UpdateResource(
     request->set_last_viewed_by_me_date(last_viewed_by_me);
   }
   request->set_fields(kFileResourceFields);
+  request->set_properties(properties);
   return sender_->StartRequestWithRetry(request);
 }
 

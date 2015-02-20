@@ -165,8 +165,8 @@ DriveApiErrorCode FakeDriveServiceHelper::UpdateModificationTime(
     return error;
 
   fake_drive_service_->UpdateResource(
-      file_id, std::string(), entry->title(),
-      modification_time, entry->last_viewed_by_me_date(),
+      file_id, std::string(), entry->title(), modification_time,
+      entry->last_viewed_by_me_date(), google_apis::drive::Properties(),
       CreateResultReceiver(&error, &entry));
   base::RunLoop().RunUntilIdle();
   return error;
@@ -179,7 +179,7 @@ DriveApiErrorCode FakeDriveServiceHelper::RenameResource(
   scoped_ptr<FileResource> entry;
   fake_drive_service_->UpdateResource(
       file_id, std::string(), new_title, base::Time(), base::Time(),
-      CreateResultReceiver(&error, &entry));
+      google_apis::drive::Properties(), CreateResultReceiver(&error, &entry));
   base::RunLoop().RunUntilIdle();
   return error;
 }

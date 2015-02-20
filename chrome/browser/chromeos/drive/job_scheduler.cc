@@ -521,16 +521,11 @@ void JobScheduler::UpdateResource(
   JobEntry* new_job = CreateNewJob(TYPE_UPDATE_RESOURCE);
   new_job->context = context;
   new_job->task = base::Bind(
-      &DriveServiceInterface::UpdateResource,
-      base::Unretained(drive_service_),
-      resource_id,
-      parent_resource_id,
-      new_title,
-      last_modified,
-      last_viewed_by_me,
+      &DriveServiceInterface::UpdateResource, base::Unretained(drive_service_),
+      resource_id, parent_resource_id, new_title, last_modified,
+      last_viewed_by_me, google_apis::drive::Properties(),
       base::Bind(&JobScheduler::OnGetFileResourceJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
+                 weak_ptr_factory_.GetWeakPtr(), new_job->job_info.job_id,
                  callback));
   new_job->abort_callback = CreateErrorRunCallback(callback);
   StartJob(new_job);

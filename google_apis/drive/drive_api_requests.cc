@@ -49,6 +49,12 @@ void ParseFileResourceWithUploadRangeAndRun(
 
 namespace drive {
 
+Property::Property() : visibility_(VISIBILITY_PRIVATE) {
+}
+
+Property::~Property() {
+}
+
 //============================ DriveApiPartialFieldRequest ====================
 
 DriveApiPartialFieldRequest::DriveApiPartialFieldRequest(
@@ -224,6 +230,27 @@ bool FilesPatchRequest::GetContentData(std::string* upload_content_type,
       parents_value->Append(parent);
     }
     root.Set("parents", parents_value);
+  }
+
+  if (!properties_.empty()) {
+    base::ListValue* properties_value = new base::ListValue;
+    for (const auto& property : properties_) {
+      base::DictionaryValue* const property_value = new base::DictionaryValue;
+      std::string visibility_as_string;
+      switch (property.visibility()) {
+        case Property::VISIBILITY_PRIVATE:
+          visibility_as_string = "PRIVATE";
+          break;
+        case Property::VISIBILITY_PUBLIC:
+          visibility_as_string = "PUBLIC";
+          break;
+      }
+      property_value->SetString("visibility", visibility_as_string);
+      property_value->SetString("key", property.key());
+      property_value->SetString("value", property.value());
+      properties_value->Append(property_value);
+    }
+    root.Set("properties", properties_value);
   }
 
   base::JSONWriter::Write(&root, upload_content);
