@@ -92,7 +92,7 @@ cr.define('hotword', function() {
         'com',
         'com.au',
         'com.mx',
-        'co.br',
+        'com.br',
         'co.jp',
         'co.kr',
         'co.nz',
