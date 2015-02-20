@@ -258,7 +258,6 @@ function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
 
     case ErrorCodes.TIMEOUT:
       return GnubbyCodeTypes.WAIT_TOUCH;
-
   }
   return GnubbyCodeTypes.UNKNOWN_ERROR;
 }
@@ -277,7 +276,6 @@ function mapDeviceStatusCodeToU2fError(code) {
     case DeviceStatusCodes.TIMEOUT_STATUS:
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
       return {errorCode: ErrorCodes.TIMEOUT};
-
 
     default:
       var reportedError = {

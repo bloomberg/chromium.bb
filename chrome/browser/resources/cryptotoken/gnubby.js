@@ -25,7 +25,7 @@ function Gnubby(opt_busySeconds) {
   this.closed = false;
   this.commandPending = false;
   this.notifyOnClose = [];
-  this.busyMillis = (opt_busySeconds ? opt_busySeconds * 1000 : 2500);
+  this.busyMillis = (opt_busySeconds ? opt_busySeconds * 1000 : 9500);
 }
 
 /**
@@ -41,6 +41,19 @@ Gnubby.gnubbyId_ = 0;
 Gnubby.setGnubbies = function(gnubbies) {
   /** @private {Gnubbies} */
   Gnubby.gnubbies_ = gnubbies;
+};
+
+/**
+ * Return cid as hex string.
+ * @param {number} cid to convert.
+ * @return {string} hexadecimal string.
+ */
+Gnubby.hexCid = function(cid) {
+  var tmp = [(cid >>> 24) & 255,
+             (cid >>> 16) & 255,
+             (cid >>> 8) & 255,
+             (cid >>> 0) & 255];
+  return UTIL_BytesToHex(tmp);
 };
 
 /**
@@ -262,7 +275,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     if (!callback || !tid) return;  // Already done.
 
     console.error(UTIL_fmt(
-        '[' + self.cid.toString(16) + '] timeout!'));
+        '[' + Gnubby.hexCid(self.cid) + '] timeout!'));
 
     if (self.dev) {
       self.dev.destroy();  // Stop pretending this thing works.
@@ -283,7 +296,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     if (rcmd == GnubbyDevice.CMD_ERROR && totalLen == 1) {
       // Error from device; forward.
       console.log(UTIL_fmt(
-          '[' + self.cid.toString(16) + '] error frame ' +
+          '[' + Gnubby.hexCid(self.cid) + '] error frame ' +
           UTIL_BytesToHex(f)));
       if (f[7] == GnubbyDevice.GONE) {
         self.closed = true;
@@ -295,7 +308,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     if ((rcmd & 0x80)) {
       // Not an CONT frame, ignore.
       console.log(UTIL_fmt(
-          '[' + self.cid.toString(16) + '] ignoring non-cont frame ' +
+          '[' + Gnubby.hexCid(self.cid) + '] ignoring non-cont frame ' +
           UTIL_BytesToHex(f)));
       self.notifyFrame_(cont_frame);
       return;
@@ -304,7 +317,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     var seq = (rcmd & 0x7f);
     if (seq != seqno++) {
       console.log(UTIL_fmt(
-          '[' + self.cid.toString(16) + '] bad cont frame ' +
+          '[' + Gnubby.hexCid(self.cid) + '] bad cont frame ' +
           UTIL_BytesToHex(f)));
       schedule_cb(-GnubbyDevice.INVALID_SEQ);
       return;
@@ -337,7 +350,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
       // Don't log busy frames, they're "normal".
       if (f[7] != GnubbyDevice.BUSY) {
         console.log(UTIL_fmt(
-            '[' + self.cid.toString(16) + '] error frame ' +
+            '[' + Gnubby.hexCid(self.cid) + '] error frame ' +
             UTIL_BytesToHex(f)));
       }
       if (f[7] == GnubbyDevice.GONE) {
@@ -350,7 +363,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     if (!(rcmd & 0x80)) {
       // Not an init frame, ignore.
       console.log(UTIL_fmt(
-          '[' + self.cid.toString(16) + '] ignoring non-init frame ' +
+          '[' + Gnubby.hexCid(self.cid) + '] ignoring non-init frame ' +
           UTIL_BytesToHex(f)));
       self.notifyFrame_(init_frame);
       return;
@@ -359,7 +372,7 @@ Gnubby.prototype.read_ = function(cmd, timeout, cb) {
     if (rcmd != cmd) {
       // Not expected ack, read more.
       console.log(UTIL_fmt(
-          '[' + self.cid.toString(16) + '] ignoring non-ack frame ' +
+          '[' + Gnubby.hexCid(self.cid) + '] ignoring non-ack frame ' +
           UTIL_BytesToHex(f)));
       self.notifyFrame_(init_frame);
       return;
@@ -409,8 +422,7 @@ Gnubby.prototype.checkCID_ = function(frame) {
           (f[2] << 8) |
           (f[3]);
   return c === this.cid ||
-         c === Gnubby.NOTIFICATION_CID ||
-         c === Gnubby.BROADCAST_CID;
+         c === Gnubby.NOTIFICATION_CID;
 };
 
 /**
@@ -491,9 +503,7 @@ Gnubby.prototype.sync = function(cb) {
 
   function returnValue(rc) {
     done = true;
-    // Wait a bit to cater to devices being slow coming out of suspend.
-    // TODO: remove when usb fw gets fixed.
-    window.setTimeout(cb.bind(null, rc), 200);
+    window.setTimeout(cb.bind(null, rc), 0);
     if (self.closingWhenIdle) self.idleClose_();
   }
 
@@ -526,8 +536,10 @@ Gnubby.prototype.sync = function(cb) {
 
   function sendInitSentinel() {
     var cid = self.cid;
-    if (cid == Gnubby.defaultChannelId_(self.gnubbyInstance, self.which)) {
-      cid = Gnubby.BROADCAST_CID;
+    // If we do not have a specific CID yet, reset to BROADCAST for init.
+    if (self.cid == Gnubby.defaultChannelId_(self.gnubbyInstance, self.which)) {
+      self.cid = Gnubby.BROADCAST_CID;
+      cid = self.cid;
     }
     var cmd = GnubbyDevice.CMD_INIT;
     self.dev.queueCommand(cid, cmd, nonce);
@@ -560,6 +572,7 @@ Gnubby.prototype.sync = function(cb) {
       // INIT command not supported or is missing the returned channel id:
       // Pick a random cid to try to prevent collisions on the USB bus.
       var rnd = UTIL_getRandom(2);
+      self.cid = Gnubby.defaultChannelId_(self.gnubbyInstance, self.which);
       self.cid ^= (rnd[0] << 16) | (rnd[1] << 8);
       // Now sync with that cid, to make sure we've got it.
       setSync();
@@ -581,6 +594,12 @@ Gnubby.prototype.sync = function(cb) {
     // Stop on errors and return them.
     if (f[4] == GnubbyDevice.CMD_ERROR &&
         f[5] == 0 && f[6] == 1) {
+      if (f[7] == GnubbyDevice.BUSY) {
+        // Not spec but some devices do this; retry.
+        sendSentinel();
+        self.notifyFrame_(checkSentinel);
+        return;
+      }
       if (f[7] == GnubbyDevice.GONE) {
         // Device disappeared on us.
         self.closed = true;

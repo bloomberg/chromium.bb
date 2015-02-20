@@ -29,5 +29,4 @@ var GnubbyCodeTypes = {
 
   /** Bad request. */
   'BAD_REQUEST': 12
-
 };

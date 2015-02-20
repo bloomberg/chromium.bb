@@ -114,7 +114,7 @@ UsbGnubbyDevice.prototype.publishFrame_ = function(f) {
     } else {
       changes = true;
       console.log(UTIL_fmt(
-          '[' + client.cid.toString(16) + '] left?'));
+          '[' + Gnubby.hexCid(client.cid) + '] left?'));
     }
   }
   if (changes) this.clients = remaining;
@@ -346,7 +346,7 @@ UsbGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
       this.lockTID = window.setTimeout(
           function() {
             console.warn(UTIL_fmt(
-                'lock for CID ' + cid.toString(16) + ' expired!'));
+                'lock for CID ' + Gnubby.hexCid(cid) + ' expired!'));
             self.lockTID = null;
             self.lockCID = 0;
           },
