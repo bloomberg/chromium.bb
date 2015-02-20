@@ -276,7 +276,7 @@ bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionCont
     if (m_askedToTerminate || !m_workerThread)
         return false;
 
-    m_workerThread->postTask(task);
+    m_workerThread->postTask(FROM_HERE, task);
     return !m_workerThread->terminated();
 }
 

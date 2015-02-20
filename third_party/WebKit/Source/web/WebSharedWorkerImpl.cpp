@@ -351,14 +351,14 @@ void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task
 
 bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_workerThread->postTask(task);
+    m_workerThread->postTask(FROM_HERE, task);
     return true;
 }
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 {
     workerThread()->postTask(
-        createCrossThreadTask(&connectTask, adoptPtr(webChannel)));
+        FROM_HERE, createCrossThreadTask(&connectTask, adoptPtr(webChannel)));
 }
 
 void WebSharedWorkerImpl::connectTask(ExecutionContext* context, PassOwnPtr<WebMessagePortChannel> channel)

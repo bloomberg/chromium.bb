@@ -197,7 +197,7 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
 
 void WorkerGlobalScope::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    thread()->postTask(task);
+    thread()->postTask(location, task);
 }
 
 // FIXME: Called twice, from WorkerThreadShutdownFinishTask and WorkerGlobalScope::dispose.

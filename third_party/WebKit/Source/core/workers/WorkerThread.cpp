@@ -170,7 +170,7 @@ public:
         // Now queue the task as a cancellable one.
         OwnPtr<WorkerThreadCancelableTask> task = WorkerThreadCancelableTask::create(bind(&WorkerSharedTimer::OnTimeout, this));
         m_lastQueuedTask = task->createWeakPtr();
-        m_workerThread->postDelayedTask(task.release(), delay);
+        m_workerThread->postDelayedTask(FROM_HERE, task.release(), delay);
     }
 
     virtual void stop()
@@ -352,7 +352,7 @@ void WorkerThread::initialize()
 
     postInitialize();
 
-    postDelayedTask(createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
+    postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
 }
 
 void WorkerThread::cleanup()
@@ -423,7 +423,7 @@ public:
 
         // Stick a shutdown command at the end of the queue, so that we deal
         // with all the cleanup tasks the databases post first.
-        workerGlobalScope->postTask(WorkerThreadShutdownFinishTask::create());
+        workerGlobalScope->postTask(FROM_HERE, WorkerThreadShutdownFinishTask::create());
     }
 
     virtual bool isCleanupTask() const { return true; }
@@ -474,7 +474,7 @@ void WorkerThread::stopInternal()
     m_workerGlobalScope->script()->scheduleExecutionTermination();
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
-    postTask(WorkerThreadShutdownStartTask::create());
+    postTask(FROM_HERE, WorkerThreadShutdownStartTask::create());
 }
 
 void WorkerThread::didStartRunLoop()
@@ -519,23 +519,23 @@ void WorkerThread::idleHandler()
             delay = kShortIdleHandlerDelayMs;
     }
 
-    postDelayedTask(createSameThreadTask(&WorkerThread::idleHandler, this), delay);
+    postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), delay);
 }
 
-void WorkerThread::postTask(PassOwnPtr<ExecutionContextTask> task)
+void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    m_thread->postTask(FROM_HERE, WorkerThreadTask::create(*this, task, true).leakPtr());
+    m_thread->postTask(location, WorkerThreadTask::create(*this, task, true).leakPtr());
 }
 
-void WorkerThread::postDelayedTask(PassOwnPtr<ExecutionContextTask> task, long long delayMs)
+void WorkerThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, long long delayMs)
 {
-    m_thread->postDelayedTask(FROM_HERE, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
+    m_thread->postDelayedTask(location, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
 }
 
-void WorkerThread::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
+void WorkerThread::postDebuggerTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
     m_debuggerMessageQueue.append(WorkerThreadTask::create(*this, task, false));
-    postTask(RunDebuggerQueueTask::create(this));
+    postTask(location, RunDebuggerQueueTask::create(this));
 }
 
 MessageQueueWaitResult WorkerThread::runDebuggerTask(WaitMode waitMode)
