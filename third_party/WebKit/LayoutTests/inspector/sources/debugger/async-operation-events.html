@@ -20,9 +20,25 @@ function callback1()
 function callback2()
 {
     setTimeout(callback3, 0);
+    // Pressing RESUME here, thus the following async promise events should not be reported to the front-end.
+    Promise.resolve(43)
+        .then(function() {})
+        .then(function() {});
 }
 
 function callback3()
+{
+    Promise.resolve(44)
+        .then(function() {})
+        .then(
+            function()
+            {
+                setTimeout(callback4, 0);
+            }
+        );
+}
+
+function callback4()
 {
     debugger;
 }
@@ -41,7 +57,6 @@ function test()
     {
         InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationStarted, onAsyncOperationStarted);
         InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, onAsyncOperationCompleted);
-        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationsCleared, onAsyncOperationsCleared);
         InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
     }
 
@@ -76,11 +91,6 @@ function test()
         var operationId = event.data.operationId;
         InspectorTest.addResult("==> AsyncOperationCompleted: " + asyncOperations[operationId]);
         delete asyncOperations[operationId];
-    }
-
-    function onAsyncOperationsCleared()
-    {
-        InspectorTest.addResult("==> AsyncOperationsCleared");
     }
 
     function asyncOperationDescription(operation)

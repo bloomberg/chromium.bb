@@ -42,6 +42,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -213,8 +214,6 @@ private:
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
 
-    bool isStepping() const;
-
     void schedulePauseOnNextStatementIfSteppingInto();
     void cancelPauseOnNextStatement();
     void addMessageToConsole(MessageSource, MessageType);
@@ -222,6 +221,7 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
+    void flushPendingAsyncOperationNotifications();
     void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();
 
@@ -239,7 +239,6 @@ private:
     void removeBreakpoint(const String& breakpointId);
     void clear();
     void clearStepIntoAsync();
-    void clearAsyncOperationNotifications();
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
 
@@ -296,12 +295,12 @@ private:
     AsyncOperationIdToAsyncCallChain m_asyncOperations;
     int m_lastAsyncOperationId;
     HashSet<int> m_asyncOperationsForStepInto;
-    HashSet<int> m_asyncOperationNotifications;
+    ListHashSet<int> m_asyncOperationNotifications;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;
-    bool m_notifyCurrentAsyncOperationCompleted;
+    bool m_pendingTraceAsyncOperationCompleted;
     bool m_performingAsyncStepIn;
     WillBeHeapVector<RawPtrWillBeMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
 };
