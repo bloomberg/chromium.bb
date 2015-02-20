@@ -390,45 +390,13 @@ void WebsiteSettingsPopupView::ButtonPressed(views::Button* button,
 
 void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
                                            int event_flags) {
-  if (source == cookie_dialog_link_) {
-    // Count how often the Collected Cookies dialog is opened.
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
-
-    new CollectedCookiesViews(web_contents_);
-  } else if (source == certificate_dialog_link_) {
-    gfx::NativeWindow parent = GetAnchorView() ?
-        GetAnchorView()->GetWidget()->GetNativeWindow() : nullptr;
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
-    ShowCertificateViewerByID(web_contents_, parent, cert_id_);
-  } else if (source == signed_certificate_timestamps_link_) {
-    chrome::ShowSignedCertificateTimestampsViewer(
-        web_contents_, signed_certificate_timestamp_ids_);
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_TRANSPARENCY_VIEWER_OPENED);
-  } else if (source == help_center_link_) {
-    browser_->OpenURL(
-        content::OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
-                               content::Referrer(),
-                               NEW_FOREGROUND_TAB,
-                               ui::PAGE_TRANSITION_LINK,
-                               false));
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_HELP_OPENED);
-  } else if (source == site_settings_link_) {
-    // TODO(palmer): This opens the general Content Settings pane, which is OK
-    // for now. But on Android, it opens a page specific to a given origin that
-    // shows all of the settings for that origin. If/when that's available on
-    // desktop we should link to that here, too.
-    browser_->OpenURL(content::OpenURLParams(
-        GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
-        NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
-  } else {
-    NOTREACHED();
-  }
+  // The popup closes automatically when the collected cookies dialog or the
+  // certificate viewer opens. So delay handling of the link clicked to avoid
+  // a crash in the base class which needs to complete the mouse event handling.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebsiteSettingsPopupView::HandleLinkClickedAsync,
+                 weak_factory_.GetWeakPtr(), source));
 }
 
 void WebsiteSettingsPopupView::TabSelectedAt(int index) {
@@ -868,4 +836,46 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
   layout->AddView(content_pane, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
   layout->AddPaddingRow(0, kConnectionSectionPaddingBottom);
+}
+
+void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
+  if (source == cookie_dialog_link_) {
+    // Count how often the Collected Cookies dialog is opened.
+    presenter_->RecordWebsiteSettingsAction(
+        WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
+
+    new CollectedCookiesViews(web_contents_);
+  } else if (source == certificate_dialog_link_) {
+    gfx::NativeWindow parent = GetAnchorView() ?
+        GetAnchorView()->GetWidget()->GetNativeWindow() : nullptr;
+    presenter_->RecordWebsiteSettingsAction(
+        WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
+    ShowCertificateViewerByID(web_contents_, parent, cert_id_);
+  } else if (source == signed_certificate_timestamps_link_) {
+    chrome::ShowSignedCertificateTimestampsViewer(
+        web_contents_, signed_certificate_timestamp_ids_);
+    presenter_->RecordWebsiteSettingsAction(
+        WebsiteSettings::WEBSITE_SETTINGS_TRANSPARENCY_VIEWER_OPENED);
+  } else if (source == help_center_link_) {
+    browser_->OpenURL(
+        content::OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
+                               content::Referrer(),
+                               NEW_FOREGROUND_TAB,
+                               ui::PAGE_TRANSITION_LINK,
+                               false));
+    presenter_->RecordWebsiteSettingsAction(
+        WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_HELP_OPENED);
+  } else if (source == site_settings_link_) {
+    // TODO(palmer): This opens the general Content Settings pane, which is OK
+    // for now. But on Android, it opens a page specific to a given origin that
+    // shows all of the settings for that origin. If/when that's available on
+    // desktop we should link to that here, too.
+    browser_->OpenURL(content::OpenURLParams(
+        GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
+        NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
+    presenter_->RecordWebsiteSettingsAction(
+        WebsiteSettings::WEBSITE_SETTINGS_SITE_SETTINGS_OPENED);
+  } else {
+    NOTREACHED();
+  }
 }

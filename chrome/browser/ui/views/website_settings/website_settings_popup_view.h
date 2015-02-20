@@ -122,6 +122,11 @@ class WebsiteSettingsPopupView
                               views::Link* secondary_link,
                               views::LabelButton* reset_decisions_button);
 
+  // Used to asynchronously handle clicks since these calls may cause the
+  // destruction of the settings view and the base class window still needs to
+  // be alive to finish handling the mouse or keyboard click.
+  void HandleLinkClickedAsync(views::Link* source);
+
   // The web contents of the current tab. The popup can't live longer than a
   // tab.
   content::WebContents* web_contents_;
