@@ -552,9 +552,6 @@ JstProcessor.prototype.jstProcessInner_ = function(context, template) {
  * @param {Element} template The currently processed node of the template.
  *
  * @param {Function} select The javascript expression to evaluate.
- *
- * @notypecheck FIXME(hmitchell): See OCL6434950. instance and value need
- * type checks.
  */
 JstProcessor.prototype.jstSelect_ = function(context, template, select) {
   var me = this;
@@ -586,6 +583,7 @@ JstProcessor.prototype.jstSelect_ = function(context, template, select) {
   var multipleEmpty = (multiple && count == 0);
 
   if (multiple) {
+    value = /** @type Array */(value);
     if (multipleEmpty) {
       // For an empty array, keep the first template instance and mark
       // it last. Remove all other template instances.
@@ -938,7 +936,7 @@ function jstLoadTemplate_(doc, html, targetId) {
  * @param {Array} values The current input context, the array of
  * values of which the template node will render one instance.
  *
- * @param {number} index The index of this template node in values.
+ * @param {number|string} index The index of this template node in values.
  */
 function jstSetInstance(template, values, index) {
   if (index == jsLength(values) - 1) {

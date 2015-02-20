@@ -1,6 +1,8 @@
 Name: google-jstemplate
 URL: http://code.google.com/p/google-jstemplate/
 License: Apache 2.0
+Security Critical: yes
+Version: unknown
 
 "Template processing that is more suitable for the specific development-time
 and runtime requirements of AJAX based web applications.
@@ -16,3 +18,7 @@ jsfile.
 
 jstemplate_compiled.js is the output after passing the code through
 compile.sh.
+
+Local modifications:
+Changed JSDoc annotations and subtle code changes to make it compile with modern
+versions of Closure Compiler. TODO(dbeam): upstream to google code project.

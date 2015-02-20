@@ -243,7 +243,7 @@ JsEvalContext.prototype.jsexec = function(exprFunction, template) {
  *
  * @param {Object} data The new context object.
  *
- * @param {number} index Position of the new context when multiply
+ * @param {number|string} index Position of the new context when multiply
  * instantiated. (See implementation of jstSelect().)
  * 
  * @param {number} count The total number of contexts that were multiply
