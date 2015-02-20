@@ -2034,13 +2034,14 @@ def FormatDetailedTraceback(exc_info=None):
           '    Call: %s%s\n' % (fname, inspect.formatargvalues(*args)),
           '    Locals:\n',
       ]
-      keys = sorted(frame.f_locals.keys(), key=str.lower)
-      keylen = max(len(x) for x in keys)
-      typelen = max(len(str(type(x))) for x in frame.f_locals.values())
-      for key in keys:
-        val = frame.f_locals[key]
-        ret += ['      %-*s: %-*s %s\n' %
-                (keylen, key, typelen, type(val), pprint.saferepr(val))]
+      if frame.f_locals:
+        keys = sorted(frame.f_locals.keys(), key=str.lower)
+        keylen = max(len(x) for x in keys)
+        typelen = max(len(str(type(x))) for x in frame.f_locals.values())
+        for key in keys:
+          val = frame.f_locals[key]
+          ret += ['      %-*s: %-*s %s\n' %
+                  (keylen, key, typelen, type(val), pprint.saferepr(val))]
       exc_tb = exc_tb.tb_next
 
     if exc_type:
