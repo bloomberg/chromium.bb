@@ -123,14 +123,15 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
   core_tab_helper->set_new_tab_start_time(base::TimeTicks());
 }
 
-// Returns true if the user is signed in and full history sync is enabled,
-// and false otherwise.
+// Returns true if the user wants to sync history. This function returning true
+// is not a guarantee that history is being synced, but it can be used to
+// disable a feature that should not be shown to users who prefer not to sync
+// their history.
 bool IsHistorySyncEnabled(Profile* profile) {
   ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   return sync &&
-      sync->SyncActive() &&
-      sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+      sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
 bool OmniboxHasFocus(OmniboxView* omnibox) {

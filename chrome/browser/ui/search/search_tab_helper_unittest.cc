@@ -106,12 +106,11 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
 
-    EXPECT_CALL(*sync_service, SyncActive()).WillRepeatedly(Return(true));
     syncer::ModelTypeSet result;
     if (sync_history) {
       result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
     }
-    EXPECT_CALL(*sync_service, GetActiveDataTypes())
+    EXPECT_CALL(*sync_service, GetPreferredDataTypes())
         .WillRepeatedly(Return(result));
   }
 
@@ -278,26 +277,6 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
   EXPECT_EQ(test_identity, get<0>(params));
   ASSERT_FALSE(get<1>(params));
-}
-
-TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncInactive) {
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
-  EXPECT_CALL(*sync_service, SyncActive()).WillRepeatedly(Return(false));
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-
-  search_tab_helper->OnHistorySyncCheck();
-
-  const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
-      ChromeViewMsg_HistorySyncCheckResult::ID);
-  ASSERT_TRUE(message != NULL);
-
-  ChromeViewMsg_HistorySyncCheckResult::Param params;
-  ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_FALSE(get<0>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
