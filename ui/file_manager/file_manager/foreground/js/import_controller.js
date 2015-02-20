@@ -492,6 +492,28 @@ importer.RuntimeCommandWidget = function() {
   this.clickListener_;
 };
 
+/**
+ * Ensures that a transitionend event gets sent out after a transition.  Similar
+ * to ensureTransitionEndEvent (see ui/webui/resources/js/util.js) but sends a
+ * standard-compliant rather than a webkit event.
+ *
+ * @param {!HTMLElement} element
+ * @param {number} timeout In milliseconds.
+ */
+importer.RuntimeCommandWidget.ensureTransitionEndEvent =
+    function(element, timeout) {
+    var fired = false;
+  element.addEventListener('transitionend', function f(e) {
+    element.removeEventListener('transitionend', f);
+    fired = true;
+  });
+  // Use a timeout of 400 ms.
+  window.setTimeout(function() {
+    if (!fired)
+      cr.dispatchSimpleEvent(element, 'transitionend', true);
+  }, timeout);
+};
+
 /** @override */
 importer.RuntimeCommandWidget.prototype.addClickListener =
     function(listener) {
@@ -558,7 +580,7 @@ importer.RuntimeCommandWidget.prototype.setDetailsVisible_ = function(visible) {
   } else {
     this.detailsPanel_.className = 'hidden';
     // transition duration is 200ms. Let's wait for 400ms.
-    ensureTransitionEndEvent(
+    importer.RuntimeCommandWidget.ensureTransitionEndEvent(
         /** @type {!HTMLElement} */ (this.detailsPanel_),
         400);
   }
