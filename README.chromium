@@ -146,9 +146,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
      windowsZones.txt
      zoneinfo64.txt
 
-   As of January 2015, the latest version is 2014j and the above files
+   As of January 2015, the latest version is 2015a and the above files
    are available at
-   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2014j/44/
+   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2015a/44/
 
 7. Transliterator customization
 
