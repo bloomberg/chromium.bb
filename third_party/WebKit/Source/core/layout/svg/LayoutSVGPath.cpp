@@ -49,6 +49,7 @@ LayoutSVGPath::~LayoutSVGPath()
 void LayoutSVGPath::updateShapeFromElement()
 {
     LayoutSVGShape::updateShapeFromElement();
+    processMarkerPositions();
     updateZeroLengthSubpaths();
 
     m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();

@@ -50,7 +50,7 @@ private:
 
     FloatRect markerRect(float strokeWidth) const;
     bool shouldGenerateMarkerPositions() const;
-    virtual void processMarkerPositions() override;
+    void processMarkerPositions();
 
     bool shouldStrokeZeroLengthSubpath() const;
     void updateZeroLengthSubpaths();

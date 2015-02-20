@@ -61,7 +61,6 @@ void LayoutSVGShape::createPath()
     ASSERT(LayoutSVGShape::isShapeEmpty());
 
     updatePathFromGraphicsElement(toSVGGraphicsElement(element()), path());
-    processMarkerPositions();
 }
 
 void LayoutSVGShape::updateShapeFromElement()

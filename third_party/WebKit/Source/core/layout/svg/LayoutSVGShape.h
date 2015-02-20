@@ -87,9 +87,6 @@ protected:
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
 
-    // Give LayoutSVGPath a hook for updating markers in updateShapeFromElement.
-    virtual void processMarkerPositions() { };
-
     FloatRect m_fillBoundingBox;
     FloatRect m_strokeBoundingBox;
 
