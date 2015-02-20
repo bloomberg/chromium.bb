@@ -95,6 +95,10 @@ bool ZoomController::SetZoomLevelByClient(
 
   // Do not actually rescale the page in manual mode.
   if (zoom_mode_ == ZOOM_MODE_MANUAL) {
+    // If the zoom level hasn't changed, early out to avoid sending an event.
+    if (zoom_level_ == zoom_level)
+      return true;
+
     double old_zoom_level = zoom_level_;
     zoom_level_ = zoom_level;
 
