@@ -1010,6 +1010,7 @@ body[type='full-page'] .detail-name .detail-icon {
   margin-top: 8px;
   overflow: hidden;
   position: relative;
+  transition: box-shadow 220ms ease;
   width: 180px;
 }
 
