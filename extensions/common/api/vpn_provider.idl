@@ -15,16 +15,17 @@ namespace vpnProvider {
     DOMString? broadcastAddress;
     // MTU setting for the VPN interface. (default: 1500 bytes)
     DOMString? mtu;
-    // Exclude network traffic to the below IP blocks in CIDR notation from the
-    // tunnel. This can be used to bypass traffic to and from the VPN server.
-    // When many rules match a destination, routing decision is made based on
-    // longest matching prefix.
+    // Exclude network traffic to the list of IP blocks in CIDR notation from
+    // the tunnel. This can be used to bypass traffic to and from the VPN
+    // server.
+    // When many rules match a destination, the rule with the longest matching
+    // prefix wins.
     DOMString[] exclusionList;
-    // Include network traffic to the below IP blocks in CIDR notation to the
+    // Include network traffic to the list of IP blocks in CIDR notation to the
     // tunnel. By default all user traffic is routed to the tunnel. This
     // parameter can be used to setup split tunnel.
-    // When many rules match a destination, routing decision is made based on
-    // longest matching prefix.
+    // When many rules match a destination, the rule with the longest matching
+    // prefix wins.
     DOMString[] inclusionList;
     // A list of search domains. (default: no search domain)
     DOMString[]? domainSearch;
