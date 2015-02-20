@@ -182,8 +182,14 @@ bool FindAddress(const base::string16::const_iterator& begin,
           size_t zip_word = state_last_word + 1;
           if (zip_word == words.size()) {
             do {
-              if (!tokenizer.GetNext())
-                return false;
+              if (!tokenizer.GetNext()) {
+                // The address ends with a state name without a zip code. This
+                // is legal according to WebView#findAddress public
+                // documentation.
+                *start_pos = words[0].begin - begin;
+                *end_pos = words[state_last_word].end - begin;
+                return true;
+              }
             } while (tokenizer.token_is_delim());
             words.push_back(Word(tokenizer.token_begin(),
                             tokenizer.token_end()));

@@ -592,3 +592,8 @@ TEST_F(AddressParserTest, FullAddress) {
       "1 Supercalifragilisticexpialidocious is too long, CA 90000"));
   EXPECT_FALSE(ContainsAddress(""));
 }
+
+TEST_F(AddressParserTest, FullAddressWithoutZipCode) {
+  EXPECT_TRUE(IsAddress("1600 Amphitheatre Parkway Mountain View, CA"));
+  EXPECT_TRUE(IsAddress("201 S. Division St. Suite 500 Ann Arbor, MI"));
+}
