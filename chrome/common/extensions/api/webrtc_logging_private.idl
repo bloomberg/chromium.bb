@@ -67,6 +67,23 @@ namespace webrtcLoggingPrivate {
                      DOMString securityOrigin,
                      GenericDoneCallback callback);
 
+    // Stores the current log without uploading. The log may stay around for
+    // as much as 5 days. The application has the option of supplying an id
+    // for uniquely identifying the log for later upload via a call to
+    // uploadStored().
+    static void store(RequestInfo request,
+                      DOMString securityOrigin,
+                      DOMString logId,
+                      GenericDoneCallback callback);
+
+    // Uploads a previously kept log that was stored via a call to store().
+    // The caller needs to know the logId as was originally provided in the
+    // call to store().
+    static void uploadStored(RequestInfo request,
+                             DOMString securityOrigin,
+                             DOMString logId,
+                             UploadDoneCallback callback);
+
     // Uploads the log and the RTP dumps, if they exist. Logging and RTP dumping
     // must be stopped before this function is called.
     static void upload(RequestInfo request,

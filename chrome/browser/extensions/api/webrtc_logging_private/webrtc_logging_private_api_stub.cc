@@ -14,24 +14,11 @@ const char kErrorNotSupported[] = "Not supported";
 
 }  // namespace
 
-WebrtcLoggingPrivateSetMetaDataFunction::
-WebrtcLoggingPrivateSetMetaDataFunction() {}
-
-WebrtcLoggingPrivateSetMetaDataFunction::
-~WebrtcLoggingPrivateSetMetaDataFunction() {}
-
 bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
 }
-
-void WebrtcLoggingPrivateSetMetaDataFunction::SetMetaDataCallback(
-    bool success, const std::string& error_message) {}
-
-WebrtcLoggingPrivateStartFunction::WebrtcLoggingPrivateStartFunction() {}
-
-WebrtcLoggingPrivateStartFunction::~WebrtcLoggingPrivateStartFunction() {}
 
 bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   SetError(kErrorNotSupported);
@@ -39,24 +26,11 @@ bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   return false;
 }
 
-void WebrtcLoggingPrivateStartFunction::StartCallback(
-    bool success, const std::string& error_message) {}
-
-WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::
-WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
-
-WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::
-~WebrtcLoggingPrivateSetUploadOnRenderCloseFunction() {}
-
 bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
 }
-
-WebrtcLoggingPrivateStopFunction::WebrtcLoggingPrivateStopFunction() {}
-
-WebrtcLoggingPrivateStopFunction::~WebrtcLoggingPrivateStopFunction() {}
 
 bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   SetError(kErrorNotSupported);
@@ -64,12 +38,17 @@ bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   return false;
 }
 
-void WebrtcLoggingPrivateStopFunction::StopCallback(
-    bool success, const std::string& error_message) {}
+bool WebrtcLoggingPrivateStoreFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
 
-WebrtcLoggingPrivateUploadFunction::WebrtcLoggingPrivateUploadFunction() {}
-
-WebrtcLoggingPrivateUploadFunction::~WebrtcLoggingPrivateUploadFunction() {}
+bool WebrtcLoggingPrivateUploadStoredFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
 
 bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   SetError(kErrorNotSupported);
@@ -77,30 +56,10 @@ bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   return false;
 }
 
-void WebrtcLoggingPrivateUploadFunction::UploadCallback(
-    bool success, const std::string& report_id,
-    const std::string& error_message) {
-}
-
-WebrtcLoggingPrivateDiscardFunction::WebrtcLoggingPrivateDiscardFunction() {}
-
-WebrtcLoggingPrivateDiscardFunction::~WebrtcLoggingPrivateDiscardFunction() {}
-
 bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
-}
-
-void WebrtcLoggingPrivateDiscardFunction::DiscardCallback(
-    bool success, const std::string& error_message) {}
-
-WebrtcLoggingPrivateStartRtpDumpFunction::
-    WebrtcLoggingPrivateStartRtpDumpFunction() {
-}
-
-WebrtcLoggingPrivateStartRtpDumpFunction::
-    ~WebrtcLoggingPrivateStartRtpDumpFunction() {
 }
 
 bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
@@ -109,28 +68,10 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
   return false;
 }
 
-void WebrtcLoggingPrivateStartRtpDumpFunction::StartRtpDumpCallback(
-    bool success,
-    const std::string& error_message) {
-}
-
-WebrtcLoggingPrivateStopRtpDumpFunction::
-    WebrtcLoggingPrivateStopRtpDumpFunction() {
-}
-
-WebrtcLoggingPrivateStopRtpDumpFunction::
-    ~WebrtcLoggingPrivateStopRtpDumpFunction() {
-}
-
 bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
   SetError(kErrorNotSupported);
   SendResponse(false);
   return false;
-}
-
-void WebrtcLoggingPrivateStopRtpDumpFunction::StopRtpDumpCallback(
-    bool success,
-    const std::string& error_message) {
 }
 
 }  // namespace extensions

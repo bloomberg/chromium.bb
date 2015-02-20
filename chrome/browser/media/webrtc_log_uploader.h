@@ -29,13 +29,10 @@ typedef struct z_stream_s z_stream;
 
 // Used when uploading is done to perform post-upload actions. |log_path| is
 // also used pre-upload.
-struct WebRtcLogUploadDoneData {
+struct WebRtcLogUploadDoneData : public WebRtcLogPaths {
   WebRtcLogUploadDoneData();
   ~WebRtcLogUploadDoneData();
 
-  base::FilePath log_path;
-  base::FilePath incoming_rtp_dump;
-  base::FilePath outgoing_rtp_dump;
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
   scoped_refptr<WebRtcLoggingHandlerHost> host;
   std::string local_log_id;
@@ -75,10 +72,22 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // |upload_done_data.local_log_id| is set and used internally and should be
   // left empty.
   void LoggingStoppedDoUpload(
-      scoped_ptr<unsigned char[]> log_buffer,
-      uint32 length,
-      const std::map<std::string, std::string>& meta_data,
+      scoped_ptr<WebRtcLogBuffer> log_buffer,
+      scoped_ptr<MetaDataMap> meta_data,
       const WebRtcLogUploadDoneData& upload_done_data);
+
+  // Uploads a previously stored log (see LoggingStoppedDoStore()).
+  void UploadStoredLog(const WebRtcLogUploadDoneData& upload_data);
+
+  // Similarly to LoggingStoppedDoUpload(), we store the log in compressed
+  // format on disk but add the option to specify a unique |log_id| for later
+  // identification and potential upload.
+  void LoggingStoppedDoStore(
+      const WebRtcLogPaths& log_paths,
+      const std::string& log_id,
+      scoped_ptr<WebRtcLogBuffer> log_buffer,
+      scoped_ptr<MetaDataMap> meta_data,
+      const WebRtcLoggingHandlerHost::GenericDoneCallback& done_callback);
 
   // Cancels URL fetcher operation by deleting all URL fetchers. This cancels
   // any pending uploads and releases SystemURLRequestContextGetter references.
@@ -101,16 +110,15 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
   void SetupMultipart(std::string* post_data,
-                      const std::vector<uint8>& compressed_log,
+                      const std::string& compressed_log,
                       const base::FilePath& incoming_rtp_dump,
                       const base::FilePath& outgoing_rtp_dump,
                       const std::map<std::string, std::string>& meta_data);
 
-  void CompressLog(std::vector<uint8>* compressed_log,
-                   uint8* input,
-                   uint32 input_size);
+  void CompressLog(std::string* compressed_log,
+                   WebRtcLogBuffer* buffer);
 
-  void ResizeForNextOutput(std::vector<uint8>* compressed_log,
+  void ResizeForNextOutput(std::string* compressed_log,
                            z_stream* stream);
 
   void CreateAndStartURLFetcher(
@@ -120,8 +128,13 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void DecreaseLogCount();
 
   // Must be called on the FILE thread.
-  void WriteCompressedLogToFile(const std::vector<uint8>& compressed_log,
+  void WriteCompressedLogToFile(const std::string& compressed_log,
                                 const base::FilePath& log_file_path);
+
+  void UploadCompressedLog(
+      const std::string& compressed_log,
+      scoped_ptr<MetaDataMap> meta_data,
+      const WebRtcLogUploadDoneData& upload_done_data);
 
   // Append information (upload time, report ID and local ID) about a log to a
   // log list file, limited to |kLogListLimitLines| entries. This list is used

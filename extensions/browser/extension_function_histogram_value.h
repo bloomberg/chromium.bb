@@ -1026,6 +1026,8 @@ enum HistogramValue {
   AUDIOMODEM_STOPTRANSMIT,
   AUDIOMODEM_RECEIVE,
   AUDIOMODEM_STOPRECEIVE,
+  WEBRTCLOGGINGPRIVATE_STORE,
+  WEBRTCLOGGINGPRIVATE_UPLOADSTORED,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

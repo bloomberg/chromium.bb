@@ -10,6 +10,7 @@
 #include "chrome/browser/media/rtp_dump_type.h"
 #include "chrome/browser/media/webrtc_rtp_dump_handler.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
+#include "chrome/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/net_util.h"
@@ -18,10 +19,48 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-class PartialCircularBuffer;
 class Profile;
 
+#if defined(OS_ANDROID)
+const size_t kWebRtcLogSize = 1 * 1024 * 1024;  // 1 MB
+#else
+const size_t kWebRtcLogSize = 6 * 1024 * 1024;  // 6 MB
+#endif
+
 typedef std::map<std::string, std::string> MetaDataMap;
+
+struct WebRtcLogPaths {
+  base::FilePath log_path;  // todo: rename to directory.
+  base::FilePath incoming_rtp_dump;
+  base::FilePath outgoing_rtp_dump;
+};
+
+class WebRtcLogBuffer {
+ public:
+  WebRtcLogBuffer();
+  ~WebRtcLogBuffer();
+
+  void Log(const std::string& message);
+
+  // Returns a circular buffer instance for reading the internal log buffer.
+  // Must only be called after the log has been marked as complete
+  // (see SetComplete) and the caller must ensure that the WebRtcLogBuffer
+  // instance remains in scope for the lifetime of the returned circular buffer.
+  PartialCircularBuffer Read();
+
+  // Switches the buffer to read-only mode, where access to the internal
+  // buffer is allowed from different threads than were used to contribute
+  // to the log.  Calls to Log() won't be allowed after calling
+  // SetComplete() and the call to SetComplete() must be done on the same
+  // thread as constructed the buffer and calls Log().
+  void SetComplete();
+
+ private:
+  base::ThreadChecker thread_checker_;
+  uint8 buffer_[kWebRtcLogSize];
+  PartialCircularBuffer circular_;
+  bool read_only_;
+};
 
 // WebRtcLoggingHandlerHost handles operations regarding the WebRTC logging:
 // - Opens a shared memory buffer that the handler in the render process
@@ -43,7 +82,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
   // StartLogging.
-  void SetMetaData(const MetaDataMap& meta_data,
+  void SetMetaData(scoped_ptr<MetaDataMap> meta_data,
                    const GenericDoneCallback& callback);
 
   // Opens a log and starts logging. Must be called on the IO thread.
@@ -57,6 +96,11 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // called after logging has stopped. Must be called on the IO thread.
   void UploadLog(const UploadDoneCallback& callback);
 
+  // Uploads a log that was previously saved via a call to StoreLog().
+  // Otherwise operates in the same way as UploadLog.
+  void UploadStoredLog(const std::string& log_id,
+                       const UploadDoneCallback& callback);
+
   // Called by WebRtcLogUploader when uploading has finished. Must be called on
   // the IO thread.
   void UploadLogDone();
@@ -64,6 +108,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Discards the log and the RTP dumps. May only be called after logging has
   // stopped. Must be called on the IO thread.
   void DiscardLog(const GenericDoneCallback& callback);
+
+  // Stores the log locally using a hash of log_id + security origin.
+  void StoreLog(const std::string& log_id, const GenericDoneCallback& callback);
 
   // Adds a message to the log.
   void LogMessage(const std::string& message);
@@ -114,7 +161,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
     STARTED,   // Logging started.
     STOPPING,  // Stop logging is in progress.
     STOPPED,   // Logging has been stopped, log still open in memory.
-    UPLOADING  // Uploading log is in progress.
   };
 
   friend class content::BrowserThread;
@@ -134,11 +180,17 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Handles log message requests from browser process.
   void AddLogMessageFromBrowser(const WebRtcLoggingMessageData& message);
 
-  void StartLoggingIfAllowed();
-  void DoStartLogging();
-  void LogInitialInfoOnFileThread();
-  void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list);
-  void NotifyLoggingStarted();
+  void StartLoggingIfAllowed(const GenericDoneCallback& callback);
+  void DoStartLogging(bool permissions_granted,
+                      const GenericDoneCallback& callback);
+  void LogInitialInfoOnFileThread(const GenericDoneCallback& callback);
+  void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list,
+                                const GenericDoneCallback& callback);
+  void NotifyLoggingStarted(const GenericDoneCallback& callback);
+
+  // Called after stopping RTP dumps.
+  void StoreLogContinue(const std::string& log_id,
+      const GenericDoneCallback& callback);
 
   // Writes a formatted log |message| to the |circular_buffer_|.
   void LogToCircularBuffer(const std::string& message);
@@ -147,24 +199,30 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // called on the FILE thread.
   base::FilePath GetLogDirectoryAndEnsureExists();
 
-  void TriggerUpload(const base::FilePath& log_directory);
+  void TriggerUpload(const UploadDoneCallback& callback,
+                     const base::FilePath& log_directory);
+
+  void StoreLogInDirectory(const std::string& log_id,
+                           scoped_ptr<WebRtcLogPaths> log_paths,
+                           const GenericDoneCallback& done_callback,
+                           const base::FilePath& directory);
+
+  void UploadStoredLogOnFileThread(const std::string& log_id,
+                                   const UploadDoneCallback& callback);
 
   // A helper for TriggerUpload to do the real work.
-  void DoUploadLogAndRtpDumps(const base::FilePath& log_directory);
-
-  void FireGenericDoneCallback(GenericDoneCallback* callback,
-                               bool success,
-                               const std::string& error_message);
+  void DoUploadLogAndRtpDumps(const base::FilePath& log_directory,
+                              const UploadDoneCallback& callback);
 
   // Create the RTP dump handler and start dumping. Must be called after making
   // sure the log directory exists.
   void CreateRtpDumpHandlerAndStart(RtpDumpType type,
-                                    GenericDoneCallback callback,
+                                    const GenericDoneCallback& callback,
                                     const base::FilePath& dump_dir);
 
   // A helper for starting RTP dump assuming the RTP dump handler has been
   // created.
-  void DoStartRtpDump(RtpDumpType type, GenericDoneCallback* callback);
+  void DoStartRtpDump(RtpDumpType type, const GenericDoneCallback& callback);
 
   // Adds the packet to the dump on IO thread.
   void DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
@@ -172,21 +230,20 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                                size_t packet_length,
                                bool incoming);
 
-  scoped_ptr<unsigned char[]> log_buffer_;
-  scoped_ptr<PartialCircularBuffer> circular_buffer_;
+  bool ReleaseRtpDumps(WebRtcLogPaths* log_paths);
+
+  scoped_ptr<WebRtcLogBuffer> log_buffer_;
 
   // The profile associated with our renderer process.
-  Profile* profile_;
+  Profile* const profile_;
 
   // These are only accessed on the IO thread, except when in STARTING state. In
   // this state we are protected since entering any function that alters the
   // state is not allowed.
-  MetaDataMap meta_data_;
+  scoped_ptr<MetaDataMap> meta_data_;
 
   // These are only accessed on the IO thread.
-  GenericDoneCallback start_callback_;
   GenericDoneCallback stop_callback_;
-  UploadDoneCallback upload_callback_;
 
   // Only accessed on the IO thread, except when in STARTING, STOPPING or
   // UPLOADING state if the action fails and the state must be reset. In these

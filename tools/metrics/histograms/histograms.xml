@@ -48281,6 +48281,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="965" label="AUDIOMODEM_STOPTRANSMIT"/>
   <int value="966" label="AUDIOMODEM_RECEIVE"/>
   <int value="967" label="AUDIOMODEM_STOPRECEIVE"/>
+  <int value="968" label="WEBRTCLOGGINGPRIVATE_STORE"/>
+  <int value="969" label="WEBRTCLOGGINGPRIVATE_UPLOADSTORED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

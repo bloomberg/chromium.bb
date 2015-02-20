@@ -250,15 +250,10 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   upload_done_data.incoming_rtp_dump = incoming_dump;
   upload_done_data.outgoing_rtp_dump = outgoing_dump;
 
-  const size_t log_length = 100;
-  scoped_ptr<unsigned char[]> log(new unsigned char[log_length]);
-  memset(log.get(), 0, log_length);
-
+  scoped_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
+  log->SetComplete();
   webrtc_log_uploader->LoggingStoppedDoUpload(
-      log.Pass(),
-      log_length,
-      std::map<std::string, std::string>(),
-      upload_done_data);
+      log.Pass(), make_scoped_ptr(new MetaDataMap()), upload_done_data);
 
   VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);

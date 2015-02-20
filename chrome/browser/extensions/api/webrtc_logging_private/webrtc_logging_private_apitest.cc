@@ -16,6 +16,15 @@
 #include "extensions/common/test_util.h"
 
 using extensions::Extension;
+using extensions::WebrtcLoggingPrivateDiscardFunction;
+using extensions::WebrtcLoggingPrivateSetMetaDataFunction;
+using extensions::WebrtcLoggingPrivateStartFunction;
+using extensions::WebrtcLoggingPrivateStartRtpDumpFunction;
+using extensions::WebrtcLoggingPrivateStopFunction;
+using extensions::WebrtcLoggingPrivateStopRtpDumpFunction;
+using extensions::WebrtcLoggingPrivateStoreFunction;
+using extensions::WebrtcLoggingPrivateUploadFunction;
+using extensions::WebrtcLoggingPrivateUploadStoredFunction;
 
 namespace utils = extension_function_test_utils;
 
@@ -24,70 +33,165 @@ namespace {
 static const char kTestLoggingSessionId[] = "0123456789abcdef";
 static const char kTestLoggingUrl[] = "dummy url string";
 
+std::string ParamsToString(const base::ListValue& parameters) {
+  std::string parameter_string;
+  EXPECT_TRUE(base::JSONWriter::Write(&parameters, &parameter_string));
+  return parameter_string;
+}
+
+void InitializeTestMetaData(base::ListValue* parameters) {
+  base::DictionaryValue* meta_data_entry = new base::DictionaryValue();
+  meta_data_entry->SetString("key", "app_session_id");
+  meta_data_entry->SetString("value", kTestLoggingSessionId);
+  base::ListValue* meta_data = new base::ListValue();
+  meta_data->Append(meta_data_entry);
+  meta_data_entry = new base::DictionaryValue();
+  meta_data_entry->SetString("key", "url");
+  meta_data_entry->SetString("value", kTestLoggingUrl);
+  meta_data->Append(meta_data_entry);
+  parameters->Append(meta_data);
+}
+
 class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
+ protected:
+
+  void SetUp() override {
+    ExtensionApiTest::SetUp();
+    extension_ = extensions::test_util::CreateEmptyExtension();
+  }
+
+  template<typename T>
+  scoped_refptr<T> CreateFunction() {
+    scoped_refptr<T> function(new T());
+    function->set_extension(extension_.get());
+    function->set_has_callback(true);
+    return function;
+  }
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  void AppendTabIdAndUrl(base::ListValue* parameters) {
+    base::DictionaryValue* request_info = new base::DictionaryValue();
+    request_info->SetInteger(
+        "tabId", extensions::ExtensionTabUtil::GetTabId(web_contents()));
+    parameters->Append(request_info);
+    parameters->AppendString(web_contents()->GetURL().GetOrigin().spec());
+  }
+
+  bool RunFunction(UIThreadExtensionFunction* function,
+                   const base::ListValue& parameters,
+                   bool expect_results) {
+    scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        function, ParamsToString(parameters), browser()));
+    if (expect_results) {
+      EXPECT_TRUE(result.get());
+      return result.get() != nullptr;
+    }
+
+    EXPECT_FALSE(result.get());
+    return result.get() == nullptr;
+  }
+
+  template<typename Function>
+  bool RunFunction(const base::ListValue& parameters, bool expect_results) {
+    scoped_refptr<Function> function(CreateFunction<Function>());
+    return RunFunction(function.get(), parameters, expect_results);
+  }
+
+  template<typename Function>
+  bool RunNoArgsFunction(bool expect_results) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    scoped_refptr<Function> function(CreateFunction<Function>());
+    return RunFunction(function.get(), params, expect_results);
+  }
+
+  bool StartLogging() {
+    return RunNoArgsFunction<WebrtcLoggingPrivateStartFunction>(false);
+  }
+
+  bool StopLogging() {
+    return RunNoArgsFunction<WebrtcLoggingPrivateStopFunction>(false);
+  }
+
+  bool DiscardLog() {
+    return RunNoArgsFunction<WebrtcLoggingPrivateDiscardFunction>(false);
+  }
+
+  bool UploadLog() {
+    return RunNoArgsFunction<WebrtcLoggingPrivateUploadFunction>(true);
+  }
+
+  bool SetMetaData(const base::ListValue& data) {
+    return RunFunction<WebrtcLoggingPrivateSetMetaDataFunction>(data, false);
+  }
+
+  bool StartRtpDump(bool incoming, bool outgoing) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    params.AppendBoolean(incoming);
+    params.AppendBoolean(outgoing);
+    return RunFunction<WebrtcLoggingPrivateStartRtpDumpFunction>(params, false);
+  }
+
+  bool StopRtpDump(bool incoming, bool outgoing) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    params.AppendBoolean(incoming);
+    params.AppendBoolean(outgoing);
+    return RunFunction<WebrtcLoggingPrivateStopRtpDumpFunction>(params, false);
+  }
+
+  bool StoreLog(const std::string& log_id) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    params.AppendString(log_id);
+    return RunFunction<WebrtcLoggingPrivateStoreFunction>(params, false);
+  }
+
+  bool UploadStoredLog(const std::string& log_id) {
+    base::ListValue params;
+    AppendTabIdAndUrl(&params);
+    params.AppendString(log_id);
+    return RunFunction<WebrtcLoggingPrivateUploadStoredFunction>(params, true);
+  }
+
+ private:
+  scoped_refptr<Extension> extension_;
+};
+
+// Helper class to temporarily tell the uploader to save the multipart buffer to
+// a test string instead of uploading.
+class ScopedOverrideUploadBuffer {
+ public:
+  ScopedOverrideUploadBuffer() {
+    g_browser_process->webrtc_log_uploader()->
+        OverrideUploadWithBufferForTesting(&multipart_);
+  }
+
+  ~ScopedOverrideUploadBuffer() {
+    g_browser_process->webrtc_log_uploader()->
+        OverrideUploadWithBufferForTesting(nullptr);
+  }
+
+  const std::string& multipart() const { return multipart_; }
+
+ private:
+  std::string multipart_;
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
-  scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
+  ScopedOverrideUploadBuffer buffer_override;
 
-  // Tell the uploader to save the multipart to a buffer instead of uploading.
-  std::string multipart;
-  g_browser_process->webrtc_log_uploader()->
-      OverrideUploadWithBufferForTesting(&multipart);
+  EXPECT_TRUE(StartLogging());
+  EXPECT_TRUE(StopLogging());
+  EXPECT_TRUE(DiscardLog());
 
-  // Start
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateStartFunction>
-      start_function(new extensions::WebrtcLoggingPrivateStartFunction());
-  start_function->set_extension(empty_extension.get());
-  start_function->set_has_callback(true);
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  base::ListValue parameters;
-  base::DictionaryValue* request_info = new base::DictionaryValue();
-  request_info->SetInteger("tabId",
-                           extensions::ExtensionTabUtil::GetTabId(contents));
-  parameters.Append(request_info);
-  parameters.AppendString(contents->GetURL().GetOrigin().spec());
-  std::string parameter_string;
-  base::JSONWriter::Write(&parameters, &parameter_string);
-
-  // TODO(grunell): MaybeRunFunction is suitable for those calls not returning
-  // anything.
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      start_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
-
-  // Stop
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateStopFunction>
-      stop_function(new extensions::WebrtcLoggingPrivateStopFunction());
-  stop_function->set_extension(empty_extension.get());
-  stop_function->set_has_callback(true);
-
-  result.reset(utils::RunFunctionAndReturnSingleResult(
-      stop_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
-
-  // Discard
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateDiscardFunction>
-      discard_function(new extensions::WebrtcLoggingPrivateDiscardFunction());
-  discard_function->set_extension(empty_extension.get());
-  discard_function->set_has_callback(true);
-
-  result.reset(utils::RunFunctionAndReturnSingleResult(
-      discard_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
-
-  ASSERT_TRUE(multipart.empty());
-
-  g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
-      NULL);
+  EXPECT_TRUE(buffer_override.multipart().empty());
 }
 
 // Tests WebRTC diagnostic logging. Sets up the browser to save the multipart
@@ -125,91 +229,19 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
 // ------**--yradnuoBgoLtrapitluMklaTelgooG--**------
 //
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
-  scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
+  ScopedOverrideUploadBuffer buffer_override;
 
-  // Tell the uploader to save the multipart to a buffer instead of uploading.
-  std::string multipart;
-  g_browser_process->webrtc_log_uploader()->
-      OverrideUploadWithBufferForTesting(&multipart);
-
-  // SetMetaData.
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateSetMetaDataFunction>
-      set_meta_data_function(
-          new extensions::WebrtcLoggingPrivateSetMetaDataFunction());
-  set_meta_data_function->set_extension(empty_extension.get());
-  set_meta_data_function->set_has_callback(true);
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   base::ListValue parameters;
-  base::DictionaryValue* request_info = new base::DictionaryValue();
-  request_info->SetInteger("tabId",
-                           extensions::ExtensionTabUtil::GetTabId(contents));
-  parameters.Append(request_info);
-  parameters.AppendString(contents->GetURL().GetOrigin().spec());
-  base::DictionaryValue* meta_data_entry = new base::DictionaryValue();
-  meta_data_entry->SetString("key", "app_session_id");
-  meta_data_entry->SetString("value", kTestLoggingSessionId);
-  base::ListValue* meta_data = new base::ListValue();
-  meta_data->Append(meta_data_entry);
-  meta_data_entry = new base::DictionaryValue();
-  meta_data_entry->SetString("key", "url");
-  meta_data_entry->SetString("value", kTestLoggingUrl);
-  meta_data->Append(meta_data_entry);
-  parameters.Append(meta_data);
+  AppendTabIdAndUrl(&parameters);
+  InitializeTestMetaData(&parameters);
 
-  std::string parameter_string;
-  base::JSONWriter::Write(&parameters, &parameter_string);
+  SetMetaData(parameters);
 
-  // TODO(grunell): MaybeRunFunction is suitable for those calls not returning
-  // anything.
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      set_meta_data_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
+  StartLogging();
+  StopLogging();
+  UploadLog();
 
-  // Start.
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateStartFunction>
-      start_function(new extensions::WebrtcLoggingPrivateStartFunction());
-  start_function->set_extension(empty_extension.get());
-  start_function->set_has_callback(true);
-
-  parameters.Clear();
-  request_info = new base::DictionaryValue();
-  request_info->SetInteger("tabId",
-                           extensions::ExtensionTabUtil::GetTabId(contents));
-  parameters.Append(request_info);
-  parameters.AppendString(contents->GetURL().GetOrigin().spec());
-  base::JSONWriter::Write(&parameters, &parameter_string);
-
-  result.reset(utils::RunFunctionAndReturnSingleResult(
-      start_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
-
-  // Stop.
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateStopFunction>
-      stop_function(new extensions::WebrtcLoggingPrivateStopFunction());
-  stop_function->set_extension(empty_extension.get());
-  stop_function->set_has_callback(true);
-
-  result.reset(utils::RunFunctionAndReturnSingleResult(
-      stop_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
-
-  // Upload.
-
-  scoped_refptr<extensions::WebrtcLoggingPrivateUploadFunction>
-      upload_function(new extensions::WebrtcLoggingPrivateUploadFunction());
-  upload_function->set_extension(empty_extension.get());
-  upload_function->set_has_callback(true);
-
-  result.reset(utils::RunFunctionAndReturnSingleResult(
-      upload_function.get(), parameter_string, browser()));
-  ASSERT_TRUE(result.get());
-
+  std::string multipart = buffer_override.multipart();
   ASSERT_FALSE(multipart.empty());
 
   // Check multipart data.
@@ -284,46 +316,80 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   final_delimiter += "--";
   EXPECT_STREQ(final_delimiter.c_str(), multipart_lines[29].c_str());
   EXPECT_TRUE(multipart_lines[30].empty());
-
-  g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
-      NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopRtpDump) {
-  scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
-
-  // Start RTP dump.
-  scoped_refptr<extensions::WebrtcLoggingPrivateStartRtpDumpFunction>
-      start_function(
-          new extensions::WebrtcLoggingPrivateStartRtpDumpFunction());
-  start_function->set_extension(empty_extension.get());
-  start_function->set_has_callback(true);
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  base::ListValue parameters;
-  base::DictionaryValue* request_info = new base::DictionaryValue();
-  request_info->SetInteger("tabId",
-                           extensions::ExtensionTabUtil::GetTabId(contents));
-  parameters.Append(request_info);
-  parameters.AppendString(contents->GetURL().GetOrigin().spec());
-  parameters.AppendBoolean(true);
-  parameters.AppendBoolean(true);
-  std::string parameter_string;
-  base::JSONWriter::Write(&parameters, &parameter_string);
-
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      start_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
-
-  // Stop RTP dump.
-  scoped_refptr<extensions::WebrtcLoggingPrivateStopRtpDumpFunction>
-      stop_function(new extensions::WebrtcLoggingPrivateStopRtpDumpFunction());
-  stop_function->set_extension(empty_extension.get());
-  stop_function->set_has_callback(true);
-
-  result.reset(utils::RunFunctionAndReturnSingleResult(
-      stop_function.get(), parameter_string, browser()));
-  ASSERT_FALSE(result.get());
+  // TODO(tommi): As is, these tests are missing verification of the actual
+  // RTP dump data.  We should fix that, e.g. use SetDumpWriterForTesting.
+  StartRtpDump(true, true);
+  StopRtpDump(true, true);
 }
+
+// Tests trying to store a log when a log is not being captured.
+// We should get a failure callback in this case.
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStoreWithoutLog) {
+  base::ListValue parameters;
+  AppendTabIdAndUrl(&parameters);
+  parameters.AppendString("MyLogId");
+  scoped_refptr<WebrtcLoggingPrivateStoreFunction> store(
+      CreateFunction<WebrtcLoggingPrivateStoreFunction>());
+  const std::string error = utils::RunFunctionAndReturnError(
+      store.get(), ParamsToString(parameters), browser());
+  ASSERT_FALSE(error.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopStore) {
+  ASSERT_TRUE(StartLogging());
+  ASSERT_TRUE(StopLogging());
+  EXPECT_TRUE(StoreLog("MyLogID"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       TestStartStopStoreAndUpload) {
+  static const char kLogId[] = "TestStartStopStoreAndUpload";
+  ASSERT_TRUE(StartLogging());
+  ASSERT_TRUE(StopLogging());
+  ASSERT_TRUE(StoreLog(kLogId));
+
+  ScopedOverrideUploadBuffer buffer_override;
+  EXPECT_TRUE(UploadStoredLog(kLogId));
+  EXPECT_NE(std::string::npos,
+            buffer_override.multipart().find("filename=\"webrtc_log.gz\""));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       TestStartStopStoreAndUploadWithRtp) {
+  static const char kLogId[] = "TestStartStopStoreAndUploadWithRtp";
+  ASSERT_TRUE(StartLogging());
+  ASSERT_TRUE(StartRtpDump(true, true));
+  ASSERT_TRUE(StopLogging());
+  ASSERT_TRUE(StopRtpDump(true, true));
+  ASSERT_TRUE(StoreLog(kLogId));
+
+  ScopedOverrideUploadBuffer buffer_override;
+  EXPECT_TRUE(UploadStoredLog(kLogId));
+  EXPECT_NE(std::string::npos,
+            buffer_override.multipart().find("filename=\"webrtc_log.gz\""));
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       TestStartStopStoreAndUploadWithMetaData) {
+  static const char kLogId[] = "TestStartStopStoreAndUploadWithRtp";
+  ASSERT_TRUE(StartLogging());
+
+  base::ListValue parameters;
+  AppendTabIdAndUrl(&parameters);
+  InitializeTestMetaData(&parameters);
+  SetMetaData(parameters);
+
+  ASSERT_TRUE(StopLogging());
+  ASSERT_TRUE(StoreLog(kLogId));
+
+  ScopedOverrideUploadBuffer buffer_override;
+  EXPECT_TRUE(UploadStoredLog(kLogId));
+  EXPECT_NE(std::string::npos,
+            buffer_override.multipart().find("filename=\"webrtc_log.gz\""));
+  EXPECT_NE(std::string::npos,
+            buffer_override.multipart().find(kTestLoggingUrl));
+}
+
