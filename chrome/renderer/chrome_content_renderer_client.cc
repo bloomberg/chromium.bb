@@ -269,6 +269,45 @@ void IsGuestViewApiAvailableToScriptContext(
 #endif
 
 #if defined(ENABLE_PLUGINS)
+// Presence of the poster param within plugin object tags.
+// These numeric values are used in UMA logs; do not change them.
+enum PosterParamPresence {
+  POSTER_PRESENCE_NO_PARAM_PPS_DISABLED = 0,
+  POSTER_PRESENCE_NO_PARAM_PPS_ENABLED = 1,
+  POSTER_PRESENCE_PARAM_EXISTS_PPS_DISABLED = 2,
+  POSTER_PRESENCE_PARAM_EXISTS_PPS_ENABLED = 3,
+  POSTER_PRESENCE_NUM_ITEMS
+};
+
+const char kPluginPowerSaverPosterParamPresenceHistogram[] =
+    "Plugin.PowerSaver.PosterParamPresence";
+
+void RecordPosterParamPresence(PosterParamPresence presence) {
+  UMA_HISTOGRAM_ENUMERATION(kPluginPowerSaverPosterParamPresenceHistogram,
+                            presence, POSTER_PRESENCE_NUM_ITEMS);
+}
+
+void TrackPosterParamPresence(const blink::WebPluginParams& params,
+                              bool power_saver_enabled) {
+  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
+
+  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
+    if (params.attributeNames[i].utf8() == "poster") {
+      if (power_saver_enabled)
+        RecordPosterParamPresence(POSTER_PRESENCE_PARAM_EXISTS_PPS_ENABLED);
+      else
+        RecordPosterParamPresence(POSTER_PRESENCE_PARAM_EXISTS_PPS_DISABLED);
+
+      return;
+    }
+  }
+
+  if (power_saver_enabled)
+    RecordPosterParamPresence(POSTER_PRESENCE_NO_PARAM_PPS_ENABLED);
+  else
+    RecordPosterParamPresence(POSTER_PRESENCE_NO_PARAM_PPS_DISABLED);
+}
+
 GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
                                   const GURL& page_base_url) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
@@ -806,6 +845,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
         bool blocked_for_background_tab =
             render_frame->IsHidden() && power_saver_enabled;
+
+        if (info.name == ASCIIToUTF16(content::kFlashPluginName))
+          TrackPosterParamPresence(params, power_saver_enabled);
 
         GURL poster_url;
         if (power_saver_enabled) {

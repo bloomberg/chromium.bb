@@ -26867,6 +26867,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Plugin.PowerSaver.PosterParamPresence"
+    enum="PluginPowerSaverPosterParamPresence">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Record how many plugin object tags use poster param. This is recorded once
+    per plugin instance, and is currently restricted to Flash plugin instances.
+  </summary>
+</histogram>
+
 <histogram name="Plugin.PowerSaver.Unthrottle"
     enum="PluginPowerSaverUnthrottleMethod">
   <owner>tommycli@chromium.org</owner>
@@ -55452,6 +55461,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Essential Cross-Origin Big"/>
   <int value="3" label="Essential Cross-Origin Whitelisted"/>
   <int value="4" label="Essential Cross-Origin Tiny"/>
+</enum>
+
+<enum name="PluginPowerSaverPosterParamPresence" type="int">
+  <int value="0" label="No poster param. Plugin power saver disabled."/>
+  <int value="1" label="No poster param. Plugin power saver enabled."/>
+  <int value="2" label="Poster param exists. Plugin power saver disabled."/>
+  <int value="3" label="Poster param exists. Plugin power saver enabled."/>
 </enum>
 
 <enum name="PluginPowerSaverUnthrottleMethod" type="int">
