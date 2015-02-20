@@ -1391,6 +1391,7 @@
         }],
         ['OS=="mac"', {
           'sources': [
+            'midi/midi_manager_mac_unittest.cc',
             'video/capture/mac/video_capture_device_factory_mac_unittest.mm',
           ]
         }],

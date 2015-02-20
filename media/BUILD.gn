@@ -662,8 +662,10 @@ test("media_unittests") {
   }
 
   if (is_mac) {
-    sources +=
-        [ "video/capture/mac/video_capture_device_factory_mac_unittest.mm" ]
+    sources += [
+      "midi/midi_manager_mac_unittest.cc",
+      "video/capture/mac/video_capture_device_factory_mac_unittest.mm",
+    ]
   }
 
   #      include_dirs += [
