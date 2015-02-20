@@ -317,11 +317,11 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
     sidebarPane.expand();
-    sidebarPane.treeOutline.expand();
+    sidebarPane._treeOutline.expand();
 
     function listenersArrived()
     {
-        var listenerTypes = sidebarPane.treeOutline.children;
+        var listenerTypes = sidebarPane._treeOutline.children;
         for (var i = 0; i < listenerTypes.length; ++i) {
             listenerTypes[i].expand();
             var listenerItems = listenerTypes[i].children;
@@ -333,7 +333,7 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     function objectsExpanded()
     {
-        var listenerTypes = sidebarPane.treeOutline.children;
+        var listenerTypes = sidebarPane._treeOutline.children;
         for (var i = 0; i < listenerTypes.length; ++i) {
             var eventType = listenerTypes[i]._title;
             InspectorTest.addResult("");
