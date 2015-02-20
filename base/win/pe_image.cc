@@ -20,6 +20,9 @@ struct EnumAllImportsStorage {
 
 namespace {
 
+  // PdbInfo Signature
+  const DWORD kPdbInfoSignature = 'SDSR';
+
   // Compare two strings byte by byte on an unsigned basis.
   //   if s1 == s2, return 0
   //   if s1 < s2, return negative
@@ -35,6 +38,12 @@ namespace {
             *reinterpret_cast<const unsigned char*>(s2));
   }
 
+  struct PdbInfo {
+    DWORD Signature;
+    GUID Guid;
+    DWORD Age;
+    char PdbFileName[1];
+  };
 }  // namespace
 
 // Callback used to enumerate imports. See EnumImportChunksFunction.
@@ -140,6 +149,36 @@ PIMAGE_SECTION_HEADER PEImage::GetImageSectionHeaderByName(
   }
 
   return ret;
+}
+
+bool PEImage::GetDebugId(LPGUID guid, LPDWORD age) const {
+  if (NULL == guid || NULL == age) {
+    return false;
+  }
+
+  DWORD debug_directory_size =
+      GetImageDirectoryEntrySize(IMAGE_DIRECTORY_ENTRY_DEBUG);
+  PIMAGE_DEBUG_DIRECTORY debug_directory =
+      reinterpret_cast<PIMAGE_DEBUG_DIRECTORY>(
+      GetImageDirectoryEntryAddr(IMAGE_DIRECTORY_ENTRY_DEBUG));
+
+  size_t directory_count =
+      debug_directory_size / sizeof(IMAGE_DEBUG_DIRECTORY);
+
+  for (size_t index = 0; index < directory_count; ++index) {
+    if (debug_directory[index].Type == IMAGE_DEBUG_TYPE_CODEVIEW) {
+      PdbInfo* pdb_info = reinterpret_cast<PdbInfo*>(
+          RVAToAddr(debug_directory[index].AddressOfRawData));
+      if (pdb_info->Signature != kPdbInfoSignature) {
+        // Unsupported PdbInfo signature
+        return false;
+      }
+      *guid = pdb_info->Guid;
+      *age = pdb_info->Age;
+      return true;
+    }
+  }
+  return false;
 }
 
 PDWORD PEImage::GetExportEntry(LPCSTR name) const {

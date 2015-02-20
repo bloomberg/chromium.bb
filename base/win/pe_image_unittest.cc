@@ -267,5 +267,21 @@ TEST(PEImageTest, RetrievesExports) {
   FreeLibrary(module);
 }
 
+// Test that we can get debug id out of a module.
+TEST(PEImageTest, GetDebugId) {
+  HMODULE module = LoadLibrary(L"advapi32.dll");
+  ASSERT_TRUE(NULL != module);
+
+  PEImage pe(module);
+  GUID guid = {0};
+  DWORD age = 0;
+  EXPECT_TRUE(pe.GetDebugId(&guid, &age));
+
+  GUID empty_guid = {0};
+  EXPECT_TRUE(!IsEqualGUID(empty_guid, guid));
+  EXPECT_NE(0U, age);
+  FreeLibrary(module);
+}
+
 }  // namespace win
 }  // namespace base

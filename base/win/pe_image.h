@@ -132,6 +132,9 @@ class PEImage {
   // Returns the exports directory.
   PIMAGE_EXPORT_DIRECTORY GetExportDirectory() const;
 
+  // Returns the debug id (guid+age).
+  bool GetDebugId(LPGUID guid, LPDWORD age) const;
+
   // Returns a given export entry.
   // Use: e = image.GetExportEntry(f);
   // Pre: 'f' is either a zero terminated string or ordinal
