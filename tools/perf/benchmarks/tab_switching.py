@@ -46,7 +46,6 @@ class TabSwitchingTypical25(benchmark.Benchmark):
     return 'tab_switching.typical_25'
 
 
-@benchmark.Disabled('mac')  # http://crbug.com/455349
 @benchmark.Disabled('android')  # http://crbug.com/460084
 @benchmark.Enabled('has tabs')
 class TabSwitchingFiveBlankTabs(benchmark.Benchmark):
