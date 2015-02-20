@@ -38,6 +38,12 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
                  blink::WebContentDecryptionModuleResult result);
 
  private:
+  // Pick a supported configuration if possible, and complete the request. This
+  // method may asynchronously invoke itself after prompting for permissions.
+  void SelectSupportedConfiguration(blink::WebEncryptedMediaRequest request,
+                                    bool was_permission_requested,
+                                    bool is_permission_granted);
+
   // Report usage of key system to UMA. There are 2 different counts logged:
   // 1. The key system is requested.
   // 2. The requested key system and options are supported.
@@ -53,6 +59,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   Reporters reporters_;
 
   scoped_ptr<CdmFactory> cdm_factory_;
+  MediaPermission* media_permission_;
 
   base::WeakPtrFactory<WebEncryptedMediaClientImpl> weak_factory_;
 };

@@ -4,6 +4,7 @@
 
 #include "webencryptedmediaclient_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -24,10 +25,21 @@ namespace media {
 const char kKeySystemSupportUMAPrefix[] =
     "Media.EME.RequestMediaKeySystemAccess.";
 
-static bool IsSupportedContentType(
-    const std::string& key_system,
-    const std::string& mime_type,
-    const std::string& codecs) {
+// TODO(jrummell): Convert to an enum. http://crbug.com/418239
+const char kTemporarySessionType[] = "temporary";
+const char kPersistentLicenseSessionType[] = "persistent-license";
+const char kPersistentReleaseMessageSessionType[] =
+    "persistent-release-message";
+
+enum ConfigurationSupport {
+  CONFIGURATION_NOT_SUPPORTED,
+  CONFIGURATION_REQUIRES_PERMISSION,
+  CONFIGURATION_SUPPORTED,
+};
+
+static bool IsSupportedContentType(const std::string& key_system,
+                                   const std::string& mime_type,
+                                   const std::string& codecs) {
   // TODO(sandersd): Move contentType parsing from Blink to here so that invalid
   // parameters can be rejected. http://crbug.com/417561
   // TODO(sandersd): Pass in the media type (audio or video) and check that the
@@ -62,7 +74,8 @@ static bool GetSupportedCapabilities(
         capabilities,
     std::vector<blink::WebMediaKeySystemMediaCapability>*
         media_type_capabilities) {
-  // From https://w3c.github.io/encrypted-media/#get-supported-capabilities-for-media-type
+  // From
+  // https://w3c.github.io/encrypted-media/#get-supported-capabilities-for-media-type
   // 1. Let accumulated capabilities be partial configuration.
   //    (Skipped as there are no configuration-based codec restrictions.)
   // 2. Let media type capabilities be empty.
@@ -121,14 +134,16 @@ static EmeFeatureRequirement ConvertRequirement(
   return EME_FEATURE_NOT_ALLOWED;
 }
 
-static bool GetSupportedConfiguration(
+static ConfigurationSupport GetSupportedConfiguration(
     const std::string& key_system,
     const blink::WebMediaKeySystemConfiguration& candidate,
-    const blink::WebSecurityOrigin& security_origin,
-    blink::WebMediaKeySystemConfiguration* accumulated_configuration) {
-  // When determining support, assume that permission could be granted.
-  // TODO(sandersd): Set to false if the permission is rejected.
-  bool is_permission_possible = true;
+    blink::WebMediaKeySystemConfiguration* accumulated_configuration,
+    bool was_permission_requested,
+    bool is_permission_granted) {
+  // It is possible to obtain user permission unless permission was already
+  // requested and denied.
+  bool is_permission_possible =
+      !was_permission_requested || is_permission_granted;
 
   // From https://w3c.github.io/encrypted-media/#get-supported-configuration
   // 1. Let accumulated configuration be empty. (Done by caller.)
@@ -144,7 +159,7 @@ static bool GetSupportedConfiguration(
       const blink::WebString& init_data_type = candidate.initDataTypes[i];
       // 2.2.2. If initDataType is the empty string, return null.
       if (init_data_type.isEmpty())
-        return false;
+        return CONFIGURATION_NOT_SUPPORTED;
       // 2.2.3. If the implementation supports generating requests based on
       //        initDataType, add initDataType to supported types. String
       //        comparison is case-sensitive.
@@ -157,7 +172,7 @@ static bool GetSupportedConfiguration(
 
     // 2.3. If supported types is empty, return null.
     if (supported_types.empty())
-      return false;
+      return CONFIGURATION_NOT_SUPPORTED;
 
     // 2.4. Add supported types to accumulated configuration.
     accumulated_configuration->initDataTypes = supported_types;
@@ -176,7 +191,7 @@ static bool GetSupportedConfiguration(
       ConvertRequirement(candidate.distinctiveIdentifier);
   if (!IsDistinctiveIdentifierRequirementSupported(key_system, di_requirement,
                                                    is_permission_possible)) {
-    return false;
+    return CONFIGURATION_NOT_SUPPORTED;
   }
 
   // 4. Add the value of the candidate configuration's distinctiveIdentifier
@@ -195,7 +210,7 @@ static bool GetSupportedConfiguration(
       ConvertRequirement(candidate.persistentState);
   if (!IsPersistentStateRequirementSupported(key_system, ps_requirement,
                                              is_permission_possible)) {
-    return false;
+    return CONFIGURATION_NOT_SUPPORTED;
   }
 
   // 6. Add the value of the candidate configuration's persistentState
@@ -213,7 +228,7 @@ static bool GetSupportedConfiguration(
     std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities;
     if (!GetSupportedCapabilities(key_system, candidate.videoCapabilities,
                                   &video_capabilities)) {
-      return false;
+      return CONFIGURATION_NOT_SUPPORTED;
     }
 
     // 7.3. Add video capabilities to accumulated configuration.
@@ -231,7 +246,7 @@ static bool GetSupportedConfiguration(
     std::vector<blink::WebMediaKeySystemMediaCapability> audio_capabilities;
     if (!GetSupportedCapabilities(key_system, candidate.audioCapabilities,
                                   &audio_capabilities)) {
-      return false;
+      return CONFIGURATION_NOT_SUPPORTED;
     }
 
     // 8.3. Add audio capabilities to accumulated configuration.
@@ -250,9 +265,8 @@ static bool GetSupportedConfiguration(
   // TODO(sandersd): Implement robustness. http://crbug.com/442586
   if (accumulated_configuration->distinctiveIdentifier ==
       blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
-    if (IsDistinctiveIdentifierRequirementSupported(key_system,
-                                                    EME_FEATURE_NOT_ALLOWED,
-                                                    is_permission_possible)) {
+    if (IsDistinctiveIdentifierRequirementSupported(
+            key_system, EME_FEATURE_NOT_ALLOWED, is_permission_possible)) {
       accumulated_configuration->distinctiveIdentifier =
           blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed;
     } else {
@@ -271,9 +285,8 @@ static bool GetSupportedConfiguration(
   //         to "not-allowed".
   if (accumulated_configuration->persistentState ==
       blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
-    if (IsPersistentStateRequirementSupported(key_system,
-                                              EME_FEATURE_NOT_ALLOWED,
-                                              is_permission_possible)) {
+    if (IsPersistentStateRequirementSupported(
+            key_system, EME_FEATURE_NOT_ALLOWED, is_permission_possible)) {
       accumulated_configuration->persistentState =
           blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed;
     } else {
@@ -285,22 +298,41 @@ static bool GetSupportedConfiguration(
   // 11. If implementation in the configuration specified by the combination of
   //     the values in accumulated configuration is not supported or not allowed
   //     in the origin, return null.
-  // TODO(sandersd): Implement prompting. http://crbug.com/446263
-  // For now, assume that the permission was not granted.
   di_requirement =
       ConvertRequirement(accumulated_configuration->distinctiveIdentifier);
   if (!IsDistinctiveIdentifierRequirementSupported(key_system, di_requirement,
-                                                   false)) {
-    return false;
+                                                   is_permission_granted)) {
+    DCHECK(!was_permission_requested);  // Should have failed at step 3.
+    return CONFIGURATION_REQUIRES_PERMISSION;
   }
 
   ps_requirement =
       ConvertRequirement(accumulated_configuration->persistentState);
-  if (!IsPersistentStateRequirementSupported(key_system, ps_requirement, false))
-    return false;
+  if (!IsPersistentStateRequirementSupported(key_system, ps_requirement,
+                                             is_permission_granted)) {
+    DCHECK(!was_permission_requested);  // Should have failed at step 5.
+    return CONFIGURATION_REQUIRES_PERMISSION;
+  }
 
   // 12. Return accumulated configuration.
-  return true;
+  //     (As an extra step, we record the available session types so that
+  //     createSession() can be synchronous.)
+  std::vector<blink::WebString> session_types;
+  session_types.push_back(kTemporarySessionType);
+  if (accumulated_configuration->persistentState ==
+      blink::WebMediaKeySystemConfiguration::Requirement::Required) {
+    if (IsPersistentLicenseSessionSupported(key_system,
+                                            is_permission_granted)) {
+      session_types.push_back(kPersistentLicenseSessionType);
+    }
+    if (IsPersistentReleaseMessageSessionSupported(key_system,
+                                                   is_permission_granted)) {
+      session_types.push_back(kPersistentReleaseMessageSessionType);
+    }
+  }
+  accumulated_configuration->sessionTypes = session_types;
+
+  return CONFIGURATION_SUPPORTED;
 }
 
 // Report usage of key system to UMA. There are 2 different counts logged:
@@ -356,9 +388,8 @@ class WebEncryptedMediaClientImpl::Reporter {
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
     scoped_ptr<CdmFactory> cdm_factory,
     MediaPermission* media_permission)
-    : cdm_factory_(cdm_factory.Pass()), weak_factory_(this) {
-  // TODO(sandersd): Use |media_permission| to check for media permissions in
-  // this class.
+    : cdm_factory_(cdm_factory.Pass()), media_permission_(media_permission),
+      weak_factory_(this) {
   DCHECK(media_permission);
 }
 
@@ -367,7 +398,8 @@ WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() {
 
 void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     blink::WebEncryptedMediaRequest request) {
-  // TODO(jrummell): This should be asynchronous.
+  // TODO(jrummell): This should be asynchronous, ideally not on the main
+  // thread.
 
   // Continued from requestMediaKeySystemAccess(), step 7, from
   // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
@@ -380,18 +412,29 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     return;
   }
 
+  // Report this request to the UMA.
   std::string key_system = base::UTF16ToASCII(request.keySystem());
-
-  // Report this request to the appropriate Reporter.
-  Reporter* reporter = GetReporter(key_system);
-  reporter->ReportRequested();
+  GetReporter(key_system)->ReportRequested();
 
   if (!IsSupportedKeySystem(key_system)) {
     request.requestNotSupported("Unsupported keySystem");
     return;
   }
 
+  // 7.2-7.4. Implemented by SelectSupportedConfiguration().
+  SelectSupportedConfiguration(request, false, false);
+}
+
+void WebEncryptedMediaClientImpl::SelectSupportedConfiguration(
+    blink::WebEncryptedMediaRequest request,
+    bool was_permission_requested,
+    bool is_permission_granted) {
+  // Continued from requestMediaKeySystemAccess(), step 7.1, from
+  // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
+  //
   // 7.2. Let implementation be the implementation of keySystem.
+  std::string key_system = base::UTF16ToASCII(request.keySystem());
+
   // 7.3. For each value in supportedConfigurations:
   const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
       configurations = request.supportedConfigurations();
@@ -405,14 +448,30 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
     // 7.3.3. If supported configuration is not null, [initialize and return a
     //        new MediaKeySystemAccess object.]
     blink::WebMediaKeySystemConfiguration accumulated_configuration;
-    if (GetSupportedConfiguration(key_system, candidate_configuration,
-                                  request.securityOrigin(),
-                                  &accumulated_configuration)) {
-      reporter->ReportSupported();
-      request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-          request.keySystem(), accumulated_configuration,
-          request.securityOrigin(), weak_factory_.GetWeakPtr()));
-      return;
+    ConfigurationSupport supported = GetSupportedConfiguration(
+        key_system, candidate_configuration, &accumulated_configuration,
+        was_permission_requested, is_permission_granted);
+    switch (supported) {
+      case CONFIGURATION_NOT_SUPPORTED:
+        continue;
+      case CONFIGURATION_REQUIRES_PERMISSION:
+        DCHECK(!was_permission_requested);
+        media_permission_->RequestPermission(
+            MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
+            GURL(request.securityOrigin().toString()),
+            // Try again with |was_permission_requested| true and
+            // |is_permission_granted| the value of the permission.
+            base::Bind(
+                &WebEncryptedMediaClientImpl::SelectSupportedConfiguration,
+                weak_factory_.GetWeakPtr(), request, true));
+        return;
+      case CONFIGURATION_SUPPORTED:
+        // Report that this request succeeded to the UMA.
+        GetReporter(key_system)->ReportSupported();
+        request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
+            request.keySystem(), accumulated_configuration,
+            request.securityOrigin(), weak_factory_.GetWeakPtr()));
+        return;
     }
   }
 
