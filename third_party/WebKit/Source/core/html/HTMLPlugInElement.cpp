@@ -602,10 +602,10 @@ void HTMLPlugInElement::setPlaceholder(PassOwnPtrWillBeRawPtr<PluginPlaceholder>
 {
     bool needsLazyReattach = (!placeholder) != (!m_placeholder);
     if (placeholder) {
-        placeholder->loadIntoContainer(ensureUserAgentShadowRoot());
+        placeholder->loadIntoContainer(ensureClosedShadowRoot());
         m_placeholder = placeholder;
     } else {
-        ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
+        ShadowRoot& shadowRoot = ensureClosedShadowRoot();
         shadowRoot.removeChildren();
         shadowRoot.appendChild(HTMLContentElement::create(document()));
         m_placeholder.clear();
@@ -652,12 +652,12 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
     return !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
 }
 
-void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)
+void HTMLPlugInElement::didAddClosedShadowRoot(ShadowRoot&)
 {
-    userAgentShadowRoot()->appendChild(HTMLContentElement::create(document()));
+    closedShadowRoot()->appendChild(HTMLContentElement::create(document()));
 }
 
-void HTMLPlugInElement::willAddFirstAuthorShadowRoot()
+void HTMLPlugInElement::willAddFirstOpenShadowRoot()
 {
     lazyReattachIfAttached();
 }
@@ -669,7 +669,7 @@ bool HTMLPlugInElement::hasFallbackContent() const
 
 bool HTMLPlugInElement::useFallbackContent() const
 {
-    return hasAuthorShadowRoot();
+    return hasOpenShadowRoot();
 }
 
 void HTMLPlugInElement::lazyReattachIfNeeded()

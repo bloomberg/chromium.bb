@@ -44,13 +44,13 @@ using namespace HTMLNames;
 
 void BaseButtonInputType::createShadowSubtree()
 {
-    ASSERT(element().userAgentShadowRoot());
-    element().userAgentShadowRoot()->appendChild(Text::create(element().document(), element().valueWithDefault()));
+    ASSERT(element().closedShadowRoot());
+    element().closedShadowRoot()->appendChild(Text::create(element().document(), element().valueWithDefault()));
 }
 
 void BaseButtonInputType::valueAttributeChanged()
 {
-    toText(element().userAgentShadowRoot()->firstChild())->setData(element().valueWithDefault());
+    toText(element().closedShadowRoot()->firstChild())->setData(element().valueWithDefault());
 }
 
 bool BaseButtonInputType::shouldSaveAndRestoreFormControlState() const

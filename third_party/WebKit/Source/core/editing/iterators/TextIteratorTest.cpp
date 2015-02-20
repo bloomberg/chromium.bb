@@ -320,7 +320,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithOption)
     static const char* shadowContent = "<span>shadow</span>";
     static const char* expectedTextChunksRawString[] = {
         "Hello, ",
-        "shadow", // TextIterator emits "shadow" since TextIteratorEntersAuthorShadowRoots is specified.
+        "shadow", // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is specified.
         " iterator."
     };
     Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
@@ -328,7 +328,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithOption)
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
 
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption)
@@ -347,7 +347,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption)
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent2);
 
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
@@ -367,7 +367,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
 
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
@@ -388,7 +388,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
 
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
@@ -409,7 +409,7 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
     Position start(spanInShadow, Position::PositionIsBeforeChildren);
     Position end(outerDiv, Position::PositionIsAfterChildren);
 
-    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
@@ -429,7 +429,7 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
     Position start(outerDiv, Position::PositionIsBeforeChildren);
     Position end(spanInShadow, Position::PositionIsAfterChildren);
 
-    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FullyClipsContents)
@@ -482,7 +482,7 @@ TEST_F(TextIteratorTest, FullyClippedContentsDistributed)
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
 
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
@@ -506,7 +506,7 @@ TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
 
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersAuthorShadowRoots));
+    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)

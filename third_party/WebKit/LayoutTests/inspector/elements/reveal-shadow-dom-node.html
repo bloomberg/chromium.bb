@@ -23,7 +23,7 @@ function test()
     {
         if (!node.isInShadowTree())
             return "(not in shadow tree)";
-        return "(in " + (node.ancestorUserAgentShadowRoot() ? "user-agent" : "author") + " shadow DOM)";
+        return "(in " + (node.ancestorClosedShadowRoot() ? "user-agent" : "author") + " shadow DOM)";
     }
 
     InspectorTest.nodeWithId("nested-input", function(node) {

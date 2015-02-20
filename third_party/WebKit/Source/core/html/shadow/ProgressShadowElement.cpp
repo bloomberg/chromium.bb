@@ -70,7 +70,7 @@ LayoutObject* ProgressInnerElement::createRenderer(const LayoutStyle&)
 
 bool ProgressInnerElement::rendererIsNeeded(const LayoutStyle& style)
 {
-    if (progressElement()->hasAuthorShadowRoot())
+    if (progressElement()->hasOpenShadowRoot())
         return HTMLDivElement::rendererIsNeeded(style);
 
     LayoutObject* progressRenderer = progressElement()->renderer();

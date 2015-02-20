@@ -560,7 +560,7 @@ SVGElement* SVGElement::correspondingElement()
 SVGUseElement* SVGElement::correspondingUseElement() const
 {
     if (ShadowRoot* root = containingShadowRoot()) {
-        if (isSVGUseElement(root->host()) && (root->type() == ShadowRoot::UserAgentShadowRoot))
+        if (isSVGUseElement(root->host()) && (root->type() == ShadowRoot::ClosedShadowRoot))
             return toSVGUseElement(root->host());
     }
     return 0;

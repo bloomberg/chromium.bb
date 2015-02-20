@@ -14,45 +14,45 @@ function test()
             InspectorTest.expandElementsTree(next);
         },
 
-        function testAuthorShadowRoot(next)
+        function testOpenShadowRoot(next)
         {
-            InspectorTest.findNode(isAuthorShadowRoot, selectReloadAndDump.bind(null, next));
+            InspectorTest.findNode(isOpenShadowRoot, selectReloadAndDump.bind(null, next));
         },
 
-        function testUserAgentShadowRoot(next)
+        function testClosedShadowRoot(next)
         {
-            InspectorTest.findNode(isUserAgentShadowRoot, selectReloadAndDump.bind(null, next));
+            InspectorTest.findNode(isClosedShadowRoot, selectReloadAndDump.bind(null, next));
         },
 
-        function testAuthorShadowRootChild(next)
+        function testOpenShadowRootChild(next)
         {
-            InspectorTest.findNode(isAuthorShadowRootChild, selectReloadAndDump.bind(null, next));
+            InspectorTest.findNode(isOpenShadowRootChild, selectReloadAndDump.bind(null, next));
         },
 
-        function testUserAgentShadowRootChild(next)
+        function testClosedShadowRootChild(next)
         {
-            InspectorTest.findNode(isUserAgentShadowRootChild, selectReloadAndDump.bind(null, next));
+            InspectorTest.findNode(isClosedShadowRootChild, selectReloadAndDump.bind(null, next));
         }
     ]);
 
-    function isAuthorShadowRoot(node)
+    function isOpenShadowRoot(node)
     {
         return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
     }
 
-    function isUserAgentShadowRoot(node)
+    function isClosedShadowRoot(node)
     {
         return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent;
     }
 
-    function isAuthorShadowRootChild(node)
+    function isOpenShadowRootChild(node)
     {
-        return isAuthorShadowRoot(node.parentNode);
+        return isOpenShadowRoot(node.parentNode);
     }
 
-    function isUserAgentShadowRootChild(node)
+    function isClosedShadowRootChild(node)
     {
-        return isUserAgentShadowRoot(node.parentNode);
+        return isClosedShadowRoot(node.parentNode);
     }
 
     function selectReloadAndDump(next, node)

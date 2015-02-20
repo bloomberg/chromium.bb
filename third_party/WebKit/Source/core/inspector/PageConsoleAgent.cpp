@@ -155,7 +155,7 @@ void PageConsoleAgent::addInspectedNode(ErrorString* errorString, int nodeId)
     }
     while (node->isInShadowTree()) {
         Node& ancestor = NodeTraversal::highestAncestorOrSelf(*node);
-        if (!ancestor.isShadowRoot() || toShadowRoot(ancestor).type() == ShadowRoot::AuthorShadowRoot)
+        if (!ancestor.isShadowRoot() || toShadowRoot(ancestor).type() == ShadowRoot::OpenShadowRoot)
             break;
         // User agent shadow root, keep climbing up.
         node = toShadowRoot(ancestor).host();

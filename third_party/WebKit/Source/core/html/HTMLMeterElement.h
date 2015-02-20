@@ -69,7 +69,7 @@ private:
     virtual ~HTMLMeterElement();
 
     virtual bool areAuthorShadowsAllowed() const override { return false; }
-    virtual void willAddFirstAuthorShadowRoot() override;
+    virtual void willAddFirstOpenShadowRoot() override;
     RenderMeter* renderMeter() const;
 
     virtual bool supportLabels() const override { return true; }
@@ -78,7 +78,7 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     void didElementStateChange();
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
 
     RefPtrWillBeMember<MeterValueElement> m_value;
 };

@@ -96,7 +96,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSStyleDeclaration> computedStyleIncludingVisitedInfo(Node*) const;
 
-    PassRefPtrWillBeRawPtr<ShadowRoot> createUserAgentShadowRoot(Element* host);
+    PassRefPtrWillBeRawPtr<ShadowRoot> createClosedShadowRoot(Element* host);
 
     ShadowRoot* shadowRoot(Element* host);
     ShadowRoot* youngestShadowRoot(Element* host);

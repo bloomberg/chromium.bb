@@ -2289,7 +2289,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];
         ASSERT(insertionPoint->containingShadowRoot());
-        if (insertionPoint->containingShadowRoot()->type() != ShadowRoot::UserAgentShadowRoot)
+        if (insertionPoint->containingShadowRoot()->type() != ShadowRoot::ClosedShadowRoot)
             filteredInsertionPoints.append(insertionPoint);
     }
     return StaticNodeList::adopt(filteredInsertionPoints);

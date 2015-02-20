@@ -73,7 +73,7 @@ private:
         SetSeletion
     };
 
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
     // FIXME: Author shadows should be allowed
     // https://bugs.webkit.org/show_bug.cgi?id=92608
     virtual bool areAuthorShadowsAllowed() const override { return false; }

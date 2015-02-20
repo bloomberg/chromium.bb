@@ -155,7 +155,7 @@ private:
 
     virtual LayoutObject* createRenderer(const LayoutStyle&) override;
     virtual bool appendFormData(FormDataList&, bool) override;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
 
     virtual void defaultEventHandler(Event*) override;
 

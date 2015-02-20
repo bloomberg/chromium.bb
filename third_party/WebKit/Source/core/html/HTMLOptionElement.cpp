@@ -58,7 +58,7 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> option = adoptRefWillBeNoop(new HTMLOptionElement(document));
-    option->ensureUserAgentShadowRoot();
+    option->ensureClosedShadowRoot();
     return option.release();
 }
 
@@ -66,7 +66,7 @@ PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstruc
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> element = adoptRefWillBeNoop(new HTMLOptionElement(document));
-    element->ensureUserAgentShadowRoot();
+    element->ensureClosedShadowRoot();
     element->appendChild(Text::create(document, data.isNull() ? "" : data), exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -377,14 +377,14 @@ HTMLFormElement* HTMLOptionElement::form() const
     return nullptr;
 }
 
-void HTMLOptionElement::didAddUserAgentShadowRoot(ShadowRoot& root)
+void HTMLOptionElement::didAddClosedShadowRoot(ShadowRoot& root)
 {
     updateLabel();
 }
 
 void HTMLOptionElement::updateLabel()
 {
-    if (ShadowRoot* root = userAgentShadowRoot())
+    if (ShadowRoot* root = closedShadowRoot())
         root->setTextContent(text());
 }
 

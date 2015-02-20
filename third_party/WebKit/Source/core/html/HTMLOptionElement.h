@@ -90,7 +90,7 @@ private:
     virtual LayoutStyle* nonRendererStyle() const override;
     virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
     virtual void didRecalcStyle(StyleRecalcChange) override;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
 
     String collectOptionInnerText() const;
 

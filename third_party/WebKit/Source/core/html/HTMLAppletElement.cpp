@@ -53,7 +53,7 @@ HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
 PassRefPtrWillBeRawPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
 {
     RefPtrWillBeRawPtr<HTMLAppletElement> element = adoptRefWillBeNoop(new HTMLAppletElement(document, createdByParser));
-    element->ensureUserAgentShadowRoot();
+    element->ensureClosedShadowRoot();
     return element.release();
 }
 
@@ -85,14 +85,14 @@ bool HTMLAppletElement::hasLegalLinkAttribute(const QualifiedName& name) const
 
 bool HTMLAppletElement::rendererIsNeeded(const LayoutStyle& style)
 {
-    if (!fastHasAttribute(codeAttr) && !hasAuthorShadowRoot())
+    if (!fastHasAttribute(codeAttr) && !hasOpenShadowRoot())
         return false;
     return HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 LayoutObject* HTMLAppletElement::createRenderer(const LayoutStyle& style)
 {
-    if (!canEmbedJava() || hasAuthorShadowRoot())
+    if (!canEmbedJava() || hasOpenShadowRoot())
         return LayoutObject::createObject(this, style);
 
     if (usePlaceholderContent())

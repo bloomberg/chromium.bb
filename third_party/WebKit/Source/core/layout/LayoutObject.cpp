@@ -2704,7 +2704,7 @@ PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadowHo
         return nullptr;
 
     if (ShadowRoot* root = node()->containingShadowRoot()) {
-        if (root->type() == ShadowRoot::UserAgentShadowRoot) {
+        if (root->type() == ShadowRoot::ClosedShadowRoot) {
             if (Element* shadowHost = node()->shadowHost()) {
                 return shadowHost->renderer()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
             }

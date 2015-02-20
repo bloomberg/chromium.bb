@@ -36,7 +36,7 @@ enum TextIteratorBehavior {
     TextIteratorEmitsOriginalText = 1 << 3,
     TextIteratorStopsOnFormControls = 1 << 4,
     TextIteratorEmitsImageAltText = 1 << 5,
-    TextIteratorEntersAuthorShadowRoots = 1 << 6,
+    TextIteratorEntersOpenShadowRoots = 1 << 6,
     TextIteratorEmitsObjectReplacementCharacter = 1 << 7,
     TextIteratorDoesNotBreakAtReplacedElement = 1 << 8
 };

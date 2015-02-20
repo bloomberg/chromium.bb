@@ -114,8 +114,8 @@ public:
 private:
     enum IterationProgress {
         HandledNone,
-        HandledAuthorShadowRoots,
-        HandledUserAgentShadowRoot,
+        HandledOpenShadowRoots,
+        HandledClosedShadowRoot,
         HandledNode,
         HandledChildren
     };
@@ -207,7 +207,7 @@ private:
 
     bool m_emitsImageAltText;
 
-    bool m_entersAuthorShadowRoots;
+    bool m_entersOpenShadowRoots;
 
     bool m_emitsObjectReplacementCharacter;
 

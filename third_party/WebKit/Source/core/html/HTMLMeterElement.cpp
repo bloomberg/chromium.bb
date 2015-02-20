@@ -51,13 +51,13 @@ HTMLMeterElement::~HTMLMeterElement()
 PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeNoop(new HTMLMeterElement(document));
-    meter->ensureUserAgentShadowRoot();
+    meter->ensureClosedShadowRoot();
     return meter.release();
 }
 
 LayoutObject* HTMLMeterElement::createRenderer(const LayoutStyle& style)
 {
-    if (hasAuthorShadowRoot() || !LayoutTheme::theme().supportsMeter(style.appearance()))
+    if (hasOpenShadowRoot() || !LayoutTheme::theme().supportsMeter(style.appearance()))
         return LayoutObject::createObject(this, style);
     return new RenderMeter(this);
 }
@@ -191,11 +191,11 @@ RenderMeter* HTMLMeterElement::renderMeter() const
     if (renderer() && renderer()->isMeter())
         return toRenderMeter(renderer());
 
-    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->renderer();
+    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->renderer();
     return toRenderMeter(layoutObject);
 }
 
-void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
+void HTMLMeterElement::didAddClosedShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
@@ -211,7 +211,7 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     inner->appendChild(bar);
 }
 
-void HTMLMeterElement::willAddFirstAuthorShadowRoot()
+void HTMLMeterElement::willAddFirstOpenShadowRoot()
 {
     ASSERT(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled());
     lazyReattachIfAttached();

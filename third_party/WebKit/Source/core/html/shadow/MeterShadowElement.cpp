@@ -72,7 +72,7 @@ PassRefPtrWillBeRawPtr<MeterInnerElement> MeterInnerElement::create(Document& do
 
 bool MeterInnerElement::rendererIsNeeded(const LayoutStyle& style)
 {
-    if (meterElement()->hasAuthorShadowRoot())
+    if (meterElement()->hasOpenShadowRoot())
         return HTMLDivElement::rendererIsNeeded(style);
 
     LayoutObject* renderer = meterElement()->renderer();

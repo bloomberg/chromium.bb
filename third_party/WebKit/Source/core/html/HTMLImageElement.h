@@ -112,7 +112,7 @@ protected:
     virtual void didMoveToNewDocument(Document& oldDocument) override;
     virtual bool useFallbackContent() const { return m_useFallbackContent; }
 
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
     virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
 private:
     virtual bool areAuthorShadowsAllowed() const override { return false; }

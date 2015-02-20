@@ -221,7 +221,7 @@ MediaControlMuteButtonElement::MediaControlMuteButtonElement(MediaControls& medi
 PassRefPtrWillBeRawPtr<MediaControlMuteButtonElement> MediaControlMuteButtonElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlMuteButtonElement> button = adoptRefWillBeNoop(new MediaControlMuteButtonElement(mediaControls));
-    button->ensureUserAgentShadowRoot();
+    button->ensureClosedShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-mute-button", AtomicString::ConstructFromLiteral));
     return button.release();
@@ -252,7 +252,7 @@ MediaControlPlayButtonElement::MediaControlPlayButtonElement(MediaControls& medi
 PassRefPtrWillBeRawPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlPlayButtonElement> button = adoptRefWillBeNoop(new MediaControlPlayButtonElement(mediaControls));
-    button->ensureUserAgentShadowRoot();
+    button->ensureClosedShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-play-button", AtomicString::ConstructFromLiteral));
     return button.release();
@@ -283,7 +283,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(Media
 PassRefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlayPlayButtonElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> button = adoptRefWillBeNoop(new MediaControlOverlayPlayButtonElement(mediaControls));
-    button->ensureUserAgentShadowRoot();
+    button->ensureClosedShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button", AtomicString::ConstructFromLiteral));
     return button.release();
@@ -322,7 +322,7 @@ MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsB
 PassRefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> MediaControlToggleClosedCaptionsButtonElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> button = adoptRefWillBeNoop(new MediaControlToggleClosedCaptionsButtonElement(mediaControls));
-    button->ensureUserAgentShadowRoot();
+    button->ensureClosedShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-toggle-closed-captions-button", AtomicString::ConstructFromLiteral));
     button->hide();
@@ -358,7 +358,7 @@ MediaControlTimelineElement::MediaControlTimelineElement(MediaControls& mediaCon
 PassRefPtrWillBeRawPtr<MediaControlTimelineElement> MediaControlTimelineElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlTimelineElement> timeline = adoptRefWillBeNoop(new MediaControlTimelineElement(mediaControls));
-    timeline->ensureUserAgentShadowRoot();
+    timeline->ensureClosedShadowRoot();
     timeline->setType(InputTypeNames::range);
     timeline->setAttribute(stepAttr, "any");
     timeline->setShadowPseudoId(AtomicString("-webkit-media-controls-timeline", AtomicString::ConstructFromLiteral));
@@ -431,7 +431,7 @@ MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(MediaControls& 
 PassRefPtrWillBeRawPtr<MediaControlVolumeSliderElement> MediaControlVolumeSliderElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = adoptRefWillBeNoop(new MediaControlVolumeSliderElement(mediaControls));
-    slider->ensureUserAgentShadowRoot();
+    slider->ensureClosedShadowRoot();
     slider->setType(InputTypeNames::range);
     slider->setAttribute(stepAttr, "any");
     slider->setAttribute(maxAttr, "1");
@@ -494,7 +494,7 @@ MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(MediaCo
 PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> MediaControlFullscreenButtonElement::create(MediaControls& mediaControls)
 {
     RefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> button = adoptRefWillBeNoop(new MediaControlFullscreenButtonElement(mediaControls));
-    button->ensureUserAgentShadowRoot();
+    button->ensureClosedShadowRoot();
     button->setType(InputTypeNames::button);
     button->setShadowPseudoId(AtomicString("-webkit-media-controls-fullscreen-button", AtomicString::ConstructFromLiteral));
     button->hide();
@@ -529,7 +529,7 @@ MediaControlCastButtonElement::MediaControlCastButtonElement(MediaControls& medi
 PassRefPtrWillBeRawPtr<MediaControlCastButtonElement> MediaControlCastButtonElement::create(MediaControls& mediaControls, bool isOverlayButton)
 {
     RefPtrWillBeRawPtr<MediaControlCastButtonElement> button = adoptRefWillBeNoop(new MediaControlCastButtonElement(mediaControls, isOverlayButton));
-    button->ensureUserAgentShadowRoot();
+    button->ensureClosedShadowRoot();
     button->setType(InputTypeNames::button);
     return button.release();
 }

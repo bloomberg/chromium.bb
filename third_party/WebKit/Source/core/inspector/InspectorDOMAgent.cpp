@@ -458,7 +458,7 @@ Element* InspectorDOMAgent::assertElement(ErrorString* errorString, int nodeId)
     return toElement(node);
 }
 
-static ShadowRoot* userAgentShadowRoot(Node* node)
+static ShadowRoot* closedShadowRoot(Node* node)
 {
     if (!node || !node->isInShadowTree())
         return nullptr;
@@ -469,7 +469,7 @@ static ShadowRoot* userAgentShadowRoot(Node* node)
     ASSERT(candidate);
     ShadowRoot* shadowRoot = toShadowRoot(candidate);
 
-    return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot ? shadowRoot : nullptr;
+    return shadowRoot->type() == ShadowRoot::ClosedShadowRoot ? shadowRoot : nullptr;
 }
 
 Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId)
@@ -483,7 +483,7 @@ Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId
             *errorString = "Cannot edit shadow roots";
             return nullptr;
         }
-        if (userAgentShadowRoot(node)) {
+        if (closedShadowRoot(node)) {
             *errorString = "Cannot edit nodes from user-agent shadow trees";
             return nullptr;
         }
@@ -515,7 +515,7 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
     if (!element)
         return nullptr;
 
-    if (element->isInShadowTree() && userAgentShadowRoot(element)) {
+    if (element->isInShadowTree() && closedShadowRoot(element)) {
         *errorString = "Cannot edit elements from user-agent shadow trees";
         return nullptr;
     }
@@ -1057,7 +1057,7 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
         if (elementShadow) {
             ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
             if (shadowRoot) {
-                if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot || includeUserAgentShadowDOM)
+                if (shadowRoot->type() == ShadowRoot::OpenShadowRoot || includeUserAgentShadowDOM)
                     return shadowRoot;
             }
         }
@@ -1295,11 +1295,11 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
         return true;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
 
-    // Do not highlight within UA shadow root unless requested.
+    // Do not highlight within closed shadow root unless requested.
     if (m_searchingForNode != SearchingForUAShadow) {
-        ShadowRoot* uaShadowRoot = userAgentShadowRoot(node);
-        if (uaShadowRoot)
-            node = uaShadowRoot->host();
+        ShadowRoot* shadowRoot = closedShadowRoot(node);
+        if (shadowRoot)
+            node = shadowRoot->host();
     }
 
     // Shadow roots don't have boxes - use host element instead.
@@ -1635,9 +1635,9 @@ static String documentBaseURLString(Document* document)
 static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowRoot)
 {
     switch (shadowRoot->type()) {
-    case ShadowRoot::UserAgentShadowRoot:
+    case ShadowRoot::ClosedShadowRoot:
         return TypeBuilder::DOM::ShadowRootType::User_agent;
-    case ShadowRoot::AuthorShadowRoot:
+    case ShadowRoot::OpenShadowRoot:
         return TypeBuilder::DOM::ShadowRootType::Author;
     }
     ASSERT_NOT_REACHED();
@@ -2173,7 +2173,7 @@ static ShadowRoot* shadowRootForNode(Node* node, const String& type)
     if (type == "a")
         return toElement(node)->shadowRoot();
     if (type == "u")
-        return toElement(node)->userAgentShadowRoot();
+        return toElement(node)->closedShadowRoot();
     return nullptr;
 }
 

@@ -3,19 +3,19 @@ Tests that elements panel preserves selected shadow DOM node on page refresh.
 
 Running: setup
 
-Running: testAuthorShadowRoot
+Running: testOpenShadowRoot
 Page reloaded.
 Selected node: '#shadow-root'
 
-Running: testUserAgentShadowRoot
+Running: testClosedShadowRoot
 Page reloaded.
 Selected node: '#shadow-root (user-agent)'
 
-Running: testAuthorShadowRootChild
+Running: testOpenShadowRootChild
 Page reloaded.
 Selected node: 'input'
 
-Running: testUserAgentShadowRootChild
+Running: testClosedShadowRootChild
 Page reloaded.
 Selected node: 'div'
 

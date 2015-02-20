@@ -54,13 +54,13 @@ HTMLProgressElement::~HTMLProgressElement()
 PassRefPtrWillBeRawPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLProgressElement> progress = adoptRefWillBeNoop(new HTMLProgressElement(document));
-    progress->ensureUserAgentShadowRoot();
+    progress->ensureClosedShadowRoot();
     return progress.release();
 }
 
 LayoutObject* HTMLProgressElement::createRenderer(const LayoutStyle& style)
 {
-    if (!style.hasAppearance() || hasAuthorShadowRoot())
+    if (!style.hasAppearance() || hasOpenShadowRoot())
         return LayoutObject::createObject(this, style);
     return new RenderProgress(this);
 }
@@ -70,7 +70,7 @@ RenderProgress* HTMLProgressElement::renderProgress() const
     if (renderer() && renderer()->isProgress())
         return toRenderProgress(renderer());
 
-    LayoutObject* layoutObject = userAgentShadowRoot()->firstChild()->renderer();
+    LayoutObject* layoutObject = closedShadowRoot()->firstChild()->renderer();
     ASSERT_WITH_SECURITY_IMPLICATION(!layoutObject || layoutObject->isProgress());
     return toRenderProgress(layoutObject);
 }
@@ -146,7 +146,7 @@ void HTMLProgressElement::didElementStateChange()
     }
 }
 
-void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
+void HTMLProgressElement::didAddClosedShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
@@ -170,7 +170,7 @@ bool HTMLProgressElement::shouldAppearIndeterminate() const
     return !isDeterminate();
 }
 
-void HTMLProgressElement::willAddFirstAuthorShadowRoot()
+void HTMLProgressElement::willAddFirstOpenShadowRoot()
 {
     ASSERT(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled());
     lazyReattachIfAttached();

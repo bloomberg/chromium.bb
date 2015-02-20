@@ -90,14 +90,14 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
 PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLSelectElement> select = adoptRefWillBeNoop(new HTMLSelectElement(document, 0));
-    select->ensureUserAgentShadowRoot();
+    select->ensureClosedShadowRoot();
     return select.release();
 }
 
 PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
 {
     RefPtrWillBeRawPtr<HTMLSelectElement> select = adoptRefWillBeNoop(new HTMLSelectElement(document, form));
-    select->ensureUserAgentShadowRoot();
+    select->ensureClosedShadowRoot();
     return select.release();
 }
 
@@ -1754,7 +1754,7 @@ DEFINE_TRACE(HTMLSelectElement)
     HTMLFormControlElementWithState::trace(visitor);
 }
 
-void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)
+void HTMLSelectElement::didAddClosedShadowRoot(ShadowRoot& root)
 {
     RefPtrWillBeRawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
     content->setAttribute(selectAttr, "option,optgroup,hr");

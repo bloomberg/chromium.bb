@@ -147,8 +147,8 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    if (type == ShadowRoot::AuthorShadowRoot && (!youngestShadowRoot() || youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot))
-        shadowHost.willAddFirstAuthorShadowRoot();
+    if (type == ShadowRoot::OpenShadowRoot && (!youngestShadowRoot() || youngestShadowRoot()->type() == ShadowRoot::ClosedShadowRoot))
+        shadowHost.willAddFirstOpenShadowRoot();
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
         root->lazyReattachIfAttached();

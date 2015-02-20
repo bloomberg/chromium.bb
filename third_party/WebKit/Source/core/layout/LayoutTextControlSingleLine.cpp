@@ -53,17 +53,17 @@ LayoutTextControlSingleLine::~LayoutTextControlSingleLine()
 
 inline Element* LayoutTextControlSingleLine::containerElement() const
 {
-    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
+    return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
 }
 
 inline Element* LayoutTextControlSingleLine::editingViewPortElement() const
 {
-    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
+    return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
 }
 
 inline HTMLElement* LayoutTextControlSingleLine::innerSpinButtonElement() const
 {
-    return toHTMLElement(inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
+    return toHTMLElement(inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
 void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

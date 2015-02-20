@@ -328,10 +328,10 @@ public:
     ShadowRoot* shadowRoot() const;
     ShadowRoot* youngestShadowRoot() const;
 
-    bool hasAuthorShadowRoot() const { return shadowRoot(); }
-    ShadowRoot* userAgentShadowRoot() const;
-    ShadowRoot& ensureUserAgentShadowRoot();
-    virtual void willAddFirstAuthorShadowRoot() { }
+    bool hasOpenShadowRoot() const { return shadowRoot(); }
+    ShadowRoot* closedShadowRoot() const;
+    ShadowRoot& ensureClosedShadowRoot();
+    virtual void willAddFirstOpenShadowRoot() { }
 
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 
@@ -578,8 +578,8 @@ private:
 
     // FIXME: Everyone should allow author shadows.
     virtual bool areAuthorShadowsAllowed() const { return true; }
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) { }
-    virtual bool alwaysCreateUserAgentShadowRoot() const { return false; }
+    virtual void didAddClosedShadowRoot(ShadowRoot&) { }
+    virtual bool alwaysCreateClosedShadowRoot() const { return false; }
 
     // FIXME: Remove the need for Attr to call willModifyAttribute/didModifyAttribute.
     friend class Attr;

@@ -138,18 +138,18 @@ LayoutObject* HitTestResult::renderer() const
     return m_innerNode ? m_innerNode->renderer() : 0;
 }
 
-void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
+void HitTestResult::setToShadowHostIfInClosedShadowRoot()
 {
     if (Node* node = innerNode()) {
         if (ShadowRoot* containingShadowRoot = node->containingShadowRoot()) {
-            if (containingShadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
+            if (containingShadowRoot->type() == ShadowRoot::ClosedShadowRoot)
                 setInnerNode(node->shadowHost());
         }
     }
 
     if (Node* node = innerNonSharedNode()) {
         if (ShadowRoot* containingShadowRoot = node->containingShadowRoot()) {
-            if (containingShadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
+            if (containingShadowRoot->type() == ShadowRoot::ClosedShadowRoot)
                 setInnerNonSharedNode(node->shadowHost());
         }
     }

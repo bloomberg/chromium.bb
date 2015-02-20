@@ -124,7 +124,7 @@ TextFieldInputType::~TextFieldInputType()
 
 SpinButtonElement* TextFieldInputType::spinButtonElement() const
 {
-    return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
+    return toSpinButtonElement(element().closedShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
 bool TextFieldInputType::shouldShowFocusRingOnMouseFocus() const
@@ -281,7 +281,7 @@ bool TextFieldInputType::shouldHaveSpinButton() const
 void TextFieldInputType::createShadowSubtree()
 {
     ASSERT(element().shadow());
-    ShadowRoot* shadowRoot = element().userAgentShadowRoot();
+    ShadowRoot* shadowRoot = element().closedShadowRoot();
     ASSERT(!shadowRoot->hasChildren());
 
     Document& document = element().document();
@@ -316,7 +316,7 @@ void TextFieldInputType::createShadowSubtree()
 
 Element* TextFieldInputType::containerElement() const
 {
-    return element().userAgentShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
+    return element().closedShadowRoot()->getElementById(ShadowElementNames::textFieldContainer());
 }
 
 void TextFieldInputType::destroyShadowSubtree()
@@ -330,7 +330,7 @@ void TextFieldInputType::listAttributeTargetChanged()
 {
     if (Chrome* chrome = this->chrome())
         chrome->client().textFieldDataListChanged(element());
-    Element* picker = element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator());
+    Element* picker = element().closedShadowRoot()->getElementById(ShadowElementNames::pickerIndicator());
     bool didHavePickerIndicator = picker;
     bool willHavePickerIndicator = element().hasValidDataListOptions();
     if (didHavePickerIndicator == willHavePickerIndicator)

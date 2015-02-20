@@ -44,7 +44,7 @@ private:
 
     virtual LayoutObject* createRenderer(const LayoutStyle&) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
     virtual bool isInteractiveContent() const override;
 
     bool m_isOpen;

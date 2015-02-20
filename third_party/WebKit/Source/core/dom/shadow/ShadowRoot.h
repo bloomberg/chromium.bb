@@ -53,8 +53,8 @@ public:
     // in several elements for a while.
     // See https://bugs.webkit.org/show_bug.cgi?id=77503 and related bugs.
     enum ShadowRootType {
-        UserAgentShadowRoot = 0,
-        AuthorShadowRoot
+        ClosedShadowRoot = 0,
+        OpenShadowRoot
     };
 
     static PassRefPtrWillBeRawPtr<ShadowRoot> create(Document& document, ShadowRootType type)
@@ -74,7 +74,7 @@ public:
     ShadowRoot* youngerShadowRoot() const { return prev(); }
 
     ShadowRoot* olderShadowRootForBindings() const;
-    bool shouldExposeToBindings() const { return type() == AuthorShadowRoot; }
+    bool shouldExposeToBindings() const { return type() == OpenShadowRoot; }
 
     bool isYoungest() const { return !youngerShadowRoot(); }
     bool isOldest() const { return !olderShadowRoot(); }

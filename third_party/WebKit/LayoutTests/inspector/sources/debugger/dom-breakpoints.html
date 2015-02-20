@@ -72,7 +72,7 @@ function appendElementToAuthorShadowTree(parentId, childId)
     authorShadowElement(parentId).appendChild(child);
 }
 
-function appendElementToAuthorShadowRoot(childId)
+function appendElementToOpenShadowRoot(childId)
 {
     var child = document.createElement("div");
     child.id = childId;
@@ -256,7 +256,7 @@ function test()
                 InspectorTest.addResult("Test that 'Subtree Modified' breakpoint on author shadow root is hit when appending a child.");
                 pane._setBreakpoint(authorShadowRoot, pane._breakpointTypes.SubtreeModified, true);
                 InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on author shadow root.");
-                InspectorTest.evaluateInPageWithTimeout("appendElementToAuthorShadowRoot('childElement')");
+                InspectorTest.evaluateInPageWithTimeout("appendElementToOpenShadowRoot('childElement')");
                 InspectorTest.addResult("Append childElement to author shadow root.");
                 InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }

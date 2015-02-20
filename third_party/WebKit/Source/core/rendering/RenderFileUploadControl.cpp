@@ -148,7 +148,7 @@ HTMLInputElement* RenderFileUploadControl::uploadButton() const
 {
     // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
     HTMLInputElement* input = toHTMLInputElement(node());
-    Node* buttonNode = input->userAgentShadowRoot()->firstChild();
+    Node* buttonNode = input->closedShadowRoot()->firstChild();
     return isHTMLInputElement(buttonNode) ? toHTMLInputElement(buttonNode) : 0;
 }
 

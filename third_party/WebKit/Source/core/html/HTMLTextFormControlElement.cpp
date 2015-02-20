@@ -154,7 +154,7 @@ bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
 
 HTMLElement* HTMLTextFormControlElement::placeholderElement() const
 {
-    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::placeholder()));
+    return toHTMLElement(closedShadowRoot()->getElementById(ShadowElementNames::placeholder()));
 }
 
 void HTMLTextFormControlElement::updatePlaceholderVisibility(bool placeholderValueChanged)
@@ -216,7 +216,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
         exceptionState.throwDOMException(IndexSizeError, "The provided start value (" + String::number(start) + ") is larger than the provided end value (" + String::number(end) + ").");
         return;
     }
-    if (hasAuthorShadowRoot())
+    if (hasOpenShadowRoot())
         return;
 
     String text = innerEditorValue();
@@ -348,7 +348,7 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
 
 void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour, SelectionOption selectionOption)
 {
-    if (hasAuthorShadowRoot() || !isTextFormControl())
+    if (hasOpenShadowRoot() || !isTextFormControl())
         return;
 
     const int editorValueLength = static_cast<int>(innerEditorValue().length());
@@ -592,8 +592,8 @@ bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
 
 void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
 {
-    ASSERT(!hasAuthorShadowRoot());
-    if (!isTextFormControl() || hasAuthorShadowRoot())
+    ASSERT(!hasOpenShadowRoot());
+    if (!isTextFormControl() || hasOpenShadowRoot())
         return;
 
     bool textIsChanged = value != innerEditorValue();
@@ -620,7 +620,7 @@ static String finishText(StringBuilder& result)
 
 String HTMLTextFormControlElement::innerEditorValue() const
 {
-    ASSERT(!hasAuthorShadowRoot());
+    ASSERT(!hasOpenShadowRoot());
     HTMLElement* innerEditor = innerEditorElement();
     if (!innerEditor || !isTextFormControl())
         return emptyString();
@@ -709,7 +709,7 @@ HTMLTextFormControlElement* enclosingTextFormControl(Node* container)
     if (!container)
         return nullptr;
     Element* ancestor = container->shadowHost();
-    return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot ? toHTMLTextFormControlElement(ancestor) : 0;
+    return ancestor && isHTMLTextFormControlElement(*ancestor) && container->containingShadowRoot()->type() == ShadowRoot::ClosedShadowRoot ? toHTMLTextFormControlElement(ancestor) : 0;
 }
 
 String HTMLTextFormControlElement::directionForFormData() const
@@ -734,7 +734,7 @@ String HTMLTextFormControlElement::directionForFormData() const
 
 HTMLElement* HTMLTextFormControlElement::innerEditorElement() const
 {
-    return toHTMLElement(userAgentShadowRoot()->getElementById(ShadowElementNames::innerEditor()));
+    return toHTMLElement(closedShadowRoot()->getElementById(ShadowElementNames::innerEditor()));
 }
 
 static Position innerNodePosition(const Position& innerPosition)

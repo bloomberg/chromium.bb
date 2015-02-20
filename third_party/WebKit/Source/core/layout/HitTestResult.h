@@ -92,7 +92,7 @@ public:
     PositionWithAffinity position() const;
     LayoutObject* renderer() const;
 
-    void setToShadowHostIfInUserAgentShadowRoot();
+    void setToShadowHostIfInClosedShadowRoot();
 
     const HitTestLocation& hitTestLocation() const { return m_hitTestLocation; }
 

@@ -156,7 +156,7 @@ private:
 #endif
 
     virtual bool isFormControlElement() const override final { return true; }
-    virtual bool alwaysCreateUserAgentShadowRoot() const override { return true; }
+    virtual bool alwaysCreateClosedShadowRoot() const override { return true; }
 
     virtual short tabIndex() const override final;
 

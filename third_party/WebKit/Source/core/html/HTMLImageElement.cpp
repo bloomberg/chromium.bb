@@ -257,8 +257,8 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (name == altAttr || name == titleAttr) {
-        if (userAgentShadowRoot()) {
-            Element* text = userAgentShadowRoot()->getElementById("alttext");
+        if (closedShadowRoot()) {
+            Element* text = closedShadowRoot()->getElementById("alttext");
             String value = altText();
             if (text && text->textContent() != value)
                 text->setTextContent(altText());
@@ -675,7 +675,7 @@ const KURL& HTMLImageElement::sourceURL() const
     return cachedImage()->response().url();
 }
 
-void HTMLImageElement::didAddUserAgentShadowRoot(ShadowRoot&)
+void HTMLImageElement::didAddClosedShadowRoot(ShadowRoot&)
 {
     HTMLImageFallbackHelper::createAltTextShadowTree(*this);
 }
@@ -723,7 +723,7 @@ void HTMLImageElement::setUseFallbackContent()
     if (document().inStyleRecalc())
         return;
     EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
-    ensureUserAgentShadowRoot();
+    ensureClosedShadowRoot();
 }
 
 bool HTMLImageElement::isOpaque() const

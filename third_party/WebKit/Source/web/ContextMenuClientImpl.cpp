@@ -190,7 +190,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
 
     HitTestResult r = m_webView->page()->contextMenuController().hitTestResult();
 
-    r.setToShadowHostIfInUserAgentShadowRoot();
+    r.setToShadowHostIfInClosedShadowRoot();
 
     LocalFrame* selectedFrame = r.innerNodeFrame();
 

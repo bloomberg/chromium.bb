@@ -60,7 +60,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 PassRefPtrWillBeRawPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLVideoElement> video = adoptRefWillBeNoop(new HTMLVideoElement(document));
-    video->ensureUserAgentShadowRoot();
+    video->ensureClosedShadowRoot();
     video->suspendIfNeeded();
     return video.release();
 }

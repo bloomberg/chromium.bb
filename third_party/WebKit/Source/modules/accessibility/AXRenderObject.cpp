@@ -2211,7 +2211,7 @@ void AXRenderObject::addTextFieldChildren()
         return;
 
     HTMLInputElement& input = toHTMLInputElement(*node);
-    Element* spinButtonElement = input.userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton());
+    Element* spinButtonElement = input.closedShadowRoot()->getElementById(ShadowElementNames::spinButton());
     if (!spinButtonElement || !spinButtonElement->isSpinButtonElement())
         return;
 

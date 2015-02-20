@@ -3295,12 +3295,12 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
 
 MediaControls* HTMLMediaElement::mediaControls() const
 {
-    return toMediaControls(userAgentShadowRoot()->firstChild());
+    return toMediaControls(closedShadowRoot()->firstChild());
 }
 
 bool HTMLMediaElement::hasMediaControls() const
 {
-    if (ShadowRoot* userAgent = userAgentShadowRoot()) {
+    if (ShadowRoot* userAgent = closedShadowRoot()) {
         Node* node = userAgent->firstChild();
         ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isMediaControls());
         return node;
@@ -3320,7 +3320,7 @@ void HTMLMediaElement::ensureMediaControls()
     if (isFullscreen())
         mediaControls->enteredFullscreen();
 
-    ensureUserAgentShadowRoot().appendChild(mediaControls);
+    ensureClosedShadowRoot().appendChild(mediaControls);
 
     if (!shouldShowControls() || !inDocument())
         mediaControls->hide();

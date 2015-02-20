@@ -121,7 +121,7 @@ Set 'Subtree Modified' DOM breakpoint on author shadow root.
 Append childElement to author shadow root.
 Script execution paused.
 Call stack:
-    0) appendElementToAuthorShadowRoot (dom-breakpoints.html:79)
+    0) appendElementToOpenShadowRoot (dom-breakpoints.html:79)
     1)  (:1)
 Paused on a "Subtree Modified" breakpoint set on #shadow-root, because a new child was added to that node.
 Script execution resumed.

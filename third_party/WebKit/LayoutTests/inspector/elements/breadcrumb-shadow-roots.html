@@ -20,13 +20,13 @@ function test()
 
     function step0()
     {
-        selectNode(matchUserAgentShadowRoot, step1);
+        selectNode(matchClosedShadowRoot, step1);
     }
 
     function step1()
     {
         InspectorTest.dumpBreadcrumb("User-agent shadow root breadcrumb");
-        selectNode(matchAuthorShadowRoot, step2);
+        selectNode(matchOpenShadowRoot, step2);
     }
 
     function step2()
@@ -44,12 +44,12 @@ function test()
         }
     }
 
-    function matchUserAgentShadowRoot(node)
+    function matchClosedShadowRoot(node)
     {
         return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent;
     }
 
-    function matchAuthorShadowRoot(node)
+    function matchOpenShadowRoot(node)
     {
         return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
     }

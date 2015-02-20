@@ -9,10 +9,10 @@ function createShadowRoot()
             'children': children};
 }
 
-function createUserAgentShadowRoot()
+function createClosedShadowRoot()
 {
     var shadowRoot = createShadowRoot.apply(null, arguments);
-    shadowRoot.isUserAgentShadowRoot = true;
+    shadowRoot.isClosedShadowRoot = true;
     return shadowRoot;
 }
 
@@ -27,8 +27,8 @@ function createDOM(tagName, attributes)
         var child = childElements[i];
         if (child.isShadowRoot) {
             var shadowRoot;
-            if (child.isUserAgentShadowRoot) {
-                shadowRoot = window.internals.createUserAgentShadowRoot(element);
+            if (child.isClosedShadowRoot) {
+                shadowRoot = window.internals.createClosedShadowRoot(element);
             } else {
                 shadowRoot = element.createShadowRoot();
             }

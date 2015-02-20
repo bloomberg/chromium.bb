@@ -53,7 +53,7 @@ private:
     virtual ~HTMLProgressElement();
 
     virtual bool areAuthorShadowsAllowed() const override { return false; }
-    virtual void willAddFirstAuthorShadowRoot() override;
+    virtual void willAddFirstOpenShadowRoot() override;
     virtual bool shouldAppearIndeterminate() const override;
     virtual bool supportLabels() const override { return true; }
 
@@ -65,7 +65,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) override;
 
     void didElementStateChange();
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    virtual void didAddClosedShadowRoot(ShadowRoot&) override;
     bool isDeterminate() const;
 
     RawPtrWillBeMember<ProgressValueElement> m_value;

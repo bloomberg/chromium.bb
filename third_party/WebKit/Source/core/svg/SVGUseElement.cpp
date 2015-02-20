@@ -67,7 +67,7 @@ PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document)
 {
     // Always build a user agent #shadow-root for SVGUseElement.
     RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeNoop(new SVGUseElement(document));
-    use->ensureUserAgentShadowRoot();
+    use->ensureClosedShadowRoot();
     return use.release();
 }
 
@@ -329,7 +329,7 @@ void SVGUseElement::clearResourceReferences()
         m_targetElementInstance = nullptr;
 
     // FIXME: We should try to optimize this, to at least allow partial reclones.
-    if (ShadowRoot* shadowTreeRootElement = userAgentShadowRoot())
+    if (ShadowRoot* shadowTreeRootElement = closedShadowRoot())
         shadowTreeRootElement->removeChildren(OmitSubtreeModifiedEvent);
 
     m_needsShadowTreeRecreation = false;
@@ -404,7 +404,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
     // Set up root SVG element in shadow tree.
     RefPtrWillBeRawPtr<Element> newChild = target->cloneElementWithoutChildren();
     m_targetElementInstance = toSVGElement(newChild.get());
-    ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
+    ShadowRoot* shadowTreeRootElement = closedShadowRoot();
     shadowTreeRootElement->appendChild(newChild.release());
 
     // Clone the target subtree into the shadow tree, not handling <use> and <symbol> yet.
@@ -464,7 +464,7 @@ void SVGUseElement::toClipPath(Path& path)
 {
     ASSERT(path.isEmpty());
 
-    Node* n = userAgentShadowRoot()->firstChild();
+    Node* n = closedShadowRoot()->firstChild();
     if (!n || !n->isSVGElement())
         return;
     SVGElement& element = toSVGElement(*n);
@@ -485,7 +485,7 @@ void SVGUseElement::toClipPath(Path& path)
 
 LayoutObject* SVGUseElement::rendererClipChild() const
 {
-    if (Node* n = userAgentShadowRoot()->firstChild()) {
+    if (Node* n = closedShadowRoot()->firstChild()) {
         if (n->isSVGElement() && isDirectReference(toSVGElement(*n)))
             return n->renderer();
     }

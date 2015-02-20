@@ -45,7 +45,7 @@ BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 
 void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
 {
-    if (element().isDisabledOrReadOnly() || !element().renderer() || !UserGestureIndicator::processingUserGesture() || element().hasAuthorShadowRoot())
+    if (element().isDisabledOrReadOnly() || !element().renderer() || !UserGestureIndicator::processingUserGesture() || element().hasOpenShadowRoot())
         return;
 
     if (m_dateTimeChooser)
@@ -64,13 +64,13 @@ void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
 
     RefPtrWillBeRawPtr<HTMLDivElement> valueContainer = HTMLDivElement::create(element().document());
     valueContainer->setShadowPseudoId(valueContainerPseudo);
-    element().userAgentShadowRoot()->appendChild(valueContainer.get());
+    element().closedShadowRoot()->appendChild(valueContainer.get());
     updateView();
 }
 
 void BaseChooserOnlyDateAndTimeInputType::updateView()
 {
-    Node* node = element().userAgentShadowRoot()->firstChild();
+    Node* node = element().closedShadowRoot()->firstChild();
     if (!node || !node->isHTMLElement())
         return;
     String displayValue;

@@ -101,7 +101,7 @@ TextIterator::TextIterator(const Range* range, TextIteratorBehaviorFlags behavio
     , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
     , m_shouldStop(false)
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
-    , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
+    , m_entersOpenShadowRoots(behavior & TextIteratorEntersOpenShadowRoots)
     , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
     , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
 {
@@ -133,7 +133,7 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
     , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
     , m_shouldStop(false)
     , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
-    , m_entersAuthorShadowRoots(behavior & TextIteratorEntersAuthorShadowRoots)
+    , m_entersOpenShadowRoots(behavior & TextIteratorEntersOpenShadowRoots)
     , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
     , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
 {
@@ -269,10 +269,10 @@ void TextIterator::advance()
             }
         } else {
             // Enter author shadow roots, from youngest, if any and if necessary.
-            if (m_iterationProgress < HandledAuthorShadowRoots) {
-                if (m_entersAuthorShadowRoots && m_node->isElementNode() && toElement(m_node)->hasAuthorShadowRoot()) {
+            if (m_iterationProgress < HandledOpenShadowRoots) {
+                if (m_entersOpenShadowRoots && m_node->isElementNode() && toElement(m_node)->hasOpenShadowRoot()) {
                     ShadowRoot* youngestShadowRoot = toElement(m_node)->shadowRoot();
-                    ASSERT(youngestShadowRoot->type() == ShadowRoot::AuthorShadowRoot);
+                    ASSERT(youngestShadowRoot->type() == ShadowRoot::OpenShadowRoot);
                     m_node = youngestShadowRoot;
                     m_iterationProgress = HandledNone;
                     ++m_shadowDepth;
@@ -280,21 +280,21 @@ void TextIterator::advance()
                     continue;
                 }
 
-                m_iterationProgress = HandledAuthorShadowRoots;
+                m_iterationProgress = HandledOpenShadowRoots;
             }
 
             // Enter user-agent shadow root, if necessary.
-            if (m_iterationProgress < HandledUserAgentShadowRoot) {
+            if (m_iterationProgress < HandledClosedShadowRoot) {
                 if (m_entersTextControls && renderer->isTextControl()) {
-                    ShadowRoot* userAgentShadowRoot = toElement(m_node)->userAgentShadowRoot();
-                    ASSERT(userAgentShadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
-                    m_node = userAgentShadowRoot;
+                    ShadowRoot* closedShadowRoot = toElement(m_node)->closedShadowRoot();
+                    ASSERT(closedShadowRoot->type() == ShadowRoot::ClosedShadowRoot);
+                    m_node = closedShadowRoot;
                     m_iterationProgress = HandledNone;
                     ++m_shadowDepth;
                     m_fullyClippedStack.pushFullyClippedState(m_node);
                     continue;
                 }
-                m_iterationProgress = HandledUserAgentShadowRoot;
+                m_iterationProgress = HandledClosedShadowRoot;
             }
 
             // Handle the current node according to its type.
@@ -353,9 +353,9 @@ void TextIterator::advance()
                     // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
                     // sibling shadow root, if any.
                     ShadowRoot* shadowRoot = toShadowRoot(m_node);
-                    if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot) {
+                    if (shadowRoot->type() == ShadowRoot::OpenShadowRoot) {
                         ShadowRoot* nextShadowRoot = shadowRoot->olderShadowRoot();
-                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRoot::AuthorShadowRoot) {
+                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRoot::OpenShadowRoot) {
                             m_fullyClippedStack.pop();
                             m_node = nextShadowRoot;
                             m_iterationProgress = HandledNone;
@@ -364,15 +364,15 @@ void TextIterator::advance()
                         } else {
                             // We are the last shadow root; exit from here and go back to where we were.
                             m_node = shadowRoot->host();
-                            m_iterationProgress = HandledAuthorShadowRoots;
+                            m_iterationProgress = HandledOpenShadowRoots;
                             --m_shadowDepth;
                             m_fullyClippedStack.pop();
                         }
                     } else {
                         // If we are in a user-agent shadow root, then go back to the host.
-                        ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                        ASSERT(shadowRoot->type() == ShadowRoot::ClosedShadowRoot);
                         m_node = shadowRoot->host();
-                        m_iterationProgress = HandledUserAgentShadowRoot;
+                        m_iterationProgress = HandledClosedShadowRoot;
                         --m_shadowDepth;
                         m_fullyClippedStack.pop();
                     }

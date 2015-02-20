@@ -532,10 +532,10 @@ PassRefPtrWillBeRawPtr<CSSStyleDeclaration> Internals::computedStyleIncludingVis
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Internals::createUserAgentShadowRoot(Element* host)
+PassRefPtrWillBeRawPtr<ShadowRoot> Internals::createClosedShadowRoot(Element* host)
 {
     ASSERT(host);
-    return PassRefPtrWillBeRawPtr<ShadowRoot>(host->ensureUserAgentShadowRoot());
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(host->ensureClosedShadowRoot());
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host)
@@ -581,10 +581,10 @@ String Internals::shadowRootType(const Node* root, ExceptionState& exceptionStat
     }
 
     switch (toShadowRoot(root)->type()) {
-    case ShadowRoot::UserAgentShadowRoot:
-        return String("UserAgentShadowRoot");
-    case ShadowRoot::AuthorShadowRoot:
-        return String("AuthorShadowRoot");
+    case ShadowRoot::ClosedShadowRoot:
+        return String("ClosedShadowRoot");
+    case ShadowRoot::OpenShadowRoot:
+        return String("OpenShadowRoot");
     default:
         ASSERT_NOT_REACHED();
         return String("Unknown");

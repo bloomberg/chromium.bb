@@ -1767,8 +1767,8 @@ CustomElementDefinition* Element::customElementDefinition() const
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
 {
-    if (alwaysCreateUserAgentShadowRoot())
-        ensureUserAgentShadowRoot();
+    if (alwaysCreateClosedShadowRoot())
+        ensureClosedShadowRoot();
 
     // Some elements make assumptions about what kind of renderers they allow
     // as children so we can't allow author shadows on them for now. An override
@@ -1778,7 +1778,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exc
         return nullptr;
     }
 
-    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot));
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::OpenShadowRoot));
 }
 
 ShadowRoot* Element::shadowRoot() const
@@ -1787,16 +1787,16 @@ ShadowRoot* Element::shadowRoot() const
     if (!elementShadow)
         return nullptr;
     ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
-    if (shadowRoot->type() == ShadowRoot::AuthorShadowRoot)
+    if (shadowRoot->type() == ShadowRoot::OpenShadowRoot)
         return shadowRoot;
     return nullptr;
 }
 
-ShadowRoot* Element::userAgentShadowRoot() const
+ShadowRoot* Element::closedShadowRoot() const
 {
     if (ElementShadow* elementShadow = shadow()) {
         if (ShadowRoot* shadowRoot = elementShadow->oldestShadowRoot()) {
-            ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+            ASSERT(shadowRoot->type() == ShadowRoot::ClosedShadowRoot);
             return shadowRoot;
         }
     }
@@ -1804,12 +1804,12 @@ ShadowRoot* Element::userAgentShadowRoot() const
     return nullptr;
 }
 
-ShadowRoot& Element::ensureUserAgentShadowRoot()
+ShadowRoot& Element::ensureClosedShadowRoot()
 {
-    if (ShadowRoot* shadowRoot = userAgentShadowRoot())
+    if (ShadowRoot* shadowRoot = closedShadowRoot())
         return *shadowRoot;
-    ShadowRoot& shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRoot::UserAgentShadowRoot);
-    didAddUserAgentShadowRoot(shadowRoot);
+    ShadowRoot& shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRoot::ClosedShadowRoot);
+    didAddClosedShadowRoot(shadowRoot);
     return shadowRoot;
 }
 
@@ -2469,7 +2469,7 @@ String Element::textFromChildren()
 const AtomicString& Element::shadowPseudoId() const
 {
     if (ShadowRoot* root = containingShadowRoot()) {
-        if (root->type() == ShadowRoot::UserAgentShadowRoot)
+        if (root->type() == ShadowRoot::ClosedShadowRoot)
             return fastGetAttribute(pseudoAttr);
     }
     return nullAtom;

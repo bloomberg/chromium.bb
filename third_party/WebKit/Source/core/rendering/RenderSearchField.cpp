@@ -47,12 +47,12 @@ RenderSearchField::~RenderSearchField()
 
 inline Element* RenderSearchField::searchDecorationElement() const
 {
-    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::searchDecoration());
+    return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::searchDecoration());
 }
 
 inline Element* RenderSearchField::cancelButtonElement() const
 {
-    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
+    return inputElement()->closedShadowRoot()->getElementById(ShadowElementNames::clearButton());
 }
 
 LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
