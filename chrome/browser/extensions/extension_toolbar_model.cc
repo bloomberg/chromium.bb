@@ -328,6 +328,12 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
                   last_known_positions_.end(),
                   toolbar_items_[new_index - 1]->id()) -
             last_known_positions_.begin() + 1;
+    // In theory, the extension before this one should always
+    // be in last known positions, but if something funny happened with prefs,
+    // make sure we handle it.
+    // TODO(devlin): Track down these cases so we can CHECK this.
+    new_last_known_index =
+        std::min<int>(new_last_known_index, last_known_positions_.size());
     last_known_positions_.insert(
         last_known_positions_.begin() + new_last_known_index, extension->id());
     UpdatePrefs();
@@ -423,19 +429,19 @@ void ExtensionToolbarModel::InitializeExtensionList() {
   if (profile_->IsOffTheRecord())
     IncognitoPopulate();
   else
-    Populate(last_known_positions_);
+    Populate(&last_known_positions_);
 
   extensions_initialized_ = true;
   MaybeUpdateVisibilityPrefs();
   FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
 }
 
-void ExtensionToolbarModel::Populate(const ExtensionIdList& positions) {
+void ExtensionToolbarModel::Populate(ExtensionIdList* positions) {
   DCHECK(!profile_->IsOffTheRecord());
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
   // Items that have explicit positions.
-  ExtensionList sorted(positions.size(), NULL);
+  ExtensionList sorted(positions->size(), NULL);
   // The items that don't have explicit positions.
   ExtensionList unsorted;
 
@@ -450,11 +456,15 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions) {
     }
 
     ExtensionIdList::const_iterator pos =
-        std::find(positions.begin(), positions.end(), extension->id());
-    if (pos != positions.end())
-      sorted[pos - positions.begin()] = extension;
-    else
+        std::find(positions->begin(), positions->end(), extension->id());
+    if (pos != positions->end()) {
+      sorted[pos - positions->begin()] = extension;
+    } else {
+      // Unknown extension - push it to the back of unsorted, and add it to the
+      // list of ids at the end.
       unsorted.push_back(extension);
+      positions->push_back(extension->id());
+    }
   }
 
   // Merge the lists.
@@ -590,7 +600,7 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   DCHECK(toolbar_items_.empty());
 
   // ...Add the new...
-  Populate(last_known_positions_);
+  Populate(&last_known_positions_);
 
   // ...And notify.
   for (size_t i = 0; i < toolbar_items().size(); ++i) {

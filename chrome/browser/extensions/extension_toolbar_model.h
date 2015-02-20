@@ -187,7 +187,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // takes the shortcut - looking at the regular model's content and modifying
   // it.
   void InitializeExtensionList();
-  void Populate(const ExtensionIdList& positions);
+  void Populate(ExtensionIdList* positions);
   void IncognitoPopulate();
 
   // Save the model to prefs.
