@@ -42,19 +42,26 @@ class BatteryStatusManager {
     // This is to workaround a Galaxy Nexus bug, see the comment in the constructor.
     private final boolean mIgnoreBatteryPresentState;
 
+    // Only used in L (API level 21 and higher).
+    private BatteryManager mLollipopBatteryManager;
+
     private boolean mEnabled = false;
 
     private BatteryStatusManager(
-            Context context, BatteryStatusCallback callback, boolean ignoreBatteryPresentState) {
+            Context context, BatteryStatusCallback callback, boolean ignoreBatteryPresentState,
+            BatteryManager batteryManager) {
         mAppContext = context.getApplicationContext();
         mCallback = callback;
         mIgnoreBatteryPresentState = ignoreBatteryPresentState;
+        mLollipopBatteryManager = batteryManager;
     }
 
     BatteryStatusManager(Context context, BatteryStatusCallback callback) {
         // BatteryManager.EXTRA_PRESENT appears to be unreliable on Galaxy Nexus,
         // Android 4.2.1, it always reports false. See http://crbug.com/384348.
-        this(context, callback, Build.MODEL.equals("Galaxy Nexus"));
+        this(context, callback, Build.MODEL.equals("Galaxy Nexus"),
+             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? new BatteryManager()
+                                                                   : null);
     }
 
     /**
@@ -62,8 +69,10 @@ class BatteryStatusManager {
      * testing.
      */
     static BatteryStatusManager createBatteryStatusManagerForTesting(
-            Context context, BatteryStatusCallback callback) {
-        return new BatteryStatusManager(context, callback, false);
+            Context context,
+            BatteryStatusCallback callback,
+            BatteryManager batteryManager) {
+        return new BatteryStatusManager(context, callback, false, batteryManager);
     }
 
     /**
@@ -114,20 +123,44 @@ class BatteryStatusManager {
             level = 1.0;
         }
 
-        // Currently Android does not provide charging/discharging time, as a work-around
-        // we could compute it manually based on level delta.
+        // Currently Android (below L) does not provide charging/discharging time, as a work-around
+        // we could compute it manually based on the evolution of level delta.
         // TODO(timvolodine): add proper projection for chargingTime, dischargingTime
         // (see crbug.com/401553).
         boolean charging = pluggedStatus != 0;
         int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         boolean batteryFull = status == BatteryManager.BATTERY_STATUS_FULL;
-        double chargingTime = (charging & batteryFull) ? 0 : Double.POSITIVE_INFINITY;
-        double dischargingTime = Double.POSITIVE_INFINITY;
+        double chargingTimeSeconds = (charging && batteryFull) ? 0 : Double.POSITIVE_INFINITY;
+        double dischargingTimeSeconds = Double.POSITIVE_INFINITY;
+
+        if (mLollipopBatteryManager != null) {
+            // On Lollipop we can provide a better estimate for chargingTime and dischargingTime.
+            double remainingCapacityRatio = mLollipopBatteryManager.getIntProperty(
+                    BatteryManager.BATTERY_PROPERTY_CAPACITY) / 100.0;
+            double batteryCapacityMicroAh = mLollipopBatteryManager.getIntProperty(
+                    BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+            double averageCurrentMicroA = mLollipopBatteryManager.getIntProperty(
+                    BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE);
+
+            if (charging) {
+                if (chargingTimeSeconds == Double.POSITIVE_INFINITY && averageCurrentMicroA > 0) {
+                    double chargeFromEmptyHours = batteryCapacityMicroAh / averageCurrentMicroA;
+                    chargingTimeSeconds =
+                            Math.ceil((1 - remainingCapacityRatio) * chargeFromEmptyHours * 3600.0);
+                }
+            } else {
+                if (averageCurrentMicroA < 0) {
+                    double dischargeFromFullHours = batteryCapacityMicroAh / -averageCurrentMicroA;
+                    dischargingTimeSeconds =
+                            Math.floor(remainingCapacityRatio * dischargeFromFullHours * 3600.0);
+                }
+            }
+        }
 
         BatteryStatus batteryStatus = new BatteryStatus();
         batteryStatus.charging = charging;
-        batteryStatus.chargingTime = chargingTime;
-        batteryStatus.dischargingTime = dischargingTime;
+        batteryStatus.chargingTime = chargingTimeSeconds;
+        batteryStatus.dischargingTime = dischargingTimeSeconds;
         batteryStatus.level = level;
         mCallback.onBatteryStatusChanged(batteryStatus);
     }
