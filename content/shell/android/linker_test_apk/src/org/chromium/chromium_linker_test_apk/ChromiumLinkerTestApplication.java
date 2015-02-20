@@ -4,15 +4,14 @@
 
 package org.chromium.chromium_linker_test_apk;
 
-import android.app.Application;
-
+import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 
 /**
  * Application for testing the Chromium Linker
  */
-public class ChromiumLinkerTestApplication extends Application {
+public class ChromiumLinkerTestApplication extends BaseChromiumApplication {
 
     /**
      * icudtl.dat provides ICU (i18n library) with all the data for its
