@@ -87,7 +87,7 @@ void SharedWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, 
     addMessageToWorkerConsole(consoleMessage.release());
 }
 
-void SharedWorkerGlobalScope::trace(Visitor* visitor)
+DEFINE_TRACE(SharedWorkerGlobalScope)
 {
     WorkerGlobalScope::trace(visitor);
 }

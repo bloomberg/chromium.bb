@@ -58,7 +58,7 @@ public:
     AbstractWorker(ExecutionContext*);
     virtual ~AbstractWorker();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     // Helper function that converts a URL to an absolute URL and checks the result for validity.

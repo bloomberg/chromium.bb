@@ -117,7 +117,7 @@ void DedicatedWorkerGlobalScope::countDeprecation(UseCounter::Feature feature) c
     thread()->workerObjectProxy().postTaskToMainExecutionContext(UseCounterTask::createDeprecation(feature));
 }
 
-void DedicatedWorkerGlobalScope::trace(Visitor* visitor)
+DEFINE_TRACE(DedicatedWorkerGlobalScope)
 {
     WorkerGlobalScope::trace(visitor);
 }

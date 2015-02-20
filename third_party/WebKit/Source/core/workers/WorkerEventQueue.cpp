@@ -50,7 +50,7 @@ WorkerEventQueue::~WorkerEventQueue()
     ASSERT(m_eventTaskMap.isEmpty());
 }
 
-void WorkerEventQueue::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerEventQueue)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContext);

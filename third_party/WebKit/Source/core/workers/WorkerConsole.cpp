@@ -66,7 +66,7 @@ ExecutionContext* WorkerConsole::context()
     return m_scope->executionContext();
 }
 
-void WorkerConsole::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerConsole)
 {
     visitor->trace(m_scope);
     ConsoleBase::trace(visitor);

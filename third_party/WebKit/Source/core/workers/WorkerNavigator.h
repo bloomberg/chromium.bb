@@ -50,7 +50,7 @@ public:
 
     virtual String userAgent() const override;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit WorkerNavigator(const String&);

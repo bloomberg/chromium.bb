@@ -364,7 +364,7 @@ void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
         addConsoleMessage(consoleMessage.release());
 }
 
-void WorkerGlobalScope::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerGlobalScope)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_console);

@@ -44,7 +44,7 @@ public:
 
     static PassOwnPtrWillBeRawPtr<WorkerEventQueue> create(ExecutionContext*);
     virtual ~WorkerEventQueue();
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
     // EventQueue
     virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;

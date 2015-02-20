@@ -55,7 +55,7 @@ public:
 
     virtual bool hasPendingActivity() const override;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SharedWorker(ExecutionContext*);

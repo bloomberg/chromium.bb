@@ -71,7 +71,7 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionStat
     return scriptURL;
 }
 
-void AbstractWorker::trace(Visitor* visitor)
+DEFINE_TRACE(AbstractWorker)
 {
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);

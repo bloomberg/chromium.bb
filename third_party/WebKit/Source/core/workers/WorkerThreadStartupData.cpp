@@ -53,7 +53,7 @@ WorkerThreadStartupData::~WorkerThreadStartupData()
 {
 }
 
-void WorkerThreadStartupData::trace(Visitor* visitor)
+DEFINE_TRACE(WorkerThreadStartupData)
 {
     visitor->trace(m_workerClients);
 }

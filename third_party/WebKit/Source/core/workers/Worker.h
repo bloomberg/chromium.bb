@@ -63,7 +63,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit Worker(ExecutionContext*);

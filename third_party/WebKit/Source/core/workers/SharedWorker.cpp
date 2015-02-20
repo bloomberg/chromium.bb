@@ -101,7 +101,7 @@ bool SharedWorker::hasPendingActivity() const
     return m_isBeingConnected;
 }
 
-void SharedWorker::trace(Visitor* visitor)
+DEFINE_TRACE(SharedWorker)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_port);

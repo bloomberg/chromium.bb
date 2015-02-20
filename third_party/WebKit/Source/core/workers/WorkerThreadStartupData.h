@@ -81,7 +81,7 @@ public:
 
     V8CacheOptions m_v8CacheOptions;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, V8CacheOptions);

@@ -135,7 +135,7 @@ void Worker::notifyFinished()
     m_scriptLoader = nullptr;
 }
 
-void Worker::trace(Visitor* visitor)
+DEFINE_TRACE(Worker)
 {
     AbstractWorker::trace(visitor);
 }

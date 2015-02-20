@@ -53,7 +53,7 @@ public:
     }
     virtual ~WorkerConsole();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     virtual ExecutionContext* context() override;
