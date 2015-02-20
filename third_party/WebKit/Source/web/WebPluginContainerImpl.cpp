@@ -972,10 +972,7 @@ IntRect WebPluginContainerImpl::windowClipRect() const
     IntRect clipRect =
         convertToContainingWindow(IntRect(0, 0, width(), height()));
 
-    // document().renderView() can be 0 when we receive messages from the
-    // plugins while we are destroying a frame.
-    // FIXME: Can we just check m_element->document().isActive() ?
-    if (m_element->renderer()->document().renderView()) {
+    if (m_element->document().isActive()) {
         // Take our element and get the clip rect from the enclosing layer and
         // frame view.
         clipRect.intersect(
