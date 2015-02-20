@@ -1100,6 +1100,8 @@ int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& descriptio
         if (m_inAsyncOperationForStepInto || m_asyncOperationsForStepInto.isEmpty())
             m_asyncOperationsForStepInto.add(m_lastAsyncOperationId);
     }
+    if (m_pausedScriptState)
+        flushAsyncOperationEvents(nullptr);
     return m_lastAsyncOperationId;
 }
 
@@ -1186,9 +1188,10 @@ void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
         m_frontend->asyncOperationCompleted(operationId);
 }
 
-void InspectorDebuggerAgent::flushPendingAsyncOperationNotifications()
+void InspectorDebuggerAgent::flushAsyncOperationEvents(ErrorString*)
 {
-    ASSERT(m_frontend);
+    if (!m_frontend)
+        return;
 
     for (int operationId : m_asyncOperationNotifications) {
         RefPtrWillBeRawPtr<AsyncCallChain> chain = m_asyncOperations.get(operationId);
@@ -1515,7 +1518,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     }
 
     if (!m_asyncOperationNotifications.isEmpty())
-        flushPendingAsyncOperationNotifications();
+        flushAsyncOperationEvents(nullptr);
 
     m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
     m_scheduledDebuggerStep = NoStep;

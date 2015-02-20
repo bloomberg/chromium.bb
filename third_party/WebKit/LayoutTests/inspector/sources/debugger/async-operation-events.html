@@ -43,6 +43,13 @@ function callback4()
     debugger;
 }
 
+function runIntervals()
+{
+    setInterval(function f1() {}, 50);
+    setInterval(function f2() {}, 60);
+    setInterval(function f3() {}, 70);
+}
+
 function test()
 {
     var maxAsyncCallStackDepth = 4;
@@ -71,12 +78,9 @@ function test()
         InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
     }
 
-    function step4()
-    {
-        InspectorTest.completeDebuggerTest();
-    }
-
     var asyncOperations = {};
+    var setIntervalEventCount = 3;
+    var noAsyncOperationsCallback = null;
 
     function onAsyncOperationStarted(event)
     {
@@ -84,6 +88,11 @@ function test()
         var description = asyncOperationDescription(operation);
         asyncOperations[operation.id] = description;
         InspectorTest.addResult("==> AsyncOperationStarted: " + description);
+
+        if (description.indexOf("runIntervals") !== -1) {
+            if (!--setIntervalEventCount)
+                InspectorTest.completeDebuggerTest();
+        }
     }
 
     function onAsyncOperationCompleted(event)
@@ -91,6 +100,7 @@ function test()
         var operationId = event.data.operationId;
         InspectorTest.addResult("==> AsyncOperationCompleted: " + asyncOperations[operationId]);
         delete asyncOperations[operationId];
+        maybeRunNoAsyncOperationsCallback();
     }
 
     function asyncOperationDescription(operation)
@@ -103,6 +113,37 @@ function test()
         }
         return ("[" + operation.description + "]" + link);
     }
+
+    function maybeRunNoAsyncOperationsCallback()
+    {
+        if (!noAsyncOperationsCallback)
+            return;
+        for (var id in asyncOperations)
+            return;
+        var callback = noAsyncOperationsCallback;
+        noAsyncOperationsCallback = null;
+        callback();
+    }
+
+    function step4()
+    {
+        noAsyncOperationsCallback = step5;
+        maybeRunNoAsyncOperationsCallback();
+    }
+
+    function step5()
+    {
+        InspectorTest.addResult("Scheduling few setInterval's...");
+        InspectorTest.evaluateInPage("runIntervals()", step6);
+    }
+
+    function step6()
+    {
+        InspectorTest.addResult("All setInterval's were scheduled.");
+        InspectorTest.addResult("Requesting all pending AsyncOperation events from backend...");
+        InspectorTest.DebuggerAgent.flushAsyncOperationEvents();
+    }
+
 }
 
 </script>
