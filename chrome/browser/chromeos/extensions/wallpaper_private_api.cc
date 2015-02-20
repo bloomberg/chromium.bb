@@ -26,6 +26,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -99,6 +100,18 @@ bool GetData(const base::FilePath& path, std::string* data) {
 
   return !base::PathExists(path) ||
          base::ReadFileToString(path, data);
+}
+
+// Gets the |User| for a given |BrowserContext|. The function will only return
+// valid objects.
+const user_manager::User* GetUserFromBrowserContext(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  DCHECK(profile);
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+  return user;
 }
 
 // WindowStateManager remembers which windows have been minimized in order to
@@ -323,7 +336,9 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
   params = set_wallpaper_if_exists::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  user_id_ = user_manager::UserManager::Get()->GetActiveUser()->email();
+  // Gets email address from caller, ensuring multiprofile compatibility.
+  const user_manager::User* user = GetUserFromBrowserContext(browser_context());
+  user_id_ = user->email();
 
   base::FilePath wallpaper_path;
   base::FilePath fallback_path;
@@ -432,8 +447,9 @@ bool WallpaperPrivateSetWallpaperFunction::RunAsync() {
   params = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Gets email address while at UI thread.
-  user_id_ = user_manager::UserManager::Get()->GetActiveUser()->email();
+  // Gets email address from caller, ensuring multiprofile compatibility.
+  const user_manager::User* user = GetUserFromBrowserContext(browser_context());
+  user_id_ = user->email();
 
   StartDecode(params->wallpaper);
 
@@ -567,10 +583,10 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunAsync() {
   params = set_custom_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // Gets email address and username hash while at UI thread.
-  user_id_ = user_manager::UserManager::Get()->GetActiveUser()->email();
-  user_id_hash_ =
-      user_manager::UserManager::Get()->GetActiveUser()->username_hash();
+  // Gets email address from caller, ensuring multiprofile compatibility.
+  const user_manager::User* user = GetUserFromBrowserContext(browser_context());
+  user_id_ = user->email();
+  user_id_hash_ = user->username_hash();
 
   StartDecode(params->wallpaper);
 
