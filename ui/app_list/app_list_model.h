@@ -39,13 +39,16 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
     STATUS_SYNCING,  // Syncing apps or installing synced apps.
   };
 
+  // Do not change the order of these as they are used for metrics.
   enum State {
-    STATE_APPS,
+    STATE_APPS = 0,
     STATE_SEARCH_RESULTS,
     STATE_START,
     STATE_CUSTOM_LAUNCHER_PAGE,
+    // Add new values here.
 
     INVALID_STATE,
+    STATE_LAST = INVALID_STATE,
   };
 
   typedef ui::ListModel<SearchResult> SearchResults;

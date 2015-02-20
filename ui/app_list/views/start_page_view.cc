@@ -5,6 +5,7 @@
 #include "ui/app_list/views/start_page_view.h"
 
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item.h"
@@ -230,6 +231,10 @@ void StartPageView::MaybeOpenCustomLauncherPage() {
   ContentsView* contents_view = app_list_main_view_->contents_view();
   if (!app_list_main_view_->ShouldShowCustomLauncherPage())
     return;
+
+  UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram,
+                            AppListModel::STATE_CUSTOM_LAUNCHER_PAGE,
+                            AppListModel::STATE_LAST);
 
   int custom_page_index = contents_view->GetPageIndexForState(
       AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);

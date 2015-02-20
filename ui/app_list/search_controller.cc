@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/search/history.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_provider.h"
@@ -76,6 +78,10 @@ void SearchController::Stop() {
 void SearchController::OpenResult(SearchResult* result, int event_flags) {
   // Count AppList.Search here because it is composed of search + action.
   base::RecordAction(base::UserMetricsAction("AppList_Search"));
+
+  UMA_HISTOGRAM_ENUMERATION(kSearchResultOpenDisplayTypeHistogram,
+                            result->display_type(),
+                            SearchResult::DISPLAY_TYPE_LAST);
 
   result->Open(event_flags);
 

@@ -80,6 +80,8 @@ int SearchResult::GetPreferredIconDimension() const {
       return kListIconSize;
     case DISPLAY_NONE:
       return 0;
+    case DISPLAY_TYPE_LAST:
+      break;
   }
   NOTREACHED();
   return 0;

@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/all_apps_tile_item_view.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -27,6 +29,9 @@ void AllAppsTileItemView::UpdateIcon() {
 
 void AllAppsTileItemView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
+  UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram, AppListModel::STATE_APPS,
+                            AppListModel::STATE_LAST);
+
   contents_view_->SetActivePage(
       contents_view_->GetPageIndexForState(AppListModel::STATE_APPS));
 }

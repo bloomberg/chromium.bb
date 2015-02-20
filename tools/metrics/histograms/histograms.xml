@@ -475,11 +475,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListPageOpened" enum="AppListPage">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The page that the app list goes to. This is gathered every time the user
+    initiates a transition to another page in the launcher.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppListSearchCommenced" units="searches">
   <owner>tapted@chromium.org</owner>
   <summary>
     The number of searches that are started in the app list. This is gathered
     each time the app list search box transitions from empty to non-empty.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppListSearchResultOpenDisplayType"
+    enum="AppListSearchResultDisplayType">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The display type of the app list search result that was opened by the user.
+    This is gathered per click of a search result.
   </summary>
 </histogram>
 
@@ -43701,6 +43718,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="Second packaged app installed without showing"/>
 </enum>
 
+<enum name="AppListPage" type="int">
+  <int value="0" label="APPS"/>
+  <int value="1" label="SEARCH_RESULTS"/>
+  <int value="2" label="START"/>
+  <int value="3" label="CUSTOM_LAUNCHER_PAGE"/>
+</enum>
+
 <enum name="AppListSearchResult" type="int">
   <int value="0" label="OMNIBOX"/>
   <int value="1" label="APP"/>
@@ -43708,6 +43732,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="SEARCH_WEBSTORE"/>
   <int value="4" label="SEARCH_PEOPLE"/>
   <int value="5" label="SUGGESTION"/>
+</enum>
+
+<enum name="AppListSearchResultDisplayType" type="int">
+  <int value="0" label="NONE"/>
+  <int value="1" label="LIST"/>
+  <int value="2" label="TILE"/>
+  <int value="3" label="RECOMMENDATION"/>
 </enum>
 
 <enum name="AppLocation" type="int">

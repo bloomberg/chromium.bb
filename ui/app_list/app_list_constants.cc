@@ -128,6 +128,13 @@ const size_t kMaxFolderNameChars = 40;
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =
     ui::ResourceBundle::SmallFont;
 
+// The UMA histogram that logs which page gets opened by the user.
+const char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
+
+// The UMA histogram that logs the type of search result opened.
+const char kSearchResultOpenDisplayTypeHistogram[] =
+    "Apps.AppListSearchResultOpenDisplayType";
+
 #if defined(OS_LINUX)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kAppListWMClass[] = "chrome_app_list";

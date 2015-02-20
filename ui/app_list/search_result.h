@@ -28,12 +28,16 @@ class SearchResultObserver;
 // default style.
 class APP_LIST_EXPORT SearchResult {
  public:
-  // How the result should be displayed.
+  // How the result should be displayed. Do not change the order of these as
+  // they are used for metrics.
   enum DisplayType {
+    DISPLAY_NONE = 0,
     DISPLAY_LIST,
     DISPLAY_TILE,
     DISPLAY_RECOMMENDATION,
-    DISPLAY_NONE,
+    // Add new values here.
+
+    DISPLAY_TYPE_LAST,
   };
 
   // A tagged range in search result text.
