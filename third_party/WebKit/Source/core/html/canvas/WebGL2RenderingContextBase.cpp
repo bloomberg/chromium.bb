@@ -235,7 +235,7 @@ void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target, GLint level, G
     notImplemented();
 }
 
-void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, DOMArrayBufferView* data)
+void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, DOMArrayBufferView* data)
 {
     if (isContextLost())
         return;
@@ -243,7 +243,7 @@ void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level
     notImplemented();
 }
 
-void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, DOMArrayBufferView* data)
+void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, DOMArrayBufferView* data)
 {
     if (isContextLost())
         return;
