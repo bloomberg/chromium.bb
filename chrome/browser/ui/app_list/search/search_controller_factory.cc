@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"
 
@@ -39,16 +40,17 @@ bool IsSuggestionsSearchProviderEnabled() {
 
 scoped_ptr<SearchController> CreateSearchController(
     Profile* profile,
-    SearchBoxModel* search_box,
-    AppListModel::SearchResults* results,
+    AppListModel* model,
     AppListControllerDelegate* list_controller) {
-  scoped_ptr<SearchController> controller(new SearchController(
-      search_box, results, HistoryFactory::GetForBrowserContext(profile)));
+  scoped_ptr<SearchController> controller(
+      new SearchController(model->search_box(), model->results(),
+                           HistoryFactory::GetForBrowserContext(profile)));
 
-  controller->AddProvider(Mixer::MAIN_GROUP,
-                          scoped_ptr<SearchProvider>(new AppSearchProvider(
-                              profile, list_controller,
-                              make_scoped_ptr(new base::DefaultClock()))));
+  controller->AddProvider(
+      Mixer::MAIN_GROUP,
+      scoped_ptr<SearchProvider>(new AppSearchProvider(
+          profile, list_controller, make_scoped_ptr(new base::DefaultClock()),
+          model->top_level_item_list())));
   controller->AddProvider(Mixer::OMNIBOX_GROUP,
                           scoped_ptr<SearchProvider>(
                               new OmniboxProvider(profile, list_controller)));

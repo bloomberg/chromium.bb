@@ -26,6 +26,8 @@ class ExtensionSet;
 
 namespace app_list {
 
+class AppListItemList;
+
 namespace test {
 class AppSearchProviderTest;
 }
@@ -35,7 +37,8 @@ class AppSearchProvider : public SearchProvider,
  public:
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
-                    scoped_ptr<base::Clock> clock);
+                    scoped_ptr<base::Clock> clock,
+                    AppListItemList* top_level_item_list);
   ~AppSearchProvider() override;
 
   // SearchProvider overrides:
@@ -69,6 +72,8 @@ class AppSearchProvider : public SearchProvider,
       extension_registry_observer_;
 
   Apps apps_;
+
+  AppListItemList* top_level_item_list_;
 
   scoped_ptr<base::Clock> clock_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;

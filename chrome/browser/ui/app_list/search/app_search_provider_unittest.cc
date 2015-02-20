@@ -11,19 +11,24 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
+#include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
+#include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_item.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_result.h"
 
 namespace app_list {
 namespace test {
 
-const base::Time kTestCurrentTime = base::Time::FromInternalValue(1000);
+const base::Time kTestCurrentTime = base::Time::FromInternalValue(100000);
 
 bool MoreRelevant(const SearchResult* result1, const SearchResult* result2) {
   return result1->relevance() > result2->relevance();
@@ -40,8 +45,12 @@ class AppSearchProviderTest : public AppListTestBase {
 
     scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
     clock->SetNow(kTestCurrentTime);
-    app_search_.reset(
-        new AppSearchProvider(profile_.get(), NULL, clock.Pass()));
+    model_.reset(new app_list::AppListModel);
+    controller_.reset(new ::test::TestAppListControllerDelegate);
+    builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
+    builder_->InitializeWithProfile(profile_.get(), model_.get());
+    app_search_.reset(new AppSearchProvider(
+        profile_.get(), nullptr, clock.Pass(), model_->top_level_item_list()));
   }
 
   std::string RunQuery(const std::string& query) {
@@ -64,10 +73,14 @@ class AppSearchProviderTest : public AppListTestBase {
     return result_str;
   }
 
+  AppListModel* model() { return model_.get(); }
   const SearchProvider::Results& results() { return app_search_->results(); }
 
  private:
+  scoped_ptr<app_list::AppListModel> model_;
   scoped_ptr<AppSearchProvider> app_search_;
+  scoped_ptr<ExtensionAppModelBuilder> builder_;
+  scoped_ptr<::test::TestAppListControllerDelegate> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderTest);
 };
@@ -128,10 +141,10 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
 
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
-  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
+  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 
-  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(0));
+  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(20));
   EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App", RunQuery(""));
@@ -140,8 +153,27 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId,
                            kTestCurrentTime + base::TimeDelta::FromSeconds(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
+  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
+  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
+}
+
+TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
+  extensions::ExtensionPrefs* prefs =
+      extensions::ExtensionPrefs::Get(profile_.get());
+
+  // The order of unlaunched recommendations should be based on the app list
+  // order and be sorted below launched items.
+  prefs->SetLastLaunchTime(kHostedAppId,
+                           kTestCurrentTime - base::TimeDelta::FromSeconds(5));
+  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
+
+  // Switching the app list order should change the query result.
+  model()->SetItemPosition(
+      model()->FindItem(kPackagedApp2Id),
+      model()->FindItem(kPackagedApp1Id)->position().CreateBefore());
+  EXPECT_EQ("Hosted App,Packaged App 2,Packaged App 1", RunQuery(""));
 }
 
 }  // namespace test

@@ -329,8 +329,7 @@ void AppListViewDelegate::SetUpSearchUI() {
       model_->search_box(),
       speech_ui_.get()));
 
-  search_controller_ = CreateSearchController(
-      profile_, model_->search_box(), model_->results(), controller_);
+  search_controller_ = CreateSearchController(profile_, model_, controller_);
 }
 
 void AppListViewDelegate::SetUpProfileSwitcher() {

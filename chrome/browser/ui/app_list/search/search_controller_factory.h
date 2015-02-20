@@ -19,8 +19,7 @@ class SearchController;
 // Build a SearchController instance with the profile.
 scoped_ptr<SearchController> CreateSearchController(
     Profile* profile,
-    SearchBoxModel* search_box,
-    AppListModel::SearchResults* results,
+    AppListModel* model,
     AppListControllerDelegate* list_controller);
 
 }  // namespace app_list

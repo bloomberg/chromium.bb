@@ -14,16 +14,26 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "ui/app_list/app_list_item.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/tokenized_string.h"
 #include "ui/app_list/search/tokenized_string_match.h"
 
 using extensions::ExtensionRegistry;
+
+namespace {
+
+// The size of each step unlaunched apps should increase their relevance by.
+const double kUnlaunchedAppRelevanceStepSize = 0.0001;
+}
 
 namespace app_list {
 
@@ -50,10 +60,12 @@ class AppSearchProvider::App {
 
 AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
-                                     scoped_ptr<base::Clock> clock)
+                                     scoped_ptr<base::Clock> clock,
+                                     AppListItemList* top_level_item_list)
     : profile_(profile),
       list_controller_(list_controller),
       extension_registry_observer_(this),
+      top_level_item_list_(top_level_item_list),
       clock_(clock.Pass()),
       update_results_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
@@ -86,23 +98,39 @@ void AppSearchProvider::UpdateResults() {
   bool show_recommendations = query_.empty();
   ClearResults();
 
-  for (Apps::const_iterator app_it = apps_.begin();
-       app_it != apps_.end();
-       ++app_it) {
-    scoped_ptr<AppResult> result(new AppResult(
-        profile_, (*app_it)->app_id(), list_controller_, show_recommendations));
-    if (show_recommendations) {
-      result->set_title((*app_it)->indexed_name().text());
-      result->UpdateFromLastLaunched(clock_->Now(),
-                                     (*app_it)->last_launch_time());
-    } else {
+  if (show_recommendations) {
+    // Build a map of app ids to their position in the app list.
+    std::map<std::string, size_t> id_to_app_list_index;
+    for (size_t i = 0; i < top_level_item_list_->item_count(); ++i) {
+      id_to_app_list_index[top_level_item_list_->item_at(i)->id()] = i;
+    }
+
+    for (const App* app : apps_) {
+      scoped_ptr<AppResult> result(
+          new AppResult(profile_, app->app_id(), list_controller_, true));
+      result->set_title(app->indexed_name().text());
+
+      // Use the app list order to tiebreak apps that have never been launched.
+      if (app->last_launch_time().is_null()) {
+        result->set_relevance(
+            kUnlaunchedAppRelevanceStepSize *
+            (apps_.size() - id_to_app_list_index[app->app_id()]));
+      } else {
+        result->UpdateFromLastLaunched(clock_->Now(), app->last_launch_time());
+      }
+      Add(result.Pass());
+    }
+  } else {
+    for (const App* app : apps_) {
+      scoped_ptr<AppResult> result(
+          new AppResult(profile_, app->app_id(), list_controller_, false));
       TokenizedStringMatch match;
-      if (!match.Calculate(query_terms, (*app_it)->indexed_name()))
+      if (!match.Calculate(query_terms, app->indexed_name()))
         continue;
 
-      result->UpdateFromMatch((*app_it)->indexed_name(), match);
+      result->UpdateFromMatch(app->indexed_name(), match);
+      Add(result.Pass());
     }
-    Add(result.Pass());
   }
 
   update_results_factory_.InvalidateWeakPtrs();
