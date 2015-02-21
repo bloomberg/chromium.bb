@@ -70,6 +70,8 @@ public:
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) override;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) override;
     virtual void encrypted(const WebString& initDataType, const unsigned char* initData, unsigned initDataLength) override;
+    virtual void didBlockPlaybackWaitingForKey() override;
+    virtual void didResumePlaybackBlockedForKey() override;
 
     virtual void setWebLayer(WebLayer*) override;
     virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) override;

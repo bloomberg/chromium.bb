@@ -248,6 +248,7 @@ void SetMediaKeysHandler::trace(Visitor* visitor)
 
 HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia()
     : m_emeMode(EmeModeNotSelected)
+    , m_isWaitingForKey(false)
 {
 }
 
@@ -534,6 +535,44 @@ void HTMLMediaElementEncryptedMedia::encrypted(HTMLMediaElement& element, const 
         event->setTarget(&element);
         element.scheduleEvent(event.release());
     }
+}
+
+void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey(HTMLMediaElement& element)
+{
+    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey");
+
+    // From https://w3c.github.io/encrypted-media/#queue-waitingforkey:
+    // It should only be called when the HTMLMediaElement object is potentially
+    // playing and its readyState is equal to HAVE_FUTURE_DATA or greater.
+    // FIXME: Is this really required?
+
+    // 1. Let the media element be the specified HTMLMediaElement object.
+    HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
+
+    // 2. If the media element's waiting for key value is false, queue a task
+    //    to fire a simple event named waitingforkey at the media element.
+    if (!thisElement.m_isWaitingForKey) {
+        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::waitingforkey);
+        event->setTarget(&element);
+        element.scheduleEvent(event.release());
+    }
+
+    // 3. Set the media element's waiting for key value to true.
+    thisElement.m_isWaitingForKey = true;
+
+    // 4. Suspend playback.
+    //    (Already done on the Chromium side by the decryptors.)
+}
+
+void HTMLMediaElementEncryptedMedia::didResumePlaybackBlockedForKey(HTMLMediaElement& element)
+{
+    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::didResumePlaybackBlockedForKey");
+
+    // Logic is on the Chromium side to attempt to resume playback when a new
+    // key is available. However, |m_isWaitingForKey| needs to be cleared so
+    // that a later waitingForKey() call can generate the event.
+    HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
+    thisElement.m_isWaitingForKey = false;
 }
 
 void HTMLMediaElementEncryptedMedia::playerDestroyed(HTMLMediaElement& element)

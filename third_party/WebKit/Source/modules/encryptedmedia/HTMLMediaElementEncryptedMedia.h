@@ -45,6 +45,8 @@ public:
     static void keyError(HTMLMediaElement&, const String& keySystem, const String& sessionId, WebMediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode);
     static void keyMessage(HTMLMediaElement&, const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL);
     static void encrypted(HTMLMediaElement&, const String& initDataType, const unsigned char* initData, unsigned initDataLength);
+    static void didBlockPlaybackWaitingForKey(HTMLMediaElement&);
+    static void didResumePlaybackBlockedForKey(HTMLMediaElement&);
     static void playerDestroyed(HTMLMediaElement&);
     static WebContentDecryptionModule* contentDecryptionModule(HTMLMediaElement&);
 
@@ -78,6 +80,8 @@ private:
     WebContentDecryptionModule* contentDecryptionModule();
 
     EmeMode m_emeMode;
+
+    bool m_isWaitingForKey;
 
     PersistentWillBeMember<MediaKeys> m_mediaKeys;
 };

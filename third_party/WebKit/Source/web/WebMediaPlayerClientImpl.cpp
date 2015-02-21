@@ -128,6 +128,16 @@ void WebMediaPlayerClientImpl::encrypted(const WebString& initDataType, const un
     HTMLMediaElementEncryptedMedia::encrypted(mediaElement(), initDataType, initData, initDataLength);
 }
 
+void WebMediaPlayerClientImpl::didBlockPlaybackWaitingForKey()
+{
+    HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey(mediaElement());
+}
+
+void WebMediaPlayerClientImpl::didResumePlaybackBlockedForKey()
+{
+    HTMLMediaElementEncryptedMedia::didResumePlaybackBlockedForKey(mediaElement());
+}
+
 void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 {
     m_client->mediaPlayerSetWebLayer(layer);

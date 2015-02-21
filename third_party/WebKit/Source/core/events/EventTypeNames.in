@@ -218,6 +218,7 @@ visibilitychange
 voiceschanged
 volumechange
 waiting
+waitingforkey
 webglcontextcreationerror
 webglcontextlost
 webglcontextrestored
