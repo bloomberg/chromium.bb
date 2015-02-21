@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/field_trial.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -14,11 +15,25 @@
 #include "components/rappor/rappor_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+#if defined(GOOGLE_CHROME_BUILD)
+
+void UseRapporOption() {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "RapporOption", "Enabled"));
+}
+
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+}  // namespace
+
 class MetricsServicesManagerTest : public testing::Test {
  public:
   MetricsServicesManagerTest()
       : test_profile_manager_(TestingBrowserProcess::GetGlobal()),
-        manager_(&test_prefs_) {
+        manager_(&test_prefs_),
+        field_trial_list_(NULL) {
     rappor::internal::RegisterPrefs(test_prefs_.registry());
   }
 
@@ -39,6 +54,7 @@ class MetricsServicesManagerTest : public testing::Test {
   TestingProfileManager test_profile_manager_;
   TestingPrefServiceSimple test_prefs_;
   MetricsServicesManager manager_;
+  base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServicesManagerTest);
 };
@@ -98,12 +114,10 @@ TEST_F(MetricsServicesManagerTest, CheckRapporDisable) {
   EXPECT_FALSE(test_prefs()->GetBoolean(rappor::prefs::kRapporEnabled));
 }
 
-// TODO(holte): Remove special casing here when it is removed from
-// GetRapporRecordingLevel
 #if defined(GOOGLE_CHROME_BUILD)
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
 
 TEST_F(MetricsServicesManagerTest, GetRecordingLevelDisabled) {
+  UseRapporOption();
   test_prefs()->SetBoolean(rappor::prefs::kRapporEnabled, false);
   bool uma_enabled = true;
 
@@ -112,6 +126,7 @@ TEST_F(MetricsServicesManagerTest, GetRecordingLevelDisabled) {
 }
 
 TEST_F(MetricsServicesManagerTest, GetRecordingLevelFine) {
+  UseRapporOption();
   test_prefs()->SetBoolean(rappor::prefs::kRapporEnabled, true);
   bool uma_enabled = true;
 
@@ -120,6 +135,7 @@ TEST_F(MetricsServicesManagerTest, GetRecordingLevelFine) {
 }
 
 TEST_F(MetricsServicesManagerTest, GetRecordingLevelCoarse) {
+  UseRapporOption();
   test_prefs()->SetBoolean(rappor::prefs::kRapporEnabled, true);
   bool uma_enabled = false;
 
@@ -127,5 +143,4 @@ TEST_F(MetricsServicesManagerTest, GetRecordingLevelCoarse) {
             manager()->GetRapporRecordingLevel(uma_enabled));
 }
 
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 #endif  // defined(GOOGLE_CHROME_BUILD)
