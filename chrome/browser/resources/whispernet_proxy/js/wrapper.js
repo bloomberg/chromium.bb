@@ -44,6 +44,7 @@ function WhisperEncoder(params, whisperNacl, clientId) {
 
   var msg = {
     type: 'initialize_encoder',
+    client_id: clientId,
     params: params
   };
 
@@ -84,7 +85,7 @@ WhisperEncoder.prototype.encode = function(params) {
  */
 WhisperEncoder.prototype.onNaclMessage_ = function(e) {
   var msg = e.data;
-  if (msg.type == 'encode_token_response') {
+  if (msg.type == 'encode_token_response' && msg.client_id == this.clientId_) {
     chrome.copresencePrivate.sendSamples(this.clientId_,
         { token: bytesToBase64(msg.token), audible: msg.audible }, msg.samples);
   }
@@ -105,20 +106,11 @@ function WhisperDecoder(params, whisperNacl, clientId) {
 
   var msg = {
     type: 'initialize_decoder',
+    client_id: clientId,
     params: params
   };
   this.whisperNacl_.send(msg);
 }
-
-/**
- * Method to request the decoder to wipe its internal buffer.
- */
-WhisperDecoder.prototype.wipeDecoder = function() {
-  var msg = {
-    type: 'wipe_decode_buffer'
-  };
-  this.whisperNacl_.send(msg);
-};
 
 /**
  * Method to request the decoder to process samples.
@@ -151,7 +143,7 @@ WhisperDecoder.prototype.processSamples = function(params) {
  */
 WhisperDecoder.prototype.onNaclMessage_ = function(e) {
   var msg = e.data;
-  if (msg.type == 'decode_tokens_response') {
+  if (msg.type == 'decode_tokens_response' && msg.client_id == this.clientId_) {
     this.handleCandidates_(msg.tokens, msg.audible);
   }
 };

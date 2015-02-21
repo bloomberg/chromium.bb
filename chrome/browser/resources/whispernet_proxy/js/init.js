@@ -23,7 +23,7 @@ function audioConfig(clientId, audioParams) {
     return;
   }
 
-  console.log('Configuring encoder and decoder!');
+  console.log('Configuring encoder and decoder for client ' + clientId);
   whisperEncoders[clientId] =
       new WhisperEncoder(audioParams.paramData, whispernetNacl, clientId);
   whisperDecoders[clientId] =
@@ -39,7 +39,8 @@ function encodeTokenRequest(clientId, params) {
   if (whisperEncoders[clientId]) {
     whisperEncoders[clientId].encode(params);
   } else {
-    console.error('encodeTokenRequest: Whisper not initialized!');
+    console.error('encodeTokenRequest: Whisper not initialized for client ' +
+        clientId);
   }
 }
 
@@ -52,7 +53,8 @@ function decodeSamplesRequest(clientId, params) {
   if (whisperDecoders[clientId]) {
     whisperDecoders[clientId].processSamples(params);
   } else {
-    console.error('decodeSamplesRequest: Whisper not initialized!');
+    console.error('decodeSamplesRequest: Whisper not initialized for client ' +
+        clientId);
   }
 }
 

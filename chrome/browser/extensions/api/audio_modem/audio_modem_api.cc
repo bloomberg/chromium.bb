@@ -144,8 +144,8 @@ Status AudioModemAPI::StartTransmit(const std::string& app_id,
   base::Base64Encode(token, &encoded_token);
   base::RemoveChars(encoded_token, "=", &encoded_token);
 
-  modem_->SetToken(audio_type, encoded_token);
   modem_->SetTokenParams(audio_type, TokenParamsForEncoding(params.encoding));
+  modem_->SetToken(audio_type, encoded_token);
   modem_->StartPlaying(audio_type);
 
   transmit_timers_[audio_type].Start(
