@@ -205,17 +205,15 @@ base::string16 ElideUrl(const GURL& url,
 
   // Get filename - note that for a path ending with /
   // such as www.google.com/intl/ads/, the file name is ads/.
+  base::string16 url_filename(
+      url_path_elements.empty() ? base::string16() : url_path_elements.back());
   size_t url_path_number_of_elements = url_path_elements.size();
-  DCHECK(url_path_number_of_elements != 0);
-  base::string16 url_filename;
-  if ((url_path_elements.at(url_path_number_of_elements - 1)).length() > 0) {
-    url_filename = *(url_path_elements.end() - 1);
-  } else if (url_path_number_of_elements > 1) {  // Path ends with a '/'.
-    url_filename = url_path_elements.at(url_path_number_of_elements - 2) +
+  if (url_filename.empty() && (url_path_number_of_elements > 1)) {
+    // Path ends with a '/'.
+    --url_path_number_of_elements;
+    url_filename = url_path_elements[url_path_number_of_elements - 1] +
         kForwardSlash;
-    url_path_number_of_elements--;
   }
-  DCHECK(url_path_number_of_elements != 0);
 
   const size_t kMaxNumberOfUrlPathElementsAllowed = 1024;
   if (url_path_number_of_elements <= 1 ||

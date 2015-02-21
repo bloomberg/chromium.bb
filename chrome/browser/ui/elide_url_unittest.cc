@@ -156,6 +156,12 @@ TEST(TextEliderTest, TestFileURLEliding) {
     {"file://filer/foo/bar/file", "filer/foo/bar/file"},
     {"file://filer/foo/bar/file", "filer/foo/" + kEllipsisStr + "/file"},
     {"file://filer/foo/bar/file", "filer/" + kEllipsisStr + "/file"},
+    {"file://filer/foo/", "file://filer/foo/"},
+    {"file://filer/foo/", "filer/foo/"},
+    {"file://filer/foo/", "filer" + kEllipsisStr},
+    // Eliding file URLs with nothing after the ':' shouldn't crash.
+    {"file:///aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:", "aaa" + kEllipsisStr},
+    {"file:///aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:/", "aaa" + kEllipsisStr},
   };
 
   RunUrlTest(testcases, arraysize(testcases));
