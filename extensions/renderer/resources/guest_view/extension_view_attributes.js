@@ -87,15 +87,9 @@ ExtensionAttribute.prototype.handleMutation = function(oldValue, newValue) {
 function SrcAttribute(extensionViewImpl) {
   ExtensionViewAttribute.call(this, ExtensionViewConstants.ATTRIBUTE_SRC,
                               extensionViewImpl);
-  this.setupMutationObserver();
 }
 
 SrcAttribute.prototype.__proto__ = ExtensionViewAttribute.prototype;
-
-SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
-  this.observer.takeRecords();
-  ExtensionViewAttribute.prototype.setValueIgnoreMutation.call(this, value);
-}
 
 SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
   if (!newValue && oldValue) {
@@ -103,26 +97,6 @@ SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
     return;
   }
   this.parse();
-};
-
-SrcAttribute.prototype.setupMutationObserver =
-    function() {
-  this.observer = new MutationObserver(function(mutations) {
-    $Array.forEach(mutations, function(mutation) {
-      var oldValue = mutation.oldValue;
-      var newValue = this.getValue();
-      if (oldValue != newValue) {
-        return;
-      }
-      this.handleMutation(oldValue, newValue);
-    }.bind(this));
-  }.bind(this));
-  var params = {
-    attributes: true,
-    attributeOldValue: true,
-    attributeFilter: [this.name]
-  };
-  this.observer.observe(this.extensionViewImpl.element, params);
 };
 
 SrcAttribute.prototype.parse = function() {
