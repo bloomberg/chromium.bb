@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
@@ -28,13 +30,52 @@ const char kUnmaskCardRequestFormat[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_13_cvc=%s";
 
-const char kUnmaskCardRequestUrl[] =
-    "https://sandbox.google.com/payments/apis-secure/creditcardservice"
-    "/getrealpan?s7e_suffix=chromewallet";
+const char kUnmaskCardRequestHost[] = "https://wallet.google.com";
+const char kUnmaskCardRequestHostSandbox[] = "https://sandbox.google.com";
+const char kUnmaskCardRequestPath[] =
+    "payments/apis-secure/creditcardservice/getrealpan?s7e_suffix=chromewallet";
 
 const char kTokenServiceConsumerId[] = "real_pan_wallet_client";
 const char kWalletOAuth2Scope[] =
     "https://www.googleapis.com/auth/wallet.chrome";
+
+// This is mostly copied from wallet_service_url.cc, which is currently in
+// content/, hence inaccessible from here.
+bool IsWalletProductionEnabled() {
+  // If the command line flag exists, it takes precedence.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  std::string sandbox_enabled(
+      command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
+  if (!sandbox_enabled.empty())
+    return sandbox_enabled != "1";
+
+#if defined(ENABLE_PROD_WALLET_SERVICE)
+  return true;
+#else
+  return false;
+#endif
+}
+
+GURL GetUnmaskCardRequestUrl() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("sync-url")) {
+    if (IsWalletProductionEnabled()) {
+      LOG(ERROR) << "You are using production Wallet but you specified a "
+                    "--sync-url. You likely want to disable the sync sandbox "
+                    "or switch to sandbox Wallet. Both are controlled in "
+                    "about:flags.";
+    }
+  } else if (!IsWalletProductionEnabled()) {
+    LOG(ERROR) << "You are using sandbox Wallet but you didn't specify a "
+                  "--sync-url. You likely want to enable the sync sandbox "
+                  "or switch to production Wallet. Both are controlled in "
+                  "about:flags.";
+  }
+
+  GURL base(IsWalletProductionEnabled() ? kUnmaskCardRequestHost
+                                        : kUnmaskCardRequestHostSandbox);
+  return base.Resolve(kUnmaskCardRequestPath);
+}
 
 }  // namespace
 
@@ -62,7 +103,7 @@ void RealPanWalletClient::UnmaskCard(
   DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
 
   request_.reset(net::URLFetcher::Create(
-      0, GURL(kUnmaskCardRequestUrl), net::URLFetcher::POST, this));
+      0, GetUnmaskCardRequestUrl(), net::URLFetcher::POST, this));
   request_->SetRequestContext(context_getter_.get());
 
   base::DictionaryValue request_dict;
