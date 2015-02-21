@@ -217,7 +217,16 @@ TEST_F(AudioRecorderTest, BasicRecordAndStop) {
   DeleteRecorder();
 }
 
-TEST_F(AudioRecorderTest, OutOfOrderRecordAndStopMultiple) {
+// http://crbug.com/460685
+#if defined(OS_MACOSX)
+#define MAYBE_OutOfOrderRecordAndStopMultiple \
+  DISABLED_OutOfOrderRecordAndStopMultiple
+#else
+#define MAYBE_OutOfOrderRecordAndStopMultiple \
+  OutOfOrderRecordAndStopMultiple
+#endif
+
+TEST_F(AudioRecorderTest, MAYBE_OutOfOrderRecordAndStopMultiple) {
   CreateSimpleRecorder();
 
   recorder_->Stop();
