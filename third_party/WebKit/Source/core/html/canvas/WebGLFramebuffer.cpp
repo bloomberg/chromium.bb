@@ -36,11 +36,6 @@ namespace blink {
 
 namespace {
 
-    Platform3DObject objectOrZero(WebGLObject* object)
-    {
-        return object ? object->object() : 0;
-    }
-
     class WebGLRenderbufferAttachment final : public WebGLFramebuffer::WebGLAttachment {
     public:
         static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLRenderbuffer*);
@@ -279,9 +274,9 @@ PassRefPtrWillBeRawPtr<WebGLFramebuffer> WebGLFramebuffer::create(WebGLRendering
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
+    , m_object(ctx->webContext()->createFramebuffer())
     , m_hasEverBeenBound(false)
 {
-    setObject(ctx->webContext()->createFramebuffer());
 }
 
 WebGLFramebuffer::~WebGLFramebuffer()
@@ -301,7 +296,7 @@ void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum attachment, GLenu
 {
     ASSERT(isBound());
     removeAttachmentFromBoundFramebuffer(attachment);
-    if (!object())
+    if (!m_object)
         return;
     if (texture && texture->object()) {
         m_attachments.add(attachment, WebGLTextureAttachment::create(texture, texTarget, level));
@@ -314,7 +309,7 @@ void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum attachment, WebGL
 {
     ASSERT(isBound());
     removeAttachmentFromBoundFramebuffer(attachment);
-    if (!object())
+    if (!m_object)
         return;
     if (renderbuffer && renderbuffer->object()) {
         m_attachments.add(attachment, WebGLRenderbufferAttachment::create(renderbuffer));
@@ -333,7 +328,7 @@ void WebGLFramebuffer::attach(GLenum attachment, GLenum attachmentPoint)
 
 WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GLenum attachment) const
 {
-    if (!object())
+    if (!m_object)
         return nullptr;
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     return attachmentObject ? attachmentObject->object() : nullptr;
@@ -435,7 +430,7 @@ WebGLFramebuffer::WebGLAttachment* WebGLFramebuffer::getAttachment(GLenum attach
 void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum attachment)
 {
     ASSERT(isBound());
-    if (!object())
+    if (!m_object)
         return;
 
     WebGLAttachment* attachmentObject = getAttachment(attachment);
@@ -461,7 +456,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum attachment)
 void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(WebGLSharedObject* attachment)
 {
     ASSERT(isBound());
-    if (!object())
+    if (!m_object)
         return;
     if (!attachment)
         return;
@@ -484,7 +479,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(WebGLSharedObject* a
 
 GLenum WebGLFramebuffer::colorBufferFormat() const
 {
-    if (!object())
+    if (!m_object)
         return 0;
     WebGLAttachment* attachment = getAttachment(GL_COLOR_ATTACHMENT0);
     if (!attachment)
@@ -564,7 +559,7 @@ bool WebGLFramebuffer::hasStencilBuffer() const
     return attachment && attachment->valid();
 }
 
-void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
 #if !ENABLE(OILPAN)
     // With Oilpan, both the AttachmentMap and its WebGLAttachment objects are
@@ -578,7 +573,8 @@ void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, 
         attachment.value->onDetached(context3d);
 #endif
 
-    context3d->deleteFramebuffer(object);
+    context3d->deleteFramebuffer(m_object);
+    m_object = 0;
 }
 
 bool WebGLFramebuffer::isBound() const

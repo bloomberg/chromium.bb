@@ -5,15 +5,15 @@
 #ifndef CHROMIUMValuebuffer_h
 #define CHROMIUMValuebuffer_h
 
-#include "core/html/canvas/WebGLSharedObject.h"
+#include "core/html/canvas/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class CHROMIUMValuebuffer final : public WebGLSharedObject {
+class CHROMIUMValuebuffer final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~CHROMIUMValuebuffer();
+    ~CHROMIUMValuebuffer() override;
 
     static PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> create(WebGLRenderingContextBase*);
 
@@ -24,7 +24,7 @@ public:
 protected:
     explicit CHROMIUMValuebuffer(WebGLRenderingContextBase*);
 
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
 private:
 

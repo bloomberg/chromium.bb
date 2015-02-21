@@ -37,7 +37,7 @@ PassRefPtrWillBeRawPtr<WebGLTexture> WebGLTexture::create(WebGLRenderingContextB
 }
 
 WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
-    : WebGLSharedObject(ctx)
+    : WebGLSharedPlatform3DObject(ctx)
     , m_target(0)
     , m_minFilter(GL_NEAREST_MIPMAP_LINEAR)
     , m_magFilter(GL_LINEAR)
@@ -251,9 +251,10 @@ bool WebGLTexture::needToUseBlackTexture(TextureExtensionFlag flag) const
     return false;
 }
 
-void WebGLTexture::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLTexture::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-    context3d->deleteTexture(object);
+    context3d->deleteTexture(m_object);
+    m_object = 0;
 }
 
 int WebGLTexture::mapTargetToIndex(GLenum target) const

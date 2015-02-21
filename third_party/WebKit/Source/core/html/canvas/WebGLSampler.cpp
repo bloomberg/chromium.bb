@@ -28,14 +28,15 @@ WebGLSampler::~WebGLSampler()
 }
 
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
-    : WebGLSharedObject(ctx)
+    : WebGLSharedPlatform3DObject(ctx)
 {
     setObject(ctx->webContext()->createSampler());
 }
 
-void WebGLSampler::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLSampler::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-    context3d->deleteSampler(object);
+    context3d->deleteSampler(m_object);
+    m_object = 0;
 }
 
 } // namespace blink

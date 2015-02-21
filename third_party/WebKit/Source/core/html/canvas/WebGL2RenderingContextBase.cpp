@@ -31,7 +31,7 @@ namespace {
 
 const GLuint webGLTimeoutIgnored = 0xFFFFFFFF;
 
-Platform3DObject objectOrZero(const WebGLObject* object)
+WGC3Dsync syncObjectOrZero(const WebGLSync* object)
 {
     return object ? object->object() : 0;
 }
@@ -882,7 +882,7 @@ GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync, GLbitfield fl
         return GL_WAIT_FAILED;
 
     GLuint64 timeout64 = (timeout == webGLTimeoutIgnored ? GL_TIMEOUT_IGNORED : timeout);
-    return webContext()->clientWaitSync(objectOrZero(sync), flags, timeout64);
+    return webContext()->clientWaitSync(syncObjectOrZero(sync), flags, timeout64);
 }
 
 void WebGL2RenderingContextBase::waitSync(WebGLSync* sync, GLbitfield flags, GLuint timeout)
@@ -891,7 +891,7 @@ void WebGL2RenderingContextBase::waitSync(WebGLSync* sync, GLbitfield flags, GLu
         return;
 
     GLuint64 timeout64 = (timeout == webGLTimeoutIgnored ? GL_TIMEOUT_IGNORED : timeout);
-    webContext()->waitSync(objectOrZero(sync), flags, timeout64);
+    webContext()->waitSync(syncObjectOrZero(sync), flags, timeout64);
 }
 
 ScriptValue WebGL2RenderingContextBase::getSyncParameter(ScriptState* scriptState, WebGLSync* sync, GLenum pname)

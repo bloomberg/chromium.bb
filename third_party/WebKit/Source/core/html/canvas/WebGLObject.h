@@ -40,11 +40,15 @@ namespace blink {
 class WebGLContextGroup;
 class WebGLRenderingContextBase;
 
+template <typename T>
+Platform3DObject objectOrZero(const T* object)
+{
+    return object ? object->object() : 0;
+}
+
 class WebGLObject : public RefCountedWillBeGarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
 public:
     virtual ~WebGLObject();
-
-    Platform3DObject object() const { return m_object; }
 
     // deleteObject may not always delete the OpenGL resource.  For programs and
     // shaders, deletion is delayed until they are no longer attached.
@@ -61,17 +65,16 @@ public:
 
     // True if this object belongs to the group or context.
     virtual bool validate(const WebGLContextGroup*, const WebGLRenderingContextBase*) const = 0;
+    virtual bool hasObject() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit WebGLObject(WebGLRenderingContextBase*);
 
-    // setObject should be only called once right after creating a WebGLObject.
-    void setObject(Platform3DObject);
-
     // deleteObjectImpl should be only called once to delete the OpenGL resource.
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) = 0;
+    // After calling deleteObjectImpl, hasObject() should return false.
+    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*) = 0;
 
     virtual bool hasGroupOrContext() const = 0;
 
@@ -81,7 +84,6 @@ protected:
     virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const = 0;
 
 private:
-    Platform3DObject m_object;
     unsigned m_attachmentCount;
     bool m_deleted;
 };

@@ -28,15 +28,16 @@ CHROMIUMValuebuffer::~CHROMIUMValuebuffer()
 }
 
 CHROMIUMValuebuffer::CHROMIUMValuebuffer(WebGLRenderingContextBase* ctx)
-    : WebGLSharedObject(ctx)
+    : WebGLSharedPlatform3DObject(ctx)
     , m_hasEverBeenBound(false)
 {
     setObject(ctx->webContext()->createValuebufferCHROMIUM());
 }
 
-void CHROMIUMValuebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void CHROMIUMValuebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-    context3d->deleteValuebufferCHROMIUM(object);
+    context3d->deleteValuebufferCHROMIUM(m_object);
+    m_object = 0;
 }
 
 } // namespace blink

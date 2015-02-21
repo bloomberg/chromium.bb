@@ -5,14 +5,14 @@
 #ifndef WebGLSampler_h
 #define WebGLSampler_h
 
-#include "core/html/canvas/WebGLSharedObject.h"
+#include "core/html/canvas/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class WebGL2RenderingContextBase;
 
-class WebGLSampler : public WebGLSharedObject {
+class WebGLSampler : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~WebGLSampler() override;
@@ -22,7 +22,7 @@ public:
 protected:
     explicit WebGLSampler(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
 private:
     bool isSampler() const override { return true; }

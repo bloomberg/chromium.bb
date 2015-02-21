@@ -26,13 +26,13 @@
 #ifndef WebGLTexture_h
 #define WebGLTexture_h
 
-#include "core/html/canvas/WebGLSharedObject.h"
+#include "core/html/canvas/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class WebGLTexture final : public WebGLSharedObject {
+class WebGLTexture final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum TextureExtensionFlag {
@@ -40,7 +40,7 @@ public:
         TextureFloatLinearExtensionEnabled = 1 << 0,
         TextureHalfFloatLinearExtensionEnabled = 1 << 1
     };
-    virtual ~WebGLTexture();
+    ~WebGLTexture() override;
 
     static PassRefPtrWillBeRawPtr<WebGLTexture> create(WebGLRenderingContextBase*);
 
@@ -78,7 +78,7 @@ public:
 private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
 
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
     class LevelInfo {
     public:
@@ -107,7 +107,7 @@ private:
         GLenum type;
     };
 
-    virtual bool isTexture() const override { return true; }
+    bool isTexture() const override { return true; }
 
     void update();
 

@@ -20,9 +20,8 @@ WebGLFenceSync::~WebGLFenceSync()
 }
 
 WebGLFenceSync::WebGLFenceSync(WebGL2RenderingContextBase* ctx, GLenum condition, GLbitfield flags)
-    : WebGLSync(ctx, GL_SYNC_FENCE)
+    : WebGLSync(ctx, ctx->webContext()->fenceSync(condition, flags), GL_SYNC_FENCE)
 {
-    setObject(ctx->webContext()->fenceSync(condition, flags));
 }
 
 } // namespace blink

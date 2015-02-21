@@ -26,16 +26,16 @@
 #ifndef WebGLShader_h
 #define WebGLShader_h
 
-#include "core/html/canvas/WebGLSharedObject.h"
+#include "core/html/canvas/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class WebGLShader final : public WebGLSharedObject {
+class WebGLShader final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~WebGLShader();
+    ~WebGLShader() override;
 
     static PassRefPtrWillBeRawPtr<WebGLShader> create(WebGLRenderingContextBase*, GLenum);
 
@@ -47,9 +47,9 @@ public:
 private:
     WebGLShader(WebGLRenderingContextBase*, GLenum);
 
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
-    virtual bool isShader() const override { return true; }
+    bool isShader() const override { return true; }
 
     GLenum m_type;
     String m_source;

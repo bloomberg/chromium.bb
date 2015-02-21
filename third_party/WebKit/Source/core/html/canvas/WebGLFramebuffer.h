@@ -64,9 +64,11 @@ public:
         WebGLAttachment();
     };
 
-    virtual ~WebGLFramebuffer();
+    ~WebGLFramebuffer() override;
 
     static PassRefPtrWillBeRawPtr<WebGLFramebuffer> create(WebGLRenderingContextBase*);
+
+    Platform3DObject object() const { return m_object; }
 
     void setAttachmentForBoundFramebuffer(GLenum attachment, GLenum texTarget, WebGLTexture*, GLint level);
     void setAttachmentForBoundFramebuffer(GLenum attachment, WebGLRenderbuffer*);
@@ -106,7 +108,8 @@ public:
 protected:
     explicit WebGLFramebuffer(WebGLRenderingContextBase*);
 
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    bool hasObject() const override { return m_object != 0; }
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
 private:
     WebGLAttachment* getAttachment(GLenum) const;
@@ -120,6 +123,8 @@ private:
 
     // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
     void drawBuffersIfNecessary(bool force);
+
+    Platform3DObject m_object;
 
     typedef WillBeHeapHashMap<GLenum, RefPtrWillBeMember<WebGLAttachment>> AttachmentMap;
 

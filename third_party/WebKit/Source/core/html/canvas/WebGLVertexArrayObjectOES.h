@@ -41,9 +41,11 @@ public:
         VaoTypeUser,
     };
 
-    virtual ~WebGLVertexArrayObjectOES();
+    ~WebGLVertexArrayObjectOES() override;
 
     static PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> create(WebGLRenderingContextBase*, VaoType);
+
+    Platform3DObject object() const { return m_object; }
 
     // Cached values for vertex attrib range checks
     class VertexAttribState final {
@@ -95,7 +97,10 @@ private:
     WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);
 
     void dispatchDetached(blink::WebGraphicsContext3D*);
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    bool hasObject() const override { return m_object != 0; }
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+
+    Platform3DObject m_object;
 
     VaoType m_type;
     bool m_hasEverBeenBound;

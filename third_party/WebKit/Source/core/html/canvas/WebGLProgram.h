@@ -26,14 +26,14 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
-#include "core/html/canvas/WebGLSharedObject.h"
 #include "core/html/canvas/WebGLShader.h"
+#include "core/html/canvas/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class WebGLProgram final : public WebGLSharedObject {
+class WebGLProgram final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLProgram();
@@ -64,10 +64,10 @@ public:
 protected:
     explicit WebGLProgram(WebGLRenderingContextBase*);
 
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
 private:
-    virtual bool isProgram() const override { return true; }
+    bool isProgram() const override { return true; }
 
     void cacheActiveAttribLocations(blink::WebGraphicsContext3D*);
     void cacheInfoIfNeeded();

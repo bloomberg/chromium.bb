@@ -37,7 +37,7 @@ PassRefPtrWillBeRawPtr<WebGLShader> WebGLShader::create(WebGLRenderingContextBas
 }
 
 WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
-    : WebGLSharedObject(ctx)
+    : WebGLSharedPlatform3DObject(ctx)
     , m_type(type)
     , m_source("")
 {
@@ -56,9 +56,10 @@ WebGLShader::~WebGLShader()
     detachAndDeleteObject();
 }
 
-void WebGLShader::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLShader::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-    context3d->deleteShader(object);
+    context3d->deleteShader(m_object);
+    m_object = 0;
 }
 
 }

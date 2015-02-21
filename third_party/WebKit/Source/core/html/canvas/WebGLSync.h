@@ -6,6 +6,7 @@
 #define WebGLSync_h
 
 #include "core/html/canvas/WebGLSharedObject.h"
+#include "public/platform/WebGraphicsContext3D.h"
 
 namespace blink {
 
@@ -16,16 +17,20 @@ class WebGLSync : public WebGLSharedObject {
 public:
     ~WebGLSync() override;
 
-protected:
-    WebGLSync(WebGL2RenderingContextBase*, GLenum objectType);
+    WGC3Dsync object() const { return m_object; }
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+protected:
+    WebGLSync(WebGL2RenderingContextBase*, WGC3Dsync, GLenum objectType);
+
+    bool hasObject() const override { return m_object != 0; }
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
     GLenum objectType() const { return m_objectType; }
 
 private:
     bool isSync() const override { return true; }
 
+    WGC3Dsync m_object;
     GLenum m_objectType;
 };
 

@@ -57,6 +57,7 @@ typedef float WGC3Dclampf;
 typedef signed long int WGC3Dintptr;
 typedef signed long int WGC3Dsizeiptr;
 typedef uint64_t WGC3Duint64;
+typedef struct __WGC3Dsync *WGC3Dsync;
 
 // Typedef for server-side objects like OpenGL textures and program objects.
 typedef WGC3Duint WebGLId;
@@ -480,7 +481,7 @@ public:
     virtual void clearBufferfv(WGC3Denum buffer, WGC3Dint drawbuffer, const WGC3Dfloat *value) { }
     virtual void clearBufferiv(WGC3Denum buffer, WGC3Dint drawbuffer, const WGC3Dint *value) { }
     virtual void clearBufferuiv(WGC3Denum buffer, WGC3Dint drawbuffer, const WGC3Duint *value) { }
-    virtual WGC3Denum clientWaitSync(WebGLId sync, WGC3Dbitfield flags, WGC3Duint64 timeout) { return 0x911D; /* GL_WAIT_FAILED */ }
+    virtual WGC3Denum clientWaitSync(WGC3Dsync sync, WGC3Dbitfield flags, WGC3Duint64 timeout) { return 0x911D; /* GL_WAIT_FAILED */ }
     virtual void compressedTexImage3D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Dint border, WGC3Dsizei imageSize, const void *data) { }
     virtual void compressedTexSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Denum format, WGC3Dsizei imageSize, const void *data) { }
     virtual void copyBufferSubData(WGC3Denum readTarget, WGC3Denum writeTarget, WGC3Dintptr readOffset, WGC3Dintptr writeOffset, WGC3Dsizeiptr size) { }
@@ -488,10 +489,10 @@ public:
     virtual WebGLId createSampler() { return 0; }
     virtual WebGLId createTransformFeedback() { return 0; }
     virtual void deleteSampler(WebGLId sampler) { }
-    virtual void deleteSync(WebGLId sync) { }
+    virtual void deleteSync(WGC3Dsync sync) { }
     virtual void deleteTransformFeedback(WebGLId transformfeedback) { }
     virtual void endTransformFeedback(void) { }
-    virtual WebGLId fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return 0; }
+    virtual WGC3Dsync fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return 0; }
     virtual void framebufferTextureLayer(WGC3Denum target, WGC3Denum attachment, WGC3Duint texture, WGC3Dint level, WGC3Dint layer) { }
     virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
     virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
@@ -509,7 +510,7 @@ public:
     virtual void invalidateFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments) { }
     virtual void invalidateSubFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
     virtual WGC3Dboolean isSampler(WebGLId sampler) { return false; }
-    virtual WGC3Dboolean isSync(WebGLId sync) { return false; }
+    virtual WGC3Dboolean isSync(WGC3Dsync sync) { return false; }
     virtual WGC3Dboolean isTransformFeedback(WebGLId transformfeedback) { return false; }
     virtual void pauseTransformFeedback(void) { }
     virtual void programParameteri(WebGLId program, WGC3Denum pname, WGC3Dint value) { }
@@ -543,7 +544,7 @@ public:
     virtual void vertexAttribI4ui(WGC3Duint index, WGC3Duint x, WGC3Duint y, WGC3Duint z, WGC3Duint w) { }
     virtual void vertexAttribI4uiv(WGC3Duint index, const WGC3Duint *v) { }
     virtual void vertexAttribIPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dsizei stride, WGC3Dintptr pointer) { }
-    virtual void waitSync(WebGLId sync, WGC3Dbitfield flags, WGC3Duint64 timeout) { }
+    virtual void waitSync(WGC3Dsync sync, WGC3Dbitfield flags, WGC3Duint64 timeout) { }
 };
 
 } // namespace blink

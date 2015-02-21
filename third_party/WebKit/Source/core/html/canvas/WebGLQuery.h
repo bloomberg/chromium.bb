@@ -5,14 +5,14 @@
 #ifndef WebGLQuery_h
 #define WebGLQuery_h
 
-#include "core/html/canvas/WebGLSharedObject.h"
+#include "core/html/canvas/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class WebGL2RenderingContextBase;
 
-class WebGLQuery : public WebGLSharedObject {
+class WebGLQuery : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~WebGLQuery() override;
@@ -22,7 +22,7 @@ public:
 protected:
     explicit WebGLQuery(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) override;
+    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
 
 private:
     bool isQuery() const override { return true; }

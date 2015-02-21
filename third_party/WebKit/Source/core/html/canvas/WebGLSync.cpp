@@ -22,15 +22,17 @@ WebGLSync::~WebGLSync()
     detachAndDeleteObject();
 }
 
-WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx, GLenum objectType)
+WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx, WGC3Dsync object, GLenum objectType)
     : WebGLSharedObject(ctx)
+    , m_object(object)
     , m_objectType(objectType)
 {
 }
 
-void WebGLSync::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLSync::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-    context3d->deleteSync(object);
+    context3d->deleteSync(m_object);
+    m_object = 0;
 }
 
 } // namespace blink

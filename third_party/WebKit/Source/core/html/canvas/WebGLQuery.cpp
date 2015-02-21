@@ -28,14 +28,15 @@ WebGLQuery::~WebGLQuery()
 }
 
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
-    : WebGLSharedObject(ctx)
+    : WebGLSharedPlatform3DObject(ctx)
 {
     setObject(ctx->webContext()->createQueryEXT());
 }
 
-void WebGLQuery::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLQuery::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-    context3d->deleteQueryEXT(object);
+    context3d->deleteQueryEXT(m_object);
+    m_object = 0;
 }
 
 } // namespace blink

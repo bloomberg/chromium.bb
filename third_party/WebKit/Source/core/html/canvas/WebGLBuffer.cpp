@@ -37,7 +37,7 @@ PassRefPtrWillBeRawPtr<WebGLBuffer> WebGLBuffer::create(WebGLRenderingContextBas
 }
 
 WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
-    : WebGLSharedObject(ctx)
+    : WebGLSharedPlatform3DObject(ctx)
     , m_target(0)
 {
     setObject(ctx->webContext()->createBuffer());
@@ -57,9 +57,10 @@ WebGLBuffer::~WebGLBuffer()
     detachAndDeleteObject();
 }
 
-void WebGLBuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
+void WebGLBuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
 {
-      context3d->deleteBuffer(object);
+    context3d->deleteBuffer(m_object);
+    m_object = 0;
 }
 
 void WebGLBuffer::setTarget(GLenum target)

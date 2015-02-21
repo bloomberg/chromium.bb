@@ -2821,6 +2821,8 @@
             'html/canvas/WebGLShaderPrecisionFormat.h',
             'html/canvas/WebGLSharedObject.cpp',
             'html/canvas/WebGLSharedObject.h',
+            'html/canvas/WebGLSharedPlatform3DObject.cpp',
+            'html/canvas/WebGLSharedPlatform3DObject.h',
             'html/canvas/WebGLSharedWebGraphicsContext3D.cpp',
             'html/canvas/WebGLSharedWebGraphicsContext3D.h',
             'html/canvas/WebGLSync.cpp',

@@ -102,7 +102,7 @@ const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
 const unsigned maxGLActiveContexts = 16;
 
-} // namesapce
+} // namespace
 
 // FIXME: Oilpan: static vectors to heap allocated WebGLRenderingContextBase objects
 // are kept here. This relies on the WebGLRenderingContextBase finalization to
@@ -243,11 +243,6 @@ namespace {
         DrawingBuffer* m_drawingBuffer;
         RawPtrWillBeMember<WebGLFramebuffer> m_framebufferBinding;
     };
-
-    Platform3DObject objectOrZero(WebGLObject* object)
-    {
-        return object ? object->object() : 0;
-    }
 
     GLint clamp(GLint value, GLint min, GLint max)
     {
@@ -1114,7 +1109,7 @@ bool WebGLRenderingContextBase::checkObjectToBeBound(const char* functionName, W
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "object not from this context");
             return false;
         }
-        deleted = !object->object();
+        deleted = !object->hasObject();
     }
     return true;
 }
@@ -1687,7 +1682,7 @@ bool WebGLRenderingContextBase::deleteObject(WebGLObject* object)
         synthesizeGLError(GL_INVALID_OPERATION, "delete", "object does not belong to this context");
         return false;
     }
-    if (object->object()) {
+    if (object->hasObject()) {
         // We need to pass in context here because we want
         // things in this context unbound.
         object->deleteObject(webContext());
@@ -1849,7 +1844,7 @@ bool WebGLRenderingContextBase::validateRenderingState(const char* functionName)
 
 bool WebGLRenderingContextBase::validateWebGLObject(const char* functionName, WebGLObject* object)
 {
-    if (!object || !object->object()) {
+    if (!object || !object->hasObject()) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no object or object deleted");
         return false;
     }
