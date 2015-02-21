@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/ContainerAnnotations.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -73,7 +74,7 @@ struct SameSizeAsVectorWithInlineCapacity<T, 0> {
 template<typename T, unsigned inlineCapacity>
 struct SameSizeAsVectorWithInlineCapacity {
     SameSizeAsVectorWithInlineCapacity<T, 0> baseCapacity;
-    AlignedBuffer<inlineCapacity * sizeof(T), WTF_ALIGN_OF(T)> inlineBuffer;
+    AlignedBuffer<inlineCapacity * sizeof(T), WTF_CONTAINER_BUFFER_ALIGNMENT(T)> inlineBuffer;
 };
 
 static_assert(sizeof(OwnPtr<int>) == sizeof(int*), "OwnPtr should stay small");
