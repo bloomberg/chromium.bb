@@ -204,10 +204,10 @@ int CertVerifyProcOpenSSL::VerifyInternal(
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
   }
 
-  crypto::ScopedOpenSSL<X509_STORE_CTX, X509_STORE_CTX_free>::Type ctx(
+  crypto::ScopedOpenSSL<X509_STORE_CTX, X509_STORE_CTX_free> ctx(
       X509_STORE_CTX_new());
 
-  crypto::ScopedOpenSSL<STACK_OF(X509), sk_X509_free_fn>::Type intermediates(
+  crypto::ScopedOpenSSL<STACK_OF(X509), sk_X509_free_fn> intermediates(
       sk_X509_new_null());
   if (!intermediates.get())
     return ERR_OUT_OF_MEMORY;

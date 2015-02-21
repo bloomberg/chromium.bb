@@ -18,8 +18,7 @@ namespace sha256_interception {
 
 namespace {
 
-typedef crypto::ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free>::Type
-    ScopedX509_ALGOR;
+using ScopedX509_ALGOR = crypto::ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free>;
 
 // Parses |subject_signature| and writes the components into |*out_tbs_data|,
 // |*out_algor|, and |*out_signature|. The BIT STRING in the signature must be

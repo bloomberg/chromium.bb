@@ -13,10 +13,10 @@
 namespace net {
 
 using ScopedPKCS8_PRIV_KEY_INFO =
-    crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type;
-using ScopedSSL = crypto::ScopedOpenSSL<SSL, SSL_free>::Type;
-using ScopedSSL_CTX = crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>::Type;
-using ScopedX509 = crypto::ScopedOpenSSL<X509, X509_free>::Type;
+    crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>;
+using ScopedSSL = crypto::ScopedOpenSSL<SSL, SSL_free>;
+using ScopedSSL_CTX = crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>;
+using ScopedX509 = crypto::ScopedOpenSSL<X509, X509_free>;
 
 }  // namespace net
 

@@ -101,8 +101,7 @@ Status AeadEncryptDecrypt(EncryptOrDecrypt mode,
     return Status::OperationError();
   }
 
-  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup>::Type ctx_cleanup(
-      &ctx);
+  crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup> ctx_cleanup(&ctx);
 
   size_t len;
   int ok;
@@ -226,8 +225,8 @@ Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   const uint8_t* ptr = key_data.bytes();
-  crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
-      p8inf(d2i_PKCS8_PRIV_KEY_INFO(nullptr, &ptr, key_data.byte_length()));
+  crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free> p8inf(
+      d2i_PKCS8_PRIV_KEY_INFO(nullptr, &ptr, key_data.byte_length()));
   if (!p8inf.get() || ptr != key_data.bytes() + key_data.byte_length())
     return Status::DataError();
 

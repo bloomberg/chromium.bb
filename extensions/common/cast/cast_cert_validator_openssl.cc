@@ -18,13 +18,12 @@
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_openssl.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 namespace extensions {
 namespace core_api {
 namespace cast_crypto {
 namespace {
-
-typedef crypto::ScopedOpenSSL<X509, X509_free>::Type ScopedX509;
 
 class CertVerificationContextOpenSSL : public CertVerificationContext {
  public:
@@ -80,7 +79,7 @@ class CertVerificationContextOpenSSL : public CertVerificationContext {
   }
 
  private:
-  ScopedX509 x509_;
+  net::ScopedX509 x509_;
 };
 
 }  // namespace
@@ -127,7 +126,7 @@ VerificationResult VerifyDeviceCert(
   const uint8_t* device_cert_der_ptr =
       reinterpret_cast<const uint8_t*>(device_cert.data());
   const uint8_t* device_cert_der_end = device_cert_der_ptr + device_cert.size();
-  ScopedX509 device_cert_x509(
+  net::ScopedX509 device_cert_x509(
       d2i_X509(NULL, &device_cert_der_ptr, device_cert.size()));
   if (!device_cert_x509 || device_cert_der_ptr != device_cert_der_end) {
     return VerificationResult("Failed to parse device certificate.",

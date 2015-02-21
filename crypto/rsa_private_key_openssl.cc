@@ -19,13 +19,13 @@ namespace crypto {
 
 namespace {
 
-typedef ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
-    ScopedPKCS8_PRIV_KEY_INFO;
+using ScopedPKCS8_PRIV_KEY_INFO =
+    ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>;
 
 // Function pointer definition, for injecting the required key export function
 // into ExportKey, below. The supplied function should export EVP_PKEY into
 // the supplied BIO, returning 1 on success or 0 on failure.
-typedef int (ExportFunction)(BIO*, EVP_PKEY*);
+using ExportFunction = int (*)(BIO*, EVP_PKEY*);
 
 // Helper to export |key| into |output| via the specified ExportFunction.
 bool ExportKey(EVP_PKEY* key,

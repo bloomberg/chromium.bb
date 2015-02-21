@@ -34,8 +34,8 @@ namespace net {
 
 namespace {
 
-typedef crypto::ScopedOpenSSL<GENERAL_NAMES, GENERAL_NAMES_free>::Type
-    ScopedGENERAL_NAMES;
+using ScopedGENERAL_NAMES =
+    crypto::ScopedOpenSSL<GENERAL_NAMES, GENERAL_NAMES_free>;
 
 void CreateOSCertHandlesFromPKCS7Bytes(
     const char* data, int length,
@@ -161,7 +161,7 @@ class X509InitSingleton {
     ResetCertStore();
   }
 
-  crypto::ScopedOpenSSL<X509_STORE, X509_STORE_free>::Type store_;
+  crypto::ScopedOpenSSL<X509_STORE, X509_STORE_free> store_;
 
   DISALLOW_COPY_AND_ASSIGN(X509InitSingleton);
 };
@@ -404,7 +404,7 @@ bool X509Certificate::IsIssuedByEncoded(
 
   // Convert to a temporary list of X509_NAME objects.
   // It will own the objects it points to.
-  crypto::ScopedOpenSSL<STACK_OF(X509_NAME), sk_X509_NAME_free_all>::Type
+  crypto::ScopedOpenSSL<STACK_OF(X509_NAME), sk_X509_NAME_free_all>
       issuer_names(sk_X509_NAME_new_null());
   if (!issuer_names.get())
     return false;

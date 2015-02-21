@@ -65,7 +65,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt cipher_operation,
     return Status::ErrorDataTooLarge();
 
   // Note: PKCS padding is enabled by default
-  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free>::Type context(
+  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free> context(
       EVP_CIPHER_CTX_new());
 
   if (!context.get())

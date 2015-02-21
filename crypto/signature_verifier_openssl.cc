@@ -50,7 +50,7 @@ bool SignatureVerifier::VerifyInit(const uint8* signature_algorithm,
                                    const uint8* public_key_info,
                                    int public_key_info_len) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free>::Type algorithm(
+  ScopedOpenSSL<X509_ALGOR, X509_ALGOR_free> algorithm(
       d2i_X509_ALGOR(NULL, &signature_algorithm, signature_algorithm_len));
   if (!algorithm.get())
     return false;

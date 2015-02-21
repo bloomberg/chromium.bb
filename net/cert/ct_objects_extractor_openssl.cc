@@ -29,8 +29,8 @@ void FreeX509_EXTENSIONS(X509_EXTENSIONS* ptr) {
   sk_X509_EXTENSION_pop_free(ptr, X509_EXTENSION_free);
 }
 
-typedef crypto::ScopedOpenSSL<X509_EXTENSIONS, FreeX509_EXTENSIONS>::Type
-    ScopedX509_EXTENSIONS;
+using ScopedX509_EXTENSIONS =
+    crypto::ScopedOpenSSL<X509_EXTENSIONS, FreeX509_EXTENSIONS>;
 
 // The wire form of the OID 1.3.6.1.4.1.11129.2.4.2. See Section 3.3 of
 // RFC6962.

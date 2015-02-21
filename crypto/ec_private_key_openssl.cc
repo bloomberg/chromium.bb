@@ -25,9 +25,9 @@ namespace {
 //       style guide, hence the unusual parameter placement / types.
 typedef int (*ExportBioFunction)(BIO* bio, const void* key);
 
-typedef ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
-    ScopedPKCS8_PRIV_KEY_INFO;
-typedef ScopedOpenSSL<X509_SIG, X509_SIG_free>::Type ScopedX509_SIG;
+using ScopedPKCS8_PRIV_KEY_INFO =
+    ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>;
+using ScopedX509_SIG = ScopedOpenSSL<X509_SIG, X509_SIG_free>;
 
 // Helper to export |key| into |output| via the specified ExportBioFunction.
 bool ExportKeyWithBio(const void* key,

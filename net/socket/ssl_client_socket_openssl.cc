@@ -78,8 +78,7 @@ void FreeX509Stack(STACK_OF(X509)* ptr) {
   sk_X509_pop_free(ptr, X509_free);
 }
 
-typedef crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>::Type
-    ScopedX509Stack;
+using ScopedX509Stack = crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>;
 
 #if OPENSSL_VERSION_NUMBER < 0x1000103fL
 // This method doesn't seem to have made it into the OpenSSL headers.

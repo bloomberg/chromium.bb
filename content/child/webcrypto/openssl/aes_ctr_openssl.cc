@@ -50,7 +50,7 @@ Status AesCtrEncrypt128BitCounter(const EVP_CIPHER* cipher,
   DCHECK_EQ(16u, counter.byte_length());
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free>::Type context(
+  crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free> context(
       EVP_CIPHER_CTX_new());
 
   if (!context.get())
