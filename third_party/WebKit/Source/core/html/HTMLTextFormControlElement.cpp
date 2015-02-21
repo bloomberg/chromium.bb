@@ -348,7 +348,7 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
 
 void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour, SelectionOption selectionOption)
 {
-    if (hasOpenShadowRoot() || !isTextFormControl())
+    if (hasOpenShadowRoot() || !isTextFormControl() || !inDocument())
         return;
 
     const int editorValueLength = static_cast<int>(innerEditorValue().length());
