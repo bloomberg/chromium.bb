@@ -19,7 +19,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   ImageFromCustomData(&bitmap);
   gfx::Point hotspot = hotspot_;
   ui::ScaleAndRotateCursorBitmapAndHotpoint(
-      device_scale_factor_, rotation_, &bitmap, &hotspot);
+      device_scale_factor_ / custom_scale_, rotation_, &bitmap, &hotspot);
 
   return ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap,
                                                                   hotspot);
