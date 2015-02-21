@@ -11,7 +11,7 @@ declare_args() {
 
 config("dl_config") {
   include_dirs = [ ".." ]
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     if (arm_use_neon) {
       # Enable build-time NEON selection.
       defines = [ "DL_ARM_NEON" ]
@@ -19,7 +19,7 @@ config("dl_config") {
       # Enable run-time NEON selection.
       defines = [ "DL_ARM_NEON_OPTIONAL" ]
     }
-  } else if (cpu_arch == "arm64") {
+  } else if (current_cpu == "arm64") {
     # Enable build-time NEON selection.
     defines = [ "DL_ARM_NEON" ]
   }
@@ -42,7 +42,7 @@ source_set("dl") {
     defines += [ "BIG_FFT_TABLE" ]
   }
 
-  if (cpu_arch == "arm" || cpu_arch == "arm64") {
+  if (current_cpu == "arm" || current_cpu == "arm64") {
     sources += [
       # Common files that are used by both arm and arm64 code.
       "api/arm/armOMX.h",
@@ -58,7 +58,7 @@ source_set("dl") {
     ]
   }
 
-  if (cpu_arch == "arm") {
+  if (current_cpu == "arm") {
     sources += [
       # Common files that are used by both the NEON and non-NEON code.
       "api/armCOMM_s.h",
@@ -78,7 +78,7 @@ source_set("dl") {
     ]
   }
 
-  if (cpu_arch == "arm64") {
+  if (current_cpu == "arm64") {
     sources += [
       "api/arm/arm64COMM_s.h",
 
@@ -101,7 +101,7 @@ source_set("dl") {
     ]
   }
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (current_cpu == "x86" || current_cpu == "x64") {
     cflags += [ "-msse2" ]
 
     sources += [
@@ -137,7 +137,7 @@ source_set("dl") {
     ]
   }
 
-  if (cpu_arch == "mipsel") {
+  if (current_cpu == "mipsel") {
     cflags += [ "-std=c99" ]
     sources -= [ "sp/src/armSP_FFT_F32TwiddleTable.c" ]
 
@@ -156,7 +156,7 @@ source_set("dl") {
   }
 }
 
-if (cpu_arch == "arm") {
+if (current_cpu == "arm") {
   # GYP: third_party/openmax_dl/dl/dl.gyp:openmax_dl_armv7
   # Non-NEON implementation of FFT. This library is NOT
   # standalone. Applications must link with openmax_dl.
