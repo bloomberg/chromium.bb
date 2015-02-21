@@ -46,6 +46,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/common/gpu/media/fake_video_decode_accelerator.h"
 #include "content/common/gpu/media/rendering_helper.h"
@@ -73,6 +74,7 @@
 #endif  // OS_WIN
 
 #if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif  // defined(USE_OZONE)
 
@@ -227,6 +229,16 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     rendering_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&RenderingHelper::InitializeOneOff, &done));
     done.Wait();
+
+#if defined(USE_OZONE)
+    // Need to initialize after the rendering side since the rendering side
+    // initializes the "GPU" parts of Ozone.
+    //
+    // This also needs to be done in the test environment since this shouldn't
+    // be initialized multiple times for the same Ozone platform.
+    gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
+                           GetRenderingTaskRunner());
+#endif
   }
 
   void TearDown() override { rendering_thread_.Stop(); }
@@ -237,6 +249,9 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 
  private:
   base::Thread rendering_thread_;
+#if defined(USE_OZONE)
+  ui::OzoneGpuTestHelper gpu_helper_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
 };

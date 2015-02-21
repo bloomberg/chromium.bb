@@ -96,12 +96,12 @@ component("ozone") {
     "platform_selection.h",
     "public/input_controller.cc",
     "public/input_controller.h",
+    "public/ozone_gpu_thread_helper.cc",
+    "public/ozone_gpu_thread_helper.h",
     "public/ozone_platform.cc",
     "public/ozone_platform.h",
     "public/ozone_switches.cc",
     "public/ozone_switches.h",
-    "public/ui_thread_gpu.cc",
-    "public/ui_thread_gpu.h",
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]

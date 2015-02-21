@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/dri/ozone_platform_dri.h"
 
 #include "base/at_exit.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
@@ -27,8 +28,8 @@
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 #include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
+#include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ui_thread_gpu.h"
 
 #if defined(USE_XKBCOMMON)
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
@@ -121,7 +122,8 @@ class OzonePlatformDri : public OzonePlatform {
         cursor_.get(), device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
 
-    if (!ui_thread_gpu_.Initialize())
+    if (!gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
+                                base::ThreadTaskRunnerHandle::Get()))
       LOG(FATAL) << "Failed to initialize dummy channel.";
   }
 
@@ -147,7 +149,7 @@ class OzonePlatformDri : public OzonePlatform {
 
   DriWindowDelegateManager window_delegate_manager_;
 
-  UiThreadGpu ui_thread_gpu_;
+  OzoneGpuTestHelper gpu_helper_;
 
 #if defined(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

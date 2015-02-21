@@ -42,7 +42,6 @@
 #include "ui/display/chromeos/display_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/ui_thread_gpu.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #endif  // defined(USE_OZONE)
@@ -98,7 +97,6 @@ class DisplayConfiguratorObserver : public ui::DisplayConfigurator::Observer {
 class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
  public:
   StubOzoneDelegate() : accelerated_widget_(gfx::kNullAcceleratedWidget) {
-    ui_thread_gpu_.Initialize();
     platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
         this, gfx::Rect());
   }
@@ -132,7 +130,6 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
   ui::PlatformWindow* platform_window() const { return platform_window_.get(); }
 
  private:
-  ui::UiThreadGpu ui_thread_gpu_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget accelerated_widget_;
 

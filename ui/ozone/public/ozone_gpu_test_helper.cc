@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/public/ui_thread_gpu.h"
+#include "ui/ozone/public/ozone_gpu_test_helper.h"
 
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_listener.h"
@@ -23,12 +23,12 @@ const int kGpuProcessHostId = 1;
 
 class FakeGpuProcess : public IPC::Sender {
  public:
-  FakeGpuProcess() : weak_factory_(this) {}
+  FakeGpuProcess(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+      : ui_task_runner_(ui_task_runner), weak_factory_(this) {}
   ~FakeGpuProcess() override {}
 
   void Init() {
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupport()
         ->OnChannelEstablished(this);
@@ -42,8 +42,7 @@ class FakeGpuProcess : public IPC::Sender {
   }
 
   bool Send(IPC::Message* msg) override {
-    DCHECK(task_runner_->BelongsToCurrentThread());
-    base::MessageLoop::current()->PostTask(
+    ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&FakeGpuProcess::DispatchToGpuPlatformSupportHostTask,
                    weak_factory_.GetWeakPtr(), msg));
@@ -58,59 +57,60 @@ class FakeGpuProcess : public IPC::Sender {
     delete msg;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   base::WeakPtrFactory<FakeGpuProcess> weak_factory_;
 };
 
 class FakeGpuProcessHost {
  public:
-  FakeGpuProcessHost() : weak_factory_(this) {}
+  FakeGpuProcessHost(
+      const scoped_refptr<base::SingleThreadTaskRunner>& gpu_task_runner)
+      : gpu_task_runner_(gpu_task_runner), weak_factory_(this) {}
   ~FakeGpuProcessHost() {}
 
   void Init() {
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
     base::Callback<void(IPC::Message*)> sender =
         base::Bind(&FakeGpuProcessHost::DispatchToGpuPlatformSupportTask,
                    weak_factory_.GetWeakPtr());
 
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupportHost()
-        ->OnChannelEstablished(kGpuProcessHostId, task_runner_, sender);
+        ->OnChannelEstablished(kGpuProcessHostId, gpu_task_runner_, sender);
   }
 
  private:
   void DispatchToGpuPlatformSupportTask(IPC::Message* msg) {
-    DCHECK(task_runner_->BelongsToCurrentThread());
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupport()
         ->OnMessageReceived(*msg);
     delete msg;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<FakeGpuProcessHost> weak_factory_;
 };
 
-UiThreadGpu::UiThreadGpu() {
+OzoneGpuTestHelper::OzoneGpuTestHelper() {
 }
 
-UiThreadGpu::~UiThreadGpu() {
+OzoneGpuTestHelper::~OzoneGpuTestHelper() {
 }
 
-bool UiThreadGpu::Initialize() {
+bool OzoneGpuTestHelper::Initialize(
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& gpu_task_runner) {
   io_helper_thread_.reset(new base::Thread("IOHelperThread"));
   if (!io_helper_thread_->StartWithOptions(
           base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
     return false;
 
-  fake_gpu_process_.reset(new FakeGpuProcess);
+  fake_gpu_process_.reset(new FakeGpuProcess(ui_task_runner));
   io_helper_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&FakeGpuProcess::InitOnIO,
                             base::Unretained(fake_gpu_process_.get())));
   fake_gpu_process_->Init();
 
-  fake_gpu_process_host_.reset(new FakeGpuProcessHost);
+  fake_gpu_process_host_.reset(new FakeGpuProcessHost(gpu_task_runner));
   fake_gpu_process_host_->Init();
 
   return true;

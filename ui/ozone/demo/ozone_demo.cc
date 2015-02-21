@@ -23,9 +23,9 @@
 #include "ui/ozone/demo/software_renderer.h"
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
 #include "ui/ozone/gpu/gpu_memory_buffer_factory_ozone_native_buffer.h"
+#include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
-#include "ui/ozone/public/ui_thread_gpu.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
@@ -59,7 +59,7 @@ class RendererFactory {
   RendererType type_;
 
   // Helper for applications that do GL on main thread.
-  ui::UiThreadGpu ui_thread_gpu_;
+  ui::OzoneGpuTestHelper gpu_helper_;
 
   // Used by the surfaceless renderers to allocate buffers.
   ui::GpuMemoryBufferFactoryOzoneNativeBuffer buffer_factory_;
@@ -199,7 +199,9 @@ RendererFactory::~RendererFactory() {
 bool RendererFactory::Initialize() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kDisableGpu) &&
-      gfx::GLSurface::InitializeOneOff() && ui_thread_gpu_.Initialize()) {
+      gfx::GLSurface::InitializeOneOff() &&
+      gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
+                             base::ThreadTaskRunnerHandle::Get())) {
     if (command_line->HasSwitch(switches::kOzoneUseSurfaceless)) {
       type_ = SURFACELESS_GL;
     } else {
