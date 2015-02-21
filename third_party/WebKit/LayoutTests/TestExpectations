@@ -899,6 +899,10 @@ crbug.com/393096 [ Win7 ] fast/flexbox/overhanging-floats-removed.html [ Failure
 
 crbug.com/339778 crbug.com/412273 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
+crbug.com/460408 [ XP ] virtual/slimmingpaint/fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
+crbug.com/460408 [ XP ] virtual/slimmingpaint/fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
+crbug.com/460408 [ XP ] virtual/slimmingpaint/fast/frames/iframe-scaling-with-scroll.html [ NeedsRebaseline ]
+
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Timeout Pass ]
 
 crbug.com/418070 [ Mac ] fast/text/atsui-multiple-renderers.html [ Failure ]
@@ -1838,10 +1842,6 @@ crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
 crbug.com/460356 fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
-
-crbug.com/458813 [ XP ] virtual/slimmingpaint/fast/frames/frame-set-scaling-rotate.html [ ImageOnlyFailure ]
-crbug.com/458813 [ XP ] virtual/slimmingpaint/fast/frames/frame-set-scaling-skew.html [ ImageOnlyFailure ]
-crbug.com/458813 [ XP ] virtual/slimmingpaint/fast/frames/iframe-scaling-with-scroll.html [ ImageOnlyFailure ]
 
 crbug.com/460374 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ ImageOnlyFailure ]
 
