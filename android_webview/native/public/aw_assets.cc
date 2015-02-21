@@ -4,7 +4,7 @@
 
 #include <jni.h>
 
-#include "android_webview/native/aw_assets.h"
+#include "android_webview/native/public/aw_assets.h"
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
