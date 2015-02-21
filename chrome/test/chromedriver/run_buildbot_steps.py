@@ -322,7 +322,7 @@ def _MaybeUploadReleaseNotes(version):
 
   fixed_issues = []
   query = ('https://code.google.com/p/chromedriver/issues/csv?'
-           'q=status%3AToBeReleased&colspec=ID%20Summary')
+           'q=label%%3AChromeDriver-%s&colspec=ID%%20Summary' % version)
   issues = StringIO.StringIO(_GetWebPageContent(query).split('\n', 1)[1])
   for issue in csv.reader(issues):
     if not issue:
