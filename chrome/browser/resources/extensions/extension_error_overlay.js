@@ -242,7 +242,8 @@ cr.define('extensions', function() {
           ExtensionErrorOverlay.requestFileSource(
               {extensionId: this.error_.extensionId,
                message: this.error_.message,
-               pathSuffix: getRelativeUrl(frame.url, this.extensionUrl_),
+               pathSuffix: getRelativeUrl(frame.url,
+                                          assert(this.extensionUrl_)),
                lineNumber: frame.lineNumber});
         }.bind(this, frame, frameNode));
 
