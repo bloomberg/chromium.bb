@@ -124,16 +124,19 @@ class LocalDeviceInstrumentationTestRun(
 
     # TODO(jbudorick): Make instrumentation tests output a JSON so this
     # doesn't have to parse the output.
-    logging.info('output from %s:' % test_name)
+    logging.debug('output from %s:', test_name)
     for l in output:
-      logging.info('  %s' % l)
+      logging.debug('  %s', l)
 
-    _, _, statuses = self._test_instance.ParseAmInstrumentRawOutput(output)
-    result = self._test_instance.GenerateTestResult(
-        test_name, statuses, start_ms, duration_ms)
+    result_code, result_bundle, statuses = (
+        self._test_instance.ParseAmInstrumentRawOutput(output))
+    results = self._test_instance.GenerateTestResults(
+        result_code, result_bundle, statuses, start_ms, duration_ms)
     if DidPackageCrashOnDevice(self._test_instance.test_package, device):
-      result.SetType(base_test_result.ResultType.CRASH)
-    return result
+      for r in results:
+        if r.GetType() == base_test_result.ResultType.UNKNOWN:
+          r.SetType(base_test_result.ResultType.CRASH)
+    return results
 
   #override
   def _ShouldShard(self):

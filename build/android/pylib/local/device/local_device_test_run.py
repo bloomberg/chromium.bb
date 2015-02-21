@@ -70,10 +70,11 @@ class LocalDeviceTestRun(test_run.TestRun):
     if unknown_tests:
       results.AddResults(
           base_test_result.BaseTestResult(
-              t, base_test_result.ResultType.UNKNOWN)
-          for t in tests)
+              u, base_test_result.ResultType.UNKNOWN)
+          for u in unknown_tests)
     if failed_tests:
       results.AddResults(all_fail_results[f] for f in failed_tests)
+
     return results
 
   def GetTool(self, device):

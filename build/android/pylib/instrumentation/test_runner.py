@@ -320,9 +320,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
         '%s/%s' % (self.test_pkg.GetPackageName(), self.options.test_runner),
         raw=True, extras=extras, timeout=timeout, retries=3)
 
-  def _GenerateTestResult(self, test, instr_statuses, start_ms, duration_ms):
-    return instrumentation_test_instance.GenerateTestResult(
-        test, instr_statuses, start_ms, duration_ms)
+  def _GenerateTestResult(self, test, instr_result_code, instr_result_bundle,
+                          statuses, start_ms, duration_ms):
+    results = instrumentation_test_instance.GenerateTestResults(
+        instr_result_code, instr_result_bundle, statuses, start_ms, duration_ms)
+    for r in results:
+      if r.GetName() == test:
+        return r
+    logging.error('Could not find result for test: %s', test)
+    return test_result.InstrumentationTestResult(
+        test, base_test_result.ResultType.UNKNOWN, start_ms, duration_ms)
 
   #override
   def RunTest(self, test):
@@ -345,9 +352,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
       duration_ms = time_ms() - start_ms
 
       # Parse the test output
-      _, _, statuses = (
+      result_code, result_bundle, statuses = (
           instrumentation_test_instance.ParseAmInstrumentRawOutput(raw_output))
-      result = self._GenerateTestResult(test, statuses, start_ms, duration_ms)
+      result = self._GenerateTestResult(
+          test, result_code, result_bundle, statuses, start_ms, duration_ms)
       if local_device_instrumentation_test_run.DidPackageCrashOnDevice(
           self.test_pkg.GetPackageName(), self.device):
         result.SetType(base_test_result.ResultType.CRASH)

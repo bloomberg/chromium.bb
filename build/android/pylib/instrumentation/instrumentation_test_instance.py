@@ -23,6 +23,10 @@ sys.path.append(
     os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
 import unittest_util
 
+# Ref: http://developer.android.com/reference/android/app/Activity.html
+_ACTIVITY_RESULT_CANCELED = 0
+_ACTIVITY_RESULT_OK = -1
+
 _DEFAULT_ANNOTATIONS = [
     'Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
     'EnormousTest', 'IntegrationTest']
@@ -54,48 +58,69 @@ def ParseAmInstrumentRawOutput(raw_output):
   return (code, bundle, statuses)
 
 
-def GenerateTestResult(test_name, instr_statuses, start_ms, duration_ms):
-  """Generate the result of |test| from |instr_statuses|.
+def GenerateTestResults(
+    result_code, result_bundle, statuses, start_ms, duration_ms):
+  """Generate test results from |statuses|.
 
   Args:
-    test_name: The name of the test as "class#method"
-    instr_statuses: A list of 2-tuples containing:
+    result_code: The overall status code as an integer.
+    result_bundle: The summary bundle dump as a dict.
+    statuses: A list of 2-tuples containing:
       - the status code as an integer
       - the bundle dump as a dict mapping string keys to string values
       Note that this is the same as the third item in the 3-tuple returned by
       |_ParseAmInstrumentRawOutput|.
     start_ms: The start time of the test in milliseconds.
     duration_ms: The duration of the test in milliseconds.
+
   Returns:
-    An InstrumentationTestResult object.
+    A list containing an instance of InstrumentationTestResult for each test
+    parsed.
   """
-  log = ''
-  result_type = base_test_result.ResultType.UNKNOWN
 
-  for status_code, bundle in instr_statuses:
-    if status_code == instrumentation_parser.STATUS_CODE_START:
-      pass
-    elif status_code == instrumentation_parser.STATUS_CODE_OK:
-      bundle_test = '%s#%s' % (bundle.get('class', ''), bundle.get('test', ''))
-      skipped = bundle.get('test_skipped', '')
+  results = []
 
-      if (test_name == bundle_test and
-          result_type == base_test_result.ResultType.UNKNOWN):
-        result_type = base_test_result.ResultType.PASS
-      elif skipped.lower() in ('true', '1', 'yes'):
-        result_type = base_test_result.ResultType.SKIP
-        logging.info('Skipped ' + test_name)
+  current_result = None
+
+  for status_code, bundle in statuses:
+    test_class = bundle.get('class', '')
+    test_method = bundle.get('test', '')
+    if test_class and test_method:
+      test_name = '%s#%s' % (test_class, test_method)
     else:
-      if status_code not in (instrumentation_parser.STATUS_CODE_ERROR,
-                             instrumentation_parser.STATUS_CODE_FAILURE):
-        logging.error('Unrecognized status code %d. Handling as an error.',
-                      status_code)
-      result_type = base_test_result.ResultType.FAIL
-      if 'stack' in bundle:
-        log = bundle['stack']
+      continue
 
-  return test_result.InstrumentationTestResult(
-      test_name, result_type, start_ms, duration_ms, log=log)
+    if status_code == instrumentation_parser.STATUS_CODE_START:
+      if current_result:
+        results.append(current_result)
+      current_result = test_result.InstrumentationTestResult(
+          test_name, base_test_result.ResultType.UNKNOWN, start_ms, duration_ms)
+    else:
+      if status_code == instrumentation_parser.STATUS_CODE_OK:
+        if bundle.get('test_skipped', '').lower() in ('true', '1', 'yes'):
+          current_result.SetType(base_test_result.ResultType.SKIP)
+        elif current_result.GetType() == base_test_result.ResultType.UNKNOWN:
+          current_result.SetType(base_test_result.ResultType.PASS)
+      else:
+        if status_code not in (instrumentation_parser.STATUS_CODE_ERROR,
+                               instrumentation_parser.STATUS_CODE_FAILURE):
+          logging.error('Unrecognized status code %d. Handling as an error.',
+                        status_code)
+        current_result.SetType(base_test_result.ResultType.FAIL)
+        if 'stack' in bundle:
+          current_result.SetLog(bundle['stack'])
+
+  if current_result:
+    if current_result.GetType() == base_test_result.ResultType.UNKNOWN:
+      crashed = (result_code == _ACTIVITY_RESULT_CANCELED
+                 and any(_NATIVE_CRASH_RE.search(l)
+                         for l in result_bundle.itervalues()))
+      if crashed:
+        current_result.SetType(base_test_result.ResultType.CRASH)
+
+    results.append(current_result)
+
+  return results
 
 
 class InstrumentationTestInstance(test_instance.TestInstance):
@@ -421,37 +446,14 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return inflated_tests
 
   @staticmethod
-  def GenerateMultiTestResult(errors, statuses):
-    results = []
-    skip_counter = 1
-    for status_code, bundle in statuses:
-      if status_code != instrumentation_parser.STATUS_CODE_START:
-        # TODO(rnephew): Make skipped tests still output test name. This is only
-        # there to give skipped tests a unique name so they are counted
-        if 'test_skipped' in bundle:
-          test_name = str(skip_counter)
-          skip_counter += 1
-        else:
-          test_name = '%s#%s' % (bundle.get('class', ''),
-                                 bundle.get('test', ''))
-
-        results.append(
-            GenerateTestResult(test_name, [(status_code, bundle)], 0, 0))
-    for error in errors.itervalues():
-      if _NATIVE_CRASH_RE.search(error):
-        results.append(
-            base_test_result.BaseTestResult(
-            'Crash detected', base_test_result.ResultType.CRASH))
-
-    return results
-
-  @staticmethod
   def ParseAmInstrumentRawOutput(raw_output):
     return ParseAmInstrumentRawOutput(raw_output)
 
   @staticmethod
-  def GenerateTestResult(test_name, instr_statuses, start_ms, duration_ms):
-    return GenerateTestResult(test_name, instr_statuses, start_ms, duration_ms)
+  def GenerateTestResults(
+      result_code, result_bundle, statuses, start_ms, duration_ms):
+    return GenerateTestResults(result_code, result_bundle, statuses,
+                               start_ms, duration_ms)
 
   #override
   def TearDown(self):

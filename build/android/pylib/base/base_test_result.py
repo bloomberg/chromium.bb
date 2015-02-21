@@ -77,6 +77,10 @@ class BaseTestResult(object):
     """Get the test duration."""
     return self._duration
 
+  def SetLog(self, log):
+    """Set the test log."""
+    self._log = log
+
   def GetLog(self):
     """Get the test log."""
     return self._log
