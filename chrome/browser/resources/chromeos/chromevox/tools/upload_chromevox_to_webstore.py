@@ -43,7 +43,9 @@ EXCLUDE_PATHS = [
 
 def CreateOptionParser():
   parser = optparse.OptionParser(description=__doc__)
-  parser.usage = '%prog <extension_path> <output_path> <client_secret'
+  parser.usage = '%prog <extension_path> <client_secret>'
+  parser.add_option('-p', '--publish', action='store_true',
+                    help='publish the extension')
   return parser
 
 
@@ -88,11 +90,11 @@ def RunInteractivePrompt(client_secret, output_path):
              chromevox_webstore_util.GetUploadStatus(client_secret).read())
     elif input == 'u':
       print ('Uploaded with status: %s' %
-             chromevox_webstore_util.PostUpload(output_path, client_secret))
+          chromevox_webstore_util.PostUpload(output_path.name, client_secret))
     elif input == 't':
       print ('Published to trusted testers with status: %s' %
-             chromevox_webstore_util.PostPublishTrustedTesters(
-                 client_secret).read())
+          chromevox_webstore_util.PostPublishTrustedTesters(
+              client_secret).read())
     elif input == 'p':
       print ('Published to public with status: %s' %
              chromevox_webstore_util.PostPublish(client_secret).read())
@@ -102,14 +104,15 @@ def RunInteractivePrompt(client_secret, output_path):
       print 'Unrecognized option: %s' % input
 
 def main():
-  _, args = CreateOptionParser().parse_args()
-  if len(args) != 3:
-    print 'Expected exactly three arguments'
+  options, args = CreateOptionParser().parse_args()
+  if len(args) != 2:
+    print 'Expected exactly two arguments'
+    print str(args)
     sys.exit(1)
 
   extension_path = args[0]
-  output_path = args[1]
-  client_secret = args[2]
+  client_secret = args[1]
+  output_path = tempfile.NamedTemporaryFile()
 
   with ZipFile(output_path, 'w') as zip:
     for root, dirs, files in os.walk(extension_path):
@@ -125,9 +128,15 @@ def main():
                   os.path.join(rel_path, extension_file))
     manifest_file = MakeManifest()
     zip.write(manifest_file.name, 'manifest.json')
-  print 'Created ChromeVox zip file in %s' % output_path
+  print 'Created ChromeVox zip file in %s' % output_path.name
   print 'Please run manual smoke tests before proceeding.'
-  RunInteractivePrompt(client_secret, output_path)
+  if options.publish:
+    print('Uploading...%s' %
+        chromevox_webstore_util.PostUpload(output_path.name, client_secret))
+    print('publishing...%s' %
+        chromevox_webstore_util.PostPublish(client_secret).read())
+  else:
+    RunInteractivePrompt(client_secret, output_path)
 
 
 if __name__ == '__main__':

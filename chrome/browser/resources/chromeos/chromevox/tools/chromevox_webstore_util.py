@@ -24,7 +24,10 @@ PROJECT_ARGS = {
   'redirect_uri': 'http://localhost:8000'
 }
 
+# Globals.
 PORT = 8000
+g_auth_code = None
+g_oauth_token = None
 
 APP_ID = 'kgejglhpjiefppelpmljglcjbhoiplfn'
 OAUTH_DOMAIN = 'accounts.google.com'
@@ -45,6 +48,10 @@ class CodeRequestHandler(SocketServer.StreamRequestHandler):
     self.rfile.close()
 
 def GetAuthCode():
+  global g_auth_code
+  if g_auth_code:
+    return g_auth_code
+
   Handler = CodeRequestHandler
   httpd = SocketServer.TCPServer(("", PORT), Handler)
   query = '&'.join(['response_type=code',
@@ -56,9 +63,14 @@ def GetAuthCode():
   webbrowser.open(auth_url)
   httpd.handle_request()
   httpd.server_close()
-  return httpd.code
+  g_auth_code = httpd.code
+  return g_auth_code
 
 def GetOauthToken(code, client_secret):
+  global g_oauth_token
+  if g_oauth_token:
+    return g_oauth_token
+
   PROJECT_ARGS['code'] = code
   PROJECT_ARGS['client_secret'] = client_secret
   body = urllib.urlencode(PROJECT_ARGS)
@@ -69,11 +81,14 @@ def GetOauthToken(code, client_secret):
   conn.endheaders()
   conn.send(body)
   content = conn.getresponse().read()
-  return json.loads(content)
+  conn.close()
+  g_oauth_token = json.loads(content)
+  return g_oauth_token
 
 def GetPopulatedHeader(client_secret):
   code = GetAuthCode()
   access_token = GetOauthToken(code, client_secret)
+
   url = 'www.googleapis.com'
 
   return {'Authorization': 'Bearer %(access_token)s' % access_token,
@@ -85,14 +100,18 @@ def SendGetCommand(command, client_secret):
   headers = GetPopulatedHeader(client_secret)
   conn = httplib.HTTPSConnection(API_ENDPOINT_DOMAIN)
   conn.request('GET', command, '', headers)
-  return conn.getresponse()
+  r = conn.getresponse()
+  conn.close()
+  return r
 
 def SendPostCommand(command, client_secret, header_additions = {}, body=None):
   headers = GetPopulatedHeader(client_secret)
   headers = dict(headers.items() + header_additions.items())
   conn = httplib.HTTPSConnection(API_ENDPOINT_DOMAIN)
   conn.request('POST', command, body, headers)
-  return conn.getresponse()
+  r = conn.getresponse()
+  conn.close()
+  return r
 
 def GetUploadStatus(client_secret):
   '''Gets the status of a previous upload.
