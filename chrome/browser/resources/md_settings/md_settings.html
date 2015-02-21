@@ -3,12 +3,15 @@
 <head>
   <meta charset="utf-8">
   <title>Settings</title>
+  <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+  <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+  <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
   <link rel="import"
       href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
   <link rel="import"
       href="chrome://resources/cr_elements/cr_toggle_button/cr_toggle_button.html">
   <link rel="import"
-      href="chrome://resources/polymer/paper-button/paper-button.html">
+      href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
 </head>
 <body>
   <header>
@@ -18,6 +21,16 @@
     <paper-button id="manage-button" raised>Manage</paper-button>
     <cr-toggle-button checked></cr-toggle-button>
     <cr-checkbox checked></cr-checkbox>
+    <section>
+      <h2>cr-dropdown-menu</h2>
+      <cr-dropdown-menu style="width: 200px">
+        <core-menu class="menu">
+          <paper-item>Chrome</paper-item>
+          <paper-item>IE</paper-item>
+          <paper-item>Firefox</paper-item>
+        </core-menu>
+      </cr-dropdown-menu>
+    </section>
   </div>
 </body>
 </html>

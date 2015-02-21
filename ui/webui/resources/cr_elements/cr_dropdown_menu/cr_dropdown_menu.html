@@ -1,0 +1,16 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/paper-dropdown/paper-dropdown.html">
+<script src="chrome://resources/js/assert.js"></script>
+
+<polymer-element name="cr-dropdown-menu">
+  <template>
+    <link rel="stylesheet" href="cr_dropdown_menu.css">
+    <paper-dropdown-menu flex label="{{label}}" opened="{{opened}}">
+      <paper-dropdown class="dropdown">
+        <content></content>
+      </paper-dropdown>
+    </paper-dropdown-menu>
+  </template>
+  <script src="cr_dropdown_menu.js"></script>
+</polymer-element>
