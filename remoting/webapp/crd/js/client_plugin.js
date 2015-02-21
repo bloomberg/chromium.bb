@@ -239,6 +239,13 @@ remoting.ClientPlugin.prototype.setFetchThirdPartyTokenHandler =
 remoting.ClientPlugin.prototype.setFetchPinHandler =
     function(handler) {};
 
+/**
+ * @param {function({rects:Array<Array<number>>}):void|null} handler Callback
+ *     to receive dirty region information for each video frame, for debugging.
+ */
+remoting.ClientPlugin.prototype.setDebugDirtyRegionHandler =
+    function(handler) {};
+
 
 /**
  * Set of features for which hasFeature() can be used to test.

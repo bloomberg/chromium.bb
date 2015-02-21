@@ -38,6 +38,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
                   const ClientContext& context,
                   EventHandler* event_handler) override;
   void OnViewChanged(const pp::View& view) override;
+  void EnableDebugDirtyRegion(bool enable) override;
 
   // VideoRenderer interface.
   void OnSessionConfig(const protocol::SessionConfig& config) override;
@@ -148,6 +149,9 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   // Location of the scale value to be passed to the |shader_program_|.
   int shader_texcoord_scale_location_;
+
+  // True if dirty regions are to be sent to |event_handler_| for debugging.
+  bool debug_dirty_region_;
 
   pp::CompletionCallbackFactory<PepperVideoRenderer3D> callback_factory_;
 

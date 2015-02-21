@@ -840,3 +840,16 @@ remoting.ClientSession.prototype.handleExtensionMessage =
   }
   return false;
 };
+
+/**
+ * Enables or disables rendering of dirty regions for debugging.
+ * @param {boolean} enable True to enable rendering.
+ */
+remoting.ClientSession.prototype.enableDebugRegion = function(enable) {
+  if (enable) {
+    this.plugin_.setDebugDirtyRegionHandler(
+        this.uiHandler_.handleDebugRegion.bind(this.uiHandler_));
+  } else {
+    this.plugin_.setDebugDirtyRegionHandler(null);
+  }
+}

@@ -105,12 +105,13 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage,
    * @private
    */
   this.updateMouseCursorImage_ = function(url, hotspotX, hotspotY) {};
-
   /**
    * @param {string} data Remote cast extension message.
    * @private
    */
   this.onCastExtensionHandler_ = function(data) {};
+  /** @private {?function({rects:Array<Array<number>>}):void} */
+  this.debugRegionHandler_ = null;
 
   /**
    * @type {number}
@@ -293,6 +294,16 @@ remoting.ClientPluginImpl.prototype.setFetchThirdPartyTokenHandler =
  */
 remoting.ClientPluginImpl.prototype.setFetchPinHandler = function(handler) {
   this.fetchPinHandler_ = handler;
+};
+
+/**
+ * @param {?function({rects:Array<Array<number>>}):void} handler
+ */
+remoting.ClientPluginImpl.prototype.setDebugDirtyRegionHandler =
+    function(handler) {
+  this.debugRegionHandler_ = handler;
+  this.plugin_.postMessage(JSON.stringify(
+      { method: 'enableDebugRegion', data: { enable: handler != null } }));
 };
 
 /**
@@ -492,6 +503,13 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
 
     context.putImageData(imageData, 0, 0);
     this.updateMouseCursorImage_(canvas.toDataURL(), hotspotX, hotspotY);
+
+  } else if (message.method == 'onDebugRegion') {
+    if (this.debugRegionHandler_) {
+      this.debugRegionHandler_(
+          /** @type {{rects: Array<(Array<number>)>}} **/(message.data));
+    }
+
   }
 };
 

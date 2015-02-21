@@ -153,6 +153,10 @@ void PepperVideoRenderer3D::OnViewChanged(const pp::View& view) {
   PaintIfNeeded();
 }
 
+void PepperVideoRenderer3D::EnableDebugDirtyRegion(bool enable) {
+  debug_dirty_region_ = enable;
+}
+
 void PepperVideoRenderer3D::OnSessionConfig(
     const protocol::SessionConfig& config) {
   PP_VideoProfile video_profile = PP_VIDEOPROFILE_VP8_ANY;
@@ -248,6 +252,18 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   if (!desktop_shape_.Equals(desktop_shape)) {
     desktop_shape_.Swap(&desktop_shape);
     event_handler_->OnVideoShape(desktop_shape_);
+  }
+
+  // Report the dirty region, for debugging, if requested.
+  if (debug_dirty_region_) {
+    webrtc::DesktopRegion dirty_region;
+    for (int i = 0; i < packet->dirty_rects_size(); ++i) {
+      Rect remoting_rect = packet->dirty_rects(i);
+      dirty_region.AddRect(webrtc::DesktopRect::MakeXYWH(
+          remoting_rect.x(), remoting_rect.y(),
+          remoting_rect.width(), remoting_rect.height()));
+    }
+    event_handler_->OnVideoFrameDirtyRegion(dirty_region);
   }
 
   pending_packets_.push_back(

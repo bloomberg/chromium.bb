@@ -72,6 +72,10 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
   this.notifyClientResolutionTimer_ = null;
 
   /** @type {Element} @private */
+  this.debugRegionContainer_ =
+      this.container_.querySelector('.debug-region-container');
+
+  /** @type {Element} @private */
   this.mouseCursorOverlay_ =
       this.container_.querySelector('.mouse-cursor-overlay');
 
@@ -1053,3 +1057,28 @@ remoting.DesktopConnectedView.prototype.handleExtensionMessage =
   }
   return false;
 };
+
+/**
+ * Handles dirty region debug messages.
+ *
+ * @param {{rects:Array<Array<number>>}} region Dirty region of the latest
+ *     frame.
+ */
+remoting.DesktopConnectedView.prototype.handleDebugRegion = function(region) {
+  while (this.debugRegionContainer_.firstChild) {
+    this.debugRegionContainer_.removeChild(
+        this.debugRegionContainer_.firstChild);
+  }
+  if (region.rects) {
+    var rects = region.rects;
+    for (var i = 0; i < rects.length; ++i) {
+      var rect = document.createElement('div');
+      rect.classList.add('debug-region-rect');
+      rect.style.left = rects[i][0] + 'px';
+      rect.style.top = rects[i][1] +'px';
+      rect.style.width = rects[i][2] +'px';
+      rect.style.height = rects[i][3] + 'px';
+      this.debugRegionContainer_.appendChild(rect);
+    }
+  }
+}

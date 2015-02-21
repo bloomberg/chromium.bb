@@ -707,6 +707,22 @@ body:not(.connected) #session-mode {
   height: auto;
 }
 
+.debug-region-container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+}
+
+.debug-region-rect {
+  position: absolute;
+  background-color: rgba(255, 0, 255, 0.5);
+  border-color: #000000;
+  border-style: solid;
+  border-width: 2px;
+  box-sizing: border-box;
+}
+
 .mouse-cursor-overlay {
   position: absolute;
   pointer-events: none;

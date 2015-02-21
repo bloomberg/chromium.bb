@@ -69,6 +69,7 @@ PepperVideoRenderer2D::PepperVideoRenderer2D()
       dips_to_view_scale_(1.0f),
       flush_pending_(false),
       frame_received_(false),
+      debug_dirty_region_(false),
       callback_factory_(this),
       weak_factory_(this) {
 }
@@ -176,6 +177,10 @@ void PepperVideoRenderer2D::OnViewChanged(const pp::View& view) {
     software_video_renderer_->SetOutputSizeAndClip(view_size_, clip_area_);
     AllocateBuffers();
   }
+}
+
+void PepperVideoRenderer2D::EnableDebugDirtyRegion(bool enable) {
+  debug_dirty_region_ = enable;
 }
 
 void PepperVideoRenderer2D::OnSessionConfig(
@@ -338,6 +343,11 @@ void PepperVideoRenderer2D::FlushBuffer(const webrtc::DesktopRect& clip_area,
   int error = graphics2d_.Flush(callback);
   CHECK(error == PP_OK_COMPLETIONPENDING);
   flush_pending_ = true;
+
+  // If Debug dirty region is enabled then emit it.
+  if (debug_dirty_region_) {
+    event_handler_->OnVideoFrameDirtyRegion(region);
+  }
 }
 
 void PepperVideoRenderer2D::OnFlushDone(int result,

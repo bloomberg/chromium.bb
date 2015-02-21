@@ -131,6 +131,8 @@ class ChromotingInstance : public ClientUserInterface,
   void OnVideoSize(const webrtc::DesktopSize& size,
                       const webrtc::DesktopVector& dpi) override;
   void OnVideoShape(const webrtc::DesktopRegion& shape) override;
+  void OnVideoFrameDirtyRegion(
+      const webrtc::DesktopRegion& dirty_region) override;
 
   // Registers a global log message handler that redirects the log output to
   // our plugin instance.
@@ -192,6 +194,7 @@ class ChromotingInstance : public ClientUserInterface,
   void HandleAllowMouseLockMessage();
   void HandleSendMouseInputWhenUnfocused();
   void HandleDelegateLargeCursors();
+  void HandleEnableDebugRegion(const base::DictionaryValue& data);
 
   void Disconnect();
 
@@ -206,7 +209,7 @@ class ChromotingInstance : public ClientUserInterface,
   // TODO(sergeyu): When all current versions of the webapp support raw messages
   // remove this method and use PostChromotingMessage() instead.
   void PostLegacyJsonMessage(const std::string& method,
-                       scoped_ptr<base::DictionaryValue> data);
+                             scoped_ptr<base::DictionaryValue> data);
 
   // Posts trapped keys to the web-app to handle.
   void SendTrappedKey(uint32 usb_keycode, bool pressed);

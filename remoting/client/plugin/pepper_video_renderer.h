@@ -42,6 +42,11 @@ class PepperVideoRenderer : public VideoRenderer {
 
     // Called when desktop shape changes.
     virtual void OnVideoShape(const webrtc::DesktopRegion& shape) = 0;
+
+    // Called with each frame's updated region, if EnableDebugDirtyRegion(true)
+    // was called.
+    virtual void OnVideoFrameDirtyRegion(
+        const webrtc::DesktopRegion& dirty_region) = 0;
   };
 
   // Initializes the renderer. |instance| and |event_handler| must outlive the
@@ -52,6 +57,10 @@ class PepperVideoRenderer : public VideoRenderer {
 
   // Must be called whenever the plugin view changes.
   virtual void OnViewChanged(const pp::View& view) = 0;
+
+  // Enables or disables delivery of dirty region information to the
+  // EventHandler, for debugging purposes.
+  virtual void EnableDebugDirtyRegion(bool enable) = 0;
 };
 
 }  // namespace remoting
