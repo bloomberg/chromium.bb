@@ -191,6 +191,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnablePushMessagePayload))
     WebRuntimeFeatures::enablePushMessagingData(true);
 
+  if (command_line.HasSwitch(switches::kEnablePushMessagingHasPermission))
+    WebRuntimeFeatures::enablePushMessagingHasPermission(true);
+
   if (command_line.HasSwitch(switches::kDisableV8IdleTasks))
     WebRuntimeFeatures::enableV8IdleTasks(false);
   else
