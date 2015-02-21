@@ -146,11 +146,6 @@ void ResourceLoader::CancelWithError(int error_code) {
 }
 
 void ResourceLoader::ReportUploadProgress() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455952 ResourceLoader::ReportUploadProgress"));
   if (waiting_for_upload_progress_ack_)
     return;  // Send one progress event at a time.
 

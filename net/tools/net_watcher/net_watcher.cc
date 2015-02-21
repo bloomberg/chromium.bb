@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
@@ -115,11 +114,6 @@ class NetWatcher :
   void OnProxyConfigChanged(
       const net::ProxyConfig& config,
       net::ProxyConfigService::ConfigAvailability availability) override {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 NetWatcher::OnProxyConfigChanged"));
     LOG(INFO) << "OnProxyConfigChanged("
               << ProxyConfigToString(config) << ", "
               << ConfigAvailabilityToString(availability) << ")";

@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "net/base/io_buffer.h"
 #include "net/spdy/spdy_protocol.h"
 
@@ -89,9 +88,6 @@ void SpdyBuffer::AddConsumeCallback(const ConsumeCallback& consume_callback) {
 }
 
 void SpdyBuffer::Consume(size_t consume_size) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdyBuffer::Consume"));
   ConsumeHelper(consume_size, CONSUME);
 };
 

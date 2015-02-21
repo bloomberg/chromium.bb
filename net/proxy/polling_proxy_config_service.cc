@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/worker_pool.h"
 #include "net/proxy/proxy_config.h"
@@ -114,11 +113,6 @@ class PollingProxyConfigService::Core
 
   // Called after the worker thread has finished retrieving a configuration.
   void GetConfigCompleted(const ProxyConfig& config) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 PollingProxyConfigService::Core::GetConfigCompleted"));
     DCHECK(poll_task_outstanding_);
     poll_task_outstanding_ = false;
 

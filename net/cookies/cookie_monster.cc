@@ -450,6 +450,10 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 };
 
 void CookieMonster::SetCookieWithDetailsTask::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::SetCookieWithDetailsTask::Run"));
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_, secure_,
       http_only_, priority_);
@@ -479,6 +483,10 @@ class CookieMonster::GetAllCookiesTask : public CookieMonsterTask {
 };
 
 void CookieMonster::GetAllCookiesTask::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::GetAllCookiesTask::Run"));
   if (!callback_.is_null()) {
     CookieList cookies = this->cookie_monster()->GetAllCookies();
     this->InvokeCallback(base::Bind(&GetCookieListCallback::Run,
@@ -514,6 +522,10 @@ class CookieMonster::GetAllCookiesForURLWithOptionsTask
 };
 
 void CookieMonster::GetAllCookiesForURLWithOptionsTask::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::GetAllCookiesForURLWithOptionsTask::Run"));
   if (!callback_.is_null()) {
     CookieList cookies =
         this->cookie_monster()->GetAllCookiesForURLWithOptions(url_, options_);
@@ -578,6 +590,10 @@ base::Closure CookieMonster::DeleteTask<void>::RunDeleteTaskAndBindCallback() {
 
 template <typename Result>
 void CookieMonster::DeleteTask<Result>::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::DeleteTask::Run"));
   this->cookie_monster()->FlushStore(base::Bind(
       &DeleteTask<Result>::FlushDone, this, RunDeleteTaskAndBindCallback()));
 }
@@ -750,6 +766,10 @@ class CookieMonster::SetCookieWithOptionsTask : public CookieMonsterTask {
 };
 
 void CookieMonster::SetCookieWithOptionsTask::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::SetCookieWithOptionsTask::Run"));
   bool result = this->cookie_monster()->SetCookieWithOptions(url_, cookie_line_,
                                                              options_);
   if (!callback_.is_null()) {
@@ -785,6 +805,10 @@ class CookieMonster::GetCookiesWithOptionsTask : public CookieMonsterTask {
 };
 
 void CookieMonster::GetCookiesWithOptionsTask::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::GetCookiesWithOptionsTask::Run"));
   std::string cookie =
       this->cookie_monster()->GetCookiesWithOptions(url_, options_);
   if (!callback_.is_null()) {
@@ -866,6 +890,10 @@ class CookieMonster::HasCookiesForETLDP1Task : public CookieMonsterTask {
 };
 
 void CookieMonster::HasCookiesForETLDP1Task::Run() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::HasCookiesForETLDP1Task::Run"));
   bool result = this->cookie_monster()->HasCookiesForETLDP1(etldp1_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&HasCookiesForETLDP1Callback::Run,
@@ -1414,9 +1442,6 @@ void CookieMonster::InitStore() {
 }
 
 void CookieMonster::ReportLoaded() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457528 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457528 CookieMonster::ReportLoaded"));
   if (delegate_.get())
     delegate_->OnLoaded();
 }
@@ -1442,10 +1467,6 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
   // We need to do this repeatedly until no more tasks were added to the queue
   // during the period where we release the lock.
   while (true) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("456373 CookieMonster::OnKeyLoaded1"));
     {
       base::AutoLock autolock(lock_);
       std::map<std::string,
@@ -1463,10 +1484,6 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
       it->second.swap(tasks_pending_for_key);
     }
 
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("456373 CookieMonster::OnKeyLoaded2"));
     while (!tasks_pending_for_key.empty()) {
       scoped_refptr<CookieMonsterTask> task = tasks_pending_for_key.front();
       task->Run();
@@ -1538,9 +1555,6 @@ void CookieMonster::StoreLoadedCookies(
 }
 
 void CookieMonster::InvokeQueue() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457528 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457528 CookieMonster::InvokeQueue"));
   while (true) {
     scoped_refptr<CookieMonsterTask> request_task;
     {
@@ -1559,6 +1573,10 @@ void CookieMonster::InvokeQueue() {
 }
 
 void CookieMonster::EnsureCookiesMapIsValid() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::EnsureCookiesMapIsValid"));
   lock_.AssertAcquired();
 
   int num_duplicates_trimmed = 0;
@@ -1764,6 +1782,10 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     const std::string& key,
     CanonicalCookie* cc,
     bool sync_to_store) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::InternalInsertCookie"));
   lock_.AssertAcquired();
 
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
@@ -1872,6 +1894,10 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
 void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                                          bool sync_to_store,
                                          DeletionCause deletion_cause) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456373 CookieMonster::InternalDeleteCookie"));
   lock_.AssertAcquired();
 
   // Ideally, this would be asserted up where we define ChangeCauseMapping,

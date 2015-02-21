@@ -350,6 +350,11 @@ class ProxyService::InitProxyResolver {
             const ProxyConfig& config,
             TimeDelta wait_delay,
             const CompletionCallback& callback) {
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455942 ProxyService::InitProxyResolver::Start"));
     DCHECK_EQ(STATE_NONE, next_state_);
     proxy_resolver_ = proxy_resolver;
 
@@ -1155,6 +1160,10 @@ void ProxyService::ApplyProxyConfigIfAvailable() {
 }
 
 void ProxyService::OnInitProxyResolverComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 ProxyService::OnInitProxyResolverComplete"));
   DCHECK_EQ(STATE_WAITING_FOR_INIT_PROXY_RESOLVER, current_state_);
   DCHECK(init_proxy_resolver_.get());
   DCHECK(fetched_config_.HasAutomaticSettings());
@@ -1382,6 +1391,10 @@ ProxyScriptFetcher* ProxyService::GetProxyScriptFetcher() const {
 }
 
 ProxyService::State ProxyService::ResetProxyConfig(bool reset_fetched_config) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 ProxyService::ResetProxyConfig"));
   DCHECK(CalledOnValidThread());
   State previous_state = current_state_;
 
@@ -1516,6 +1529,10 @@ void ProxyService::OnProxyConfigChanged(
 }
 
 void ProxyService::InitializeUsingLastFetchedConfig() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 ProxyService::InitializeUsingLastFetchedConfig"));
   ResetProxyConfig(false);
 
   DCHECK(fetched_config_.is_valid());

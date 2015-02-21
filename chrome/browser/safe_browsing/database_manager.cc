@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/leak_tracker.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
@@ -651,6 +652,10 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
     return;
 
   DCHECK(!safe_browsing_thread_.get());
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingDatabaseManager::StartOnIOThread"));
   safe_browsing_thread_.reset(new base::Thread("Chrome_SafeBrowsingThread"));
   if (!safe_browsing_thread_->Start())
     return;
@@ -764,6 +769,10 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
 }
 
 bool SafeBrowsingDatabaseManager::DatabaseAvailable() const {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingDatabaseManager::DatabaseAvailable"));
   base::AutoLock lock(database_lock_);
   return !closing_database_ && (database_ != NULL);
 }
@@ -771,6 +780,10 @@ bool SafeBrowsingDatabaseManager::DatabaseAvailable() const {
 bool SafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455469 SafeBrowsingDatabaseManager::MakeDatabaseAvailable"));
   if (DatabaseAvailable())
     return true;
   safe_browsing_thread_->message_loop()->PostTask(
