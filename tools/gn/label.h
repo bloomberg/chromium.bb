@@ -18,7 +18,7 @@ class Label {
  public:
   Label();
 
-  // Makes a label given an already-separate out path and name.
+  // Makes a label given an already-separated out path and name.
   // See also Resolve().
   Label(const SourceDir& dir,
         const base::StringPiece& name,

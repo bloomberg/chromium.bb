@@ -148,6 +148,14 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
                       bool require_permitted,
                       Chain* chain) const;
 
+  // Makes a very descriptive error message for when an include is disallowed
+  // from a given from_target, with a missing dependency to one of the given
+  // targets.
+  static Err MakeUnreachableError(const InputFile& source_file,
+                                  const LocationRange& range,
+                                  const Target* from_target,
+                                  const TargetVector& targets);
+
   // Non-locked variables ------------------------------------------------------
   //
   // These are initialized during construction (which happens on one thread)
