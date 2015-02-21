@@ -82,9 +82,11 @@ To just build a single package:
     advanced.add_argument('--jobs', default=None, type=int,
                           help='Maximium job count to run in parallel '
                                '(Default: Use all available cores)')
-    advanced.add_argument('--norebuild', default=True, dest='rebuild_deps',
-                          action='store_false',
-                          help='Don\'t automatically rebuild dependencies.')
+
+    # Legacy options, for backward compatibiltiy.
+    legacy = parser.add_argument_group('Options for backward compatibility')
+    legacy.add_argument('--norebuild', default=True, dest='rebuild_deps',
+                        action='store_false', help='Inverse of --rebuild-deps.')
 
   def _CheckDependencies(self):
     """Verify emerge dependencies.
