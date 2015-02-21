@@ -6537,20 +6537,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="EasyUnlock.Setup.Devices.HasSmartLockEnabled"
-    enum="EasyUnlockHasSmartLockEnabled">
+<histogram name="EasyUnlock.Setup.Devices.HasTrustAgentEnabled"
+    enum="EasyUnlockHasTrustAgentEnabled">
   <owner>isherman@chromium.org</owner>
   <owner>xiaowenx@chromium.org</owner>
   <summary>
-    Whether the user's phone has Smart Lock for Android enabled. Recorded during
-    Smart Lock (for Chrome) setup, when the user selects the phone to use as her
-    unlock key.
+    Whether the user's phone has a trust agent -- e.g. Smart Lock for Android --
+    enabled. Recorded during Smart Lock (for Chrome) setup, when the user's
+    phone first connects to the Chromebook.
   </summary>
   <details>
-    Note that this histogram tracks whether the setting under Settings ~>
-    Security ~> Trust agents ~> Smart Lock (Google) is enabled, which is the
-    default state. It does _not_ measure whether users have any Smart Lock
-    trustlets enabled.
+    Note that this histogram tracks whether the setting under Settings ~&gt;
+    Security ~&gt; Trust agents ~&gt; Smart Lock (Google) (or any other trust
+    agent) is enabled. The Smart Lock trust agent is enabled by default for
+    users who have ascure lock screen. This metric does _not_ measure whether
+    users have any Smart Lock trustlets enabled.
   </details>
 </histogram>
 
@@ -46437,9 +46438,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Has secure screen lock"/>
 </enum>
 
-<enum name="EasyUnlockHasSmartLockEnabled" type="int">
-  <int value="0" label="Smart Lock for Android disabled"/>
-  <int value="1" label="Smart Lock for Android enabled"/>
+<enum name="EasyUnlockHasTrustAgentEnabled" type="int">
+  <int value="0" label="No trust agents enabled"/>
+  <int value="1" label="1+ trust agents enabled"/>
 </enum>
 
 <enum name="EasyUnlockNotificationEvent" type="int">
