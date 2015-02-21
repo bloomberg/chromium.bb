@@ -90,13 +90,17 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
 {
     switch (executionType) {
     case ASYNC_EXECUTION:
-        ASSERT(m_pendingAsyncScripts.contains(scriptLoader));
+        // RELEASE_ASSERT makes us crash in a controlled way in error cases
+        // where the ScriptLoader is associated with the wrong ScriptRunner
+        // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
+        // to detach).
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
         m_scriptsToExecuteSoon.append(scriptLoader);
         m_pendingAsyncScripts.remove(scriptLoader);
         break;
 
     case IN_ORDER_EXECUTION:
-        ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!m_scriptsToExecuteInOrder.isEmpty());
         break;
     }
     m_timer.startOneShot(0, FROM_HERE);
@@ -106,14 +110,18 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
 {
     switch (executionType) {
     case ASYNC_EXECUTION:
-        ASSERT(m_pendingAsyncScripts.contains(scriptLoader));
+        // RELEASE_ASSERT makes us crash in a controlled way in error cases
+        // where the ScriptLoader is associated with the wrong ScriptRunner
+        // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
+        // to detach).
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
         m_pendingAsyncScripts.remove(scriptLoader);
         scriptLoader->detach();
         m_document->decrementLoadEventDelayCount();
         break;
 
     case IN_ORDER_EXECUTION:
-        ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!m_scriptsToExecuteInOrder.isEmpty());
         break;
     }
 }
