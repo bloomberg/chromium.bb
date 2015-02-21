@@ -140,6 +140,8 @@ static ConfigurationSupport GetSupportedConfiguration(
     blink::WebMediaKeySystemConfiguration* accumulated_configuration,
     bool was_permission_requested,
     bool is_permission_granted) {
+  DCHECK(was_permission_requested || !is_permission_granted);
+
   // It is possible to obtain user permission unless permission was already
   // requested and denied.
   bool is_permission_possible =
@@ -302,8 +304,18 @@ static ConfigurationSupport GetSupportedConfiguration(
       ConvertRequirement(accumulated_configuration->distinctiveIdentifier);
   if (!IsDistinctiveIdentifierRequirementSupported(key_system, di_requirement,
                                                    is_permission_granted)) {
-    DCHECK(!was_permission_requested);  // Should have failed at step 3.
-    return CONFIGURATION_REQUIRES_PERMISSION;
+    if (was_permission_requested) {
+      // The optional permission was requested and denied.
+      // TODO(sandersd): Avoid the need for this logic - crbug.com/460616.
+      DCHECK(candidate.distinctiveIdentifier ==
+             blink::WebMediaKeySystemConfiguration::Requirement::Optional);
+      DCHECK(di_requirement == EME_FEATURE_REQUIRED);
+      DCHECK(!is_permission_granted);
+      accumulated_configuration->distinctiveIdentifier =
+          blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed;
+    } else {
+      return CONFIGURATION_REQUIRES_PERMISSION;
+    }
   }
 
   ps_requirement =

@@ -190,8 +190,7 @@ static void AddPepperBasedWidevine(
   }
 
   cdm::AddWidevineWithCodecs(
-      cdm::WIDEVINE,
-      supported_codecs,
+      cdm::WIDEVINE, supported_codecs,
 #if defined(OS_CHROMEOS)
       // Persistent licenses are supported if remote attestation succeeds.
       media::EME_SESSION_TYPE_SUPPORTED_WITH_PERMISSION,
@@ -199,21 +198,18 @@ static void AddPepperBasedWidevine(
       // TODO(sandersd): Using ALWAYS_ENABLED prevents "not-allowed" from
       // succeeding. Change this to REQUESTABLE once the state can be blocked.
       // http://crbug.com/457482
-      media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
+      media::EME_FEATURE_ALWAYS_ENABLED,  // Persistent state.
       // A distinctive identifier will be available if remote attestation
       // succeeds.
-      // TODO(sandersd): Using ALWAYS_ENABLED prevents "not-allowed" from
-      // succeeding. Change this to REQUESTABLE_WITH_PERMISSION once the
-      // distinctive identifier can be blocked. http://crbug.com/457482
-      media::EME_FEATURE_ALWAYS_ENABLED,
+      media::EME_FEATURE_REQUESTABLE_WITH_PERMISSION,
 #else   // (Desktop)
       media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent license.
       media::EME_SESSION_TYPE_NOT_SUPPORTED,  // Persistent release message.
       // TODO(sandersd): Using ALWAYS_ENABLED prevents "not-allowed" from
       // succeeding. Change this to REQUESTABLE once the state can be blocked.
       // http://crbug.com/457482
-      media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
-      media::EME_FEATURE_NOT_SUPPORTED,       // Distinctive identifier.
+      media::EME_FEATURE_ALWAYS_ENABLED,  // Persistent state.
+      media::EME_FEATURE_NOT_SUPPORTED,   // Distinctive identifier.
 #endif  // defined(OS_CHROMEOS)
       concrete_key_systems);
 }

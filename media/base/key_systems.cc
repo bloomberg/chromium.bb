@@ -395,14 +395,26 @@ void KeySystems::AddConcreteSupportedKeySystems(
     DCHECK_NE(info.persistent_license_support, EME_SESSION_TYPE_INVALID);
     DCHECK_NE(info.persistent_release_message_support,
               EME_SESSION_TYPE_INVALID);
-    // REQUESTABLE and REQUESTABLE_WITH_PERMISSION are not available until we
-    // can block access/ per-CDM-instance. http://crbug.com/457482
-    // Note: Even once that is fixed, distinctive identifiers should never be
-    // REQUESTABLE, since user permission is always required.
+    // TODO(sandersd): Add REQUESTABLE and REQUESTABLE_WITH_PERMISSION for
+    // persistent_state_support once we can block access per-CDM-instance
+    // (http://crbug.com/457482).
     DCHECK(info.persistent_state_support == EME_FEATURE_NOT_SUPPORTED ||
            info.persistent_state_support == EME_FEATURE_ALWAYS_ENABLED);
+// TODO(sandersd): Allow REQUESTABLE_WITH_PERMISSION for all key systems on
+// all platforms once we have proper enforcement (http://crbug.com/457482).
+// On Chrome OS, an ID will not be used without permission, but we cannot
+// currently prevent the CDM from requesting the permission again when no
+// there was no initial prompt. Thus, we block "not-allowed" below.
+#if defined(OS_CHROMEOS)
+    DCHECK(info.distinctive_identifier_support == EME_FEATURE_NOT_SUPPORTED ||
+           (info.distinctive_identifier_support ==
+                EME_FEATURE_REQUESTABLE_WITH_PERMISSION &&
+            info.key_system == kWidevineKeySystem) ||
+           info.distinctive_identifier_support == EME_FEATURE_ALWAYS_ENABLED);
+#else
     DCHECK(info.distinctive_identifier_support == EME_FEATURE_NOT_SUPPORTED ||
            info.distinctive_identifier_support == EME_FEATURE_ALWAYS_ENABLED);
+#endif
     if (info.persistent_state_support == EME_FEATURE_NOT_SUPPORTED) {
       DCHECK_EQ(info.persistent_license_support,
                 EME_SESSION_TYPE_NOT_SUPPORTED);
@@ -715,6 +727,12 @@ bool KeySystems::IsDistinctiveIdentifierRequirementSupported(
     case EME_FEATURE_NOT_SUPPORTED:
       return requirement != EME_FEATURE_REQUIRED;
     case EME_FEATURE_REQUESTABLE_WITH_PERMISSION:
+      // TODO(sandersd): Remove this hack once crbug.com/457482 and
+      // crbug.com/460616 are addressed.
+      // We cannot currently enforce "not-allowed", so don't allow it.
+      // Note: Removing this check will expose crbug.com/460616.
+      if (requirement == EME_FEATURE_NOT_ALLOWED)
+        return false;
       return (requirement != EME_FEATURE_REQUIRED) || is_permission_granted;
     case EME_FEATURE_REQUESTABLE:
       NOTREACHED();
