@@ -99,9 +99,6 @@ class CONTENT_EXPORT UserMediaClientImpl
        blink::WebUserMediaRequest* request_info);
   virtual void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
-      MediaStreamRequestResult result);
-  virtual void GetUserMediaRequestTrackStartedFailed(
-      blink::WebUserMediaRequest* request_info,
       MediaStreamRequestResult result,
       const blink::WebString& result_name);
   virtual void EnumerateDevicesSucceded(

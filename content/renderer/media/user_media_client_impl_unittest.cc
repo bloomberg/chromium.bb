@@ -84,15 +84,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 
   void GetUserMediaRequestFailed(
       blink::WebUserMediaRequest* request_info,
-      content::MediaStreamRequestResult result) override {
-    last_generated_stream_.reset();
-    state_ = REQUEST_FAILED;
-    result_ = result;
-  }
-
-  void GetUserMediaRequestTrackStartedFailed(
-      blink::WebUserMediaRequest* request_info,
-      MediaStreamRequestResult result,
+      content::MediaStreamRequestResult result,
       const blink::WebString& result_name) override {
     last_generated_stream_.reset();
     state_ = REQUEST_FAILED;

@@ -499,7 +499,7 @@ void UserMediaClientImpl::OnStreamGenerationFailed(
     return;
   }
 
-  GetUserMediaRequestFailed(&request_info->request, result);
+  GetUserMediaRequestFailed(&request_info->request, result, "");
   DeleteUserMediaRequestInfo(request_info);
 }
 
@@ -654,9 +654,7 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
   if (result == content::MEDIA_DEVICE_OK)
     GetUserMediaRequestSucceeded(request->web_stream, &request->request);
   else
-    GetUserMediaRequestTrackStartedFailed(&request->request,
-                                          result,
-                                          result_name);
+    GetUserMediaRequestFailed(&request->request, result, result_name);
 
   DeleteUserMediaRequestInfo(request);
 }
@@ -724,59 +722,53 @@ void UserMediaClientImpl::GetUserMediaRequestSucceeded(
 
 void UserMediaClientImpl::GetUserMediaRequestFailed(
     blink::WebUserMediaRequest* request_info,
-    MediaStreamRequestResult result) {
+    MediaStreamRequestResult result,
+    const blink::WebString& result_name) {
   LogUserMediaRequestResult(result);
   switch (result) {
     case MEDIA_DEVICE_OK:
+    case NUM_MEDIA_REQUEST_RESULTS:
       NOTREACHED();
-      break;
+      return;
     case MEDIA_DEVICE_PERMISSION_DENIED:
       request_info->requestDenied();
-      break;
+      return;
     case MEDIA_DEVICE_PERMISSION_DISMISSED:
       request_info->requestFailedUASpecific("PermissionDismissedError");
-      break;
+      return;
     case MEDIA_DEVICE_INVALID_STATE:
       request_info->requestFailedUASpecific("InvalidStateError");
-      break;
+      return;
     case MEDIA_DEVICE_NO_HARDWARE:
       request_info->requestFailedUASpecific("DevicesNotFoundError");
-      break;
+      return;
     case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
       request_info->requestFailedUASpecific("InvalidSecurityOriginError");
-      break;
+      return;
     case MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
       request_info->requestFailedUASpecific("TabCaptureError");
-      break;
+      return;
     case MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE:
       request_info->requestFailedUASpecific("ScreenCaptureError");
-      break;
+      return;
     case MEDIA_DEVICE_CAPTURE_FAILURE:
       request_info->requestFailedUASpecific("DeviceCaptureError");
-      break;
-    default:
-      NOTREACHED();
-      request_info->requestFailed();
-      break;
-  }
-}
-
-void UserMediaClientImpl::GetUserMediaRequestTrackStartedFailed(
-    blink::WebUserMediaRequest* request_info,
-    MediaStreamRequestResult result,
-    const blink::WebString& result_name) {
-  switch (result) {
+      return;
     case MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
       request_info->requestFailedConstraint(result_name);
-      break;
+      return;
     case MEDIA_DEVICE_TRACK_START_FAILURE:
       request_info->requestFailedUASpecific("TrackStartError");
-      break;
-    default:
-      NOTREACHED();
-      request_info->requestFailed();
-      break;
+      return;
+    case MEDIA_DEVICE_NOT_SUPPORTED:
+      request_info->requestFailedUASpecific("MediaDeviceNotSupported");
+      return;
+    case MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN:
+      request_info->requestFailedUASpecific("MediaDeviceFailedDueToShutdown");
+      return;
   }
+  NOTREACHED();
+  request_info->requestFailed();
 }
 
 void UserMediaClientImpl::EnumerateDevicesSucceded(
