@@ -80,9 +80,10 @@ private:
     const RefPtr<DOMArrayBuffer> m_data;
 };
 
-MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwnPtr<WebContentDecryptionModule> cdm)
+MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const blink::WebVector<blink::WebString>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
     : ContextLifecycleObserver(context)
     , m_keySystem(keySystem)
+    , m_supportedSessionTypes(supportedSessionTypes)
     , m_cdm(cdm)
     , m_timer(this, &MediaKeys::timerFired)
 {
@@ -102,26 +103,31 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState, const String
 {
     WTF_LOG(Media, "MediaKeys(%p)::createSession", this);
 
-    // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
-    // The createSession(sessionType) method returns a new MediaKeySession
-    // object. It must run the following steps:
-    // 1. If sessionType is not supported by the content decryption module
-    //    corresponding to the keySystem, throw a DOMException whose name is
-    //    "NotSupportedError".
-    ASSERT(MediaKeySession::isValidSessionType(sessionType));
-    // FIXME: Check whether sessionType is actually supported by the CDM.
-    // (http://crbug.com/384152)
-    // FIXME: Enable "persistent-release-message" session type once support
-    // added to CDMs.
-    if (sessionType == "persistent-release-message") {
-        exceptionState.throwDOMException(NotSupportedError, "'persistent-release-message' is not supported.");
-        return nullptr;
-    }
+    // From http://w3c.github.io/encrypted-media/#createSession
 
-    // 2. Let session be a new MediaKeySession object, and initialize it as
+    // When this method is invoked, the user agent must run the following steps:
+    // 1. If this object's persistent state allowed value is false and
+    //    sessionType is not "temporary", throw a new DOMException whose name is
+    //    NotSupportedError.
+    //    (Chromium ensures that only session types supported by the
+    //    configuration are listed in supportedSessionTypes.)
+    // 2. If the Key System implementation represented by this object's cdm
+    //    implementation value does not support sessionType, throw a new
+    //    DOMException whose name is NotSupportedError.
+    bool found = false;
+    for (size_t i = 0; i < m_supportedSessionTypes.size(); i++) {
+        if (m_supportedSessionTypes[i] == blink::WebString(sessionType)) {
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+        exceptionState.throwDOMException(NotSupportedError, "Unsupported session type.");
+
+    // 3. Let session be a new MediaKeySession object, and initialize it as
     //    follows:
     //    (Initialization is performed in the constructor.)
-    // 3. Return session.
+    // 4. Return session.
     return MediaKeySession::create(scriptState, this, sessionType);
 }
 

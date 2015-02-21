@@ -32,9 +32,10 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
     WTF_MAKE_NONCOPYABLE(NewCdmResultPromise);
 
 public:
-    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem)
+    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const blink::WebVector<blink::WebString>& supportedSessionTypes)
         : ContentDecryptionModuleResultPromise(scriptState)
         , m_keySystem(keySystem)
+        , m_supportedSessionTypes(supportedSessionTypes)
     {
     }
 
@@ -45,16 +46,17 @@ public:
     // ContentDecryptionModuleResult implementation.
     virtual void completeWithContentDecryptionModule(WebContentDecryptionModule* cdm) override
     {
-        // NOTE: Continued from step 2. of createMediaKeys().
-        // 2.4 Let media keys be a new MediaKeys object.
-        MediaKeys* mediaKeys = new MediaKeys(executionContext(), m_keySystem, adoptPtr(cdm));
+        // NOTE: Continued from step 2.8 of createMediaKeys().
+        // 2.9. Let media keys be a new MediaKeys object.
+        MediaKeys* mediaKeys = new MediaKeys(executionContext(), m_keySystem, m_supportedSessionTypes, adoptPtr(cdm));
 
-        // 2.5 Resolve promise with media keys.
+        // 2.10. Resolve promise with media keys.
         resolve(mediaKeys);
     }
 
 private:
     const String m_keySystem;
+    const blink::WebVector<blink::WebString> m_supportedSessionTypes;
 };
 
 // These methods are the inverses of those with the same names in
@@ -120,10 +122,15 @@ void MediaKeySystemAccess::getConfiguration(MediaKeySystemConfiguration& result)
 
 ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)
 {
-    // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#widl-MediaKeySystemAccess-createMediaKeys-Promise-MediaKeys
-    // When this method is invoked, the user agent must run the following steps:
+    // From http://w3c.github.io/encrypted-media/#createMediaKeys
+    // (Reordered to be able to pass values into the promise constructor.)
+    // 2.4 Let configuration be the value of this object's configuration value.
+    // 2.5-2.8. [Set use distinctive identifier and persistent state allowed
+    //          based on configuration.]
+    WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
+
     // 1. Let promise be a new promise.
-    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem);
+    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem, configuration.sessionTypes);
     ScriptPromise promise = helper->promise();
 
     // 2. Asynchronously create and initialize the MediaKeys object.
