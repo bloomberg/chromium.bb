@@ -285,7 +285,7 @@ class AesDecryptorTest : public testing::Test {
     EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                         GURL::EmptyGURL()));
     decryptor_.CreateSessionAndGenerateRequest(
-        MediaKeys::TEMPORARY_SESSION, std::string(), &key_id[0], key_id.size(),
+        MediaKeys::TEMPORARY_SESSION, "webm", &key_id[0], key_id.size(),
         CreateSessionPromise(RESOLVED));
     // This expects the promise to be called synchronously, which is the case
     // for AesDecryptor.
@@ -430,7 +430,7 @@ TEST_F(AesDecryptorTest, CreateSessionWithNullInitData) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             std::string(), NULL, 0,
+                                             "webm", NULL, 0,
                                              CreateSessionPromise(RESOLVED));
 }
 
@@ -438,19 +438,19 @@ TEST_F(AesDecryptorTest, MultipleCreateSession) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             std::string(), NULL, 0,
+                                             "webm", NULL, 0,
                                              CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             std::string(), NULL, 0,
+                                             "webm", NULL, 0,
                                              CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             std::string(), NULL, 0,
+                                             "webm", NULL, 0,
                                              CreateSessionPromise(RESOLVED));
 }
 

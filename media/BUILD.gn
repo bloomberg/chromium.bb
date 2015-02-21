@@ -82,6 +82,8 @@ component("media") {
   sources = [
     "cdm/aes_decryptor.cc",
     "cdm/aes_decryptor.h",
+    "cdm/cenc_utils.cc",
+    "cdm/cenc_utils.h",
     "cdm/default_cdm_factory.cc",
     "cdm/default_cdm_factory.h",
     "cdm/json_web_key.cc",
@@ -529,6 +531,7 @@ if (is_ios) {
 test("media_unittests") {
   sources = [
     "cdm/aes_decryptor_unittest.cc",
+    "cdm/cenc_utils_unittest.cc",
     "cdm/json_web_key_unittest.cc",
     "filters/audio_clock_unittest.cc",
     "filters/audio_decoder_selector_unittest.cc",

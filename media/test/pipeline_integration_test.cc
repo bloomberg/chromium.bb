@@ -56,7 +56,6 @@ namespace media {
 
 const char kSourceId[] = "SourceId";
 const char kCencInitDataType[] = "cenc";
-const uint8 kInitData[] = { 0x69, 0x6e, 0x69, 0x74 };
 
 const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
 const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
@@ -256,7 +255,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
                 media::MediaKeys::Exception exception_code,
                 uint32 system_code,
                 const std::string& error_message) {
-    EXPECT_EQ(expected, REJECTED);
+    EXPECT_EQ(expected, REJECTED) << error_message;
   }
 
   scoped_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
@@ -304,15 +303,26 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
                                 const std::vector<uint8>& init_data,
                                 AesDecryptor* decryptor) override {
     if (current_session_id_.empty()) {
-      decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, init_data_type, kInitData,
-          arraysize(kInitData), CreateSessionPromise(RESOLVED));
+      if (init_data_type == kCencInitDataType) {
+        // Since the 'cenc' files are not created with proper 'pssh' boxes,
+        // simply pretend that this is a webm file and pass the expected
+        // key ID as the init_data.
+        // http://crbug.com/460308
+        decryptor->CreateSessionAndGenerateRequest(
+            MediaKeys::TEMPORARY_SESSION, "webm", kKeyId, arraysize(kKeyId),
+            CreateSessionPromise(RESOLVED));
+      } else {
+        decryptor->CreateSessionAndGenerateRequest(
+            MediaKeys::TEMPORARY_SESSION, init_data_type,
+            vector_as_array(&init_data), init_data.size(),
+            CreateSessionPromise(RESOLVED));
+      }
       EXPECT_FALSE(current_session_id_.empty());
     }
 
-    // Clear Key really needs the key ID in |init_data|. For WebM, they are the
-    // same, but this is not the case for ISO CENC. Therefore, provide the
-    // correct key ID.
+    // Clear Key really needs the key ID from |init_data|. For WebM, they are
+    // the same, but this is not the case for ISO CENC (key ID embedded in a
+    // 'pssh' box). Therefore, provide the correct key ID.
     const uint8* key_id = init_data.empty() ? NULL : &init_data[0];
     size_t key_id_length = init_data.size();
     if (init_data_type == kCencInitDataType) {
@@ -350,14 +360,24 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     prev_init_data_ = init_data;
     ++num_distint_need_key_calls_;
 
-    decryptor->CreateSessionAndGenerateRequest(
-        MediaKeys::TEMPORARY_SESSION, init_data_type,
-        vector_as_array(&init_data), init_data.size(),
-        CreateSessionPromise(RESOLVED));
-
     std::vector<uint8> key_id;
     std::vector<uint8> key;
     EXPECT_TRUE(GetKeyAndKeyId(init_data, &key, &key_id));
+
+    if (init_data_type == kCencInitDataType) {
+      // Since the 'cenc' files are not created with proper 'pssh' boxes,
+      // simply pretend that this is a webm file and pass the expected
+      // key ID as the init_data.
+      // http://crbug.com/460308
+      decryptor->CreateSessionAndGenerateRequest(
+          MediaKeys::TEMPORARY_SESSION, "webm", vector_as_array(&key_id),
+          key_id.size(), CreateSessionPromise(RESOLVED));
+    } else {
+      decryptor->CreateSessionAndGenerateRequest(
+          MediaKeys::TEMPORARY_SESSION, init_data_type,
+          vector_as_array(&init_data), init_data.size(),
+          CreateSessionPromise(RESOLVED));
+    }
 
     // Convert key into a JSON structure and then add it.
     std::string jwk = GenerateJWKSet(vector_as_array(&key),

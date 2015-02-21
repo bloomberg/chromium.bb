@@ -19,6 +19,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
 
 namespace media {
@@ -254,13 +255,31 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
   std::string session_id(base::UintToString(next_session_id_++));
   valid_sessions_.insert(session_id);
 
-  // For now, the AesDecryptor does not care about |init_data_type| or
-  // |session_type|; just resolve the promise and then fire a message event
-  // using the |init_data| as the key ID in the license request.
-  // TODO(jrummell): Validate |init_data_type| and |session_type|.
+  // For now, the AesDecryptor does not care about |session_type|.
+  // TODO(jrummell): Validate |session_type|.
+
   std::vector<uint8> message;
-  if (init_data && init_data_length)
-    CreateLicenseRequest(init_data, init_data_length, session_type, &message);
+  // TODO(jrummell): Since unprefixed will never send NULL, remove this check
+  // when prefixed EME is removed (http://crbug.com/249976).
+  if (init_data && init_data_length) {
+    std::vector<std::vector<uint8>> keys;
+    if (init_data_type == "webm") {
+      // |init_data| is simply the key needed.
+      keys.push_back(
+          std::vector<uint8>(init_data, init_data + init_data_length));
+    } else if (init_data_type == "cenc") {
+      // |init_data| is a set of 0 or more concatenated 'pssh' boxes.
+      if (!GetKeyIdsForCommonSystemId(init_data, init_data_length, &keys)) {
+        promise->reject(NOT_SUPPORTED_ERROR, 0, "No supported PSSH box found.");
+        return;
+      }
+    } else {
+      // TODO(jrummell): Support init_data_type == "keyids".
+      promise->reject(NOT_SUPPORTED_ERROR, 0, "init_data_type not supported.");
+      return;
+    }
+    CreateLicenseRequest(keys, session_type, &message);
+  }
 
   promise->resolve(session_id);
 

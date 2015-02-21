@@ -45,7 +45,9 @@ class JSONWebKeyTest : public testing::Test {
                               MediaKeys::SessionType session_type,
                               const std::string& expected_result) {
     std::vector<uint8> result;
-    CreateLicenseRequest(key_id, key_id_length, session_type, &result);
+    KeyIdList key_ids;
+    key_ids.push_back(std::vector<uint8>(key_id, key_id + key_id_length));
+    CreateLicenseRequest(key_ids, session_type, &result);
     std::string s(result.begin(), result.end());
     EXPECT_EQ(expected_result, s);
   }
@@ -496,6 +498,25 @@ TEST_F(JSONWebKeyTest, Base64UrlEncoding) {
   ExtractKeyFromLicenseAndExpect(
       "{\"kids\":[\"-_37_fv9-w\"],\"type\":\"temporary\"}", true, data1,
       arraysize(data1));
+}
+
+TEST_F(JSONWebKeyTest, MultipleKeys) {
+  const uint8 data1[] = { 0x01, 0x02 };
+  const uint8 data2[] = { 0x01, 0x02, 0x03, 0x04 };
+  const uint8 data3[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10 };
+
+  std::vector<uint8> result;
+  KeyIdList key_ids;
+  key_ids.push_back(std::vector<uint8>(data1, data1 + arraysize(data1)));
+  key_ids.push_back(std::vector<uint8>(data2, data2 + arraysize(data2)));
+  key_ids.push_back(std::vector<uint8>(data3, data3 + arraysize(data3)));
+  CreateLicenseRequest(key_ids, MediaKeys::TEMPORARY_SESSION, &result);
+  std::string s(result.begin(), result.end());
+  EXPECT_EQ(
+      "{\"kids\":[\"AQI\",\"AQIDBA\",\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":"
+      "\"temporary\"}",
+      s);
 }
 
 }  // namespace media

@@ -226,14 +226,14 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
   return true;
 }
 
-void CreateLicenseRequest(const uint8* key_id,
-                          int key_id_length,
+void CreateLicenseRequest(const KeyIdList& key_ids,
                           MediaKeys::SessionType session_type,
                           std::vector<uint8>* license) {
   // Create the license request.
   scoped_ptr<base::DictionaryValue> request(new base::DictionaryValue());
   scoped_ptr<base::ListValue> list(new base::ListValue());
-  list->AppendString(EncodeBase64Url(key_id, key_id_length));
+  for (const auto& key_id : key_ids)
+    list->AppendString(EncodeBase64Url(&key_id[0], key_id.size()));
   request->Set(kKeyIdsTag, list.release());
 
   switch (session_type) {
