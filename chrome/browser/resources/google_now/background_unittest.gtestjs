@@ -713,6 +713,10 @@ function expectInitialization(fixture) {
   fixture.mockGlobals.stubs().recordEvent(ANYTHING);
   fixture.mockGlobals.
       expects(once()).recordEvent(GoogleNowEvent.EXTENSION_START);
+  fixture.mockApis.expects(once())
+      .fillFromChromeLocalStorage(eqJSON({gcmNotificationKey: undefined}))
+      .will(returnValue(Promise.resolve({gcmNotificationKey: 'gcmkey'})));
+
 }
 
 TEST_F(TEST_NAME,'Initialize_SignedOut', function() {

@@ -18,12 +18,12 @@ var buildAttemptManager = emptyMock;
 var buildCardSet = emptyMock;
 
 var instrumented = {};
+mockChromeEvent(instrumented, 'gcm.onMessage');
 mockChromeEvent(instrumented, 'notifications.onButtonClicked');
 mockChromeEvent(instrumented, 'notifications.onClicked');
 mockChromeEvent(instrumented, 'notifications.onClosed');
 mockChromeEvent(instrumented, 'notifications.onPermissionLevelChanged');
 mockChromeEvent(instrumented, 'notifications.onShowSettings');
-mockChromeEvent(instrumented, 'pushMessaging.onMessage');
 mockChromeEvent(instrumented, 'runtime.onInstalled');
 mockChromeEvent(instrumented, 'runtime.onStartup');
 mockChromeEvent(instrumented, 'storage.onChanged');

@@ -982,15 +982,25 @@ function buildAuthenticationManager() {
   }
 
   /**
+   * Determines the active account's login (username).
+   * @return {Promise} A promise to determine the current account's login.
+   */
+  function getLogin() {
+    return new Promise(function(resolve) {
+      instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
+        resolve(accountInfo.login);
+      });
+    });
+  }
+
+  /**
    * Determines whether there is an account attached to the profile.
    * @return {Promise} A promise to determine if there is an account attached
    *     to the profile.
    */
   function isSignedIn() {
-    return new Promise(function(resolve) {
-      instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
-        resolve(!!accountInfo.login);
-      });
+    return getLogin().then(function(login) {
+      return Promise.resolve(!!login);
     });
   }
 
@@ -1055,6 +1065,7 @@ function buildAuthenticationManager() {
   return {
     addListener: addListener,
     getAuthToken: getAuthToken,
+    getLogin: getLogin,
     isSignedIn: isSignedIn,
     removeToken: removeToken
   };

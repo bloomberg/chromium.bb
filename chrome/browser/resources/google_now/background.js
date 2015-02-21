@@ -95,6 +95,17 @@ var DEFAULT_OPTIN_CHECK_PERIOD_SECONDS = 60 * 60 * 24 * 7; // 1 week
 var SETTINGS_URL = 'https://support.google.com/chrome/?p=ib_google_now_welcome';
 
 /**
+ * GCM registration URL.
+ */
+var GCM_REGISTRATION_URL =
+    'https://android.googleapis.com/gcm/googlenotification';
+
+/**
+ * DevConsole project ID for GCM API use.
+ */
+var GCM_PROJECT_ID = '437902709571';
+
+/**
  * Number of cards that need an explanatory link.
  */
 var EXPLANATORY_CARDS_LINK_THRESHOLD = 4;
@@ -189,6 +200,8 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
+wrapper.instrumentChromeApiFunction('gcm.onMessage.addListener', 0);
+wrapper.instrumentChromeApiFunction('gcm.register', 1);
 wrapper.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 wrapper.instrumentChromeApiFunction('notifications.clear', 1);
 wrapper.instrumentChromeApiFunction('notifications.create', 2);
@@ -204,10 +217,9 @@ wrapper.instrumentChromeApiFunction(
 wrapper.instrumentChromeApiFunction(
     'notifications.onShowSettings.addListener', 0);
 wrapper.instrumentChromeApiFunction('permissions.contains', 1);
-wrapper.instrumentChromeApiFunction('pushMessaging.onMessage.addListener', 0);
-wrapper.instrumentChromeApiFunction('storage.onChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
+wrapper.instrumentChromeApiFunction('storage.onChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction('tabs.create', 1);
 
 var updateCardsAttempts = buildAttemptManager(
@@ -1015,6 +1027,7 @@ function stopPollingCards() {
  */
 function initialize() {
   recordEvent(GoogleNowEvent.EXTENSION_START);
+  registerForGcm();
   onStateChange();
 }
 
@@ -1204,6 +1217,100 @@ function isGoogleNowEnabled() {
 }
 
 /**
+ * Ensures the extension is ready to listen for GCM messages.
+ */
+function registerForGcm() {
+  // We don't need to use the key yet, just ensure the channel is set up.
+  getGcmNotificationKey();
+}
+
+/**
+ * Returns a Promise resolving to either a cached or new GCM notification key.
+ * Rejects if registration fails.
+ * @return {Promise} A Promise that resolves to a potentially-cached GCM key.
+ */
+function getGcmNotificationKey() {
+  return fillFromChromeLocalStorage({gcmNotificationKey: undefined})
+      .then(function(items) {
+        if (items.gcmNotificationKey) {
+          console.log('Reused gcm key from storage.');
+          return Promise.resolve(items.gcmNotificationKey);
+        }
+        return requestNewGcmNotificationKey();
+      });
+}
+
+/**
+ * Returns a promise resolving to a GCM Notificaiton Key. May call
+ * chrome.gcm.register() first if required. Rejects on registration failure.
+ * @return {Promise} A Promise that resolves to a fresh GCM Notification key.
+ */
+function requestNewGcmNotificationKey() {
+  return getGcmRegistrationId().then(function(gcmId) {
+    authenticationManager.getAuthToken().then(function(token) {
+      authenticationManager.getLogin().then(function(username) {
+        return new Promise(function(resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.responseType = 'application/json';
+          xhr.open('POST', GCM_REGISTRATION_URL, true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+          xhr.setRequestHeader('project_id', GCM_PROJECT_ID);
+          var payload = {
+            'operation': 'add',
+            'notification_key_name': username,
+            'registration_ids': [gcmId]
+          };
+          xhr.onloadend = function() {
+            if (xhr.status != 200) {
+              reject();
+            }
+            var obj = JSON.parse(xhr.responseText);
+            var key = obj && obj.notification_key;
+            if (!key) {
+              reject();
+            }
+            console.log('gcm notification key POST: ' + key);
+            chrome.storage.local.set({gcmNotificationKey: key});
+            resolve(key);
+          };
+          xhr.send(JSON.stringify(payload));
+        });
+      });
+    }).catch(function() {
+      // Couldn't obtain a GCM ID. Ignore and fallback to polling.
+    });
+  });
+}
+
+/**
+ * Returns a promise resolving to either a cached or new GCM registration ID.
+ * Rejects if registration fails.
+ * @return {Promise} A Promise that resolves to a GCM registration ID.
+ */
+function getGcmRegistrationId() {
+  return fillFromChromeLocalStorage({gcmRegistrationId: undefined})
+      .then(function(items) {
+        if (items.gcmRegistrationId) {
+          console.log('Reused gcm registration id from storage.');
+          return Promise.resolve(items.gcmRegistrationId);
+        }
+
+        return new Promise(function(resolve, reject) {
+          instrumented.gcm.register([GCM_PROJECT_ID], function(registrationId) {
+            console.log('gcm.register(): ' + registrationId);
+            if (registrationId) {
+              chrome.storage.local.set({gcmRegistrationId: registrationId});
+              resolve(registrationId);
+            } else {
+              reject();
+            }
+          });
+        });
+      });
+}
+
+/**
  * Polls the optin state.
  * Sometimes we get the response to the opted in result too soon during
  * push messaging. We'll recheck the optin state a few times before giving up.
@@ -1334,13 +1441,15 @@ instrumented.storage.onChanged.addListener(function(changes, areaName) {
   }
 });
 
-instrumented.pushMessaging.onMessage.addListener(function(message) {
-  // message.payload will be '' when the extension first starts.
-  // Each time after signing in, we'll get latest payload for all channels.
-  // So, we need to poll the server only when the payload is non-empty and has
-  // changed.
-  console.log('pushMessaging.onMessage ' + JSON.stringify(message));
-  if (message.payload.indexOf('REQUEST_CARDS') == 0) {
+instrumented.gcm.onMessage.addListener(function(message) {
+  console.log('gcm.onMessage ' + JSON.stringify(message));
+  if (!message || !message.data) {
+    return;
+  }
+
+  var payload = message.data.payload;
+  var tag = message.data.tag;
+  if (payload.indexOf('REQUEST_CARDS') == 0) {
     tasks.add(ON_PUSH_MESSAGE_START_TASK_NAME, function() {
       // Accept promise rejection on failure since it's safer to do nothing,
       // preventing polling the server when the payload really didn't change.
@@ -1349,11 +1458,10 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
         /** @type {Object<string, StoredNotificationGroup>} */
         notificationGroups: {}
       }, PromiseRejection.ALLOW).then(function(items) {
-        if (items.lastPollNowPayloads[message.subchannelId] !=
-            message.payload) {
-          items.lastPollNowPayloads[message.subchannelId] = message.payload;
+        if (items.lastPollNowPayloads[tag] != payload) {
+          items.lastPollNowPayloads[tag] = payload;
 
-          items.notificationGroups['PUSH' + message.subchannelId] = {
+          items.notificationGroups['PUSH' + tag] = {
             cards: [],
             nextPollTime: Date.now()
           };
