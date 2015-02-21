@@ -12,7 +12,7 @@
  * @param {!Object} DOMContainers Various DOM containers required for the
  *     editor.
  * @param {!Array.<!ImageEditor.Mode>} modes Available editor modes.
- * @param {function(string, ...[string])} displayStringFunction String
+ * @param {function(string, ...string)} displayStringFunction String
  *     formatting function.
  * @param {function()} onToolsVisibilityChanged Callback to be called, when
  *     some of the UI elements have been dimmed or revealed.
@@ -1200,7 +1200,7 @@ ImageEditor.Toolbar.prototype.show = function(on) {
 /** A prompt panel for the editor.
  *
  * @param {!HTMLElement} container Container element.
- * @param {function(string, ...[string])} displayStringFunction A formatting
+ * @param {function(string, ...string)} displayStringFunction A formatting
  *     function.
  * @constructor
  * @struct

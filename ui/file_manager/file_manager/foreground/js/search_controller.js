@@ -151,7 +151,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
         // Discard results for previous requests and fire a new search
         // for the most recent query.
         if (searchString != this.lastAutocompleteQuery_) {
-          this.requestAutocompleteSuggestions_(this.lastAutocompleteQuery_);
+          this.requestAutocompleteSuggestions_();
           return;
         }
 

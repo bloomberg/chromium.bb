@@ -174,8 +174,8 @@ DriveSyncHandler.prototype.updateItem_ = function(status) {
       else
         this.item_.message = strf('SYNC_FILE_NAME', entry.name);
       this.item_.cancelCallback = this.requestCancel_.bind(this, entry);
-      this.item_.progressValue = status.processed;
-      this.item_.progressMax = status.total;
+      this.item_.progressValue = status.processed || 0;
+      this.item_.progressMax = status.total || 0;
       this.progressCenter_.updateItem(this.item_);
       callback();
     }.bind(this), function(error) {

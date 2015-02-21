@@ -628,7 +628,7 @@ DirectoryContents.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Create the copy of the object, but without scan started.
- * @return {DirectoryContents} Object copy.
+ * @return {!DirectoryContents} Object copy.
  */
 DirectoryContents.prototype.clone = function() {
   return new DirectoryContents(

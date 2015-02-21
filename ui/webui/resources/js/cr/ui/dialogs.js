@@ -35,6 +35,7 @@ cr.define('cr.ui.dialogs', function() {
    */
   BaseDialog.ANIMATE_STABLE_DURATION = 500;
 
+  /** @private */
   BaseDialog.prototype.initDom_ = function() {
     var doc = this.document_;
     this.container_ = doc.createElement('div');
@@ -88,9 +89,13 @@ cr.define('cr.ui.dialogs', function() {
     this.initialFocusElement_ = this.okButton_;
   };
 
+  /** @private {Function|undefined} */
   BaseDialog.prototype.onOk_ = null;
+
+  /** @private {Function|undefined} */
   BaseDialog.prototype.onCancel_ = null;
 
+  /** @private */
   BaseDialog.prototype.onContainerKeyDown_ = function(event) {
     // Handle Escape.
     if (event.keyCode == 27 && !this.cancelButton_.disabled) {
@@ -102,6 +107,7 @@ cr.define('cr.ui.dialogs', function() {
     }
   };
 
+  /** @private */
   BaseDialog.prototype.onContainerMouseDown_ = function(event) {
     if (event.target == this.container_) {
       var classList = this.frame_.classList;
@@ -112,22 +118,26 @@ cr.define('cr.ui.dialogs', function() {
     }
   };
 
+  /** @private */
   BaseDialog.prototype.onOkClick_ = function(event) {
     this.hide();
     if (this.onOk_)
       this.onOk_();
   };
 
+  /** @private */
   BaseDialog.prototype.onCancelClick_ = function(event) {
     this.hide();
     if (this.onCancel_)
       this.onCancel_();
   };
 
+  /** @param {string} label */
   BaseDialog.prototype.setOkLabel = function(label) {
     this.okButton_.textContent = label;
   };
 
+  /** @param {string} label */
   BaseDialog.prototype.setCancelLabel = function(label) {
     this.cancelButton_.textContent = label;
   };
@@ -136,16 +146,31 @@ cr.define('cr.ui.dialogs', function() {
     this.initialFocusElement_ = this.cancelButton_;
   };
 
-  BaseDialog.prototype.show = function(message, onOk, onCancel, onShow) {
-    this.showWithTitle(null, message, onOk, onCancel, onShow);
+  /**
+   * @param {string} message
+   * @param {Function=} opt_onOk
+   * @param {Function=} opt_onCancel
+   * @param {Function=} opt_onShow
+   */
+  BaseDialog.prototype.show = function(
+      message, opt_onOk, opt_onCancel, opt_onShow) {
+    this.showWithTitle('', message, opt_onOk, opt_onCancel, opt_onShow);
   };
 
+  /**
+   * @param {string} title
+   * @param {string} message
+   * @param {Function=} opt_onOk
+   * @param {Function=} opt_onCancel
+   * @param {Function=} opt_onShow
+   */
   BaseDialog.prototype.showHtml = function(title, message,
-      onOk, onCancel, onShow) {
+      opt_onOk, opt_onCancel, opt_onShow) {
     this.text_.innerHTML = message;
-    this.show_(title, onOk, onCancel, onShow);
+    this.show_(title, opt_onOk, opt_onCancel, opt_onShow);
   };
 
+  /** @private */
   BaseDialog.prototype.findFocusableElements_ = function(doc) {
     var elements = Array.prototype.filter.call(
         doc.querySelectorAll('*'),
@@ -166,13 +191,28 @@ cr.define('cr.ui.dialogs', function() {
     return elements;
   };
 
+  /**
+   * @param {string} title
+   * @param {string} message
+   * @param {Function=} opt_onOk
+   * @param {Function=} opt_onCancel
+   * @param {Function=} opt_onShow
+   */
   BaseDialog.prototype.showWithTitle = function(title, message,
-      onOk, onCancel, onShow) {
+      opt_onOk, opt_onCancel, opt_onShow) {
     this.text_.textContent = message;
-    this.show_(title, onOk, onCancel, onShow);
+    this.show_(title, opt_onOk, opt_onCancel, opt_onShow);
   };
 
-  BaseDialog.prototype.show_ = function(title, onOk, onCancel, onShow) {
+  /**
+   * @param {string} title
+   * @param {Function=} opt_onOk
+   * @param {Function=} opt_onCancel
+   * @param {Function=} opt_onShow
+   * @private
+   */
+  BaseDialog.prototype.show_ = function(
+      title, opt_onOk, opt_onCancel, opt_onShow) {
     // Make all outside nodes unfocusable while the dialog is active.
     this.deactivatedNodes_ = this.findFocusableElements_(this.document_);
     this.tabIndexes_ = this.deactivatedNodes_.map(
@@ -183,8 +223,8 @@ cr.define('cr.ui.dialogs', function() {
     this.previousActiveElement_ = this.document_.activeElement;
     this.parentNode_.appendChild(this.container_);
 
-    this.onOk_ = onOk;
-    this.onCancel_ = onCancel;
+    this.onOk_ = opt_onOk;
+    this.onCancel_ = opt_onCancel;
 
     if (title) {
       this.title_.textContent = title;
@@ -201,15 +241,13 @@ cr.define('cr.ui.dialogs', function() {
       self.container_.classList.add('shown');
       self.initialFocusElement_.focus();
       setTimeout(function() {
-        if (onShow)
-          onShow();
+        if (opt_onShow)
+          opt_onShow();
       }, BaseDialog.ANIMATE_STABLE_DURATION);
     }, 0);
   };
 
-  /**
-   * @param {Function=} opt_onHide
-   */
+  /** @param {Function=} opt_onHide */
   BaseDialog.prototype.hide = function(opt_onHide) {
     // Restore focusability.
     for (var i = 0; i < this.deactivatedNodes_.length; i++) {
@@ -248,14 +286,20 @@ cr.define('cr.ui.dialogs', function() {
    * @extends {cr.ui.dialogs.BaseDialog}
    */
   function AlertDialog(parentNode) {
-    BaseDialog.apply(this, [parentNode]);
+    BaseDialog.call(this, parentNode);
     this.cancelButton_.style.display = 'none';
   }
 
   AlertDialog.prototype = {__proto__: BaseDialog.prototype};
 
-  AlertDialog.prototype.show = function(message, onOk, onShow) {
-    return BaseDialog.prototype.show.apply(this, [message, onOk, onOk, onShow]);
+  /**
+   * @param {Function=} opt_onOk
+   * @param {Function=} opt_onShow
+   * @override
+   */
+  AlertDialog.prototype.show = function(message, opt_onOk, opt_onShow) {
+    return BaseDialog.prototype.show.call(
+        this, message, opt_onOk, opt_onOk, opt_onShow);
   };
 
   /**
@@ -264,7 +308,7 @@ cr.define('cr.ui.dialogs', function() {
    * @extends {cr.ui.dialogs.BaseDialog}
    */
   function ConfirmDialog(parentNode) {
-    BaseDialog.apply(this, [parentNode]);
+    BaseDialog.call(this, parentNode);
   }
 
   ConfirmDialog.prototype = {__proto__: BaseDialog.prototype};
@@ -276,7 +320,7 @@ cr.define('cr.ui.dialogs', function() {
    * @extends {cr.ui.dialogs.BaseDialog}
    */
   function PromptDialog(parentNode) {
-    BaseDialog.apply(this, [parentNode]);
+    BaseDialog.call(this, parentNode);
     this.input_ = this.document_.createElement('input');
     this.input_.setAttribute('type', 'text');
     this.input_.addEventListener('focus', this.onInputFocus.bind(this));
@@ -291,6 +335,7 @@ cr.define('cr.ui.dialogs', function() {
     this.input_.select();
   };
 
+  /** @private */
   PromptDialog.prototype.onKeyDown_ = function(event) {
     if (event.keyCode == 13) {  // Enter
       this.onOkClick_(event);
@@ -299,21 +344,27 @@ cr.define('cr.ui.dialogs', function() {
   };
 
   /**
+   * @param {string} message
+   * @param {?} defaultValue
+   * @param {Function=} opt_onOk
+   * @param {Function=} opt_onCancel
+   * @param {Function=} opt_onShow
    * @suppress {checkTypes}
    * TODO(fukino): remove suppression if there is a better way to avoid warning
    * about overriding method with different signature.
    */
-  PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,
-                                        onShow) {
+  PromptDialog.prototype.show = function(
+      message, defaultValue, opt_onOk, opt_onCancel, opt_onShow) {
     this.input_.value = defaultValue || '';
-    return BaseDialog.prototype.show.apply(this, [message, onOk, onCancel,
-                                                  onShow]);
+    return BaseDialog.prototype.show.call(
+        this, message, opt_onOk, opt_onCancel, opt_onShow);
   };
 
   PromptDialog.prototype.getValue = function() {
     return this.input_.value;
   };
 
+  /** @private */
   PromptDialog.prototype.onOkClick_ = function(event) {
     this.hide();
     if (this.onOk_)

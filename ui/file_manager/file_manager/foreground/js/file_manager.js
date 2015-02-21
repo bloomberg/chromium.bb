@@ -439,7 +439,7 @@ FileManager.prototype = /** @struct */ {
                 /** @type {!importer.ImportRunner} */ (
                     this.mediaImportHandler_),
                 new importer.RuntimeCommandWidget(),
-                this.tracker_);
+                assert(this.tracker_));
           }
         }.bind(this));
 

@@ -687,7 +687,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       case 'mount':
         var requestKey = this.makeRequestKey_(
             'mount',
-            event.volumeMetadata.sourcePath);
+            event.volumeMetadata.sourcePath || '');
 
         if (event.status === 'success' ||
             event.status ===

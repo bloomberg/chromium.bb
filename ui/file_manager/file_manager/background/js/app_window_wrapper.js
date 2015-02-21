@@ -23,7 +23,8 @@ function AppWindowWrapper(url, id, options) {
   this.url_ = url;
   this.id_ = id;
   // Do deep copy for the template of options to assign customized params later.
-  this.options_ = JSON.parse(JSON.stringify(options));
+  this.options_ = /** @type chrome.app.window.CreateWindowOptions */(
+      JSON.parse(JSON.stringify(options)));
   this.window_ = null;
   this.appState_ = null;
   this.openingOrOpened_ = false;
@@ -304,7 +305,7 @@ SingletonAppWindowWrapper.prototype.reopen = function(opt_callback) {
     }
 
     try {
-      var appState = JSON.parse(value);
+      var appState = assertInstanceof(JSON.parse(value), Object);
     } catch (e) {
       console.error('Corrupt launch data for ' + this.id_, value);
       opt_callback && opt_callback();

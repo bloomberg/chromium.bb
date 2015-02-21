@@ -351,7 +351,7 @@ FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
 /**
  * Performs the deletion.
  *
- * @param {Object} task The delete task (see deleteEntries function).
+ * @param {!Object} task The delete task (see deleteEntries function).
  * @param {function()} callback Callback run on task end.
  * @private
  */

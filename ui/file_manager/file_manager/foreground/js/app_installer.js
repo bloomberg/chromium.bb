@@ -54,7 +54,7 @@ AppInstaller.prototype.install = function(callback) {
 /**
  * Called when the installation is completed.
  *
- * @param {{message: string}?} error Null if the installation is success,
+ * @param {!Object|undefined} error Undefined if the installation is success,
  *     otherwise an object which contains error message.
  * @private
  */

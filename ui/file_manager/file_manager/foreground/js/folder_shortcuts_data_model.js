@@ -207,7 +207,7 @@ FolderShortcutsDataModel.prototype = {
    * Reloads the model and loads the shortcuts.
    * @private
    */
-  reload_: function(ev) {
+  reload_: function() {
     var shortcutPaths;
     this.queue_.run(function(callback) {
       chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
