@@ -76,8 +76,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual void createMessageChannel(blink::WebMessagePortChannel** channel1,
                                     blink::WebMessagePortChannel** channel2);
   virtual blink::WebPrescientNetworking* prescientNetworking();
-  virtual void cacheMetadata(
-      const blink::WebURL&, double, const char*, size_t);
   virtual void cacheMetadata(const blink::WebURL&, int64, const char*, size_t);
   virtual blink::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);

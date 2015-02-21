@@ -970,10 +970,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
                                            const ResourceResponseInfo& info,
                                            WebURLResponse* response) {
   response->setURL(url);
-  response->setResponseTime(info.response_time.ToDoubleT());
-  // FIXME: remove static cast once setResponseTime is no longer overloaded.
-  response->setResponseTime(
-      static_cast<long long>(info.response_time.ToInternalValue()));
+  response->setResponseTime(info.response_time.ToInternalValue());
   response->setMIMEType(WebString::fromUTF8(info.mime_type));
   response->setTextEncodingName(WebString::fromUTF8(info.charset));
   response->setExpectedContentLength(info.content_length);
