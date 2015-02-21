@@ -22,6 +22,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
@@ -301,7 +302,9 @@ ssize_t ZygoteHostImpl::ReadReply(void* buf, size_t buf_len) {
         sizeof(sandbox_status_)) {
       return -1;
     }
+
     have_read_sandbox_status_word_ = true;
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Linux.SandboxStatus", sandbox_status_);
   }
 
   return HANDLE_EINTR(read(control_fd_, buf, buf_len));

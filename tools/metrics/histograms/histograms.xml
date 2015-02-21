@@ -12477,6 +12477,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Linux.SandboxStatus" enum="LinuxSandboxStatus">
+  <owner>rickyz@chromium.org</owner>
+  <summary>
+    The Linux sandbox status. This describes what sandboxing features are
+    enabled (such as the suid/namespace sandboxes, various namespaces, seccomp
+    bpf, ...). Emitted once at startup.
+  </summary>
+</histogram>
+
 <histogram name="Linux.WindowManager" enum="LinuxWindowManagerName">
   <owner>pkotwicz@chromium.org</owner>
   <summary>
@@ -51764,6 +51773,143 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="2.17"/>
   <int value="9" label="2.18"/>
   <int value="10" label="2.19"/>
+</enum>
+
+<enum name="LinuxSandboxStatus" type="int">
+  <int value="0" label="none"/>
+  <int value="1" label="suid"/>
+  <int value="2" label="pidns"/>
+  <int value="3" label="suid, pidns"/>
+  <int value="4" label="netns"/>
+  <int value="5" label="suid, netns"/>
+  <int value="6" label="pidns, netns"/>
+  <int value="7" label="suid, pidns, netns"/>
+  <int value="8" label="seccomp-bpf"/>
+  <int value="9" label="suid, seccomp-bpf"/>
+  <int value="10" label="pidns, seccomp-bpf"/>
+  <int value="11" label="suid, pidns, seccomp-bpf"/>
+  <int value="12" label="netns, seccomp-bpf"/>
+  <int value="13" label="suid, netns, seccomp-bpf"/>
+  <int value="14" label="pidns, netns, seccomp-bpf"/>
+  <int value="15" label="suid, pidns, netns, seccomp-bpf"/>
+  <int value="16" label="yama"/>
+  <int value="17" label="suid, yama"/>
+  <int value="18" label="pidns, yama"/>
+  <int value="19" label="suid, pidns, yama"/>
+  <int value="20" label="netns, yama"/>
+  <int value="21" label="suid, netns, yama"/>
+  <int value="22" label="pidns, netns, yama"/>
+  <int value="23" label="suid, pidns, netns, yama"/>
+  <int value="24" label="seccomp-bpf, yama"/>
+  <int value="25" label="suid, seccomp-bpf, yama"/>
+  <int value="26" label="pidns, seccomp-bpf, yama"/>
+  <int value="27" label="suid, pidns, seccomp-bpf, yama"/>
+  <int value="28" label="netns, seccomp-bpf, yama"/>
+  <int value="29" label="suid, netns, seccomp-bpf, yama"/>
+  <int value="30" label="pidns, netns, seccomp-bpf, yama"/>
+  <int value="31" label="suid, pidns, netns, seccomp-bpf, yama"/>
+  <int value="32" label="seccomp-tsync"/>
+  <int value="33" label="suid, seccomp-tsync"/>
+  <int value="34" label="pidns, seccomp-tsync"/>
+  <int value="35" label="suid, pidns, seccomp-tsync"/>
+  <int value="36" label="netns, seccomp-tsync"/>
+  <int value="37" label="suid, netns, seccomp-tsync"/>
+  <int value="38" label="pidns, netns, seccomp-tsync"/>
+  <int value="39" label="suid, pidns, netns, seccomp-tsync"/>
+  <int value="40" label="seccomp-bpf, seccomp-tsync"/>
+  <int value="41" label="suid, seccomp-bpf, seccomp-tsync"/>
+  <int value="42" label="pidns, seccomp-bpf, seccomp-tsync"/>
+  <int value="43" label="suid, pidns, seccomp-bpf, seccomp-tsync"/>
+  <int value="44" label="netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="45" label="suid, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="46" label="pidns, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="47" label="suid, pidns, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="48" label="yama, seccomp-tsync"/>
+  <int value="49" label="suid, yama, seccomp-tsync"/>
+  <int value="50" label="pidns, yama, seccomp-tsync"/>
+  <int value="51" label="suid, pidns, yama, seccomp-tsync"/>
+  <int value="52" label="netns, yama, seccomp-tsync"/>
+  <int value="53" label="suid, netns, yama, seccomp-tsync"/>
+  <int value="54" label="pidns, netns, yama, seccomp-tsync"/>
+  <int value="55" label="suid, pidns, netns, yama, seccomp-tsync"/>
+  <int value="56" label="seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="57" label="suid, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="58" label="pidns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="59" label="suid, pidns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="60" label="netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="61" label="suid, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="62" label="pidns, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="63" label="suid, pidns, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="64" label="userns"/>
+  <int value="65" label="suid, userns"/>
+  <int value="66" label="userns, pidns"/>
+  <int value="67" label="suid, userns, pidns"/>
+  <int value="68" label="userns, netns"/>
+  <int value="69" label="suid, userns, netns"/>
+  <int value="70" label="userns, pidns, netns"/>
+  <int value="71" label="suid, userns, pidns, netns"/>
+  <int value="72" label="userns, seccomp-bpf"/>
+  <int value="73" label="suid, userns, seccomp-bpf"/>
+  <int value="74" label="userns, pidns, seccomp-bpf"/>
+  <int value="75" label="suid, userns, pidns, seccomp-bpf"/>
+  <int value="76" label="userns, netns, seccomp-bpf"/>
+  <int value="77" label="suid, userns, netns, seccomp-bpf"/>
+  <int value="78" label="userns, pidns, netns, seccomp-bpf"/>
+  <int value="79" label="suid, userns, pidns, netns, seccomp-bpf"/>
+  <int value="80" label="userns, yama"/>
+  <int value="81" label="suid, userns, yama"/>
+  <int value="82" label="userns, pidns, yama"/>
+  <int value="83" label="suid, userns, pidns, yama"/>
+  <int value="84" label="userns, netns, yama"/>
+  <int value="85" label="suid, userns, netns, yama"/>
+  <int value="86" label="userns, pidns, netns, yama"/>
+  <int value="87" label="suid, userns, pidns, netns, yama"/>
+  <int value="88" label="userns, seccomp-bpf, yama"/>
+  <int value="89" label="suid, userns, seccomp-bpf, yama"/>
+  <int value="90" label="userns, pidns, seccomp-bpf, yama"/>
+  <int value="91" label="suid, userns, pidns, seccomp-bpf, yama"/>
+  <int value="92" label="userns, netns, seccomp-bpf, yama"/>
+  <int value="93" label="suid, userns, netns, seccomp-bpf, yama"/>
+  <int value="94" label="userns, pidns, netns, seccomp-bpf, yama"/>
+  <int value="95" label="suid, userns, pidns, netns, seccomp-bpf, yama"/>
+  <int value="96" label="userns, seccomp-tsync"/>
+  <int value="97" label="suid, userns, seccomp-tsync"/>
+  <int value="98" label="userns, pidns, seccomp-tsync"/>
+  <int value="99" label="suid, userns, pidns, seccomp-tsync"/>
+  <int value="100" label="userns, netns, seccomp-tsync"/>
+  <int value="101" label="suid, userns, netns, seccomp-tsync"/>
+  <int value="102" label="userns, pidns, netns, seccomp-tsync"/>
+  <int value="103" label="suid, userns, pidns, netns, seccomp-tsync"/>
+  <int value="104" label="userns, seccomp-bpf, seccomp-tsync"/>
+  <int value="105" label="suid, userns, seccomp-bpf, seccomp-tsync"/>
+  <int value="106" label="userns, pidns, seccomp-bpf, seccomp-tsync"/>
+  <int value="107" label="suid, userns, pidns, seccomp-bpf, seccomp-tsync"/>
+  <int value="108" label="userns, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="109" label="suid, userns, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="110" label="userns, pidns, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="111"
+      label="suid, userns, pidns, netns, seccomp-bpf, seccomp-tsync"/>
+  <int value="112" label="userns, yama, seccomp-tsync"/>
+  <int value="113" label="suid, userns, yama, seccomp-tsync"/>
+  <int value="114" label="userns, pidns, yama, seccomp-tsync"/>
+  <int value="115" label="suid, userns, pidns, yama, seccomp-tsync"/>
+  <int value="116" label="userns, netns, yama, seccomp-tsync"/>
+  <int value="117" label="suid, userns, netns, yama, seccomp-tsync"/>
+  <int value="118" label="userns, pidns, netns, yama, seccomp-tsync"/>
+  <int value="119" label="suid, userns, pidns, netns, yama, seccomp-tsync"/>
+  <int value="120" label="userns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="121" label="suid, userns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="122" label="userns, pidns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="123"
+      label="suid, userns, pidns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="124" label="userns, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="125"
+      label="suid, userns, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="126"
+      label="userns, pidns, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="127"
+      label="suid, userns, pidns, netns, seccomp-bpf, yama, seccomp-tsync"/>
+  <int value="2147483648" label="Invalid"/>
 </enum>
 
 <enum name="LinuxWindowManagerName" type="int">
