@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/android/base_jni_onload.h"
-#include "base/android/jni_onload_delegate.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+#include "base/bind.h"
 #include "content/app/android/library_loader_hooks.h"
 #include "content/public/app/content_main.h"
 
@@ -17,18 +17,11 @@ namespace android {
 
 namespace {
 
-class ContentJNIOnLoadDelegate
-    : public base::android::JNIOnLoadDelegate {
- public:
-  bool RegisterJNI(JNIEnv* env) override;
-  bool Init() override;
-};
-
-bool ContentJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
+bool RegisterJNI(JNIEnv* env) {
   return content::EnsureJniRegistered(env);
 }
 
-bool ContentJNIOnLoadDelegate::Init() {
+bool Init() {
   base::android::SetLibraryLoadedHook(&content::LibraryLoaded);
   return true;
 }
@@ -36,13 +29,20 @@ bool ContentJNIOnLoadDelegate::Init() {
 }  // namespace
 
 
-bool OnJNIOnLoad(JavaVM* vm,
-                 base::android::JNIOnLoadDelegate* delegate) {
-  std::vector<base::android::JNIOnLoadDelegate*> delegates;
-  ContentJNIOnLoadDelegate content_delegate;
-  delegates.push_back(delegate);
-  delegates.push_back(&content_delegate);
-  return base::android::OnJNIOnLoad(vm, &delegates);
+bool OnJNIOnLoadRegisterJNI(
+    JavaVM* vm,
+    base::android::RegisterCallback callback) {
+  std::vector<base::android::RegisterCallback> callbacks;
+  callbacks.push_back(callback);
+  callbacks.push_back(base::Bind(&RegisterJNI));
+  return base::android::OnJNIOnLoadRegisterJNI(vm, callbacks);
+}
+
+bool OnJNIOnLoadInit(base::android::InitCallback callback) {
+  std::vector<base::android::InitCallback> callbacks;
+  callbacks.push_back(callback);
+  callbacks.push_back(base::Bind(&Init));
+  return base::android::OnJNIOnLoadInit(callbacks);
 }
 
 }  // namespace android

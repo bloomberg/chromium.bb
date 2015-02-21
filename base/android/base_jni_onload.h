@@ -9,17 +9,22 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/callback.h"
 
 namespace base {
 namespace android {
 
-class JNIOnLoadDelegate;
+// Returns whether JNI registration succeeded. Caller shall put the
+// RegisterCallback into |callbacks| in reverse order.
+typedef base::Callback<bool(JNIEnv*)> RegisterCallback;
+BASE_EXPORT bool OnJNIOnLoadRegisterJNI(
+    JavaVM* vm,
+    std::vector<RegisterCallback> callbacks);
 
-// Returns whether JNI registration and initialization succeeded. Caller shall
-// put the JNIOnLoadDelegate into |delegates| in reverse order. Refer
-// JNIOnLoadDelegate for more information.
-BASE_EXPORT bool OnJNIOnLoad(JavaVM* vm,
-                             std::vector<JNIOnLoadDelegate*>* delegates);
+// Returns whether initialization succeeded. Caller shall put the
+// InitCallback into |callbacks| in reverse order.
+typedef base::Callback<bool(void)> InitCallback;
+BASE_EXPORT bool OnJNIOnLoadInit(std::vector<InitCallback> callbacks);
 
 }  // namespace android
 }  // namespace base

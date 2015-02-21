@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/lib/main/webview_jni_onload_delegate.h"
+#include "android_webview/lib/main/webview_jni_onload.h"
 #include "base/android/jni_android.h"
+#include "base/bind.h"
 #include "content/public/app/content_jni_onload.h"
 
 // This is called by the VM when the shared library is first loaded.
@@ -13,8 +14,10 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // improve startup peformance.
   base::android::DisableManualJniRegistration();
 
-  if (!android_webview::OnJNIOnLoad(vm))
+  if (!content::android::OnJNIOnLoadRegisterJNI(
+          vm, base::Bind(&android_webview::RegisterJNI)) ||
+      !content::android::OnJNIOnLoadInit(base::Bind(&android_webview::Init))) {
     return -1;
-
+  }
   return JNI_VERSION_1_4;
 }

@@ -7,24 +7,19 @@
 
 #include <jni.h>
 
+#include "base/android/base_jni_onload.h"
 #include "content/common/content_export.h"
-
-namespace base {
-namespace android {
-
-class JNIOnLoadDelegate;
-
-}  // namespace android
-}  // namespace base
 
 namespace content {
 namespace android {
 
-// Returns true if JNI registration and initialization succeeded. Refer to
-// JNIOnLoadDelegate for more information.
-CONTENT_EXPORT bool OnJNIOnLoad(
+// Returns true if JNI registration succeeded.
+CONTENT_EXPORT bool OnJNIOnLoadRegisterJNI(
     JavaVM* vm,
-    base::android::JNIOnLoadDelegate* delegate);
+    base::android::RegisterCallback callback);
+
+// Returns true if initialization succeeded.
+CONTENT_EXPORT bool OnJNIOnLoadInit(base::android::InitCallback callback);
 
 }  // namespace android
 }  // namespace content

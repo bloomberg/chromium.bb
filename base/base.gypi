@@ -44,7 +44,6 @@
           'android/jni_android.h',
           'android/jni_array.cc',
           'android/jni_array.h',
-          'android/jni_onload_delegate.h',
           'android/jni_registrar.cc',
           'android/jni_registrar.h',
           'android/jni_string.cc',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/lib/main/webview_jni_onload_delegate.h"
+#include "android_webview/lib/main/webview_jni_onload.h"
 
 #include "android_webview/lib/main/aw_main_delegate.h"
 #include "android_webview/native/android_webview_jni_registrar.h"
@@ -10,7 +10,6 @@
 #include "base/android/jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
-#include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
 #include "url/url_util.h"
 
@@ -28,7 +27,7 @@ static base::android::RegistrationMethod
 
 }  // namespace
 
-bool WebViewJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
+bool RegisterJNI(JNIEnv* env) {
   // Register JNI for components we depend on.
   if (!RegisterNativeMethods(
           env,
@@ -40,7 +39,7 @@ bool WebViewJNIOnLoadDelegate::RegisterJNI(JNIEnv* env) {
   return true;
 }
 
-bool WebViewJNIOnLoadDelegate::Init() {
+bool Init() {
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 
   // Initialize url lib here while we are still single-threaded, in case we use
@@ -48,11 +47,6 @@ bool WebViewJNIOnLoadDelegate::Init() {
   // this). It's safe to call this multiple times.
   url::Initialize();
   return true;
-}
-
-bool OnJNIOnLoad(JavaVM* vm) {
-  WebViewJNIOnLoadDelegate delegate;
-  return content::android::OnJNIOnLoad(vm, &delegate);
 }
 
 }  // android_webview
