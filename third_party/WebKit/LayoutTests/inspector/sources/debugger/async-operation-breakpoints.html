@@ -60,7 +60,7 @@ function test()
 
     function onAsyncOperationStarted(event)
     {
-        var operation = event.data.operation;
+        var operation = event.data;
         var callFrame = operation.stackTrace && operation.stackTrace[0];
         var functionName = callFrame && callFrame.functionName;
         if (functionName === "setAsyncBreakpointForMe")

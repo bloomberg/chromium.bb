@@ -84,7 +84,7 @@ function test()
 
     function onAsyncOperationStarted(event)
     {
-        var operation = event.data.operation;
+        var operation = event.data;
         var description = asyncOperationDescription(operation);
         asyncOperations[operation.id] = description;
         InspectorTest.addResult("==> AsyncOperationStarted: " + description);
@@ -97,7 +97,7 @@ function test()
 
     function onAsyncOperationCompleted(event)
     {
-        var operationId = event.data.operationId;
+        var operationId = event.data;
         InspectorTest.addResult("==> AsyncOperationCompleted: " + asyncOperations[operationId]);
         delete asyncOperations[operationId];
         maybeRunNoAsyncOperationsCallback();
