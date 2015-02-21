@@ -75,7 +75,8 @@ void DiscardableSharedMemoryHeap::MergeIntoFreeList(scoped_ptr<Span> span) {
     scoped_ptr<Span> prev = RemoveFromFreeList(prev_it->second);
     DCHECK_EQ(prev->start_ + prev->length_, span->start_);
     UnregisterSpan(prev.get());
-    spans_.erase(span->start_);
+    if (span->length_ > 1)
+      spans_.erase(span->start_);
     span->start_ -= prev->length_;
     span->length_ += prev->length_;
     spans_[span->start_] = span.get();

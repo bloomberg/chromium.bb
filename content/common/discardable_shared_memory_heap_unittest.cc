@@ -105,6 +105,31 @@ TEST_F(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   heap.MergeIntoFreeList(large_span.Pass());
 }
 
+TEST_F(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
+  size_t block_size = base::GetPageSize();
+  DiscardableSharedMemoryHeap heap(block_size);
+
+  const size_t kBlocks = 6;
+  size_t memory_size = block_size * kBlocks;
+
+  scoped_ptr<base::DiscardableSharedMemory> memory(
+      new base::DiscardableSharedMemory);
+  ASSERT_TRUE(memory->CreateAndMap(memory_size));
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
+      heap.Grow(memory.Pass(), memory_size));
+
+  // Split span into two.
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
+      heap.Split(new_span.get(), 5);
+  ASSERT_TRUE(leftover);
+
+  // Merge |new_span| into free list.
+  heap.MergeIntoFreeList(new_span.Pass());
+
+  // Merge |leftover| into free list.
+  heap.MergeIntoFreeList(leftover.Pass());
+}
+
 TEST_F(DiscardableSharedMemoryHeapTest, Grow) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
