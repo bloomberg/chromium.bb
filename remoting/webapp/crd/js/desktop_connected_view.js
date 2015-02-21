@@ -79,8 +79,8 @@ remoting.DesktopConnectedView = function(session, container, host, mode,
   var img = this.mouseCursorOverlay_;
   /** @param {Event} event @private */
   this.updateMouseCursorPosition_ = function(event) {
-    img.style.top = event.y + 'px';
-    img.style.left = event.x + 'px';
+    img.style.top = event.offsetY + 'px';
+    img.style.left = event.offsetX + 'px';
   };
 
   /** @type {number?} @private */
