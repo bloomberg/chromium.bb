@@ -1828,7 +1828,6 @@
         'jni_generator_jarjar_file': '../android_webview/build/jarjar-rules.txt',
       }],
       ['OS=="linux" and target_arch!="mipsel"', {
-        # TODO(thakis): This is here to measure perf for a while.
         'clang%': 1,
       }],  # OS=="mac"
       ['OS=="mac"', {
@@ -3512,7 +3511,7 @@
         ],
       },
     }],
-    # TODO(thakis): Enable this everywhere. http://crbug.com/371125
+    # -Wl,-z,-defs doesn't work with the sanitiziers, http://crbug.com/452065
     ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_vptr==0', {
       'target_defaults': {
         'ldflags': [
