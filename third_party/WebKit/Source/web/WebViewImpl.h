@@ -372,8 +372,6 @@ public:
     // not take the user away from the current page.
     void didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage);
 
-    void postLayoutResize(WebLocalFrameImpl* webframe);
-
     // Indicates two things:
     //   1) This view may have a new layout now.
     //   2) Calling layout() is a no-op.
