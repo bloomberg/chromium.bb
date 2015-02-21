@@ -28,7 +28,10 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS(ui::PageTransition)  // Bitmask.
+IPC_ENUM_TRAITS_VALIDATE(ui::PageTransition,
+                         ((value &
+                           ui::PageTransition::PAGE_TRANSITION_CORE_MASK) <=
+                          ui::PageTransition::PAGE_TRANSITION_LAST_CORE))
 IPC_ENUM_TRAITS_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
                           net::NetworkChangeNotifier::CONNECTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
