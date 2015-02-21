@@ -26,7 +26,7 @@ public:
     ~MockPlatform() override { }
 
     // From blink::Platform:
-    void cacheMetadata(const WebURL& url, double, const char*, size_t) override
+    void cacheMetadata(const WebURL& url, int64, const char*, size_t) override
     {
         m_cachedURLs.append(url);
     }
