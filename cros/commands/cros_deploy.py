@@ -767,29 +767,24 @@ For more information of cros build usage:
     parser.add_argument(
         '--no-ping', dest='ping', action='store_false', default=True,
         help='Do not ping the device before attempting to connect to it.')
-    # TODO(garnold) Make deep and check installed the default behavior.
-    parser.add_argument(
-        '--update', action='store_true',
-        help='Check installed versions on target (emerge only).')
-    parser.add_argument(
-        '--deep', action='store_true',
-        help='Install dependencies. Implies --update.')
-    parser.add_argument(
-        '--deep-rev', action='store_true',
-        help='Install reverse dependencies. Implies --deep.')
     parser.add_argument(
         '--dry-run', '-n', action='store_true',
         help='Output deployment plan but do not deploy anything.')
 
     advanced = parser.add_option_group('Advanced options')
     advanced.add_argument(
-        '--ignore-device-board', action='store_true',
-        help='Do not require that device be compatible with current '
-        'project/board.')
+        '--force', action='store_true',
+        help='Ignore sanity checks, just do it.')
+    # TODO(garnold) Make deep and check installed the default behavior.
     advanced.add_argument(
-        '--ignore-device-sdk-version', action='store_true',
-        help='Do not require that device SDK version be compatible with '
-        'the environment.')
+        '--update', action='store_true',
+        help='Check installed versions on target (emerge only).')
+    advanced.add_argument(
+        '--deep', action='store_true',
+        help='Install dependencies. Implies --update.')
+    advanced.add_argument(
+        '--deep-rev', action='store_true',
+        help='Install reverse dependencies. Implies --deep.')
 
   def _GetPackageByCPV(self, cpv):
     """Returns the path to a binary package corresponding to |cpv|."""
@@ -957,13 +952,12 @@ For more information of cros build usage:
         proj = project.FindProjectByName(self.board)
         if not proj:
           cros_build_lib.Die('Could not find project for board')
-        if not (self.options.ignore_device_board or
-                proj.Inherits(device.board)):
+        if not (self.options.force or proj.Inherits(device.board)):
           cros_build_lib.Die('Device (%s) is incompatible with board',
                              device.board)
 
         # If this is an official SDK, check that the target is compatible.
-        if not self.options.ignore_device_sdk_version:
+        if not self.options.force:
           sdk_version = project_sdk.FindVersion()
           if sdk_version and device.sdk_version != sdk_version:
             cros_build_lib.Die('Device SDK version (%s) is incompatible with '

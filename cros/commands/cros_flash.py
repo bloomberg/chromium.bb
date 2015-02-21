@@ -258,8 +258,8 @@ class RemoteDeviceUpdater(object):
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False, ping=True, disable_verification=False,
-               ignore_device_board=False, sdk_version=None):
+               yes=False, force=False, ping=True, disable_verification=False,
+               sdk_version=None):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -280,7 +280,7 @@ class RemoteDeviceUpdater(object):
     # Do not wipe if debug is set.
     self.wipe = wipe and not debug
     self.yes = yes
-    self.ignore_device_board = ignore_device_board
+    self.force = force
     self.sdk_version = sdk_version
 
   # pylint: disable=unbalanced-tuple-unpacking
@@ -547,7 +547,7 @@ class RemoteDeviceUpdater(object):
         proj = project.FindProjectByName(self.board)
         if not proj:
           cros_build_lib.Die('Could not find project for board')
-        if not (self.ignore_device_board or proj.Inherits(device.board)):
+        if not (self.force or proj.Inherits(device.board)):
           cros_build_lib.Die('Device (%s) is incompatible with board',
                              device.board)
 
@@ -739,7 +739,10 @@ Examples:
         'this option')
     update.add_argument(
         '--yes', default=False, action='store_true',
-        help='Force yes to any prompt. Use with caution.')
+        help='Answer yes to any prompt. Use with caution.')
+    update.add_argument(
+        '--force', action='store_true',
+        help='Ignore sanity checks, just do it. Implies --yes.')
     update.add_argument(
         '--no-reboot', action='store_false', dest='reboot', default=True,
         help='Do not reboot after update. Default is always reboot.')
@@ -773,10 +776,6 @@ Examples:
         help='Install a Project SDK image. This resets the device to a clean '
         'state and ensures that it is compatible with the development '
         'environment. The image argument is ignored.')
-    update.add_argument(
-        '--ignore-device-board', action='store_true',
-        help='Do not require that device be compatible with current '
-        'project/board.')
 
     usb = parser.add_argument_group('USB specific options')
     usb.add_argument(
@@ -817,6 +816,8 @@ Examples:
   # pylint: disable=E1101
   def Run(self):
     """Perfrom the cros flash command."""
+    if self.options.force:
+      self.options.yes = True
     self.options.Freeze()
 
     if self.options.clear_cache:
@@ -867,9 +868,9 @@ Examples:
             wipe=self.options.wipe,
             debug=self.options.debug,
             yes=self.options.yes,
+            force=self.options.force,
             ping=self.options.ping,
             disable_verification=self.options.disable_rootfs_verification,
-            ignore_device_board=self.options.ignore_device_board,
             sdk_version=sdk_version)
 
         # Perform device update.
