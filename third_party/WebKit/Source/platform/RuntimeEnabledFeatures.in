@@ -116,7 +116,7 @@ PushMessaging status=stable
 PushMessagingData status=test
 // PushManager.hasPermission() is currently disabled, expecting Permissions API
 // to fulfill the same role.
-PushMessagingHasPermission status=stable
+PushMessagingHasPermission status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RegionBasedColumns status=experimental
