@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2015 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "config.h"
 #include "TopControls.h"
@@ -35,7 +14,7 @@
 namespace blink {
 
 TopControls::TopControls(const FrameHost& frameHost)
-    : m_frameHost(frameHost)
+    : m_frameHost(&frameHost)
     , m_height(0)
     , m_shownRatio(0)
     , m_baselineContentOffset(0)
@@ -43,6 +22,15 @@ TopControls::TopControls(const FrameHost& frameHost)
     , m_shrinkViewport(false)
     , m_permittedState(WebTopControlsBoth)
 {
+}
+
+TopControls::~TopControls()
+{
+}
+
+void TopControls::trace(Visitor* visitor)
+{
+    visitor->trace(m_frameHost);
 }
 
 void TopControls::scrollBegin()
@@ -97,7 +85,7 @@ void TopControls::setShownRatio(float shownRatio)
         return;
 
     m_shownRatio = shownRatio;
-    m_frameHost.chrome().client().didUpdateTopControls();
+    m_frameHost->chrome().client().didUpdateTopControls();
 }
 
 void TopControls::updateConstraints(WebTopControlsState constraints)
@@ -112,7 +100,7 @@ void TopControls::setHeight(float height, bool shrinkViewport)
 
     m_height = height;
     m_shrinkViewport = shrinkViewport;
-    m_frameHost.chrome().client().didUpdateTopControls();
+    m_frameHost->chrome().client().didUpdateTopControls();
 }
 
 } // namespace blink
