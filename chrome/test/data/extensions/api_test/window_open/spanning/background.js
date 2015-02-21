@@ -13,8 +13,14 @@ function openFromNormalShouldOpenInNormal() {
     chrome.test.assertEq(1, windows[0].tabs.length);
     chrome.test.assertFalse(windows[0].tabs[0].incognito);
 
-    // The rest of the test continues in infobar.html.
-    chrome.infobars.show({tabId: windows[0].tabs[0].id, path: "infobar.html"});
+    chrome.windows.update(windows[0].id, {
+      focused: true
+    }, function() {
+      chrome.browserAction.openPopup(function(popupWindow) {
+        chrome.test.assertTrue(!!popupWindow);
+        // The rest of the test continues in popup.html.
+      });
+    });
   });
 }
 
@@ -23,14 +29,19 @@ function openFromExtensionHostInIncognitoBrowserShouldOpenInNormalBrowser() {
   chrome.windows.getCurrent(function(normalWin) {
     chrome.test.assertFalse(normalWin.incognito);
     // Create an incognito window.
-    chrome.windows.create({ incognito: true }, function(incognitoWin) {
+    chrome.windows.create({
+      incognito: true,
+      focused: true
+    }, function(incognitoWin) {
       // Remove the normal window. We keep running because of the incognito
       // window.
       chrome.windows.remove(normalWin.id, function() {
         chrome.tabs.getAllInWindow(incognitoWin.id, function(tabs) {
           chrome.test.assertEq(1, tabs.length);
-          // The rest of the test continues in infobar.html.
-          chrome.infobars.show({tabId: tabs[0].id, path: "infobar.html"});
+          chrome.browserAction.openPopup(function(popupWindow) {
+            chrome.test.assertTrue(!!popupWindow);
+            // The rest of the test continues in popup.html.
+          });
         });
       });
     });

@@ -46,11 +46,15 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
-// Disabled, http://crbug.com/64899.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      extensions::switches::kEnableExperimentalExtensionApis);
-
+// The test uses the chrome.browserAction.openPopup API, which requires that the
+// window can automatically be activated.
+// See comments at BrowserActionInteractiveTest::ShouldRunPopupTest
+#if defined(OS_MACOSX)
+#define MAYBE_WindowOpen DISABLED_WindowOpen
+#else
+#define MAYBE_WindowOpen WindowOpen
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WindowOpen) {
   extensions::ResultCatcher catcher;
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
       .AppendASCII("window_open").AppendASCII("spanning")));

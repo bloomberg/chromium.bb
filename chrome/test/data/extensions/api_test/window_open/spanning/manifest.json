@@ -2,7 +2,10 @@
   "name": "window.open test - spanning",
   "version": "1",
   "manifest_version": 2,
-  "permissions": ["infobars", "tabs"],
+  "permissions": ["tabs"],
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
   "background": {
     "scripts": ["background.js"]
   }

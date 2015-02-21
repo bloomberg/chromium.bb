@@ -523,27 +523,6 @@
     "channel": "trunk",
     "extension_types": ["extension"]
   },
-  "infobars": [
-    {
-      "channel": "dev",
-      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["extension"],
-      "whitelist": [
-        "496B6890097EB6E19809ADEADD095A8721FBB2E0"  // crbug.com/415852
-      ]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["extension"],
-      "whitelist": [
-        "E24F1786D842E91E74C27929B0B3715A4689A473"  // crbug.com/415852
-      ],
-      "location": "component"
-    }
-  ],
   "input": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],

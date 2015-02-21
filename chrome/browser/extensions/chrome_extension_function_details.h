@@ -38,9 +38,9 @@ class ChromeExtensionFunctionDetails {
   // Gets the "current" browser, if any.
   //
   // Many extension APIs operate relative to the current browser, which is the
-  // browser the calling code is running inside of. For example, popups, tabs,
-  // and infobars all have a containing browser, but background pages and
-  // notification bubbles do not.
+  // browser the calling code is running inside of. For example, popups and tabs
+  // all have a containing browser, but background pages and notification
+  // bubbles do not.
   //
   // If there is no containing window, the current browser defaults to the
   // foremost one.

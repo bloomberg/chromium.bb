@@ -466,10 +466,6 @@
     "dependencies": ["permission:idltest"],
     "contexts": ["blessed_extension"]
   },
-  "infobars": {
-    "dependencies": ["permission:infobars"],
-    "contexts": ["blessed_extension"]
-  },
   "inlineInstallPrivate": {
     "dependencies": ["permission:inlineInstallPrivate"],
     "contexts": ["blessed_extension"]

@@ -71,7 +71,7 @@ namespace tabCapture {
   interface Events {
     // Event fired when the capture status of a tab changes.
     // This allows extension authors to keep track of the capture status of
-    // tabs to keep UI elements like page actions and infobars in sync.
+    // tabs to keep UI elements like page actions in sync.
     // |info| : CaptureInfo with new capture status for the tab.
     static void onStatusChanged(CaptureInfo info);
   };

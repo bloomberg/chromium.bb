@@ -131,7 +131,6 @@ class APIPermission {
     kIdltest,
     kIdle,
     kImeWindowEnabled,
-    kInfobars,
     kInlineInstallPrivate,
     kInput,
     kInputMethodPrivate,
