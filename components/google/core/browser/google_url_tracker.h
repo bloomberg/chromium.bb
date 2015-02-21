@@ -16,7 +16,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class GoogleURLTrackerNavigationHelper;
 class PrefService;
 
 namespace infobars {
