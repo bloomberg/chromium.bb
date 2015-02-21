@@ -16,4 +16,3 @@ bool HdmiSinkSupportsPcmSurroundSound();
 }  // namespace media
 
 #endif  // CHROMECAST_MEDIA_BASE_MEDIA_CAPS_
-
