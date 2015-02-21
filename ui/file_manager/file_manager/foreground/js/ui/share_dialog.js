@@ -229,7 +229,7 @@ ShareDialog.prototype.hideWithResult = function(result, opt_onHide) {
  *     showing task is completed. The argument is whether to succeed or not.
  *     Note that cancel is regarded as success.
  */
-ShareDialog.prototype.show = function(entry, callback) {
+ShareDialog.prototype.showEntry = function(entry, callback) {
   // If the dialog is already showing, return the error.
   if (this.isShowing()) {
     callback(ShareDialog.Result.ALREADY_SHOWING);

@@ -1017,7 +1017,7 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
     }
     // Add the overlapped class to prevent the applicaiton window from
     // captureing mouse events.
-    fileManager.ui.shareDialog.show(entries[0], function(result) {
+    fileManager.ui.shareDialog.showEntry(entries[0], function(result) {
       if (result == ShareDialog.Result.NETWORK_ERROR)
         fileManager.ui.errorDialog.show(str('SHARE_ERROR'), null, null, null);
     }.bind(this));

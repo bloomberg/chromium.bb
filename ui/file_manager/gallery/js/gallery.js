@@ -863,7 +863,7 @@ Gallery.prototype.onShareButtonClick_ = function() {
   var item = this.getSingleSelectedItem();
   if (!item)
     return;
-  this.shareDialog_.show(item.getEntry(), function() {});
+  this.shareDialog_.showEntry(item.getEntry(), function() {});
 };
 
 /**
