@@ -32,6 +32,7 @@
 #define FrameHost_h
 
 #include "core/frame/PinchViewport.h"
+#include "core/frame/TopControls.h"
 #include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
@@ -77,6 +78,7 @@ public:
     // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
     float deviceScaleFactor() const;
 
+    TopControls& topControls() const;
     PinchViewport& pinchViewport() const;
     EventHandlerRegistry& eventHandlerRegistry() const;
 
@@ -100,6 +102,7 @@ private:
     explicit FrameHost(Page&);
 
     RawPtrWillBeMember<Page> m_page;
+    const OwnPtrWillBeMember<TopControls> m_topControls;
     const OwnPtrWillBeMember<PinchViewport> m_pinchViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
     const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;

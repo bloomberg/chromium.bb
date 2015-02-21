@@ -174,15 +174,12 @@ bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const
         if (!root || !root->view())
             return false;
         return handler.handleTouchEvent(*root, static_cast<const WebTouchEvent&>(event));
-
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
-        // FIXME: Once PlatformGestureEvent is updated to support pinch, this
-        // should call handleGestureEvent, just like it currently does for
-        // gesture scroll.
+        // Touchscreen pinch events are currently not handled in main thread. Once they are,
+        // these should be passed to |handleGestureEvent| similar to gesture scroll events.
         return false;
-
     default:
         return false;
     }

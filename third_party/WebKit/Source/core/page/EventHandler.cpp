@@ -2479,6 +2479,9 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
 
     passScrollGestureEventToWidget(gestureEvent, m_scrollGestureHandlingNode->renderer());
 
+    if (m_frame->isMainFrame())
+        m_frame->host()->topControls().scrollBegin();
+
     return true;
 }
 
@@ -2533,10 +2536,22 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         }
     }
 
+    // If this is main frame, allow top controls to scroll first and update
+    // delta accordingly
+    bool consumed = false;
+    if (m_frame->isMainFrame() && shouldTopControlsConsumeScroll(delta)) {
+        FloatSize excessDelta = m_frame->host()->topControls().scrollBy(delta);
+        consumed = excessDelta != delta;
+        delta = excessDelta;
+
+        if (delta.isZero())
+            return consumed;
+    }
+
     // Try to scroll the frame view.
     FrameView* view = m_frame->view();
     if (!view)
-        return false;
+        return consumed;
 
     if (scrollAreaOnBothAxes(delta, *view)) {
         setFrameWasScrolledByUser();
@@ -2545,14 +2560,14 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     // If this is the main frame and it didn't scroll, propagate up to the pinch viewport.
     if (!m_frame->settings()->pinchVirtualViewportEnabled() || !m_frame->isMainFrame())
-        return false;
+        return consumed;
 
-    if (scrollAreaOnBothAxes(delta, m_frame->page()->frameHost().pinchViewport())) {
+    if (scrollAreaOnBothAxes(delta, m_frame->host()->pinchViewport())) {
         setFrameWasScrolledByUser();
         return true;
     }
 
-    return false;
+    return consumed;
 }
 
 void EventHandler::clearGestureScrollNodes()
@@ -3903,5 +3918,19 @@ unsigned EventHandler::accessKeyModifiers()
     return PlatformEvent::AltKey;
 #endif
 }
+
+bool EventHandler::shouldTopControlsConsumeScroll(FloatSize scrollDelta) const
+{
+    // Always consume if it's in the direction to show the top controls.
+    if (scrollDelta.height() > 0)
+        return true;
+
+    // If it's in the direction to hide the top controls, only consume when the frame can also scroll.
+    if (m_frame->view()->scrollPosition().y() < m_frame->view()->maximumScrollPosition().y())
+        return true;
+
+    return false;
+}
+
 
 } // namespace blink

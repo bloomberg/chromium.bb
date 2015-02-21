@@ -1534,6 +1534,8 @@
             'frame/SubresourceIntegrity.h',
             'frame/SuspendableTimer.cpp',
             'frame/SuspendableTimer.h',
+            'frame/TopControls.cpp',
+            'frame/TopControls.h',
             'frame/UseCounter.cpp',
             'frame/csp/CSPDirectiveList.cpp',
             'frame/csp/CSPSource.cpp',

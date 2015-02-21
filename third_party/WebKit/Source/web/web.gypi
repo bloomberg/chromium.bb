@@ -305,6 +305,7 @@
       'tests/ScrollingCoordinatorTest.cpp',
       'tests/SpinLockTest.cpp',
       'tests/TextFinderTest.cpp',
+      'tests/TopControlsTest.cpp',
       'tests/TouchActionTest.cpp',
       'tests/ViewportTest.cpp',
       'tests/WebDocumentTest.cpp',

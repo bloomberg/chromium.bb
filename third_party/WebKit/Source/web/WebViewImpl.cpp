@@ -57,6 +57,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
+#include "core/frame/TopControls.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -415,9 +416,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
-    , m_topControlsShownRatio(0)
-    , m_topControlsHeight(0)
-    , m_topControlsShrinkLayoutSize(true)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -711,9 +709,6 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
-        // Gesture pinch events are aborted in PageWidgetDelegate::handleInputEvent and should
-        // not reach here.
-        ASSERT_NOT_REACHED();
         return false;
     default:
         break;
@@ -1706,25 +1701,24 @@ void WebViewImpl::performResize()
     }
 }
 
-void WebViewImpl::setTopControlsShownRatio(float offset)
-{
-    m_topControlsShownRatio = offset;
-    m_layerTreeView->setTopControlsShownRatio(offset);
-    didUpdateTopControls();
-}
-
 void WebViewImpl::setTopControlsHeight(float height, bool topControlsShrinkLayoutSize)
 {
-    if (m_topControlsHeight == height && m_topControlsShrinkLayoutSize == topControlsShrinkLayoutSize)
-        return;
+    topControls().setHeight(height, topControlsShrinkLayoutSize);
+}
 
-    m_topControlsHeight = height;
-    m_topControlsShrinkLayoutSize = topControlsShrinkLayoutSize;
-    didUpdateTopControls();
+void WebViewImpl::updateTopControlsState(WebTopControlsState constraint, WebTopControlsState current, bool animate)
+{
+    topControls().updateConstraints(constraint);
+    m_layerTreeView->updateTopControlsState(constraint, current, animate);
 }
 
 void WebViewImpl::didUpdateTopControls()
 {
+    if (m_layerTreeView) {
+        m_layerTreeView->setTopControlsShownRatio(topControls().shownRatio());
+        m_layerTreeView->setTopControlsHeight(topControls().height(), topControls().shrinkViewport());
+    }
+
     WebLocalFrameImpl* mainFrame = mainFrameImpl();
     if (!mainFrame)
         return;
@@ -1733,10 +1727,7 @@ void WebViewImpl::didUpdateTopControls()
     if (!view)
         return;
 
-    float topControlsViewportAdjustment = 0;
-    if (m_topControlsShrinkLayoutSize)
-        topControlsViewportAdjustment += m_topControlsHeight;
-    topControlsViewportAdjustment -= m_topControlsShownRatio * m_topControlsHeight;
+    float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
 
     if (!pinchVirtualViewportEnabled()) {
         // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
@@ -1761,6 +1752,11 @@ void WebViewImpl::didUpdateTopControls()
             view->setTopControlsViewportAdjustment(adjustment);
         }
     }
+}
+
+TopControls& WebViewImpl::topControls()
+{
+    return page()->frameHost().topControls();
 }
 
 void WebViewImpl::resize(const WebSize& newSize)
@@ -4422,7 +4418,7 @@ void WebViewImpl::applyViewportDeltas(
     if (!frameView)
         return;
 
-    setTopControlsShownRatio(m_topControlsShownRatio + topControlsShownRatioDelta);
+    topControls().setShownRatio(topControls().shownRatio() + topControlsShownRatioDelta);
 
     FloatPoint pinchViewportOffset = page()->frameHost().pinchViewport().visibleRect().location();
     pinchViewportOffset.move(pinchViewportDelta.width, pinchViewportDelta.height);
@@ -4442,7 +4438,7 @@ void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScal
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
 
-    setTopControlsShownRatio(m_topControlsShownRatio + topControlsShownRatioDelta);
+    topControls().setShownRatio(topControls().shownRatio() + topControlsShownRatioDelta);
 
     if (pageScaleDelta == 1) {
         TRACE_EVENT_INSTANT2("blink", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);

@@ -73,6 +73,7 @@ class InputMethodContext;
 class LinkHighlight;
 class PopupContainer;
 class LayerCompositor;
+class TopControls;
 class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentImpl;
@@ -518,15 +519,17 @@ public:
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
     virtual void setTopControlsHeight(float height, bool topControlsShrinkLayoutSize) override;
+    virtual void updateTopControlsState(WebTopControlsState constraint, WebTopControlsState current, bool animate) override;
+
+    TopControls& topControls();
+    // Called anytime top controls layout height or content offset have changed.
+    void didUpdateTopControls();
 
     virtual void forceNextWebGLContextCreationToFail() override;
 
     IntSize mainFrameSize();
 
 private:
-    void didUpdateTopControls();
-    void setTopControlsShownRatio(float);
-
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) override;
@@ -761,15 +764,6 @@ private:
     float m_zoomFactorOverride;
 
     bool m_userGestureObserved;
-
-    // The top controls shown amount (normalized from 0 to 1) since the last
-    // compositor commit.
-    float m_topControlsShownRatio;
-
-    float m_topControlsHeight;
-    // If this is true, then the embedder shrunk the WebView size by the top
-    // controls height.
-    bool m_topControlsShrinkLayoutSize;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

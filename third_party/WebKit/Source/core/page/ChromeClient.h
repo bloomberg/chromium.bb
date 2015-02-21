@@ -234,6 +234,8 @@ public:
 
     virtual void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) { }
 
+    virtual void didUpdateTopControls() const { }
+
 protected:
     virtual ~ChromeClient() { }
 };

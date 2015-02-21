@@ -896,4 +896,9 @@ void ChromeClientImpl::registerViewportLayers() const
         m_webView->page()->frameHost().pinchViewport().registerLayersWithTreeView(m_webView->layerTreeView());
 }
 
+void ChromeClientImpl::didUpdateTopControls() const
+{
+    m_webView->didUpdateTopControls();
+}
+
 } // namespace blink

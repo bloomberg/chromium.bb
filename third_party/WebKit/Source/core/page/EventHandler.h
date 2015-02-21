@@ -314,6 +314,8 @@ private:
     bool panScrollInProgress() const;
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 
+    bool shouldTopControlsConsumeScroll(FloatSize) const;
+
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
 

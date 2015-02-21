@@ -178,6 +178,7 @@ public:
     virtual void registerViewportLayers() const override;
 
     virtual void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) override;
+    virtual void didUpdateTopControls() const override;
 
 private:
     virtual bool isChromeClientImpl() const override { return true; }
