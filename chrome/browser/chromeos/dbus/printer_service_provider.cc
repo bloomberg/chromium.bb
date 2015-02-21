@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "dbus/bus.h"
@@ -95,8 +97,8 @@ PrinterServiceProvider::~PrinterServiceProvider() {
 
 void PrinterServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
-
   exported_object_ = exported_object;
+
   DVLOG(1) << "PrinterServiceProvider started";
   exported_object_->ExportMethod(
       kLibCrosServiceInterface,
@@ -129,6 +131,15 @@ void PrinterServiceProvider::PrinterAdded(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   DVLOG(1) << "PrinterAdded " << method_call->ToString();
+
+  // Disable showing Cloudprint help on canary and dev channel, as these have
+  // support for printerProvider API.
+  // TODO(tbarzic): Remove this and offer the user to search for an extension
+  // that can act as a print driver (using printerProvider API) for USB printers
+  // detected by this service. http://crbug.com/439448
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV)
+    return;
 
   dbus::MessageReader reader(method_call);
   std::string vendor;
