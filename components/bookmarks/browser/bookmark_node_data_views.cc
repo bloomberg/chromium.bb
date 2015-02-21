@@ -56,7 +56,6 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
     }
   } else {
     // See if there is a URL on the clipboard.
-    Element element;
     GURL url;
     base::string16 title;
     if (data.GetURLAndTitle(
