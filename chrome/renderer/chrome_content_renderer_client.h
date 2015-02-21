@@ -241,7 +241,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #endif
 #if defined(ENABLE_PLUGINS)
   std::set<std::string> allowed_compositor_origins_;
-  std::set<std::string> allowed_video_decode_origins_;
 #endif
 };
 
