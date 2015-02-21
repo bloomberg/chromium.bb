@@ -73,7 +73,12 @@ void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
       // TODO(scheib): Filter devices by services: crbug.com/440594
       // TODO(scheib): Device selection UI: crbug.com/436280
       // TODO(scheib): Utilize BluetoothAdapter::Observer::DeviceAdded/Removed.
-      BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+      BluetoothAdapter::DeviceList devices;
+      if (adapter_.get())
+        devices = adapter_->GetDevices();
+      else
+        DLOG(WARNING) << "No BluetoothAdapter. Can't serve requestDevice.";
+
       if (devices.begin() == devices.end()) {
         Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
                                                  BluetoothError::NOT_FOUND));
