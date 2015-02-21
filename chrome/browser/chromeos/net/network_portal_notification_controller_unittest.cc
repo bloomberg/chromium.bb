@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
@@ -61,7 +63,8 @@ class NotificationObserver : public message_center::MessageCenterObserver {
 
 class NetworkPortalNotificationControllerTest : public testing::Test {
  public:
-  NetworkPortalNotificationControllerTest() {}
+  NetworkPortalNotificationControllerTest()
+      : user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
   ~NetworkPortalNotificationControllerTest() override {}
 
   void SetUp() override {
@@ -86,6 +89,7 @@ class NetworkPortalNotificationControllerTest : public testing::Test {
   NotificationObserver& observer() { return observer_; }
 
  private:
+  ScopedUserManagerEnabler user_manager_enabler_;
   NetworkPortalNotificationController controller_;
   NotificationObserver observer_;
 

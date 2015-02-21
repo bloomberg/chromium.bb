@@ -4,16 +4,20 @@
 
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
@@ -31,6 +35,10 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/captive_portal/captive_portal_detector.h"
+#include "components/user_manager/user_manager.h"
+#include "extensions/browser/api/networking_config/networking_config_service.h"
+#include "extensions/browser/api/networking_config/networking_config_service_factory.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
@@ -45,31 +53,82 @@ namespace chromeos {
 
 namespace {
 
+const int kUseExtensionButtonIndex = 0;
+const int kOpenPortalButtonIndex = 1;
+
 bool IsPortalNotificationEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNetworkPortalNotification);
 }
-
 
 void CloseNotification() {
   message_center::MessageCenter::Get()->RemoveNotification(
       NetworkPortalNotificationController::kNotificationId, false);
 }
 
+Profile* GetProfileForPrimaryUser() {
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user)
+    return nullptr;
+  return ProfileHelper::Get()->GetProfileByUser(primary_user);
+}
+
+// Note that NetworkingConfigService may change after login as the profile
+// switches from the login to the user's profile.
+extensions::NetworkingConfigService* GetNetworkingConfigService(
+    Profile* profile) {
+  if (!profile)
+    return nullptr;
+  return extensions::NetworkingConfigServiceFactory::GetForBrowserContext(
+      profile);
+}
+
+const extensions::Extension* LookupExtensionForRawSsid(
+    extensions::NetworkingConfigService* networking_config_service,
+    const std::vector<uint8_t>& raw_ssid) {
+  DCHECK(networking_config_service);
+  Profile* profile = GetProfileForPrimaryUser();
+  if (!profile || !networking_config_service)
+    return nullptr;
+  std::string extension_id;
+  std::string hex_ssid =
+      base::HexEncode(vector_as_array(&raw_ssid), raw_ssid.size());
+  extension_id =
+      networking_config_service->LookupExtensionIdForHexSsid(hex_ssid);
+  if (extension_id.empty())
+    return nullptr;
+  return extensions::ExtensionRegistry::Get(profile)
+      ->GetExtensionById(extension_id, extensions::ExtensionRegistry::ENABLED);
+}
+
 class NetworkPortalNotificationControllerDelegate
     : public message_center::NotificationDelegate {
  public:
   explicit NetworkPortalNotificationControllerDelegate(
+      const std::string& extension_id,
+      const std::string& guid,
       base::WeakPtr<NetworkPortalNotificationController> controller)
-      : clicked_(false), controller_(controller) {}
+      : extension_id_(extension_id),
+        guid_(guid),
+        clicked_(false),
+        controller_(controller) {}
 
   // Overridden from message_center::NotificationDelegate:
   void Display() override;
   void Close(bool by_user) override;
   void Click() override;
+  void ButtonClick(int button_click) override;
 
  private:
   ~NetworkPortalNotificationControllerDelegate() override {}
+
+  // ID of the extension responsible for network configuration of the network
+  // that this notification is generated for. Empty if none.
+  std::string extension_id_;
+
+  // GUID of the network this notification is generated for.
+  std::string guid_;
 
   bool clicked_;
 
@@ -89,12 +148,10 @@ void NetworkPortalNotificationControllerDelegate::Close(bool by_user) {
   if (clicked_)
     return;
   NetworkPortalNotificationController::UserActionMetric metric =
-      by_user
-      ? NetworkPortalNotificationController::USER_ACTION_METRIC_CLOSED
-      : NetworkPortalNotificationController::USER_ACTION_METRIC_IGNORED;
+      by_user ? NetworkPortalNotificationController::USER_ACTION_METRIC_CLOSED
+              : NetworkPortalNotificationController::USER_ACTION_METRIC_IGNORED;
   UMA_HISTOGRAM_ENUMERATION(
-      NetworkPortalNotificationController::kUserActionMetric,
-      metric,
+      NetworkPortalNotificationController::kUserActionMetric, metric,
       NetworkPortalNotificationController::USER_ACTION_METRIC_COUNT);
 }
 
@@ -131,6 +188,23 @@ void NetworkPortalNotificationControllerDelegate::Click() {
   CloseNotification();
 }
 
+void NetworkPortalNotificationControllerDelegate::ButtonClick(
+    int button_index) {
+  if (button_index == kUseExtensionButtonIndex) {
+    Profile* profile = GetProfileForPrimaryUser();
+    extensions::NetworkingConfigServiceFactory::GetForBrowserContext(profile)
+        ->DispatchPortalDetectedEvent(extension_id_, guid_);
+  } else if (button_index == kOpenPortalButtonIndex) {
+    Click();
+  }
+}
+
+gfx::Image& GetImageForNotification() {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  gfx::Image& icon = bundle.GetImageNamed(IDR_PORTAL_DETECTION_ALERT);
+  return icon;
+}
+
 }  // namespace
 
 // static
@@ -149,7 +223,23 @@ NetworkPortalNotificationController::NetworkPortalNotificationController()
     : dialog_(nullptr) {
 }
 
-NetworkPortalNotificationController::~NetworkPortalNotificationController() {}
+NetworkPortalNotificationController::~NetworkPortalNotificationController() {
+}
+
+void NetworkPortalNotificationController::DefaultNetworkChanged(
+    const NetworkState* network) {
+  if (!network)
+    return;
+  Profile* profile = GetProfileForPrimaryUser();
+  extensions::NetworkingConfigService* networking_config_service =
+      GetNetworkingConfigService(profile);
+  if (!networking_config_service)
+    return;
+  extensions::NetworkingConfigService::AuthenticationResult
+      authentication_result(std::string(), network->guid(),
+                            extensions::NetworkingConfigService::NOTRY);
+  networking_config_service->SetAuthenticationResult(authentication_result);
+}
 
 void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     const NetworkState* network,
@@ -178,36 +268,14 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     return;
   last_network_path_ = network->path();
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  gfx::Image& icon = bundle.GetImageNamed(IDR_PORTAL_DETECTION_ALERT);
-  message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
-      ash::system_notifier::kNotifierNetworkPortalDetector);
-
-  bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
-  scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-      l10n_util::GetStringUTF16(
-          is_wifi ?
-          IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI :
-          IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
-      l10n_util::GetStringFUTF16(
-          is_wifi ?
-          IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI :
-          IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
-          base::UTF8ToUTF16(network->name())),
-      icon, base::string16() /* display_source */, notifier_id,
-      message_center::RichNotificationData(),
-      new NetworkPortalNotificationControllerDelegate(AsWeakPtr())));
-  notification->SetSystemPriority();
-
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetInstance()
         ->system_tray_notifier()
         ->NotifyOnCaptivePortalDetected(network->path());
   }
 
-  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
+  message_center::MessageCenter::Get()->AddNotification(
+      GetNotification(network, state));
 }
 
 void NetworkPortalNotificationController::ShowDialog() {
@@ -225,6 +293,104 @@ void NetworkPortalNotificationController::OnDialogDestroyed(
   if (dialog == dialog_) {
     dialog_ = nullptr;
     ProfileHelper::Get()->ClearSigninProfile(base::Closure());
+  }
+}
+
+scoped_ptr<message_center::Notification>
+NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
+    const NetworkState* network) {
+  message_center::RichNotificationData data;
+  scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
+      new NetworkPortalNotificationControllerDelegate(
+          std::string(), network->guid(), AsWeakPtr()));
+  gfx::Image& icon = GetImageForNotification();
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      ash::system_notifier::kNotifierNetworkPortalDetector);
+  base::string16 notificationText;
+  bool is_wifi = NetworkTypePattern::WiFi().MatchesType(network->type());
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+      l10n_util::GetStringUTF16(
+          is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI
+                  : IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED),
+      l10n_util::GetStringFUTF16(
+          is_wifi ? IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI
+                  : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
+          base::UTF8ToUTF16(network->name())),
+      icon, base::string16(), notifier_id, data, delegate.get()));
+  notification->SetSystemPriority();
+  return notification.Pass();
+}
+
+scoped_ptr<message_center::Notification> NetworkPortalNotificationController::
+    CreateCaptivePortalNotificationForExtension(
+        const NetworkState* network,
+        extensions::NetworkingConfigService* networking_config_service,
+        const extensions::Extension* extension) {
+  message_center::RichNotificationData data;
+  scoped_refptr<NetworkPortalNotificationControllerDelegate> delegate(
+      new NetworkPortalNotificationControllerDelegate(
+          extension->id(), network->guid(), AsWeakPtr()));
+  gfx::Image& icon = GetImageForNotification();
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      ash::system_notifier::kNotifierNetworkPortalDetector);
+
+  const extensions::NetworkingConfigService::AuthenticationResult&
+      authentication_result =
+          networking_config_service->GetAuthenticationResult();
+  base::string16 notificationText;
+  if (authentication_result.authentication_state ==
+          extensions::NetworkingConfigService::NOTRY ||
+      network->guid() != authentication_result.guid) {
+    notificationText = l10n_util::GetStringFUTF16(
+        IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_ASK_WIFI,
+        base::UTF8ToUTF16(network->name()));
+    data.buttons.push_back(
+        message_center::ButtonInfo(l10n_util::GetStringFUTF16(
+            IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_EXTENSION,
+            base::UTF8ToUTF16(extension->name()))));
+    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
+        IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL)));
+  } else {
+    notificationText = l10n_util::GetStringFUTF16(
+        IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_FAILED_WIFI,
+        base::UTF8ToUTF16(network->name()));
+    data.buttons.push_back(
+        message_center::ButtonInfo(l10n_util::GetStringFUTF16(
+            IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_EXTENSION_RETRY,
+            base::UTF8ToUTF16(extension->name()))));
+    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
+        IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL)));
+  }
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+      l10n_util::GetStringUTF16(IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI),
+      notificationText, icon, base::string16() /* display_source */,
+      notifier_id, data, delegate.get()));
+  notification->SetSystemPriority();
+  return notification.Pass();
+}
+
+scoped_ptr<Notification> NetworkPortalNotificationController::GetNotification(
+    const NetworkState* network,
+    const NetworkPortalDetector::CaptivePortalState& state) {
+  base::string16 notificationText;
+  Profile* profile = GetProfileForPrimaryUser();
+  extensions::NetworkingConfigService* networking_config_service =
+      GetNetworkingConfigService(profile);
+  std::string extension_id;
+  const extensions::Extension* extension = nullptr;
+  if (networking_config_service) {
+    extension = LookupExtensionForRawSsid(networking_config_service,
+                                          network->raw_ssid());
+  }
+  if (extension) {
+    return CreateCaptivePortalNotificationForExtension(
+        network, networking_config_service, extension);
+  } else {
+    return CreateDefaultCaptivePortalNotification(network);
   }
 }
 

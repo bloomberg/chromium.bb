@@ -71,7 +71,7 @@ NetworkingConfigServiceFactory::~NetworkingConfigServiceFactory() {
 KeyedService* NetworkingConfigServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new NetworkingConfigService(
-      make_scoped_ptr(new DefaultEventDelegate(context)),
+      context, make_scoped_ptr(new DefaultEventDelegate(context)),
       ExtensionRegistry::Get(context));
 }
 

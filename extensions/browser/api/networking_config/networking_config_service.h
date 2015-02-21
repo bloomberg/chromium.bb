@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -49,7 +50,8 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   };
 
   // Note: |extension_registry| must outlive this class.
-  NetworkingConfigService(scoped_ptr<EventDelegate> event_delegate,
+  NetworkingConfigService(content::BrowserContext* browser_context,
+                          scoped_ptr<EventDelegate> event_delegate,
                           ExtensionRegistry* extension_registry);
   ~NetworkingConfigService() override;
 
@@ -90,7 +92,11 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   void SetAuthenticationResult(
       const AuthenticationResult& authentication_result);
 
+  bool DispatchPortalDetectedEvent(std::string extension_id, std::string guid);
+
  private:
+  content::BrowserContext* browser_context_;
+
   AuthenticationResult authentication_result_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

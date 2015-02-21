@@ -10,6 +10,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "ui/message_center/notification.h"
+
+namespace extensions {
+
+class Extension;
+class NetworkingConfigService;
+
+}  // namespace extensions
 
 namespace chromeos {
 
@@ -44,7 +52,9 @@ class NetworkPortalNotificationController
   static const char kUserActionMetric[];
 
   NetworkPortalNotificationController();
-  virtual ~NetworkPortalNotificationController();
+  ~NetworkPortalNotificationController();
+
+  void DefaultNetworkChanged(const NetworkState* network);
 
   void OnPortalDetectionCompleted(
       const NetworkState* network,
@@ -57,6 +67,29 @@ class NetworkPortalNotificationController
   void OnDialogDestroyed(const NetworkPortalWebDialog* dialog);
 
  private:
+  // Creates the default notification informing the user that a captive portal
+  // has been detected. On click the captive portal login page is opened in the
+  // browser.
+  scoped_ptr<message_center::Notification>
+  CreateDefaultCaptivePortalNotification(const NetworkState* network);
+
+  // Creates an advanced captive portal notification informing the user that a
+  // captive portal has been detected and an extension has registered to perform
+  // captive portal authentication for that network. Gives the user the choice
+  // to either authenticate using that extension or open the captive portal
+  // login page in the browser.
+  scoped_ptr<message_center::Notification>
+  CreateCaptivePortalNotificationForExtension(
+      const NetworkState* network,
+      extensions::NetworkingConfigService* networking_config_service,
+      const extensions::Extension* extension);
+
+  // Constructs a notification to inform the user that a captive portal has been
+  // detected.
+  scoped_ptr<message_center::Notification> GetNotification(
+      const NetworkState* network,
+      const NetworkPortalDetector::CaptivePortalState& state);
+
   // Last network path for which notification was displayed.
   std::string last_network_path_;
 

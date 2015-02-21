@@ -336,6 +336,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());
 
+  notification_controller_.DefaultNetworkChanged(default_network);
   if (!default_network) {
     NET_LOG(EVENT) << "Default network changed: None";
 

@@ -13,18 +13,24 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
@@ -66,15 +72,32 @@ class NetworkPortalDetectorImplTest
     : public testing::Test,
       public captive_portal::CaptivePortalDetectorTestBase {
  protected:
+  NetworkPortalDetectorImplTest()
+      : test_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
   void SetUp() override {
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
+
+    FakeChromeUserManager* user_manager = new FakeChromeUserManager();
+    user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager));
 
     DBusThreadManager::Initialize();
     base::StatisticsRecorder::Initialize();
     SetupNetworkHandler();
 
-    profile_.reset(new TestingProfile());
+    ASSERT_TRUE(test_profile_manager_.SetUp());
+
+    // Add a user.
+    const char kTestUserName[] = "test-user@example.com";
+    user_manager->AddUser(kTestUserName);
+    user_manager->LoginUser(kTestUserName);
+
+    // Create a profile for the user.
+    profile_ = test_profile_manager_.CreateTestingProfile(kTestUserName);
+    test_profile_manager_.SetLoggedIn(true);
+    EXPECT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
+
     network_portal_detector_.reset(
         new NetworkPortalDetectorImpl(profile_->GetRequestContext()));
     network_portal_detector_->Enable(false);
@@ -93,7 +116,7 @@ class NetworkPortalDetectorImplTest
 
   void TearDown() override {
     network_portal_detector_.reset();
-    profile_.reset();
+    profile_ = nullptr;
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     PortalDetectorStrategy::reset_fields_for_testing();
@@ -123,7 +146,7 @@ class NetworkPortalDetectorImplTest
     CompleteURLFetch(net_error, status_code, NULL);
   }
 
-  Profile* profile() { return profile_.get(); }
+  Profile* profile() { return profile_; }
 
   NetworkPortalDetectorImpl* network_portal_detector() {
     return network_portal_detector_.get();
@@ -267,9 +290,11 @@ class NetworkPortalDetectorImplTest
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  Profile* profile_ = nullptr;
   scoped_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
   scoped_ptr<base::HistogramSamples> original_samples_;
+  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  TestingProfileManager test_profile_manager_;
 };
 
 TEST_F(NetworkPortalDetectorImplTest, NoPortal) {

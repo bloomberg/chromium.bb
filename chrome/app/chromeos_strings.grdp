@@ -5506,22 +5506,28 @@ All users must sign out to continue.
     Connect to network
   </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI" desc="Title for the system notification that current Wi-Fi network is behind captive portal">
-    Connect to Wi-Fi
+    Connect to Wi-Fi network
   </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED" desc="Body of the system notification that current wired network is behind captive portal">
     The network you are using (<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>) may require you to visit its login page.
   </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIFI" desc="Body of the system notification that current Wi-Fi network is behind captive portal">
-    The Wi-Fi you are using (<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>) may require you to visit its login page.
+    The Wi-Fi network you are using (<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>) may require you to visit its login page.
   </message>
-  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_CHOICE_MESSAGE" desc="Body of the system notification that current network is behind captive portal">
-    <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph> may require visiting<ph name="LOGIN_URL">$2<ex>portal.ipass.net</ex></ph> to complete your connection..
+  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_ASK_WIFI" desc="Body of the system notification that asks a user whether to use an extension to authenticate to the network">
+    The Wi-Fi network you are using (<ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>) may require authentication.
   </message>
-  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_EXTENSION_TITLE" desc="Text for the button in the captive portal system notification to connect using extension">
-    Connect using <ph name="PORTAL_PROVIDER">$1<ex>iPass</ex></ph>
+  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_FAILED_WIFI" desc="Body of the system notification that authentication failed and current network is still behind captive portal">
+    Authentication failed. Click to visit the login page for the Wi-Fi network you are using (<ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>).
   </message>
-  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL_TITLE" desc="Text for the button in the captive portal system notification to open up the captive portal login page">
-    Visit captive portal site
+  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_EXTENSION" desc="Button caption to connect using the authenticating extension">
+    Connect using <ph name="ExtensionName">$1<ex>WiFi Company Authenticator</ex></ph>
+  </message>
+  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_EXTENSION_RETRY" desc="Button caption to connect using the authenticating extension">
+    Retry using <ph name="ExtensionName">$1<ex>WiFi Company Authenticator</ex></ph>
+  </message>
+  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL" desc="Button caption to open the captive portal login page.">
+    Visit captive portal login page
   </message>
 
   <!-- Locale Change Notification-->

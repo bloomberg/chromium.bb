@@ -47,7 +47,8 @@ class NetworkingConfigServiceTest : public ApiUnitTest {
     scoped_ptr<MockEventDelegate> mock_event_delegate =
         scoped_ptr<MockEventDelegate>(new MockEventDelegate());
     service_ = scoped_ptr<NetworkingConfigService>(new NetworkingConfigService(
-        mock_event_delegate.Pass(), extension_registry_.get()));
+        browser_context(), mock_event_delegate.Pass(),
+        extension_registry_.get()));
     DCHECK(service_);
   }
 
