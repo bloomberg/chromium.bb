@@ -2750,7 +2750,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), base::string16());
   ASSERT_EQ(2U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("American Express - 8555"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("Amex - 8555"), suggestions[0].value);
   EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[0].label);
   EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[1].value);
   EXPECT_EQ(base::string16(), suggestions[1].label);
@@ -2801,7 +2801,7 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("MasterCard - 2109"), suggestions[0].value);
   EXPECT_EQ(ASCIIToUTF16("Visa - 9012"), suggestions[1].value);
   EXPECT_EQ(ASCIIToUTF16("Visa - 2109"), suggestions[2].value);
-  EXPECT_EQ(ASCIIToUTF16("American Express - 8555"), suggestions[3].value);
+  EXPECT_EQ(ASCIIToUTF16("Amex - 8555"), suggestions[3].value);
 
   // Make sure a server card can be a dupe of more than one local card.
   CreditCard credit_card3("4141084B-72D7-4B73-90CF-3D6AC154673B",

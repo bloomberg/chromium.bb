@@ -3521,7 +3521,7 @@ TEST_F(AutofillDialogControllerTest, LimitedCcChoices) {
   field.autocomplete_attribute = "billing cc-type";
   field.option_contents.push_back(ASCIIToUTF16("Visa"));
   field.option_values.push_back(ASCIIToUTF16("V"));
-  field.option_contents.push_back(ASCIIToUTF16("American Express"));
+  field.option_contents.push_back(ASCIIToUTF16("Amex"));
   field.option_values.push_back(ASCIIToUTF16("AX"));
   form_data.fields.push_back(field);
   ResetControllerWithFormData(form_data);

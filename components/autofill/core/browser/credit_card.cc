@@ -185,6 +185,9 @@ const base::string16 CreditCard::StripSeparators(const base::string16& number) {
 base::string16 CreditCard::TypeForDisplay(const std::string& type) {
   if (kGenericCard == type)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
+  if (kAmericanExpressCard == type)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX_SHORT);
+
   return ::autofill::TypeForFill(type);
 }
 
