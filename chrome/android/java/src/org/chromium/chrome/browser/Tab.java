@@ -22,6 +22,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.TabState.WebContentsState;
 import org.chromium.chrome.browser.banners.AppBannerManager;
@@ -1357,6 +1358,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mIsTabStateDirty = true;
         updateTitle();
         updateFullscreenEnabledState();
+        if (!isNativePage()) {
+            RecordHistogram.recordBooleanHistogram(
+                    "Navigation.MobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
+        }
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
     }
