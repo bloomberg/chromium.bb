@@ -107,6 +107,7 @@ enum UserActionBuckets {
   INITIATOR_CLOSED,
   PRINT_WITH_CLOUD_PRINT,
   PRINT_WITH_PRIVET,
+  PRINT_WITH_EXTENSION,
   USERACTION_BUCKET_BOUNDARY
 };
 
@@ -884,7 +885,9 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 #endif
 
   if (print_with_extension) {
-    // TODO(tbarzic): Record UMA stats.
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithExtension",
+                         page_count);
+    ReportUserActionHistogram(PRINT_WITH_EXTENSION);
 
     std::string destination_id;
     std::string print_ticket;
