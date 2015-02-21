@@ -540,6 +540,7 @@
       'browser/content_verify_job.h',
       'browser/crx_file_info.cc',
       'browser/crx_file_info.h',
+      'browser/deferred_start_render_host.h',
       'browser/error_map.cc',
       'browser/error_map.h',
       'browser/event_listener_map.cc',

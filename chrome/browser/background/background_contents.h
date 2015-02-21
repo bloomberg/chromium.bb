@@ -12,7 +12,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/deferred_start_render_host.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -21,10 +23,15 @@ class SessionStorageNamespace;
 class SiteInstance;
 };
 
+namespace extensions {
+class ExtensionHostDelegate;
+}
+
 // This class maintains a WebContents used in the background. It can host a
 // renderer, but does not have any visible display.
 // TODO(atwilson): Unify this with background pages; http://crbug.com/77790
-class BackgroundContents : public content::WebContentsDelegate,
+class BackgroundContents : public extensions::DeferredStartRenderHost,
+                           public content::WebContentsDelegate,
                            public content::WebContentsObserver,
                            public content::NotificationObserver {
  public:
@@ -56,6 +63,9 @@ class BackgroundContents : public content::WebContentsDelegate,
   content::WebContents* web_contents() const { return web_contents_.get(); }
   virtual const GURL& GetURL() const;
 
+  // Adds this BackgroundContents to the queue of RenderViews to create.
+  void CreateRenderViewSoon(const GURL& url);
+
   // content::WebContentsDelegate implementation:
   void CloseContents(content::WebContents* source) override;
   bool ShouldSuppressDialogs(content::WebContents* source) override;
@@ -81,12 +91,21 @@ class BackgroundContents : public content::WebContentsDelegate,
   BackgroundContents();
 
  private:
+  // DeferredStartRenderHost implementation:
+  void CreateRenderViewNow() override;
+
   // The delegate for this BackgroundContents.
   Delegate* delegate_;
+
+  // Delegate for choosing an ExtensionHostQueue.
+  scoped_ptr<extensions::ExtensionHostDelegate> extension_host_delegate_;
 
   Profile* profile_;
   scoped_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
+
+  // The initial URL to load.
+  GURL initial_url_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContents);
 };

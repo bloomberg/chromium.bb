@@ -4,7 +4,6 @@
 
 #include "extensions/browser/extension_host.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -31,7 +30,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/runtime_data.h"
-#include "extensions/browser/serial_extension_host_queue.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -49,17 +47,6 @@ using content::SiteInstance;
 using content::WebContents;
 
 namespace extensions {
-
-namespace {
-
-// Singleton which wraps our current ExtensionHostQueue implementation.
-struct QueueWrapper {
-  QueueWrapper() : queue(new SerialExtensionHostQueue()) {}
-  scoped_ptr<ExtensionHostQueue> queue;
-};
-base::LazyInstance<QueueWrapper> g_queue_wrapper = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 ExtensionHost::ExtensionHost(const Extension* extension,
                              SiteInstance* site_instance,
@@ -110,7 +97,7 @@ ExtensionHost::~ExtensionHost() {
       content::Details<ExtensionHost>(this));
   FOR_EACH_OBSERVER(ExtensionHostObserver, observer_list_,
                     OnExtensionHostDestroyed(this));
-  g_queue_wrapper.Get().queue->Remove(this);
+  delegate_->GetExtensionHostQueue()->Remove(this);
   // Immediately stop observing |host_contents_| because its destruction events
   // (like DidStopLoading, it turns out) can call back into ExtensionHost
   // re-entrantly, when anything declared after |host_contents_| has already
@@ -138,7 +125,7 @@ void ExtensionHost::CreateRenderViewSoon() {
     // to defer.
     CreateRenderViewNow();
   } else {
-    g_queue_wrapper.Get().queue->Add(this);
+    delegate_->GetExtensionHostQueue()->Add(this);
   }
 }
 

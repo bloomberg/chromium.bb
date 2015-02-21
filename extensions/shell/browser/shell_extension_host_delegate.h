@@ -33,6 +33,7 @@ class ShellExtensionHostDelegate : public ExtensionHostDelegate {
                                   const GURL& security_origin,
                                   content::MediaStreamType type,
                                   const Extension* extension) override;
+  ExtensionHostQueue* GetExtensionHostQueue() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionHostDelegate);

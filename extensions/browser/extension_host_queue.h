@@ -7,7 +7,7 @@
 
 namespace extensions {
 
-class ExtensionHost;
+class DeferredStartRenderHost;
 
 // An interface for a queue of ExtensionHosts waiting for initialization.
 // This is used to implement different throttling strategies.
@@ -16,11 +16,11 @@ class ExtensionHostQueue {
   virtual ~ExtensionHostQueue() {}
 
   // Adds a host to the queue for RenderView creation.
-  virtual void Add(ExtensionHost* host) = 0;
+  virtual void Add(DeferredStartRenderHost* host) = 0;
 
   // Removes a host from the queue (for example, it may be deleted before
   // having a chance to start).
-  virtual void Remove(ExtensionHost* host) = 0;
+  virtual void Remove(DeferredStartRenderHost* host) = 0;
 };
 
 }  // namespace extensions

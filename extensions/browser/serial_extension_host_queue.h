@@ -13,11 +13,11 @@
 
 namespace extensions {
 
-class ExtensionHost;
+class DeferredStartRenderHost;
 
-// An ExtensionHostQueue which initializes ExtensionHosts in the order they're
-// Add()ed, with simple rate limiting logic that re-posts each task to the UI
-// thread, to avoid clogging it for a long period of time.
+// An ExtensionHostQueue which initializes DeferredStartRenderHosts in the order
+// they're Add()ed, with simple rate limiting logic that re-posts each task to
+// the UI thread, to avoid clogging it for a long period of time.
 class SerialExtensionHostQueue : public ExtensionHostQueue {
  public:
   SerialExtensionHostQueue();
@@ -25,21 +25,22 @@ class SerialExtensionHostQueue : public ExtensionHostQueue {
 
  private:
   // ExtensionHostQueue:
-  void Add(ExtensionHost* host) override;
-  void Remove(ExtensionHost* host) override;
+  void Add(DeferredStartRenderHost* host) override;
+  void Remove(DeferredStartRenderHost* host) override;
 
-  // Queues up a delayed task to process the next ExtensionHost in the queue.
+  // Queues up a delayed task to process the next DeferredStartRenderHost in
+  // the queue.
   void PostTask();
 
   // Creates the RenderView for the next host in the queue.
   void ProcessOneHost();
 
   // True if this queue is currently in the process of starting an
-  // ExtensionHost.
+  // DeferredStartRenderHost.
   bool pending_create_;
 
-  // The list of ExtensionHosts waiting to be started.
-  std::list<ExtensionHost*> queue_;
+  // The list of DeferredStartRenderHosts waiting to be started.
+  std::list<DeferredStartRenderHost*> queue_;
 
   base::WeakPtrFactory<SerialExtensionHostQueue> ptr_factory_;
 

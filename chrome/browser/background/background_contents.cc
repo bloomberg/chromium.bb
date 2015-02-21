@@ -16,6 +16,9 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_host_delegate.h"
+#include "extensions/browser/extension_host_queue.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/view_type_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -29,7 +32,9 @@ BackgroundContents::BackgroundContents(
     Delegate* delegate,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      extension_host_delegate_(extensions::ExtensionsBrowserClient::Get()
+                                   ->CreateExtensionHostDelegate()) {
   profile_ = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
 
@@ -82,10 +87,17 @@ BackgroundContents::~BackgroundContents() {
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile_),
       content::Details<BackgroundContents>(this));
+
+  extension_host_delegate_->GetExtensionHostQueue()->Remove(this);
 }
 
 const GURL& BackgroundContents::GetURL() const {
   return web_contents_.get() ? web_contents_->GetURL() : GURL::EmptyGURL();
+}
+
+void BackgroundContents::CreateRenderViewSoon(const GURL& url) {
+  initial_url_ = url;
+  extension_host_delegate_->GetExtensionHostQueue()->Add(this);
 }
 
 void BackgroundContents::CloseContents(WebContents* source) {
@@ -159,4 +171,10 @@ void BackgroundContents::Observe(int type,
       NOTREACHED() << "Unexpected notification sent.";
       break;
   }
+}
+
+void BackgroundContents::CreateRenderViewNow() {
+  web_contents()->GetController().LoadURL(initial_url_, content::Referrer(),
+                                          ui::PAGE_TRANSITION_LINK,
+                                          std::string());
 }

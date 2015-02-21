@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "extensions/browser/extension_host.h"
+#include "extensions/browser/deferred_start_render_host.h"
 
 namespace extensions {
 
@@ -17,13 +17,13 @@ SerialExtensionHostQueue::SerialExtensionHostQueue()
 SerialExtensionHostQueue::~SerialExtensionHostQueue() {
 }
 
-void SerialExtensionHostQueue::Add(ExtensionHost* host) {
+void SerialExtensionHostQueue::Add(DeferredStartRenderHost* host) {
   queue_.push_back(host);
   PostTask();
 }
 
-void SerialExtensionHostQueue::Remove(ExtensionHost* host) {
-  std::list<ExtensionHost*>::iterator it =
+void SerialExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
+  std::list<DeferredStartRenderHost*>::iterator it =
       std::find(queue_.begin(), queue_.end(), host);
   if (it != queue_.end())
     queue_.erase(it);

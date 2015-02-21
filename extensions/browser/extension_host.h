@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/deferred_start_render_host.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
@@ -44,7 +45,8 @@ class WindowController;
 //
 // If you are adding code that only affects visible extension views (and not
 // invisible background pages) you should add it to ExtensionViewHost.
-class ExtensionHost : public content::WebContentsDelegate,
+class ExtensionHost : public DeferredStartRenderHost,
+                      public content::WebContentsDelegate,
                       public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
                       public content::NotificationObserver {
@@ -77,10 +79,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // (can be NULL). This happens delayed to avoid locking the UI.
   void CreateRenderViewSoon();
 
-  // DO NOT CALL THIS. Always use CreateRenderViewSoon().
-  // (Unless you're implementing an ExtensionHostQueue).
-  void CreateRenderViewNow();
-
   // Closes this host (results in [possibly asynchronous] deletion).
   void Close();
 
@@ -100,7 +98,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // finished.
   void OnNetworkRequestDone(uint64 request_id);
 
-  // content::WebContentsObserver
+  // content::WebContentsObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
@@ -109,7 +107,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   void DocumentAvailableInMainFrame() override;
   void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
-  // content::WebContentsDelegate
+  // content::WebContentsDelegate:
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   void AddNewContents(content::WebContents* source,
@@ -128,7 +126,7 @@ class ExtensionHost : public content::WebContentsDelegate,
                                   content::MediaStreamType type) override;
   bool IsNeverVisible(content::WebContents* web_contents) override;
 
-  // content::NotificationObserver
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
@@ -147,6 +145,9 @@ class ExtensionHost : public content::WebContentsDelegate,
   virtual bool IsBackgroundPage() const;
 
  private:
+  // DeferredStartRenderHost:
+  void CreateRenderViewNow() override;
+
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void OnEventAck(int message_id);

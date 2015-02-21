@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 
+#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -12,6 +13,7 @@
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/serial_extension_host_queue.h"
 
 namespace extensions {
 
@@ -64,6 +66,13 @@ bool ChromeExtensionHostDelegate::CheckMediaAccessPermission(
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(
           web_contents, security_origin, type, extension);
+}
+
+static base::LazyInstance<SerialExtensionHostQueue> g_queue =
+    LAZY_INSTANCE_INITIALIZER;
+
+ExtensionHostQueue* ChromeExtensionHostDelegate::GetExtensionHostQueue() const {
+  return g_queue.Pointer();
 }
 
 }  // namespace extensions

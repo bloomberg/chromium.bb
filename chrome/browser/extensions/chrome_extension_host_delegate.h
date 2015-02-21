@@ -32,6 +32,7 @@ class ChromeExtensionHostDelegate : public ExtensionHostDelegate {
                                   const GURL& security_origin,
                                   content::MediaStreamType type,
                                   const Extension* extension) override;
+  ExtensionHostQueue* GetExtensionHostQueue() const override;
 };
 
 }  // namespace extensions
