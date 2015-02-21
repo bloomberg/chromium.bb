@@ -15,9 +15,9 @@
 class SkBitmap;
 
 namespace base {
-class FileDescriptor;
 class FilePath;
 class SingleThreadTaskRunner;
+struct FileDescriptor;
 }
 
 namespace gfx {

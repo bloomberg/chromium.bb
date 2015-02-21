@@ -11,9 +11,9 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
 namespace base {
-class FileDescriptor;
 class FilePath;
 class SingleThreadTaskRunner;
+struct FileDescriptor;
 }
 
 namespace ui {
