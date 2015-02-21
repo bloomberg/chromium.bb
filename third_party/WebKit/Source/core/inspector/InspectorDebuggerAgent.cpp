@@ -350,7 +350,7 @@ static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, 
     breakpointObject->setNumber(DebuggerAgentState::columnNumber, columnNumber);
     breakpointObject->setString(DebuggerAgentState::condition, condition);
     breakpointObject->setBoolean(DebuggerAgentState::isRegex, isRegex);
-    return breakpointObject;
+    return breakpointObject.release();
 }
 
 static bool matches(const String& url, const String& pattern, bool isRegex)
@@ -1127,15 +1127,18 @@ void InspectorDebuggerAgent::traceAsyncCallbackStarting(int operationId)
         m_currentAsyncOperationId = operationId;
         m_pendingTraceAsyncOperationCompleted = false;
         m_nestedAsyncCallCount = 1;
-        if (!m_performingAsyncStepIn)
-            return;
-        if (!m_asyncOperationsForStepInto.contains(operationId))
-            return;
-        m_inAsyncOperationForStepInto = true;
-        m_scheduledDebuggerStep = StepInto;
-        m_skippedStepFrameCount = 0;
-        m_recursionLevelForStepFrame = 0;
-        scriptDebugServer().setPauseOnNextStatement(true);
+
+        if (m_performingAsyncStepIn && m_asyncOperationsForStepInto.contains(operationId)) {
+            m_inAsyncOperationForStepInto = true;
+            m_scheduledDebuggerStep = StepInto;
+            m_skippedStepFrameCount = 0;
+            m_recursionLevelForStepFrame = 0;
+            scriptDebugServer().setPauseOnNextStatement(true);
+        } else if (m_asyncOperationBreakpoints.contains(operationId)) {
+            RefPtr<JSONObject> data = JSONObject::create();
+            data->setNumber("operationId", operationId);
+            schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::AsyncOperation, data.release());
+        }
     } else {
         if (m_currentAsyncCallChain)
             ++m_nestedAsyncCallCount;
@@ -1178,6 +1181,7 @@ void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
         }
         m_asyncOperations.remove(operationId);
         m_asyncOperationsForStepInto.remove(operationId);
+        m_asyncOperationBreakpoints.remove(operationId);
         shouldNotify = !m_asyncOperationNotifications.take(operationId);
     }
     if (m_performingAsyncStepIn) {
@@ -1249,6 +1253,37 @@ void InspectorDebuggerAgent::resetAsyncCallTracker()
         listener->resetAsyncOperations();
     m_asyncOperations.clear();
     m_asyncOperationNotifications.clear();
+    m_asyncOperationBreakpoints.clear();
+}
+
+void InspectorDebuggerAgent::setAsyncOperationBreakpoint(ErrorString* errorString, int operationId)
+{
+    if (!trackingAsyncCalls()) {
+        *errorString = "Can only perform operation while tracking async call stacks.";
+        return;
+    }
+    if (operationId <= 0) {
+        *errorString = "Wrong async operation id.";
+        return;
+    }
+    if (!m_asyncOperations.contains(operationId)) {
+        *errorString = "Unknown async operation id.";
+        return;
+    }
+    m_asyncOperationBreakpoints.add(operationId);
+}
+
+void InspectorDebuggerAgent::removeAsyncOperationBreakpoint(ErrorString* errorString, int operationId)
+{
+    if (!trackingAsyncCalls()) {
+        *errorString = "Can only perform operation while tracking async call stacks.";
+        return;
+    }
+    if (operationId <= 0) {
+        *errorString = "Wrong async operation id.";
+        return;
+    }
+    m_asyncOperationBreakpoints.remove(operationId);
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)

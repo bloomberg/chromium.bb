@@ -141,6 +141,8 @@ public:
     void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) final;
     void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) final;
     void flushAsyncOperationEvents(ErrorString*) final;
+    void setAsyncOperationBreakpoint(ErrorString*, int operationId) final;
+    void removeAsyncOperationBreakpoint(ErrorString*, int operationId) final;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didFireTimer();
@@ -296,6 +298,7 @@ private:
     int m_lastAsyncOperationId;
     HashSet<int> m_asyncOperationsForStepInto;
     ListHashSet<int> m_asyncOperationNotifications;
+    HashSet<int> m_asyncOperationBreakpoints;
     unsigned m_maxAsyncCallStackDepth;
     RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;

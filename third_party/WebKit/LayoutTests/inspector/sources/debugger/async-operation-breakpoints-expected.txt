@@ -1,0 +1,9 @@
+Tests AsyncOperation breakpoints.
+
+Set timer for test function.
+Executing Resume...
+Executing Resume...
+Call stack:
+    0) PASS_should_pause_here (async-operation-breakpoints.html:23)
+Pause reason: AsyncOperation
+
