@@ -196,7 +196,7 @@ void RenderInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldSt
     for (RenderInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         RenderBoxModelObject* nextCont = currCont->continuation();
         currCont->setContinuation(0);
-        currCont->setStyle(style());
+        currCont->setStyle(mutableStyle());
         currCont->setContinuation(nextCont);
     }
 
@@ -359,7 +359,7 @@ void RenderInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
 RenderInline* RenderInline::clone() const
 {
     RenderInline* cloneInline = new RenderInline(node());
-    cloneInline->setStyle(style());
+    cloneInline->setStyle(mutableStyle());
     cloneInline->setFlowThreadState(flowThreadState());
     return cloneInline;
 }

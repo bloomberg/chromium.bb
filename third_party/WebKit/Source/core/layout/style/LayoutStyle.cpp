@@ -331,8 +331,8 @@ void LayoutStyle::removeCachedPseudoStyle(PseudoId pid)
     if (!m_cachedPseudoStyles)
         return;
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
-        LayoutStyle* pseudoStyle = m_cachedPseudoStyles->at(i).get();
-        if (pseudoStyle->styleType() == pid) {
+        const LayoutStyle& pseudoStyle = *m_cachedPseudoStyles->at(i);
+        if (pseudoStyle.styleType() == pid) {
             m_cachedPseudoStyles->remove(i);
             return;
         }

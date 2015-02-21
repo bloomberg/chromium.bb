@@ -45,15 +45,15 @@ LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
 void LayoutSliderThumb::updateAppearance(const LayoutStyle& parentStyle)
 {
     if (parentStyle.appearance() == SliderVerticalPart)
-        style()->setAppearance(SliderThumbVerticalPart);
+        mutableStyleRef().setAppearance(SliderThumbVerticalPart);
     else if (parentStyle.appearance() == SliderHorizontalPart)
-        style()->setAppearance(SliderThumbHorizontalPart);
+        mutableStyleRef().setAppearance(SliderThumbHorizontalPart);
     else if (parentStyle.appearance() == MediaSliderPart)
-        style()->setAppearance(MediaSliderThumbPart);
+        mutableStyleRef().setAppearance(MediaSliderThumbPart);
     else if (parentStyle.appearance() == MediaVolumeSliderPart)
-        style()->setAppearance(MediaVolumeSliderThumbPart);
+        mutableStyleRef().setAppearance(MediaVolumeSliderThumbPart);
     else if (parentStyle.appearance() == MediaFullScreenVolumeSliderPart)
-        style()->setAppearance(MediaFullScreenVolumeSliderThumbPart);
+        mutableStyleRef().setAppearance(MediaFullScreenVolumeSliderThumbPart);
     if (style()->hasAppearance())
         LayoutTheme::theme().adjustSliderThumbSize(mutableStyleRef(), toElement(node()));
 }

@@ -1055,7 +1055,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
         return selectAutoCursor(result, node, iBeamCursor());
 
     LayoutObject* renderer = node->renderer();
-    LayoutStyle* style = renderer ? renderer->style() : nullptr;
+    const LayoutStyle* style = renderer ? renderer->style() : nullptr;
 
     if (renderer) {
         Cursor overrideCursor;

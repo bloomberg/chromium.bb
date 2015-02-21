@@ -49,7 +49,7 @@ ElementResolveContext::ElementResolveContext(Element& element)
 
     const Document& document = element.document();
     Node* documentElement = document.documentElement();
-    LayoutStyle* documentStyle = document.layoutStyle();
+    const LayoutStyle* documentStyle = document.layoutStyle();
     m_rootElementStyle = documentElement && element != documentElement ? documentElement->layoutStyle() : documentStyle;
     if (!m_rootElementStyle)
         m_rootElementStyle = documentStyle;

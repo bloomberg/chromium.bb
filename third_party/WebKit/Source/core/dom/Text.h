@@ -52,7 +52,7 @@ public:
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
     bool textRendererIsNeeded(const LayoutStyle&, const LayoutObject& parent);
-    RenderText* createTextRenderer(LayoutStyle*);
+    RenderText* createTextRenderer(const LayoutStyle&);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
     virtual void attach(const AttachContext& = AttachContext()) override final;

@@ -234,7 +234,7 @@ LayoutStyle* FirstLetterPseudoElement::styleForFirstLetter(LayoutObject* rendere
     // We always force the pseudo style to recompute as the first-letter style
     // computed by the style container may not have taken the renderers styles
     // into account.
-    styleContainer->style()->removeCachedPseudoStyle(FIRST_LETTER);
+    styleContainer->mutableStyleRef().removeCachedPseudoStyle(FIRST_LETTER);
 
     LayoutStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
     ASSERT(pseudoStyle);
@@ -266,7 +266,7 @@ void FirstLetterPseudoElement::attachFirstLetterTextRenderers()
         new RenderTextFragment(nextRenderer->node() ? nextRenderer->node() : &nextRenderer->document(), oldText.impl(), length, oldText.length() - length);
     remainingText->setFirstLetterPseudoElement(this);
     remainingText->setIsRemainingTextRenderer(true);
-    remainingText->setStyle(nextRenderer->style());
+    remainingText->setStyle(nextRenderer->mutableStyle());
 
     if (remainingText->node())
         remainingText->node()->setRenderer(remainingText);
@@ -306,7 +306,7 @@ void FirstLetterPseudoElement::didRecalcStyle(StyleRecalcChange)
         if (!child->isText() && !child->isQuote() && !child->isImage())
             continue;
 
-        child->setPseudoStyle(renderer->style());
+        child->setPseudoStyle(renderer->mutableStyle());
     }
 }
 

@@ -41,7 +41,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     HTMLElement* bodyElement = coreDoc->body();
     ASSERT(bodyElement);
 
-    LayoutStyle* style = bodyElement->layoutStyle();
+    const LayoutStyle* style = bodyElement->layoutStyle();
     ASSERT(style);
 
     // Inserted stylesheet not yet applied.
@@ -73,13 +73,13 @@ TEST(WebDocumentTest, BeginExitTransition)
     Element* transitionElement = coreDoc->getElementById("foo");
     ASSERT(transitionElement);
 
-    LayoutStyle* transitionStyle = transitionElement->layoutStyle();
+    const LayoutStyle* transitionStyle = transitionElement->layoutStyle();
     ASSERT(transitionStyle);
 
     HTMLElement* bodyElement = coreDoc->body();
     ASSERT(bodyElement);
 
-    LayoutStyle* bodyStyle = bodyElement->layoutStyle();
+    const LayoutStyle* bodyStyle = bodyElement->layoutStyle();
     ASSERT(bodyStyle);
     // The transition_exit.css stylesheet should not have been applied at this point.
     ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
@@ -118,13 +118,13 @@ TEST(WebDocumentTest, BeginExitTransitionToNativeApp)
     Element* transitionElement = coreDoc->getElementById("foo");
     ASSERT(transitionElement);
 
-    LayoutStyle* transitionStyle = transitionElement->layoutStyle();
+    const LayoutStyle* transitionStyle = transitionElement->layoutStyle();
     ASSERT(transitionStyle);
 
     HTMLElement* bodyElement = coreDoc->body();
     ASSERT(bodyElement);
 
-    LayoutStyle* bodyStyle = bodyElement->layoutStyle();
+    const LayoutStyle* bodyStyle = bodyElement->layoutStyle();
     ASSERT(bodyStyle);
     // The transition_exit.css stylesheet should not have been applied at this point.
     ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
@@ -161,7 +161,7 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     Element* transitionElement = coreDoc->getElementById("foo");
     ASSERT(transitionElement);
 
-    LayoutStyle* transitionStyle = transitionElement->layoutStyle();
+    const LayoutStyle* transitionStyle = transitionElement->layoutStyle();
     ASSERT(transitionStyle);
     EXPECT_EQ(transitionStyle->opacity(), 1);
 

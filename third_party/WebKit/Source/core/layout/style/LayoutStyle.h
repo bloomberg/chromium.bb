@@ -258,8 +258,9 @@ protected:
 
         unsigned styleType : 6; // PseudoId
         unsigned pseudoBits : 8;
-        unsigned explicitInheritance : 1; // Explicitly inherits a non-inherited property
-        unsigned unique : 1; // Style can not be shared.
+        // FIXME: |explicitInheritance| should be moved to ElementRareData.
+        mutable unsigned explicitInheritance : 1; // Explicitly inherits a non-inherited property
+        mutable unsigned unique : 1; // Style can not be shared.
 
         unsigned emptyState : 1;
 
@@ -1460,7 +1461,7 @@ public:
 
     // A unique style is one that has matches something that makes it impossible to share.
     bool unique() const { return noninherited_flags.unique; }
-    void setUnique() { noninherited_flags.unique = true; }
+    void setUnique() const { noninherited_flags.unique = true; }
 
     bool isSharable() const;
 
@@ -1469,7 +1470,7 @@ public:
 
     Color visitedDependentColor(int colorProperty) const;
 
-    void setHasExplicitlyInheritedProperties() { noninherited_flags.explicitInheritance = true; }
+    void setHasExplicitlyInheritedProperties() const { noninherited_flags.explicitInheritance = true; }
     bool hasExplicitlyInheritedProperties() const { return noninherited_flags.explicitInheritance; }
 
     bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || resize() != RESIZE_NONE; }

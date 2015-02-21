@@ -155,7 +155,7 @@ void RenderMenuList::styleDidChange(StyleDifference diff, const LayoutStyle* old
     RenderBlock::styleDidChange(diff, oldStyle);
 
     if (m_buttonText)
-        m_buttonText->setStyle(style());
+        m_buttonText->setStyle(mutableStyle());
     if (m_innerBlock) // RenderBlock handled updating the anonymous block's style.
         adjustInnerStyle();
 
@@ -244,7 +244,7 @@ void RenderMenuList::setTextFromOption(int optionIndex)
             HTMLOptionElement* selectedOptionElement = toHTMLOptionElement(listItems[firstSelectedIndex]);
             ASSERT(selectedOptionElement->selected());
             text = selectedOptionElement->textIndentedToRespectGroupLabel();
-            m_optionStyle = selectedOptionElement->layoutStyle();
+            m_optionStyle = selectedOptionElement->mutableLayoutStyle();
         } else {
             Locale& locale = select->locale();
             String localizedNumberString = locale.convertToLocalizedNumber(String::number(selectedCount));
@@ -257,7 +257,7 @@ void RenderMenuList::setTextFromOption(int optionIndex)
             Element* element = listItems[i];
             if (isHTMLOptionElement(*element)) {
                 text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-                m_optionStyle = element->layoutStyle();
+                m_optionStyle = element->mutableLayoutStyle();
             }
         }
     }
@@ -277,7 +277,7 @@ void RenderMenuList::setText(const String& s)
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new LayoutBR(&document());
-            m_buttonText->setStyle(style());
+            m_buttonText->setStyle(mutableStyle());
             addChild(m_buttonText);
         }
     } else {
@@ -290,7 +290,7 @@ void RenderMenuList::setText(const String& s)
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new RenderText(&document(), s.impl());
-            m_buttonText->setStyle(style());
+            m_buttonText->setStyle(mutableStyle());
             // We need to set the text explicitly though it was specified in the
             // constructor because RenderText doesn't refer to the text
             // specified in the constructor in a case of re-transforming.
@@ -390,7 +390,7 @@ Element& RenderMenuList::ownerElement() const
 
 const LayoutStyle* RenderMenuList::layoutStyleForItem(Element& element) const
 {
-    return element.layoutStyle() ? element.layoutStyle() : element.computedStyle();
+    return element.layoutStyle() ? element.mutableLayoutStyle() : element.computedStyle();
 }
 
 void RenderMenuList::didSetSelectedIndex(int listIndex)

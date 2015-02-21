@@ -616,7 +616,7 @@ private:
 
     virtual LayoutStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override { return computedStyle(pseudoElementSpecifier); }
 
-    inline void updateCallbackSelectors(LayoutStyle* oldStyle, LayoutStyle* newStyle);
+    inline void updateCallbackSelectors(const LayoutStyle* oldStyle, const LayoutStyle* newStyle);
     inline void removeCallbackSelectors();
     inline void addCallbackSelectors();
 

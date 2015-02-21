@@ -814,7 +814,7 @@ String AXRenderObject::text() const
         if (!m_renderer)
             return String();
 
-        LayoutStyle* style = m_renderer->style();
+        const LayoutStyle* style = m_renderer->style();
         if (!style)
             return String();
 

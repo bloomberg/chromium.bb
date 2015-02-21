@@ -315,12 +315,12 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-RenderText* Text::createTextRenderer(LayoutStyle* style)
+RenderText* Text::createTextRenderer(const LayoutStyle& style)
 {
     if (isSVGText(this))
         return new LayoutSVGInlineText(this, dataImpl());
 
-    if (style->hasTextCombine())
+    if (style.hasTextCombine())
         return new RenderCombineText(this, dataImpl());
 
     return new RenderText(this, dataImpl());
@@ -383,7 +383,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 bool Text::needsWhitespaceRenderer()
 {
     ASSERT(!renderer());
-    if (LayoutStyle* style = parentLayoutStyle())
+    if (const LayoutStyle* style = parentLayoutStyle())
         return style->preserveNewline();
     return false;
 }

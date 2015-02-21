@@ -179,7 +179,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     if (primitiveValue->getValueID() == CSSValueInternalExtendToZoom)
         return Length(ExtendToZoom);
 
-    LayoutStyle* documentStyle = m_document->layoutStyle();
+    const LayoutStyle* documentStyle = m_document->layoutStyle();
 
     // If we have viewport units the conversion will mark the document style as having viewport units.
     bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();

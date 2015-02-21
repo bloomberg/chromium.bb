@@ -598,7 +598,7 @@ String InputType::sanitizeValue(const String& proposedValue) const
 void InputType::warnIfValueIsInvalidAndElementIsVisible(const String& value) const
 {
     // Don't warn if the value is set in Modernizr.
-    LayoutStyle* style = element().layoutStyle();
+    const LayoutStyle* style = element().layoutStyle();
     if (style && style->visibility() != HIDDEN)
         warnIfValueIsInvalid(value);
 }
@@ -898,7 +898,7 @@ void InputType::stepUpFromRenderer(int n)
 
 void InputType::countUsageIfVisible(UseCounter::Feature feature) const
 {
-    if (LayoutStyle* style = element().layoutStyle()) {
+    if (const LayoutStyle* style = element().layoutStyle()) {
         if (style->visibility() != HIDDEN)
             UseCounter::count(element().document(), feature);
     }

@@ -276,7 +276,7 @@ void RenderBlock::willBeDestroyed()
 
 void RenderBlock::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
-    LayoutStyle* oldStyle = style();
+    const LayoutStyle* oldStyle = style();
 
     setReplaced(newStyle.isDisplayInlineType());
 
@@ -336,7 +336,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldSty
         for (RenderBlock* currCont = blockElementContinuation(); currCont; currCont = currCont->blockElementContinuation()) {
             RenderBoxModelObject* nextCont = currCont->continuation();
             currCont->setContinuation(0);
-            currCont->setStyle(style());
+            currCont->setStyle(mutableStyle());
             currCont->setContinuation(nextCont);
         }
     }
@@ -588,7 +588,7 @@ RenderBlock* RenderBlock::clone() const
     else {
         LayoutObject* cloneRenderer = toElement(node())->createRenderer(styleRef());
         cloneBlock = toRenderBlock(cloneRenderer);
-        cloneBlock->setStyle(style());
+        cloneBlock->setStyle(mutableStyle());
 
         // This takes care of setting the right value of childrenInline in case
         // generated content is added to cloneBlock and 'this' does not have
@@ -3051,14 +3051,14 @@ void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
             continue;
         }
 
-        RefPtr<LayoutStyle> childStyle = child->style();
+        const LayoutStyle& childStyle = child->styleRef();
         if (child->isFloating() || (child->isBox() && toRenderBox(child)->avoidsFloats())) {
             LayoutUnit floatTotalWidth = floatLeftWidth + floatRightWidth;
-            if (childStyle->clear() & CLEFT) {
+            if (childStyle.clear() & CLEFT) {
                 maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
                 floatLeftWidth = 0;
             }
-            if (childStyle->clear() & CRIGHT) {
+            if (childStyle.clear() & CRIGHT) {
                 maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
                 floatRightWidth = 0;
             }
@@ -3067,8 +3067,8 @@ void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         // A margin basically has three types: fixed, percentage, and auto (variable).
         // Auto and percentage margins simply become 0 when computing min/max width.
         // Fixed margins can be added in as is.
-        Length startMarginLength = childStyle->marginStartUsing(&styleToUse);
-        Length endMarginLength = childStyle->marginEndUsing(&styleToUse);
+        Length startMarginLength = childStyle.marginStartUsing(&styleToUse);
+        Length endMarginLength = childStyle.marginEndUsing(&styleToUse);
         LayoutUnit margin = 0;
         LayoutUnit marginStart = 0;
         LayoutUnit marginEnd = 0;
@@ -3117,7 +3117,7 @@ void RenderBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         }
 
         if (child->isFloating()) {
-            if (childStyle->floating() == LeftFloat)
+            if (childStyle.floating() == LeftFloat)
                 floatLeftWidth += w;
             else
                 floatRightWidth += w;

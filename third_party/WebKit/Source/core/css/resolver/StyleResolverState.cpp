@@ -29,7 +29,7 @@
 
 namespace blink {
 
-StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, LayoutStyle* parentStyle)
+StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, const LayoutStyle* parentStyle)
     : m_elementContext(elementContext)
     , m_document(document)
     , m_style(nullptr)
@@ -45,7 +45,7 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
     m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
 }
 
-StyleResolverState::StyleResolverState(Document& document, Element* element, LayoutStyle* parentStyle)
+StyleResolverState::StyleResolverState(Document& document, Element* element, const LayoutStyle* parentStyle)
     : StyleResolverState(document, element ? ElementResolveContext(*element) : ElementResolveContext(document), parentStyle)
 {
 }

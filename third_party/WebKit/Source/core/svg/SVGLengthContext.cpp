@@ -179,7 +179,7 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
     return 0;
 }
 
-static inline LayoutStyle* layoutStyleForLengthResolving(const SVGElement* context)
+static inline const LayoutStyle* layoutStyleForLengthResolving(const SVGElement* context)
 {
     if (!context)
         return 0;
@@ -198,7 +198,7 @@ static inline LayoutStyle* layoutStyleForLengthResolving(const SVGElement* conte
 
 float SVGLengthContext::convertValueFromUserUnitsToEMS(float value) const
 {
-    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
+    const LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
 
@@ -211,7 +211,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEMS(float value) const
 
 float SVGLengthContext::convertValueFromEMSToUserUnits(float value) const
 {
-    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
+    const LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
     return value * style->specifiedFontSize();
@@ -219,7 +219,7 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value) const
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const
 {
-    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
+    const LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
 
@@ -234,7 +234,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const
 
 float SVGLengthContext::convertValueFromEXSToUserUnits(float value) const
 {
-    LayoutStyle* style = layoutStyleForLengthResolving(m_context);
+    const LayoutStyle* style = layoutStyleForLengthResolving(m_context);
     if (!style)
         return 0;
 
