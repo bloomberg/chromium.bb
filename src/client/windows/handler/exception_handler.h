@@ -263,6 +263,15 @@ class ExceptionHandler {
     handle_debug_exceptions_ = handle_debug_exceptions;
   }
 
+  // Controls behavior of EXCEPTION_INVALID_HANDLE.
+  bool get_consume_invalid_handle_exceptions() const {
+    return consume_invalid_handle_exceptions_;
+  }
+  void set_consume_invalid_handle_exceptions(
+      bool consume_invalid_handle_exceptions) {
+    consume_invalid_handle_exceptions_ = consume_invalid_handle_exceptions;
+  }
+
   // Returns whether out-of-process dump generation is used or not.
   bool IsOutOfProcess() const { return crash_generation_client_.get() != NULL; }
 
@@ -471,6 +480,10 @@ class ExceptionHandler {
   // EXCEPTION_SINGLE_STEP exceptions.  Leave this false (the default)
   // to not interfere with debuggers.
   bool handle_debug_exceptions_;
+
+  // If true, the handler will consume any EXCEPTION_INVALID_HANDLE exceptions.
+  // Leave this false (the default) to handle these exceptions as normal.
+  bool consume_invalid_handle_exceptions_;
 
   // Callers can request additional memory regions to be included in
   // the dump.
