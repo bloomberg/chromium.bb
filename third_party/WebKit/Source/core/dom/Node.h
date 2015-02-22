@@ -108,9 +108,6 @@ protected:
     { }
 
 protected:
-    // Oilpan: This member is traced in NodeRareData.
-    // FIXME: Can we add traceAfterDispatch and finalizeGarbageCollectedObject
-    // to NodeRareDataBase, and make m_renderer Member<>?
     LayoutObject* m_renderer;
 };
 
