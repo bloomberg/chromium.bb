@@ -14,27 +14,18 @@
 #ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_EMBEDDER_H_
 #define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_EMBEDDER_H_
 
-#include <map>
-
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 struct BrowserPluginHostMsg_Attach_Params;
-struct BrowserPluginHostMsg_ResizeGuest_Params;
-
-namespace gfx {
-class Point;
-}
 
 namespace content {
 
 class BrowserPluginGuest;
 class BrowserPluginGuestManager;
 class RenderWidgetHostImpl;
-class WebContentsImpl;
 struct NativeWebKeyboardEvent;
 
 class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
@@ -42,9 +33,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   ~BrowserPluginEmbedder() override;
 
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents);
-
-  // Returns this embedder's WebContentsImpl.
-  WebContentsImpl* GetWebContents() const;
 
   // Called when embedder's |rwh| has sent screen rects to renderer.
   void DidSendScreenRects();
@@ -56,8 +44,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   void DragSourceEndedAt(int client_x, int client_y, int screen_x,
       int screen_y, blink::WebDragOperation operation);
-
-  void OnUpdateDragCursor(bool* handled);
 
   void DragEnteredGuest(BrowserPluginGuest* guest);
 
@@ -98,12 +84,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   static bool StopFindingInGuest(StopFindAction action, WebContents* guest);
 
   // Message handlers.
+
   void OnAttach(RenderFrameHost* render_frame_host,
                 int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params);
-  void OnPluginAtPositionResponse(int instance_id,
-                                  int request_id,
-                                  const gfx::Point& position);
+  void OnUpdateDragCursor(bool* handled);
 
   // Used to correctly update the cursor when dragging over a guest, and to
   // handle a race condition when dropping onto the guest that started the drag
