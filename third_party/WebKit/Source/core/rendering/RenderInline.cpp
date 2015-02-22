@@ -835,7 +835,7 @@ PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
 {
     // FIXME: Does not deal with relative positioned inlines (should it?)
     RenderBlock* cb = containingBlock();
-    if (firstLineBox()) {
+    if (firstLineBoxIncludingCulling()) {
         // This inline actually has a line box.  We must have clicked in the border/padding of one of these boxes.  We
         // should try to find a result by asking our containing block.
         return cb->positionForPoint(point);
