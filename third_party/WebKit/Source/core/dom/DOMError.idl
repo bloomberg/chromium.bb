@@ -25,11 +25,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// https://dom.spec.whatwg.org/#domerror
+
+// FIXME: DOMError has been removed from the spec. crbug.com/460725
 [
     Constructor(DOMString name, optional DOMString message = null),
     GarbageCollected
 ] interface DOMError {
     readonly attribute DOMString name;
     readonly attribute DOMString message;
-  };
-
+};
