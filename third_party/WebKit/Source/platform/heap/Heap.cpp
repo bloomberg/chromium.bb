@@ -40,6 +40,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/AddressSpaceRandomization.h"
 #include "wtf/Assertions.h"
+#include "wtf/ContainerAnnotations.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/PassOwnPtr.h"
 #if ENABLE(GC_PROFILING)
@@ -57,6 +58,39 @@
 #include <unistd.h>
 #elif OS(WIN)
 #include <windows.h>
+#endif
+
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+// FIXME: have ContainerAnnotations.h define an ENABLE_-style name instead.
+#define ENABLE_ASAN_CONTAINER_ANNOTATIONS 1
+
+// When finalizing a non-inlined vector backing store/container, remove
+// its contiguous container annotation. Required as it will not be destructed
+// from its Vector.
+#define ASAN_RETIRE_CONTAINER_ANNOTATION(object, objectSize)                          \
+    do {                                                                              \
+        BasePage* page = pageFromObject(object);                                      \
+        ASSERT(page);                                                                 \
+        bool isContainer = page->heap()->heapIndex() == VectorHeapIndex;              \
+        if (!isContainer && page->isLargeObjectPage())                                \
+            isContainer = static_cast<LargeObjectPage*>(page)->isVectorBackingPage(); \
+        if (isContainer)                                                              \
+            ANNOTATE_DELETE_BUFFER(object, objectSize, 0);                            \
+    } while (0)
+
+// A vector backing store represented by a large object is marked
+// so that when it is finalized, its ASan annotation will be
+// correctly retired.
+#define ASAN_MARK_LARGE_VECTOR_CONTAINER(heap, largeObject)                  \
+    if (heap->heapIndex() == VectorHeapIndex) {                              \
+        BasePage* largePage = pageFromObject(largeObject);                   \
+        ASSERT(largePage->isLargeObjectPage());                              \
+        static_cast<LargeObjectPage*>(largePage)->setIsVectorBackingPage();  \
+    }
+#else
+#define ENABLE_ASAN_CONTAINER_ANNOTATIONS 0
+#define ASAN_RETIRE_CONTAINER_ANNOTATION(payload, payloadSize)
+#define ASAN_MARK_LARGE_VECTOR_CONTAINER(heap, largeObject)
 #endif
 
 namespace blink {
@@ -458,6 +492,8 @@ void HeapObjectHeader::finalize(Address object, size_t objectSize)
     if (gcInfo->hasFinalizer()) {
         gcInfo->m_finalize(object);
     }
+
+    ASAN_RETIRE_CONTAINER_ANNOTATION(object, objectSize);
 
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // In Debug builds, memory is zapped when it's freed, and the zapped memory
@@ -1019,8 +1055,12 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
 #endif
 
     // 1. If this allocation is big enough, allocate a large object.
-    if (allocationSize >= largeObjectSizeThreshold)
-        return static_cast<LargeObjectHeap*>(threadState()->heap(LargeObjectHeapIndex))->allocateLargeObjectPage(allocationSize, gcInfoIndex);
+    if (allocationSize >= largeObjectSizeThreshold) {
+        LargeObjectHeap* largeObjectHeap = static_cast<LargeObjectHeap*>(threadState()->heap(LargeObjectHeapIndex));
+        Address largeObject = largeObjectHeap->allocateLargeObjectPage(allocationSize, gcInfoIndex);
+        ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
+        return largeObject;
+    }
 
     // 2. Check if we should trigger a GC.
     updateRemainingAllocationSize();
@@ -1774,6 +1814,9 @@ NormalPageHeap* NormalPage::heapForNormalPage()
 LargeObjectPage::LargeObjectPage(PageMemory* storage, BaseHeap* heap, size_t payloadSize)
     : BasePage(storage, heap)
     , m_payloadSize(payloadSize)
+#if ENABLE(ASAN_CONTAINER_ANNOTATIONS)
+    , m_isVectorBackingPage(false)
+#endif
 {
 }
 

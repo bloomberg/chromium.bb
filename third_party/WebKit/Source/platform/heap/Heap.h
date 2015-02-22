@@ -38,6 +38,7 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
+#include "wtf/ContainerAnnotations.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/LinkedHashSet.h"
 #include "wtf/ListHashSet.h"
@@ -567,9 +568,17 @@ public:
         return reinterpret_cast<HeapObjectHeader*>(headerAddress);
     }
 
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+    void setIsVectorBackingPage() { m_isVectorBackingPage = true; }
+    bool isVectorBackingPage() const { return m_isVectorBackingPage; }
+#endif
+
 private:
 
     size_t m_payloadSize;
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+    bool m_isVectorBackingPage;
+#endif
 };
 
 // A HeapDoesNotContainCache provides a fast way of taking an arbitrary
@@ -2139,6 +2148,12 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         // Use the payload size as recorded by the heap to determine how many
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+        // Have no option but to mark the whole container as accessible, but
+        // this trace() is only used for backing stores that are identified
+        // as roots independent from a vector.
+        ANNOTATE_CHANGE_SIZE(array, length, 0, length);
+#endif
         for (size_t i = 0; i < length; ++i)
             blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
         return false;
