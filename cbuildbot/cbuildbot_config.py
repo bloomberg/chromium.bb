@@ -3270,6 +3270,7 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
       # Experimental Paladins
+      'daisy_freon-paladin',
       'daisy_skate-paladin',
       'nyan_freon-paladin',
       'whirlwind-paladin',
@@ -3303,6 +3304,7 @@ _waterfall_config_map = {
       'urara-release',
 
       # Experimental PFQs.
+      'daisy_freon-chrome-pfq',
       'peach_pit-chrome-pfq',
 
       # Incremental Builders.

@@ -11327,6 +11327,7 @@
         "vm_tests": []
     },
     "daisy_freon-chrome-pfq": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy_freon"
         ],
@@ -11470,6 +11471,7 @@
         "vm_tests": []
     },
     "daisy_freon-paladin": {
+        "active_waterfall": "chromeos",
         "boards": [
             "daisy_freon"
         ],
