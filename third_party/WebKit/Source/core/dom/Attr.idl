@@ -18,29 +18,25 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-attr
+
+// FIXME: Attr should not inherit from Node. crbug.com/305105
 interface Attr : Node {
-
-    // DOM Level 1
-
+    readonly attribute DOMString? namespaceURI;
+    readonly attribute DOMString? prefix;
+    // FIXME: localName/name/value/nodeValue/textContent should not be nullable.
+    readonly attribute DOMString? localName;
     readonly attribute DOMString? name;
-
-    [MeasureAs=AttributeSpecified] readonly attribute boolean specified;
-
     [ImplementedAs=valueForBindings, CustomElementCallbacks] attribute DOMString? value;
-    [ImplementedAs=valueForBindings, MeasureAs=AttrNodeValue] attribute DOMString? nodeValue;
-    [ImplementedAs=valueForBindings, MeasureAs=AttrTextContent] attribute DOMString? textContent;
+    [ImplementedAs=valueForBindings, MeasureAs=AttrNodeValue] attribute DOMString? nodeValue; // legacy alias of .value
+    [ImplementedAs=valueForBindings, MeasureAs=AttrTextContent] attribute DOMString? textContent; // legacy alias of .value
 
-    // DOM Level 2
-
+    // FIXME: ownerElement should be nullable.
     [MeasureAs=AttributeOwnerElement] readonly attribute Element ownerElement;
 
-    // DOM 4
+    [MeasureAs=AttributeSpecified] readonly attribute boolean specified; // useless; always returns true
 
-    readonly attribute DOMString? prefix;
-    readonly attribute DOMString? namespaceURI;
-    readonly attribute DOMString? localName;
-
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26609
+    // FIXME: Attr should not have any child nodes. crbug.com/305105
     [MeasureAs=AttrChildAccess] readonly attribute NodeList childNodes;
     [MeasureAs=AttrChildAccess] readonly attribute Node firstChild;
     [MeasureAs=AttrChildAccess] readonly attribute Node lastChild;
