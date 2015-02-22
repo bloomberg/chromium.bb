@@ -31,6 +31,8 @@ bool ParseVersionNumbers(const std::string& version_str,
 
   for (std::vector<std::string>::const_iterator it = numbers.begin();
        it != numbers.end(); ++it) {
+    if (StartsWithASCII(*it, "+", false))
+      return false;
     int num;
     if (!StringToInt(*it, &num))
       return false;
@@ -42,8 +44,8 @@ bool ParseVersionNumbers(const std::string& version_str,
     if (num > max)
       return false;
 
-    // This throws out things like +3, or 032.
-    if (IntToString(num) != *it)
+    // This throws out leading zeros for the first item only.
+    if (it == numbers.begin() && IntToString(num) != *it)
       return false;
 
     parsed->push_back(static_cast<uint16>(num));
