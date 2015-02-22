@@ -17,9 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-comment
+
 [
     Constructor(optional DOMString data = ""),
     ConstructorCallWith=Document,
 ] interface Comment : CharacterData {
 };
-

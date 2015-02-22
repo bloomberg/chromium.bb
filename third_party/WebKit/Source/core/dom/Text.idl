@@ -16,17 +16,17 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
+
+// https://dom.spec.whatwg.org/#interface-text
+
 [
     Constructor(optional DOMString data = ""),
     ConstructorCallWith=Document,
 ] interface Text : CharacterData {
-
-    // DOM Level 1
     [RaisesException] Text splitText(unsigned long offset);
-
-    // Introduced in DOM Level 3:
     [MeasureAs=TextWholeText] readonly attribute DOMString wholeText;
 
-    // Shadow DOM API
+    // FIXME: Text.getDestinationInsertionPoints() is not in the Shadow DOM spec.
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28069
     NodeList getDestinationInsertionPoints();
 };

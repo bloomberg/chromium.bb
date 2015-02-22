@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-processinginstruction
+
 interface ProcessingInstruction : CharacterData {
-
-    // DOM Level 1
-
+    // FIXME: target should not be nullable.
     readonly attribute DOMString? target;
 
-    // interface LinkStyle from DOM Level 2 Style Sheets
+    // FIXME: CharacterData.sheet is not part of any modern spec.
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28068
     readonly attribute StyleSheet sheet;
 };
-

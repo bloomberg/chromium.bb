@@ -17,18 +17,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-characterdata
+
 interface CharacterData : Node {
-
     [TreatNullAs=NullString] attribute DOMString data;
-
     readonly attribute unsigned long length;
-
-    [RaisesException] DOMString? substringData(unsigned long offset, unsigned long length);
-
+    // FIXME: substringData return value should not be nullable.
+    [RaisesException] DOMString? substringData(unsigned long offset, unsigned long count);
     void appendData(DOMString data);
     [RaisesException] void insertData(unsigned long offset, DOMString data);
-    [RaisesException] void deleteData(unsigned long offset, unsigned long length);
-    [RaisesException] void replaceData(unsigned long offset, unsigned long length, DOMString data);
+    [RaisesException] void deleteData(unsigned long offset, unsigned long count);
+    [RaisesException] void replaceData(unsigned long offset, unsigned long count, DOMString data);
 };
 
 CharacterData implements ChildNode;
