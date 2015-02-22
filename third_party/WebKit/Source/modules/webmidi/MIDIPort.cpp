@@ -48,6 +48,12 @@ MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufactu
     ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);
 }
 
+String MIDIPort::state() const
+{
+    // FIXME: Support complete MIDIPortState once Blink API is updated.
+    return m_isActive ? "opened" : "disconnected";
+}
+
 String MIDIPort::type() const
 {
     switch (m_type) {

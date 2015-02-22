@@ -28,6 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum MIDIPortState {
+    "disconnected",
+    "connected",
+    "opened"
+};
+
 enum MIDIPortType {
     "input",
     "output"
@@ -40,6 +46,7 @@ enum MIDIPortType {
     readonly attribute DOMString id;
     readonly attribute DOMString manufacturer;
     readonly attribute DOMString name;
+    readonly attribute MIDIPortState state;
     readonly attribute MIDIPortType type;
     readonly attribute DOMString version;
 

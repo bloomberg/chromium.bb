@@ -13,6 +13,8 @@ PASS input.id is "MockInputID"
 PASS input.manufacturer is "MockInputManufacturer"
 PASS input.name is "MockInputName"
 PASS input.version is "MockInputVersion"
+PASS input.state is "opened"
+PASS input.type is "input"
 for (var input of inputs.keys())
 PASS inputKey is "MockInputID"
 for (var input of inputs.entries())
@@ -34,6 +36,8 @@ PASS output.id is "MockOutputID"
 PASS output.manufacturer is "MockOutputManufacturer"
 PASS output.name is "MockOutputName"
 PASS output.version is "MockOutputVersion"
+PASS output.state is "opened"
+PASS output.type is "output"
 for (var output of outputs.keys())
 PASS outputKey is "MockOutputID"
 for (var output of outputs.entries())

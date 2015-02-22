@@ -52,6 +52,7 @@ public:
     String id() const { return m_id; }
     String manufacturer() const { return m_manufacturer; }
     String name() const { return m_name; }
+    String state() const;
     String type() const;
     String version() const { return m_version; }
 
