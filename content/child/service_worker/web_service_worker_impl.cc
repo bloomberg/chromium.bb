@@ -43,10 +43,8 @@ WebServiceWorkerImpl::~WebServiceWorkerImpl() {
 
 void WebServiceWorkerImpl::OnStateChanged(
     blink::WebServiceWorkerState new_state) {
-  if (proxy_ && proxy_->isReady())
-    CommitState(new_state);
-  else
-    queued_states_.push_back(new_state);
+  state_ = new_state;
+  proxy_->dispatchStateChangeEvent();
 }
 
 void WebServiceWorkerImpl::setProxy(blink::WebServiceWorkerProxy* proxy) {
@@ -55,18 +53,6 @@ void WebServiceWorkerImpl::setProxy(blink::WebServiceWorkerProxy* proxy) {
 
 blink::WebServiceWorkerProxy* WebServiceWorkerImpl::proxy() {
   return proxy_;
-}
-
-void WebServiceWorkerImpl::proxyReadyChanged() {
-  if (!proxy_->isReady())
-    return;
-  for (std::vector<blink::WebServiceWorkerState>::iterator it =
-           queued_states_.begin();
-       it != queued_states_.end();
-       ++it) {
-    CommitState(*it);
-  }
-  queued_states_.clear();
 }
 
 blink::WebURL WebServiceWorkerImpl::url() const {
@@ -88,13 +74,6 @@ void WebServiceWorkerImpl::postMessage(const WebString& message,
 void WebServiceWorkerImpl::terminate() {
   thread_safe_sender_->Send(
       new ServiceWorkerHostMsg_TerminateWorker(handle_ref_->handle_id()));
-}
-
-void WebServiceWorkerImpl::CommitState(blink::WebServiceWorkerState new_state) {
-  DCHECK(proxy_);
-  DCHECK(proxy_->isReady());
-  state_ = new_state;
-  proxy_->dispatchStateChangeEvent();
 }
 
 }  // namespace content

@@ -39,14 +39,10 @@ class WebServiceWorkerImpl
                        ThreadSafeSender* thread_safe_sender);
   virtual ~WebServiceWorkerImpl();
 
-  // Notifies that the service worker's state changed. This function may queue
-  // the state change for later processing, if the proxy is not yet ready to
-  // handle state changes.
   void OnStateChanged(blink::WebServiceWorkerState new_state);
 
   virtual void setProxy(blink::WebServiceWorkerProxy* proxy);
   virtual blink::WebServiceWorkerProxy* proxy();
-  virtual void proxyReadyChanged();
   virtual blink::WebURL url() const;
   virtual blink::WebServiceWorkerState state() const;
   virtual void postMessage(const blink::WebString& message,
@@ -54,14 +50,10 @@ class WebServiceWorkerImpl
   virtual void terminate();
 
  private:
-  // Commits the new state internally and notifies the proxy of the change.
-  void CommitState(blink::WebServiceWorkerState new_state);
-
   scoped_ptr<ServiceWorkerHandleReference> handle_ref_;
   blink::WebServiceWorkerState state_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   blink::WebServiceWorkerProxy* proxy_;
-  std::vector<blink::WebServiceWorkerState> queued_states_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);
 };
