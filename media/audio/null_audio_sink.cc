@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "media/audio/fake_audio_consumer.h"
+#include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_hash.h"
 
 namespace media {
@@ -24,7 +24,8 @@ NullAudioSink::~NullAudioSink() {}
 void NullAudioSink::Initialize(const AudioParameters& params,
                                RenderCallback* callback) {
   DCHECK(!initialized_);
-  fake_consumer_.reset(new FakeAudioConsumer(task_runner_, params));
+  fake_worker_.reset(new FakeAudioWorker(task_runner_, params));
+  audio_bus_ = AudioBus::Create(params);
   callback_ = callback;
   initialized_ = true;
 }
@@ -38,8 +39,8 @@ void NullAudioSink::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Stop may be called at any time, so we have to check before stopping.
-  if (fake_consumer_)
-    fake_consumer_->Stop();
+  if (fake_worker_)
+    fake_worker_->Stop();
 }
 
 void NullAudioSink::Play() {
@@ -49,7 +50,7 @@ void NullAudioSink::Play() {
   if (playing_)
     return;
 
-  fake_consumer_->Start(base::Bind(
+  fake_worker_->Start(base::Bind(
       &NullAudioSink::CallRender, base::Unretained(this)));
   playing_ = true;
 }
@@ -60,7 +61,7 @@ void NullAudioSink::Pause() {
   if (!playing_)
     return;
 
-  fake_consumer_->Stop();
+  fake_worker_->Stop();
   playing_ = false;
 }
 
@@ -69,14 +70,14 @@ bool NullAudioSink::SetVolume(double volume) {
   return volume == 0.0;
 }
 
-void NullAudioSink::CallRender(AudioBus* audio_bus) {
+void NullAudioSink::CallRender() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  int frames_received = callback_->Render(audio_bus, 0);
+  int frames_received = callback_->Render(audio_bus_.get(), 0);
   if (!audio_hash_ || frames_received <= 0)
     return;
 
-  audio_hash_->Update(audio_bus, frames_received);
+  audio_hash_->Update(audio_bus_.get(), frames_received);
 }
 
 void NullAudioSink::StartAudioHashForTesting() {

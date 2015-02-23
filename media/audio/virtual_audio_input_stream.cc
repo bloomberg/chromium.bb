@@ -58,7 +58,8 @@ VirtualAudioInputStream::VirtualAudioInputStream(
       params_(params),
       mixer_(params_, params_, false),
       num_attached_output_streams_(0),
-      fake_consumer_(worker_task_runner_, params_) {
+      fake_worker_(worker_task_runner_, params_),
+      audio_bus_(AudioBus::Create(params)) {
   DCHECK(params_.IsValid());
   DCHECK(worker_task_runner_.get());
 
@@ -89,13 +90,13 @@ bool VirtualAudioInputStream::Open() {
 void VirtualAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   callback_ = callback;
-  fake_consumer_.Start(base::Bind(
+  fake_worker_.Start(base::Bind(
       &VirtualAudioInputStream::PumpAudio, base::Unretained(this)));
 }
 
 void VirtualAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  fake_consumer_.Stop();
+  fake_worker_.Stop();
   callback_ = NULL;
 }
 
@@ -132,18 +133,18 @@ void VirtualAudioInputStream::RemoveOutputStream(
   DCHECK_LE(0, num_attached_output_streams_);
 }
 
-void VirtualAudioInputStream::PumpAudio(AudioBus* audio_bus) {
+void VirtualAudioInputStream::PumpAudio() {
   DCHECK(worker_task_runner_->BelongsToCurrentThread());
 
   {
     base::AutoLock scoped_lock(converter_network_lock_);
     // Because the audio is being looped-back, the delay until it will be played
     // out is zero.
-    mixer_.ConvertWithDelay(base::TimeDelta(), audio_bus);
+    mixer_.ConvertWithDelay(base::TimeDelta(), audio_bus_.get());
   }
   // Because the audio is being looped-back, the delay since since it was
   // recorded is zero.
-  callback_->OnData(this, audio_bus, 0, 1.0);
+  callback_->OnData(this, audio_bus_.get(), 0, 1.0);
 }
 
 void VirtualAudioInputStream::Close() {

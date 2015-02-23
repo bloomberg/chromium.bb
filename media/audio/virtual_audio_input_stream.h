@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/fake_audio_consumer.h"
+#include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_converter.h"
 
 namespace base {
@@ -77,7 +77,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   // Pulls audio data from all attached VirtualAudioOutputStreams, mixes and
   // converts the streams into one, and pushes the result to |callback_|.
   // Invoked on the worker thread.
-  void PumpAudio(AudioBus* audio_bus);
+  void PumpAudio();
 
   const scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
 
@@ -105,7 +105,9 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   int num_attached_output_streams_;
 
   // Handles callback timing for consumption of audio data.
-  FakeAudioConsumer fake_consumer_;
+  FakeAudioWorker fake_worker_;
+
+  scoped_ptr<AudioBus> audio_bus_;
 
   base::ThreadChecker thread_checker_;
 

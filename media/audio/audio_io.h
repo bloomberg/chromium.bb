@@ -56,6 +56,8 @@ class MEDIA_EXPORT AudioOutputStream {
   // itself such as creating Windows or initializing COM.
   class MEDIA_EXPORT AudioSourceCallback {
    public:
+    virtual ~AudioSourceCallback() {}
+
     // Provide more data by fully filling |dest|.  The source will return
     // the number of frames it filled.  |total_bytes_delay| contains current
     // number of bytes of delay buffered by the AudioOutputStream.
@@ -66,9 +68,6 @@ class MEDIA_EXPORT AudioOutputStream {
     // a good place to stop accumulating sound data since is is likely that
     // playback will not continue.
     virtual void OnError(AudioOutputStream* stream) = 0;
-
-   protected:
-    virtual ~AudioSourceCallback() {}
   };
 
   virtual ~AudioOutputStream() {}
