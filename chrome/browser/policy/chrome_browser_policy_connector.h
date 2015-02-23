@@ -40,9 +40,6 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
  private:
   ConfigurationPolicyProvider* CreatePlatformProvider();
 
-  // Appends any required flags if certain policies are set.
-  // TODO(guohui): Needs to move this to a more proper place and also to handle
-  // dynamic refresh.
   void AppendExtraFlagsPerPolicy();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPolicyConnector);

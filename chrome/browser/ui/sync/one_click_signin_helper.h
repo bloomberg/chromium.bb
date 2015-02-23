@@ -335,12 +335,6 @@ class OneClickSigninHelper
       const content::FrameNavigateParams& params) override;
   void DidStopLoading(content::RenderViewHost* render_view_host) override;
 
-  OneClickSigninSyncStarter::Callback CreateSyncStarterCallback();
-
-  // Callback invoked when OneClickSigninSyncStarter completes sync setup.
-  void SyncSetupCompletedCallback(
-      OneClickSigninSyncStarter::SyncSetupResult result);
-
   // Tracks if we are in the process of showing the signin or one click
   // interstitial page. It's set to true the first time we load one of those
   // pages and set to false when transient state is cleaned.

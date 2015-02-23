@@ -228,17 +228,6 @@ void AddEmailToOneClickRejectedList(Profile* profile,
   updater->AppendIfNotPresent(new base::StringValue(email));
 }
 
-void RedirectToNtpOrAppsPageWithIds(int child_id,
-                                    int route_id,
-                                    signin_metrics::Source source) {
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(child_id,
-                                                                    route_id);
-  if (!web_contents)
-    return;
-
-  OneClickSigninHelper::RedirectToNtpOrAppsPage(web_contents, source);
-}
-
 // Start syncing with the given user information.
 void StartSync(const OneClickSigninHelper::StartSyncArgs& args,
                OneClickSigninSyncStarter::StartSyncMode start_mode) {
@@ -278,33 +267,14 @@ void StartExplicitSync(const OneClickSigninHelper::StartSyncArgs& args,
                        content::WebContents* contents,
                        OneClickSigninSyncStarter::StartSyncMode start_mode,
                        ConfirmEmailDialogDelegate::Action action) {
-  bool enable_inline = !switches::IsEnableWebBasedSignin();
   if (action == ConfirmEmailDialogDelegate::START_SYNC) {
     StartSync(args, start_mode);
-    if (!enable_inline) {
-      // Redirect/tab closing for inline flow is handled by the sync callback.
-      OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
-          contents, args.source);
-    }
   } else {
     // Perform a redirection to the NTP/Apps page to hide the blank page when
     // the action is CLOSE or CREATE_NEW_USER. The redirection is useful when
     // the action is CREATE_NEW_USER because the "Create new user" page might
     // be opened in a different tab that is already showing settings.
-    if (enable_inline) {
-      // Redirect/tab closing for inline flow is handled by the sync callback.
-      args.callback.Run(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-    } else {
-      // Redirect, but don't do so immediately; otherwise there might be two
-      // nested navigations, which would cause a crash: http://crbug.com/293261
-      // Instead, post a task to the current thread.
-      base::MessageLoopProxy::current()->PostNonNestableTask(
-          FROM_HERE,
-          base::Bind(RedirectToNtpOrAppsPageWithIds,
-                     contents->GetRenderProcessHost()->GetID(),
-                     contents->GetRoutingID(),
-                     args.source));
-    }
+    args.callback.Run(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
     if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
       chrome::ShowSettingsSubPage(args.browser,
                                   std::string(chrome::kCreateProfileSubPage));
@@ -455,22 +425,6 @@ void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
   // Return early if this is not top-level navigation.
   if (render_frame_host->GetParent())
     return;
-
-  content::NavigationController* nc = &web_contents()->GetController();
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      ServiceAccessType::IMPLICIT_ACCESS);
-
-  // Have to wait until something else gets added to history before removal.
-  if (history_index_to_remove_ < nc->GetLastCommittedEntryIndex()) {
-    content::NavigationEntry* entry =
-        nc->GetEntryAtIndex(history_index_to_remove_);
-    if (signin::IsContinueUrlForWebBasedSigninFlow(entry->GetURL())) {
-      hs->DeleteURL(entry->GetURL());
-      nc->RemoveEntryAtIndex(history_index_to_remove_);
-      delete this;  // Success.
-    }
-  }
 }
 
 void CurrentHistoryCleaner::WebContentsDestroyed() {
@@ -1049,11 +1003,6 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 // static
 void OneClickSigninHelper::RemoveSigninRedirectURLHistoryItem(
     content::WebContents* web_contents) {
-  // Only actually remove the item if it's the blank.html continue url.
-  if (signin::IsContinueUrlForWebBasedSigninFlow(
-          web_contents->GetLastCommittedURL())) {
-    new CurrentHistoryCleaner(web_contents);  // will self-destruct when done
-  }
 }
 
 // static
@@ -1392,7 +1341,7 @@ void OneClickSigninHelper::DidStopLoading(
                           session_index_, email_, password_, "",
                           NULL  /* don't force sync setup in same tab */,
                           true  /* confirmation_required */, source_,
-                          CreateSyncStarterCallback()),
+                          OneClickSigninSyncStarter::Callback()),
             OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
       }
       break;
@@ -1408,7 +1357,7 @@ void OneClickSigninHelper::DidStopLoading(
                           session_index_, email_, password_, "",
                           NULL  /* don't force sync setup in same tab */,
                           true  /* confirmation_required */, source_,
-                          CreateSyncStarterCallback()),
+                          OneClickSigninSyncStarter::Callback()),
             OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       }
       break;
@@ -1444,14 +1393,14 @@ void OneClickSigninHelper::DidStopLoading(
 
       if (!HandleCrossAccountError(profile, session_index_, email_, password_,
               "", auto_accept_, source_, start_mode,
-              CreateSyncStarterCallback())) {
+              OneClickSigninSyncStarter::Callback())) {
         if (!do_not_start_sync_for_testing_) {
           StartSync(
               StartSyncArgs(profile, browser, auto_accept_,
                             session_index_, email_, password_, "",
                             contents,
                             untrusted_confirmation_required_, source_,
-                            CreateSyncStarterCallback()),
+                            OneClickSigninSyncStarter::Callback()),
               start_mode);
         }
 
@@ -1481,30 +1430,4 @@ void OneClickSigninHelper::DidStopLoading(
   }
 
   CleanTransientState();
-}
-
-OneClickSigninSyncStarter::Callback
-    OneClickSigninHelper::CreateSyncStarterCallback() {
-  // The callback will only be invoked if this object is still alive when sync
-  // setup is completed. This is correct because this object is only deleted
-  // when the web contents that potentially shows a blank page is deleted.
-  return base::Bind(&OneClickSigninHelper::SyncSetupCompletedCallback,
-                    weak_pointer_factory_.GetWeakPtr());
-}
-
-void OneClickSigninHelper::SyncSetupCompletedCallback(
-    OneClickSigninSyncStarter::SyncSetupResult result) {
-  if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE &&
-      web_contents()) {
-    GURL current_url = web_contents()->GetVisibleURL();
-
-    // If the web contents is showing a blank page and not about to be closed,
-    // redirect to the NTP or apps page.
-    if (signin::IsContinueUrlForWebBasedSigninFlow(current_url) &&
-        !signin::IsAutoCloseEnabledInURL(original_continue_url_)) {
-      RedirectToNtpOrAppsPage(
-          web_contents(),
-          signin::GetSourceForPromoURL(original_continue_url_));
-    }
-  }
 }

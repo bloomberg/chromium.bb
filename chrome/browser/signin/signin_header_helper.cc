@@ -214,7 +214,7 @@ bool AppendMirrorRequestHeaderIfPossible(
   }
 
   // Only set the header for Drive and Gaia always, and other Google properties
-  // if new-profile-management is enabled.
+  // if account consistency is enabled.
   // Vasquette, which is integrated with most Google properties, needs the
   // header to redirect certain user actions to Chrome native UI. Drive and Gaia
   // need the header to tell if the current user is connected. The drive path is
@@ -224,7 +224,6 @@ bool AppendMirrorRequestHeaderIfPossible(
   GURL origin(url.GetOrigin());
   bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
   bool is_google_url =
-      !switches::IsEnableWebBasedSignin() &&
       is_enable_account_consistency &&
       (google_util::IsGoogleDomainUrl(
            url,

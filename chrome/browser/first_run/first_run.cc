@@ -36,7 +36,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -365,15 +364,14 @@ void FirstRunBubbleLauncher::Observe(
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  // Suppress the first run bubble if a Gaia sign in page, the continue
-  // URL for the sign in page or the sync setup page is showing.
+  // Suppress the first run bubble if a Gaia sign in page or the sync setup
+  // page is showing.
   if (contents &&
       (contents->GetURL().GetOrigin().spec() ==
            chrome::kChromeUIChromeSigninURL ||
        gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
-       signin::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()) ||
-       (contents->GetURL() ==
-        chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)))) {
+       contents->GetURL() ==
+           chrome::GetSettingsUrl(chrome::kSyncSetupSubPage))) {
     return;
   }
 

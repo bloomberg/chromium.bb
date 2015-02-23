@@ -19,9 +19,6 @@ namespace switches {
 // management UI is available in the avatar bubble.
 bool IsEnableAccountConsistency();
 
-// Checks whether the web-based sign in flow is enabled on Chrome desktop.
-bool IsEnableWebBasedSignin();
-
 // Checks whether the webview-based sign in flow is enabled on Chrome desktop.
 bool IsEnableWebviewBasedSignin();
 

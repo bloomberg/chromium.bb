@@ -1435,13 +1435,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableNewAvatarMenu)
   },
   {
-    "enable-web-based-signin",
-    IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_NAME,
-    IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableWebBasedSignin)
-  },
-  {
     "enable-iframe-based-signin",
     IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME,
     IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION,

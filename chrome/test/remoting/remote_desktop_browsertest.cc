@@ -677,11 +677,6 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
     ASSERT_NE(webapp_crx_.empty(), webapp_unpacked_.empty());
   }
 
-  // Run with "enable-web-based-signin" flag to enforce web-based sign-in,
-  // rather than inline signin. This ensures we use the same authentication
-  // page, regardless of whether we are testing the v1 or v2 web-app.
-  command_line->AppendSwitch(switches::kEnableWebBasedSignin);
-
   // Enable experimental extensions; this is to allow adding the LG extensions
   command_line->AppendSwitch(
     extensions::switches::kEnableExperimentalExtensionApis);

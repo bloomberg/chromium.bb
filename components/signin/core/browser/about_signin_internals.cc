@@ -448,8 +448,6 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
           : "Signed In";
   AddSectionEntry(basic_info, "Chrome Version", product_version);
   AddSectionEntry(basic_info, "Signin Status", signin_status_string);
-  AddSectionEntry(basic_info, "Web Based Signin Enabled?",
-      switches::IsEnableWebBasedSignin() == true ? "True" : "False");
   AddSectionEntry(basic_info, "Webview Based Signin Enabled?",
       switches::IsEnableWebviewBasedSignin() == true ? "True" : "False");
   AddSectionEntry(basic_info, "New Avatar Menu Enabled?",

@@ -40,7 +40,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -430,8 +429,6 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
-  if (switches::IsEnableWebBasedSignin())
-    MergeSessionComplete(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 }
 
 void OneClickSigninSyncStarter::MergeSessionComplete(
@@ -535,8 +532,7 @@ void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()) ==
           profile_;
       use_same_tab =
-          (is_chrome_signin_url ||
-           signin::IsContinueUrlForWebBasedSigninFlow(current_url)) &&
+          is_chrome_signin_url &&
           !signin::IsAutoCloseEnabledInURL(current_url) &&
           is_same_profile;
     }

@@ -777,7 +777,6 @@ if (!is_android && (!is_win || link_chrome_on_windows)) {
         # chromeos does not support profile list avatar menu
         "../browser/profiles/profile_list_desktop_browsertest.cc",
         "../browser/service_process/service_process_control_browsertest.cc",
-        "../browser/signin/signin_browsertest.cc",
 
         # chromeos does not use cross-platform panels
         "../browser/ui/panels/panel_extension_browsertest.cc",

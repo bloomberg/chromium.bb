@@ -11,41 +11,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-#include "chrome/browser/ui/sync/one_click_signin_helper.h"
-#endif
 
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix) {
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  // Don't show the password manager infobar if this form is for a google
-  // account and we are going to show the one-click signin infobar.
-  GURL realm(form_to_save->realm());
-  // TODO(mathp): Checking only against associated_username() causes a bug
-  // referenced here: crbug.com/133275
-  // TODO(vabr): The check IsEnableWebBasedSignin is a hack for the time when
-  // OneClickSignin is disabled. http://crbug.com/339804
-  if (((realm == GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
-       (realm == GURL("https://www.google.com/"))) &&
-      switches::IsEnableWebBasedSignin() &&
-      OneClickSigninHelper::CanOffer(
-          web_contents,
-          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-          base::UTF16ToUTF8(form_to_save->associated_username()),
-          NULL))
-    return;
-#endif
-
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(

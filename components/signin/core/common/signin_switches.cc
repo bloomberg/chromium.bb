@@ -39,10 +39,6 @@ const char kEnableNewProfileManagement[] = "new-profile-management";
 extern const char kEnableRefreshTokenAnnotationRequest[] =
     "enable-refresh-token-annotation-request";
 
-// Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
-// settings page.
-const char kEnableWebBasedSignin[] = "enable-web-based-signin";
-
 // Enables multiple account versions of chrome.identity APIs.
 const char kExtensionsMultiAccount[] = "extensions-multi-account";
 
