@@ -360,7 +360,6 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
        IDR_KEYBOARD_LAYOUTS_COMPACT_NUMBERPAD},
       {"keyboard/inputview_layouts/emoji.js", IDR_KEYBOARD_LAYOUTS_EMOJI},
       {"keyboard/inputview_layouts/handwriting.js", IDR_KEYBOARD_LAYOUTS_HWT},
-      {"keyboard/keyboard_mojo.js", IDR_KEYBOARD_MOJO_JS},
       {"keyboard/manifest.json", IDR_KEYBOARD_MANIFEST},
       {"keyboard/sounds/keypress-delete.wav",
        IDR_KEYBOARD_SOUNDS_KEYPRESS_DELETE},

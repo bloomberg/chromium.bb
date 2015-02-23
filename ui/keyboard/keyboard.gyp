@@ -5,24 +5,14 @@
 {
   'variables': {
     'chromium_code': 1,
-    'keyboard_mojom_gen_js': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.js',
     'input_tools_root_dir': '../../third_party/google_input_tools/src/chrome/os',
     'inputview_gen_js': '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/resources/inputview.js',
   },
-  'targets': [
-    {
-      'target_name': 'keyboard_mojom_bindings',
-      'type': 'none',
-      'sources': [
-        'webui/keyboard.mojom',
-      ],
-      'includes': [ '../../third_party/mojo/mojom_bindings_generator.gypi' ],
-    },
+  'targets': [ 
     {
       # GN version: //ui/keyboard:resources
       'target_name': 'keyboard_resources',
       'dependencies': [
-        'keyboard_mojom_bindings',
         '../../third_party/google_input_tools/inputview.gyp:inputview',
        ],
       'type': 'none',
@@ -35,7 +25,6 @@
           'variables': {
             'grit_grd_file': 'keyboard_resources.grd',
             'grit_additional_defines': [
-              '-E', 'keyboard_mojom_gen_js=<(keyboard_mojom_gen_js)',
               '-E', 'input_tools_root_dir=<(input_tools_root_dir)',
               '-E', 'inputview_gen_js=<(inputview_gen_js)',
             ],
@@ -62,11 +51,7 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../content/content.gyp:content_browser',
         '../../ipc/ipc.gyp:ipc',
-        '../../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../../skia/skia.gyp:skia',
-        '../../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../../third_party/mojo/mojo_public.gyp:mojo_js_bindings',
         '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',
         '../base/ime/ui_base_ime.gyp:ui_base_ime',
@@ -77,14 +62,12 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../wm/wm.gyp:wm',
-        'keyboard_mojom_bindings',
         'keyboard_resources',
       ],
       'defines': [
         'KEYBOARD_IMPLEMENTATION',
       ],
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/webui/keyboard.mojom.cc',
         'keyboard.cc',
         'keyboard.h',
         'keyboard_constants.cc',
@@ -101,10 +84,6 @@
         'keyboard_switches.h',
         'keyboard_util.cc',
         'keyboard_util.h',
-        'webui/vk_mojo_handler.cc',
-        'webui/vk_mojo_handler.h',
-        'webui/vk_webui_controller.cc',
-        'webui/vk_webui_controller.h',
       ]
     },
     {

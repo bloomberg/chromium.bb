@@ -51,8 +51,6 @@
       <include name="IDR_KEYBOARD_INPUTVIEW_ADAPTER" file="resources/inputview_adapter.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_INPUTVIEW_CSS" file="${input_tools_root_dir}/inputview/common.css" type="BINDATA" />
       <include name="IDR_KEYBOARD_INPUTVIEW_JS" file="${inputview_gen_js}" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_KEYBOARD_MOJO_JS" file="resources/keyboard_mojo.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_KEYBOARD_MOJO_GEN_JS" file="${keyboard_mojom_gen_js}" use_base_dir="false" type="BINDATA" />
       <include name="IDR_KEYBOARD_LOCALES_EN" file="resources/locales/en.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_LAYOUTS_101" file="${input_tools_root_dir}/inputview/layouts/101kbd_layout.js" type="BINDATA"/>
       <include name="IDR_KEYBOARD_LAYOUTS_COMPACT_QWERTY" file="${input_tools_root_dir}/inputview/layouts/compactkbd_qwerty_layout.js" type="BINDATA" />
