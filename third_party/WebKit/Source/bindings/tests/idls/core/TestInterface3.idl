@@ -45,6 +45,8 @@
     [Custom] setter Node (DOMString name, Node value);
     [Custom] deleter boolean (DOMString name);
 
+    void voidMethodDocument(Document document);
+
     [RuntimeEnabled=FeatureName] iterable<any>;
     [RuntimeEnabled=FeatureName, CallWith=ScriptState, RaisesException, ImplementedAs=iterableKeys] Iterator keys();
 };
