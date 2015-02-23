@@ -27,12 +27,12 @@
 #define ScriptRunner_h
 
 #include "core/fetch/ResourcePtr.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "platform/scheduler/CancellableTaskFactory.h"
-#include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -63,22 +63,18 @@ public:
 private:
     explicit ScriptRunner(Document*);
 
-    void executeScripts();
+    void timerFired(Timer<ScriptRunner>*);
 
     void addPendingAsyncScript(ScriptLoader*);
 
     void movePendingAsyncScript(ScriptRunner*, ScriptLoader*);
 
-    bool yieldForHighPriorityWork();
-
-    void postTaskIfOneIsNotAlreadyInFlight();
-
     RawPtrWillBeMember<Document> m_document;
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteInOrder;
+    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > m_scriptsToExecuteInOrder;
     // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteSoon;
+    WillBeHeapVector<RawPtrWillBeMember<ScriptLoader> > m_scriptsToExecuteSoon;
     WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader> > m_pendingAsyncScripts;
-    CancellableTaskFactory m_executeScriptsTaskFactory;
+    Timer<ScriptRunner> m_timer;
 };
 
 }
