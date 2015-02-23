@@ -43,14 +43,19 @@ void StyleInvalidator::invalidate(Document& document)
 void StyleInvalidator::scheduleInvalidation(PassRefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet, Element& element)
 {
     ASSERT(element.inActiveDocument());
-    ASSERT(element.styleChangeType() < SubtreeStyleChange);
-    InvalidationList& list = ensurePendingInvalidationList(element);
-    // If we're already going to invalidate the whole subtree we don't need to store any new sets.
-    if (!list.isEmpty() && list.last()->wholeSubtreeInvalid())
+    if (element.styleChangeType() >= SubtreeStyleChange)
         return;
-    // If this set would invalidate the whole subtree we can discard all existing sets.
-    if (invalidationSet->wholeSubtreeInvalid())
-        list.clear();
+    if (invalidationSet->wholeSubtreeInvalid()) {
+        element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+        clearInvalidation(element);
+        return;
+    }
+    if (invalidationSet->isEmpty()) {
+        element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+        return;
+    }
+
+    InvalidationList& list = ensurePendingInvalidationList(element);
     list.append(invalidationSet);
     element.setNeedsStyleInvalidation();
 }
@@ -87,22 +92,18 @@ StyleInvalidator::~StyleInvalidator()
 void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvalidationSet& invalidationSet)
 {
     ASSERT(!m_wholeSubtreeInvalid);
+    ASSERT(!invalidationSet.wholeSubtreeInvalid());
+    ASSERT(!invalidationSet.isEmpty());
     if (invalidationSet.treeBoundaryCrossing())
         m_treeBoundaryCrossing = true;
     if (invalidationSet.insertionPointCrossing())
         m_insertionPointCrossing = true;
-    if (invalidationSet.wholeSubtreeInvalid()) {
-        m_wholeSubtreeInvalid = true;
-        return;
-    }
     m_invalidationSets.append(&invalidationSet);
     m_invalidateCustomPseudo = invalidationSet.customPseudoInvalid();
 }
 
 ALWAYS_INLINE bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& element)
 {
-    ASSERT(!m_wholeSubtreeInvalid);
-
     if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom) {
         TRACE_STYLE_INVALIDATOR_INVALIDATION_IF_ENABLED(element, InvalidateCustomPseudo);
         return true;
@@ -172,7 +173,8 @@ bool StyleInvalidator::invalidate(Element& element, StyleInvalidator::RecursionD
         someChildrenNeedStyleRecalc = invalidateChildren(element, recursionData);
 
     if (thisElementNeedsStyleRecalc) {
-        element.setNeedsStyleRecalc(recursionData.wholeSubtreeInvalid() ? SubtreeStyleChange : LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
+        ASSERT(!recursionData.wholeSubtreeInvalid());
+        element.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
     } else if (recursionData.hasInvalidationSets() && someChildrenNeedStyleRecalc) {
         // Clone the LayoutStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
         if (LayoutObject* renderer = element.renderer()) {

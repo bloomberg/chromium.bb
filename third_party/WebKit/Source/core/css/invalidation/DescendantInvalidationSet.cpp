@@ -199,6 +199,7 @@ void DescendantInvalidationSet::setWholeSubtreeInvalid()
         return;
 
     m_allDescendantsMightBeInvalid = true;
+    m_customPseudoInvalid = false;
     m_treeBoundaryCrossing = false;
     m_insertionPointCrossing = false;
     m_classes = nullptr;

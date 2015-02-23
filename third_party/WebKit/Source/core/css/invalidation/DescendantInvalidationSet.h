@@ -76,7 +76,7 @@ public:
     void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
     bool customPseudoInvalid() const { return m_customPseudoInvalid; }
 
-    bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes; }
+    bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes && !m_customPseudoInvalid; }
 
     void trace(Visitor*);
 
