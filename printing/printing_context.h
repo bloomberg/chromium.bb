@@ -139,9 +139,6 @@ class PRINTING_EXPORT PrintingContext {
   // Printing context delegate.
   Delegate* delegate_;
 
-  // The dialog box has been dismissed.
-  volatile bool dialog_box_dismissed_;
-
   // Is a print job being done.
   volatile bool in_print_job_;
 

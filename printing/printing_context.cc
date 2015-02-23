@@ -20,7 +20,6 @@ const float kCloudPrintMarginInch = 0.25;
 
 PrintingContext::PrintingContext(Delegate* delegate)
     : delegate_(delegate),
-      dialog_box_dismissed_(false),
       in_print_job_(false),
       abort_printing_(false) {
   CHECK(delegate_);
@@ -40,7 +39,6 @@ void PrintingContext::ResetSettings() {
   settings_.Clear();
 
   in_print_job_ = false;
-  dialog_box_dismissed_ = false;
   abort_printing_ = false;
 }
 
