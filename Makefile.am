@@ -82,6 +82,7 @@ libdrm_la_LIBADD = @CLOCK_LIB@
 
 libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
 AM_CFLAGS = \
+	$(WARN_CFLAGS) \
 	$(VALGRIND_CFLAGS)
 
 libdrm_la_SOURCES = $(LIBDRM_FILES)

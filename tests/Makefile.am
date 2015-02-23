@@ -1,6 +1,7 @@
 NULL:=#
 
-AM_CPPFLAGS = \
+AM_CFLAGS = \
+	$(WARN_CFLAGS)\
 	-I $(top_srcdir)/include/drm \
 	-I $(top_srcdir)
 
