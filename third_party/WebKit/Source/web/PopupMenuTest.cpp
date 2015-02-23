@@ -125,7 +125,7 @@ public:
     virtual bool itemIsSelected(unsigned listIndex) const { return listIndex == m_selectIndex; }
     virtual bool valueShouldChangeOnHotTrack() const { return false; }
     virtual void setTextFromItem(unsigned listIndex) { }
-    virtual IntRect elementRectRelativeToRootView() const override { return IntRect(); }
+    virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *toElement(m_node); }
     virtual LayoutStyle* layoutStyleForItem(Element& element) const override { return nullptr; }
 

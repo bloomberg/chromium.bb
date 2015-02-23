@@ -92,7 +92,7 @@ private:
         m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
     }
 
-    virtual IntRect rootViewToScreen(const IntRect& rect) const override
+    virtual IntRect viewportToScreen(const IntRect& rect) const override
     {
         IntRect rectInScreen(rect);
         rectInScreen.move(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y);
@@ -212,7 +212,7 @@ WebPagePopupImpl::~WebPagePopupImpl()
     ASSERT(!m_page);
 }
 
-bool WebPagePopupImpl::initialize(WebViewImpl* webView, PagePopupClient* popupClient, const IntRect&)
+bool WebPagePopupImpl::initialize(WebViewImpl* webView, PagePopupClient* popupClient)
 {
     ASSERT(webView);
     ASSERT(popupClient);

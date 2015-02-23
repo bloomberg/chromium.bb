@@ -110,7 +110,7 @@ bool ExternalDateTimeChooser::openDateTimeChooser(ChromeClientImpl* chromeClient
 
     WebDateTimeChooserParams webParams;
     webParams.type = toWebDateTimeInputType(parameters.type);
-    webParams.anchorRectInScreen = chromeClient->rootViewToScreen(parameters.anchorRectInRootView);
+    webParams.anchorRectInScreen = parameters.anchorRectInScreen;
     webParams.currentValue = parameters.currentValue;
     webParams.doubleValue = parameters.doubleValue;
     webParams.suggestions = parameters.suggestions;

@@ -63,7 +63,7 @@ public:
     virtual bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
     virtual void setTextFromItem(unsigned listIndex) override { }
     virtual bool multiple() const override { return false; }
-    virtual IntRect elementRectRelativeToRootView() const override { return IntRect(); }
+    virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *m_ownerElement; }
     virtual const LayoutStyle* layoutStyleForItem(Element& element) const override { return nullptr; }
 

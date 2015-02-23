@@ -110,7 +110,7 @@ protected:
     virtual FloatPoint translatePoint(const FloatPoint& point)
     {
         FloatPoint rendererPoint = m_shapeOutsideInfo.shapeToRendererPoint(point);
-        return m_view.contentsToRootView(roundedIntPoint(m_renderer.localToAbsolute(rendererPoint)));
+        return m_view.contentsToRootFrame(roundedIntPoint(m_renderer.localToAbsolute(rendererPoint)));
     }
 
 private:
@@ -236,12 +236,12 @@ private:
     RefPtr<JSONArray> m_highlightPaths;
 };
 
-static void contentsQuadToScreen(const FrameView* view, FloatQuad& quad)
+static void contentsQuadToRootFrame(const FrameView* view, FloatQuad& quad)
 {
-    quad.setP1(view->contentsToRootView(roundedIntPoint(quad.p1())));
-    quad.setP2(view->contentsToRootView(roundedIntPoint(quad.p2())));
-    quad.setP3(view->contentsToRootView(roundedIntPoint(quad.p3())));
-    quad.setP4(view->contentsToRootView(roundedIntPoint(quad.p4())));
+    quad.setP1(view->contentsToRootFrame(roundedIntPoint(quad.p1())));
+    quad.setP2(view->contentsToRootFrame(roundedIntPoint(quad.p2())));
+    quad.setP3(view->contentsToRootFrame(roundedIntPoint(quad.p3())));
+    quad.setP4(view->contentsToRootFrame(roundedIntPoint(quad.p4())));
 }
 
 static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
@@ -294,10 +294,10 @@ static bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad
     *border = renderer->localToAbsoluteQuad(FloatRect(borderBox));
     *margin = renderer->localToAbsoluteQuad(FloatRect(marginBox));
 
-    contentsQuadToScreen(containingView, *content);
-    contentsQuadToScreen(containingView, *padding);
-    contentsQuadToScreen(containingView, *border);
-    contentsQuadToScreen(containingView, *margin);
+    contentsQuadToRootFrame(containingView, *content);
+    contentsQuadToRootFrame(containingView, *padding);
+    contentsQuadToRootFrame(containingView, *border);
+    contentsQuadToRootFrame(containingView, *margin);
 
     return true;
 }
@@ -317,7 +317,7 @@ static void buildNodeHighlight(Node& node, const HighlightConfig& highlightConfi
         FrameView* containingView = renderer->frameView();
         for (size_t i = 0; i < quads.size(); ++i) {
             if (containingView)
-                contentsQuadToScreen(containingView, quads[i]);
+                contentsQuadToRootFrame(containingView, quads[i]);
             highlight->appendQuad(quads[i], highlightConfig.content, highlightConfig.contentOutline);
         }
         return;
@@ -604,7 +604,7 @@ static const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::Displa
 
     LayoutRect shapeBounds = shapeOutsideInfo->computedShapePhysicalBoundingBox();
     *bounds = renderBox->localToAbsoluteQuad(FloatRect(shapeBounds));
-    contentsQuadToScreen(containingView, *bounds);
+    contentsQuadToRootFrame(containingView, *bounds);
 
     return shapeOutsideInfo;
 }
@@ -829,7 +829,7 @@ bool InspectorOverlay::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel
     if (!buildNodeQuads(node->renderer(), &content, &padding, &border, &margin))
         return false;
 
-    IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
+    IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootFrame(renderer->absoluteBoundingBoxRect()));
     LayoutBoxModelObject* modelObject = renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
 
     model = TypeBuilder::DOM::BoxModel::create()

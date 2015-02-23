@@ -236,9 +236,9 @@ Element& ColorInputType::ownerElement() const
     return element();
 }
 
-IntRect ColorInputType::elementRectRelativeToRootView() const
+IntRect ColorInputType::elementRectRelativeToViewport() const
 {
-    return element().document().view()->contentsToRootView(element().pixelSnappedBoundingBox());
+    return element().document().view()->contentsToWindow(element().pixelSnappedBoundingBox());
 }
 
 Color ColorInputType::currentColor()

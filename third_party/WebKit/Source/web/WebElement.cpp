@@ -146,7 +146,7 @@ void WebElement::requestFullScreen()
 
 WebRect WebElement::boundsInViewportSpace()
 {
-    return unwrap<Element>()->boundsInRootViewSpace();
+    return unwrap<Element>()->boundsInViewportSpace();
 }
 
 WebImage WebElement::imageContents()

@@ -243,6 +243,7 @@ public:
     bool scrollToFragment(const KURL&);
     bool scrollToAnchor(const String&);
     void maintainScrollPositionAtAnchor(Node*);
+
     void scrollElementToRect(Element*, const IntRect&);
     void scrollContentsIfNeededRecursive();
 
@@ -466,10 +467,10 @@ public:
 
     bool drawPanScrollIcon() { return m_shouldDrawPanScrollIcon; }
 
-    IntPoint rootViewToContents(const IntPoint&) const;
-    IntPoint contentsToRootView(const IntPoint&) const;
-    IntRect rootViewToContents(const IntRect&) const;
-    IntRect contentsToRootView(const IntRect&) const;
+    IntPoint rootFrameToContents(const IntPoint&) const;
+    IntRect rootFrameToContents(const IntRect&) const;
+    IntPoint contentsToRootFrame(const IntPoint&) const;
+    IntRect contentsToRootFrame(const IntRect&) const;
 
     // Event coordinates are assumed to be in the coordinate space of a window that contains
     // the entire widget hierarchy. It is up to the platform to decide what the precise definition
@@ -479,6 +480,16 @@ public:
     IntPoint contentsToWindow(const IntPoint&) const;
     IntRect windowToContents(const IntRect&) const;
     IntRect contentsToWindow(const IntRect&) const;
+
+    // Methods for converting between Frame and Content (i.e. Document) coordinates.
+    // Frame coordinates are relative to the top left corner of the frame and so
+    // they are affected by scroll offset. Content coordinates are relative to the
+    // document's top left corner and thus are not affected by scroll offset.
+    IntPoint contentsToFrame(const IntPoint&) const;
+    IntRect contentsToFrame(const IntRect&) const;
+    IntPoint frameToContents(const IntPoint&) const;
+    FloatPoint frameToContents(const FloatPoint&) const;
+    IntRect frameToContents(const IntRect&) const;
 
     // Functions for converting to screen coordinates.
     IntRect contentsToScreen(const IntRect&) const;
@@ -491,14 +502,14 @@ public:
     void windowResizerRectChanged();
 
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
-    Scrollbar* scrollbarAtWindowPoint(const IntPoint& windowPoint);
-    Scrollbar* scrollbarAtViewPoint(const IntPoint& viewPoint);
+    Scrollbar* scrollbarAtWindowPoint(const IntPoint&);
+    Scrollbar* scrollbarAtFramePoint(const IntPoint&);
 
     virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const override
     {
         IntPoint newPoint = point;
         if (!isFrameViewScrollbar(child))
-            newPoint = point - scrollOffset();
+            newPoint = contentsToFrame(point);
         newPoint.moveBy(child->location());
         return newPoint;
     }
@@ -507,7 +518,7 @@ public:
     {
         IntPoint newPoint = point;
         if (!isFrameViewScrollbar(child))
-            newPoint = point + scrollOffset();
+            newPoint = frameToContents(point);
         newPoint.moveBy(-child->location());
         return newPoint;
     }
@@ -751,6 +762,8 @@ private:
     double m_lastPaintTime;
 
     bool m_isTrackingPaintInvalidations; // Used for testing.
+
+    // In frame coordinates.
     Vector<IntRect> m_trackedPaintInvalidationRects;
 
     RefPtrWillBeMember<Node> m_nodeToDraw;

@@ -110,7 +110,7 @@ public:
     // HostWindow methods:
     virtual void invalidateRect(const IntRect&) override final;
     virtual void scheduleAnimation() override final;
-    virtual IntRect rootViewToScreen(const IntRect&) const override final;
+    virtual IntRect viewportToScreen(const IntRect&) const override final;
     virtual WebScreenInfo screenInfo() const override final;
 
     // PopupContainerClient methods:

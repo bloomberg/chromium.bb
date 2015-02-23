@@ -378,9 +378,9 @@ bool RenderMenuList::multiple() const
     return selectElement()->multiple();
 }
 
-IntRect RenderMenuList::elementRectRelativeToRootView() const
+IntRect RenderMenuList::elementRectRelativeToViewport() const
 {
-    return selectElement()->document().view()->contentsToRootView(pixelSnappedIntRect(absoluteBoundingBoxRect()));
+    return selectElement()->document().view()->contentsToWindow(pixelSnappedIntRect(absoluteBoundingBoxRect()));
 }
 
 Element& RenderMenuList::ownerElement() const

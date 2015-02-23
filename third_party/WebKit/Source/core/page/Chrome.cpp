@@ -69,9 +69,9 @@ void Chrome::invalidateRect(const IntRect& updateRect)
     m_client->invalidateRect(updateRect);
 }
 
-IntRect Chrome::rootViewToScreen(const IntRect& rect) const
+IntRect Chrome::viewportToScreen(const IntRect& rect) const
 {
-    return m_client->rootViewToScreen(rect);
+    return m_client->viewportToScreen(rect);
 }
 
 blink::WebScreenInfo Chrome::screenInfo() const

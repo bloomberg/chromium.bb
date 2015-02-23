@@ -2228,10 +2228,10 @@ unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
     return context->hitRegionsCount();
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Internals::boundsInRootViewSpace(Element* element)
+PassRefPtrWillBeRawPtr<ClientRect> Internals::boundsInViewportSpace(Element* element)
 {
     ASSERT(element);
-    return ClientRect::create(element->boundsInRootViewSpace());
+    return ClientRect::create(element->boundsInViewportSpace());
 }
 
 String Internals::serializeNavigationMarkup()

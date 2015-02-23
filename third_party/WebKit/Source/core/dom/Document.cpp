@@ -5526,7 +5526,7 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
                 transitionElement.id = element->getIdAttribute().string();
             else
                 transitionElement.id = "";
-            transitionElement.rect = element->boundsInRootViewSpace();
+            transitionElement.rect = element->boundsInViewportSpace();
             newElements.elements.append(transitionElement);
         }
 

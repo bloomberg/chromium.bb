@@ -397,7 +397,7 @@ void WebPopupMenuImpl::scheduleAnimation()
 {
 }
 
-IntRect WebPopupMenuImpl::rootViewToScreen(const IntRect& rect) const
+IntRect WebPopupMenuImpl::viewportToScreen(const IntRect& rect) const
 {
     notImplemented();
     return IntRect();

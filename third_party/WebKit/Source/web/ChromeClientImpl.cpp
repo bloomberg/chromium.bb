@@ -498,9 +498,9 @@ void ChromeClientImpl::scheduleAnimationForFrame(LocalFrame* localRoot)
         WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->scheduleAnimation();
 }
 
-IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const
+IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport) const
 {
-    IntRect screenRect(rect);
+    IntRect screenRect(rectInViewport);
 
     if (m_webView->client()) {
         WebRect windowRect = m_webView->client()->windowRect();
@@ -755,9 +755,9 @@ PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& 
     return adoptRefWillBeNoop(new PopupMenuChromium(frame, client));
 }
 
-PagePopup* ChromeClientImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)
+PagePopup* ChromeClientImpl::openPagePopup(PagePopupClient* client)
 {
-    return m_webView->openPagePopup(client, originBoundsInRootView);
+    return m_webView->openPagePopup(client);
 }
 
 void ChromeClientImpl::closePagePopup(PagePopup* popup)

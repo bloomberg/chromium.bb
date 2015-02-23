@@ -498,10 +498,10 @@ static void localToPageQuad(const LayoutObject& renderer, const LayoutRect& rect
     LocalFrame* frame = renderer.frame();
     FrameView* view = frame->view();
     FloatQuad absolute = renderer.localToAbsoluteQuad(FloatQuad(rect));
-    quad->setP1(view->contentsToRootView(roundedIntPoint(absolute.p1())));
-    quad->setP2(view->contentsToRootView(roundedIntPoint(absolute.p2())));
-    quad->setP3(view->contentsToRootView(roundedIntPoint(absolute.p3())));
-    quad->setP4(view->contentsToRootView(roundedIntPoint(absolute.p4())));
+    quad->setP1(view->contentsToRootFrame(roundedIntPoint(absolute.p1())));
+    quad->setP2(view->contentsToRootFrame(roundedIntPoint(absolute.p2())));
+    quad->setP3(view->contentsToRootFrame(roundedIntPoint(absolute.p3())));
+    quad->setP4(view->contentsToRootFrame(roundedIntPoint(absolute.p4())));
 }
 
 const char InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated[] = "Squashing layer geometry was updated";

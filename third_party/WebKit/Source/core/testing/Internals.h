@@ -324,7 +324,7 @@ public:
     // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
     void setNetworkConnectionInfo(const String&, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRect> boundsInRootViewSpace(Element*);
+    PassRefPtrWillBeRawPtr<ClientRect> boundsInViewportSpace(Element*);
     String serializeNavigationMarkup();
     Vector<String> getTransitionElementIds();
     PassRefPtrWillBeRawPtr<ClientRectList> getTransitionElementRects();

@@ -1326,7 +1326,7 @@ TEST_F(PinchViewportTest, ResizePinchViewportStaysWithinOuterViewport)
     EXPECT_EQ(0, pinchViewport.location().y());
 }
 
-TEST_F(PinchViewportTest, ElementBoundsInRootViewSpaceAccountsForViewport)
+TEST_F(PinchViewportTest, ElementBoundsInViewportSpaceAccountsForViewport)
 {
     initializeWithAndroidSettings();
 
@@ -1345,7 +1345,7 @@ TEST_F(PinchViewportTest, ElementBoundsInRootViewSpaceAccountsForViewport)
     pinchViewport.setScale(2);
     pinchViewport.setLocation(scrollDelta);
 
-    IntRect boundsInViewport = inputElement->boundsInRootViewSpace();
+    IntRect boundsInViewport = inputElement->boundsInViewportSpace();
 
     EXPECT_POINT_EQ(IntPoint(bounds.location() - scrollDelta),
         boundsInViewport.location());

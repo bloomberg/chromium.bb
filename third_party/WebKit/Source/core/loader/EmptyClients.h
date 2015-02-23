@@ -127,7 +127,7 @@ public:
     virtual void invalidateRect(const IntRect&) override { }
     virtual void scheduleAnimation() override { }
 
-    virtual IntRect rootViewToScreen(const IntRect& r) const override { return r; }
+    virtual IntRect viewportToScreen(const IntRect& r) const override { return r; }
     virtual blink::WebScreenInfo screenInfo() const override { return blink::WebScreenInfo(); }
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override { }
 

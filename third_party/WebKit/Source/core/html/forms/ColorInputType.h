@@ -49,7 +49,7 @@ public:
     void didChooseColor(const Color&) override;
     void didEndChooser() override;
     Element& ownerElement() const override;
-    IntRect elementRectRelativeToRootView() const override;
+    IntRect elementRectRelativeToViewport() const override;
     Color currentColor() override;
     bool shouldShowSuggestions() const override;
     Vector<ColorSuggestion> suggestions() const override;

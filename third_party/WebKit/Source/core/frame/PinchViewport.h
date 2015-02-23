@@ -94,6 +94,9 @@ public:
     void setSize(const IntSize&);
     IntSize size() const { return m_size; }
 
+    // Gets the scaled size, i.e. the viewport in root view space.
+    FloatSize visibleSize() const;
+
     // Resets the viewport to initial state.
     void reset();
 

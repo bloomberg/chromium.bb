@@ -81,7 +81,7 @@ IntSize PopupMenuImpl::contentSize()
 
 void PopupMenuImpl::writeDocument(SharedBuffer* data)
 {
-    IntRect anchorRectInScreen = m_chromeClient->rootViewToScreen(m_client->elementRectRelativeToRootView());
+    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_client->elementRectRelativeToViewport());
 
     PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.css"));
@@ -268,7 +268,7 @@ void PopupMenuImpl::dispose()
 void PopupMenuImpl::show(const FloatQuad& /*controlPosition*/, const IntSize& /*controlSize*/, int /*index*/)
 {
     ASSERT(!m_popup);
-    m_popup = m_chromeClient->openPagePopup(this, m_client->elementRectRelativeToRootView());
+    m_popup = m_chromeClient->openPagePopup(this);
 }
 
 void PopupMenuImpl::hide()

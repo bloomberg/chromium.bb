@@ -133,7 +133,7 @@ public:
 
     // Methods used by HostWindow.
     virtual void invalidateRect(const IntRect&) = 0;
-    virtual IntRect rootViewToScreen(const IntRect&) const = 0;
+    virtual IntRect viewportToScreen(const IntRect&) const = 0;
     virtual blink::WebScreenInfo screenInfo() const = 0;
     virtual void setCursor(const Cursor&) = 0;
     virtual void scheduleAnimation() = 0;

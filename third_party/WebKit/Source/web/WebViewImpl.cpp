@@ -1589,7 +1589,7 @@ void WebViewImpl::popupClosed(PopupContainer* popupContainer)
         registry->didRemoveEventHandler(document, EventHandlerRegistry::WheelEvent);
 }
 
-PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)
+PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client)
 {
     ASSERT(client);
     if (hasOpenedPopup())
@@ -1599,7 +1599,7 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& or
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypePage);
     ASSERT(popupWidget);
     m_pagePopup = toWebPagePopupImpl(popupWidget);
-    if (!m_pagePopup->initialize(this, client, originBoundsInRootView)) {
+    if (!m_pagePopup->initialize(this, client)) {
         m_pagePopup->closePopup();
         m_pagePopup = nullptr;
     }

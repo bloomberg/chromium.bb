@@ -874,7 +874,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
             FrameView* frameView = m_frame->view();
             FrameView* mainView = mainFrame->view();
             if (frameView && mainView) {
-                IntPoint mainFramePoint = mainView->rootViewToContents(frameView->contentsToRootView(roundedIntPoint(point)));
+                IntPoint mainFramePoint = mainView->rootFrameToContents(frameView->contentsToRootFrame(roundedIntPoint(point)));
                 return mainFrame->eventHandler().hitTestResultAtPoint(mainFramePoint, hitType, padding);
             }
         }
@@ -2833,7 +2833,7 @@ bool EventHandler::sendContextMenuEventForKey()
 #else
     int rightAligned = 0;
 #endif
-    IntPoint rootViewLocation;
+    IntPoint locationInViewport;
     Element* focusedElement = doc->focusedElement();
     FrameSelection& selection = m_frame->selection();
     Position start = selection.selection().start();
@@ -2845,25 +2845,26 @@ bool EventHandler::sendContextMenuEventForKey()
         int x = rightAligned ? firstRect.maxX() : firstRect.x();
         // In a multiline edit, firstRect.maxY() would endup on the next line, so -1.
         int y = firstRect.maxY() ? firstRect.maxY() - 1 : 0;
-        rootViewLocation = view->contentsToRootView(IntPoint(x, y));
+        locationInViewport = view->contentsToWindow(IntPoint(x, y));
     } else if (focusedElement) {
-        IntRect clippedRect = focusedElement->boundsInRootViewSpace();
-        rootViewLocation = IntPoint(clippedRect.center());
+        IntRect clippedRect = focusedElement->boundsInViewportSpace();
+        locationInViewport = IntPoint(clippedRect.center());
     } else {
-        rootViewLocation = IntPoint(
+        // FIXME - Almost certainly wrong, this is not in viewport space. crbug.com/458682.
+        locationInViewport = IntPoint(
             rightAligned ? view->contentsWidth() - kContextMenuMargin : kContextMenuMargin,
             kContextMenuMargin);
     }
 
     m_frame->view()->setCursor(pointerCursor());
-    IntPoint globalPosition = view->hostWindow()->rootViewToScreen(IntRect(rootViewLocation, IntSize())).location();
+    IntPoint globalPosition = view->hostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize())).location();
 
     Node* targetNode = doc->focusedElement();
     if (!targetNode)
         targetNode = doc;
 
     // Use the focused node as the target for hover and active.
-    HitTestResult result(rootViewLocation);
+    HitTestResult result(locationInViewport);
     result.setInnerNode(targetNode);
     doc->updateHoverActiveState(HitTestRequest::Active, result.innerElement());
 
@@ -2873,7 +2874,7 @@ bool EventHandler::sendContextMenuEventForKey()
     if (m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
 
-    PlatformMouseEvent mouseEvent(rootViewLocation, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
+    PlatformMouseEvent mouseEvent(locationInViewport, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
 
     handleMousePressEvent(mouseEvent);
     return sendContextMenuEvent(mouseEvent);

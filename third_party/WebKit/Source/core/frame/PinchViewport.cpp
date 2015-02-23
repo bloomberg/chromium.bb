@@ -115,12 +115,17 @@ void PinchViewport::mainFrameDidChangeSize()
     clampToBoundaries();
 }
 
-FloatRect PinchViewport::visibleRect() const
+FloatSize PinchViewport::visibleSize() const
 {
     FloatSize scaledSize(m_size);
     scaledSize.expand(0, m_topControlsAdjustment);
     scaledSize.scale(1 / m_scale);
-    return FloatRect(m_offset, scaledSize);
+    return scaledSize;
+}
+
+FloatRect PinchViewport::visibleRect() const
+{
+    return FloatRect(location(), visibleSize());
 }
 
 FloatRect PinchViewport::visibleRectInDocument() const

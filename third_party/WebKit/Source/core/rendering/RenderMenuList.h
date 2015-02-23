@@ -96,7 +96,7 @@ private:
     virtual void setTextFromItem(unsigned listIndex) override;
     virtual void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) override;
     virtual bool multiple() const override;
-    virtual IntRect elementRectRelativeToRootView() const override;
+    virtual IntRect elementRectRelativeToViewport() const override;
     virtual Element& ownerElement() const override;
     virtual const LayoutStyle* layoutStyleForItem(Element&) const override;
 

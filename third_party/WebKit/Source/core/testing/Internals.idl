@@ -283,7 +283,7 @@
     // This function is for testing HitRegions on Canvas2D.
     unsigned long countHitRegions(CanvasRenderingContext2D context);
 
-    [TypeChecking=Interface] ClientRect boundsInRootViewSpace(Element element);
+    [TypeChecking=Interface] ClientRect boundsInViewportSpace(Element element);
     DOMString serializeNavigationMarkup();
     DOMString[] getTransitionElementIds();
     ClientRectList getTransitionElementRects();

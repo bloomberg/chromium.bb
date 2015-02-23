@@ -61,7 +61,7 @@ public:
 
     // HostWindow methods.
     virtual void invalidateRect(const IntRect&) override;
-    virtual IntRect rootViewToScreen(const IntRect&) const override;
+    virtual IntRect viewportToScreen(const IntRect&) const override;
     virtual blink::WebScreenInfo screenInfo() const override;
 
     virtual void scheduleAnimation() override;

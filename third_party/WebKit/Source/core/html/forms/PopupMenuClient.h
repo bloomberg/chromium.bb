@@ -54,7 +54,7 @@ public:
     virtual bool itemIsLabel(unsigned listIndex) const = 0;
     virtual bool itemIsSelected(unsigned listIndex) const = 0;
     virtual void setTextFromItem(unsigned listIndex) = 0;
-    virtual IntRect elementRectRelativeToRootView() const = 0;
+    virtual IntRect elementRectRelativeToViewport() const = 0;
     virtual Element& ownerElement() const = 0;
     virtual const LayoutStyle* layoutStyleForItem(Element&) const = 0;
 

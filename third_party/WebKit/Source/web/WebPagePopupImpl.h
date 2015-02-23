@@ -59,7 +59,7 @@ class WebPagePopupImpl final
 
 public:
     virtual ~WebPagePopupImpl();
-    bool initialize(WebViewImpl*, PagePopupClient*, const IntRect& originBoundsInRootView);
+    bool initialize(WebViewImpl*, PagePopupClient*);
     bool handleKeyEvent(const PlatformKeyboardEvent&);
     void closePopup();
     WebWidgetClient* widgetClient() const { return m_widgetClient; }

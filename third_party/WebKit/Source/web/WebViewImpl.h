@@ -423,7 +423,7 @@ public:
     // Notification that a popup was opened/closed.
     void popupOpened(PopupContainer*);
     void popupClosed(PopupContainer*);
-    PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView);
+    PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     LocalDOMWindow* pagePopupWindow() const;
 

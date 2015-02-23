@@ -26,7 +26,7 @@
       debug('This test requires window.internals API to be available.');
     }
 
-    window.rect = window.internals.boundsInRootViewSpace(box);
+    window.rect = window.internals.boundsInViewportSpace(box);
     window.computedLeft = Math.floor((300 - rect.width) / 2);
     window.computedTop = Math.floor((300 - rect.height) / 2);
     shouldBe('rect.left', 'computedLeft');

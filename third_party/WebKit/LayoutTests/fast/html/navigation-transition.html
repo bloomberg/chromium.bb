@@ -47,8 +47,8 @@ window.onload = function() {
         shouldBeEqualToString('transitionElementIds[1]', 'boxTransitionElement');
 
         transitionElementRects = internals.getTransitionElementRects();
-        transitionElementBounds = internals.boundsInRootViewSpace(transitionElement);
-        boxTransitionElementBounds = internals.boundsInRootViewSpace(sourceElement);
+        transitionElementBounds = internals.boundsInViewportSpace(transitionElement);
+        boxTransitionElementBounds = internals.boundsInViewportSpace(sourceElement);
         shouldBeTrue('transitionElementRects[0].left == transitionElementBounds.left');
         shouldBeTrue('transitionElementRects[0].top == transitionElementBounds.top');
         shouldBeTrue('transitionElementRects[0].width == transitionElementBounds.width');

@@ -112,7 +112,7 @@ public:
     virtual void invalidateRect(const IntRect&) override;
     virtual void scheduleAnimation() override;
     virtual void scheduleAnimationForFrame(LocalFrame* localRoot) override;
-    virtual IntRect rootViewToScreen(const IntRect&) const override;
+    virtual IntRect viewportToScreen(const IntRect&) const override;
     virtual WebScreenInfo screenInfo() const override;
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
     virtual void pageScaleFactorChanged() const override;
@@ -153,7 +153,7 @@ public:
 
     virtual bool hasOpenedPopup() const override;
     virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
-    PagePopup* openPagePopup(PagePopupClient*, const IntRect&);
+    PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     virtual DOMWindow* pagePopupWindowForTesting() const override;
 

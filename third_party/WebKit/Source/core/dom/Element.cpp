@@ -861,7 +861,7 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), scrollBehavior);
 }
 
-IntRect Element::boundsInRootViewSpace()
+IntRect Element::boundsInViewportSpace()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -889,7 +889,7 @@ IntRect Element::boundsInRootViewSpace()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].enclosingBoundingBox());
 
-    result = view->contentsToRootView(result);
+    result = view->contentsToWindow(result);
 
     // FIXME: Cleanup pinch viewport coordinate translations. crbug.com/371902.
     PinchViewport& pinchViewport = document().page()->frameHost().pinchViewport();

@@ -55,7 +55,7 @@ DateTimeChooserImpl::DateTimeChooserImpl(ChromeClientImpl* chromeClient, DateTim
 {
     ASSERT(m_chromeClient);
     ASSERT(m_client);
-    m_popup = m_chromeClient->openPagePopup(this, m_parameters.anchorRectInRootView);
+    m_popup = m_chromeClient->openPagePopup(this);
 }
 
 PassRefPtr<DateTimeChooserImpl> DateTimeChooserImpl::create(ChromeClientImpl* chromeClient, DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
@@ -106,7 +106,6 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
 {
     String stepString = String::number(m_parameters.step);
     String stepBaseString = String::number(m_parameters.stepBase, 11, WTF::TruncateTrailingZeros);
-    IntRect anchorRectInScreen = m_chromeClient->rootViewToScreen(m_parameters.anchorRectInRootView);
     String todayLabelString;
     String otherDateLabelString;
     if (m_parameters.type == InputTypeNames::month) {
@@ -127,7 +126,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     data->append(Platform::current()->loadResource("calendarPicker.css"));
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
-    addProperty("anchorRectInScreen", anchorRectInScreen, data);
+    addProperty("anchorRectInScreen", m_parameters.anchorRectInScreen, data);
     addProperty("min", valueToDateTimeString(m_parameters.minimum, m_parameters.type), data);
     addProperty("max", valueToDateTimeString(m_parameters.maximum, m_parameters.type), data);
     addProperty("step", stepString, data);
@@ -159,7 +158,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
         addProperty("suggestionValues", suggestionValues, data);
         addProperty("localizedSuggestionValues", localizedSuggestionValues, data);
         addProperty("suggestionLabels", suggestionLabels, data);
-        addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootView.width()), data);
+        addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootFrame.width()), data);
         addProperty("showOtherDateEntry", LayoutTheme::theme().supportsCalendarPicker(m_parameters.type), data);
         addProperty("otherDateLabel", otherDateLabelString, data);
         addProperty("suggestionHighlightColor", LayoutTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), data);

@@ -194,7 +194,7 @@ public:
     void scroll(double x, double y) { scrollTo(x, y); }
     void scroll(const ScrollToOptions& scrollToOptions) { scrollTo(scrollToOptions); }
 
-    IntRect boundsInRootViewSpace();
+    IntRect boundsInViewportSpace();
 
     PassRefPtrWillBeRawPtr<ClientRectList> getClientRects();
     PassRefPtrWillBeRawPtr<ClientRect> getBoundingClientRect();

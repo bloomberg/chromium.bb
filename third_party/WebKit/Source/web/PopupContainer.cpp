@@ -206,7 +206,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     float pageScaleFactor = m_frameView->frame().page()->pageScaleFactor();
     int popupX = round((popupInitialCoordinate.x() + rightOffset) * pageScaleFactor);
     int popupY = round((popupInitialCoordinate.y() + verticalForRTLOffset) * pageScaleFactor);
-    widgetRectInScreen = chromeClient().rootViewToScreen(IntRect(popupX, popupY, targetSize.width(), targetSize.height()));
+    widgetRectInScreen = chromeClient().viewportToScreen(IntRect(popupX, popupY, targetSize.width(), targetSize.height()));
 
     // If we have multiple screens and the browser rect is in one screen, we
     // have to clip the window width to the screen width.

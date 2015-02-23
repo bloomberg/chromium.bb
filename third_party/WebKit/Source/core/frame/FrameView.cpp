@@ -1743,21 +1743,19 @@ HostWindow* FrameView::hostWindow() const
     return &page->chrome();
 }
 
-void FrameView::contentRectangleForPaintInvalidation(const IntRect& rect)
+void FrameView::contentRectangleForPaintInvalidation(const IntRect& rectInContent)
 {
     ASSERT(!m_frame->ownerRenderer());
 
     if (m_isTrackingPaintInvalidations) {
-        IntRect paintInvalidationRect = rect;
-        paintInvalidationRect.move(-scrollOffset());
-        m_trackedPaintInvalidationRects.append(paintInvalidationRect);
+        m_trackedPaintInvalidationRects.append(contentsToFrame(rectInContent));
         // FIXME: http://crbug.com/368518. Eventually, invalidateContentRectangleForPaint
         // is going away entirely once all layout tests are FCM. In the short
         // term, no code should be tracking non-composited FrameView paint invalidations.
         RELEASE_ASSERT_NOT_REACHED();
     }
 
-    IntRect paintRect = rect;
+    IntRect paintRect = rectInContent;
     if (clipsPaintInvalidations())
         paintRect.intersect(visibleContentRect());
     if (paintRect.isEmpty())
@@ -2759,17 +2757,17 @@ IntRect FrameView::convertFromRenderer(const LayoutObject& renderer, const IntRe
     return rect;
 }
 
-IntRect FrameView::convertToRenderer(const LayoutObject& renderer, const IntRect& viewRect) const
+IntRect FrameView::convertToRenderer(const LayoutObject& renderer, const IntRect& frameRect) const
 {
-    IntRect rect = viewRect;
+    IntRect rectInContent = frameToContents(frameRect);
 
     // Convert from FrameView coords into page ("absolute") coordinates.
-    rect.moveBy(scrollPosition());
+    rectInContent.moveBy(scrollPosition());
 
     // FIXME: we don't have a way to map an absolute rect down to a local quad, so just
     // move the rect for now.
-    rect.setLocation(roundedIntPoint(renderer.absoluteToLocal(rect.location(), UseTransforms)));
-    return rect;
+    rectInContent.setLocation(roundedIntPoint(renderer.absoluteToLocal(rectInContent.location(), UseTransforms)));
+    return rectInContent;
 }
 
 IntPoint FrameView::convertFromRenderer(const LayoutObject& renderer, const IntPoint& rendererPoint) const
@@ -2781,9 +2779,9 @@ IntPoint FrameView::convertFromRenderer(const LayoutObject& renderer, const IntP
     return point;
 }
 
-IntPoint FrameView::convertToRenderer(const LayoutObject& renderer, const IntPoint& viewPoint) const
+IntPoint FrameView::convertToRenderer(const LayoutObject& renderer, const IntPoint& framePoint) const
 {
-    IntPoint point = viewPoint;
+    IntPoint point = framePoint;
 
     // Convert from FrameView coords into page ("absolute") coordinates.
     point += IntSize(scrollX(), scrollY());
@@ -3628,62 +3626,82 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
     frameRectsChanged();
 }
 
-IntPoint FrameView::rootViewToContents(const IntPoint& rootViewPoint) const
+IntPoint FrameView::contentsToFrame(const IntPoint& pointInContentSpace) const
 {
-    IntPoint viewPoint = convertFromContainingWindow(rootViewPoint);
-    return viewPoint + scrollOffset();
+    return pointInContentSpace - scrollOffset();
 }
 
-IntPoint FrameView::contentsToRootView(const IntPoint& contentsPoint) const
+IntRect FrameView::contentsToFrame(const IntRect& rectInContentSpace) const
 {
-    IntPoint viewPoint = contentsPoint - scrollOffset();
-    return convertToContainingWindow(viewPoint);
+    return IntRect(contentsToFrame(rectInContentSpace.location()), rectInContentSpace.size());
 }
 
-IntRect FrameView::rootViewToContents(const IntRect& rootViewRect) const
+FloatPoint FrameView::frameToContents(const FloatPoint& pointInFrame) const
 {
-    IntRect viewRect = convertFromContainingWindow(rootViewRect);
-    viewRect.move(scrollOffset());
-    return viewRect;
+    return pointInFrame + scrollOffset();
 }
 
-IntRect FrameView::contentsToRootView(const IntRect& contentsRect) const
+IntPoint FrameView::frameToContents(const IntPoint& pointInFrame) const
 {
-    IntRect viewRect = contentsRect;
-    viewRect.move(-scrollOffset());
-    return convertToContainingWindow(viewRect);
+    return pointInFrame + scrollOffset();
+}
+
+IntRect FrameView::frameToContents(const IntRect& rectInFrame) const
+{
+    return IntRect(frameToContents(rectInFrame.location()), rectInFrame.size());
+}
+
+IntPoint FrameView::rootFrameToContents(const IntPoint& rootFramePoint) const
+{
+    IntPoint framePoint = convertFromContainingWindow(rootFramePoint);
+    return frameToContents(framePoint);
+}
+
+IntRect FrameView::rootFrameToContents(const IntRect& rootFrameRect) const
+{
+    return IntRect(rootFrameToContents(rootFrameRect.location()), rootFrameRect.size());
+}
+
+IntPoint FrameView::contentsToRootFrame(const IntPoint& contentsPoint) const
+{
+    IntPoint framePoint = contentsToFrame(contentsPoint);
+    return convertToContainingWindow(framePoint);
+}
+
+IntRect FrameView::contentsToRootFrame(const IntRect& contentsRect) const
+{
+    IntRect rectInFrame = contentsToFrame(contentsRect);
+    return convertToContainingWindow(rectInFrame);
 }
 
 IntPoint FrameView::windowToContents(const IntPoint& windowPoint) const
 {
-    IntPoint viewPoint = convertFromContainingWindow(windowPoint);
-    return viewPoint + scrollOffset();
+    IntPoint framePoint = convertFromContainingWindow(windowPoint);
+    return frameToContents(framePoint);
 }
 
 FloatPoint FrameView::windowToContents(const FloatPoint& windowPoint) const
 {
-    FloatPoint viewPoint = convertFromContainingWindow(windowPoint);
-    return viewPoint + scrollOffset();
+    FloatPoint framePoint = convertFromContainingWindow(windowPoint);
+    return frameToContents(framePoint);
 }
 
 IntPoint FrameView::contentsToWindow(const IntPoint& contentsPoint) const
 {
-    IntPoint viewPoint = contentsPoint - scrollOffset();
-    return convertToContainingWindow(viewPoint);
+    IntPoint framePoint = contentsToFrame(contentsPoint);
+    return convertToContainingWindow(framePoint);
 }
 
 IntRect FrameView::windowToContents(const IntRect& windowRect) const
 {
-    IntRect viewRect = convertFromContainingWindow(windowRect);
-    viewRect.move(scrollOffset());
-    return viewRect;
+    IntRect rectInFrame = convertFromContainingWindow(windowRect);
+    return frameToContents(rectInFrame);
 }
 
 IntRect FrameView::contentsToWindow(const IntRect& contentsRect) const
 {
-    IntRect viewRect = contentsRect;
-    viewRect.move(-scrollOffset());
-    return convertToContainingWindow(viewRect);
+    IntRect rectInFrame = contentsToFrame(contentsRect);
+    return convertToContainingWindow(rectInFrame);
 }
 
 IntRect FrameView::contentsToScreen(const IntRect& rect) const
@@ -3691,7 +3709,7 @@ IntRect FrameView::contentsToScreen(const IntRect& rect) const
     HostWindow* window = hostWindow();
     if (!window)
         return IntRect();
-    return window->rootViewToScreen(contentsToRootView(rect));
+    return window->viewportToScreen(contentsToWindow(rect));
 }
 
 bool FrameView::containsScrollbarsAvoidingResizer() const
@@ -3735,15 +3753,15 @@ void FrameView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppres
 
 Scrollbar* FrameView::scrollbarAtWindowPoint(const IntPoint& windowPoint)
 {
-    IntPoint viewPoint = convertFromContainingWindow(windowPoint);
-    return scrollbarAtViewPoint(viewPoint);
+    IntPoint pointInFrame = convertFromContainingWindow(windowPoint);
+    return scrollbarAtFramePoint(pointInFrame);
 }
 
-Scrollbar* FrameView::scrollbarAtViewPoint(const IntPoint& viewPoint)
+Scrollbar* FrameView::scrollbarAtFramePoint(const IntPoint& pointInFrame)
 {
-    if (m_horizontalScrollbar && m_horizontalScrollbar->shouldParticipateInHitTesting() && m_horizontalScrollbar->frameRect().contains(viewPoint))
+    if (m_horizontalScrollbar && m_horizontalScrollbar->shouldParticipateInHitTesting() && m_horizontalScrollbar->frameRect().contains(pointInFrame))
         return m_horizontalScrollbar.get();
-    if (m_verticalScrollbar && m_verticalScrollbar->shouldParticipateInHitTesting() && m_verticalScrollbar->frameRect().contains(viewPoint))
+    if (m_verticalScrollbar && m_verticalScrollbar->shouldParticipateInHitTesting() && m_verticalScrollbar->frameRect().contains(pointInFrame))
         return m_verticalScrollbar.get();
     return nullptr;
 }
@@ -3923,21 +3941,21 @@ bool FrameView::isPointInScrollbarCorner(const IntPoint& windowPoint)
     if (!scrollbarCornerPresent())
         return false;
 
-    IntPoint viewPoint = convertFromContainingWindow(windowPoint);
+    IntPoint framePoint = convertFromContainingWindow(windowPoint);
 
     if (m_horizontalScrollbar) {
         int horizontalScrollbarYMin = m_horizontalScrollbar->frameRect().y();
         int horizontalScrollbarYMax = m_horizontalScrollbar->frameRect().y() + m_horizontalScrollbar->frameRect().height();
         int horizontalScrollbarXMin = m_horizontalScrollbar->frameRect().x() + m_horizontalScrollbar->frameRect().width();
 
-        return viewPoint.y() > horizontalScrollbarYMin && viewPoint.y() < horizontalScrollbarYMax && viewPoint.x() > horizontalScrollbarXMin;
+        return framePoint.y() > horizontalScrollbarYMin && framePoint.y() < horizontalScrollbarYMax && framePoint.x() > horizontalScrollbarXMin;
     }
 
     int verticalScrollbarXMin = m_verticalScrollbar->frameRect().x();
     int verticalScrollbarXMax = m_verticalScrollbar->frameRect().x() + m_verticalScrollbar->frameRect().width();
     int verticalScrollbarYMin = m_verticalScrollbar->frameRect().y() + m_verticalScrollbar->frameRect().height();
 
-    return viewPoint.x() > verticalScrollbarXMin && viewPoint.x() < verticalScrollbarXMax && viewPoint.y() > verticalScrollbarYMin;
+    return framePoint.x() > verticalScrollbarXMin && framePoint.x() < verticalScrollbarXMax && framePoint.y() > verticalScrollbarYMin;
 }
 
 bool FrameView::scrollbarCornerPresent() const
