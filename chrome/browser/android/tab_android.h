@@ -211,6 +211,8 @@ class TabAndroid : public CoreTabHelperDelegate,
                                     jobject obj,
                                     jobject jcontent_view_core);
 
+  bool HasPrerenderedUrl(JNIEnv* env, jobject obj, jstring url);
+
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 

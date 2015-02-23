@@ -2469,6 +2469,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         return mAppBannerManager;
     }
 
+    @VisibleForTesting
+    public boolean hasPrerenderedUrl(String url) {
+        return nativeHasPrerenderedUrl(mNativeTabAndroid, url);
+    }
+
     /**
      * Ensures the counter is at least as high as the specified value.  The counter should always
      * point to an unused ID (which will be handed out next time a request comes in).  Exposed so
@@ -2512,5 +2517,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             ContentViewCore content, boolean visible);
     private native void nativeDetachOverlayContentViewCore(long nativeTabAndroid,
             ContentViewCore content);
+    private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
+
     private static native void nativeRecordStartupToCommitUma();
 }

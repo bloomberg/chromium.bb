@@ -764,6 +764,11 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   return -1;
 }
 
+bool TabAndroid::HasPrerenderedUrl(JNIEnv* env, jobject obj, jstring url) {
+  GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
+  return HasPrerenderedUrl(gurl);
+}
+
 namespace {
 
 class ChromeInterceptNavigationDelegate : public InterceptNavigationDelegate {
