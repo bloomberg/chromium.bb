@@ -154,8 +154,6 @@ InternalSettings::InternalSettings(Page& page)
 
 void InternalSettings::resetToConsistentState()
 {
-    page()->setPageScaleFactor(1, IntPoint(0, 0));
-
     m_backup.restoreTo(settings());
     m_backup = Backup(settings());
     m_backup.m_originalTextAutosizingEnabled = settings()->textAutosizingEnabled();
