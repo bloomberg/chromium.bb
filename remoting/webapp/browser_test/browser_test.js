@@ -190,9 +190,13 @@ browserTest.onUIMode = function(expectedMode, opt_timeout) {
  */
 browserTest.connectMe2Me = function() {
   var AppMode = remoting.AppMode;
-  browserTest.clickOnControl('this-host-connect');
-  return browserTest.onUIMode(AppMode.CLIENT_HOST_NEEDS_UPGRADE).then(
-    function() {
+  // The one second timeout is necessary because the click handler of
+  // 'this-host-connect' is registered asynchronously.
+  return base.Promise.sleep(1000).then(function() {
+      browserTest.clickOnControl('this-host-connect');
+    }).then(function(){
+      return browserTest.onUIMode(AppMode.CLIENT_HOST_NEEDS_UPGRADE);
+    }).then(function() {
       // On fulfilled.
       browserTest.clickOnControl('host-needs-update-connect-button');
     }, function() {
@@ -259,15 +263,15 @@ browserTest.expectConnectionError = function(connectionMode, errorTag) {
   var Timeout = browserTest.Timeout;
 
   var finishButton = 'client-finished-me2me-button';
-  var failureMode = AppMode.CLIENT_CONNECT_FAILED_ME2ME;
 
   if (connectionMode == remoting.DesktopConnectedView.Mode.IT2ME) {
-    failureMode = AppMode.CLIENT_CONNECT_FAILED_IT2ME;
     finishButton = 'client-finished-it2me-button';
   }
 
   var onConnected = browserTest.onUIMode(AppMode.IN_SESSION, Timeout.NONE);
-  var onFailure = browserTest.onUIMode(failureMode);
+  var onFailure = Promise.race([
+      browserTest.onUIMode(AppMode.CLIENT_CONNECT_FAILED_ME2ME),
+      browserTest.onUIMode(AppMode.CLIENT_CONNECT_FAILED_IT2ME)]);
 
   onConnected = onConnected.then(function() {
     return Promise.reject(
@@ -313,7 +317,7 @@ browserTest.expectConnected = function() {
  * @param {base.EventSource} eventSource
  * @param {string} event
  * @param {number} timeoutMs
- * @param {?string} opt_expectedData
+ * @param {*=} opt_expectedData
  * @return {Promise}
  */
 browserTest.expectEvent = function(eventSource, event, timeoutMs,
@@ -383,7 +387,7 @@ browserTest.setupPIN = function(newPin) {
 };
 
 /**
- * @return {Promise}
+ * @return {Promise<boolean>}
  */
 browserTest.isLocalHostStarted = function() {
   return new Promise(function(resolve) {
