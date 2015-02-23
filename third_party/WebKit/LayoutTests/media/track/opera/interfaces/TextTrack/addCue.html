@@ -26,6 +26,21 @@ test(function() {
 }, document.title+', adding a cue to a track twice');
 test(function() {
     var t1 = video.addTextTrack('subtitles');
+    var c1 = new VTTCue(0, 1, 'text1');
+    t1.addCue(c1);
+    assert_equals(t1.cues.length, 1, 't1.cues.length after first addition');
+    assert_equals(t1.cues[0], c1, 'position of c1 in the list');
+    var c2 = new VTTCue(0, 1, 'text2');
+    t1.addCue(c2);
+    assert_equals(t1.cues.length, 2, 't1.cues.length after second addition');
+    assert_equals(t1.cues[1], c2, 'position of c2 in the list');
+    t1.addCue(c1);
+    assert_equals(t1.cues.length, 2, 't1.cues.length after reinserting c1');
+    assert_equals(t1.cues[1], c1, 'position of c1 in the list');
+    assert_equals(t1.cues[0], c2, 'position of c2 in the list');
+}, document.title+', adding a cue to a track twice when another cue has same timestamps');
+test(function() {
+    var t1 = video.addTextTrack('subtitles');
     var t2 = video.addTextTrack('subtitles');
     var c1 = new VTTCue(0, 1, 'text1');
     t1.addCue(c1);

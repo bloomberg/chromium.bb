@@ -232,17 +232,18 @@ void TextTrack::addCue(PassRefPtrWillBeRawPtr<TextTrackCue> prpCue)
     if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()) || cue->startTime() < 0 || cue->endTime() < 0)
         return;
 
-    // 4.8.10.12.5 Text track API
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-addcue
 
     // The addCue(cue) method of TextTrack objects, when invoked, must run the following steps:
 
-    // 1. If the given cue is in a text track list of cues, then remove cue from that text track
-    // list of cues.
-    TextTrack* cueTrack = cue->track();
-    if (cueTrack && cueTrack != this)
+    // (Steps 1 and 2 - pertaining to association of rendering rules - are not implemented.)
+
+    // 3. If the given cue is in a text track list of cues, then remove cue
+    // from that text track list of cues.
+    if (TextTrack* cueTrack = cue->track())
         cueTrack->removeCue(cue.get(), ASSERT_NO_EXCEPTION);
 
-    // 2. Add cue to the method's TextTrack object's text track's text track list of cues.
+    // 4. Add cue to the method's TextTrack object's text track's text track list of cues.
     cue->setTrack(this);
     ensureTextTrackCueList()->add(cue);
 
@@ -254,20 +255,15 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
 {
     ASSERT(cue);
 
-    // 4.8.10.12.5 Text track API
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-removecue
 
     // The removeCue(cue) method of TextTrack objects, when invoked, must run the following steps:
 
     // 1. If the given cue is not currently listed in the method's TextTrack
     // object's text track's text track list of cues, then throw a NotFoundError exception.
-    if (cue->track() != this) {
-        exceptionState.throwDOMException(NotFoundError, "The specified cue is not listed in the TextTrack's list of cues.");
-        return;
-    }
-
     // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
-    if (!m_cues || !m_cues->remove(cue)) {
-        exceptionState.throwDOMException(InvalidStateError, "Failed to remove the specified cue.");
+    if (cue->track() != this || !m_cues || !m_cues->remove(cue)) {
+        exceptionState.throwDOMException(NotFoundError, "The specified cue is not listed in the TextTrack's list of cues.");
         return;
     }
 
