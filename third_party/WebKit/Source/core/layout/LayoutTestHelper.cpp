@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderingTestHelper.h"
+#include "core/layout/LayoutTestHelper.h"
 
 #include "core/loader/EmptyClients.h"
 #include "platform/graphics/GraphicsLayer.h"

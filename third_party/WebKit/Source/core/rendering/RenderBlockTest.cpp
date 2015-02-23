@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/rendering/RenderBlock.h"
 
+#include "core/layout/LayoutTestHelper.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderingTestHelper.h"
 #include <gtest/gtest.h>
 
 namespace blink {

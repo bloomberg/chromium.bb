@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderingTestHelper_h
-#define RenderingTestHelper_h
+#ifndef LayoutTestHelper_h
+#define LayoutTestHelper_h
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
@@ -40,4 +40,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderingTestHelper_h
+#endif // LayoutTestHelper_h

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/layout/LayoutTableCell.h"
 
-#include "core/rendering/RenderingTestHelper.h"
+#include "core/layout/LayoutTestHelper.h"
 
 namespace blink {
 

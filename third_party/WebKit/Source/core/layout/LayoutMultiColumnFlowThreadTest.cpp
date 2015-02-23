@@ -8,7 +8,7 @@
 
 #include "core/layout/LayoutMultiColumnSet.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
-#include "core/rendering/RenderingTestHelper.h"
+#include "core/layout/LayoutTestHelper.h"
 
 #include <gtest/gtest.h>
 

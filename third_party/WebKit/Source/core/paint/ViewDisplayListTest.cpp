@@ -4,6 +4,7 @@
 
 #include "config.h"
 
+#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/FocusController.h"
@@ -14,7 +15,6 @@
 #include "core/paint/SubtreeRecorder.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderingTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
