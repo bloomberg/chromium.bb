@@ -83,8 +83,8 @@ public:
 
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
-    void postTask(PassOwnPtr<ExecutionContextTask>);
-    void postDebuggerTask(PassOwnPtr<ExecutionContextTask>);
+    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
+    void postDebuggerTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
 
     enum WaitMode { WaitForMessage, DontWaitForMessage };
     MessageQueueWaitResult runDebuggerTask(WaitMode = WaitForMessage);
@@ -123,7 +123,7 @@ private:
     void initialize();
     void cleanup();
     void idleHandler();
-    void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
+    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
     bool m_terminated;
     OwnPtr<WorkerSharedTimer> m_sharedTimer;

@@ -147,7 +147,7 @@ void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedS
 
     if (m_workerThread) {
         ++m_unconfirmedMessageCount;
-        m_workerThread->postTask(MessageWorkerGlobalScopeTask::create(message, channels));
+        m_workerThread->postTask(FROM_HERE, MessageWorkerGlobalScopeTask::create(message, channels));
     } else
         m_queuedEarlyTasks.append(MessageWorkerGlobalScopeTask::create(message, channels));
 }
@@ -158,7 +158,7 @@ bool WorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionConte
         return false;
 
     ASSERT(m_workerThread);
-    m_workerThread->postTask(task);
+    m_workerThread->postTask(FROM_HERE, task);
     return true;
 }
 
@@ -209,7 +209,7 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<DedicatedWorkerThread>
     m_workerThreadHadPendingActivity = true; // Worker initialization means a pending activity.
 
     for (auto& earlyTasks : m_queuedEarlyTasks)
-        m_workerThread->postTask(earlyTasks.release());
+        m_workerThread->postTask(FROM_HERE, earlyTasks.release());
     m_queuedEarlyTasks.clear();
 }
 
