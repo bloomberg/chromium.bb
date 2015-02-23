@@ -1082,7 +1082,9 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
           navigated_frame->provisionalDataSource());
   content::NavigationState* navigation_state =
       document_state->navigation_state();
-  if (ui::PageTransitionIsWebTriggerable(navigation_state->transition_type()) &&
+  ui::PageTransition type = navigation_state->transition_type();
+  if (ui::PageTransitionIsWebTriggerable(type) &&
+      ui::PageTransitionIsNewNavigation(type) &&
       !blink::WebUserGestureIndicator::isProcessingUserGesture()) {
     // If onsubmit has been called, try and save that form.
     if (provisionally_saved_form_) {
