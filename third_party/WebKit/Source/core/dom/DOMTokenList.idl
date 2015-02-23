@@ -23,6 +23,7 @@
  */
 
 // https://dom.spec.whatwg.org/#interface-domtokenlist
+
 [
     SetWrapperReferenceFrom=element,
     WillBeGarbageCollected,
@@ -33,7 +34,7 @@
     [RaisesException, CustomElementCallbacks] void add(DOMString... tokens);
     [RaisesException, CustomElementCallbacks] void remove(DOMString... tokens);
     [RaisesException, CustomElementCallbacks] boolean toggle(DOMString token, optional boolean force);
-
+    // FIXME: stringifier should be enumerable.
     [NotEnumerable] stringifier;
     iterable<DOMString>;
 };
