@@ -20,8 +20,6 @@ function WebViewImpl(webviewElement) {
   this.setupWebViewAttributes();
   this.setupElementProperties();
 
-  // on* Event handlers.
-  this.on = {};
   new WebViewEvents(this, this.viewInstanceId);
 }
 
@@ -156,35 +154,11 @@ WebViewImpl.prototype.createGuest = function() {
 };
 
 WebViewImpl.prototype.onFrameNameChanged = function(name) {
-  name = name || '';
-  if (name === '') {
-    this.element.removeAttribute(WebViewConstants.ATTRIBUTE_NAME);
-  } else {
-    this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValue(name);
-  }
+  this.attributes[WebViewConstants.ATTRIBUTE_NAME].setValueIgnoreMutation(name);
 };
 
 WebViewImpl.prototype.dispatchEvent = function(webViewEvent) {
   return this.element.dispatchEvent(webViewEvent);
-};
-
-// Adds an 'on<event>' property on the webview, which can be used to set/unset
-// an event handler.
-WebViewImpl.prototype.setupEventProperty = function(eventName) {
-  var propertyName = 'on' + eventName.toLowerCase();
-  Object.defineProperty(this.element, propertyName, {
-    get: function() {
-      return this.on[propertyName];
-    }.bind(this),
-    set: function(value) {
-      if (this.on[propertyName])
-        this.element.removeEventListener(eventName, this.on[propertyName]);
-      this.on[propertyName] = value;
-      if (value)
-        this.element.addEventListener(eventName, value);
-    }.bind(this),
-    enumerable: true
-  });
 };
 
 // Updates state upon loadcommit.
@@ -195,19 +169,17 @@ WebViewImpl.prototype.onLoadCommit = function(
   this.currentEntryIndex = currentEntryIndex;
   this.entryCount = entryCount;
   this.processId = processId;
-  var oldValue = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
-  var newValue = url;
-  if (isTopLevel && (oldValue != newValue)) {
+  if (isTopLevel) {
     // Touching the src attribute triggers a navigation. To avoid
     // triggering a page reload on every guest-initiated navigation,
     // we do not handle this mutation.
-    this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValueIgnoreMutation(
-        newValue);
+    this.attributes[
+        WebViewConstants.ATTRIBUTE_SRC].setValueIgnoreMutation(url);
   }
 };
 
 WebViewImpl.prototype.onAttach = function(storagePartitionId) {
-  this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(
+  this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValueIgnoreMutation(
       storagePartitionId);
 };
 

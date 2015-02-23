@@ -182,6 +182,9 @@ function WebViewEvents(webViewImpl, viewInstanceId) {
   this.webViewImpl = webViewImpl;
   this.viewInstanceId = viewInstanceId;
 
+  // on* Event handlers.
+  this.on = {};
+
   // Set up the events.
   this.setupFrameNameChangedEvent();
   this.setupWebRequestEvents();
@@ -290,7 +293,26 @@ WebViewEvents.prototype.setupEvent = function(name, info) {
     this.webViewImpl.dispatchEvent(webViewEvent);
   }.bind(this), {instanceId: this.viewInstanceId});
 
-  this.webViewImpl.setupEventProperty(name);
+  this.setupEventProperty(name);
+};
+
+WebViewEvents.prototype.setupEventProperty = function(eventName) {
+  var propertyName = 'on' + eventName.toLowerCase();
+  Object.defineProperty(this.webViewImpl.element, propertyName, {
+    get: function() {
+      return this.on[propertyName];
+    }.bind(this),
+    set: function(value) {
+      if (this.on[propertyName]) {
+        this.webViewImpl.element.removeEventListener(
+            eventName, this.on[propertyName]);
+      }
+      this.on[propertyName] = value;
+      if (value)
+        this.webViewImpl.element.addEventListener(eventName, value);
+    }.bind(this),
+    enumerable: true
+  });
 };
 
 WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
@@ -310,9 +332,11 @@ WebViewEvents.prototype.handleLoadAbortEvent = function(event, webViewEvent) {
 
 WebViewEvents.prototype.handleLoadCommitEvent = function(event, webViewEvent) {
   this.webViewImpl.onLoadCommit(event.baseUrlForDataUrl,
-                                    event.currentEntryIndex, event.entryCount,
-                                    event.processId, event.url,
-                                    event.isTopLevel);
+                                event.currentEntryIndex,
+                                event.entryCount,
+                                event.processId,
+                                event.url,
+                                event.isTopLevel);
   this.webViewImpl.dispatchEvent(webViewEvent);
 };
 

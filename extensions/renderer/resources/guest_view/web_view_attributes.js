@@ -184,6 +184,15 @@ NameAttribute.prototype.handleMutation = function(oldValue, newValue) {
   WebViewInternal.setName(this.webViewImpl.guest.getId(), newValue);
 };
 
+NameAttribute.prototype.setValue = function(value) {
+  value = value || '';
+  if (value === '') {
+    this.webViewImpl.element.removeAttribute(this.name);
+  } else {
+    this.webViewImpl.element.setAttribute(this.name, value);
+  }
+};
+
 // Attribute representing the state of the storage partition.
 function PartitionAttribute(webViewImpl) {
   WebViewAttribute.call(
@@ -224,12 +233,12 @@ function SrcAttribute(webViewImpl) {
 SrcAttribute.prototype.__proto__ = WebViewAttribute.prototype;
 
 SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
+  WebViewAttribute.prototype.setValueIgnoreMutation.call(this, value);
   // takeRecords() is needed to clear queued up src mutations. Without it, it is
   // possible for this change to get picked up asyncronously by src's mutation
   // observer |observer|, and then get handled even though we do not want to
   // handle this mutation.
   this.observer.takeRecords();
-  WebViewAttribute.prototype.setValueIgnoreMutation.call(this, value);
 }
 
 SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
