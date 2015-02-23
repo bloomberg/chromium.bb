@@ -420,12 +420,10 @@ FileManager.prototype = /** @struct */ {
         this.directoryModel_,
         this.commandHandler);
     this.toolbarController_ = new ToolbarController(
-        this.ui_.cancelSelectionButton,
-        this.ui_.cancelSelectionButtonWrapper,
-        this.ui_.filesSelectedLabel,
+        this.ui_.toolbar,
         this.ui_.dialogNavigationList,
         this.selectionHandler_,
-        this.directoryModel_.getFileListSelection());
+        this.directoryModel_);
 
     importer.importEnabled().then(
         function(enabled) {

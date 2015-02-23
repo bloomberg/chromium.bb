@@ -128,28 +128,11 @@ function FileManagerUI(element, launchParam) {
   this.locationLine = null;
 
   /**
-   * The toolbar button to cancel selection.
+   * The toolbar which contains controls.
    * @type {!HTMLElement}
    * @const
    */
-  this.cancelSelectionButton =
-      queryRequiredElement(this.element, '#cancel-selection-button');
-
-  /**
-   * The wrapper for the toolbar button to cancel selection.
-   * @type {!HTMLElement}
-   * @const
-   */
-  this.cancelSelectionButtonWrapper =
-      queryRequiredElement(this.element, '#cancel-selection-button-wrapper');
-
-  /**
-   * The label showing how many files are selected.
-   * @type {!HTMLElement}
-   * @const
-   */
-  this.filesSelectedLabel =
-      queryRequiredElement(this.element, '#files-selected-label');
+  this.toolbar = queryRequiredElement(this.element, '.dialog-header');
 
   /**
    * The navigation list.

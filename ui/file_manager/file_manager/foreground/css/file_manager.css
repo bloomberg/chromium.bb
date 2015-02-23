@@ -1385,10 +1385,6 @@ li[renaming=''] .badge {
   opacity: 1;
 }
 
-#delete-button[disabled] {
-  display: none;
-}
-
 #tasks-menu cr-menu-item:not(.change-default) {
   background-position: left 10px center;
   padding-left: 32px;

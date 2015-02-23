@@ -6,46 +6,86 @@
  * This class controls wires toolbar UI and selection model. When selection
  * status is changed, this class changes the view of toolbar. If cancel
  * selection button is pressed, this class clears the selection.
- * @param {!HTMLElement} cancelSelectionButton Button to cancel selection.
- * @param {!HTMLElement} cancelSelectionButtonWrapper Wapper for the button,
- *     which works as a spacer for the filesSelectionLabel.
- * @param {!HTMLElement} filesSelectedLabel Label to show how many files are
- *     selected.
+ * @param {!HTMLElement} toolbar Toolbar element which contains controls.
  * @param {!HTMLElement} navigationList Navigation list on the left pane. The
  *     position of silesSelectedLabel depends on the navitaion list's width.
  * @param {!FileSelectionHandler} selectionHandler
- * @param {!cr.ui.ListSelectionModel|!cr.ui.ListSingleSelectionModel}
- *     selectionModel
+ * @param {!DirectoryModel} directoryModel
  * @constructor
  * @struct
  */
-function ToolbarController(cancelSelectionButton,
-                           cancelSelectionButtonWrapper,
-                           filesSelectedLabel,
+function ToolbarController(toolbar,
                            navigationList,
                            selectionHandler,
-                           selectionModel) {
-  /** @private {!HTMLElement} */
-  this.cancelSelectionButtonWrapper_ = cancelSelectionButtonWrapper;
+                           directoryModel) {
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.toolbar_ = toolbar;
 
-  /** @private {!HTMLElement} */
-  this.filesSelectedLabel_ = filesSelectedLabel;
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.cancelSelectionButton_ =
+      queryRequiredElement(this.toolbar_, '#cancel-selection-button');
 
-  /** @private {!HTMLElement} */
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.cancelSelectionButtonWrapper_ =
+      queryRequiredElement(this.toolbar_, '#cancel-selection-button-wrapper');
+
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.filesSelectedLabel_ =
+      queryRequiredElement(this.toolbar_, '#files-selected-label');
+
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.deleteButton_ = queryRequiredElement(this.toolbar_, '#delete-button');
+
+  /**
+   * @private {!cr.ui.Command}
+   * @const
+   */
+  this.deleteCommand_ = assertInstanceof(
+      queryRequiredElement(assert(this.toolbar_.ownerDocument), '#delete'),
+      cr.ui.Command);
+
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
   this.navigationList_ = navigationList;
 
-  /** @private {!FileSelectionHandler} */
+  /**
+   * @private {!FileSelectionHandler}
+   * @const
+   */
   this.selectionHandler_ = selectionHandler;
 
-  /** @private {!cr.ui.ListSelectionModel|!cr.ui.ListSingleSelectionModel} */
-  this.selectionModel_ = selectionModel;
+  /**
+   * @private {!DirectoryModel}
+   * @const
+   */
+  this.directoryModel_ = directoryModel;
 
   this.selectionHandler_.addEventListener(
       FileSelectionHandler.EventType.CHANGE,
       this.onSelectionChanged_.bind(this));
 
-  cancelSelectionButton.addEventListener(
+  this.cancelSelectionButton_.addEventListener(
       'click', this.onCancelSelectionButtonClicked_.bind(this));
+
+  this.deleteButton_.addEventListener(
+      'click', this.onDeleteButtonClicked_.bind(this));
 
   this.navigationList_.addEventListener(
       'relayout', this.onNavigationListRelayout_.bind(this));
@@ -72,6 +112,10 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
     this.filesSelectedLabel_.textContent = text;
   }
 
+  // Update visibility of the delete button.
+  this.deleteButton_.hidden =
+      selection.totalCount === 0 || this.directoryModel_.isReadOnly();
+
   // Set .selecting class to containing element to change the view accordingly.
   // TODO(fukino): This code changes the state of body, not the toolbar, to
   // update the checkmark visibility on grid view. This should be moved to a
@@ -86,7 +130,15 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
  * @private
  */
 ToolbarController.prototype.onCancelSelectionButtonClicked_ = function() {
-  this.selectionModel_.unselectAll();
+  this.directoryModel_.selectEntries([]);
+}
+
+/**
+ * Handles click event for delete button to execute the delete command.
+ * @private
+ */
+ToolbarController.prototype.onDeleteButtonClicked_ = function() {
+  this.deleteCommand_.execute();
 }
 
 /**
