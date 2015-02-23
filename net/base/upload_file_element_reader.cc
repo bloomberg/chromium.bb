@@ -119,14 +119,13 @@ void UploadFileElementReader::OnOpenCompleted(
   }
 
   if (range_offset_) {
-    int result = file_stream_->Seek(
+    int seek_result = file_stream_->Seek(
         base::File::FROM_BEGIN, range_offset_,
         base::Bind(&UploadFileElementReader::OnSeekCompleted,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-    DCHECK_GT(0, result);
-    if (result != ERR_IO_PENDING)
-      callback.Run(result);
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+    DCHECK_GT(0, seek_result);
+    if (seek_result != ERR_IO_PENDING)
+      callback.Run(seek_result);
   } else {
     OnSeekCompleted(callback, OK);
   }

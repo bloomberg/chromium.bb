@@ -43,8 +43,6 @@ GURL AppendOrReplaceQueryParameter(const GURL& url,
                                    &value_range)) {
     const base::StringPiece key(
         input.data() + key_range.begin, key_range.len);
-    const base::StringPiece value(
-        input.data() + value_range.begin, value_range.len);
     std::string key_value_pair;
     // Check |replaced| as only the first pair should be replaced.
     if (!replaced && key == param_name) {

@@ -1275,7 +1275,6 @@ void GetExtensionsFromHardCodedMappings(
     size_t mappings_len,
     const std::string& leading_mime_type,
     base::hash_set<base::FilePath::StringType>* extensions) {
-  base::FilePath::StringType extension;
   for (size_t i = 0; i < mappings_len; ++i) {
     if (StartsWithASCII(mappings[i].mime_type, leading_mime_type, false)) {
       std::vector<string> this_extensions;
