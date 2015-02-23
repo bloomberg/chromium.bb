@@ -34,7 +34,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLProgressElement.h"
-#include "core/rendering/RenderProgress.h"
+#include "core/layout/LayoutProgress.h"
 
 namespace blink {
 
@@ -65,7 +65,7 @@ DEFINE_NODE_FACTORY(ProgressInnerElement)
 
 LayoutObject* ProgressInnerElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderProgress(this);
+    return new LayoutProgress(this);
 }
 
 bool ProgressInnerElement::rendererIsNeeded(const LayoutStyle& style)

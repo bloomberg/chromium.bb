@@ -41,7 +41,7 @@ class Element;
 class FileList;
 class HTMLInputElement;
 class RenderMeter;
-class RenderProgress;
+class LayoutProgress;
 
 
 class LayoutTheme : public RefCounted<LayoutTheme> {
@@ -158,9 +158,9 @@ public:
     virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) { return 0; };
 
     // Returns the repeat interval of the animation for the progress bar.
-    virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;
+    virtual double animationRepeatIntervalForProgressBar(LayoutProgress*) const;
     // Returns the duration of the animation for the progress bar.
-    virtual double animationDurationForProgressBar(RenderProgress*) const;
+    virtual double animationDurationForProgressBar(LayoutProgress*) const;
 
     // Media controls
     virtual String formatMediaControlsTime(float time) const;

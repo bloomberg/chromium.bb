@@ -39,6 +39,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
@@ -50,7 +51,6 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
-#include "core/rendering/RenderProgress.h"
 #include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXARIAGrid.h"
 #include "modules/accessibility/AXARIAGridCell.h"
@@ -298,7 +298,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* rendere
 
         // progress bar
         if (cssBox->isProgress())
-            return AXProgressIndicator::create(toRenderProgress(cssBox), this);
+            return AXProgressIndicator::create(toLayoutProgress(cssBox), this);
 
         // input type=range
         if (cssBox->isSlider())

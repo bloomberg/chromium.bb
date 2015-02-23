@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef RenderProgress_h
-#define RenderProgress_h
+#ifndef LayoutProgress_h
+#define LayoutProgress_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
@@ -27,10 +27,10 @@ namespace blink {
 
 class HTMLProgressElement;
 
-class RenderProgress final : public RenderBlockFlow {
+class LayoutProgress final : public RenderBlockFlow {
 public:
-    explicit RenderProgress(HTMLElement*);
-    virtual ~RenderProgress();
+    explicit LayoutProgress(HTMLElement*);
+    virtual ~LayoutProgress();
     virtual void destroy() override;
 
     double position() const { return m_position; }
@@ -42,10 +42,10 @@ public:
     HTMLProgressElement* progressElement() const;
 
 private:
-    virtual const char* renderName() const override { return "RenderProgress"; }
+    virtual const char* renderName() const override { return "LayoutProgress"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || RenderBlockFlow::isOfType(type); }
 
-    void animationTimerFired(Timer<RenderProgress>*);
+    void animationTimerFired(Timer<LayoutProgress>*);
     void updateAnimationState();
 
     double m_position;
@@ -53,11 +53,11 @@ private:
     double m_animationRepeatInterval;
     double m_animationDuration;
     bool m_animating;
-    Timer<RenderProgress> m_animationTimer;
+    Timer<LayoutProgress> m_animationTimer;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderProgress, isProgress());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutProgress, isProgress());
 
 } // namespace blink
 
-#endif // RenderProgress_h
+#endif // LayoutProgress_h

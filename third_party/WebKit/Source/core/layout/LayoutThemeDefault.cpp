@@ -28,9 +28,9 @@
 #include "core/CSSValueKeywords.h"
 #include "core/layout/LayoutMediaControls.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutThemeFontProvider.h"
 #include "core/layout/PaintInfo.h"
-#include "core/rendering/RenderProgress.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
@@ -491,7 +491,7 @@ bool LayoutThemeDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, c
     if (!o->isProgress())
         return true;
 
-    RenderProgress* renderProgress = toRenderProgress(o);
+    LayoutProgress* renderProgress = toLayoutProgress(o);
     IntRect valueRect = progressValueRectFor(renderProgress, rect);
 
     WebThemeEngine::ExtraParams extraParams;
@@ -815,13 +815,13 @@ static const int progressActivityBlocks = 5;
 static const int progressAnimationFrames = 10;
 static const double progressAnimationInterval = 0.125;
 
-IntRect LayoutThemeDefault::determinateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::determinateProgressValueRectFor(LayoutProgress* renderProgress, const IntRect& rect) const
 {
     int dx = rect.width() * renderProgress->position();
     return IntRect(rect.x(), rect.y(), dx, rect.height());
 }
 
-IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(LayoutProgress* renderProgress, const IntRect& rect) const
 {
 
     int valueWidth = rect.width() / progressActivityBlocks;
@@ -835,17 +835,17 @@ IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(RenderProgress* re
     return IntRect(rect.x() + (1.0 - progress) * 2 * movableWidth, rect.y(), valueWidth, rect.height());
 }
 
-double LayoutThemeDefault::animationRepeatIntervalForProgressBar(RenderProgress*) const
+double LayoutThemeDefault::animationRepeatIntervalForProgressBar(LayoutProgress*) const
 {
     return progressAnimationInterval;
 }
 
-double LayoutThemeDefault::animationDurationForProgressBar(RenderProgress* renderProgress) const
+double LayoutThemeDefault::animationDurationForProgressBar(LayoutProgress* renderProgress) const
 {
     return progressAnimationInterval * progressAnimationFrames * 2; // "2" for back and forth
 }
 
-IntRect LayoutThemeDefault::progressValueRectFor(RenderProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::progressValueRectFor(LayoutProgress* renderProgress, const IntRect& rect) const
 {
     return renderProgress->isDeterminate() ? determinateProgressValueRectFor(renderProgress, rect) : indeterminateProgressValueRectFor(renderProgress, rect);
 }

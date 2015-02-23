@@ -40,8 +40,8 @@
 #import "core/layout/style/ShadowList.h"
 #import "core/layout/LayoutMedia.h"
 #import "core/layout/LayoutMediaControls.h"
+#import "core/layout/LayoutProgress.h"
 #import "core/rendering/RenderMeter.h"
-#import "core/rendering/RenderProgress.h"
 #import "core/rendering/RenderView.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/PlatformResourceLoader.h"
@@ -977,12 +977,12 @@ int LayoutThemeMac::minimumProgressBarHeight(const LayoutStyle& style) const
     return sizeForSystemFont(style, progressBarSizes()).height();
 }
 
-double LayoutThemeMac::animationRepeatIntervalForProgressBar(RenderProgress*) const
+double LayoutThemeMac::animationRepeatIntervalForProgressBar(LayoutProgress*) const
 {
     return progressAnimationFrameRate;
 }
 
-double LayoutThemeMac::animationDurationForProgressBar(RenderProgress*) const
+double LayoutThemeMac::animationDurationForProgressBar(LayoutProgress*) const
 {
     return progressAnimationNumFrames * progressAnimationFrameRate;
 }
@@ -1003,7 +1003,7 @@ bool LayoutThemeMac::paintProgressBar(LayoutObject* layoutObject, const PaintInf
     if (rect.height() <= minimumProgressBarHeight(layoutObject->styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, progressBarMargins(controlSize), zoomLevel);
 
-    RenderProgress* renderProgress = toRenderProgress(layoutObject);
+    LayoutProgress* renderProgress = toLayoutProgress(layoutObject);
     HIThemeTrackDrawInfo trackInfo;
     trackInfo.version = 0;
     if (controlSize == NSRegularControlSize)

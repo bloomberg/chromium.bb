@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class RenderProgress;
+class LayoutProgress;
 
 class LayoutThemeDefault : public LayoutTheme {
 public:
@@ -143,8 +143,8 @@ public:
     virtual void adjustMenuListStyle(LayoutStyle&, Element*) const override;
     virtual void adjustMenuListButtonStyle(LayoutStyle&, Element*) const override;
 
-    virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const override;
-    virtual double animationDurationForProgressBar(RenderProgress*) const override;
+    virtual double animationRepeatIntervalForProgressBar(LayoutProgress*) const override;
+    virtual double animationDurationForProgressBar(LayoutProgress*) const override;
 
     // These methods define the padding for the MenuList's inner block.
     virtual int popupInternalPaddingLeft(const LayoutStyle&) const override;
@@ -167,9 +167,9 @@ protected:
     virtual bool shouldUseFallbackTheme(const LayoutStyle&) const override;
     virtual int menuListArrowPadding() const;
 
-    IntRect determinateProgressValueRectFor(RenderProgress*, const IntRect&) const;
-    IntRect indeterminateProgressValueRectFor(RenderProgress*, const IntRect&) const;
-    IntRect progressValueRectFor(RenderProgress*, const IntRect&) const;
+    IntRect determinateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
+    IntRect indeterminateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
+    IntRect progressValueRectFor(LayoutProgress*, const IntRect&) const;
 
     class DirectionFlippingScope {
     public:

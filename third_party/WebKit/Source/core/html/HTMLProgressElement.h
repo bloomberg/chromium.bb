@@ -26,7 +26,7 @@
 namespace blink {
 
 class ProgressValueElement;
-class RenderProgress;
+class LayoutProgress;
 
 class HTMLProgressElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
@@ -58,7 +58,7 @@ private:
     virtual bool supportLabels() const override { return true; }
 
     virtual LayoutObject* createRenderer(const LayoutStyle&) override;
-    RenderProgress* renderProgress() const;
+    LayoutProgress* layoutProgress() const;
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
