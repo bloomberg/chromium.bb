@@ -112,11 +112,16 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_FALSE(fixture.changed_prefs()->GetDictionary(
       prefs::kSupervisedUserManualHosts, &manual_hosts));
 
-  // kForceSafeSearch defaults to true for supervised users.
-  bool force_safesearch = false;
-  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(prefs::kForceSafeSearch,
-                                                  &force_safesearch));
-  EXPECT_TRUE(force_safesearch);
+  // kForceGoogleSafeSearch and kForceYouTubeSafetyMode default to true for
+  // supervised users.
+  bool force_google_safesearch = false;
+  bool force_youtube_safety_mode = false;
+  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(prefs::kForceGoogleSafeSearch,
+                                                  &force_google_safesearch));
+  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(
+      prefs::kForceYouTubeSafetyMode, &force_youtube_safety_mode));
+  EXPECT_TRUE(force_google_safesearch);
+  EXPECT_TRUE(force_youtube_safety_mode);
 
   // Activating the service again should not change anything.
   fixture.changed_prefs()->Clear();
@@ -135,16 +140,19 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
       prefs::kSupervisedUserManualHosts, &manual_hosts));
   EXPECT_TRUE(manual_hosts->Equals(dict.get()));
 
-  // kForceSafeSearch can be configured by the custodian, overriding the
-  // hardcoded default.
+  // kForceGoogleSafeSearch and kForceYouTubeSafetyMode can be configured by the
+  // custodian, overriding the hardcoded default.
   fixture.changed_prefs()->Clear();
   service_.SetLocalSetting(
       supervised_users::kForceSafeSearch,
       scoped_ptr<base::Value>(new base::FundamentalValue(false)));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
-  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(prefs::kForceSafeSearch,
-                                                  &force_safesearch));
-  EXPECT_FALSE(force_safesearch);
+  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(prefs::kForceGoogleSafeSearch,
+                                                  &force_google_safesearch));
+  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(
+      prefs::kForceYouTubeSafetyMode, &force_youtube_safety_mode));
+  EXPECT_FALSE(force_youtube_safety_mode);
+  EXPECT_FALSE(force_google_safesearch);
 }
 
 TEST_F(SupervisedUserPrefStoreTest, ActivateSettingsBeforeInitialization) {

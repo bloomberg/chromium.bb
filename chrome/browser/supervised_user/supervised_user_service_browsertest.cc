@@ -81,8 +81,11 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, LocalPolicies) {
   Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceSafeSearch));
-  EXPECT_TRUE(prefs->IsUserModifiablePreference(prefs::kForceSafeSearch));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kForceYouTubeSafetyMode));
+  EXPECT_TRUE(prefs->IsUserModifiablePreference(prefs::kForceGoogleSafeSearch));
+  EXPECT_TRUE(
+      prefs->IsUserModifiablePreference(prefs::kForceYouTubeSafetyMode));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
@@ -101,8 +104,12 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
   Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceSafeSearch));
-  EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kForceSafeSearch));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kForceYouTubeSafetyMode));
+  EXPECT_FALSE(
+      prefs->IsUserModifiablePreference(prefs::kForceGoogleSafeSearch));
+  EXPECT_FALSE(
+      prefs->IsUserModifiablePreference(prefs::kForceYouTubeSafetyMode));
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {

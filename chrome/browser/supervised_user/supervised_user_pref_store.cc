@@ -40,7 +40,10 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
     prefs::kSupervisedUserManualURLs,
   },
   {
-    supervised_users::kForceSafeSearch, prefs::kForceSafeSearch,
+    supervised_users::kForceSafeSearch, prefs::kForceGoogleSafeSearch,
+  },
+  {
+    supervised_users::kForceSafeSearch, prefs::kForceYouTubeSafetyMode,
   },
   {
     supervised_users::kRecordHistory, prefs::kRecordHistory,
@@ -100,7 +103,8 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                        SupervisedUserURLFilter::ALLOW);
-    prefs_->SetBoolean(prefs::kForceSafeSearch, true);
+    prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);
+    prefs_->SetBoolean(prefs::kForceYouTubeSafetyMode, true);
     prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
     prefs_->SetInteger(prefs::kIncognitoModeAvailability,
                        IncognitoModePrefs::DISABLED);
