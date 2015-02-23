@@ -53,6 +53,7 @@
         '../device/usb/usb.gyp:device_usb',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net',
+        '../third_party/icu/icu.gyp:icuuc',
         '../third_party/re2/re2.gyp:re2',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx_geometry',

@@ -876,6 +876,7 @@
         'base_i18n',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],

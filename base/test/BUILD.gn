@@ -116,6 +116,7 @@ source_set("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libxml",
+    "//third_party/icu:icuuc",
   ]
 
   if (!is_posix) {
