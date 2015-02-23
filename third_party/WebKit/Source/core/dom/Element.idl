@@ -112,6 +112,7 @@
     [RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
     NodeList getDestinationInsertionPoints();
+    [RuntimeEnabled=IsTabStopAttribute] attribute boolean isTabStop;
 
     // CSSOM View Module API
     ClientRectList getClientRects();

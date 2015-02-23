@@ -57,14 +57,21 @@ public:
     void setTabIndexExplicitly(short index)
     {
         m_tabindex = index;
+        // isTabStop is overridden by setting tabindex.
+        m_isTabStop = (m_tabindex >= 0);
         setElementFlag(TabIndexWasSetExplicitly, true);
     }
 
     void clearTabIndexExplicitly()
     {
         m_tabindex = 0;
+        m_isTabStop = true;
         clearElementFlag(TabIndexWasSetExplicitly);
     }
+
+    bool isTabStop() const { return m_isTabStop; }
+
+    void setIsTabStop(bool flag) { m_isTabStop = flag; }
 
     CSSStyleDeclaration& ensureInlineCSSStyleDeclaration(Element* ownerElement);
 
@@ -130,6 +137,7 @@ public:
 
 private:
     short m_tabindex;
+    bool m_isTabStop;
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
@@ -162,6 +170,7 @@ inline LayoutSize defaultMinimumSizeForResizing()
 inline ElementRareData::ElementRareData(LayoutObject* renderer)
     : NodeRareData(renderer)
     , m_tabindex(0)
+    , m_isTabStop(true)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
     m_isElementRareData = true;

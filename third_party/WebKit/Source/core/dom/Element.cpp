@@ -2250,6 +2250,17 @@ bool Element::isMouseFocusable() const
     return isFocusable();
 }
 
+bool Element::isTabStop() const
+{
+    // Any element which never supports focus will always return false.
+    return supportsFocus() && (hasRareData() ? elementRareData()->isTabStop() : true);
+}
+
+void Element::setIsTabStop(bool flag)
+{
+    ensureElementRareData().setIsTabStop(flag);
+}
+
 void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);

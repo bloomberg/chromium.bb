@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<p>This tests TAB focus navigation with isTabStop property on elements</p>
+<pre id="console"></pre>
+<script>
+
+function prepareDOMTree(parent) {
+    parent.appendChild(
+        createDOM('div', {'id': 'testform'},
+            createDOM('input', {'id': 'input-before'}),
+            createDOM('div', {'id': 'host-div'},
+                createShadowRoot(
+                    createDOM('input', {'id': 'inner-input'}))),
+            createDOM('input', {'id': 'input-after'})));
+    parent.offsetTop;
+}
+
+var host_div;
+
+function test() {
+    debug("Testing shadow host with possible combinations of tabindex and isTabStop");
+
+    debug("Normal tab order without tabindex");
+
+    host_div = document.getElementById("host-div");
+    shouldBe('host_div.isTabStop', 'false');
+
+    var expectedOrder = [
+      'input-before',
+      'host-div/inner-input',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order without tabindex but isTabStop=true");
+    host_div.isTabStop = true;
+
+    expectedOrder = [
+      'input-before',
+      'host-div/inner-input',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with tabindex=0 on host");
+
+    host_div.tabIndex = 0;
+    shouldBeEqualToString('host_div.getAttribute("tabindex")', '0');
+    shouldBe('host_div.isTabStop', 'true');
+
+    expectedOrder = [
+      'input-before',
+      'host-div',
+      'host-div/inner-input',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with tabindex=0 but isTabStop = false on host");
+    host_div.isTabStop = false;
+
+    expectedOrder = [
+      'input-before',
+      // 'host-div', // should skip host when isTabStop = false
+      'host-div/inner-input',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with tabindex=-1 on host");
+
+    host_div.tabIndex = -1;
+    shouldBeEqualToString('host_div.getAttribute("tabindex")', '-1');
+    shouldBe('host_div.isTabStop', 'false');
+
+    expectedOrder = [
+      'input-before',
+      'host-div/inner-input',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with tabindex=-1 but isTabStop=true on host");
+    host_div.isTabStop = true;
+
+    expectedOrder = [
+      'input-before',
+      'host-div/inner-input',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with tabindex=1 on host");
+
+    host_div.tabIndex = 1;
+    shouldBeEqualToString('host_div.getAttribute("tabindex")', '1');
+    shouldBe('host_div.isTabStop', 'true');
+
+    expectedOrder = [
+      'input-before',
+      'input-after',
+      'host-div',
+      'host-div/inner-input'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with tabindex=1 but isTabStop=false on host");
+    host_div.isTabStop = false;
+
+    expectedOrder = [
+      'input-before',
+      'input-after',
+      // 'host-div', // should skip host when isTabStop = false
+      'host-div/inner-input'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+}
+
+function run_tests() {
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    if (!window.eventSender) {
+        testFailed('');
+        return;
+    }
+
+    prepareDOMTree(document.body);
+    test();
+
+    debug('Test finished.');
+}
+
+run_tests();
+</script>
+</body>
+</html>

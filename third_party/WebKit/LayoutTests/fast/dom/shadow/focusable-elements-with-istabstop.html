@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<p>This tests TAB focus navigation with isTabStop property on focusable elements</p>
+<pre id="console"></pre>
+<div id="sandbox"></div>
+<script>
+function prepareFocusableElements(parent) {
+    parent.appendChild(
+        createDOM('div', {'id': 'container'},
+            createDOM('input', {'id': 'input-before'}),
+            createDOM('button', {'id': 'button-focusable'}),
+            createDOM('input', {'id': 'input-focusable'}),
+            createDOM('input', {'id': 'input-after'})));
+    parent.offsetTop;
+}
+
+function prepareButtonWithShadow(parent) {
+    parent.appendChild(
+        createDOM('div', {'id': 'button-container'},
+            createDOM('input', {'id': 'button-before'}),
+            createDOM('button', {'id': 'button-host'},
+                createShadowRoot(
+                    createDOM('input', {'id': 'button-inner'}))),
+            createDOM('input', {'id': 'button-after'})));
+    parent.offsetTop;
+}
+
+function prepareAnchorWithShadow(parent) {
+    parent.appendChild(
+        createDOM('div', {'id': 'anchor-container'},
+            createDOM('input', {'id': 'anchor-before'}),
+            createDOM('a', {'id': 'anchor-host'},
+                createShadowRoot(
+                    createDOM('input', {'id': 'anchor-inner'}))),
+            createDOM('input', {'id': 'anchor-after'})));
+
+    parent.offsetTop;
+}
+
+var button_host;
+var anchor_host;
+
+function testFocusableElementsWithIsTabStop() {
+    debug("Testing tab focus navigation order on focusable nodes");
+
+    prepareFocusableElements(sandbox);
+
+    debug("Normal tab order without isTabStop");
+
+    var expectedOrder = [
+      'input-before',
+      'button-focusable',
+      'input-focusable',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Normal tab order with isTabStop=false");
+
+    button_focusable = document.getElementById("button-focusable");
+    button_focusable.isTabStop = false;
+    input_focusable = document.getElementById("input-focusable");
+    input_focusable.isTabStop = false;
+
+    expectedOrder = [
+      'input-before',
+      // These will be skipped with isTabStop = false.
+      // 'button-focusable',
+      // 'input-focusable',
+      'input-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+}
+
+function testButton() {
+    debug("Testing isTabStop property on button");
+
+    prepareButtonWithShadow(sandbox);
+
+    debug("Normal tab order without tabindex");
+
+    button_host = document.getElementById("button-host");
+    shouldBe('button_host.isTabStop', 'true');
+
+    var expectedOrder = [
+      'button-before',
+      'button-host',
+      'button-host/button-inner',
+      'button-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Testing isTabStop property on button with isTabStop = false");
+    button_host.isTabStop = false;
+
+    expectedOrder = [
+      'button-before',
+      // 'button-host',  // host should be skipped when isTabStop=false
+      'button-host/button-inner',
+      'button-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+}
+
+function testAnchor() {
+    debug("Testing isTabStop property on anchor without href");
+
+    prepareAnchorWithShadow(sandbox);
+
+    anchor_host = document.getElementById("anchor-host");
+    shouldBe('anchor_host.isTabStop', 'false');
+
+    var expectedOrder = [
+      'anchor-before',
+      'anchor-host/anchor-inner',
+      'anchor-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Testing isTabStop property on anchor with href");
+
+    anchor_host.setAttribute('href', '#');
+    anchor_host.offsetTop;
+    shouldBe('anchor_host.isTabStop', 'true');
+
+    expectedOrder = [
+      'anchor-before',
+      'anchor-host',
+      'anchor-host/anchor-inner',
+      'anchor-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+
+    debug("Testing isTabStop property on anchor with href but isTabStop = false");
+
+    anchor_host.isTabStop = false;
+
+    expectedOrder = [
+      'anchor-before',
+      // 'anchor-host', // host should be skipped when isTabStop=false
+      'anchor-host/anchor-inner',
+      'anchor-after'
+    ];
+
+    testFocusNavigationFowrad(expectedOrder);
+    expectedOrder.reverse();
+    testFocusNavigationBackward(expectedOrder);
+}
+
+function run_tests() {
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    if (!window.eventSender) {
+        testFailed('');
+        return;
+    }
+
+    testRunner.overridePreference("WebKitTabToLinksPreferenceKey", true);
+
+    testFocusableElementsWithIsTabStop();
+    sandbox.innerHTML = '';
+
+    testButton();
+    sandbox.innerHTML = '';
+
+    testAnchor();
+
+    debug('Test finished.');
+}
+
+run_tests();
+</script>
+</body>
+</html>

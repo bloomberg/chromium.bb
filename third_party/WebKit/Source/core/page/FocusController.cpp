@@ -528,7 +528,7 @@ Node* FocusController::findFocusableNodeAcrossFocusScopesBackward(const FocusNav
         if (!owner)
             break;
         currentScope = FocusNavigationScope::focusNavigationScopeOf(*owner);
-        if (isKeyboardFocusableShadowHost(*owner)) {
+        if (isKeyboardFocusableShadowHost(*owner) && toElement(owner)->isTabStop()) {
             found = owner;
             break;
         }
@@ -547,32 +547,59 @@ Node* FocusController::findFocusableNodeRecursively(WebFocusType type, const Foc
 Node* FocusController::findFocusableNodeRecursivelyForward(const FocusNavigationScope& scope, Node* start)
 {
     // Starting node is exclusive.
-    Node* foundOrNull = findFocusableNode(WebFocusTypeForward, scope, start);
-    if (!foundOrNull)
+    Node* found = findFocusableNode(WebFocusTypeForward, scope, start);
+    if (!found)
         return nullptr;
-    Node& found = *foundOrNull;
-    if (!isNonFocusableFocusScopeOwner(found))
-        return &found;
-    Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(found), nullptr);
-    return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, &found);
+    if (found->isElementNode() && !toElement(found)->isTabStop()) {
+        if (isShadowHostWithoutCustomFocusLogic(*found)) {
+            FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*found);
+            Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
+            return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, found);
+        }
+        if (!isNonFocusableFocusScopeOwner(*found))
+            found = findFocusableNodeRecursivelyForward(scope, found);
+    }
+    if (!isNonFocusableFocusScopeOwner(*found))
+        return found;
+
+    // Now |found| is on a focusable scope owner (either shadow host or <shadow>)
+    // Find inside the inward scope and return it if found. Otherwise continue searching in the same
+    // scope.
+    FocusNavigationScope innerScope = FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(*found);
+    Node* foundInInnerFocusScope = findFocusableNodeRecursivelyForward(innerScope, nullptr);
+    return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyForward(scope, found);
 }
 
 Node* FocusController::findFocusableNodeRecursivelyBackward(const FocusNavigationScope& scope, Node* start)
 {
     // Starting node is exclusive.
-    Node* foundOrNull = findFocusableNode(WebFocusTypeBackward, scope, start);
-    if (!foundOrNull)
+    Node* found = findFocusableNode(WebFocusTypeBackward, scope, start);
+    if (!found)
         return nullptr;
-    Node& found = *foundOrNull;
-    if (isKeyboardFocusableShadowHost(found)) {
-        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(FocusNavigationScope::ownedByShadowHost(found), nullptr);
-        return foundInInnerFocusScope ? foundInInnerFocusScope : &found;
+
+    // Now |found| is on a focusable shadow host.
+    // Find inside shadow backwards. If any focusable element is found, return it, otherwise return
+    // the host itself.
+    if (isKeyboardFocusableShadowHost(*found)) {
+        FocusNavigationScope innerScope = FocusNavigationScope::ownedByShadowHost(*found);
+        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(innerScope, nullptr);
+        if (foundInInnerFocusScope)
+            return foundInInnerFocusScope;
+        if (found->isElementNode() && !toElement(found)->isTabStop())
+            found = findFocusableNodeRecursivelyBackward(scope, found);
+        return found;
     }
-    if (isNonFocusableFocusScopeOwner(found)) {
-        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(found), nullptr);
-        return foundInInnerFocusScope ? foundInInnerFocusScope :findFocusableNodeRecursivelyBackward(scope, &found);
+
+    // Now |found| is on a non focusable scope owner (either shadow host or <shadow>).
+    // Find focusable node in decendant scope. If not found, find next focusable node within the
+    // current scope.
+    if (isNonFocusableFocusScopeOwner(*found)) {
+        FocusNavigationScope innerScope = FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(*found);
+        Node* foundInInnerFocusScope = findFocusableNodeRecursivelyBackward(innerScope, nullptr);
+        return foundInInnerFocusScope ? foundInInnerFocusScope : findFocusableNodeRecursivelyBackward(scope, found);
     }
-    return &found;
+
+    return found->isElementNode() && toElement(found)->isTabStop() ? found : findFocusableNodeRecursivelyBackward(scope, found);
 }
 
 static Node* findNodeWithExactTabIndex(Node* start, int tabIndex, WebFocusType type)
