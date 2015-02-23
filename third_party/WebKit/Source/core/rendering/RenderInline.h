@@ -24,13 +24,13 @@
 #define RenderInline_h
 
 #include "core/editing/PositionWithAffinity.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/line/InlineFlowBox.h"
-#include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"
 
 namespace blink {
 
-class RenderInline : public RenderBoxModelObject {
+class RenderInline : public LayoutBoxModelObject {
 public:
     explicit RenderInline(Element*);
 
@@ -45,7 +45,7 @@ public:
 
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
 
-    Element* node() const { return toElement(RenderBoxModelObject::node()); }
+    Element* node() const { return toElement(LayoutBoxModelObject::node()); }
 
     virtual LayoutRectOutsets marginBoxOutsets() const override final;
     virtual LayoutUnit marginLeft() const override final;
@@ -77,7 +77,7 @@ public:
     InlineBox* firstLineBoxIncludingCulling() const { return alwaysCreateLineBoxes() ? firstLineBox() : culledInlineFirstLineBox(); }
     InlineBox* lastLineBoxIncludingCulling() const { return alwaysCreateLineBoxes() ? lastLineBox() : culledInlineLastLineBox(); }
 
-    virtual RenderBoxModelObject* virtualContinuation() const override final { return continuation(); }
+    virtual LayoutBoxModelObject* virtualContinuation() const override final { return continuation(); }
     RenderInline* inlineElementContinuation() const;
 
     virtual void updateDragState(bool dragOn) override final;
@@ -86,8 +86,8 @@ public:
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
-    using RenderBoxModelObject::continuation;
-    using RenderBoxModelObject::setContinuation;
+    using LayoutBoxModelObject::continuation;
+    using LayoutBoxModelObject::setContinuation;
 
     bool alwaysCreateLineBoxes() const { return alwaysCreateLineBoxesForRenderInline(); }
     void setAlwaysCreateLineBoxes(bool alwaysCreateLineBoxes = true) { setAlwaysCreateLineBoxesForRenderInline(alwaysCreateLineBoxes); }
@@ -131,9 +131,9 @@ private:
     void moveChildrenToIgnoringContinuation(RenderInline* to, LayoutObject* startChild);
 
     void splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
-        LayoutObject* beforeChild, RenderBoxModelObject* oldCont);
+        LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
     void splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
-        LayoutObject* newChild, RenderBoxModelObject* oldCont);
+        LayoutObject* newChild, LayoutBoxModelObject* oldCont);
 
     virtual void layout() override final { ASSERT_NOT_REACHED(); } // Do nothing for layout()
 
@@ -186,7 +186,7 @@ private:
 
     RenderInline* clone() const;
 
-    RenderBoxModelObject* continuationBefore(LayoutObject* beforeChild);
+    LayoutBoxModelObject* continuationBefore(LayoutObject* beforeChild);
 
     LayoutObjectChildList m_children;
     RenderLineBoxList m_lineBoxes;   // All of the line boxes created for this inline flow.  For example, <i>Hello<br>world.</i> will have two <i> line boxes.

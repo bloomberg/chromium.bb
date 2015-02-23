@@ -252,7 +252,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         if (!o.isBoxModelObject())
             return;
 
-        const RenderBoxModelObject& box = toRenderBoxModelObject(o);
+        const LayoutBoxModelObject& box = toLayoutBoxModelObject(o);
         if (box.borderTop() || box.borderRight() || box.borderBottom() || box.borderLeft()) {
             ts << " [border:";
 

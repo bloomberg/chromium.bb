@@ -64,10 +64,10 @@ public:
     void dirtyLineBoxes();
     void dirtyLinesFromChangedChild(LayoutObject* parent, LayoutObject* child);
 
-    bool hitTest(RenderBoxModelObject*, const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
-    bool anyLineIntersectsRect(RenderBoxModelObject*, const LayoutRect&, const LayoutPoint&) const;
-    bool lineIntersectsDirtyRect(RenderBoxModelObject*, InlineFlowBox*, const PaintInfo&, const LayoutPoint&) const;
-    bool rangeIntersectsRect(RenderBoxModelObject*, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect&, const LayoutPoint&) const;
+    bool hitTest(LayoutBoxModelObject*, const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
+    bool anyLineIntersectsRect(LayoutBoxModelObject*, const LayoutRect&, const LayoutPoint&) const;
+    bool lineIntersectsDirtyRect(LayoutBoxModelObject*, InlineFlowBox*, const PaintInfo&, const LayoutPoint&) const;
+    bool rangeIntersectsRect(LayoutBoxModelObject*, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect&, const LayoutPoint&) const;
 
 private:
 

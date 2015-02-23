@@ -58,7 +58,7 @@ public:
     virtual LayoutRect elementRect() const override;
 
     void setRenderer(LayoutObject*);
-    RenderBoxModelObject* renderBoxModelObject() const;
+    LayoutBoxModelObject* layoutBoxModelObject() const;
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
     virtual ScrollableArea* getScrollableAreaIfScrollable() const override final;

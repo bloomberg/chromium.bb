@@ -970,7 +970,7 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
     for (const LayoutObject* renderer : *viewportConstrainedObjects) {
         ASSERT(renderer->isBoxModelObject() && renderer->hasLayer());
         ASSERT(renderer->style()->position() == FixedPosition);
-        Layer* layer = toRenderBoxModelObject(renderer)->layer();
+        Layer* layer = toLayoutBoxModelObject(renderer)->layer();
 
         // Whether the Layer scrolls with the viewport is a tree-depenent
         // property and our viewportConstrainedObjects collection is maintained

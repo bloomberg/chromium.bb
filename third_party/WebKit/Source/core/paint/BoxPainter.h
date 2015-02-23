@@ -5,8 +5,8 @@
 #ifndef BoxPainter_h
 #define BoxPainter_h
 
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/RenderBoxModelObject.h"
 
 namespace blink {
 
@@ -28,11 +28,11 @@ public:
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance = BackgroundBleedNone, SkXfermode::Mode = SkXfermode::kSrcOver_Mode, LayoutObject* backgroundObject = 0);
     void paintMaskImages(const PaintInfo&, const LayoutRect&);
     void paintBoxDecorationBackgroundWithRect(const PaintInfo&, const LayoutPoint&, const LayoutRect&);
-    static void paintFillLayerExtended(RenderBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), SkXfermode::Mode = SkXfermode::kSrcOver_Mode, LayoutObject* backgroundObject = 0, bool skipBaseColor = false);
-    static void calculateBackgroundImageGeometry(RenderBoxModelObject&, const LayoutLayerModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, LayoutObject* = 0);
-    static InterpolationQuality chooseInterpolationQuality(RenderBoxModelObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);
-    static bool paintNinePieceImage(RenderBoxModelObject&, GraphicsContext*, const LayoutRect&, const LayoutStyle&, const NinePieceImage&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
-    static void paintBorder(RenderBoxModelObject&, const PaintInfo&, const LayoutRect&, const LayoutStyle&, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
+    static void paintFillLayerExtended(LayoutBoxModelObject&, const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox* = 0, const LayoutSize& = LayoutSize(), SkXfermode::Mode = SkXfermode::kSrcOver_Mode, LayoutObject* backgroundObject = 0, bool skipBaseColor = false);
+    static void calculateBackgroundImageGeometry(LayoutBoxModelObject&, const LayoutLayerModelObject* paintContainer, const FillLayer&, const LayoutRect& paintRect, BackgroundImageGeometry&, LayoutObject* = 0);
+    static InterpolationQuality chooseInterpolationQuality(LayoutBoxModelObject&, GraphicsContext*, Image*, const void*, const LayoutSize&);
+    static bool paintNinePieceImage(LayoutBoxModelObject&, GraphicsContext*, const LayoutRect&, const LayoutStyle&, const NinePieceImage&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
+    static void paintBorder(LayoutBoxModelObject&, const PaintInfo&, const LayoutRect&, const LayoutStyle&, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const LayoutStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static bool shouldAntialiasLines(GraphicsContext*);
 
@@ -47,7 +47,7 @@ private:
     static bool isDocumentElementWithOpaqueBackground(LayoutObject&);
     static void applyBoxShadowForBackground(GraphicsContext*, LayoutObject&);
     static bool fixedBackgroundPaintsInLocalCoordinates(const LayoutObject&);
-    static IntSize calculateFillTileSize(const RenderBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
+    static IntSize calculateFillTileSize(const LayoutBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
     static void paintTranslucentBorderSides(GraphicsContext*, const LayoutStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
         const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);
     static LayoutRect borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance);

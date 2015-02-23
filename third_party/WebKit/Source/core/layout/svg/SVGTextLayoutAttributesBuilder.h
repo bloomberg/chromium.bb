@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class RenderBoxModelObject;
+class LayoutBoxModelObject;
 class LayoutSVGInlineText;
 class LayoutSVGText;
 class SVGTextPositioningElement;
@@ -66,7 +66,7 @@ private:
     };
 
     void buildCharacterDataMap(LayoutSVGText&);
-    void collectTextPositioningElements(RenderBoxModelObject&, UChar& lastCharacter);
+    void collectTextPositioningElements(LayoutBoxModelObject&, UChar& lastCharacter);
     void fillCharacterDataMap(const TextPosition&);
 
 private:

@@ -654,7 +654,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             const FontMetrics& fontMetrics = curr->renderer().style(isFirstLineStyle())->fontMetrics();
             newLogicalTop += curr->baselinePosition(baselineType) - fontMetrics.ascent(baselineType);
             if (curr->isInlineFlowBox()) {
-                RenderBoxModelObject& boxObject = toRenderBoxModelObject(curr->renderer());
+                LayoutBoxModelObject& boxObject = toLayoutBoxModelObject(curr->renderer());
                 newLogicalTop -= boxObject.style(isFirstLineStyle())->isHorizontalWritingMode() ? boxObject.borderTop() + boxObject.paddingTop() :
                     boxObject.borderRight() + boxObject.paddingRight();
                 borderPaddingHeight = boxObject.borderAndPaddingLogicalHeight();

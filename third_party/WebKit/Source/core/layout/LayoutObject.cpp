@@ -579,12 +579,12 @@ RenderBox* LayoutObject::enclosingBox() const
     return 0;
 }
 
-RenderBoxModelObject* LayoutObject::enclosingBoxModelObject() const
+LayoutBoxModelObject* LayoutObject::enclosingBoxModelObject() const
 {
     LayoutObject* curr = const_cast<LayoutObject*>(this);
     while (curr) {
         if (curr->isBoxModelObject())
-            return toRenderBoxModelObject(curr);
+            return toLayoutBoxModelObject(curr);
         curr = curr->parent();
     }
 
@@ -1517,7 +1517,7 @@ void LayoutObject::handleDynamicFloatPositionChange()
     setInline(style()->isDisplayInlineType());
     if (isInline() != parent()->childrenInline()) {
         if (!isInline()) {
-            toRenderBoxModelObject(parent())->childBecameNonInline(this);
+            toLayoutBoxModelObject(parent())->childBecameNonInline(this);
         } else {
             // An anonymous block must be made to wrap this inline.
             RenderBlock* block = toRenderBlock(parent())->createAnonymousBlock();

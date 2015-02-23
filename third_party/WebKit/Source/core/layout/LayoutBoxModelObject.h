@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef RenderBoxModelObject_h
-#define RenderBoxModelObject_h
+#ifndef LayoutBoxModelObject_h
+#define LayoutBoxModelObject_h
 
 #include "core/layout/LayoutLayerModelObject.h"
 #include "core/layout/style/ShadowData.h"
@@ -53,10 +53,10 @@ class InlineFlowBox;
 // This class is the base for all objects that adhere to the CSS box model as described
 // at http://www.w3.org/TR/CSS21/box.html
 
-class RenderBoxModelObject : public LayoutLayerModelObject {
+class LayoutBoxModelObject : public LayoutLayerModelObject {
 public:
-    RenderBoxModelObject(ContainerNode*);
-    virtual ~RenderBoxModelObject();
+    LayoutBoxModelObject(ContainerNode*);
+    virtual ~LayoutBoxModelObject();
 
     LayoutSize relativePositionOffset() const;
     LayoutSize relativePositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? relativePositionOffset() : relativePositionOffset().transposedSize(); }
@@ -145,8 +145,8 @@ public:
     LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }
     LayoutUnit marginLogicalWidth() const { return marginStart() + marginEnd(); }
 
-    bool hasInlineDirectionBordersPaddingOrMargin() const { return hasInlineDirectionBordersOrPadding() || marginStart()|| marginEnd(); }
-    bool hasInlineDirectionBordersOrPadding() const { return borderStart() || borderEnd() || paddingStart()|| paddingEnd(); }
+    bool hasInlineDirectionBordersPaddingOrMargin() const { return hasInlineDirectionBordersOrPadding() || marginStart() || marginEnd(); }
+    bool hasInlineDirectionBordersOrPadding() const { return borderStart() || borderEnd() || paddingStart() || paddingEnd(); }
 
     virtual LayoutUnit containingBlockLogicalWidthForContent() const;
 
@@ -175,8 +175,8 @@ protected:
 
     bool calculateHasBoxDecorations() const;
 
-    RenderBoxModelObject* continuation() const;
-    void setContinuation(RenderBoxModelObject*);
+    LayoutBoxModelObject* continuation() const;
+    void setContinuation(LayoutBoxModelObject*);
 
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
 
@@ -187,26 +187,26 @@ public:
     // These functions are only used internally to manipulate the render tree structure via remove/insert/appendChildNode.
     // Since they are typically called only to move objects around within anonymous blocks (which only have layers in
     // the case of column spans), the default for fullRemoveInsert is false rather than true.
-    void moveChildTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert = false);
-    void moveChildTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* child, bool fullRemoveInsert = false)
+    void moveChildTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert = false);
+    void moveChildTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* child, bool fullRemoveInsert = false)
     {
         moveChildTo(toBoxModelObject, child, 0, fullRemoveInsert);
     }
-    void moveAllChildrenTo(RenderBoxModelObject* toBoxModelObject, bool fullRemoveInsert = false)
+    void moveAllChildrenTo(LayoutBoxModelObject* toBoxModelObject, bool fullRemoveInsert = false)
     {
         moveAllChildrenTo(toBoxModelObject, 0, fullRemoveInsert);
     }
-    void moveAllChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* beforeChild, bool fullRemoveInsert = false)
+    void moveAllChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* beforeChild, bool fullRemoveInsert = false)
     {
         moveChildrenTo(toBoxModelObject, slowFirstChild(), 0, beforeChild, fullRemoveInsert);
     }
     // Move all of the kids from |startChild| up to but excluding |endChild|. 0 can be passed as the |endChild| to denote
     // that all the kids from |startChild| onwards should be moved.
-    void moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, bool fullRemoveInsert = false)
+    void moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, bool fullRemoveInsert = false)
     {
         moveChildrenTo(toBoxModelObject, startChild, endChild, 0, fullRemoveInsert);
     }
-    virtual void moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false);
+    virtual void moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false);
 
     enum ScaleByEffectiveZoomOrNot { ScaleByEffectiveZoom, DoNotScaleByEffectiveZoom };
     IntSize calculateImageIntrinsicDimensions(StyleImage*, const IntSize& scaledPositioningAreaSize, ScaleByEffectiveZoomOrNot) const;
@@ -216,8 +216,8 @@ private:
     virtual bool isBoxModelObject() const override final { return true; }
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderBoxModelObject, isBoxModelObject());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, isBoxModelObject());
 
 } // namespace blink
 
-#endif // RenderBoxModelObject_h
+#endif // LayoutBoxModelObject_h

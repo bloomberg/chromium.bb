@@ -696,7 +696,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     if (box->renderer().isText())
         return box->parent()->logicalTop();
 
-    RenderBoxModelObject* renderer = box->boxModelObject();
+    LayoutBoxModelObject* renderer = box->boxModelObject();
     ASSERT(renderer->isInline());
     if (!renderer->isInline())
         return 0;

@@ -50,7 +50,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
@@ -831,7 +830,7 @@ bool InspectorOverlay::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel
         return false;
 
     IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
-    RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : nullptr;
+    LayoutBoxModelObject* modelObject = renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
 
     model = TypeBuilder::DOM::BoxModel::create()
         .setContent(buildArrayForQuad(content))

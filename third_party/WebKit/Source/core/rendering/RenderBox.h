@@ -23,8 +23,8 @@
 #ifndef RenderBox_h
 #define RenderBox_h
 
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderOverflow.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -72,7 +72,7 @@ public:
     LayoutSize m_previousBorderBoxSize;
 };
 
-class RenderBox : public RenderBoxModelObject {
+class RenderBox : public LayoutBoxModelObject {
 public:
     explicit RenderBox(ContainerNode*);
 
@@ -706,15 +706,15 @@ private:
 
     bool skipContainingBlockForPercentHeightCalculation(const RenderBox* containingBlock) const;
 
-    LayoutUnit containingBlockLogicalWidthForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
-    LayoutUnit containingBlockLogicalHeightForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
+    LayoutUnit containingBlockLogicalWidthForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
+    LayoutUnit containingBlockLogicalHeightForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode = true) const;
 
     void computePositionedLogicalHeight(LogicalExtentComputedValues&) const;
-    void computePositionedLogicalWidthUsing(Length logicalWidth, const RenderBoxModelObject* containerBlock, TextDirection containerDirection,
+    void computePositionedLogicalWidthUsing(Length logicalWidth, const LayoutBoxModelObject* containerBlock, TextDirection containerDirection,
                                             LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
                                             const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
                                             const Length& marginLogicalRight, LogicalExtentComputedValues&) const;
-    void computePositionedLogicalHeightUsing(Length logicalHeightLength, const RenderBoxModelObject* containerBlock,
+    void computePositionedLogicalHeightUsing(Length logicalHeightLength, const LayoutBoxModelObject* containerBlock,
                                              LayoutUnit containerLogicalHeight, LayoutUnit bordersPlusPadding, LayoutUnit logicalHeight,
                                              const Length& logicalTop, const Length& logicalBottom, const Length& marginLogicalTop,
                                              const Length& marginLogicalBottom, LogicalExtentComputedValues&) const;

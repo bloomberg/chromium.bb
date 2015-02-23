@@ -11,14 +11,14 @@ namespace blink {
 
 class LayoutPoint;
 struct PaintInfo;
-class RenderBoxModelObject;
+class LayoutBoxModelObject;
 class RenderLineBoxList;
 
 class LineBoxListPainter {
 public:
     LineBoxListPainter(RenderLineBoxList& renderLineBoxList) : m_renderLineBoxList(renderLineBoxList) { }
 
-    void paint(RenderBoxModelObject*, const PaintInfo&, const LayoutPoint&) const;
+    void paint(LayoutBoxModelObject*, const PaintInfo&, const LayoutPoint&) const;
 
 private:
     RenderLineBoxList& m_renderLineBoxList;

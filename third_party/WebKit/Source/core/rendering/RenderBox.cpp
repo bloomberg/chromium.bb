@@ -98,7 +98,7 @@ static bool skipBodyBackground(const RenderBox* bodyElementRenderer)
 }
 
 RenderBox::RenderBox(ContainerNode* node)
-    : RenderBoxModelObject(node)
+    : LayoutBoxModelObject(node)
     , m_intrinsicContentLogicalHeight(-1)
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
@@ -140,7 +140,7 @@ void RenderBox::willBeDestroyed()
 
     ShapeOutsideInfo::removeInfo(*this);
 
-    RenderBoxModelObject::willBeDestroyed();
+    LayoutBoxModelObject::willBeDestroyed();
 }
 
 void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
@@ -201,17 +201,17 @@ void RenderBox::styleWillChange(StyleDifference diff, const LayoutStyle& newStyl
         view()->setShouldDoFullPaintInvalidation();
     }
 
-    RenderBoxModelObject::styleWillChange(diff, newStyle);
+    LayoutBoxModelObject::styleWillChange(diff, newStyle);
 }
 
 void RenderBox::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    // Horizontal writing mode definition is updated in RenderBoxModelObject::updateFromStyle,
-    // (as part of the RenderBoxModelObject::styleDidChange call below). So, we can safely cache the horizontal
+    // Horizontal writing mode definition is updated in LayoutBoxModelObject::updateFromStyle,
+    // (as part of the LayoutBoxModelObject::styleDidChange call below). So, we can safely cache the horizontal
     // writing mode value before style change here.
     bool oldHorizontalWritingMode = isHorizontalWritingMode();
 
-    RenderBoxModelObject::styleDidChange(diff, oldStyle);
+    LayoutBoxModelObject::styleDidChange(diff, oldStyle);
 
     const LayoutStyle& newStyle = styleRef();
     if (needsLayout() && oldStyle)
@@ -298,7 +298,7 @@ void RenderBox::updateGridPositionAfterStyleChange(const LayoutStyle* oldStyle)
 
 void RenderBox::updateFromStyle()
 {
-    RenderBoxModelObject::updateFromStyle();
+    LayoutBoxModelObject::updateFromStyle();
 
     const LayoutStyle& styleToUse = styleRef();
     bool isRootObject = isDocumentElement();
@@ -640,7 +640,7 @@ bool RenderBox::canResize() const
 void RenderBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     LayoutPoint adjustedLayerOffset = layerOffset + locationOffset();
-    RenderBoxModelObject::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
+    LayoutBoxModelObject::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
 }
 
 void RenderBox::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const
@@ -1388,7 +1388,7 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
 
 PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& newPaintInvalidationContainer)
 {
-    PaintInvalidationReason reason = RenderBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
@@ -1412,7 +1412,7 @@ PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidati
 
 void RenderBox::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
 {
-    RenderBoxModelObject::clearPaintInvalidationState(paintInvalidationState);
+    LayoutBoxModelObject::clearPaintInvalidationState(paintInvalidationState);
 
     if (ScrollableArea* area = scrollableArea())
         area->resetScrollbarDamage();
@@ -1425,7 +1425,7 @@ bool RenderBox::paintInvalidationStateIsDirty() const
         if (area->hasVerticalBarDamage() || area->hasHorizontalBarDamage())
             return true;
     }
-    return RenderBoxModelObject::paintInvalidationStateIsDirty();
+    return LayoutBoxModelObject::paintInvalidationStateIsDirty();
 }
 #endif
 
@@ -1623,7 +1623,7 @@ void RenderBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState
     } else if (isFixedPos)
         mode |= IsFixed;
 
-    RenderBoxModelObject::mapAbsoluteToLocalPoint(mode, transformState);
+    LayoutBoxModelObject::mapAbsoluteToLocalPoint(mode, transformState);
 }
 
 LayoutSize RenderBox::offsetFromContainer(const LayoutObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
@@ -2541,7 +2541,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(const Length& logicalWidt
             // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced element's writing-mode is perpendicular to the
             // containing block's writing-mode.
             // https://bugs.webkit.org/show_bug.cgi?id=46496
-            const LayoutUnit cw = isOutOfFlowPositioned() ? containingBlockLogicalWidthForPositioned(toRenderBoxModelObject(container())) : containingBlockLogicalWidthForContent();
+            const LayoutUnit cw = isOutOfFlowPositioned() ? containingBlockLogicalWidthForPositioned(toLayoutBoxModelObject(container())) : containingBlockLogicalWidthForContent();
             Length containerLogicalWidth = containingBlock()->style()->logicalWidth();
             // FIXME: Handle cases when containing block width is calculated or viewport percent.
             // https://bugs.webkit.org/show_bug.cgi?id=91071
@@ -2627,7 +2627,7 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
             // https://bugs.webkit.org/show_bug.cgi?id=46496
             LayoutUnit availableHeight;
             if (isOutOfFlowPositioned())
-                availableHeight = containingBlockLogicalHeightForPositioned(toRenderBoxModelObject(cb));
+                availableHeight = containingBlockLogicalHeightForPositioned(toLayoutBoxModelObject(cb));
             else {
                 availableHeight = containingBlockLogicalHeightForContent(IncludeMarginBorderPadding);
                 // It is necessary to use the border-box to match WinIE's broken
@@ -2720,7 +2720,7 @@ void RenderBox::computeAndSetBlockDirectionMargins(const RenderBlock* containing
     containingBlock->setMarginAfterForChild(*this, marginAfter);
 }
 
-LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode) const
+LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode) const
 {
     if (checkForPerpendicularWritingMode && containingBlock->isHorizontalWritingMode() != isHorizontalWritingMode())
         return containingBlockLogicalHeightForPositioned(containingBlock, false);
@@ -2763,7 +2763,7 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
     return std::max(LayoutUnit(), fromRight - fromLeft);
 }
 
-LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode) const
+LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const LayoutBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode) const
 {
     if (checkForPerpendicularWritingMode && containingBlock->isHorizontalWritingMode() != isHorizontalWritingMode())
         return containingBlockLogicalWidthForPositioned(containingBlock, false);
@@ -2806,7 +2806,7 @@ LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxM
     return heightResult;
 }
 
-static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRight, const RenderBox* child, const RenderBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth)
+static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRight, const RenderBox* child, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth)
 {
     if (!logicalLeft.isAuto() || !logicalRight.isAuto())
         return;
@@ -2881,7 +2881,7 @@ void RenderBox::computePositionedLogicalWidth(LogicalExtentComputedValues& compu
 
     // We don't use containingBlock(), since we may be positioned by an enclosing
     // relative positioned inline.
-    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
+    const LayoutBoxModelObject* containerBlock = toLayoutBoxModelObject(container());
 
     const LayoutUnit containerLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock);
 
@@ -2972,7 +2972,7 @@ void RenderBox::computePositionedLogicalWidth(LogicalExtentComputedValues& compu
     computedValues.m_extent += bordersPlusPadding;
 }
 
-static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const RenderBox* child, LayoutUnit logicalWidthValue, const RenderBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth)
+static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const RenderBox* child, LayoutUnit logicalWidthValue, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalWidth)
 {
     // Deal with differing writing modes here.  Our offset needs to be in the containing block's coordinate space. If the containing block is flipped
     // along this axis, then we need to flip the coordinate.  This can only happen if the containing block is both a flipped mode and perpendicular to us.
@@ -2991,7 +2991,7 @@ LayoutUnit RenderBox::shrinkToFitLogicalWidth(LayoutUnit availableLogicalWidth, 
     return std::min(std::max(preferredMinLogicalWidth, availableLogicalWidth), preferredLogicalWidth);
 }
 
-void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const RenderBoxModelObject* containerBlock, TextDirection containerDirection,
+void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const LayoutBoxModelObject* containerBlock, TextDirection containerDirection,
                                                    LayoutUnit containerLogicalWidth, LayoutUnit bordersPlusPadding,
                                                    const Length& logicalLeft, const Length& logicalRight, const Length& marginLogicalLeft,
                                                    const Length& marginLogicalRight, LogicalExtentComputedValues& computedValues) const
@@ -3166,7 +3166,7 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
     computeLogicalLeftPositionedOffset(computedValues.m_position, this, computedValues.m_extent, containerBlock, containerLogicalWidth);
 }
 
-static void computeBlockStaticDistance(Length& logicalTop, Length& logicalBottom, const RenderBox* child, const RenderBoxModelObject* containerBlock)
+static void computeBlockStaticDistance(Length& logicalTop, Length& logicalBottom, const RenderBox* child, const LayoutBoxModelObject* containerBlock)
 {
     if (!logicalTop.isAuto() || !logicalBottom.isAuto())
         return;
@@ -3195,7 +3195,7 @@ void RenderBox::computePositionedLogicalHeight(LogicalExtentComputedValues& comp
 
 
     // We don't use containingBlock(), since we may be positioned by an enclosing relpositioned inline.
-    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
+    const LayoutBoxModelObject* containerBlock = toLayoutBoxModelObject(container());
 
     const LayoutUnit containerLogicalHeight = containingBlockLogicalHeightForPositioned(containerBlock);
 
@@ -3275,7 +3275,7 @@ void RenderBox::computePositionedLogicalHeight(LogicalExtentComputedValues& comp
     computedValues.m_extent += bordersPlusPadding;
 }
 
-static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const RenderBox* child, LayoutUnit logicalHeightValue, const RenderBoxModelObject* containerBlock, LayoutUnit containerLogicalHeight)
+static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const RenderBox* child, LayoutUnit logicalHeightValue, const LayoutBoxModelObject* containerBlock, LayoutUnit containerLogicalHeight)
 {
     // Deal with differing writing modes here.  Our offset needs to be in the containing block's coordinate space. If the containing block is flipped
     // along this axis, then we need to flip the coordinate.  This can only happen if the containing block is both a flipped mode and perpendicular to us.
@@ -3297,7 +3297,7 @@ static void computeLogicalTopPositionedOffset(LayoutUnit& logicalTopPos, const R
     }
 }
 
-void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, const RenderBoxModelObject* containerBlock,
+void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, const LayoutBoxModelObject* containerBlock,
                                                     LayoutUnit containerLogicalHeight, LayoutUnit bordersPlusPadding, LayoutUnit logicalHeight,
                                                     const Length& logicalTop, const Length& logicalBottom, const Length& marginBefore,
                                                     const Length& marginAfter, LogicalExtentComputedValues& computedValues) const
@@ -3437,7 +3437,7 @@ void RenderBox::computePositionedLogicalWidthReplaced(LogicalExtentComputedValue
 
     // We don't use containingBlock(), since we may be positioned by an enclosing
     // relative positioned inline.
-    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
+    const LayoutBoxModelObject* containerBlock = toLayoutBoxModelObject(container());
 
     const LayoutUnit containerLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock);
     const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, false);
@@ -3605,7 +3605,7 @@ void RenderBox::computePositionedLogicalHeightReplaced(LogicalExtentComputedValu
     // the numbers correspond to numbers in spec)
 
     // We don't use containingBlock(), since we may be positioned by an enclosing relpositioned inline.
-    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
+    const LayoutBoxModelObject* containerBlock = toLayoutBoxModelObject(container());
 
     const LayoutUnit containerLogicalHeight = containingBlockLogicalHeightForPositioned(containerBlock);
     const LayoutUnit containerRelativeLogicalWidth = containingBlockLogicalWidthForPositioned(containerBlock, false);
@@ -3898,7 +3898,7 @@ bool RenderBox::hasNonCompositedScrollbars() const
 PaintInvalidationReason RenderBox::paintInvalidationReason(const LayoutLayerModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
 {
-    PaintInvalidationReason invalidationReason = RenderBoxModelObject::paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
+    PaintInvalidationReason invalidationReason = LayoutBoxModelObject::paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
     if (isFullPaintInvalidationReason(invalidationReason))
         return invalidationReason;
 
@@ -4606,7 +4606,7 @@ void RenderBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogi
 
 void RenderBox::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
 {
-    RenderBoxModelObject::invalidateDisplayItemClients(displayItemList);
+    LayoutBoxModelObject::invalidateDisplayItemClients(displayItemList);
     if (LayerScrollableArea* area = scrollableArea())
         displayItemList->invalidate(area->displayItemClient());
 }

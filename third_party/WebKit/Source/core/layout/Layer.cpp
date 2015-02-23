@@ -874,7 +874,7 @@ bool Layer::updateLayerPosition()
 
     bool positionOrOffsetChanged = false;
     if (renderer()->isRelPositioned()) {
-        LayoutSize newOffset = toRenderBoxModelObject(renderer())->offsetForInFlowPosition();
+        LayoutSize newOffset = toLayoutBoxModelObject(renderer())->offsetForInFlowPosition();
         positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
         m_offsetForInFlowPosition = newOffset;
         localPoint.move(m_offsetForInFlowPosition);

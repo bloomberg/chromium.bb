@@ -181,14 +181,14 @@ void PrintContext::end()
     m_linkAndLinkedDestinationsValid = false;
 }
 
-static RenderBoxModelObject* enclosingBoxModelObject(LayoutObject* object)
+static LayoutBoxModelObject* enclosingBoxModelObject(LayoutObject* object)
 {
 
     while (object && !object->isBoxModelObject())
         object = object->parent();
     if (!object)
         return nullptr;
-    return toRenderBoxModelObject(object);
+    return toLayoutBoxModelObject(object);
 }
 
 int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSizeInPixels)
@@ -197,7 +197,7 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
     RefPtrWillBeRawPtr<Element> protect(element);
     element->document().updateLayout();
 
-    RenderBoxModelObject* box = enclosingBoxModelObject(element->renderer());
+    LayoutBoxModelObject* box = enclosingBoxModelObject(element->renderer());
     if (!box)
         return -1;
 

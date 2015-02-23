@@ -82,7 +82,7 @@ using namespace HTMLNames;
 
 static inline LayoutObject* firstChildInContinuation(const RenderInline& renderer)
 {
-    RenderBoxModelObject* r = renderer.continuation();
+    LayoutBoxModelObject* r = renderer.continuation();
 
     while (r) {
         if (r->isRenderBlock())
@@ -100,7 +100,7 @@ static inline bool isInlineWithContinuation(LayoutObject* object)
     if (!object->isBoxModelObject())
         return false;
 
-    RenderBoxModelObject* renderer = toRenderBoxModelObject(object);
+    LayoutBoxModelObject* renderer = toLayoutBoxModelObject(object);
     if (!renderer->isRenderInline())
         return false;
 
@@ -157,7 +157,7 @@ static inline bool lastChildHasContinuation(LayoutObject* renderer)
     return lastChild && isInlineWithContinuation(lastChild);
 }
 
-static RenderBoxModelObject* nextContinuation(LayoutObject* renderer)
+static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
 {
     ASSERT(renderer);
     if (renderer->isRenderInline() && !renderer->isReplaced())
@@ -214,11 +214,11 @@ void AXRenderObject::setRenderer(LayoutObject* renderer)
     setNode(renderer->node());
 }
 
-RenderBoxModelObject* AXRenderObject::renderBoxModelObject() const
+LayoutBoxModelObject* AXRenderObject::layoutBoxModelObject() const
 {
     if (!m_renderer || !m_renderer->isBoxModelObject())
         return 0;
-    return toRenderBoxModelObject(m_renderer);
+    return toLayoutBoxModelObject(m_renderer);
 }
 
 Document* AXRenderObject::topDocument() const
@@ -254,7 +254,7 @@ ScrollableArea* AXRenderObject::getScrollableAreaIfScrollable() const
     return box->scrollableArea();
 }
 
-static bool isImageOrAltText(RenderBoxModelObject* box, Node* node)
+static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
 {
     if (box && box->isImage())
         return true;
@@ -274,7 +274,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return m_ariaRole;
 
     Node* node = m_renderer->node();
-    RenderBoxModelObject* cssBox = renderBoxModelObject();
+    LayoutBoxModelObject* cssBox = layoutBoxModelObject();
 
     if ((cssBox && cssBox->isListItem()) || isHTMLLIElement(node))
         return ListItemRole;
@@ -409,7 +409,7 @@ void AXRenderObject::detach()
 
 bool AXRenderObject::isAttachment() const
 {
-    RenderBoxModelObject* renderer = renderBoxModelObject();
+    LayoutBoxModelObject* renderer = layoutBoxModelObject();
     if (!renderer)
         return false;
     // Widgets are the replaced elements that we represent to AX as attachments
@@ -577,7 +577,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
     // ignore popup menu items because AppKit does
     for (LayoutObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
-        if (parent->isBoxModelObject() && toRenderBoxModelObject(parent)->isMenuList())
+        if (parent->isBoxModelObject() && toLayoutBoxModelObject(parent)->isMenuList())
             return true;
     }
 
@@ -922,7 +922,7 @@ String AXRenderObject::stringValue() const
     if (!m_renderer)
         return String();
 
-    RenderBoxModelObject* cssBox = renderBoxModelObject();
+    LayoutBoxModelObject* cssBox = layoutBoxModelObject();
 
     if (ariaRoleAttribute() == StaticTextRole) {
         String staticText = text();
@@ -1708,7 +1708,7 @@ void AXRenderObject::setValue(const String& string)
     if (!m_renderer || !m_renderer->isBoxModelObject())
         return;
 
-    RenderBoxModelObject* renderer = toRenderBoxModelObject(m_renderer);
+    LayoutBoxModelObject* renderer = toLayoutBoxModelObject(m_renderer);
     if (renderer->isTextField() && isHTMLInputElement(*node()))
         toHTMLInputElement(*node()).setValue(string);
     else if (renderer->isTextArea() && isHTMLTextAreaElement(*node()))
@@ -2049,7 +2049,7 @@ bool AXRenderObject::layoutObjectIsObservable(LayoutObject* renderer) const
 
     // AX clients will listen for AXSelectedChildrenChanged on listboxes.
     Node* node = renderer->node();
-    if (nodeHasRole(node, "listbox") || (renderer->isBoxModelObject() && toRenderBoxModelObject(renderer)->isListBox()))
+    if (nodeHasRole(node, "listbox") || (renderer->isBoxModelObject() && toLayoutBoxModelObject(renderer)->isListBox()))
         return true;
 
     // Textboxes should send out notifications.
@@ -2223,7 +2223,7 @@ void AXRenderObject::addTextFieldChildren()
 
 void AXRenderObject::addImageMapChildren()
 {
-    RenderBoxModelObject* cssBox = renderBoxModelObject();
+    LayoutBoxModelObject* cssBox = layoutBoxModelObject();
     if (!cssBox || !cssBox->isLayoutImage())
         return;
 

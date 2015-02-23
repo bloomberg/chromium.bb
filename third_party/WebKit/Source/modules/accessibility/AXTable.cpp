@@ -275,7 +275,7 @@ bool AXTable::isDataTable() const
             // For the first 5 rows, cache the background color so we can check if this table has zebra-striped rows.
             if (row < 5 && row == alternatingRowColorCount) {
                 LayoutObject* layoutRow = cell->parent();
-                if (!layoutRow || !layoutRow->isBoxModelObject() || !toRenderBoxModelObject(layoutRow)->isTableRow())
+                if (!layoutRow || !layoutRow->isBoxModelObject() || !toLayoutBoxModelObject(layoutRow)->isTableRow())
                     continue;
                 const LayoutStyle* rowLayoutStyle = layoutRow->style();
                 if (!rowLayoutStyle)

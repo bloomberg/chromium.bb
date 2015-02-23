@@ -21,9 +21,9 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/rendering/RenderBoxModelObject.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
 
@@ -281,10 +281,10 @@ public:
     EVerticalAlign verticalAlign() const { return renderer().style(m_bitfields.firstLine())->verticalAlign(); }
 
     // Use with caution! The type is not checked!
-    RenderBoxModelObject* boxModelObject() const
+    LayoutBoxModelObject* boxModelObject() const
     {
         if (!renderer().isText())
-            return toRenderBoxModelObject(&renderer());
+            return toLayoutBoxModelObject(&renderer());
         return 0;
     }
 

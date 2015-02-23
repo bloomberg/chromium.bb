@@ -5,16 +5,16 @@
 #include "config.h"
 #include "core/paint/LineBoxListPainter.h"
 
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
-#include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"
 
 namespace blink {
 
-void LineBoxListPainter::paint(RenderBoxModelObject* renderer, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
+void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     // Only paint during the foreground/selection phases.
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseOutline

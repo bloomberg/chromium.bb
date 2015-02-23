@@ -128,7 +128,7 @@ FloatWillBeLayoutUnit InlineBox::logicalHeight() const
         return isHorizontal() ? toRenderBox(renderer()).size().height() : toRenderBox(renderer()).size().width();
 
     ASSERT(isInlineFlowBox());
-    RenderBoxModelObject* flowObject = boxModelObject();
+    LayoutBoxModelObject* flowObject = boxModelObject();
     const FontMetrics& fontMetrics = renderer().style(isFirstLineStyle())->fontMetrics();
     FloatWillBeLayoutUnit result = fontMetrics.height();
     if (parent())

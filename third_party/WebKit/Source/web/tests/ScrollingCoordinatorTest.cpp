@@ -183,7 +183,7 @@ static WebLayer* webLayerFromElement(Element* element)
     LayoutObject* renderer = element->renderer();
     if (!renderer || !renderer->isBoxModelObject())
         return 0;
-    Layer* layer = toRenderBoxModelObject(renderer)->layer();
+    Layer* layer = toLayoutBoxModelObject(renderer)->layer();
     if (!layer)
         return 0;
     if (!layer->hasCompositedLayerMapping())

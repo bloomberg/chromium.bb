@@ -602,10 +602,10 @@ RenderBox* Node::renderBox() const
     return renderer && renderer->isBox() ? toRenderBox(renderer) : nullptr;
 }
 
-RenderBoxModelObject* Node::renderBoxModelObject() const
+LayoutBoxModelObject* Node::layoutBoxModelObject() const
 {
     LayoutObject* renderer = this->renderer();
-    return renderer && renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : nullptr;
+    return renderer && renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
 }
 
 LayoutRect Node::boundingBox() const
@@ -619,7 +619,7 @@ bool Node::hasNonEmptyBoundingBox() const
 {
     // Before calling absoluteRects, check for the common case where the renderer
     // is non-empty, since this is a faster check and almost always returns true.
-    RenderBoxModelObject* box = renderBoxModelObject();
+    LayoutBoxModelObject* box = layoutBoxModelObject();
     if (!box)
         return false;
     if (!box->borderBoundingBox().isEmpty())

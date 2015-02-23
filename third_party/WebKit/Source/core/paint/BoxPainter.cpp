@@ -10,6 +10,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/Layer.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTheme.h"
@@ -22,7 +23,6 @@
 #include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -168,7 +168,7 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
         // FIXME : It would be possible for the following occlusion culling test to be more aggressive
         // on layers with no repeat by testing whether the image covers the layout rect.
         // Testing that here would imply duplicating a lot of calculations that are currently done in
-        // RenderBoxModelObject::paintFillLayerExtended. A more efficient solution might be to move
+        // LayoutBoxModelObject::paintFillLayerExtended. A more efficient solution might be to move
         // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
         // and pass it down.
 
@@ -271,7 +271,7 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(Layo
     return BoxPainter::getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
+void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
     BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, SkXfermode::Mode op, LayoutObject* backgroundObject, bool skipBaseColor)
 {
     GraphicsContext* context = paintInfo.context;
@@ -622,7 +622,7 @@ static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
     return space;
 }
 
-void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, const LayoutLayerModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
+void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, const LayoutLayerModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
     BackgroundImageGeometry& geometry, LayoutObject* backgroundObject)
 {
     LayoutUnit left = 0;
@@ -782,7 +782,7 @@ void BoxPainter::calculateBackgroundImageGeometry(RenderBoxModelObject& obj, con
     geometry.clip(snappedPaintRect);
 }
 
-InterpolationQuality BoxPainter::chooseInterpolationQuality(RenderBoxModelObject& obj, GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
+InterpolationQuality BoxPainter::chooseInterpolationQuality(LayoutBoxModelObject& obj, GraphicsContext* context, Image* image, const void* layer, const LayoutSize& size)
 {
     return ImageQualityController::imageQualityController()->chooseInterpolationQuality(context, &obj, image, layer, size);
 }
@@ -808,12 +808,12 @@ static inline void applySubPixelHeuristicForTileSize(LayoutSize& tileSize, const
     tileSize.setHeight(positioningAreaSize.height() - tileSize.height() <= 1 ? tileSize.height().ceil() : tileSize.height().floor());
 }
 
-IntSize BoxPainter::calculateFillTileSize(const RenderBoxModelObject& obj, const FillLayer& fillLayer, const IntSize& positioningAreaSize)
+IntSize BoxPainter::calculateFillTileSize(const LayoutBoxModelObject& obj, const FillLayer& fillLayer, const IntSize& positioningAreaSize)
 {
     StyleImage* image = fillLayer.image();
     EFillSizeType type = fillLayer.size().type;
 
-    IntSize imageIntrinsicSize = obj.calculateImageIntrinsicDimensions(image, positioningAreaSize, RenderBoxModelObject::ScaleByEffectiveZoom);
+    IntSize imageIntrinsicSize = obj.calculateImageIntrinsicDimensions(image, positioningAreaSize, LayoutBoxModelObject::ScaleByEffectiveZoom);
     imageIntrinsicSize.scale(1 / image->imageScaleFactor(), 1 / image->imageScaleFactor());
     switch (type) {
     case SizeLength: {
@@ -890,7 +890,7 @@ static LayoutUnit computeBorderImageSide(const BorderImageLength& borderSlice, L
     return valueForLength(borderSlice.length(), boxExtent);
 }
 
-bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const LayoutStyle& style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
+bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext* graphicsContext, const LayoutRect& rect, const LayoutStyle& style, const NinePieceImage& ninePieceImage, SkXfermode::Mode op)
 {
     StyleImage* styleImage = ninePieceImage.image();
     if (!styleImage)
@@ -908,7 +908,7 @@ bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext*
     rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
     IntRect borderImageRect = pixelSnappedIntRect(rectWithOutsets);
 
-    IntSize imageSize = obj.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(), RenderBoxModelObject::DoNotScaleByEffectiveZoom);
+    IntSize imageSize = obj.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(), LayoutBoxModelObject::DoNotScaleByEffectiveZoom);
 
     // If both values are 'auto' then the intrinsic width and/or height of the image should be used, if any.
     styleImage->setContainerSizeForRenderer(&obj, imageSize, style.effectiveZoom());
@@ -1391,7 +1391,7 @@ static inline void drawSolidBorderRect(GraphicsContext* context, const FloatRect
         context->setShouldAntialias(wasAntialias);
 }
 
-void BoxPainter::paintBorder(RenderBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const LayoutStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const LayoutStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     GraphicsContext* graphicsContext = info.context;
     // border-image is not affected by border-radius.

@@ -1151,7 +1151,7 @@ static LayoutUnit getBPMWidth(LayoutUnit childValue, Length cssUnit)
     return LayoutUnit();
 }
 
-static LayoutUnit getBorderPaddingMargin(const RenderBoxModelObject& child, bool endOfInline)
+static LayoutUnit getBorderPaddingMargin(const LayoutBoxModelObject& child, bool endOfInline)
 {
     const LayoutStyle& childStyle = child.styleRef();
     if (endOfInline) {

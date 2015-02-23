@@ -76,7 +76,7 @@ class QualifiedName;
 class RadioNodeList;
 class RegisteredEventListener;
 class RenderBox;
-class RenderBoxModelObject;
+class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutStyle;
 class SVGQualifiedName;
@@ -512,7 +512,7 @@ public:
 
     // Use these two methods with caution.
     RenderBox* renderBox() const;
-    RenderBoxModelObject* renderBoxModelObject() const;
+    LayoutBoxModelObject* layoutBoxModelObject() const;
 
     struct AttachContext {
         LayoutStyle* resolvedStyle;

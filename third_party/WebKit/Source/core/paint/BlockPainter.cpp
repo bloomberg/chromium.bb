@@ -485,7 +485,7 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
         RenderBlock* cb = m_renderBlock.containingBlock();
 
         bool inlineEnclosedInSelfPaintingLayer = false;
-        for (RenderBoxModelObject* box = inlineRenderer; box != cb; box = box->parent()->enclosingBoxModelObject()) {
+        for (LayoutBoxModelObject* box = inlineRenderer; box != cb; box = box->parent()->enclosingBoxModelObject()) {
             if (box->hasSelfPaintingLayer()) {
                 inlineEnclosedInSelfPaintingLayer = true;
                 break;

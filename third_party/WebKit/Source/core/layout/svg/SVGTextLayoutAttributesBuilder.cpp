@@ -100,7 +100,7 @@ static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigne
     }
 }
 
-void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(RenderBoxModelObject& start, UChar& lastCharacter)
+void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxModelObject& start, UChar& lastCharacter)
 {
     ASSERT(!start.isSVGText() || m_textPositions.isEmpty());
 

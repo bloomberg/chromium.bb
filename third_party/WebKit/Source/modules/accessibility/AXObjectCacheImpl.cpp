@@ -282,7 +282,7 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* rendere
         return AXSVGRoot::create(renderer, this);
 
     if (renderer->isBoxModelObject()) {
-        RenderBoxModelObject* cssBox = toRenderBoxModelObject(renderer);
+        LayoutBoxModelObject* cssBox = toLayoutBoxModelObject(renderer);
         if (cssBox->isListBox())
             return AXListBox::create(toRenderListBox(cssBox), this);
         if (cssBox->isMenuList())

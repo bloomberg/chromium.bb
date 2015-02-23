@@ -235,7 +235,7 @@ void RenderBlock::willBeDestroyed()
     // Destroy our continuation before anything other than anonymous children.
     // The reason we don't destroy it before anonymous children is that they may
     // have continuations of their own that are anonymous children of our continuation.
-    RenderBoxModelObject* continuation = this->continuation();
+    LayoutBoxModelObject* continuation = this->continuation();
     if (continuation) {
         continuation->destroy();
         setContinuation(0);
@@ -334,7 +334,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const LayoutStyle* oldSty
     if (!isAnonymousBlock()) {
         // Ensure that all of our continuation blocks pick up the new style.
         for (RenderBlock* currCont = blockElementContinuation(); currCont; currCont = currCont->blockElementContinuation()) {
-            RenderBoxModelObject* nextCont = currCont->continuation();
+            LayoutBoxModelObject* nextCont = currCont->continuation();
             currCont->setContinuation(0);
             currCont->setStyle(mutableStyle());
             currCont->setContinuation(nextCont);
@@ -433,9 +433,9 @@ RenderBlock* RenderBlock::continuationBefore(LayoutObject* beforeChild)
 void RenderBlock::addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     RenderBlock* flow = continuationBefore(beforeChild);
-    RenderBoxModelObject* beforeChildParent = 0;
+    LayoutBoxModelObject* beforeChildParent = 0;
     if (beforeChild) {
-        beforeChildParent = toRenderBoxModelObject(beforeChild->parent());
+        beforeChildParent = toLayoutBoxModelObject(beforeChild->parent());
         // Don't attempt to insert into something that isn't a RenderBlockFlow (block
         // container). While the DOM nodes of |beforeChild| and |newChild| are siblings, there may
         // be anonymous table wrapper objects around |beforeChild| on the layout side. Therefore,
@@ -448,11 +448,11 @@ void RenderBlock::addChildToContinuation(LayoutObject* newChild, LayoutObject* b
             ASSERT(!beforeChildParent->virtualContinuation());
             ASSERT(beforeChildParent->isAnonymous());
             RELEASE_ASSERT(beforeChildParent != this);
-            beforeChildParent = toRenderBoxModelObject(beforeChildParent->parent());
+            beforeChildParent = toLayoutBoxModelObject(beforeChildParent->parent());
         }
         ASSERT(beforeChildParent);
     } else {
-        RenderBoxModelObject* cont = flow->continuation();
+        LayoutBoxModelObject* cont = flow->continuation();
         if (cont)
             beforeChildParent = cont;
         else
@@ -601,7 +601,7 @@ RenderBlock* RenderBlock::clone() const
 
 void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
     RenderBlock* middleBlock,
-    LayoutObject* beforeChild, RenderBoxModelObject* oldCont)
+    LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
 {
     ASSERT(isDescendantOf(fromBlock));
 
@@ -634,7 +634,7 @@ void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
         // anonymous block, there's no need to do any continuation hookup, since we haven't
         // actually split a real element.
         if (!currentBlockParent->isAnonymousBlock()) {
-            RenderBoxModelObject* oldCont = currentBlockParent->continuation();
+            LayoutBoxModelObject* oldCont = currentBlockParent->continuation();
             currentBlockParent->setContinuation(cloneBlock);
             cloneBlock->setContinuation(oldCont);
         }
@@ -669,7 +669,7 @@ void RenderBlock::splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock,
 }
 
 void RenderBlock::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
-    LayoutObject* newChild, RenderBoxModelObject* oldCont)
+    LayoutObject* newChild, LayoutBoxModelObject* oldCont)
 {
     RenderBlock* pre = 0;
     RenderBlock* block = containingColumnsBlock();
@@ -856,7 +856,7 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
             if (columnsBlockAncestor != this && !isLayoutFlowThread()) {
                 // We are nested inside a multi-column element and are being split by the span. We have to break up
                 // our block into continuations.
-                RenderBoxModelObject* oldContinuation = continuation();
+                LayoutBoxModelObject* oldContinuation = continuation();
 
                 // When we split an anonymous block, there's no need to do any continuation hookup,
                 // since we haven't actually split a real element.
@@ -1136,7 +1136,7 @@ void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* 
     // multicol implementation, because of buggy block continuation handling (which is hard and
     // rather pointless to fix at this point). Support for block continuations can be removed
     // together with the old multicol implementation. crbug.com/408123
-    RenderBoxModelObject* temporarilyInactiveContinuation = parent->continuation();
+    LayoutBoxModelObject* temporarilyInactiveContinuation = parent->continuation();
     if (temporarilyInactiveContinuation)
         parent->setContinuation(0);
     child->moveAllChildrenTo(parent, nextSibling, child->hasLayer());
@@ -1246,7 +1246,7 @@ void RenderBlock::removeChild(LayoutObject* oldChild)
 
                 // Found our previous continuation. We just need to point it to
                 // |this|'s next continuation.
-                RenderBoxModelObject* nextContinuation = continuation();
+                LayoutBoxModelObject* nextContinuation = continuation();
                 if (curr->isRenderInline())
                     toRenderInline(curr)->setContinuation(nextContinuation);
                 else if (curr->isRenderBlock())
@@ -1784,13 +1784,13 @@ void RenderBlock::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pai
 
 RenderInline* RenderBlock::inlineElementContinuation() const
 {
-    RenderBoxModelObject* continuation = this->continuation();
+    LayoutBoxModelObject* continuation = this->continuation();
     return continuation && continuation->isInline() ? toRenderInline(continuation) : 0;
 }
 
 RenderBlock* RenderBlock::blockElementContinuation() const
 {
-    RenderBoxModelObject* currentContinuation = continuation();
+    LayoutBoxModelObject* currentContinuation = continuation();
     if (!currentContinuation || currentContinuation->isInline())
         return 0;
     RenderBlock* nextContinuation = toRenderBlock(currentContinuation);

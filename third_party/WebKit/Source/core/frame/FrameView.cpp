@@ -1369,7 +1369,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         LayoutObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
         ASSERT(renderer->hasLayer());
-        Layer* layer = toRenderBoxModelObject(renderer)->layer();
+        Layer* layer = toLayoutBoxModelObject(renderer)->layer();
 
         if (layer->isPaintInvalidationContainer())
             continue;

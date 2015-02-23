@@ -216,7 +216,7 @@ void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
 
 bool LayoutImage::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox*) const
 {
-    if (!RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(bleedAvoidance))
+    if (!LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(bleedAvoidance))
         return false;
 
     return !const_cast<LayoutImage*>(this)->boxDecorationBackgroundIsKnownToBeObscured();

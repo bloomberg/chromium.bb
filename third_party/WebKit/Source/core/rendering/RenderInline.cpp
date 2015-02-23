@@ -46,7 +46,7 @@
 
 namespace blink {
 
-struct SameSizeAsRenderInline : public RenderBoxModelObject {
+struct SameSizeAsRenderInline : public LayoutBoxModelObject {
     virtual ~SameSizeAsRenderInline() { }
     LayoutObjectChildList m_children;
     RenderLineBoxList m_lineBoxes;
@@ -55,7 +55,7 @@ struct SameSizeAsRenderInline : public RenderBoxModelObject {
 static_assert(sizeof(RenderInline) == sizeof(SameSizeAsRenderInline), "RenderInline should stay small");
 
 RenderInline::RenderInline(Element* element)
-    : RenderBoxModelObject(element)
+    : LayoutBoxModelObject(element)
 {
     setChildrenInline(true);
 }
@@ -89,7 +89,7 @@ void RenderInline::willBeDestroyed()
     // Destroy our continuation before anything other than anonymous children.
     // The reason we don't destroy it before anonymous children is that they may
     // have continuations of their own that are anonymous children of our continuation.
-    RenderBoxModelObject* continuation = this->continuation();
+    LayoutBoxModelObject* continuation = this->continuation();
     if (continuation) {
         continuation->destroy();
         setContinuation(0);
@@ -97,7 +97,7 @@ void RenderInline::willBeDestroyed()
 
     if (!documentBeingDestroyed()) {
         if (firstLineBox()) {
-            // We can't wait for RenderBoxModelObject::destroy to clear the selection,
+            // We can't wait for LayoutBoxModelObject::destroy to clear the selection,
             // because by then we will have nuked the line boxes.
             // FIXME: The FrameSelection should be responsible for this when it
             // is notified of DOM mutations.
@@ -119,12 +119,12 @@ void RenderInline::willBeDestroyed()
 
     m_lineBoxes.deleteLineBoxes();
 
-    RenderBoxModelObject::willBeDestroyed();
+    LayoutBoxModelObject::willBeDestroyed();
 }
 
 RenderInline* RenderInline::inlineElementContinuation() const
 {
-    RenderBoxModelObject* continuation = this->continuation();
+    LayoutBoxModelObject* continuation = this->continuation();
     if (!continuation || continuation->isInline())
         return toRenderInline(continuation);
     return toRenderBlock(continuation)->inlineElementContinuation();
@@ -132,7 +132,7 @@ RenderInline* RenderInline::inlineElementContinuation() const
 
 void RenderInline::updateFromStyle()
 {
-    RenderBoxModelObject::updateFromStyle();
+    LayoutBoxModelObject::updateFromStyle();
 
     // FIXME: Is this still needed. Was needed for run-ins, since run-in is considered a block display type.
     setInline(true);
@@ -183,7 +183,7 @@ static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const 
 
 void RenderInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
-    RenderBoxModelObject::styleDidChange(diff, oldStyle);
+    LayoutBoxModelObject::styleDidChange(diff, oldStyle);
 
     // Ensure that all of the split inlines pick up the new style. We
     // only do this if we're an inline, since we don't want to propagate
@@ -194,7 +194,7 @@ void RenderInline::styleDidChange(StyleDifference diff, const LayoutStyle* oldSt
     const LayoutStyle& newStyle = styleRef();
     RenderInline* continuation = inlineElementContinuation();
     for (RenderInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
-        RenderBoxModelObject* nextCont = currCont->continuation();
+        LayoutBoxModelObject* nextCont = currCont->continuation();
         currCont->setContinuation(0);
         currCont->setStyle(mutableStyle());
         currCont->setContinuation(nextCont);
@@ -288,21 +288,21 @@ void RenderInline::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     return addChildIgnoringContinuation(newChild, beforeChild);
 }
 
-static RenderBoxModelObject* nextContinuation(LayoutObject* renderer)
+static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
 {
     if (renderer->isInline() && !renderer->isReplaced())
         return toRenderInline(renderer)->continuation();
     return toRenderBlock(renderer)->inlineElementContinuation();
 }
 
-RenderBoxModelObject* RenderInline::continuationBefore(LayoutObject* beforeChild)
+LayoutBoxModelObject* RenderInline::continuationBefore(LayoutObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() == this)
         return this;
 
-    RenderBoxModelObject* curr = nextContinuation(this);
-    RenderBoxModelObject* nextToLast = this;
-    RenderBoxModelObject* last = this;
+    LayoutBoxModelObject* curr = nextContinuation(this);
+    LayoutBoxModelObject* nextToLast = this;
+    LayoutBoxModelObject* last = this;
     while (curr) {
         if (beforeChild && beforeChild->parent() == curr) {
             if (curr->slowFirstChild() == beforeChild)
@@ -344,14 +344,14 @@ void RenderInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
 
         RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&document());
         newBox->setStyle(newStyle.release());
-        RenderBoxModelObject* oldContinuation = continuation();
+        LayoutBoxModelObject* oldContinuation = continuation();
         setContinuation(newBox);
 
         splitFlow(beforeChild, newBox, newChild, oldContinuation);
         return;
     }
 
-    RenderBoxModelObject::addChild(newChild, beforeChild);
+    LayoutBoxModelObject::addChild(newChild, beforeChild);
 
     newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
 }
@@ -376,7 +376,7 @@ void RenderInline::moveChildrenToIgnoringContinuation(RenderInline* to, LayoutOb
 
 void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
                                 RenderBlock* middleBlock,
-                                LayoutObject* beforeChild, RenderBoxModelObject* oldCont)
+                                LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
 {
     ASSERT(isDescendantOf(fromBlock));
 
@@ -425,7 +425,7 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
     // we have reached |cMaxDepth| in which case we sacrifice correct rendering for performance).
     for (int i = static_cast<int>(inlinesToClone.size()) - 2; i >= 0; --i) {
         // Hook the clone up as a continuation of |currentInline|.
-        RenderBoxModelObject* oldCont = currentParent->continuation();
+        LayoutBoxModelObject* oldCont = currentParent->continuation();
         currentParent->setContinuation(cloneInline);
         cloneInline->setContinuation(oldCont);
 
@@ -457,7 +457,7 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
 }
 
 void RenderInline::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
-    LayoutObject* newChild, RenderBoxModelObject* oldCont)
+    LayoutObject* newChild, LayoutBoxModelObject* oldCont)
 {
     RenderBlock* pre = 0;
     RenderBlock* block = containingBlock();
@@ -516,13 +516,13 @@ void RenderInline::splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox
 
 void RenderInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
-    RenderBoxModelObject* flow = continuationBefore(beforeChild);
+    LayoutBoxModelObject* flow = continuationBefore(beforeChild);
     ASSERT(!beforeChild || beforeChild->parent()->isRenderBlock() || beforeChild->parent()->isRenderInline());
-    RenderBoxModelObject* beforeChildParent = 0;
+    LayoutBoxModelObject* beforeChildParent = 0;
     if (beforeChild)
-        beforeChildParent = toRenderBoxModelObject(beforeChild->parent());
+        beforeChildParent = toLayoutBoxModelObject(beforeChild->parent());
     else {
-        RenderBoxModelObject* cont = nextContinuation(flow);
+        LayoutBoxModelObject* cont = nextContinuation(flow);
         if (cont)
             beforeChildParent = cont;
         else
@@ -843,7 +843,7 @@ PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
 
     // Translate the coords from the pre-anonymous block to the post-anonymous block.
     LayoutPoint parentBlockPoint = cb->location() + point;
-    RenderBoxModelObject* c = continuation();
+    LayoutBoxModelObject* c = continuation();
     while (c) {
         RenderBox* contBlock = c->isInline() ? c->containingBlock() : toRenderBlock(c);
         if (c->isInline() || c->slowFirstChild())
@@ -851,7 +851,7 @@ PositionWithAffinity RenderInline::positionForPoint(const LayoutPoint& point)
         c = toRenderBlock(c)->inlineElementContinuation();
     }
 
-    return RenderBoxModelObject::positionForPoint(point);
+    return LayoutBoxModelObject::positionForPoint(point);
 }
 
 namespace {
@@ -1084,7 +1084,7 @@ LayoutRect RenderInline::clippedOverflowRect(const LayoutLayerModelObject* paint
 
 LayoutRect RenderInline::rectWithOutlineForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
 {
-    LayoutRect r(RenderBoxModelObject::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
+    LayoutRect r(LayoutBoxModelObject::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
     for (LayoutObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
         if (!curr->isText())
             r.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
@@ -1222,7 +1222,7 @@ void RenderInline::mapLocalToContainer(const LayoutLayerModelObject* paintInvali
 
 void RenderInline::updateDragState(bool dragOn)
 {
-    RenderBoxModelObject::updateDragState(dragOn);
+    LayoutBoxModelObject::updateDragState(dragOn);
     if (continuation())
         continuation()->updateDragState(dragOn);
 }
@@ -1231,7 +1231,7 @@ void RenderInline::childBecameNonInline(LayoutObject* child)
 {
     // We have to split the parent flow.
     RenderBlock* newBox = containingBlock()->createAnonymousBlock();
-    RenderBoxModelObject* oldContinuation = continuation();
+    LayoutBoxModelObject* oldContinuation = continuation();
     setContinuation(newBox);
     LayoutObject* beforeChild = child->nextSibling();
     children()->removeChildNode(this, child);
@@ -1453,7 +1453,7 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 
 void RenderInline::invalidateDisplayItemClients(DisplayItemList* displayItemList) const
 {
-    RenderBoxModelObject::invalidateDisplayItemClients(displayItemList);
+    LayoutBoxModelObject::invalidateDisplayItemClients(displayItemList);
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
         displayItemList->invalidate(box->displayItemClient());
 }

@@ -3000,11 +3000,11 @@ bool RenderBlockFlow::avoidsFloats() const
     return RenderBox::avoidsFloats() || !style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth();
 }
 
-void RenderBlockFlow::moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert)
+void RenderBlockFlow::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     if (childrenInline())
         deleteLineBoxTree();
-    RenderBoxModelObject::moveChildrenTo(toBoxModelObject, startChild, endChild, beforeChild, fullRemoveInsert);
+    LayoutBoxModelObject::moveChildrenTo(toBoxModelObject, startChild, endChild, beforeChild, fullRemoveInsert);
 }
 
 LayoutUnit RenderBlockFlow::logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const

@@ -99,7 +99,7 @@ void LayoutSVGForeignObject::layout()
         updateCachedBoundariesInParents = oldViewport != m_viewport;
 
     // Set box origin to the foreignObject x/y translation, so positioned objects in XHTML content get correct
-    // positions. A regular RenderBoxModelObject would pull this information from LayoutStyle - in SVG those
+    // positions. A regular LayoutBoxModelObject would pull this information from LayoutStyle - in SVG those
     // properties are ignored for non <svg> elements, so we mimic what happens when specifying them through CSS.
 
     // FIXME: Investigate in location rounding issues - only affects LayoutSVGForeignObject & LayoutSVGText

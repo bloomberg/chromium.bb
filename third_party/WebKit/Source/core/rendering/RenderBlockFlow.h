@@ -206,8 +206,8 @@ public:
 
     virtual bool avoidsFloats() const override;
 
-    using RenderBoxModelObject::moveChildrenTo;
-    virtual void moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false) override;
+    using LayoutBoxModelObject::moveChildrenTo;
+    virtual void moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false) override;
 
     LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {

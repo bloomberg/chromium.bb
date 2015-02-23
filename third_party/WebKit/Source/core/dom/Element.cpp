@@ -515,7 +515,7 @@ static double adjustForLocalZoom(LayoutUnit value, LayoutObject& renderer)
 int Element::offsetLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderBoxModelObject* renderer = renderBoxModelObject())
+    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
         return lroundf(adjustForLocalZoom(renderer->offsetLeft(), *renderer));
     return 0;
 }
@@ -523,7 +523,7 @@ int Element::offsetLeft()
 int Element::offsetTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderBoxModelObject* renderer = renderBoxModelObject())
+    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
         return lroundf(adjustForLocalZoom(renderer->pixelSnappedOffsetTop(), *renderer));
     return 0;
 }
@@ -531,7 +531,7 @@ int Element::offsetTop()
 int Element::offsetWidth()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderBoxModelObject* renderer = renderBoxModelObject())
+    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), *renderer).round();
     return 0;
 }
@@ -539,7 +539,7 @@ int Element::offsetWidth()
 int Element::offsetHeight()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (RenderBoxModelObject* renderer = renderBoxModelObject())
+    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), *renderer).round();
     return 0;
 }
@@ -878,8 +878,8 @@ IntRect Element::boundsInRootViewSpace()
             quads.append(renderer()->localToAbsoluteQuad(localRect));
     } else {
         // Get the bounding rectangle from the box model.
-        if (renderBoxModelObject())
-            renderBoxModelObject()->absoluteQuads(quads);
+        if (layoutBoxModelObject())
+            layoutBoxModelObject()->absoluteQuads(quads);
     }
 
     if (quads.isEmpty())
@@ -1742,7 +1742,7 @@ void Element::setNeedsCompositingUpdate()
 {
     if (!document().isActive())
         return;
-    RenderBoxModelObject* renderer = renderBoxModelObject();
+    LayoutBoxModelObject* renderer = layoutBoxModelObject();
     if (!renderer)
         return;
     if (!renderer->hasLayer())

@@ -62,7 +62,7 @@ class InlineBox;
 class Position;
 class PositionWithAffinity;
 class PseudoStyleRequest;
-class RenderBoxModelObject;
+class LayoutBoxModelObject;
 class RenderBlock;
 class LayoutFlowThread;
 class LayoutGeometryMap;
@@ -189,7 +189,7 @@ public:
 
     // Convenience function for getting to the nearest enclosing box of a LayoutObject.
     RenderBox* enclosingBox() const;
-    RenderBoxModelObject* enclosingBoxModelObject() const;
+    LayoutBoxModelObject* enclosingBoxModelObject() const;
 
     RenderBox* enclosingScrollableBox() const;
 
@@ -516,7 +516,7 @@ public:
     bool isAnonymousColumnSpanBlock() const { return style()->columnSpan() && isAnonymousBlock(); }
     bool isElementContinuation() const { return node() && node()->renderer() != this; }
     bool isInlineElementContinuation() const { return isElementContinuation() && isInline(); }
-    virtual RenderBoxModelObject* virtualContinuation() const { return 0; }
+    virtual LayoutBoxModelObject* virtualContinuation() const { return 0; }
 
     bool isFloating() const { return m_bitfields.floating(); }
 

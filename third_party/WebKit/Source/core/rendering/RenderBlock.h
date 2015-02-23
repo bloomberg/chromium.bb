@@ -173,13 +173,13 @@ public:
 
     void addContinuationWithOutline(RenderInline*);
 
-    virtual RenderBoxModelObject* virtualContinuation() const override final { return continuation(); }
+    virtual LayoutBoxModelObject* virtualContinuation() const override final { return continuation(); }
     bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
     RenderInline* inlineElementContinuation() const;
     RenderBlock* blockElementContinuation() const;
 
-    using RenderBoxModelObject::continuation;
-    using RenderBoxModelObject::setContinuation;
+    using LayoutBoxModelObject::continuation;
+    using LayoutBoxModelObject::setContinuation;
 
     static RenderBlock* createAnonymousWithParentRendererAndDisplay(const LayoutObject*, EDisplay = BLOCK);
     static RenderBlockFlow* createAnonymousColumnsWithParentRenderer(const LayoutObject*);
@@ -207,10 +207,10 @@ public:
     LayoutUnit logicalHeightForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size().height() : child.size().width(); }
     LayoutSize logicalSizeForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size() : child.size().transposedSize(); }
     LayoutUnit logicalTopForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.location().y() : child.location().x(); }
-    LayoutUnit marginBeforeForChild(const RenderBoxModelObject& child) const { return child.marginBefore(style()); }
-    LayoutUnit marginAfterForChild(const RenderBoxModelObject& child) const { return child.marginAfter(style()); }
-    LayoutUnit marginStartForChild(const RenderBoxModelObject& child) const { return child.marginStart(style()); }
-    LayoutUnit marginEndForChild(const RenderBoxModelObject& child) const { return child.marginEnd(style()); }
+    LayoutUnit marginBeforeForChild(const LayoutBoxModelObject& child) const { return child.marginBefore(style()); }
+    LayoutUnit marginAfterForChild(const LayoutBoxModelObject& child) const { return child.marginAfter(style()); }
+    LayoutUnit marginStartForChild(const LayoutBoxModelObject& child) const { return child.marginStart(style()); }
+    LayoutUnit marginEndForChild(const LayoutBoxModelObject& child) const { return child.marginEnd(style()); }
     void setMarginStartForChild(RenderBox& child, LayoutUnit value) const { child.setMarginStart(value, style()); }
     void setMarginEndForChild(RenderBox& child, LayoutUnit value) const { child.setMarginEnd(value, style()); }
     void setMarginBeforeForChild(RenderBox& child, LayoutUnit value) const { child.setMarginBefore(value, style()); }
@@ -401,9 +401,9 @@ private:
     void makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, RenderBlockFlow* newBlockBox, LayoutObject* newChild);
 
     void splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
-        LayoutObject* beforeChild, RenderBoxModelObject* oldCont);
+        LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
     void splitFlow(LayoutObject* beforeChild, RenderBlock* newBlockBox,
-        LayoutObject* newChild, RenderBoxModelObject* oldCont);
+        LayoutObject* newChild, LayoutBoxModelObject* oldCont);
     RenderBlock* clone() const;
     RenderBlock* continuationBefore(LayoutObject* beforeChild);
     RenderBlockFlow* containingColumnsBlock(bool allowAnonymousColumnBlock = true);

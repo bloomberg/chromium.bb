@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderBoxModelObject.h"
+#include "core/layout/LayoutBoxModelObject.h"
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/Layer.h"
@@ -57,10 +57,10 @@ namespace blink {
 // an anonymous block (that houses other blocks) or it will be an inline flow.
 // <b><i><p>Hello</p></i></b>. In this example the <i> will have a block as
 // its continuation but the <b> will just have an inline as its continuation.
-typedef HashMap<const RenderBoxModelObject*, RenderBoxModelObject*> ContinuationMap;
+typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*> ContinuationMap;
 static ContinuationMap* continuationMap = nullptr;
 
-void RenderBoxModelObject::setSelectionState(SelectionState state)
+void LayoutBoxModelObject::setSelectionState(SelectionState state)
 {
     if (state == SelectionInside && selectionState() != SelectionNone)
         return;
@@ -79,7 +79,7 @@ void RenderBoxModelObject::setSelectionState(SelectionState state)
         containingBlock->setSelectionState(state);
 }
 
-void RenderBoxModelObject::contentChanged(ContentChangeType changeType)
+void LayoutBoxModelObject::contentChanged(ContentChangeType changeType)
 {
     if (!hasLayer())
         return;
@@ -87,21 +87,21 @@ void RenderBoxModelObject::contentChanged(ContentChangeType changeType)
     layer()->contentChanged(changeType);
 }
 
-bool RenderBoxModelObject::hasAcceleratedCompositing() const
+bool LayoutBoxModelObject::hasAcceleratedCompositing() const
 {
     return view()->compositor()->hasAcceleratedCompositing();
 }
 
-RenderBoxModelObject::RenderBoxModelObject(ContainerNode* node)
+LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
     : LayoutLayerModelObject(node)
 {
 }
 
-RenderBoxModelObject::~RenderBoxModelObject()
+LayoutBoxModelObject::~LayoutBoxModelObject()
 {
 }
 
-void RenderBoxModelObject::willBeDestroyed()
+void LayoutBoxModelObject::willBeDestroyed()
 {
     ImageQualityController::remove(this);
 
@@ -111,13 +111,13 @@ void RenderBoxModelObject::willBeDestroyed()
     LayoutLayerModelObject::willBeDestroyed();
 }
 
-bool RenderBoxModelObject::calculateHasBoxDecorations() const
+bool LayoutBoxModelObject::calculateHasBoxDecorations() const
 {
     const LayoutStyle& styleToUse = styleRef();
     return hasBackground() || styleToUse.hasBorder() || styleToUse.hasAppearance() || styleToUse.boxShadow();
 }
 
-void RenderBoxModelObject::updateFromStyle()
+void LayoutBoxModelObject::updateFromStyle()
 {
     LayoutLayerModelObject::updateFromStyle();
 
@@ -144,7 +144,7 @@ static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
     return offset;
 }
 
-RenderBlock* RenderBoxModelObject::containingBlockForAutoHeightDetection(Length logicalHeight) const
+RenderBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length logicalHeight) const
 {
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
@@ -176,7 +176,7 @@ RenderBlock* RenderBoxModelObject::containingBlockForAutoHeightDetection(Length 
     return cb;
 }
 
-bool RenderBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
+bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
 {
     Length logicalHeightLength = style()->logicalHeight();
     if (logicalHeightLength.isAuto())
@@ -191,7 +191,7 @@ bool RenderBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
     return false;
 }
 
-LayoutSize RenderBoxModelObject::relativePositionOffset() const
+LayoutSize LayoutBoxModelObject::relativePositionOffset() const
 {
     LayoutSize offset = accumulateInFlowPositionOffsets(this);
 
@@ -231,7 +231,7 @@ LayoutSize RenderBoxModelObject::relativePositionOffset() const
     return offset;
 }
 
-LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const LayoutPoint& startPoint) const
+LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeToOffsetParent(const LayoutPoint& startPoint) const
 {
     // If the element is the HTML body element or doesn't have a parent
     // return 0 and stop this algorithm.
@@ -248,7 +248,7 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
     if (!element)
         return referencePoint;
 
-    if (const RenderBoxModelObject* offsetParent = element->renderBoxModelObject()) {
+    if (const LayoutBoxModelObject* offsetParent = element->layoutBoxModelObject()) {
         if (offsetParent->isBox() && !offsetParent->isBody())
             referencePoint.move(-toRenderBox(offsetParent)->borderLeft(), -toRenderBox(offsetParent)->borderTop());
         if (!isOutOfFlowPositioned() || flowThreadContainingBlock()) {
@@ -273,36 +273,36 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
     return referencePoint;
 }
 
-LayoutSize RenderBoxModelObject::offsetForInFlowPosition() const
+LayoutSize LayoutBoxModelObject::offsetForInFlowPosition() const
 {
     return isRelPositioned() ? relativePositionOffset() : LayoutSize();
 }
 
-LayoutUnit RenderBoxModelObject::offsetLeft() const
+LayoutUnit LayoutBoxModelObject::offsetLeft() const
 {
     // Note that RenderInline and RenderBox override this to pass a different
     // startPoint to adjustedPositionRelativeToOffsetParent.
     return adjustedPositionRelativeToOffsetParent(LayoutPoint()).x();
 }
 
-LayoutUnit RenderBoxModelObject::offsetTop() const
+LayoutUnit LayoutBoxModelObject::offsetTop() const
 {
     // Note that RenderInline and RenderBox override this to pass a different
     // startPoint to adjustedPositionRelativeToOffsetParent.
     return adjustedPositionRelativeToOffsetParent(LayoutPoint()).y();
 }
 
-int RenderBoxModelObject::pixelSnappedOffsetWidth() const
+int LayoutBoxModelObject::pixelSnappedOffsetWidth() const
 {
     return snapSizeToPixel(offsetWidth(), offsetLeft());
 }
 
-int RenderBoxModelObject::pixelSnappedOffsetHeight() const
+int LayoutBoxModelObject::pixelSnappedOffsetHeight() const
 {
     return snapSizeToPixel(offsetHeight(), offsetTop());
 }
 
-LayoutUnit RenderBoxModelObject::computedCSSPadding(const Length& padding) const
+LayoutUnit LayoutBoxModelObject::computedCSSPadding(const Length& padding) const
 {
     LayoutUnit w = 0;
     if (padding.isPercent())
@@ -359,7 +359,7 @@ static inline IntSize resolveAgainstIntrinsicRatio(const IntSize& size, const Fl
     return IntSize(size.width(), solutionHeight);
 }
 
-IntSize RenderBoxModelObject::calculateImageIntrinsicDimensions(StyleImage* image, const IntSize& positioningAreaSize, ScaleByEffectiveZoomOrNot shouldScaleOrNot) const
+IntSize LayoutBoxModelObject::calculateImageIntrinsicDimensions(StyleImage* image, const IntSize& positioningAreaSize, ScaleByEffectiveZoomOrNot shouldScaleOrNot) const
 {
     // A generated image without a fixed size, will always return the container size as intrinsic size.
     if (image->isGeneratedImage() && image->usesImageContainerSize())
@@ -400,7 +400,7 @@ IntSize RenderBoxModelObject::calculateImageIntrinsicDimensions(StyleImage* imag
     return positioningAreaSize;
 }
 
-bool RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* inlineFlowBox) const
+bool LayoutBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* inlineFlowBox) const
 {
     if (bleedAvoidance != BackgroundBleedNone)
         return false;
@@ -455,19 +455,19 @@ bool RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedA
 
 
 
-LayoutUnit RenderBoxModelObject::containingBlockLogicalWidthForContent() const
+LayoutUnit LayoutBoxModelObject::containingBlockLogicalWidthForContent() const
 {
     return containingBlock()->availableLogicalWidth();
 }
 
-RenderBoxModelObject* RenderBoxModelObject::continuation() const
+LayoutBoxModelObject* LayoutBoxModelObject::continuation() const
 {
     if (!continuationMap)
         return 0;
     return continuationMap->get(this);
 }
 
-void RenderBoxModelObject::setContinuation(RenderBoxModelObject* continuation)
+void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation)
 {
     if (continuation) {
         if (!continuationMap)
@@ -479,7 +479,7 @@ void RenderBoxModelObject::setContinuation(RenderBoxModelObject* continuation)
     }
 }
 
-void RenderBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
+void LayoutBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
 {
     LayoutLayerModelObject::computeLayerHitTestRects(rects);
 
@@ -491,7 +491,7 @@ void RenderBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) co
         continuation()->computeLayerHitTestRects(rects);
 }
 
-LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset)
+LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset)
 {
     ASSERT(!slowFirstChild());
 
@@ -501,9 +501,9 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     // of an empty :first-line'd block is wrong. I think we can live with that.
     const LayoutStyle& currentStyle = firstLineStyleRef();
 
-    enum CaretAlignment { alignLeft, alignRight, alignCenter };
+    enum CaretAlignment { AlignLeft, AlignRight, AlignCenter };
 
-    CaretAlignment alignment = alignLeft;
+    CaretAlignment alignment = AlignLeft;
 
     switch (currentStyle.textAlign()) {
     case LEFT:
@@ -511,20 +511,20 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
         break;
     case CENTER:
     case WEBKIT_CENTER:
-        alignment = alignCenter;
+        alignment = AlignCenter;
         break;
     case RIGHT:
     case WEBKIT_RIGHT:
-        alignment = alignRight;
+        alignment = AlignRight;
         break;
     case JUSTIFY:
     case TASTART:
         if (!currentStyle.isLeftToRightDirection())
-            alignment = alignRight;
+            alignment = AlignRight;
         break;
     case TAEND:
         if (currentStyle.isLeftToRightDirection())
-            alignment = alignRight;
+            alignment = AlignRight;
         break;
     }
 
@@ -532,18 +532,18 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     LayoutUnit maxX = width - borderRight() - paddingRight();
 
     switch (alignment) {
-    case alignLeft:
+    case AlignLeft:
         if (currentStyle.isLeftToRightDirection())
             x += textIndentOffset;
         break;
-    case alignCenter:
+    case AlignCenter:
         x = (x + maxX) / 2;
         if (currentStyle.isLeftToRightDirection())
             x += textIndentOffset / 2;
         else
             x -= textIndentOffset / 2;
         break;
-    case alignRight:
+    case AlignRight:
         x = maxX - caretWidth;
         if (!currentStyle.isLeftToRightDirection())
             x -= textIndentOffset;
@@ -557,7 +557,7 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     return currentStyle.isHorizontalWritingMode() ? LayoutRect(x, y, caretWidth, height) : LayoutRect(y, x, height, caretWidth);
 }
 
-void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
+void LayoutBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
     LayoutObject* o = container();
     if (!o)
@@ -582,11 +582,12 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
         TransformationMatrix t;
         getTransformFromContainer(o, containerOffset, t);
         transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
-    } else
+    } else {
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    }
 }
 
-const LayoutObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     ASSERT(ancestorToStopAt != this);
 
@@ -623,7 +624,7 @@ const LayoutObject* RenderBoxModelObject::pushMappingToContainer(const LayoutLay
     return ancestorSkipped ? ancestorToStopAt : container;
 }
 
-void RenderBoxModelObject::moveChildTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert)
+void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     // We assume that callers have cleared their positioned objects list for child moves (!fullRemoveInsert) so the
     // positioned renderer maps don't become stale. It would be too slow to do the map lookup on each call.
@@ -635,11 +636,12 @@ void RenderBoxModelObject::moveChildTo(RenderBoxModelObject* toBoxModelObject, L
         // Takes care of adding the new child correctly if toBlock and fromBlock
         // have different kind of children (block vs inline).
         toBoxModelObject->addChild(virtualChildren()->removeChildNode(this, child), beforeChild);
-    } else
+    } else {
         toBoxModelObject->virtualChildren()->insertChildNode(toBoxModelObject, virtualChildren()->removeChildNode(this, child, fullRemoveInsert), beforeChild, fullRemoveInsert);
+    }
 }
 
-void RenderBoxModelObject::moveChildrenTo(RenderBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert)
+void LayoutBoxModelObject::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     // This condition is rarely hit since this function is usually called on
     // anonymous blocks which can no longer carry positioned objects (see r120761)

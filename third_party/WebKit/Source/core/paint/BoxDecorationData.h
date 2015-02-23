@@ -5,13 +5,13 @@
 #ifndef BoxDecorationData_h
 #define BoxDecorationData_h
 
-#include "core/rendering/RenderBoxModelObject.h"
+#include "core/layout/LayoutBoxModelObject.h" // For BackgroundBleedAvoidance.
 #include "platform/graphics/Color.h"
 
 namespace blink {
 
-class RenderBox;
 class GraphicsContext;
+class RenderBox;
 
 // Information extracted from LayoutStyle for box painting.
 class BoxDecorationData {
