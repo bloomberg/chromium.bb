@@ -12,6 +12,13 @@
 namespace chromecast {
 namespace shell {
 
+// Adds a single key system by name.
+// TODO(gunsch): modify this API to accept specifying different supported
+// features, and/or APIs per key system type.
+void AddKeySystemWithCodecs(
+    const std::string& key_system_name,
+    std::vector<::media::KeySystemInfo>* concrete_key_systems);
+
 void AddChromecastKeySystems(
     std::vector<::media::KeySystemInfo>* key_systems_info);
 
