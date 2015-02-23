@@ -209,6 +209,22 @@ function receiveIceCandidates(iceCandidatesJson) {
 }
 
 /**
+ * Sets the mute state of the selected media element.
+ *
+ * Returns ok-muted on success.
+ *
+ * @param elementId The id of the element to mute.
+ * @param muted The mute state to set.
+ */
+function setMediaElementMuted(elementId, muted) {
+  var element = document.getElementById(elementId);
+  if (!element)
+    throw failTest('Cannot mute ' + elementId + '; does not exist.');
+  element.muted = muted;
+  returnToTest('ok-muted');
+}
+
+/**
  * Returns
  */
 function hasSeenCryptoInSdp() {

@@ -155,6 +155,12 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
     return tab;
   }
 
+  void MuteMediaElement(const std::string& element_id,
+                        content::WebContents* tab_contents) {
+    EXPECT_EQ("ok-muted", ExecuteJavascript(
+        "setMediaElementMuted('" + element_id + "', true)", tab_contents));
+  }
+
  protected:
   void TestAutoGainControl(const base::FilePath::StringType& reference_filename,
                            const std::string& constraints,
@@ -266,7 +272,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
   command_line.AppendArg("-e");
   command_line.AppendArg("set volume input volume 100");
   command_line.AppendArg("-e");
-  command_line.AppendArg("set volume output volume 100");
+  command_line.AppendArg("set volume output volume 85");
 
   std::string result;
   if (!base::GetAppOutput(command_line, &result)) {
@@ -565,7 +571,7 @@ void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
 
 }  // namespace
 
-// Sets up a one-way WebRTC call and records its output to |recording|, using
+// Sets up a two-way WebRTC call and records its output to |recording|, using
 // getUserMedia.
 //
 // |reference_file| should have at least two seconds of silence in the
@@ -587,14 +593,17 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
 
   ConfigureFakeDeviceToPlayFile(reference_file);
 
-  // Create a one-way call.
+  // Create a two-way call. Mute one of the receivers though; that way it will
+  // be receiving audio bytes, but we will not be playing out of both elements.
   GURL test_page = embedded_test_server()->GetURL(kWebRtcAudioTestHtmlPage);
   content::WebContents* left_tab =
       OpenPageAndGetUserMediaInNewTabWithConstraints(test_page, constraints);
   SetupPeerconnectionWithLocalStream(left_tab);
+  MuteMediaElement("remote-view", left_tab);
 
   content::WebContents* right_tab =
-      OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
+      OpenPageAndGetUserMediaInNewTabWithConstraints(test_page, constraints);
+  SetupPeerconnectionWithLocalStream(right_tab);
 
   AudioRecorder recorder;
   ASSERT_TRUE(recorder.StartRecording(recording_time, recording));
@@ -607,17 +616,8 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
   HangUp(left_tab);
 }
 
-#if defined(OS_MACOSX)
-// Broken on Mac for some reason: http://crbug.com/446859.
-#define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
-    DISABLED_MANUAL_TestCallQualityWithAudioFromFakeDevice
-#else
-#define MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice \
-    MANUAL_TestCallQualityWithAudioFromFakeDevice
-#endif
-
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestCallQualityWithAudioFromFakeDevice) {
+                       MANUAL_TestCallQualityWithAudioFromFakeDevice) {
   if (OnWinXp() || OnWin8()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
