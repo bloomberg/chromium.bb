@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,10 +17,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
@@ -314,7 +317,7 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   plugin.is_out_of_process = true;
   plugin.name = content::kFlashPluginName;
   plugin.path = path;
-  plugin.permissions = kPepperFlashPermissions;
+  plugin.permissions = chrome::kPepperFlashPermissions;
 
   std::vector<std::string> flash_version_numbers;
   base::SplitString(version, '.', &flash_version_numbers);
@@ -387,7 +390,76 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   return false;
 #endif  // FLAPPER_AVAILABLE
 }
-#endif  // defined(ENABLE_PLUGINS)
+
+#if defined(OS_WIN)
+const char kPepperFlashDLLBaseName[] =
+#if defined(ARCH_CPU_X86)
+    "pepflashplayer32_";
+#elif defined(ARCH_CPU_X86_64)
+    "pepflashplayer64_";
+#else
+#error Unsupported Windows CPU architecture.
+#endif  // defined(ARCH_CPU_X86)
+#endif  // defined(OS_WIN)
+
+bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+#if defined(FLAPPER_AVAILABLE)
+  // If flapper is available, only try system plugin if
+  // --disable-bundled-ppapi-flash is specified.
+  if (!command_line->HasSwitch(switches::kDisableBundledPpapiFlash))
+    return false;
+#endif  // defined(FLAPPER_AVAILABLE)
+
+  // Do not try and find System Pepper Flash if there is a specific path on
+  // the commmand-line.
+  if (command_line->HasSwitch(switches::kPpapiFlashPath))
+    return false;
+
+  base::FilePath flash_path;
+  if (!PathService::Get(chrome::DIR_PEPPER_FLASH_SYSTEM_PLUGIN, &flash_path))
+    return false;
+
+  if (!base::PathExists(flash_path))
+    return false;
+
+  base::FilePath manifest_path(flash_path.AppendASCII("manifest.json"));
+
+  std::string manifest_data;
+  if (!base::ReadFileToString(manifest_path, &manifest_data))
+    return false;
+  scoped_ptr<base::Value> manifest_value(
+      base::JSONReader::Read(manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
+  if (!manifest_value.get())
+    return false;
+  base::DictionaryValue* manifest = NULL;
+  if (!manifest_value->GetAsDictionary(&manifest))
+    return false;
+
+  Version version;
+  if (!chrome::CheckPepperFlashManifest(*manifest, &version))
+    return false;
+
+#if defined(OS_WIN)
+  // PepperFlash DLLs on Windows look like basename_v_x_y_z.dll.
+  std::string filename(kPepperFlashDLLBaseName);
+  filename.append(version.GetString());
+  base::ReplaceChars(filename, ".", "_", &filename);
+  filename.append(".dll");
+
+  base::FilePath path(flash_path.Append(base::ASCIIToUTF16(filename)));
+#else
+  // PepperFlash on OS X is called PepperFlashPlayer.plugin
+  base::FilePath path(flash_path.Append(chrome::kPepperFlashPluginFilename));
+#endif
+
+  if (!base::PathExists(path))
+    return false;
+
+  *plugin = CreatePepperFlashInfo(path, version.GetString());
+  return true;
+}
+#endif  //  defined(ENABLE_PLUGINS)
 
 std::string GetProduct() {
   chrome::VersionInfo version_info;
@@ -482,6 +554,8 @@ void ChromeContentClient::AddPepperPlugins(
 
   content::PepperPluginInfo plugin;
   if (GetBundledPepperFlash(&plugin))
+    plugins->push_back(plugin);
+  if (GetSystemPepperFlash(&plugin))
     plugins->push_back(plugin);
 #endif
 }

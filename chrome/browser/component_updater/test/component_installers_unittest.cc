@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pepper_flash.h"
 #include "content/public/test/test_browser_thread.h"
 #include "ppapi/shared_impl/test_globals.h"
 
@@ -81,7 +82,7 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
 
   // This checks that the whole manifest is compatible.
   Version version;
-  EXPECT_TRUE(CheckPepperFlashManifest(*root, &version));
+  EXPECT_TRUE(chrome::CheckPepperFlashManifest(*root, &version));
   EXPECT_TRUE(version.IsValid());
 }
 

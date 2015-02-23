@@ -416,6 +416,8 @@
           'sources': [
             'common/pepper_flash.cc',
             'common/pepper_flash.h',
+            'common/ppapi_utils.cc',
+            'common/ppapi_utils.h',
           ],
         }],
         ['enable_plugins==1 and enable_extensions==1', {

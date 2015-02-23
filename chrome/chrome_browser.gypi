@@ -1897,8 +1897,6 @@
       'browser/browsing_data/browsing_data_flash_lso_helper.h',
       'browser/component_updater/flash_component_installer.h',
       'browser/component_updater/pepper_flash_component_installer.cc',
-      'browser/component_updater/ppapi_utils.cc',
-      'browser/component_updater/ppapi_utils.h',
       'browser/metrics/plugin_metrics_provider.cc',
       'browser/metrics/plugin_metrics_provider.h',
       'browser/pepper_broker_infobar_delegate.cc',

@@ -372,16 +372,24 @@ void PluginsDOMHandler::PluginsLoaded(
       plugin_file->SetString("name", group_plugin.name);
 
       // If this plugin is Pepper Flash, and the plugin path is the same as the
-      // path for the Pepper Flash Debugger plugin, then mark this plugin
-      // description as the debugger plugin to help the user disambiguate the
+      // path for the Pepper Flash System plugin, then mark this plugin
+      // description as the system plugin to help the user disambiguate the
       // two plugins.
       base::string16 desc = group_plugin.desc;
       if (group_plugin.is_pepper_plugin() &&
           group_plugin.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
-        base::FilePath debug_path;
-        PathService::Get(chrome::DIR_PEPPER_FLASH_DEBUGGER_PLUGIN, &debug_path);
-        if (group_plugin.path.DirName() == debug_path)
+        base::FilePath system_path;
+        PathService::Get(chrome::DIR_PEPPER_FLASH_SYSTEM_PLUGIN, &system_path);
+        if (group_plugin.path.DirName() == system_path) {
+#if defined(GOOGLE_CHROME_BUILD)
+          // Existing documentation for debugging Flash describe this plugin as
+          // "Debug" so preserve this nomenclature here.
           desc += base::ASCIIToUTF16(" Debug");
+#else
+          // On Chromium, we can name it what it really is; the system plugin.
+          desc += base::ASCIIToUTF16(" System");
+#endif
+        }
       }
       plugin_file->SetString("description", desc);
 

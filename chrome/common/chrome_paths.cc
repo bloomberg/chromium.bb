@@ -27,9 +27,19 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/registry.h"
+#endif
+
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace {
+
+#if defined(OS_WIN)
+const wchar_t kFlashRegistryRoot[] = L"SOFTWARE\\Macromedia\\FlashPlayerPepper";
+
+const wchar_t kFlashPlayerPathValueName[] = L"PlayerPath";
+#endif
 
 // File name of the internal Flash plugin on different platforms.
 const base::FilePath::CharType kInternalFlashPluginFileName[] =
@@ -46,8 +56,11 @@ const base::FilePath::CharType kPepperFlashBaseDirectory[] =
     FILE_PATH_LITERAL("PepperFlash");
 
 #if defined(OS_WIN)
-const base::FilePath::CharType kPepperFlashDebuggerBaseDirectory[] =
+const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
     FILE_PATH_LITERAL("Macromed\\Flash");
+#elif defined(OS_MACOSX)
+const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
+    FILE_PATH_LITERAL("Internet Plug-Ins/PepperFlashPlayer");
 #endif
 
 const base::FilePath::CharType kInternalNaClPluginFileName[] =
@@ -103,6 +116,23 @@ bool GetInternalPluginsDirectory(base::FilePath* result) {
   // The rest of the world expects plugins in the module directory.
   return PathService::Get(base::DIR_MODULE, result);
 }
+
+#if defined(OS_WIN)
+// Gets the Flash path if installed on the system.
+bool GetSystemFlashDirectory(base::FilePath* out_path) {
+  base::win::RegKey path_key(HKEY_LOCAL_MACHINE, kFlashRegistryRoot, KEY_READ);
+  base::string16 path_str;
+  if (FAILED(path_key.ReadValue(kFlashPlayerPathValueName, &path_str)))
+    return false;
+  base::FilePath plugin_path = base::FilePath(path_str).DirName();
+
+  if (!base::PathExists(plugin_path))
+    return false;
+
+  *out_path = plugin_path;
+  return true;
+}
+#endif
 
 }  // namespace
 
@@ -261,16 +291,16 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(kPepperFlashBaseDirectory);
       break;
-    case chrome::DIR_PEPPER_FLASH_DEBUGGER_PLUGIN:
+    case chrome::DIR_PEPPER_FLASH_SYSTEM_PLUGIN:
 #if defined(OS_WIN)
-      if (!PathService::Get(base::DIR_SYSTEM, &cur))
+      if (!GetSystemFlashDirectory(&cur))
         return false;
-      cur = cur.Append(kPepperFlashDebuggerBaseDirectory);
 #elif defined(OS_MACOSX)
-      // TODO(luken): finalize Mac OS directory paths, current consensus is
-      // around /Library/Internet Plug-Ins/PepperFlashPlayer/
-      return false;
+      if (!GetLocalLibraryDirectory(&cur))
+        return false;
+      cur = cur.Append(kPepperFlashSystemBaseDirectory);
 #else
+      // TODO(wfh): If Adobe release PPAPI binaries for Linux, add support here.
       return false;
 #endif
       break;

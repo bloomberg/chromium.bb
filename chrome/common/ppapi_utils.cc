@@ -1,7 +1,7 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/component_updater/ppapi_utils.h"
+#include "chrome/common/ppapi_utils.h"
 
 #include <cstring>
 

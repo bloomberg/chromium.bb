@@ -72,8 +72,9 @@ enum {
   DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,  // Base directory of the Pepper
                                               // Flash plugins downloaded by the
                                               // component updater.
-  DIR_PEPPER_FLASH_DEBUGGER_PLUGIN,  // Base directory of the debugging version
-                                     // of the Pepper Flash plugin.
+  DIR_PEPPER_FLASH_SYSTEM_PLUGIN,  // Base directory of the system version of
+                                   // the Pepper Flash plugin, downloadable
+                                   // from Adobe website.
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).
