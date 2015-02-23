@@ -19,7 +19,7 @@ component("transform") {
 
   sources = [
     "mojo_transform_export.h",
-    "transform_converters.cc",
-    "transform_converters.h",
+    "transform_type_converters.cc",
+    "transform_type_converters.h",
   ]
 }
