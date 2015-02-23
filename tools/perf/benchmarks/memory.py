@@ -17,6 +17,7 @@ class MemoryMobile(benchmark.Benchmark):
     return 'memory.mobile_memory'
 
 
+@benchmark.Disabled  # http://crbug.com/459646
 class MemoryTop7Stress(benchmark.Benchmark):
   """Use (recorded) real world web sites and measure memory consumption."""
   test = memory.Memory
