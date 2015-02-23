@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+jsTestIsAsync = true;
+
+var xhr = new XMLHttpRequest();
+xhr.responseType = 'document';
+xhr.onreadystatechange = function () {
+    if (this.readyState == XMLHttpRequest.LOADING) {
+        xhr.abort();
+        setTimeout(function() {
+            debug("PASS if no crash or leak.");
+            testRunner.notifyDone();
+        }, 0);
+    }
+};
+
+xhr.open("GET", "resources/small-chunks.cgi", true);
+xhr.send(null);
+</script>
