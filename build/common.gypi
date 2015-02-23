@@ -2076,10 +2076,13 @@
             'host_os%': "mac",
           }],
 
+          # Use the version of clang shipped with Xcode when building official
+          # version of Chrome for iOS.
+          #
           # TODO(eugenebut): Remove enable_coverage check once
           # libclang_rt.profile_ios.a is bundled with Chromium's clang.
           # http://crbug.com/450379
-          ['enable_coverage or "<(GENERATOR)"=="xcode"', {
+          ['buildtype=="Official" or enable_coverage', {
             'clang_xcode%': 1,
           }],
         ],
