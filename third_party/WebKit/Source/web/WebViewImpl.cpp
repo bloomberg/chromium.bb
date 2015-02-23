@@ -1261,12 +1261,20 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
         return 0;
 
     Node* bestTouchNode = targetedTapEvent.hitTestResult().innerNode();
+    if (!bestTouchNode)
+        return nullptr;
 
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
-    // FIXME: This wants to walk composed tree with NodeRenderingTraversal::parent().
-    while (bestTouchNode && !bestTouchNode->renderer())
+    while (!bestTouchNode->renderer()) {
         bestTouchNode = NodeRenderingTraversal::parent(*bestTouchNode);
+        if (!bestTouchNode)
+            return nullptr;
+    }
+
+    // Editable nodes should not be highlighted (e.g., <input>)
+    if (bestTouchNode->hasEditableStyle())
+        return nullptr;
 
     Node* cursorDefiningAncestor =
         findCursorDefiningAncestor(bestTouchNode, m_page->deprecatedLocalMainFrame());
