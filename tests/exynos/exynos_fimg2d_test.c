@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <sys/mman.h>
 #include <linux/stddef.h>
