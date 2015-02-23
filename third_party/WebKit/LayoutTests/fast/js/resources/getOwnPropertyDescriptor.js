@@ -23,7 +23,8 @@ descriptorShouldBe("Array.prototype", "'concat'", {writable: true, enumerable: f
 descriptorShouldBe("Date.prototype", "'toISOString'", {writable: true, enumerable: false, configurable: true, value: "Date.prototype.toISOString"});
 descriptorShouldBe("String.prototype", "'concat'", {writable: true, enumerable: false, configurable: true, value:"String.prototype.concat"});
 descriptorShouldBe("RegExp.prototype", "'exec'", {writable: true, enumerable: false, configurable: true, value:"RegExp.prototype.exec"});
-descriptorShouldBe("document.__proto__.__proto__", "'createElement'", {writable: true, enumerable: true, configurable: false, value:"document.createElement"});
+descriptorShouldBe("document.__proto__.__proto__", "'createElement'", {writable: true, enumerable: true, configurable: true, value:"document.createElement"});
+descriptorShouldBe("window", "'location'", {writable: false, enumerable: true, configurable: false, value: "window.location"});
 descriptorShouldBe("Number", "'NEGATIVE_INFINITY'", {writable: false, enumerable: false, configurable: false, value:"Number.NEGATIVE_INFINITY"});
 descriptorShouldBe("RegExp", "'$_'", {writable: true, enumerable: false, configurable: true, value:"RegExp.$_"});
 descriptorShouldBe("/a/g", "'global'", {writable: true, enumerable: false, configurable: false, value:true});

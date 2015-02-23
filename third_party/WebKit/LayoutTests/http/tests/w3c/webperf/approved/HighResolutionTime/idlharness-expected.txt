@@ -8,7 +8,7 @@ partial interface Performance {
   DOMHighResTimeStamp now();
 };
 
-FAIL Performance interface: operation now() assert_true: property is not configurable expected true got false
+PASS Performance interface: operation now() 
 PASS Performance must be primary interface of window.performance 
 PASS Stringification of window.performance 
 PASS Performance interface: window.performance must inherit property "now" with the proper type (0) 

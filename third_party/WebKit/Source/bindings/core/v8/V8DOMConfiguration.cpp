@@ -249,7 +249,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Isolate
     if (accessorCount)
         installAccessors(isolate, functionDescriptor->PrototypeTemplate(), defaultSignature, accessors, accessorCount);
     if (callbackCount)
-        installMethods(isolate, functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount);
+        installMethods(isolate, functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::None), callbacks, callbackCount);
     return defaultSignature;
 }
 

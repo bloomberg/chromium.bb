@@ -17,10 +17,10 @@ interface PerformanceMeasure : PerformanceEntry {
 };
 
 
-FAIL Performance interface: operation mark(DOMString) assert_true: property is not configurable expected true got false
-FAIL Performance interface: operation clearMarks(DOMString) assert_true: property is not configurable expected true got false
-FAIL Performance interface: operation measure(DOMString,DOMString,DOMString) assert_true: property is not configurable expected true got false
-FAIL Performance interface: operation clearMeasures(DOMString) assert_true: property is not configurable expected true got false
+PASS Performance interface: operation mark(DOMString) 
+PASS Performance interface: operation clearMarks(DOMString) 
+PASS Performance interface: operation measure(DOMString,DOMString,DOMString) 
+PASS Performance interface: operation clearMeasures(DOMString) 
 PASS Performance must be primary interface of window.performance 
 PASS Stringification of window.performance 
 PASS Performance interface: window.performance must inherit property "mark" with the proper type (0) 

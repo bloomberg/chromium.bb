@@ -1311,10 +1311,6 @@ crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-compo
 
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
 
-crbug.com/377476 fast/js/function-name.html [ NeedsManualRebaseline ]
-crbug.com/377476 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
-crbug.com/377476 fast/js/mozilla/strict/function-name-arity.html [ NeedsManualRebaseline ]
-
 crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
