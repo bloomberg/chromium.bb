@@ -1766,7 +1766,6 @@
             'page/EventSource.h',
             'page/EventWithHitTestResults.h',
             'page/FocusController.cpp',
-            'page/FocusType.h',
             'page/FrameTree.cpp',
             'page/InjectedStyleSheets.cpp',
             'page/InjectedStyleSheets.h',
