@@ -271,6 +271,11 @@ group("root") {
   #
 
   if (is_mac) {
+    deps += [
+      "//third_party/apple_sample_code",
+      "//third_party/molokocacao",
+    ]
+
     # TODO(dpranke): These are as-yet untriaged but need at least the above.
     deps -= [
       "//apps",
