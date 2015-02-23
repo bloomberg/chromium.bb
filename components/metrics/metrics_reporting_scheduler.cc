@@ -38,6 +38,7 @@ const int kUnsentLogsIntervalSeconds = 15;
 // Standard interval between log uploads, in seconds.
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const int kStandardUploadIntervalSeconds = 5 * 60;  // Five minutes.
+const int kStandardUploadIntervalCellularSeconds = 15 * 60;  // Fifteen minutes.
 #else
 const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
 #endif
@@ -83,16 +84,28 @@ base::TimeDelta GetUploadIntervalFromExperiment() {
   return TimeDelta::FromMinutes(interval);
 }
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// Returns true if the user is assigned to the experiment group for enabled
+// cellular uploads.
+bool IsCellularEnabledByExperiment() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("UMA_EnableCellularLogUpload");
+  return group_name == "Enabled";
+}
+#endif
+
 }  // anonymous namespace
 
 MetricsReportingScheduler::MetricsReportingScheduler(
-    const base::Closure& upload_callback)
+    const base::Closure& upload_callback,
+    const base::Callback<void(bool*)>& cellular_callback)
     : upload_callback_(upload_callback),
       upload_interval_(TimeDelta::FromSeconds(kInitialUploadIntervalSeconds)),
       running_(false),
       callback_pending_(false),
       init_task_complete_(false),
-      waiting_for_init_task_complete_(false) {
+      waiting_for_init_task_complete_(false),
+      cellular_callback_(cellular_callback) {
 }
 
 MetricsReportingScheduler::~MetricsReportingScheduler() {}
@@ -193,11 +206,15 @@ void MetricsReportingScheduler::BackOffUploadInterval() {
 }
 
 base::TimeDelta MetricsReportingScheduler::GetStandardUploadInterval() {
-#if defined(OS_ANDROID)
-  return GetUploadIntervalFromExperiment();
-#else
-  return TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  bool is_cellular = false;
+  if (!cellular_callback_.is_null())
+    cellular_callback_.Run(&is_cellular);
+
+  if (is_cellular && IsCellularEnabledByExperiment())
+    return TimeDelta::FromSeconds(kStandardUploadIntervalCellularSeconds);
 #endif
+  return TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
 }
 
 }  // namespace metrics

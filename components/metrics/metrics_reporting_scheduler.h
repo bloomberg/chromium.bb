@@ -10,13 +10,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/metrics/net/network_metrics_provider.h"
 
 namespace metrics {
 
 // Scheduler task to drive a MetricsService object's uploading.
 class MetricsReportingScheduler {
  public:
-  explicit MetricsReportingScheduler(const base::Closure& upload_callback);
+  // Creates MetricsServiceScheduler object with the given |upload_callback|
+  // callback to call when uploading should happen and |cellular_callback|
+  // callback to get current network connection type.
+  MetricsReportingScheduler(
+      const base::Closure& upload_callback,
+      const base::Callback<void(bool*)>& cellular_callback);
   ~MetricsReportingScheduler();
 
   // Starts scheduling uploads. This in a no-op if the scheduler is already
@@ -83,6 +89,9 @@ class MetricsReportingScheduler {
   // Whether the initial scheduled upload timer has fired before the init task
   // has been completed.
   bool waiting_for_init_task_complete_;
+
+  // Callback function used to get current network connection type.
+  base::Callback<void(bool*)> cellular_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsReportingScheduler);
 };

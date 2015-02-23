@@ -22,11 +22,20 @@ class MetricsReportingSchedulerTest : public testing::Test {
                       base::Unretained(this));
   }
 
+  base::Callback<void(bool*)> GetConnectionCallback() {
+    return base::Bind(&MetricsReportingSchedulerTest::SetConnectionTypeCallback,
+                      base::Unretained(this));
+  }
+
   int callback_call_count() const { return callback_call_count_; }
 
  private:
   void SchedulerCallback() {
     ++callback_call_count_;
+  }
+
+  void SetConnectionTypeCallback(bool* is_cellular_out) {
+    *is_cellular_out = false;
   }
 
   int callback_call_count_;
@@ -38,7 +47,7 @@ class MetricsReportingSchedulerTest : public testing::Test {
 
 
 TEST_F(MetricsReportingSchedulerTest, InitTaskCompleteBeforeTimer) {
-  MetricsReportingScheduler scheduler(GetCallback());
+  MetricsReportingScheduler scheduler(GetCallback(), GetConnectionCallback());
   scheduler.SetUploadIntervalForTesting(base::TimeDelta());
   scheduler.InitTaskComplete();
   scheduler.Start();
@@ -49,7 +58,7 @@ TEST_F(MetricsReportingSchedulerTest, InitTaskCompleteBeforeTimer) {
 }
 
 TEST_F(MetricsReportingSchedulerTest, InitTaskCompleteAfterTimer) {
-  MetricsReportingScheduler scheduler(GetCallback());
+  MetricsReportingScheduler scheduler(GetCallback(), GetConnectionCallback());
   scheduler.SetUploadIntervalForTesting(base::TimeDelta());
   scheduler.Start();
   base::RunLoop().RunUntilIdle();

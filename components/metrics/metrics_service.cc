@@ -342,9 +342,11 @@ MetricsService::~MetricsService() {
 void MetricsService::InitializeMetricsRecordingState() {
   InitializeMetricsState();
 
-  base::Closure callback = base::Bind(&MetricsService::StartScheduledUpload,
-                                      self_ptr_factory_.GetWeakPtr());
-  scheduler_.reset(new MetricsReportingScheduler(callback));
+  base::Closure upload_callback =
+      base::Bind(&MetricsService::StartScheduledUpload,
+                 self_ptr_factory_.GetWeakPtr());
+  scheduler_.reset(
+      new MetricsReportingScheduler(upload_callback, is_cellular_callback_));
 }
 
 void MetricsService::Start() {
@@ -1254,6 +1256,12 @@ void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
 void MetricsService::RecordCurrentState(PrefService* pref) {
   pref->SetInt64(prefs::kStabilityLastTimestampSec,
                  base::Time::Now().ToTimeT());
+}
+
+void MetricsService::SetConnectionTypeCallback(
+    base::Callback<void(bool*)> is_cellular_callback) {
+  DCHECK(!scheduler_);
+  is_cellular_callback_ = is_cellular_callback;
 }
 
 }  // namespace metrics

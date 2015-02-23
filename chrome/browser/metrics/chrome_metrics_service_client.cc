@@ -273,9 +273,13 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(
           new ExtensionsMetricsProvider(metrics_state_manager_)));
 #endif
-  metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new metrics::NetworkMetricsProvider(
-          content::BrowserThread::GetBlockingPool())));
+  scoped_ptr<metrics::NetworkMetricsProvider> network_metrics_provider(
+      new metrics::NetworkMetricsProvider(
+          content::BrowserThread::GetBlockingPool()));
+  metrics_service_->SetConnectionTypeCallback(
+      network_metrics_provider->GetConnectionCallback());
+  metrics_service_->RegisterMetricsProvider(network_metrics_provider.Pass());
+
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
