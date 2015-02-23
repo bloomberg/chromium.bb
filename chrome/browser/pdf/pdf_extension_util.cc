@@ -25,6 +25,14 @@ const char kMaterialIndex[] = "index-material.html";
 
 }  // namespace
 
+// These should match the keys for the Chrome and Chromium PDF Viewer entries in
+// chrome/browser/resources/plugin_metadata/plugins_*.json.
+#if defined(GOOGLE_CHROME_BUILD)
+const char kPdfResourceIdentifier[] = "google-chrome-pdf";
+#else
+const char kPdfResourceIdentifier[] = "chromium-pdf";
+#endif
+
 std::string GetManifest() {
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(

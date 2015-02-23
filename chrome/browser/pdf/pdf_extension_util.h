@@ -9,6 +9,9 @@
 
 namespace pdf_extension_util {
 
+// The ResourceIdentifier for the PDF Viewer plugin.
+extern const char kPdfResourceIdentifier[];
+
 // Return the extensions manifest for PDF. The manifest is loaded from
 // browser_resources.grd and certain fields are replaced based on what chrome
 // flags are enabled.

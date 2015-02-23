@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 
+#include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
@@ -191,7 +192,7 @@ void InternalExtensionProvider::ApplyPluginContentSettingsForExtension(
   // The PDF viewer extension relies on the out of process PDF plugin.
   if (extension->id() == extension_misc::kPdfExtensionId) {
     SetContentSettingForExtensionAndResource(
-        extension, ChromeContentClient::kPDFPluginPath, setting);
+        extension, pdf_extension_util::kPdfResourceIdentifier, setting);
   }
 }
 
