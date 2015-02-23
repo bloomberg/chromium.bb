@@ -190,7 +190,10 @@ struct weston_output {
 	struct wl_list animation_list;
 	int32_t x, y, width, height;
 	int32_t mm_width, mm_height;
+
+	/** Output area in global coordinates, simple rect */
 	pixman_region32_t region;
+
 	pixman_region32_t previous_damage;
 	int repaint_needed;
 	int repaint_scheduled;
