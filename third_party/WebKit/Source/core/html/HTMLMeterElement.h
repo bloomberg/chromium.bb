@@ -26,7 +26,7 @@
 namespace blink {
 
 class MeterValueElement;
-class RenderMeter;
+class LayoutMeter;
 
 class HTMLMeterElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
@@ -70,7 +70,7 @@ private:
 
     virtual bool areAuthorShadowsAllowed() const override { return false; }
     virtual void willAddFirstOpenShadowRoot() override;
-    RenderMeter* renderMeter() const;
+    LayoutMeter* layoutMeter() const;
 
     virtual bool supportLabels() const override { return true; }
 

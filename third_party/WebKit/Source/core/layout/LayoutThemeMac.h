@@ -73,7 +73,7 @@ public:
     virtual bool popsMenuByArrowKeys() const override { return true; }
     virtual bool popsMenuBySpaceKey() const override final { return true; }
 
-    virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const override;
+    virtual IntSize meterSizeForBounds(const LayoutMeter*, const IntRect&) const override;
     virtual bool paintMeter(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool supportsMeter(ControlPart) const override;
 
@@ -158,7 +158,7 @@ private:
     NSTextFieldCell* textField() const;
 
     NSLevelIndicatorStyle levelIndicatorStyleFor(ControlPart) const;
-    NSLevelIndicatorCell* levelIndicatorFor(const RenderMeter*) const;
+    NSLevelIndicatorCell* levelIndicatorFor(const LayoutMeter*) const;
 
     int minimumProgressBarHeight(const LayoutStyle&) const;
     const IntSize* progressBarSizes() const;

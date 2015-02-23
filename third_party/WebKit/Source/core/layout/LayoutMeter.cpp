@@ -20,7 +20,7 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderMeter.h"
+#include "core/layout/LayoutMeter.h"
 
 #include "core/html/HTMLMeterElement.h"
 #include "core/layout/LayoutTheme.h"
@@ -29,16 +29,16 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderMeter::RenderMeter(HTMLElement* element)
+LayoutMeter::LayoutMeter(HTMLElement* element)
     : RenderBlockFlow(element)
 {
 }
 
-RenderMeter::~RenderMeter()
+LayoutMeter::~LayoutMeter()
 {
 }
 
-HTMLMeterElement* RenderMeter::meterElement() const
+HTMLMeterElement* LayoutMeter::meterElement() const
 {
     ASSERT(node());
 
@@ -49,7 +49,7 @@ HTMLMeterElement* RenderMeter::meterElement() const
     return toHTMLMeterElement(node()->shadowHost());
 }
 
-void RenderMeter::updateLogicalWidth()
+void LayoutMeter::updateLogicalWidth()
 {
     RenderBox::updateLogicalWidth();
 
@@ -57,7 +57,7 @@ void RenderMeter::updateLogicalWidth()
     setLogicalWidth(isHorizontalWritingMode() ? frameSize.width() : frameSize.height());
 }
 
-void RenderMeter::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
+void LayoutMeter::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 
@@ -70,7 +70,7 @@ void RenderMeter::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logi
     computedValues.m_extent = isHorizontalWritingMode() ? frameSize.height() : frameSize.width();
 }
 
-void RenderMeter::updateFromElement()
+void LayoutMeter::updateFromElement()
 {
     setShouldDoFullPaintInvalidation();
 }

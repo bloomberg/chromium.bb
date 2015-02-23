@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef RenderMeter_h
-#define RenderMeter_h
+#ifndef LayoutMeter_h
+#define LayoutMeter_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
@@ -27,10 +27,10 @@ namespace blink {
 
 class HTMLMeterElement;
 
-class RenderMeter final : public RenderBlockFlow {
+class LayoutMeter final : public RenderBlockFlow {
 public:
-    explicit RenderMeter(HTMLElement*);
-    virtual ~RenderMeter();
+    explicit LayoutMeter(HTMLElement*);
+    virtual ~LayoutMeter();
 
     HTMLMeterElement* meterElement() const;
     virtual void updateFromElement() override;
@@ -39,12 +39,12 @@ private:
     virtual void updateLogicalWidth() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual const char* renderName() const override { return "RenderMeter"; }
+    virtual const char* renderName() const override { return "LayoutMeter"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMeter || RenderBlockFlow::isOfType(type); }
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderMeter, isMeter());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMeter, isMeter());
 
 } // namespace blink
 
-#endif // RenderMeter_h
+#endif // LayoutMeter_h

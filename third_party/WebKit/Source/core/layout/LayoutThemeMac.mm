@@ -40,8 +40,8 @@
 #import "core/layout/style/ShadowList.h"
 #import "core/layout/LayoutMedia.h"
 #import "core/layout/LayoutMediaControls.h"
+#import "core/layout/LayoutMeter.h"
 #import "core/layout/LayoutProgress.h"
-#import "core/rendering/RenderMeter.h"
 #import "core/rendering/RenderView.h"
 #import "platform/LayoutTestSupport.h"
 #import "platform/PlatformResourceLoader.h"
@@ -855,12 +855,12 @@ bool LayoutThemeMac::paintMenuList(LayoutObject* o, const PaintInfo& paintInfo, 
     return false;
 }
 
-IntSize LayoutThemeMac::meterSizeForBounds(const RenderMeter* renderMeter, const IntRect& bounds) const
+IntSize LayoutThemeMac::meterSizeForBounds(const LayoutMeter* layoutMeter, const IntRect& bounds) const
 {
-    if (NoControlPart == renderMeter->style()->appearance())
+    if (NoControlPart == layoutMeter->style()->appearance())
         return bounds.size();
 
-    NSLevelIndicatorCell* cell = levelIndicatorFor(renderMeter);
+    NSLevelIndicatorCell* cell = levelIndicatorFor(layoutMeter);
     // Makes enough room for cell's intrinsic size.
     NSSize cellSize = [cell cellSizeForBounds:IntRect(IntPoint(), bounds.size())];
     return IntSize(bounds.width() < cellSize.width ? cellSize.width : bounds.width(),
@@ -874,7 +874,7 @@ bool LayoutThemeMac::paintMeter(LayoutObject* layoutObject, const PaintInfo& pai
 
     LocalCurrentGraphicsContext localContext(paintInfo.context, rect);
 
-    NSLevelIndicatorCell* cell = levelIndicatorFor(toRenderMeter(layoutObject));
+    NSLevelIndicatorCell* cell = levelIndicatorFor(toLayoutMeter(layoutObject));
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
     [cell drawWithFrame:rect inView:documentViewFor(layoutObject)];
@@ -912,16 +912,16 @@ NSLevelIndicatorStyle LayoutThemeMac::levelIndicatorStyleFor(ControlPart part) c
     }
 }
 
-NSLevelIndicatorCell* LayoutThemeMac::levelIndicatorFor(const RenderMeter* renderMeter) const
+NSLevelIndicatorCell* LayoutThemeMac::levelIndicatorFor(const LayoutMeter* layoutMeter) const
 {
-    const LayoutStyle& style = renderMeter->styleRef();
+    const LayoutStyle& style = layoutMeter->styleRef();
     ASSERT(style.appearance() != NoControlPart);
 
     if (!m_levelIndicator)
         m_levelIndicator.adoptNS([[NSLevelIndicatorCell alloc] initWithLevelIndicatorStyle:NSContinuousCapacityLevelIndicatorStyle]);
     NSLevelIndicatorCell* cell = m_levelIndicator.get();
 
-    HTMLMeterElement* element = renderMeter->meterElement();
+    HTMLMeterElement* element = layoutMeter->meterElement();
     double value = element->value();
 
     // Because NSLevelIndicatorCell does not support optimum-in-the-middle type

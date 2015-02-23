@@ -35,8 +35,8 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLMeterElement.h"
+#include "core/layout/LayoutMeter.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/rendering/RenderMeter.h"
 
 namespace blink {
 
@@ -81,7 +81,7 @@ bool MeterInnerElement::rendererIsNeeded(const LayoutStyle& style)
 
 LayoutObject* MeterInnerElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderMeter(this);
+    return new LayoutMeter(this);
 }
 
 inline MeterBarElement::MeterBarElement(Document& document)

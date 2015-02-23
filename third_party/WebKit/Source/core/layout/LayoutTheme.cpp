@@ -43,12 +43,12 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/layout/LayoutMeter.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/style/AuthorStyleInfo.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderView.h"
 #include "platform/FileMetadata.h"
 #include "platform/FloatConversion.h"
@@ -785,7 +785,7 @@ void LayoutTheme::adjustMenuListStyle(LayoutStyle&, Element*) const
 {
 }
 
-IntSize LayoutTheme::meterSizeForBounds(const RenderMeter*, const IntRect& bounds) const
+IntSize LayoutTheme::meterSizeForBounds(const LayoutMeter*, const IntRect& bounds) const
 {
     return bounds.size();
 }

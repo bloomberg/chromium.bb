@@ -40,7 +40,7 @@ class AuthorStyleInfo;
 class Element;
 class FileList;
 class HTMLInputElement;
-class RenderMeter;
+class LayoutMeter;
 class LayoutProgress;
 
 
@@ -166,7 +166,7 @@ public:
     virtual String formatMediaControlsTime(float time) const;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const;
 
-    virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const;
+    virtual IntSize meterSizeForBounds(const LayoutMeter*, const IntRect&) const;
     virtual bool supportsMeter(ControlPart) const;
 
     // Returns size of one slider tick mark for a horizontal track.
