@@ -121,7 +121,7 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
           strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
       item.progressValue = task.processedBytes;
       item.state = ProgressItemState.PROGRESSING;
-    break;
+      break;
     case UpdateType.COMPLETE:
       item.message = '';
       item.progressValue = item.progressMax;
