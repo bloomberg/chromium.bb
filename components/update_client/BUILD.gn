@@ -12,6 +12,7 @@ source_set("update_client") {
     "component_patcher_operation.h",
     "component_unpacker.cc",
     "component_unpacker.h",
+    "configurator.h",
     "crx_downloader.cc",
     "crx_downloader.h",
     "crx_update_item.h",

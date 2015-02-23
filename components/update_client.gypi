@@ -31,6 +31,7 @@
         'update_client/component_patcher_operation.h',
         'update_client/component_unpacker.cc',
         'update_client/component_unpacker.h',
+        'update_client/configurator.h',
         'update_client/crx_downloader.cc',
         'update_client/crx_downloader.h',
         'update_client/crx_update_item.h',

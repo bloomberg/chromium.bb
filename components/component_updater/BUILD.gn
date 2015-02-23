@@ -4,7 +4,6 @@
 
 source_set("component_updater") {
   sources = [
-    "component_updater_configurator.h",
     "component_updater_paths.cc",
     "component_updater_paths.h",
     "component_updater_service.cc",

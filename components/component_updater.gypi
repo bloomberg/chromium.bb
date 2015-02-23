@@ -18,7 +18,6 @@
         '..',
       ],
       'sources': [
-        'component_updater/component_updater_configurator.h',
         'component_updater/component_updater_paths.cc',
         'component_updater/component_updater_paths.h',
         'component_updater/component_updater_service.cc',

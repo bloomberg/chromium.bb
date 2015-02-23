@@ -16,8 +16,8 @@
       ],
       'sources': [
         'constrained_window/constrained_window_views.cc',
-        'constranied_window/constrained_window_views.h',
-        'constranied_window/constrained_window_views_client.h',
+        'constrained_window/constrained_window_views.h',
+        'constrained_window/constrained_window_views_client.h',
       ],
     },
   ],
