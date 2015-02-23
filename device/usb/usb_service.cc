@@ -5,6 +5,7 @@
 #include "device/usb/usb_service.h"
 
 #include "base/message_loop/message_loop.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service_impl.h"
 
@@ -83,11 +84,19 @@ void UsbService::RemoveObserver(Observer* observer) {
 
 void UsbService::NotifyDeviceAdded(scoped_refptr<UsbDevice> device) {
   DCHECK(CalledOnValidThread());
+
+  USB_LOG(USER) << "USB device added: vendorId = " << device->vendor_id()
+                << ", productId = " << device->product_id()
+                << ", uniqueId = " << device->unique_id();
+
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device));
 }
 
 void UsbService::NotifyDeviceRemoved(scoped_refptr<UsbDevice> device) {
   DCHECK(CalledOnValidThread());
+
+  USB_LOG(USER) << "USB device removed: uniqueId = " << device->unique_id();
+
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemovedCleanup(device));
 }

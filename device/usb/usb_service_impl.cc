@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_error.h"
 
 #if defined(OS_WIN)
@@ -69,8 +70,8 @@ UsbService* UsbServiceImpl::Create(
   PlatformUsbContext context = NULL;
   const int rv = libusb_init(&context);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to initialize libusb: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(ERROR) << "Failed to initialize libusb: "
+                   << ConvertPlatformUsbErrorToString(rv);
     return nullptr;
   }
   if (!context) {
@@ -153,8 +154,8 @@ void UsbServiceImpl::RefreshDevices() {
   const ssize_t device_count =
       libusb_get_device_list(context_->context(), &platform_devices);
   if (device_count < 0) {
-    VLOG(1) << "Failed to get device list: "
-            << ConvertPlatformUsbErrorToString(device_count);
+    USB_LOG(ERROR) << "Failed to get device list: "
+                   << ConvertPlatformUsbErrorToString(device_count);
   }
 
   std::set<UsbDevice*> connected_devices;
@@ -213,8 +214,8 @@ scoped_refptr<UsbDeviceImpl> UsbServiceImpl::AddDevice(
     NotifyDeviceAdded(new_device);
     return new_device;
   } else {
-    VLOG(1) << "Failed to get device descriptor: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to get device descriptor: "
+                   << ConvertPlatformUsbErrorToString(rv);
     return nullptr;
   }
 }

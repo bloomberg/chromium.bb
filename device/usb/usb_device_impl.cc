@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle_impl.h"
@@ -221,7 +222,8 @@ scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
     handles_.push_back(device_handle);
     return device_handle;
   } else {
-    VLOG(1) << "Failed to open device: " << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to open device: "
+                   << ConvertPlatformUsbErrorToString(rv);
     return NULL;
   }
 }
@@ -302,8 +304,8 @@ void UsbDeviceImpl::RefreshConfiguration() {
   int rv =
       libusb_get_active_config_descriptor(platform_device_, &platform_config);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to get config descriptor: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to get config descriptor: "
+                   << ConvertPlatformUsbErrorToString(rv);
     return;
   }
 
@@ -382,11 +384,12 @@ void UsbDeviceImpl::CacheStrings() {
       }
       device_handle->Close();
     } else {
-      VLOG(1) << "Failed to open device to cache string descriptors.";
+      USB_LOG(EVENT) << "Failed to open device to cache string descriptors.";
     }
   } else {
-    VLOG(1) << "Failed to read device descriptor to cache string descriptors: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT)
+        << "Failed to read device descriptor to cache string descriptors: "
+        << ConvertPlatformUsbErrorToString(rv);
   }
   strings_cached_ = true;
 }

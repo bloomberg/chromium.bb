@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_impl.h"
@@ -145,8 +146,8 @@ UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
 bool UsbDeviceHandleImpl::InterfaceClaimer::Claim() const {
   const int rv = libusb_claim_interface(handle_->handle(), interface_number_);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to claim interface: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to claim interface " << interface_number_ << ": "
+                   << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -233,7 +234,7 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
-    LOG(ERROR) << "Failed to allocate control transfer.";
+    USB_LOG(ERROR) << "Failed to allocate control transfer.";
     return nullptr;
   }
 
@@ -261,7 +262,7 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
-    LOG(ERROR) << "Failed to allocate bulk transfer.";
+    USB_LOG(ERROR) << "Failed to allocate bulk transfer.";
     return nullptr;
   }
 
@@ -288,7 +289,7 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
-    LOG(ERROR) << "Failed to allocate interrupt transfer.";
+    USB_LOG(ERROR) << "Failed to allocate interrupt transfer.";
     return nullptr;
   }
 
@@ -320,7 +321,7 @@ UsbDeviceHandleImpl::Transfer::CreateIsochronousTransfer(
 
   transfer->platform_transfer_ = libusb_alloc_transfer(packets);
   if (!transfer->platform_transfer_) {
-    LOG(ERROR) << "Failed to allocate isochronous transfer.";
+    USB_LOG(ERROR) << "Failed to allocate isochronous transfer.";
     return nullptr;
   }
 
@@ -370,8 +371,8 @@ bool UsbDeviceHandleImpl::Transfer::Submit(
   if (rv == LIBUSB_SUCCESS) {
     return true;
   } else {
-    VLOG(1) << "Failed to submit transfer: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to submit transfer: "
+                   << ConvertPlatformUsbErrorToString(rv);
     Complete(USB_TRANSFER_ERROR, 0);
     return false;
   }
@@ -525,8 +526,8 @@ bool UsbDeviceHandleImpl::SetConfiguration(int configuration_value) {
     device_->RefreshConfiguration();
     RefreshEndpointMap();
   } else {
-    VLOG(1) << "Failed to set configuration " << configuration_value << ": "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to set configuration " << configuration_value
+                   << ": " << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -585,9 +586,9 @@ bool UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
         alternate_setting);
     RefreshEndpointMap();
   } else {
-    VLOG(1) << "Failed to set interface (" << interface_number << ", "
-            << alternate_setting
-            << "): " << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to set interface " << interface_number
+                   << " to alternate setting " << alternate_setting << ": "
+                   << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -599,8 +600,8 @@ bool UsbDeviceHandleImpl::ResetDevice() {
 
   const int rv = libusb_reset_device(handle_);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to reset device: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to reset device: "
+                   << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -629,21 +630,23 @@ bool UsbDeviceHandleImpl::GetStringDescriptor(uint8 string_id,
                                      reinterpret_cast<unsigned char*>(&text[0]),
                                      sizeof(text));
     if (size < 0) {
-      VLOG(1) << "Failed to get string descriptor " << string_id << " (langid "
-              << language_id << "): " << ConvertPlatformUsbErrorToString(size);
+      USB_LOG(EVENT) << "Failed to get string descriptor " << string_id
+                     << " (langid " << language_id
+                     << "): " << ConvertPlatformUsbErrorToString(size);
       continue;
     } else if (size < 2) {
-      VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
-              << ") has no header.";
+      USB_LOG(EVENT) << "String descriptor " << string_id << " (langid "
+                     << language_id << ") has no header.";
       continue;
       // The first 2 bytes of the descriptor are the total length and type tag.
     } else if ((text[0] & 0xff) != size) {
-      VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
-              << ") size mismatch: " << (text[0] & 0xff) << " != " << size;
+      USB_LOG(EVENT) << "String descriptor " << string_id << " (langid "
+                     << language_id << ") size mismatch: " << (text[0] & 0xff)
+                     << " != " << size;
       continue;
     } else if ((text[0] >> 8) != LIBUSB_DT_STRING) {
-      VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
-              << ") is not a string descriptor.";
+      USB_LOG(EVENT) << "String descriptor " << string_id << " (langid "
+                     << language_id << ") is not a string descriptor.";
       continue;
     }
 
@@ -666,7 +669,7 @@ void UsbDeviceHandleImpl::ControlTransfer(UsbEndpointDirection direction,
                                           unsigned int timeout,
                                           const UsbTransferCallback& callback) {
   if (length > UINT16_MAX) {
-    LOG(ERROR) << "Transfer too long.";
+    USB_LOG(USER) << "Transfer too long.";
     callback.Run(USB_TRANSFER_ERROR, buffer, 0);
     return;
   }
@@ -699,7 +702,7 @@ void UsbDeviceHandleImpl::BulkTransfer(const UsbEndpointDirection direction,
                                        const unsigned int timeout,
                                        const UsbTransferCallback& callback) {
   if (length > INT_MAX) {
-    LOG(ERROR) << "Transfer too long.";
+    USB_LOG(USER) << "Transfer too long.";
     callback.Run(USB_TRANSFER_ERROR, buffer, 0);
     return;
   }
@@ -719,7 +722,7 @@ void UsbDeviceHandleImpl::InterruptTransfer(
     unsigned int timeout,
     const UsbTransferCallback& callback) {
   if (length > INT_MAX) {
-    LOG(ERROR) << "Transfer too long.";
+    USB_LOG(USER) << "Transfer too long.";
     callback.Run(USB_TRANSFER_ERROR, buffer, 0);
     return;
   }
@@ -741,7 +744,7 @@ void UsbDeviceHandleImpl::IsochronousTransfer(
     const unsigned int timeout,
     const UsbTransferCallback& callback) {
   if (length > INT_MAX) {
-    LOG(ERROR) << "Transfer too long.";
+    USB_LOG(USER) << "Transfer too long.";
     callback.Run(USB_TRANSFER_ERROR, buffer, 0);
     return;
   }
@@ -827,19 +830,19 @@ bool UsbDeviceHandleImpl::GetSupportedLanguages() {
       reinterpret_cast<unsigned char*>(&languages[0]),
       sizeof(languages));
   if (size < 0) {
-    VLOG(1) << "Failed to get list of supported languages: "
-            << ConvertPlatformUsbErrorToString(size);
+    USB_LOG(EVENT) << "Failed to get list of supported languages: "
+                   << ConvertPlatformUsbErrorToString(size);
     return false;
   } else if (size < 2) {
-    VLOG(1) << "String descriptor zero has no header.";
+    USB_LOG(EVENT) << "String descriptor zero has no header.";
     return false;
     // The first 2 bytes of the descriptor are the total length and type tag.
   } else if ((languages[0] & 0xff) != size) {
-    VLOG(1) << "String descriptor zero size mismatch: " << (languages[0] & 0xff)
-            << " != " << size;
+    USB_LOG(EVENT) << "String descriptor zero size mismatch: "
+                   << (languages[0] & 0xff) << " != " << size;
     return false;
   } else if ((languages[0] >> 8) != LIBUSB_DT_STRING) {
-    VLOG(1) << "String descriptor zero is not a string descriptor.";
+    USB_LOG(EVENT) << "String descriptor zero is not a string descriptor.";
     return false;
   }
 

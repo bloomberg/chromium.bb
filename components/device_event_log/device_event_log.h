@@ -31,6 +31,9 @@
 #define LOGIN_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_LOGIN, \
              ::device_event_log::LOG_LEVEL_##level)
+#define USB_LOG(level)                         \
+  DEVICE_LOG(::device_event_log::LOG_TYPE_USB, \
+             ::device_event_log::LOG_LEVEL_##level)
 
 // Generally prefer the above macros unless |type| or  |level| is not constant.
 
@@ -61,6 +64,8 @@ enum LogType {
   LOG_TYPE_POWER,
   // Login related events.
   LOG_TYPE_LOGIN,
+  // USB device related events (i.e. device/usb).
+  LOG_TYPE_USB,
   // Used internally
   LOG_TYPE_UNKNOWN
 };

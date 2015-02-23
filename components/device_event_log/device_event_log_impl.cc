@@ -29,16 +29,22 @@ const char* kLogLevelName[] = {"Error", "User", "Event", "Debug"};
 const char* kLogTypeNetworkDesc = "Network";
 const char* kLogTypePowerDesc = "Power";
 const char* kLogTypeLoginDesc = "Login";
+const char* kLogTypeUsbDesc = "USB";
 
 std::string GetLogTypeString(LogType type) {
-  if (type == LOG_TYPE_NETWORK)
-    return kLogTypeNetworkDesc;
-  if (type == LOG_TYPE_POWER)
-    return kLogTypePowerDesc;
-  if (type == LOG_TYPE_LOGIN)
-    return kLogTypeLoginDesc;
-  NOTREACHED();
-  return "Unknown";
+  switch (type) {
+    case LOG_TYPE_NETWORK:
+      return kLogTypeNetworkDesc;
+    case LOG_TYPE_POWER:
+      return kLogTypePowerDesc;
+    case LOG_TYPE_LOGIN:
+      return kLogTypeLoginDesc;
+    case LOG_TYPE_USB:
+      return kLogTypeUsbDesc;
+    default:
+      NOTREACHED();
+      return "Unknown";
+  }
 }
 
 std::string DateAndTimeWithMicroseconds(const base::Time& time) {

@@ -36,6 +36,7 @@ source_set("usb") {
     ":usb_device_ids",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//components/device_event_log",
     "//device/core",
     "//net",
     "//third_party/libusb",
