@@ -46,23 +46,6 @@ namespace blink {
 
 template<typename T> class HeapTerminatedArray;
 
-// Template to determine if a class is a GarbageCollectedMixin by checking if it
-// has IsGarbageCollectedMixinMarker
-template<typename T>
-struct IsGarbageCollectedMixin {
-private:
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    template <typename U> static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
-    template <typename U> static NoType checkMarker(...);
-
-public:
-    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
-};
-
 template <typename T>
 struct IsGarbageCollectedType {
     using TrueType = char;

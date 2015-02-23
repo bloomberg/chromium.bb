@@ -638,6 +638,20 @@ private:
     void snapshotFreeList();
 #endif
 
+    // By entering a gc-forbidden scope, conservative GCs will not
+    // be allowed while handling an out-of-line allocation request.
+    // Intended used when constructing subclasses of GC mixins, where
+    // the object being constructed cannot be safely traced & marked
+    // fully should a GC be allowed while its subclasses are being
+    // constructed.
+    template<typename U, typename V> friend class AllocateObjectTrait;
+    void enterGCForbiddenScope() { m_gcForbiddenCount++; }
+    void leaveGCForbiddenScope()
+    {
+        ASSERT(m_gcForbiddenCount > 0);
+        m_gcForbiddenCount--;
+    }
+
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static uintptr_t s_mainThreadStackStart;
     static uintptr_t s_mainThreadUnderestimatedStackSize;
@@ -665,6 +679,7 @@ private:
     bool m_didV8GCAfterLastGC;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
+    size_t m_gcForbiddenCount;
     size_t m_allocatedObjectSizeBeforeGC;
     BaseHeap* m_heaps[NumberOfHeaps];
 

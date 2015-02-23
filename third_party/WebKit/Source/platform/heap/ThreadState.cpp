@@ -236,6 +236,7 @@ ThreadState::ThreadState()
     , m_didV8GCAfterLastGC(false)
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
+    , m_gcForbiddenCount(0)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
     , m_collectionRate(1.0)
@@ -669,6 +670,9 @@ bool ThreadState::shouldSchedulePreciseGC()
 // These heuristics affect performance significantly.
 bool ThreadState::shouldForceConservativeGC()
 {
+    if (UNLIKELY(m_gcForbiddenCount))
+        return false;
+
     size_t newSize = Heap::allocatedObjectSize();
     if (newSize >= 300 * 1024 * 1024) {
         // If we consume too much memory, trigger a conservative GC

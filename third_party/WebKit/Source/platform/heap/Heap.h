@@ -929,6 +929,7 @@ public:
     static bool weakTableRegistered(const void*);
 #endif
 
+    static inline Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocateOnHeapIndex(size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
@@ -1040,6 +1041,82 @@ private:
     friend class ThreadState;
 };
 
+template<typename T>
+struct HeapIndexTrait {
+    static int index() { return NormalPageHeapIndex; };
+};
+
+// FIXME: The forward declaration is layering violation.
+#define DEFINE_TYPED_HEAP_TRAIT(Type)                   \
+    class Type;                                         \
+    template <> struct HeapIndexTrait<class Type> {     \
+        static int index() { return Type##HeapIndex; }; \
+    };
+FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
+#undef DEFINE_TYPED_HEAP_TRAIT
+
+template<typename T, typename Enabled = void>
+class AllocateObjectTrait {
+public:
+    static inline Address allocate(size_t size)
+    {
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
+    }
+
+    static inline void constructor()
+    {
+    }
+};
+
+template<typename T>
+class AllocateObjectTrait<T, typename WTF::EnableIf<blink::IsGarbageCollectedMixin<T>::value>::Type> {
+public:
+    // An object which implements GarbageCollectedMixin is marked
+    // and traced during GC by first adjusting object references to
+    // it to refer to the leftmost base for the object (which would
+    // be a GarbageCollected-derived class.) The prefixed object header
+    // can be located after that adjustment and its trace() vtbl slot
+    // will be used to fully trace the object, if not already marked.
+    //
+    // A C++ object's vptr will be initialized to its leftmost base's
+    // vtable after the constructors of all its subclasses have run,
+    // so if a subclass constructor tries to access any of the vtbl
+    // entries of its leftmost base prematurely, it'll find an as-yet
+    // incorrect vptr and fail. Which is exactly what a garbage collector
+    // will try to do if it tries to access the leftmost base while one
+    // of the subclass constructors of a GC mixin object triggers a GC.
+    // It is consequently not safe to allow any GCs while these objects
+    // are under (sub constructor) construction.
+    //
+    // To achieve that, the construction of mixins are handled in a
+    // special manner:
+    //
+    //  - The initial allocation of the mixin object will enter a no GC scope.
+    //  - The constructor for the leftmost base, which is when the mixin
+    //    object is in a state ready for a GC, leaves that GC scope.
+    //  - no-GC scope entering/leaving must support nesting.
+    //
+    static inline Address allocate(size_t size)
+    {
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        Address object = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
+        state->enterGCForbiddenScope();
+        return object;
+    }
+
+    static inline void constructor()
+    {
+        // FIXME: if prompt conservative GCs are needed, forced GCs that
+        // were denied while within this scope, could now be performed.
+        // For now, assume the next out-of-line allocation request will
+        // happen soon enough and take care of it. Mixin objects aren't
+        // overly common.
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        state->leaveGCForbiddenScope();
+    }
+};
+
 // Base class for objects allocated in the Blink garbage-collected heap.
 //
 // Defines a 'new' operator that allocates the memory in the heap.  'delete'
@@ -1088,6 +1165,7 @@ public:
 protected:
     GarbageCollected()
     {
+        AllocateObjectTrait<T>::constructor();
     }
 };
 
@@ -1384,32 +1462,23 @@ Address NormalPageHeap::allocate(size_t size, size_t gcInfoIndex)
     return allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
-template<typename T>
-struct HeapIndexTrait {
-    static int index() { return NormalPageHeapIndex; };
-};
-
-// FIXME: The forward declaration is layering violation.
-#define DEFINE_TYPED_HEAP_TRAIT(Type)                   \
-    class Type;                                         \
-    template <> struct HeapIndexTrait<class Type> {     \
-        static int index() { return Type##HeapIndex; }; \
-    };
-FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
-#undef DEFINE_TYPED_HEAP_TRAIT
-
-template<typename T>
-Address Heap::allocateOnHeapIndex(size_t size, int heapIndex, size_t gcInfoIndex)
+Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
 {
-    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     return static_cast<NormalPageHeap*>(state->heap(heapIndex))->allocate(size, gcInfoIndex);
 }
 
 template<typename T>
+Address Heap::allocateOnHeapIndex(size_t size, int heapIndex, size_t gcInfoIndex)
+{
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+    return allocateOnHeapIndex(state, size, heapIndex, gcInfoIndex);
+}
+
+template<typename T>
 Address Heap::allocate(size_t size)
 {
-    return allocateOnHeapIndex<T>(size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
+    return AllocateObjectTrait<T>::allocate(size);
 }
 
 template<typename T>

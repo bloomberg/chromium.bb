@@ -923,6 +923,23 @@ private:
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
 #endif
 
+// Template to determine if a class is a GarbageCollectedMixin by checking if it
+// has IsGarbageCollectedMixinMarker
+template<typename T>
+struct IsGarbageCollectedMixin {
+private:
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
+    };
+
+    template <typename U> static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
+    template <typename U> static NoType checkMarker(...);
+
+public:
+    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+};
+
 #if ENABLE(GC_PROFILING)
 template<typename T>
 struct TypenameStringTrait {
