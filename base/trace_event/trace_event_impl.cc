@@ -1914,7 +1914,8 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     id ^= process_id_hash_;
 
   TimeTicks offset_event_timestamp = OffsetTimestamp(timestamp);
-  TimeTicks now = OffsetNow();
+  TimeTicks now = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP ?
+      OffsetNow() : offset_event_timestamp;
   TimeTicks thread_now = ThreadNow();
 
   ThreadLocalEventBuffer* thread_local_event_buffer = NULL;
@@ -2035,9 +2036,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
   }
 
-  // Use |now| instead of |offset_event_timestamp| to compute overhead, because
-  // event timestamp may be not the real time that we started to add the event
-  // (e.g. event with zero timestamp or that was generated some time ago).
   if (thread_local_event_buffer)
     thread_local_event_buffer->ReportOverhead(now, thread_now);
 

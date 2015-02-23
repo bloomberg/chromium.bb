@@ -1008,7 +1008,8 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
             phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), \
             name, trace_event_trace_id.data(), \
             thread_id, base::TimeTicks::FromInternalValue(timestamp), \
-            trace_event_flags, ##__VA_ARGS__); \
+            trace_event_flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, \
+            ##__VA_ARGS__); \
       } \
     } while (0)
 
@@ -1045,9 +1046,11 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 #define TRACE_EVENT_FLAG_HAS_ID       (static_cast<unsigned char>(1 << 1))
 #define TRACE_EVENT_FLAG_MANGLE_ID    (static_cast<unsigned char>(1 << 2))
 #define TRACE_EVENT_FLAG_SCOPE_OFFSET (static_cast<unsigned char>(1 << 3))
+#define TRACE_EVENT_FLAG_SCOPE_EXTRA  (static_cast<unsigned char>(1 << 4))
+#define TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP (static_cast<unsigned char>(1 << 5))
 
 #define TRACE_EVENT_FLAG_SCOPE_MASK   (static_cast<unsigned char>( \
-    TRACE_EVENT_FLAG_SCOPE_OFFSET | (TRACE_EVENT_FLAG_SCOPE_OFFSET << 1)))
+    TRACE_EVENT_FLAG_SCOPE_OFFSET | TRACE_EVENT_FLAG_SCOPE_EXTRA))
 
 // Type values for identifying types in the TraceValue union.
 #define TRACE_VALUE_TYPE_BOOL         (static_cast<unsigned char>(1))
