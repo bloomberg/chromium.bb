@@ -14,7 +14,30 @@
   ],
   'conditions': [
     ['OS=="win"', {
+      'includes': [
+        '../test/mini_installer/test_installer.gypi',
+      ],
       'targets': [
+        {
+	  # A target that is outdated if any of the mini_installer test sources
+	  # are modified.
+          'target_name': 'test_installer_sentinel',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'touch_sentinel',
+	      'variables': {
+	        'touch_sentinel_py': '../tools/build/win/touch_sentinel.py',
+              },
+              'inputs': [
+                '<@(test_installer_sources)',  # from test_installer.gypi
+	        '<(touch_sentinel_py)',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/chrome/installer/test_installer_sentinel'],
+              'action': ['python', '<(touch_sentinel_py)', '<@(_outputs)'],
+            },
+          ],
+        },
         {
           'target_name': 'mini_installer',
           'type': 'executable',
@@ -25,6 +48,7 @@
             '../chrome.gyp:chrome_dll',
             '../chrome.gyp:default_extensions',
             '../chrome.gyp:setup',
+            'test_installer_sentinel',
           ],
           'include_dirs': [
             '../..',
