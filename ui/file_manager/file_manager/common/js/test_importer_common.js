@@ -21,7 +21,10 @@ importer.setupTestLogger = function() {
  * @struct
  * @final
  */
-importer.TestLogger = function() {};
+importer.TestLogger = function() {
+  /** @public {!TestCallRecorder} */
+  this.errorRecorder = new TestCallRecorder();
+};
 
 /** @override */
 importer.TestLogger.prototype.info = function(content) {
@@ -30,6 +33,7 @@ importer.TestLogger.prototype.info = function(content) {
 
 /** @override */
 importer.TestLogger.prototype.error = function(content) {
+  this.errorRecorder.callback(content);
   console.error(content);
   console.error(new Error('Error stack').stack);
 };

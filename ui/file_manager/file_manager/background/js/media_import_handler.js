@@ -256,7 +256,7 @@ importer.MediaImportHandler.ImportTask.prototype.run = function() {
   this.scanResult_.whenFinal()
       .then(this.initialize_.bind(this))
       .then(this.importScanEntries_.bind(this))
-      .catch(importer.getLogger().catcher('import-task-chain'));
+      .catch(importer.getLogger().catcher('import-task-run'));
 };
 
 /**
@@ -338,7 +338,13 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
             }
           }.bind(this))
       // Regardless of the result of this copy, push on to the next file.
-      .then(completionCallback, completionCallback);
+      .then(completionCallback)
+      .catch(
+          /** @param {*} error */
+          function(error) {
+            importer.getLogger().catcher('import-task-import-one')(error);
+            completionCallback();
+          });
 };
 
 /**
@@ -428,7 +434,8 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
                 onComplete.bind(this),
                 onError.bind(this));
           }.bind(this),
-          resolver.reject);
+          resolver.reject)
+      .catch(importer.getLogger().catcher('import-task-copy'));
 
   return resolver.promise;
 };
@@ -461,7 +468,8 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
             entry,
             this.destination_,
             destinationUrl);
-      }.bind(this));
+      }.bind(this))
+      .catch(importer.getLogger().catcher('import-task-mark-as-copied'));
 };
 
 /**
@@ -475,7 +483,8 @@ importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
       /** @param {!importer.ImportHistory} history */
       function(history) {
         history.markImported(entry, this.destination_);
-      }.bind(this));
+      }.bind(this))
+      .catch(importer.getLogger().catcher('import-task-mark-as-imported'));
 };
 
 /** @private */

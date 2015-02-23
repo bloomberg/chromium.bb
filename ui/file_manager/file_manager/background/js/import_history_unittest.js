@@ -29,6 +29,9 @@ var testFileSystem;
 /** @type {!MockFileEntry|undefined} */
 var testFileEntry;
 
+/** @type {!importer.TestLogger} */
+var testLogger;
+
 /** @type {!importer.RecordStorage|undefined} */
 var storage;
 
@@ -41,6 +44,8 @@ var testPromise;
 // Set up the test components.
 function setUp() {
   setupChromeApis();
+  installTestLogger();
+
   testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
   testFileEntry = new MockFileEntry(
       testFileSystem,
@@ -55,14 +60,16 @@ function setUp() {
   var history = new importer.PersistentImportHistory(
       importer.createMetadataHashcode,
       storage);
+
   historyProvider = history.refresh();
 }
 
 function tearDown() {
+  testLogger.errorRecorder.assertCallCount(0);
   testPromise = null;
 }
 
-function testHistoryWasCopiedFalseForUnknownEntry(callback) {
+function testWasCopied_FalseForUnknownEntry(callback) {
   // TestRecordWriter is pre-configured with a Space Cloud entry
   // but not for this file.
   testPromise = historyProvider.then(
@@ -73,7 +80,7 @@ function testHistoryWasCopiedFalseForUnknownEntry(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
+function testWasCopied_TrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
       function(history) {
@@ -83,7 +90,7 @@ function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
+function testWasImported_TrueForKnownEntrySetAtRuntime(callback) {
   testPromise = historyProvider.then(
       function(history) {
         return history.markImported(testFileEntry, SPACE_CAMP).then(
@@ -96,7 +103,7 @@ function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
+function testWasCopied_TrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
       function(history) {
@@ -106,7 +113,7 @@ function testHistoryWasCopiedTrueForKnownEntryLoadedFromStorage(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testCopyChangeFiresChangedEvent(callback) {
+function testMarkCopied_FiresChangedEvent(callback) {
   testPromise = historyProvider.then(
       function(history) {
         var recorder = new TestCallRecorder();
@@ -127,7 +134,7 @@ function testCopyChangeFiresChangedEvent(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testMarkImportedByUrl(callback) {
+function testMarkImported_ByUrl(callback) {
   var destinationUrl = 'filesystem:chrome-extension://abc/photos/splosion.jpg';
   testPromise = historyProvider.then(
       function(history) {
@@ -148,7 +155,7 @@ function testMarkImportedByUrl(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryWasImportedFalseForUnknownEntry(callback) {
+function testWasImported_FalseForUnknownEntry(callback) {
   // TestRecordWriter is pre-configured with a Space Cloud entry
   // but not for this file.
   testPromise = historyProvider.then(
@@ -159,7 +166,7 @@ function testHistoryWasImportedFalseForUnknownEntry(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
+function testWasImported_TrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
       function(history) {
@@ -170,7 +177,7 @@ function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
+function testWasImported_TrueForKnownEntrySetAtRuntime(callback) {
   testPromise = historyProvider.then(
       function(history) {
         return history.markImported(testFileEntry, SPACE_CAMP).then(
@@ -183,7 +190,7 @@ function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testImportChangeFiresChangedEvent(callback) {
+function testMarkImport_FiresChangedEvent(callback) {
   testPromise = historyProvider.then(
       function(history) {
         var recorder = new TestCallRecorder();
@@ -204,7 +211,7 @@ function testImportChangeFiresChangedEvent(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testHistoryObserverUnsubscribe(callback) {
+function testHistoryObserver_Unsubscribe(callback) {
   testPromise = historyProvider.then(
       function(history) {
         var recorder = new TestCallRecorder();
@@ -227,7 +234,7 @@ function testHistoryObserverUnsubscribe(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
+function testRecordStorage_RemembersPreviouslyWrittenRecords(callback) {
   testPromise = createRealStorage('recordStorageTest.data')
       .then(
           function(storage) {
@@ -243,7 +250,7 @@ function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
   reportPromise(testPromise, callback);
 }
 
-function testRecordStorageSerializingOperations(callback) {
+function testRecordStorage_SerializingOperations(callback) {
   testPromise = createRealStorage('recordStorageTestForSerializing.data')
       .then(
           function(storage) {
@@ -337,7 +344,8 @@ function testHistoryLoaderIntegration(callback) {
  * Installs stub APIs.
  */
 function setupChromeApis() {
-  chrome = {};
+  new MockChromeStorageAPI();
+  chrome = chrome || {};
   chrome.fileManagerPrivate = {};
   chrome.fileManagerPrivate.onFileTransfersUpdated = {
     addListener: function() {}
@@ -345,6 +353,16 @@ function setupChromeApis() {
   chrome.syncFileSystem = {};
   chrome.syncFileSystem.onFileStatusChanged = {
     addListener: function() {}
+  };
+}
+
+/**
+ * Installs stub APIs.
+ */
+function installTestLogger() {
+  testLogger = new importer.TestLogger();
+  importer.getLogger = function() {
+    return testLogger;
   };
 }
 

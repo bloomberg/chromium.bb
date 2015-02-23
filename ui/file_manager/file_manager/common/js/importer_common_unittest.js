@@ -174,6 +174,55 @@ function testLocalStorageWrapper(callback) {
   reportPromise(promise, callback);
 }
 
+function testRotateLogs(callback) {
+  var fileName;
+  var fileFactory = function(namePromise) {
+    return namePromise.then(
+        function(name) {
+          fileName = name;
+          return Promise.resolve(driveFileEntry);
+        });
+  };
+
+  var nextLogId = 0;
+  var lastLogId = 1;
+  var promise = importer.ChromeLocalStorage.getInstance()
+      .set(importer.Setting.LAST_KNOWN_LOG_ID, lastLogId)
+      .then(
+          function() {
+            // Should delete the log with the nextLogId.
+            return importer.rotateLogs(nextLogId, fileFactory);
+          })
+      .then(
+          function() {
+            assertTrue(fileName !== undefined);
+            // Verify the *active* log is deleted.
+            assertEquals(0, fileName.search(/import-debug-[0-9]{6}-0.log/),
+                'Filename (' + fileName + ') does not match next pattern.');
+            driveFileEntry.assertRemoved();
+
+            return importer.ChromeLocalStorage.getInstance()
+                  .get(importer.Setting.LAST_KNOWN_LOG_ID)
+                  .then(assertEquals.bind(null, nextLogId));
+          });
+
+  reportPromise(promise, callback);
+}
+
+function testRotateLogs_RemembersInitialActiveLog(callback) {
+  var nextLogId = 1;
+  var fileFactory = assertFalse;  // Should not be called.
+  var promise = importer.rotateLogs(nextLogId, assertFalse)
+      .then(
+          function() {
+            return importer.ChromeLocalStorage.getInstance()
+                  .get(importer.Setting.LAST_KNOWN_LOG_ID)
+                  .then(assertEquals.bind(null, nextLogId));
+          });
+
+  reportPromise(promise, callback);
+}
+
 /** @param {string} path */
 function assertIsMediaDir(path) {
   var dir = createDirectoryEntry(sdVolume, path);

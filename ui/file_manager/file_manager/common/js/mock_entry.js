@@ -91,6 +91,7 @@ function MockEntry(filesystem, fullPath) {
   filesystem.entries[fullPath] = this;
   this.filesystem = filesystem;
   this.fullPath = fullPath;
+  this.removed_ = false;
 }
 
 MockEntry.prototype = {
@@ -168,9 +169,17 @@ MockEntry.prototype.copyTo =
  * @param {function(Object)} onError Callback invoked with an error object.
  */
 MockEntry.prototype.remove = function(onSuccess, onError) {
+  this.removed_ = true;
   Promise.resolve().then(function() {
     this.filesystem.entries[this.fullPath] = null;
   }.bind(this)).then(onSuccess, onError);
+};
+
+/**
+ * Asserts that the entry was removed.
+ */
+MockEntry.prototype.assertRemoved = function() {
+  assertTrue(this.removed_);
 };
 
 /**

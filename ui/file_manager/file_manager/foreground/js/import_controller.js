@@ -322,7 +322,8 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
         this.updateUi_(
             importer.ActivityState.READY,  // to import...
             opt_scan);
-      }.bind(this));
+      }.bind(this))
+      .catch(importer.getLogger().catcher('import-controller-check-state'));
 };
 
 /**
