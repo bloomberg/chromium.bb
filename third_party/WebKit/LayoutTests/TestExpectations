@@ -1866,3 +1866,7 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFai
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
 crbug.com/461042 [ Debug ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash ]
+
+# These need a manual rebaseline after crbug.com/461107
+crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+
