@@ -32,7 +32,7 @@
 #include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/HTMLObjectElement.h"
-#include "core/rendering/RenderFieldset.h"
+#include "core/layout/LayoutFieldset.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -118,7 +118,7 @@ const AtomicString& HTMLFieldSetElement::formControlType() const
 
 LayoutObject* HTMLFieldSetElement::createRenderer(const LayoutStyle&)
 {
-    return new RenderFieldset(this);
+    return new LayoutFieldset(this);
 }
 
 HTMLLegendElement* HTMLFieldSetElement::legend() const

@@ -9,17 +9,17 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderFieldset;
+class LayoutFieldset;
 
 class FieldsetPainter {
 public:
-    FieldsetPainter(RenderFieldset& renderFieldset) : m_renderFieldset(renderFieldset) { }
+    FieldsetPainter(LayoutFieldset& layoutFieldset) : m_layoutFieldset(layoutFieldset) { }
 
     void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
     void paintMask(const PaintInfo&, const LayoutPoint&);
 
 private:
-    RenderFieldset& m_renderFieldset;
+    LayoutFieldset& m_layoutFieldset;
 };
 
 } // namespace blink

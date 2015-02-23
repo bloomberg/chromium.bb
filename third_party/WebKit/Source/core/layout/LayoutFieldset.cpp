@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderFieldset.h"
+#include "core/layout/LayoutFieldset.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
@@ -38,12 +38,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RenderFieldset::RenderFieldset(Element* element)
+LayoutFieldset::LayoutFieldset(Element* element)
     : RenderBlockFlow(element)
 {
 }
 
-void RenderFieldset::computePreferredLogicalWidths()
+void LayoutFieldset::computePreferredLogicalWidths()
 {
     RenderBlockFlow::computePreferredLogicalWidths();
     if (RenderBox* legend = findLegend()) {
@@ -62,7 +62,7 @@ void RenderFieldset::computePreferredLogicalWidths()
     }
 }
 
-LayoutObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&)
+LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&)
 {
     RenderBox* legend = findLegend();
     if (legend) {
@@ -126,7 +126,7 @@ LayoutObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
     return legend;
 }
 
-RenderBox* RenderFieldset::findLegend(FindLegendOption option) const
+RenderBox* LayoutFieldset::findLegend(FindLegendOption option) const
 {
     for (LayoutObject* legend = firstChild(); legend; legend = legend->nextSibling()) {
         if (option == IgnoreFloatingOrOutOfFlow && legend->isFloatingOrOutOfFlowPositioned())
@@ -138,12 +138,12 @@ RenderBox* RenderFieldset::findLegend(FindLegendOption option) const
     return 0;
 }
 
-void RenderFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     FieldsetPainter(*this).paintBoxDecorationBackground(paintInfo, paintOffset);
 }
 
-void RenderFieldset::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void LayoutFieldset::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     FieldsetPainter(*this).paintMask(paintInfo, paintOffset);
 }

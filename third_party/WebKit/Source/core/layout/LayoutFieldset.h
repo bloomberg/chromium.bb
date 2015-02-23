@@ -21,22 +21,22 @@
  *
  */
 
-#ifndef RenderFieldset_h
-#define RenderFieldset_h
+#ifndef LayoutFieldset_h
+#define LayoutFieldset_h
 
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
 
-class RenderFieldset final : public RenderBlockFlow {
+class LayoutFieldset final : public RenderBlockFlow {
 public:
-    explicit RenderFieldset(Element*);
+    explicit LayoutFieldset(Element*);
 
     enum FindLegendOption { IgnoreFloatingOrOutOfFlow, IncludeFloatingOrOutOfFlow };
     RenderBox* findLegend(FindLegendOption = IgnoreFloatingOrOutOfFlow) const;
 
 private:
-    virtual const char* renderName() const override { return "RenderFieldSet"; }
+    virtual const char* renderName() const override { return "LayoutFieldset"; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFieldset || RenderBlockFlow::isOfType(type); }
 
     virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
@@ -48,8 +48,8 @@ private:
     virtual void paintMask(const PaintInfo&, const LayoutPoint&) override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, isFieldset());
 
 } // namespace blink
 
-#endif // RenderFieldset_h
+#endif // LayoutFieldset_h
