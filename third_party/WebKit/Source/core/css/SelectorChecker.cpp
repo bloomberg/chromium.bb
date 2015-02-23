@@ -625,8 +625,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 element.setStyleAffectedByEmpty();
                 if (context.elementStyle)
                     context.elementStyle->setEmptyState(result);
-                else if (element.mutableLayoutStyle() && (element.document().styleEngine()->usesSiblingRules() || element.mutableLayoutStyle()->unique()))
-                    element.mutableLayoutStyle()->setEmptyState(result);
+                else if (element.layoutStyle() && (element.document().styleEngine()->usesSiblingRules() || element.layoutStyle()->unique()))
+                    element.layoutStyle()->setEmptyState(result);
             }
             return result;
         }
@@ -702,7 +702,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             int count = 1 + siblingTraversalStrategy.countElementsBefore(element);
             if (m_mode == ResolvingStyle) {
-                const LayoutStyle* childStyle = context.elementStyle ? context.elementStyle : element.layoutStyle();
+                LayoutStyle* childStyle = context.elementStyle ? context.elementStyle : element.layoutStyle();
                 if (childStyle)
                     childStyle->setUnique();
                 parent->setChildrenAffectedByForwardPositionalRules();

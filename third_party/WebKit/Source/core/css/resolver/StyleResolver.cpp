@@ -527,7 +527,7 @@ void StyleResolver::loadPendingResources(StyleResolverState& state)
     document().styleEngine()->fontSelector()->fontLoader()->loadPendingFonts();
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, const LayoutStyle* defaultParent, StyleSharingBehavior sharingBehavior,
+PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior)
 {
     ASSERT(document().frame());
@@ -584,7 +584,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, const L
     // be propagated from shadow host to distributed node.
     if (state.distributedToInsertionPoint()) {
         if (Element* parent = element->parentElement()) {
-            if (LayoutStyle* styleOfShadowHost = parent->mutableLayoutStyle())
+            if (LayoutStyle* styleOfShadowHost = parent->layoutStyle())
                 state.style()->setUserModify(styleOfShadowHost->userModify());
         }
     }
@@ -648,7 +648,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, const L
     return state.takeStyle();
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const LayoutStyle& elementStyle, const LayoutStyle* parentStyle, const StyleRuleKeyframe* keyframe, const AtomicString& animationName)
+PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const LayoutStyle& elementStyle, LayoutStyle* parentStyle, const StyleRuleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
@@ -690,7 +690,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const 
 PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue& value)
 {
     RefPtr<LayoutStyle> style;
-    if (const LayoutStyle* elementStyle = element.layoutStyle())
+    if (LayoutStyle* elementStyle = element.layoutStyle())
         style = LayoutStyle::clone(*elementStyle);
     else
         style = LayoutStyle::create();
@@ -733,8 +733,8 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (!parentRenderer->canHaveGeneratedChildren())
         return nullptr;
 
-    LayoutStyle* parentStyle = parentRenderer->mutableStyle();
-    if (const LayoutStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
+    LayoutStyle* parentStyle = parentRenderer->style();
+    if (LayoutStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
         if (!pseudoElementRendererIsNeeded(cachedStyle))
             return nullptr;
         return createPseudoElement(&parent, pseudoId);
@@ -758,7 +758,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     return pseudo.release();
 }
 
-bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, const LayoutStyle* parentStyle, StyleResolverState& state)
+bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, LayoutStyle* parentStyle, StyleResolverState& state)
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
@@ -827,7 +827,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     return true;
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, const LayoutStyle* parentStyle)
+PassRefPtr<LayoutStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, LayoutStyle* parentStyle)
 {
     ASSERT(parentStyle);
     if (!element)
@@ -916,7 +916,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForText(Text* textNode)
     Node* parentNode = NodeRenderingTraversal::parent(*textNode);
     if (!parentNode || !parentNode->layoutStyle())
         return defaultStyleForElement();
-    return parentNode->mutableLayoutStyle();
+    return parentNode->layoutStyle();
 }
 
 void StyleResolver::updateFont(StyleResolverState& state)

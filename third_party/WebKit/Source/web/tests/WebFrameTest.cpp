@@ -704,10 +704,10 @@ static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierSet = false;
     for (LayoutObject* renderer = document->renderView(); renderer; renderer = renderer->nextInPreOrder()) {
-        if (LayoutStyle* style = renderer->mutableStyle()) {
-            style->setTextAutosizingMultiplier(multiplier);
+        if (renderer->style()) {
+            renderer->style()->setTextAutosizingMultiplier(multiplier);
 
-            EXPECT_EQ(multiplier, style->textAutosizingMultiplier());
+            EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
             multiplierSet = true;
         }
     }

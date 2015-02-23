@@ -265,11 +265,11 @@ void LayoutQuote::updateText()
 
     RenderTextFragment* fragment = findFragmentChild();
     if (fragment) {
-        fragment->setStyle(mutableStyle());
+        fragment->setStyle(style());
         fragment->setContentString(m_text.impl());
     } else {
         fragment = new RenderTextFragment(&document(), m_text.impl());
-        fragment->setStyle(mutableStyle());
+        fragment->setStyle(style());
         addChild(fragment);
     }
 }

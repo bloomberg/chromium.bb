@@ -407,7 +407,7 @@ bool HTMLOptionElement::isDisplayNone() const
         Element* parent = parentElement();
         ASSERT(parent);
         if (isHTMLOptGroupElement(*parent)) {
-            const LayoutStyle* parentStyle = parent->layoutStyle() ? parent->layoutStyle() : parent->computedStyle();
+            LayoutStyle* parentStyle = parent->layoutStyle() ? parent->layoutStyle() : parent->computedStyle();
             return !parentStyle || parentStyle->display() == NONE;
         }
     }

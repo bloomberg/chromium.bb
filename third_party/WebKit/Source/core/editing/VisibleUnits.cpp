@@ -1115,8 +1115,8 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             n = NodeTraversal::previousPostOrder(*n, startBlock);
             continue;
         }
-        const LayoutStyle& style = r->styleRef();
-        if (style.visibility() != VISIBLE) {
+        LayoutStyle* style = r->style();
+        if (style->visibility() != VISIBLE) {
             n = NodeTraversal::previousPostOrder(*n, startBlock);
             continue;
         }
@@ -1127,7 +1127,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
         if (r->isText() && toRenderText(r)->renderedTextLength()) {
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             type = Position::PositionIsOffsetInAnchor;
-            if (style.preserveNewline()) {
+            if (style->preserveNewline()) {
                 RenderText* text = toRenderText(r);
                 int i = text->textLength();
                 int o = offset;
@@ -1194,8 +1194,8 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
             n = NodeTraversal::next(*n, stayInsideBlock);
             continue;
         }
-        const LayoutStyle& style = r->styleRef();
-        if (style.visibility() != VISIBLE) {
+        LayoutStyle* style = r->style();
+        if (style->visibility() != VISIBLE) {
             n = NodeTraversal::next(*n, stayInsideBlock);
             continue;
         }
@@ -1208,7 +1208,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             int length = toRenderText(r)->textLength();
             type = Position::PositionIsOffsetInAnchor;
-            if (style.preserveNewline()) {
+            if (style->preserveNewline()) {
                 RenderText* text = toRenderText(r);
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {

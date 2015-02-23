@@ -65,8 +65,8 @@ void LayoutMedia::layout()
     LayoutState state(*this, locationOffset());
 
     controlsRenderer->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
-    controlsRenderer->mutableStyleRef().setHeight(Length(newSize.height(), Fixed));
-    controlsRenderer->mutableStyleRef().setWidth(Length(newSize.width(), Fixed));
+    controlsRenderer->style()->setHeight(Length(newSize.height(), Fixed));
+    controlsRenderer->style()->setWidth(Length(newSize.width(), Fixed));
     controlsRenderer->forceLayout();
     clearNeedsLayout();
 }

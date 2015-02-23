@@ -132,7 +132,7 @@ PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJav
 
 bool SVGGraphicsElement::hasAnimatedLocalTransform() const
 {
-    const LayoutStyle* style = renderer() ? renderer()->style() : nullptr;
+    LayoutStyle* style = renderer() ? renderer()->style() : 0;
 
     // Each of these is used in SVGGraphicsElement::calculateAnimatedLocalTransform to create an animated local transform.
     return (style && style->hasTransform()) || !m_transform->currentValue()->isEmpty() || hasSVGRareData();
@@ -141,7 +141,7 @@ bool SVGGraphicsElement::hasAnimatedLocalTransform() const
 AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
 {
     AffineTransform matrix;
-    const LayoutStyle* style = renderer() ? renderer()->style() : nullptr;
+    LayoutStyle* style = renderer() ? renderer()->style() : 0;
 
     // If CSS property was set, use that, otherwise fallback to attribute (if set).
     if (style && style->hasTransform()) {

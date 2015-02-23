@@ -149,12 +149,12 @@ void RenderTreeBuilderForElement::createRenderer()
 void RenderTreeBuilderForText::createRenderer()
 {
     LayoutObject* parentRenderer = this->parentRenderer();
-    LayoutStyle& style = parentRenderer->mutableStyleRef();
+    LayoutStyle* style = parentRenderer->style();
 
-    ASSERT(m_node->textRendererIsNeeded(style, *parentRenderer));
+    ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
 
     RenderText* newRenderer = m_node->createTextRenderer(style);
-    if (!parentRenderer->isChildAllowed(newRenderer, style)) {
+    if (!parentRenderer->isChildAllowed(newRenderer, *style)) {
         newRenderer->destroy();
         return;
     }
@@ -166,7 +166,7 @@ void RenderTreeBuilderForText::createRenderer()
     LayoutObject* nextRenderer = this->nextRenderer();
     m_node->setRenderer(newRenderer);
     // Parent takes care of the animations, no need to call setAnimatableStyle.
-    newRenderer->setStyle(&style);
+    newRenderer->setStyle(style);
     parentRenderer->addChild(newRenderer, nextRenderer);
 }
 

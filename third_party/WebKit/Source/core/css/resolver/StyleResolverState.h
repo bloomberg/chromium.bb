@@ -45,8 +45,8 @@ class StyleResolverState {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState(Document&, const ElementResolveContext&, const LayoutStyle* parentStyle);
-    StyleResolverState(Document&, Element*, const LayoutStyle* parentStyle = 0);
+    StyleResolverState(Document&, const ElementResolveContext&, LayoutStyle* parentStyle);
+    StyleResolverState(Document&, Element*, LayoutStyle* parentStyle = 0);
     ~StyleResolverState();
 
     // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
@@ -83,13 +83,9 @@ public:
     const CSSAnimationUpdate* animationUpdate() { return m_animationUpdate.get(); }
     PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> takeAnimationUpdate();
 
-    void setParentStyle(PassRefPtr<LayoutStyle> parentStyle) { m_overrideParentStyle = parentStyle; }
-    const LayoutStyle* parentStyle() const
-    {
-        if (m_overrideParentStyle)
-            return m_overrideParentStyle.get();
-        return m_parentStyle;
-    }
+    void setParentStyle(PassRefPtr<LayoutStyle> parentStyle) { m_parentStyle = parentStyle; }
+    const LayoutStyle* parentStyle() const { return m_parentStyle.get(); }
+    LayoutStyle* parentStyle() { return m_parentStyle.get(); }
 
     // FIXME: These are effectively side-channel "out parameters" for the various
     // map functions. When we map from CSS to style objects we use this state object
@@ -132,7 +128,7 @@ public:
     // set these directly on the LayoutStyle w/o telling us. Presumably we'll
     // want to design a better wrapper around LayoutStyle for tracking these mutations
     // and separate it from StyleResolverState.
-    const FontDescription& parentFontDescription() { return parentStyle()->fontDescription(); }
+    const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
 
     void setZoom(float f)
     {
@@ -166,8 +162,7 @@ private:
 
     // m_parentStyle is not always just ElementResolveContext::parentStyle,
     // so we keep it separate.
-    const LayoutStyle* m_parentStyle;
-    RefPtr<LayoutStyle> m_overrideParentStyle;
+    RefPtr<LayoutStyle> m_parentStyle;
 
     OwnPtrWillBeMember<CSSAnimationUpdate> m_animationUpdate;
 

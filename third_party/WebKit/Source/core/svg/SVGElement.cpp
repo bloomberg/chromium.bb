@@ -916,7 +916,7 @@ PassRefPtr<LayoutStyle> SVGElement::customStyleForRenderer()
     if (!correspondingElement())
         return document().ensureStyleResolver().styleForElement(this);
 
-    const LayoutStyle* style = 0;
+    LayoutStyle* style = 0;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->renderer())
             style = renderer->style();
@@ -948,7 +948,7 @@ LayoutStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
     if (!hasSVGRareData() || !svgRareData()->useOverrideComputedStyle())
         return Element::computedStyle(pseudoElementSpecifier);
 
-    const LayoutStyle* parentStyle = 0;
+    LayoutStyle* parentStyle = 0;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->renderer())
             parentStyle = renderer->style();

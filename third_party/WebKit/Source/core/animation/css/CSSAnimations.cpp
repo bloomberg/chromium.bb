@@ -86,7 +86,7 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
     return property;
 }
 
-static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframeEffect(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle& style, const LayoutStyle* parentStyle,
+static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframeEffect(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle,
     const AtomicString& name, TimingFunction* defaultTimingFunction)
 {
     // When the animating element is null, use its parent for scoping purposes.
@@ -227,7 +227,7 @@ bool CSSAnimations::isTransitionAnimationForInspector(const AnimationPlayer& pla
     return false;
 }
 
-PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const LayoutStyle& style, const LayoutStyle* parentStyle, StyleResolver* resolver)
+PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, StyleResolver* resolver)
 {
     OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), animatingElement, element, style, parentStyle, resolver);
@@ -237,7 +237,7 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const 
     return update->isEmpty() ? nullptr : update.release();
 }
 
-void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const Element* animatingElement, Element& element, const LayoutStyle& style, const LayoutStyle* parentStyle, StyleResolver* resolver)
+void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle, StyleResolver* resolver)
 {
     const ActiveAnimations* activeAnimations = animatingElement ? animatingElement->activeAnimations() : nullptr;
 

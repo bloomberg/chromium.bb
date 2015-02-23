@@ -33,10 +33,10 @@
 
 namespace blink {
 
-inline LayoutStyle* Node::mutableLayoutStyle() const
+inline LayoutStyle* Node::layoutStyle() const
 {
     if (LayoutObject* renderer = this->renderer())
-        return renderer->mutableStyle();
+        return renderer->style();
     // <option> and <optgroup> can be styled even if they don't get renderers,
     // so they store their style internally and return it through nonRendererStyle().
     // We check here explicitly to avoid the virtual call in the common case.
@@ -45,12 +45,7 @@ inline LayoutStyle* Node::mutableLayoutStyle() const
     return 0;
 }
 
-inline const LayoutStyle* Node::layoutStyle() const
-{
-    return mutableLayoutStyle();
-}
-
-inline const LayoutStyle* Node::parentLayoutStyle() const
+inline LayoutStyle* Node::parentLayoutStyle() const
 {
     ContainerNode* parent = NodeRenderingTraversal::parent(*this);
     return parent ? parent->layoutStyle() : 0;

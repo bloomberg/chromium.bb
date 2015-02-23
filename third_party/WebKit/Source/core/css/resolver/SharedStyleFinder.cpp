@@ -198,7 +198,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (element() == candidate)
         return false;
     Element* parent = candidate.parentOrShadowHostElement();
-    const LayoutStyle* style = candidate.layoutStyle();
+    LayoutStyle* style = candidate.layoutStyle();
     if (!style)
         return false;
     if (!style->isSharable())
@@ -344,7 +344,7 @@ LayoutStyle* SharedStyleFinder::findSharedStyle()
         return 0;
     }
 
-    return shareElement->mutableLayoutStyle();
+    return shareElement->layoutStyle();
 }
 
 }

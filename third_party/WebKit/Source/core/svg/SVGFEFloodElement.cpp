@@ -39,13 +39,14 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 {
     LayoutObject* renderer = this->renderer();
     ASSERT(renderer);
-    const LayoutStyle& style = renderer->styleRef();
+    LayoutStyle* style = renderer->style();
+    ASSERT(style);
     FEFlood* flood = static_cast<FEFlood*>(effect);
 
     if (attrName == SVGNames::flood_colorAttr)
-        return flood->setFloodColor(style.svgStyle().floodColor());
+        return flood->setFloodColor(style->svgStyle().floodColor());
     if (attrName == SVGNames::flood_opacityAttr)
-        return flood->setFloodOpacity(style.svgStyle().floodOpacity());
+        return flood->setFloodOpacity(style->svgStyle().floodOpacity());
 
     ASSERT_NOT_REACHED();
     return false;

@@ -601,8 +601,8 @@ public:
 
     // The pseudo element style can be cached or uncached.  Use the cached method if the pseudo element doesn't respect
     // any pseudo classes (and therefore has no concept of changing state).
-    LayoutStyle* getCachedPseudoStyle(PseudoId, const LayoutStyle* parentStyle = 0) const;
-    PassRefPtr<LayoutStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, const LayoutStyle* parentStyle = 0, const LayoutStyle* ownStyle = 0) const;
+    LayoutStyle* getCachedPseudoStyle(PseudoId, LayoutStyle* parentStyle = 0) const;
+    PassRefPtr<LayoutStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, LayoutStyle* parentStyle = 0, LayoutStyle* ownStyle = 0) const;
 
     virtual void updateDragState(bool dragOn);
 
@@ -798,8 +798,7 @@ public:
     virtual LayoutUnit minPreferredLogicalWidth() const { return 0; }
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
 
-    const LayoutStyle* style() const { return m_style.get(); }
-    LayoutStyle* mutableStyle() const { return m_style.get(); }
+    LayoutStyle* style() const { return m_style.get(); }
 
     // m_style can only be nullptr before the first style is set, thus most
     // callers will never see a nullptr style and should use styleRef().
@@ -808,9 +807,9 @@ public:
     LayoutStyle& mutableStyleRef() const { ASSERT(m_style); return *m_style; }
 
     /* The following methods are inlined in LayoutObjectInlines.h */
-    const LayoutStyle* firstLineStyle() const;
+    LayoutStyle* firstLineStyle() const;
     const LayoutStyle& firstLineStyleRef() const;
-    const LayoutStyle* style(bool firstLine) const;
+    LayoutStyle* style(bool firstLine) const;
     const LayoutStyle& styleRef(bool firstLine) const;
 
     static inline Color resolveColor(const LayoutStyle& styleToUse, int colorProperty)

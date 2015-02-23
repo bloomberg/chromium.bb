@@ -77,22 +77,22 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
         if (!renderer)
             continue;
 
-        const LayoutStyle& style = renderer->styleRef();
-        NSFont* font = style.font().primaryFont()->getNSFont();
+        LayoutStyle* style = renderer->style();
+        NSFont* font = style->font().primaryFont()->getNSFont();
         // If the platform font can't be loaded, it's likely that the site is
         // using a web font. For now, just use the default font instead.
         // TODO(rsesek): Change the font activation flags to allow other processes
         // to use the font.
         if (!font)
-            font = [NSFont systemFontOfSize:style.font().fontDescription().computedSize()];
+          font = [NSFont systemFontOfSize:style->font().fontDescription().computedSize()];
         [attrs setObject:font forKey:NSFontAttributeName];
 
-        if (style.visitedDependentColor(CSSPropertyColor).alpha())
-            [attrs setObject:nsColor(style.visitedDependentColor(CSSPropertyColor)) forKey:NSForegroundColorAttributeName];
+        if (style->visitedDependentColor(CSSPropertyColor).alpha())
+            [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyColor)) forKey:NSForegroundColorAttributeName];
         else
             [attrs removeObjectForKey:NSForegroundColorAttributeName];
-        if (style.visitedDependentColor(CSSPropertyBackgroundColor).alpha())
-            [attrs setObject:nsColor(style.visitedDependentColor(CSSPropertyBackgroundColor)) forKey:NSBackgroundColorAttributeName];
+        if (style->visitedDependentColor(CSSPropertyBackgroundColor).alpha())
+            [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyBackgroundColor)) forKey:NSBackgroundColorAttributeName];
         else
             [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 

@@ -1634,7 +1634,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     ASSERT(change >= Inherit || needsStyleRecalc());
     ASSERT(parentLayoutStyle());
 
-    RefPtr<LayoutStyle> oldStyle = mutableLayoutStyle();
+    RefPtr<LayoutStyle> oldStyle = layoutStyle();
     RefPtr<LayoutStyle> newStyle = styleForRenderer();
     StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
 
@@ -1679,7 +1679,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     return localChange;
 }
 
-void Element::updateCallbackSelectors(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
+void Element::updateCallbackSelectors(LayoutStyle* oldStyle, LayoutStyle* newStyle)
 {
     Vector<String> emptyVector;
     const Vector<String>& oldCallbackSelectors = oldStyle ? oldStyle->callbackSelectors() : emptyVector;
@@ -1830,7 +1830,7 @@ bool Element::childTypeAllowed(NodeType type) const
 
 void Element::checkForEmptyStyleChange()
 {
-    const LayoutStyle* style = layoutStyle();
+    LayoutStyle* style = layoutStyle();
 
     if (!style && !styleAffectedByEmpty())
         return;
@@ -2533,7 +2533,7 @@ LayoutStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
     // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
     // properties, which are only known by the renderer because it did the layout, will be correct and so that the
     // values returned for the ":selection" pseudo-element will be correct.
-    LayoutStyle* elementStyle = mutableLayoutStyle();
+    LayoutStyle* elementStyle = layoutStyle();
     if (!elementStyle) {
         ElementRareData& rareData = ensureElementRareData();
         if (!rareData.computedStyle())
@@ -2616,7 +2616,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // Need to clear the cached style if the PseudoElement wants a recalc so it
         // computes a new style.
         if (element->needsStyleRecalc())
-            renderer()->mutableStyleRef().removeCachedPseudoStyle(pseudoId);
+            renderer()->style()->removeCachedPseudoStyle(pseudoId);
 
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.

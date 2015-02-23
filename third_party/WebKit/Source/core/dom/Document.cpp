@@ -1628,7 +1628,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     ASSERT(inStyleRecalc());
     ASSERT(documentElement());
 
-    RefPtr<LayoutStyle> documentElementStyle = documentElement()->mutableLayoutStyle();
+    RefPtr<LayoutStyle> documentElementStyle = documentElement()->layoutStyle();
     if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force)
         documentElementStyle = ensureStyleResolver().styleForElement(documentElement());
 
@@ -1638,7 +1638,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     HTMLElement* body = this->body();
     RefPtr<LayoutStyle> bodyStyle;
     if (body) {
-        bodyStyle = body->mutableLayoutStyle();
+        bodyStyle = body->layoutStyle();
         if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
             bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
         rootWritingMode = bodyStyle->writingMode();
@@ -1685,7 +1685,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
 
-    RefPtr<LayoutStyle> documentStyle = renderView()->mutableStyle();
+    RefPtr<LayoutStyle> documentStyle = renderView()->style();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->overflowX() != overflowX
@@ -1704,13 +1704,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     if (body) {
-        if (const LayoutStyle* style = body->layoutStyle()) {
+        if (LayoutStyle* style = body->layoutStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
                 body->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
         }
     }
 
-    if (const LayoutStyle* style = documentElement()->layoutStyle()) {
+    if (LayoutStyle* style = documentElement()->layoutStyle()) {
         if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
             documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
     }
@@ -2408,7 +2408,7 @@ HTMLHeadElement* Document::head() const
     return Traversal<HTMLHeadElement>::firstChild(*de);
 }
 
-Element* Document::viewportDefiningElement(const LayoutStyle* rootStyle) const
+Element* Document::viewportDefiningElement(LayoutStyle* rootStyle) const
 {
     // If a BODY element sets non-visible overflow, it is to be propagated to the viewport, as long
     // as the following conditions are all met:
@@ -4204,7 +4204,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         m_visuallyOrdered = shouldUseVisualOrdering;
         // FIXME: How is possible to not have a renderer here?
         if (renderView())
-            renderView()->mutableStyleRef().setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
+            renderView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisuallyOrdered));
     }
 }

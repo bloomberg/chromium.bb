@@ -182,7 +182,7 @@ bool AXTable::isDataTable() const
         return true;
 
     // Store the background color of the table to check against cell's background colors.
-    const LayoutStyle* tableStyle = table->style();
+    LayoutStyle* tableStyle = table->style();
     if (!tableStyle)
         return false;
     Color tableBGColor = tableStyle->visitedDependentColor(CSSPropertyBackgroundColor);
@@ -237,7 +237,7 @@ bool AXTable::isDataTable() const
                     return true;
             }
 
-            const LayoutStyle* layoutStyle = cell->style();
+            LayoutStyle* layoutStyle = cell->style();
             if (!layoutStyle)
                 continue;
 
@@ -277,7 +277,7 @@ bool AXTable::isDataTable() const
                 LayoutObject* layoutRow = cell->parent();
                 if (!layoutRow || !layoutRow->isBoxModelObject() || !toLayoutBoxModelObject(layoutRow)->isTableRow())
                     continue;
-                const LayoutStyle* rowLayoutStyle = layoutRow->style();
+                LayoutStyle* rowLayoutStyle = layoutRow->style();
                 if (!rowLayoutStyle)
                     continue;
                 Color rowColor = rowLayoutStyle->visitedDependentColor(CSSPropertyBackgroundColor);

@@ -15,7 +15,7 @@ namespace blink {
 // to StyleEngine.h for all users of LayoutObject.h that don't use
 // these methods.
 
-inline const LayoutStyle* LayoutObject::firstLineStyle() const
+inline LayoutStyle* LayoutObject::firstLineStyle() const
 {
     return document().styleEngine()->usesFirstLineRules() ? cachedFirstLineStyle() : style();
 }
@@ -27,7 +27,7 @@ inline const LayoutStyle& LayoutObject::firstLineStyleRef() const
     return *style;
 }
 
-inline const LayoutStyle* LayoutObject::style(bool firstLine) const
+inline LayoutStyle* LayoutObject::style(bool firstLine) const
 {
     return firstLine ? firstLineStyle() : style();
 }

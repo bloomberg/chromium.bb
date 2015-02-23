@@ -70,7 +70,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     if (!node.isElementNode())
         return;
     const Element& element = toElement(node);
-    if (const LayoutStyle* style = element.layoutStyle()) {
+    if (LayoutStyle* style = element.layoutStyle()) {
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
             || ((property == CSSPropertyTransform || property == CSSPropertyWebkitTransform) && style->isRunningTransformAnimationOnCompositor())
             || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {

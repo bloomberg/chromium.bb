@@ -541,9 +541,8 @@ public:
     bool shouldCallRecalcStyle(StyleRecalcChange);
 
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
-    const LayoutStyle* layoutStyle() const;
-    LayoutStyle* mutableLayoutStyle() const;
-    const LayoutStyle* parentLayoutStyle() const;
+    LayoutStyle* layoutStyle() const;
+    LayoutStyle* parentLayoutStyle() const;
 
     const LayoutStyle& layoutStyleRef() const;
 

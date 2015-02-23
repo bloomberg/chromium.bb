@@ -60,7 +60,7 @@ public:
 
     static const StylePropertyShorthand& animatableProperties();
     static bool isAllowedAnimation(CSSPropertyID);
-    static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(const Element* animatingElement, Element&, const LayoutStyle&, const LayoutStyle* parentStyle, StyleResolver*);
+    static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(const Element* animatingElement, Element&, const LayoutStyle&, LayoutStyle* parentStyle, StyleResolver*);
 
     void setPendingUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }
     void maybeApplyPendingUpdate(Element*);
@@ -124,7 +124,7 @@ private:
 
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation>> m_previousActiveInterpolationsForAnimations;
 
-    static void calculateAnimationUpdate(CSSAnimationUpdate*, const Element* animatingElement, Element&, const LayoutStyle&, const LayoutStyle* parentStyle, StyleResolver*);
+    static void calculateAnimationUpdate(CSSAnimationUpdate*, const Element* animatingElement, Element&, const LayoutStyle&, LayoutStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element* animatingElement, const LayoutStyle&);
     static void calculateTransitionUpdateForProperty(CSSPropertyID, CSSPropertyID eventId, const CSSTransitionData&, size_t transitionIndex, const LayoutStyle& oldStyle, const LayoutStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
 
