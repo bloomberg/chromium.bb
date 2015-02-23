@@ -210,6 +210,8 @@ private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
+    static AuthorStyleInfo authorStyleInfo(StyleResolverState&);
+
     void loadPendingResources(StyleResolverState&);
     void adjustLayoutStyle(StyleResolverState&, Element*);
 

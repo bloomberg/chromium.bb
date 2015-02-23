@@ -492,7 +492,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForDocument(Document& document)
     return documentStyle.release();
 }
 
-static AuthorStyleInfo authorStyleInfo(StyleResolverState& state)
+AuthorStyleInfo StyleResolver::authorStyleInfo(StyleResolverState& state)
 {
     const CachedUAStyle* cachedUAStyle = state.cachedUAStyle();
 
@@ -508,7 +508,7 @@ static AuthorStyleInfo authorStyleInfo(StyleResolverState& state)
     backgroundLayersCopy.setRepeatY(NoRepeatFill);
 
     bool backgroundChanged = backgroundLayersCopy != backgroundCopy
-        || state.style()->visitedDependentColor(CSSPropertyBackgroundColor) != cachedUAStyle->backgroundColor;
+        || state.style()->backgroundColor() != cachedUAStyle->backgroundColor;
     bool borderChanged = state.style()->border() != cachedUAStyle->border;
 
     return AuthorStyleInfo(backgroundChanged, borderChanged);
