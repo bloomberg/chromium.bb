@@ -542,6 +542,15 @@ public class ProfileSyncService {
         return sb.toString();
     }
 
+    /**
+     * @return Whether sync is enabled to sync urls or open tabs with a non custom passphrase.
+     */
+    public boolean isSyncingUrlsWithKeystorePassphrase() {
+        return isSyncInitialized()
+            && getPreferredDataTypes().contains(ModelType.TYPED_URL)
+            && getPassphraseType().equals(PassphraseType.KEYSTORE_PASSPHRASE);
+    }
+
     // Native methods
     private native long nativeInit();
     private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
