@@ -34,7 +34,13 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(HistoryApiTest, Delete) {
+#if defined(OS_WIN)
+// Flaky on Windows: crbug.com/88318
+#define MAYBE_Delete DISABLED_Delete
+#else
+#define MAYBE_Delete Delete
+#endif
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_Delete) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
@@ -47,12 +53,21 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, DeleteProhibited) {
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(HistoryApiTest, GetVisits) {
+// See crbug.com/79074
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_GetVisits) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "get_visits.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(HistoryApiTest, SearchAfterAdd) {
+#if defined(OS_WIN)
+// Searching for a URL right after adding it fails on win XP.
+// Fix this as part of crbug/76170.
+#define MAYBE_SearchAfterAdd DISABLED_SearchAfterAdd
+#else
+#define MAYBE_SearchAfterAdd SearchAfterAdd
+#endif
+
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_SearchAfterAdd) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("history", "search_after_add.html"))
       << message_;
