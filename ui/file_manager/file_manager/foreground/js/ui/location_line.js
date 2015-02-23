@@ -3,28 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * TODO(hirono): Remove fileSystemMetadata and volumeManager dependencies from
- * the UI class.
+ * Location line.
+ *
  * @extends {cr.EventTarget}
  * @param {!Element} breadcrumbs Container element for breadcrumbs.
- * @param {!FileSystemMetadata} fileSystemMetadata To retrieve metadata.
  * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  */
-function LocationLine(breadcrumbs, fileSystemMetadata, volumeManager) {
+function LocationLine(breadcrumbs, volumeManager) {
   this.breadcrumbs_ = breadcrumbs;
-  this.fileSystemMetadata_ = fileSystemMetadata;
   this.volumeManager_ = volumeManager;
   this.entry_ = null;
 
-  /**
-   * Sequence value to skip requests that are out of date.
-   * @type {number}
-   * @private
-   */
-  this.showSequence_ = 0;
-
-  // Register events and seql the object.
   breadcrumbs.addEventListener('click', this.onClick_.bind(this));
 }
 
@@ -34,7 +24,7 @@ function LocationLine(breadcrumbs, fileSystemMetadata, volumeManager) {
 LocationLine.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Shows breadcrumbs.
+ * Shows breadcrumbs. This operation is done without IO.
  *
  * @param {!Entry|!Object} entry Target entry or fake entry.
  */
@@ -42,117 +32,98 @@ LocationLine.prototype.show = function(entry) {
   if (entry === this.entry_)
     return;
 
-  this.entry_ = entry;
-  this.showSequence_++;
+  this.update_(this.getComponents_(entry));
+};
 
-  var queue = new AsyncUtil.Queue();
-  var entries = [];
-  var error = false;
+/**
+ * Get components for the path of entry.
+ * @param {!Entry|!Object} entry An entry.
+ * @return {!Array<!LocationLine.PathComponent>} Components.
+ * @private
+ */
+LocationLine.prototype.getComponents_ = function(entry) {
+  var components = [];
+  var locationInfo = this.volumeManager_.getLocationInfo(entry);
 
-  // Obtain entries from the target entry to the root.
-  var resolveParent = function(currentEntry, previousEntry, callback) {
-    var entryLocationInfo = this.volumeManager_.getLocationInfo(currentEntry);
-    if (!entryLocationInfo) {
-      error = true;
-      callback();
-      return;
-    }
+  if (!locationInfo)
+    return components;
 
-    if (entryLocationInfo.isRootEntry &&
-        entryLocationInfo.rootType ===
-            VolumeManagerCommon.RootType.DRIVE_OTHER) {
-      this.fileSystemMetadata_.get([previousEntry], ['sharedWithMe']).then(
-          function(results) {
-            if (results[0].sharedWithMe) {
-              // Adds the shared-with-me entry instead.
-              var driveVolumeInfo = entryLocationInfo.volumeInfo;
-              var sharedWithMeEntry =
-                  driveVolumeInfo.fakeEntries[
-                      VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
-              if (sharedWithMeEntry)
-                entries.unshift(sharedWithMeEntry);
-              else
-                error = true;
-            } else {
-              entries.unshift(currentEntry);
-            }
-            // Finishes traversal since the current is root.
-            callback();
-          });
-      return;
-    }
+  if (util.isFakeEntry(entry)) {
+    components.push(new LocationLine.PathComponent(
+        util.getRootTypeLabel(locationInfo), entry.toURL(), entry));
+    return components;
+  }
 
-    entries.unshift(currentEntry);
-    if (!entryLocationInfo.isRootEntry) {
-      currentEntry.getParent(function(parentEntry) {
-        resolveParent(parentEntry, currentEntry, callback);
-      }.bind(this), function() {
-        error = true;
-        callback();
-      });
-    } else {
-      callback();
-    }
-  }.bind(this);
+  // Add volume component.
+  var displayRootUrl = locationInfo.volumeInfo.displayRoot.toURL();
+  var displayRootFullPath = locationInfo.volumeInfo.displayRoot.fullPath;
+  if (locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER) {
+    // When target path is a shared directory, volume should be shared with me.
+    displayRootUrl = displayRootUrl.slice(
+        0, displayRootUrl.length - '/root'.length) + '/other';
+    displayRootFullPath = '/other';
+    var sharedWithMeFakeEntry = locationInfo.volumeInfo.fakeEntries[
+        VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
+    components.push(new LocationLine.PathComponent(
+        str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
+        sharedWithMeFakeEntry.toURL(),
+        sharedWithMeFakeEntry));
+  } else {
+    components.push(new LocationLine.PathComponent(
+        util.getRootTypeLabel(locationInfo), displayRootUrl));
+  }
 
-  queue.run(resolveParent.bind(this, entry, null));
+  // Get relative path to display root (e.g. /root/foo/bar -> foo/bar).
+  var relativePath = entry.fullPath.slice(displayRootFullPath.length);
+  if (relativePath.indexOf('/') === 0) {
+    relativePath = relativePath.slice(1);
+  }
+  if (relativePath.length === 0)
+    return components;
 
-  queue.run(function(callback) {
-    // If an error occurred, just skip.
-    if (error) {
-      callback();
-      return;
-    }
+  // currentUrl should be without trailing slash.
+  var currentUrl = /^.+\/$/.test(displayRootUrl) ?
+      displayRootUrl.slice(0, displayRootUrl.length - 1) : displayRootUrl;
 
-    // If the path is not under the drive other root, it is not needed to
-    // override root type.
-    var locationInfo = this.volumeManager_.getLocationInfo(entry);
-    if (!locationInfo)
-      error = true;
+  // Add directory components to the target path.
+  var paths = relativePath.split('/');
+  for (var i = 0; i < paths.length; i++) {
+    currentUrl += '/' + paths[i];
+    components.push(new LocationLine.PathComponent(paths[i], currentUrl));
+  }
 
-    callback();
-  }.bind(this));
-
-  // Update DOM element.
-  queue.run(function(sequence, callback) {
-    // Check the sequence number to skip requests that are out of date.
-    if (this.showSequence_ === sequence) {
-      this.breadcrumbs_.hidden = false;
-      this.breadcrumbs_.textContent = '';
-      if (!error)
-        this.updateInternal_(entries);
-    }
-    callback();
-  }.bind(this, this.showSequence_));
+  return components;
 };
 
 /**
  * Updates the breadcrumb display.
- * @param {Array.<!Entry>} entries Entries on the target path.
+ * @param {!Array.<!LocationLine.PathComponent>} components Components to the
+ *     target path.
  * @private
  */
-LocationLine.prototype.updateInternal_ = function(entries) {
-  // Make elements.
+LocationLine.prototype.update_ = function(components) {
+  this.breadcrumbs_.textContent = '';
+  this.breadcrumbs_.hidden = false;
+
   var doc = this.breadcrumbs_.ownerDocument;
-  for (var i = 0; i < entries.length; i++) {
+  for (var i = 0; i < components.length; i++) {
     // Add a component.
-    var entry = entries[i];
+    var component = components[i];
     var div = doc.createElement('div');
-    div.className = 'breadcrumb-path entry-name';
-    div.textContent = util.getEntryLabel(
-        this.volumeManager_.getLocationInfo(entry), entry);
-    div.entry = entry;
+    div.classList.add('breadcrumb-path', 'entry-name');
+    div.textContent = component.name;
+    div.pathComponent = component;
     this.breadcrumbs_.appendChild(div);
 
     // If this is the last component, break here.
-    if (i === entries.length - 1) {
+    if (i === components.length - 1) {
       div.classList.add('breadcrumb-last');
       break;
     }
 
     // Add a separator.
     var separator = doc.createElement('span');
-    separator.className = 'separator';
+    separator.classList.add('separator');
     this.breadcrumbs_.appendChild(separator);
   }
 
@@ -255,7 +226,7 @@ LocationLine.prototype.hide = function() {
 
 /**
  * Handle a click event on a breadcrumb element.
- * @param {Event} event The click event.
+ * @param {!Event} event The click event.
  * @private
  */
 LocationLine.prototype.onClick_ = function(event) {
@@ -263,7 +234,36 @@ LocationLine.prototype.onClick_ = function(event) {
       event.target.classList.contains('breadcrumb-last'))
     return;
 
-  var newEvent = new Event('pathclick');
-  newEvent.entry = event.target.entry;
-  this.dispatchEvent(newEvent);
+  event.target.pathComponent.resolveEntry().then(function(entry) {
+    var pathClickEvent = new Event('pathclick');
+    pathClickEvent.entry = entry;
+    this.dispatchEvent(pathClickEvent);
+  }.bind(this));
+};
+
+/**
+ * Path component.
+ * @param {string} name Name.
+ * @param {string} url Url.
+ * @param {Object=} opt_fakeEntry Fake entry should be set when this component
+ *     represents fake entry.
+ * @constructor
+ * @struct
+ */
+LocationLine.PathComponent = function(name, url, opt_fakeEntry) {
+  this.name = name;
+  this.url_ = url;
+  this.fakeEntry_ = opt_fakeEntry || null;
+};
+
+/**
+ * Resolve an entry of the component.
+ * @return {!Promise<!Entry|!Object>} A promise which is resolved with an entry.
+ */
+LocationLine.PathComponent.prototype.resolveEntry = function() {
+  if (this.fakeEntry_)
+    return Promise.resolve(this.fakeEntry_);
+  else
+    return new Promise(
+        window.webkitResolveLocalFileSystemURL.bind(null, this.url_));
 };

@@ -761,7 +761,6 @@ FileManager.prototype = /** @struct */ {
         assertInstanceof(grid, FileGrid),
         new LocationLine(
             queryRequiredElement(dom, '#location-breadcrumbs'),
-            this.fileSystemMetadata_,
             this.volumeManager_));
 
     // Handle UI events.

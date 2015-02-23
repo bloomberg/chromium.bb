@@ -45,7 +45,6 @@ function VolumeInfo(
   this.label_ = label;
   this.displayRoot_ = null;
   this.fakeEntries_ = {};
-  this.displayRoot_ = null;
 
   /** @type {Promise.<DirectoryEntry>} */
   this.displayRootPromise_ = null;

@@ -924,6 +924,36 @@ util.splitExtension = function(path) {
 };
 
 /**
+ * Returns the localized name of the root type.
+ * @param {!EntryLocation} locationInfo Location info.
+ * @return {string} The localized name.
+ */
+util.getRootTypeLabel = function(locationInfo) {
+  switch (locationInfo.rootType) {
+    case VolumeManagerCommon.RootType.DOWNLOADS:
+      return str('DOWNLOADS_DIRECTORY_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE:
+      return str('DRIVE_MY_DRIVE_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
+      return str('DRIVE_OFFLINE_COLLECTION_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
+      return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_RECENT:
+      return str('DRIVE_RECENT_COLLECTION_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_OTHER:
+    case VolumeManagerCommon.RootType.DOWNLOADS:
+    case VolumeManagerCommon.RootType.ARCHIVE:
+    case VolumeManagerCommon.RootType.REMOVABLE:
+    case VolumeManagerCommon.RootType.MTP:
+    case VolumeManagerCommon.RootType.PROVIDED:
+      return locationInfo.volumeInfo.label;
+    default:
+      console.error('Unsupported root type: ' + locationInfo.rootType);
+      return locationInfo.volumeInfo.label;
+  }
+}
+
+/**
  * Returns the localized name of the entry.
  *
  * @param {EntryLocation} locationInfo
@@ -931,32 +961,10 @@ util.splitExtension = function(path) {
  * @return {?string} The localized name.
  */
 util.getEntryLabel = function(locationInfo, entry) {
-  if (locationInfo && locationInfo.isRootEntry) {
-    switch (locationInfo.rootType) {
-      case VolumeManagerCommon.RootType.DOWNLOADS:
-        return str('DOWNLOADS_DIRECTORY_LABEL');
-      case VolumeManagerCommon.RootType.DRIVE:
-        return str('DRIVE_MY_DRIVE_LABEL');
-      case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
-        return str('DRIVE_OFFLINE_COLLECTION_LABEL');
-      case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
-        return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
-      case VolumeManagerCommon.RootType.DRIVE_RECENT:
-        return str('DRIVE_RECENT_COLLECTION_LABEL');
-      case VolumeManagerCommon.RootType.DRIVE_OTHER:
-      case VolumeManagerCommon.RootType.DOWNLOADS:
-      case VolumeManagerCommon.RootType.ARCHIVE:
-      case VolumeManagerCommon.RootType.REMOVABLE:
-      case VolumeManagerCommon.RootType.MTP:
-      case VolumeManagerCommon.RootType.PROVIDED:
-        return locationInfo.volumeInfo.label;
-      default:
-        console.error('Unsupported root type: ' + locationInfo.rootType);
-        return locationInfo.volumeInfo.label;
-    }
-  }
-
-  return entry.name;
+  if (locationInfo && locationInfo.isRootEntry)
+    return util.getRootTypeLabel(locationInfo);
+  else
+    return entry.name;
 };
 
 /**
