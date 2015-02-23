@@ -454,6 +454,7 @@ def access_control_list(interface, attribute):
         else:
             access_control.append('v8::ALL_CAN_READ')
             if (not attribute.is_read_only or
+                'PutForwards' in extended_attributes or
                 'Replaceable' in extended_attributes):
                 access_control.append('v8::ALL_CAN_WRITE')
     if is_unforgeable(interface, attribute):
