@@ -3666,7 +3666,6 @@
             'testing/LayerRectList.h',
             'testing/NullExecutionContext.cpp',
             'testing/NullExecutionContext.h',
-            'testing/PartialPrivateScriptTest.h',
             'testing/PrivateScriptTest.cpp',
             'testing/PrivateScriptTest.h',
             'testing/RefCountedScriptWrappable.cpp',
