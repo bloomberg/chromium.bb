@@ -29,6 +29,8 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -2811,6 +2813,77 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   // SSL implementation's internal buffers. Either call PR_Available and
   // SSL_pending, although the former isn't actually implemented or perhaps
   // attempt to read one byte extra.
+}
+
+// Tests that session caches are sharded by max_version.
+TEST_F(SSLClientSocketTest, FallbackShardSessionCache) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // Prepare a normal and fallback SSL config.
+  SSLConfig ssl_config;
+  SSLConfig fallback_ssl_config;
+  fallback_ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  fallback_ssl_config.version_fallback = true;
+
+  // Connect with a fallback config from the test server to add an entry to the
+  // session cache.
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server()->host_port_pair(), fallback_ssl_config));
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  SSLInfo ssl_info;
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1,
+            SSLConnectionStatusToVersion(ssl_info.connection_status));
+
+  // A non-fallback connection needs a full handshake.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(transport.Pass(),
+                               test_server()->host_port_pair(), ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  // This does not check for equality because TLS 1.2 support is conditional on
+  // system NSS features.
+  EXPECT_LT(SSL_CONNECTION_VERSION_TLS1,
+            SSLConnectionStatusToVersion(ssl_info.connection_status));
+
+  // Note: if the server (correctly) declines to resume a TLS 1.0 session at TLS
+  // 1.2, the above test would not be sufficient to prove the session caches are
+  // sharded. Implementations vary here, so, to avoid being sensitive to this,
+  // attempt to resume with two more connections.
+
+  // The non-fallback connection added a > TLS 1.0 entry to the session cache.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(transport.Pass(),
+                               test_server()->host_port_pair(), ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  // This does not check for equality because TLS 1.2 support is conditional on
+  // system NSS features.
+  EXPECT_LT(SSL_CONNECTION_VERSION_TLS1,
+            SSLConnectionStatusToVersion(ssl_info.connection_status));
+
+  // The fallback connection still resumes from its session cache. It cannot
+  // offer the > TLS 1.0 session, so this must have been the session from the
+  // first fallback connection.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(
+      transport.Pass(), test_server()->host_port_pair(), fallback_ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1,
+            SSLConnectionStatusToVersion(ssl_info.connection_status));
 }
 
 #if defined(USE_OPENSSL)

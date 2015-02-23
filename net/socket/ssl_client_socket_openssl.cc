@@ -402,6 +402,27 @@ std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
   std::string result = host_and_port_.ToString();
   result.append("/");
   result.append(ssl_session_cache_shard_);
+
+  // Shard the session cache based on maximum protocol version. This causes
+  // fallback connections to use a separate session cache.
+  result.append("/");
+  switch (ssl_config_.version_max) {
+    case SSL_PROTOCOL_VERSION_SSL3:
+      result.append("ssl3");
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1:
+      result.append("tls1");
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_1:
+      result.append("tls1.1");
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_2:
+      result.append("tls1.2");
+      break;
+    default:
+      NOTREACHED();
+  }
+
   return result;
 }
 
