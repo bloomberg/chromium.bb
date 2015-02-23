@@ -5,7 +5,7 @@
   "comments": [
     "Tests for 32-bit iOS 7.1 iPhone simulator."
   ],
-  "xcode version": "5.1.1",
+  "xcode version": "5.1",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
     "target_subarch": "arm32"
