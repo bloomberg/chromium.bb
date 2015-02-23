@@ -122,6 +122,7 @@ class SavePasswordProgressLogger {
     STRING_NEW_UI_STATE,
     STRING_FORM_NOT_AUTOFILLED,
     STRING_CHANGE_PASSWORD_FORM,
+    PROCESS_FRAME_METHOD,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

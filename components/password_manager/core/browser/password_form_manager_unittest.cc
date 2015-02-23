@@ -423,6 +423,7 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   // Add a new password field to the test form. The PasswordFormManager should
   // save the password from this field, instead of the current password field.
   observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
+  observed_form()->username_marked_by_site = true;
 
   PasswordFormManager manager(NULL, client(), kNoDriver, *observed_form(),
                               false);
@@ -1371,6 +1372,70 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   // Make sure to access all fields of preferred_match; this way if it was
   // deleted, ASAN might notice it.
   PasswordForm dummy(*form_manager.preferred_match());
+}
+
+TEST_F(PasswordFormManagerTest,
+       IsIngnorableChangePasswordForm_MatchingUsernameAndPassword) {
+  observed_form()->new_password_element =
+      base::ASCIIToUTF16("new_password_field");
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  PasswordFormManager manager(nullptr, &client_with_store,
+                              client_with_store.driver(), *observed_form(),
+                              false);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
+
+  // The user submits a password on a change-password form, which does not use
+  // the "autocomplete=username" mark-up (therefore Chrome had to guess what is
+  // the username), but the user-typed credentials match something already
+  // stored (which confirms that the guess was right).
+  PasswordForm credentials(*observed_form());
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value = saved_match()->password_value;
+  credentials.new_password_value = ASCIIToUTF16("NewPassword");
+
+  EXPECT_FALSE(manager.IsIgnorableChangePasswordForm(
+      credentials.username_value, credentials.password_value));
+}
+
+TEST_F(PasswordFormManagerTest,
+       IsIngnorableChangePasswordForm_NotMatchingPassword) {
+  observed_form()->new_password_element =
+      base::ASCIIToUTF16("new_password_field");
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  PasswordFormManager manager(nullptr, &client_with_store,
+                              client_with_store.driver(), *observed_form(),
+                              false);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
+
+  // The user submits a password on a change-password form, which does not use
+  // the "autocomplete=username" mark-up (therefore Chrome had to guess what is
+  // the username), and the user-typed password do not match anything already
+  // stored. There is not much confidence in the guess being right, so the
+  // password should not be stored.
+  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(
+      saved_match()->username_value, ASCIIToUTF16("DifferentPassword")));
+}
+
+TEST_F(PasswordFormManagerTest,
+       IsIngnorableChangePasswordForm_NotMatchingUsername) {
+  observed_form()->new_password_element =
+      base::ASCIIToUTF16("new_password_field");
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  PasswordFormManager manager(nullptr, &client_with_store,
+                              client_with_store.driver(), *observed_form(),
+                              false);
+  SimulateMatchingPhase(&manager, RESULT_MATCH_FOUND);
+
+  // The user submits a password on a change-password form, which does not use
+  // the "autocomplete=username" mark-up (therefore Chrome had to guess what is
+  // the username), and the user-typed username does not match anything already
+  // stored. There is not much confidence in the guess being right, so the
+  // password should not be stored.
+  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(
+      ASCIIToUTF16("DifferentUsername"), saved_match()->password_value));
 }
 
 }  // namespace password_manager

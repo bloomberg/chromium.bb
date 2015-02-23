@@ -68,6 +68,20 @@ PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
   return result;
 }
 
+// Returns true if user-typed username and password field values match with one
+// of the password form within |credentials| map; otherwise false.
+bool DoesUsenameAndPasswordMatchCredentials(
+    const base::string16& typed_username,
+    const base::string16& typed_password,
+    const autofill::PasswordFormMap& credentials) {
+  for (auto match : credentials) {
+    if (match.second->username_value == typed_username &&
+        match.second->password_value == typed_password)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -376,18 +390,6 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
   }
 
-  // Do not autofill on sign-up or change password forms (until we have some
-  // working change password functionality).
-  if (!observed_form_.new_password_element.empty()) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_FORM_NOT_AUTOFILLED);
-    client_->AutofillResultsComputed();
-    // There is no point in looking for the credentials in the store when they
-    // won't be autofilled, so pretend there were none.
-    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm>());
-    return;
-  }
-
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
     if (logger)
@@ -402,11 +404,14 @@ bool PasswordFormManager::HasCompletedMatching() const {
   return state_ == POST_MATCHING_PHASE;
 }
 
-bool PasswordFormManager::IsIgnorableChangePasswordForm() const {
+bool PasswordFormManager::IsIgnorableChangePasswordForm(
+    const base::string16& typed_username,
+    const base::string16& typed_password) const {
   bool is_change_password_form = !observed_form_.new_password_element.empty() &&
                                  !observed_form_.password_element.empty();
-  bool is_username_certainly_correct = observed_form_.username_marked_by_site;
-  return is_change_password_form && !is_username_certainly_correct;
+  return is_change_password_form && !observed_form_.username_marked_by_site &&
+         !DoesUsenameAndPasswordMatchCredentials(typed_username, typed_password,
+                                                 best_matches_);
 }
 
 void PasswordFormManager::OnRequestDone(
@@ -534,6 +539,17 @@ void PasswordFormManager::ProcessFrame(
 
   if (best_matches_.empty())
     return;
+
+  // Do not autofill on sign-up or change password forms (until we have some
+  // working change password functionality).
+  if (!observed_form_.new_password_element.empty()) {
+    if (client_->IsLoggingActive()) {
+      BrowserSavePasswordProgressLogger logger(client_);
+      logger.LogMessage(Logger::PROCESS_FRAME_METHOD);
+      logger.LogMessage(Logger::STRING_FORM_NOT_AUTOFILLED);
+    }
+    return;
+  }
 
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:

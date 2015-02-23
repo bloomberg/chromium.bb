@@ -211,6 +211,8 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "The observed form will not be autofilled";
     case SavePasswordProgressLogger::STRING_CHANGE_PASSWORD_FORM:
       return "Not saving password for a change password form";
+    case SavePasswordProgressLogger::PROCESS_FRAME_METHOD:
+      return "PasswordFormManager::ProcessFrame";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
