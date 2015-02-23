@@ -878,12 +878,12 @@ void LayoutTheme::paintSliderTicks(LayoutObject* o, const PaintInfo& paintInfo, 
     }
 }
 
-double LayoutTheme::animationRepeatIntervalForProgressBar(LayoutProgress*) const
+double LayoutTheme::animationRepeatIntervalForProgressBar() const
 {
     return 0;
 }
 
-double LayoutTheme::animationDurationForProgressBar(LayoutProgress*) const
+double LayoutTheme::animationDurationForProgressBar() const
 {
     return 0;
 }

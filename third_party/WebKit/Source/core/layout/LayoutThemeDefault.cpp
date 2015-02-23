@@ -835,12 +835,12 @@ IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(LayoutProgress* re
     return IntRect(rect.x() + (1.0 - progress) * 2 * movableWidth, rect.y(), valueWidth, rect.height());
 }
 
-double LayoutThemeDefault::animationRepeatIntervalForProgressBar(LayoutProgress*) const
+double LayoutThemeDefault::animationRepeatIntervalForProgressBar() const
 {
     return progressAnimationInterval;
 }
 
-double LayoutThemeDefault::animationDurationForProgressBar(LayoutProgress* renderProgress) const
+double LayoutThemeDefault::animationDurationForProgressBar() const
 {
     return progressAnimationInterval * progressAnimationFrames * 2; // "2" for back and forth
 }

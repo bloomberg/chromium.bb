@@ -158,9 +158,9 @@ public:
     virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) { return 0; };
 
     // Returns the repeat interval of the animation for the progress bar.
-    virtual double animationRepeatIntervalForProgressBar(LayoutProgress*) const;
+    virtual double animationRepeatIntervalForProgressBar() const;
     // Returns the duration of the animation for the progress bar.
-    virtual double animationDurationForProgressBar(LayoutProgress*) const;
+    virtual double animationDurationForProgressBar() const;
 
     // Media controls
     virtual String formatMediaControlsTime(float time) const;

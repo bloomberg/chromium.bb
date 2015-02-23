@@ -977,12 +977,12 @@ int LayoutThemeMac::minimumProgressBarHeight(const LayoutStyle& style) const
     return sizeForSystemFont(style, progressBarSizes()).height();
 }
 
-double LayoutThemeMac::animationRepeatIntervalForProgressBar(LayoutProgress*) const
+double LayoutThemeMac::animationRepeatIntervalForProgressBar() const
 {
     return progressAnimationFrameRate;
 }
 
-double LayoutThemeMac::animationDurationForProgressBar(LayoutProgress*) const
+double LayoutThemeMac::animationDurationForProgressBar() const
 {
     return progressAnimationNumFrames * progressAnimationFrameRate;
 }

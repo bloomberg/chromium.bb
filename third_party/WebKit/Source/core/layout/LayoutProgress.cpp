@@ -85,8 +85,8 @@ void LayoutProgress::animationTimerFired(Timer<LayoutProgress>*)
 
 void LayoutProgress::updateAnimationState()
 {
-    m_animationDuration = LayoutTheme::theme().animationDurationForProgressBar(this);
-    m_animationRepeatInterval = LayoutTheme::theme().animationRepeatIntervalForProgressBar(this);
+    m_animationDuration = LayoutTheme::theme().animationDurationForProgressBar();
+    m_animationRepeatInterval = LayoutTheme::theme().animationRepeatIntervalForProgressBar();
 
     bool animating = style()->hasAppearance() && m_animationDuration > 0;
     if (animating == m_animating)

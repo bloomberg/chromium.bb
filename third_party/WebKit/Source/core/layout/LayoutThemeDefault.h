@@ -143,8 +143,8 @@ public:
     virtual void adjustMenuListStyle(LayoutStyle&, Element*) const override;
     virtual void adjustMenuListButtonStyle(LayoutStyle&, Element*) const override;
 
-    virtual double animationRepeatIntervalForProgressBar(LayoutProgress*) const override;
-    virtual double animationDurationForProgressBar(LayoutProgress*) const override;
+    virtual double animationRepeatIntervalForProgressBar() const override;
+    virtual double animationDurationForProgressBar() const override;
 
     // These methods define the padding for the MenuList's inner block.
     virtual int popupInternalPaddingLeft(const LayoutStyle&) const override;

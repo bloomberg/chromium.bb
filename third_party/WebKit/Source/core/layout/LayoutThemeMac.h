@@ -78,9 +78,9 @@ public:
     virtual bool supportsMeter(ControlPart) const override;
 
     // Returns the repeat interval of the animation for the progress bar.
-    virtual double animationRepeatIntervalForProgressBar(LayoutProgress*) const override;
+    virtual double animationRepeatIntervalForProgressBar() const override;
     // Returns the duration of the animation for the progress bar.
-    virtual double animationDurationForProgressBar(LayoutProgress*) const override;
+    virtual double animationDurationForProgressBar() const override;
 
     virtual Color systemColor(CSSValueID) const override;
 
