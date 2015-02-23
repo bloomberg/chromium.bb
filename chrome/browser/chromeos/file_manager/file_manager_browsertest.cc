@@ -820,7 +820,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_FileDisplay DISABLED_FileDisplay
 #else
 #define MAYBE_FileDisplay FileDisplay
@@ -835,7 +835,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenVideoFiles DISABLED_OpenVideoFiles
 #else
 #define MAYBE_OpenVideoFiles OpenVideoFiles
@@ -849,7 +849,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
 #else
 #define MAYBE_OpenAudioFiles OpenAudioFiles
@@ -868,7 +868,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatMultipleFileDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_CreateNewFolder DISABLED_CreateNewFolder
 #else
 #define MAYBE_CreateNewFolder CreateNewFolder
@@ -887,7 +887,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
 #else
 #define MAYBE_KeyboardOperations KeyboardOperations
@@ -914,7 +914,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_DriveSpecific DISABLED_DriveSpecific
 #else
 #define MAYBE_DriveSpecific DriveSpecific
@@ -931,7 +931,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_Transfer DISABLED_Transfer
 #else
 #define MAYBE_Transfer Transfer
@@ -951,7 +951,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_RestorePrefs DISABLED_RestorePrefs
 #else
 #define MAYBE_RestorePrefs RestorePrefs
@@ -965,7 +965,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "restoreCurrentView")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_ShareDialog DISABLED_ShareDialog
 #else
 #define MAYBE_ShareDialog ShareDialog
@@ -977,7 +977,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_RestoreGeometry DISABLED_RestoreGeometry
 #else
 #define MAYBE_RestoreGeometry RestoreGeometry
@@ -990,7 +990,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug and msan build.
 // http://crbug.com/327719, 457365
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_Traverse DISABLED_Traverse
 #else
 #define MAYBE_Traverse Traverse
@@ -1003,7 +1003,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_SuggestAppDialog DISABLED_SuggestAppDialog
 #else
 #define MAYBE_SuggestAppDialog SuggestAppDialog
@@ -1014,7 +1014,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_ExecuteDefaultTaskOnDownloads \
   DISABLED_ExecuteDefaultTaskOnDownloads
 #else
@@ -1028,7 +1028,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(IN_GUEST_MODE, "executeDefaultTaskOnDownloads")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_ExecuteDefaultTaskOnDrive DISABLED_ExecuteDefaultTaskOnDrive
 #else
 #define MAYBE_ExecuteDefaultTaskOnDrive ExecuteDefaultTaskOnDrive
@@ -1040,7 +1040,7 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_DefaultActionDialog DISABLED_DefaultActionDialog
 #else
 #define MAYBE_DefaultActionDialog DefaultActionDialog
@@ -1054,7 +1054,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "defaultActionDialogOnDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_GenericTask DISABLED_GenericTask
 #else
 #define MAYBE_GenericTask GenericTask
@@ -1067,7 +1067,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "genericAndNonGenericTasksAreMixed")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_FolderShortcuts DISABLED_FolderShortcuts
 #else
 #define MAYBE_FolderShortcuts FolderShortcuts
@@ -1085,7 +1085,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "searchBoxFocus")));
 
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenFileDialog DISABLED_OpenFileDialog
 #else
 #define MAYBE_OpenFileDialog OpenFileDialog
@@ -1107,7 +1107,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                                     "unloadFileDialog")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
 #else
 #define MAYBE_CopyBetweenWindows CopyBetweenWindows
@@ -1124,7 +1124,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToLocal")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#if !defined(NDEBUG)
 #define MAYBE_ShowGridView DISABLED_ShowGridView
 #else
 #define MAYBE_ShowGridView ShowGridView
@@ -1222,7 +1222,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_PRE_BasicDownloads DISABLED_PRE_BasicDownloads
 #define MAYBE_BasicDownloads DISABLED_BasicDownloads
 #else
@@ -1245,7 +1245,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_PRE_BasicDrive DISABLED_PRE_BasicDrive
 #define MAYBE_BasicDrive DISABLED_BasicDrive
 #else
