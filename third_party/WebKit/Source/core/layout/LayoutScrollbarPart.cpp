@@ -24,25 +24,25 @@
  */
 
 #include "config.h"
-#include "core/rendering/RenderScrollbarPart.h"
+#include "core/layout/LayoutScrollbarPart.h"
 
 #include "core/frame/UseCounter.h"
+#include "core/layout/LayoutScrollbar.h"
+#include "core/layout/LayoutScrollbarTheme.h"
 #include "core/layout/PaintInfo.h"
-#include "core/rendering/RenderScrollbar.h"
-#include "core/rendering/RenderScrollbarTheme.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
 
-RenderScrollbarPart::RenderScrollbarPart(RenderScrollbar* scrollbar, ScrollbarPart part)
+LayoutScrollbarPart::LayoutScrollbarPart(LayoutScrollbar* scrollbar, ScrollbarPart part)
     : RenderBlock(0)
     , m_scrollbar(scrollbar)
     , m_part(part)
 {
 }
 
-RenderScrollbarPart::~RenderScrollbarPart()
+LayoutScrollbarPart::~LayoutScrollbarPart()
 {
 }
 
@@ -74,15 +74,15 @@ static void recordScrollbarPartStats(Document& document, ScrollbarPart part)
     }
 }
 
-RenderScrollbarPart* RenderScrollbarPart::createAnonymous(Document* document, RenderScrollbar* scrollbar, ScrollbarPart part)
+LayoutScrollbarPart* LayoutScrollbarPart::createAnonymous(Document* document, LayoutScrollbar* scrollbar, ScrollbarPart part)
 {
-    RenderScrollbarPart* renderer = new RenderScrollbarPart(scrollbar, part);
+    LayoutScrollbarPart* renderer = new LayoutScrollbarPart(scrollbar, part);
     recordScrollbarPartStats(*document, part);
     renderer->setDocumentForAnonymous(document);
     return renderer;
 }
 
-void RenderScrollbarPart::layout()
+void LayoutScrollbarPart::layout()
 {
     setLocation(LayoutPoint()); // We don't worry about positioning ourselves. We're just determining our minimum width/height.
     if (m_scrollbar->orientation() == HorizontalScrollbar)
@@ -93,7 +93,7 @@ void RenderScrollbarPart::layout()
     clearNeedsLayout();
 }
 
-void RenderScrollbarPart::layoutHorizontalPart()
+void LayoutScrollbarPart::layoutHorizontalPart()
 {
     if (m_part == ScrollbarBGPart) {
         setWidth(m_scrollbar->width());
@@ -104,7 +104,7 @@ void RenderScrollbarPart::layoutHorizontalPart()
     }
 }
 
-void RenderScrollbarPart::layoutVerticalPart()
+void LayoutScrollbarPart::layoutVerticalPart()
 {
     if (m_part == ScrollbarBGPart) {
         computeScrollbarWidth();
@@ -122,7 +122,7 @@ static int calcScrollbarThicknessUsing(SizeType sizeType, const Length& length, 
     return ScrollbarTheme::theme()->scrollbarThickness();
 }
 
-void RenderScrollbarPart::computeScrollbarWidth()
+void LayoutScrollbarPart::computeScrollbarWidth()
 {
     if (!m_scrollbar->owningRenderer())
         return;
@@ -139,7 +139,7 @@ void RenderScrollbarPart::computeScrollbarWidth()
     setMarginRight(minimumValueForLength(style()->marginRight(), visibleSize));
 }
 
-void RenderScrollbarPart::computeScrollbarHeight()
+void LayoutScrollbarPart::computeScrollbarHeight()
 {
     if (!m_scrollbar->owningRenderer())
         return;
@@ -156,7 +156,7 @@ void RenderScrollbarPart::computeScrollbarHeight()
     setMarginBottom(minimumValueForLength(style()->marginBottom(), visibleSize));
 }
 
-void RenderScrollbarPart::computePreferredLogicalWidths()
+void LayoutScrollbarPart::computePreferredLogicalWidths()
 {
     if (!preferredLogicalWidthsDirty())
         return;
@@ -166,13 +166,13 @@ void RenderScrollbarPart::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderScrollbarPart::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+void LayoutScrollbarPart::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
 {
     RenderBlock::styleWillChange(diff, newStyle);
     setInline(false);
 }
 
-void RenderScrollbarPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+void LayoutScrollbarPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
     setInline(false);
@@ -183,11 +183,11 @@ void RenderScrollbarPart::styleDidChange(StyleDifference diff, const LayoutStyle
         m_scrollbar->theme()->invalidatePart(m_scrollbar, m_part);
 }
 
-void RenderScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rect)
+void LayoutScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rect)
 {
-    if (m_scrollbar && m_part != NoPart)
+    if (m_scrollbar && m_part != NoPart) {
         m_scrollbar->theme()->invalidatePart(m_scrollbar, m_part);
-    else {
+    } else {
         if (FrameView* frameView = view()->frameView()) {
             if (frameView->isFrameViewScrollCorner(this)) {
                 frameView->invalidateScrollCorner(frameView->scrollCornerRect());
@@ -199,7 +199,7 @@ void RenderScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
     }
 }
 
-LayoutObject* RenderScrollbarPart::rendererOwningScrollbar() const
+LayoutObject* LayoutScrollbarPart::rendererOwningScrollbar() const
 {
     if (!m_scrollbar)
         return 0;

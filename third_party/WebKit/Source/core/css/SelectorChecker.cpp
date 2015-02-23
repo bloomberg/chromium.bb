@@ -50,10 +50,10 @@
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutScrollbar.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/rendering/RenderScrollbar.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
@@ -1043,7 +1043,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
 
 bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context, Document* document, const CSSSelector& selector) const
 {
-    RenderScrollbar* scrollbar = context.scrollbar;
+    LayoutScrollbar* scrollbar = context.scrollbar;
     ScrollbarPart part = context.scrollbarPart;
 
     // FIXME: This is a temporary hack for resizers and scrollbar corners. Eventually :window-inactive should become a real

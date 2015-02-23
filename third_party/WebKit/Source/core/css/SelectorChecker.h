@@ -37,7 +37,7 @@ namespace blink {
 class CSSSelector;
 class ContainerNode;
 class Element;
-class RenderScrollbar;
+class LayoutScrollbar;
 class LayoutStyle;
 
 class SelectorChecker {
@@ -78,7 +78,7 @@ public:
         VisitedMatchType visitedMatchType;
         PseudoId pseudoId;
         LayoutStyle* elementStyle;
-        RawPtrWillBeMember<RenderScrollbar> scrollbar;
+        RawPtrWillBeMember<LayoutScrollbar> scrollbar;
         ScrollbarPart scrollbarPart;
         unsigned isSubSelector : 1;
         unsigned hasScrollbarPseudo : 1;

@@ -73,7 +73,7 @@ private:
     // It is assumed that the constructor of this paint object is responsible
     // for the lifetime of this scrollbar. The painter has to use the real
     // scrollbar (and not a WebScrollbar wrapper) due to static_casts for
-    // RenderScrollbar and pointer-based HashMap lookups for Lion scrollbars.
+    // LayoutScrollbar and pointer-based HashMap lookups for Lion scrollbars.
     Scrollbar* m_scrollbar;
 };
 

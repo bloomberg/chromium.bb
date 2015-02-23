@@ -58,6 +58,7 @@
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCaption.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
@@ -76,7 +77,6 @@
 #include "core/rendering/RenderGrid.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderListItem.h"
-#include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
@@ -797,8 +797,8 @@ RenderBlock* LayoutObject::containerForFixedPosition(const LayoutLayerModelObjec
 RenderBlock* LayoutObject::containingBlock() const
 {
     LayoutObject* o = parent();
-    if (!o && isRenderScrollbarPart())
-        o = toRenderScrollbarPart(this)->rendererOwningScrollbar();
+    if (!o && isLayoutScrollbarPart())
+        o = toLayoutScrollbarPart(this)->rendererOwningScrollbar();
     if (!isText() && m_style->position() == FixedPosition)
         return containerForFixedPosition();
     if (!isText() && m_style->position() == AbsolutePosition) {

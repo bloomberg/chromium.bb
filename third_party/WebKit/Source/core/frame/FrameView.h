@@ -58,7 +58,7 @@ class Page;
 class RenderBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
-class RenderScrollbarPart;
+class LayoutScrollbarPart;
 class RenderView;
 class ScrollingCoordinator;
 struct CompositedSelectionBound;
@@ -253,7 +253,7 @@ public:
     IntPoint convertFromRenderer(const LayoutObject&, const IntPoint&) const;
     IntPoint convertToRenderer(const LayoutObject&, const IntPoint&) const;
 
-    bool isFrameViewScrollCorner(RenderScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
+    bool isFrameViewScrollCorner(LayoutScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
 
     enum ScrollingReasons {
         Scrollable,
@@ -378,7 +378,7 @@ public:
     // can be used to obtain those scrollbars.
     virtual Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
     virtual Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
-    RenderScrollbarPart* scrollCorner() { return m_scrollCorner; }
+    LayoutScrollbarPart* scrollCorner() { return m_scrollCorner; }
 
     void positionScrollbarLayers();
 
@@ -778,7 +778,7 @@ private:
     RefPtrWillBeMember<Node> m_maintainScrollPositionAnchor;
 
     // Renderer to hold our custom scroll corner.
-    RenderScrollbarPart* m_scrollCorner;
+    LayoutScrollbarPart* m_scrollCorner;
 
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
     OwnPtr<ScrollableAreaSet> m_animatingScrollableAreas;

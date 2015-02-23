@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderScrollbar_h
-#define RenderScrollbar_h
+#ifndef LayoutScrollbar_h
+#define LayoutScrollbar_h
 
 #include "core/layout/style/LayoutStyleConstants.h"
 #include "platform/heap/Handle.h"
@@ -36,13 +36,13 @@ namespace blink {
 class LocalFrame;
 class Node;
 class RenderBox;
-class RenderScrollbarPart;
+class LayoutScrollbarPart;
 class LayoutStyle;
 
-class RenderScrollbar final : public Scrollbar {
+class LayoutScrollbar final : public Scrollbar {
 public:
     static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
-    virtual ~RenderScrollbar();
+    virtual ~LayoutScrollbar();
 
     RenderBox* owningRenderer() const;
 
@@ -54,12 +54,12 @@ public:
 
     virtual bool isOverlayScrollbar() const override { return false; }
 
-    RenderScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
+    LayoutScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
 
     virtual void trace(Visitor*) override;
 
 protected:
-    RenderScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
+    LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
 
 private:
     friend class Scrollbar;
@@ -87,11 +87,11 @@ private:
 
     RawPtrWillBeMember<LocalFrame> m_owningFrame;
 
-    HashMap<unsigned, RenderScrollbarPart*> m_parts;
+    HashMap<unsigned, LayoutScrollbarPart*> m_parts;
 };
 
-DEFINE_TYPE_CASTS(RenderScrollbar, ScrollbarThemeClient, scrollbar, scrollbar->isCustomScrollbar(), scrollbar.isCustomScrollbar());
+DEFINE_TYPE_CASTS(LayoutScrollbar, ScrollbarThemeClient, scrollbar, scrollbar->isCustomScrollbar(), scrollbar.isCustomScrollbar());
 
 } // namespace blink
 
-#endif // RenderScrollbar_h
+#endif // LayoutScrollbar_h

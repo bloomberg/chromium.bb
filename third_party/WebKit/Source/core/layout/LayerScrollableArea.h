@@ -60,7 +60,7 @@ enum ResizerHitTestType {
 class PlatformEvent;
 class RenderBox;
 class Layer;
-class RenderScrollbarPart;
+class LayoutScrollbarPart;
 
 class LayerScrollableArea final : public ScrollableArea {
     friend class Internals;
@@ -150,7 +150,7 @@ public:
 
     bool hasScrollbar() const { return m_hBar || m_vBar; }
 
-    RenderScrollbarPart* scrollCorner() const { return m_scrollCorner; }
+    LayoutScrollbarPart* scrollCorner() const { return m_scrollCorner; }
 
     void resize(const PlatformEvent&, const LayoutSize&);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
@@ -210,7 +210,7 @@ public:
     RenderBox& box() const;
     Layer* layer() const;
 
-    RenderScrollbarPart* resizer() { return m_resizer; }
+    LayoutScrollbarPart* resizer() { return m_resizer; }
 
     const IntPoint& cachedOverlayScrollbarOffset() { return m_cachedOverlayScrollbarOffset; }
     void setCachedOverlayScrollbarOffset(const IntPoint& offset) { m_cachedOverlayScrollbarOffset = offset; }
@@ -279,10 +279,10 @@ private:
     RefPtrWillBePersistent<Scrollbar> m_vBar;
 
     // Renderers to hold our custom scroll corner.
-    RenderScrollbarPart* m_scrollCorner;
+    LayoutScrollbarPart* m_scrollCorner;
 
     // Renderers to hold our custom resizer.
-    RenderScrollbarPart* m_resizer;
+    LayoutScrollbarPart* m_resizer;
 };
 
 } // namespace blink

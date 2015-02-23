@@ -5,22 +5,22 @@
 #include "config.h"
 #include "core/paint/ScrollbarPainter.h"
 
+#include "core/layout/LayoutScrollbar.h"
+#include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
-#include "core/rendering/RenderScrollbar.h"
-#include "core/rendering/RenderScrollbarPart.h"
 #include "platform/graphics/GraphicsContext.h"
 namespace blink {
 
 void ScrollbarPainter::paintPart(GraphicsContext* graphicsContext, ScrollbarPart partType, const IntRect& rect)
 {
-    RenderScrollbarPart* partRenderer = m_renderScrollbar.getPart(partType);
+    LayoutScrollbarPart* partRenderer = m_renderScrollbar.getPart(partType);
     if (!partRenderer)
         return;
     paintIntoRect(partRenderer, graphicsContext, m_renderScrollbar.location(), rect);
 }
 
-void ScrollbarPainter::paintIntoRect(RenderScrollbarPart* renderScrollbarPart, GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)
+void ScrollbarPainter::paintIntoRect(LayoutScrollbarPart* renderScrollbarPart, GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)
 {
     // Make sure our dimensions match the rect.
     // FIXME: Setting these is a bad layering violation!

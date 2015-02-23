@@ -54,6 +54,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutGeometryMap.h"
+#include "core/layout/LayoutScrollbar.h"
+#include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/LayerCompositor.h"
@@ -62,8 +64,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderScrollbar.h"
-#include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -914,7 +914,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> LayerScrollableArea::createScrollbar(Scrollbar
     LayoutObject* actualRenderer = rendererForScrollbar(box());
     bool hasCustomScrollbarStyle = actualRenderer->isBox() && actualRenderer->style()->hasPseudoStyle(SCROLLBAR);
     if (hasCustomScrollbarStyle) {
-        widget = RenderScrollbar::createCustomScrollbar(this, orientation, actualRenderer->node());
+        widget = LayoutScrollbar::createCustomScrollbar(this, orientation, actualRenderer->node());
     } else {
         ScrollbarControlSize scrollbarSize = RegularScrollbar;
         if (actualRenderer->style()->hasAppearance())
@@ -1057,7 +1057,7 @@ void LayerScrollableArea::updateScrollCornerStyle()
     RefPtr<LayoutStyle> corner = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<LayoutStyle>(nullptr);
     if (corner) {
         if (!m_scrollCorner) {
-            m_scrollCorner = RenderScrollbarPart::createAnonymous(&box().document());
+            m_scrollCorner = LayoutScrollbarPart::createAnonymous(&box().document());
             m_scrollCorner->setParent(&box());
         }
         m_scrollCorner->setStyle(corner.release());
@@ -1185,7 +1185,7 @@ void LayerScrollableArea::updateResizerStyle()
     RefPtr<LayoutStyle> resizer = box().hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<LayoutStyle>(nullptr);
     if (resizer) {
         if (!m_resizer) {
-            m_resizer = RenderScrollbarPart::createAnonymous(&box().document());
+            m_resizer = LayoutScrollbarPart::createAnonymous(&box().document());
             m_resizer->setParent(&box());
         }
         m_resizer->setStyle(resizer.release());

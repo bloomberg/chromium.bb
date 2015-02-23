@@ -23,23 +23,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderScrollbarPart_h
-#define RenderScrollbarPart_h
+#ifndef LayoutScrollbarPart_h
+#define LayoutScrollbarPart_h
 
 #include "core/rendering/RenderBlock.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
-class RenderScrollbar;
+class LayoutScrollbar;
 
-class RenderScrollbarPart final : public RenderBlock {
+class LayoutScrollbarPart final : public RenderBlock {
 public:
-    static RenderScrollbarPart* createAnonymous(Document*, RenderScrollbar* = 0, ScrollbarPart = NoPart);
+    static LayoutScrollbarPart* createAnonymous(Document*, LayoutScrollbar* = 0, ScrollbarPart = NoPart);
 
-    virtual ~RenderScrollbarPart();
+    virtual ~LayoutScrollbarPart();
 
-    virtual const char* renderName() const override { return "RenderScrollbarPart"; }
+    virtual const char* renderName() const override { return "LayoutScrollbarPart"; }
 
     virtual LayerType layerTypeRequired() const override { return NoLayer; }
 
@@ -72,7 +72,7 @@ public:
         return RenderBlock::marginRight();
     }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRenderScrollbarPart || RenderBlock::isOfType(type); }
+    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || RenderBlock::isOfType(type); }
     LayoutObject* rendererOwningScrollbar() const;
 
 protected:
@@ -81,7 +81,7 @@ protected:
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
 private:
-    RenderScrollbarPart(RenderScrollbar*, ScrollbarPart);
+    LayoutScrollbarPart(LayoutScrollbar*, ScrollbarPart);
 
     virtual void computePreferredLogicalWidths() override;
 
@@ -104,12 +104,12 @@ private:
     void computeScrollbarWidth();
     void computeScrollbarHeight();
 
-    RenderScrollbar* m_scrollbar;
+    LayoutScrollbar* m_scrollbar;
     ScrollbarPart m_part;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(RenderScrollbarPart, isRenderScrollbarPart());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutScrollbarPart, isLayoutScrollbarPart());
 
 } // namespace blink
 
-#endif // RenderScrollbarPart_h
+#endif // LayoutScrollbarPart_h

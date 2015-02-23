@@ -359,7 +359,7 @@ public:
     bool isLayoutMultiColumnSet() const { return isOfType(LayoutObjectLayoutMultiColumnSet); }
     bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
     bool isLayoutRegion() const { return isOfType(LayoutObjectLayoutRegion); }
-    bool isRenderScrollbarPart() const { return isOfType(LayoutObjectRenderScrollbarPart); }
+    bool isLayoutScrollbarPart() const { return isOfType(LayoutObjectLayoutScrollbarPart); }
     bool isRenderView() const { return isOfType(LayoutObjectRenderView); }
     bool isReplica() const { return isOfType(LayoutObjectReplica); }
     bool isRuby() const { return isOfType(LayoutObjectRuby); }
@@ -1099,7 +1099,7 @@ protected:
         LayoutObjectLayoutMultiColumnSpannerPlaceholder,
         LayoutObjectLayoutPart,
         LayoutObjectLayoutRegion,
-        LayoutObjectRenderScrollbarPart,
+        LayoutObjectLayoutScrollbarPart,
         LayoutObjectRenderView,
         LayoutObjectReplica,
         LayoutObjectRuby,

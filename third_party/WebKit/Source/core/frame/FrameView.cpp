@@ -51,6 +51,8 @@
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutPart.h"
+#include "core/layout/LayoutScrollbar.h"
+#include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -69,8 +71,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/rendering/RenderListBox.h"
-#include "core/rendering/RenderScrollbar.h"
-#include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -522,7 +522,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientatio
     Element* customScrollbarElement = nullptr;
     LocalFrame* customScrollbarFrame = nullptr;
     if (shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame))
-        return RenderScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
+        return LayoutScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
 
     // Nobody set a custom style, so we just use a native scrollbar.
     return Scrollbar::create(this, orientation, RegularScrollbar);
@@ -2479,7 +2479,7 @@ void FrameView::updateScrollCorner()
 
     if (cornerStyle) {
         if (!m_scrollCorner)
-            m_scrollCorner = RenderScrollbarPart::createAnonymous(doc);
+            m_scrollCorner = LayoutScrollbarPart::createAnonymous(doc);
         m_scrollCorner->setStyle(cornerStyle.release());
         invalidateScrollCorner(cornerRect);
     } else if (m_scrollCorner) {

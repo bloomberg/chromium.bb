@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderScrollbarTheme_h
-#define RenderScrollbarTheme_h
+#ifndef LayoutScrollbarTheme_h
+#define LayoutScrollbarTheme_h
 
 #include "platform/scroll/ScrollbarTheme.h"
 
@@ -32,9 +32,9 @@ namespace blink {
 
 class PlatformMouseEvent;
 
-class RenderScrollbarTheme final : public ScrollbarTheme {
+class LayoutScrollbarTheme final : public ScrollbarTheme {
 public:
-    virtual ~RenderScrollbarTheme() { }
+    virtual ~LayoutScrollbarTheme() { }
 
     virtual int scrollbarThickness(ScrollbarControlSize controlSize) override { return ScrollbarTheme::theme()->scrollbarThickness(controlSize); }
 
@@ -56,7 +56,7 @@ public:
 
     void buttonSizesAlongTrackAxis(ScrollbarThemeClient*, int& beforeSize, int& afterSize);
 
-    static RenderScrollbarTheme* renderScrollbarTheme();
+    static LayoutScrollbarTheme* renderScrollbarTheme();
 
 protected:
     virtual bool hasButtons(ScrollbarThemeClient*) override;
@@ -78,4 +78,4 @@ protected:
 
 } // namespace blink
 
-#endif // RenderScrollbarTheme_h
+#endif // LayoutScrollbarTheme_h

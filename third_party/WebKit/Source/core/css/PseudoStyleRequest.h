@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class RenderScrollbar;
+class LayoutScrollbar;
 class LayoutStyle;
 
 class PseudoStyleRequest {
@@ -35,7 +35,7 @@ public:
 
     enum RequestType { ForRenderer, ForComputedStyle };
 
-    PseudoStyleRequest(PseudoId pseudoId, RenderScrollbar* scrollbar = 0, ScrollbarPart scrollbarPart = NoPart)
+    PseudoStyleRequest(PseudoId pseudoId, LayoutScrollbar* scrollbar = 0, ScrollbarPart scrollbarPart = NoPart)
         : pseudoId(pseudoId)
         , type(ForRenderer)
         , scrollbarPart(scrollbarPart)
@@ -60,7 +60,7 @@ public:
     PseudoId pseudoId;
     RequestType type;
     ScrollbarPart scrollbarPart;
-    RenderScrollbar* scrollbar;
+    LayoutScrollbar* scrollbar;
 };
 
 } // namespace blink
