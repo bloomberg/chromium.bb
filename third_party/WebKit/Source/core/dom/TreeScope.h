@@ -40,6 +40,7 @@ class Element;
 class HTMLLabelElement;
 class HTMLMapElement;
 class HitTestResult;
+class HitTestRequest;
 class IdTargetObserverRegistry;
 class ScopedStyleResolver;
 class Node;
@@ -75,6 +76,7 @@ public:
     HTMLMapElement* getImageMap(const String& url) const;
 
     Element* elementFromPoint(int x, int y) const;
+    Vector<Element*> elementsFromPoint(int x, int y) const;
 
     // For accessibility.
     bool shouldCacheLabelsByForAttribute() const { return m_labelsByForAttribute; }

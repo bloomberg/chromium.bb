@@ -282,7 +282,7 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult&
             // to LayoutUnit-based types is complete (crbug.com/321237)
             if (locationInContainer.intersects(rect.rawValue())) {
                 renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-                if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
+                if (!result.addNodeToListBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
                     return true;
             }
         }

@@ -323,7 +323,7 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     // to LayoutUnit-based types is complete (crbug.com/321237)
     if (m_truncation != cFullTruncation && visibleToHitTestRequest(request) && locationInContainer.intersects(rect.rawValue())) {
         renderer().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset)));
-        if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
+        if (!result.addNodeToListBasedTestResult(renderer().node(), request, locationInContainer, rect.rawValue()))
             return true;
     }
     return false;

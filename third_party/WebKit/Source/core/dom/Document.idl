@@ -138,6 +138,7 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
     [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString readyState;
 
     Element            elementFromPoint(long x, long y);
+    Element[]          elementsFromPoint(long x, long y);
     [MeasureAs=DocumentCaretRangeFromPoint]
     Range              caretRangeFromPoint([Default=Undefined] optional long x,
                                            [Default=Undefined] optional long y);

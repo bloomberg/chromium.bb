@@ -864,6 +864,8 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
 {
     TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
 
+    ASSERT((hitType & HitTestRequest::ListBased) || padding.isEmpty());
+
     // We always send hitTestResultAtPoint to the main frame if we have one,
     // otherwise we might hit areas that are obscured by higher frames.
     if (m_frame->page()) {
@@ -2607,7 +2609,7 @@ bool EventHandler::bestClickableNodeForHitTestResult(const HitTestResult& result
     IntRect touchRect = m_frame->view()->contentsToWindow(result.hitTestLocation().boundingBox());
 
     WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
-    copyToVector(result.rectBasedTestResult(), nodes);
+    copyToVector(result.listBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
     return findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>> (nodes));
@@ -2619,7 +2621,7 @@ bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& resu
     IntPoint touchCenter = m_frame->view()->contentsToWindow(result.roundedPointInMainFrame());
     IntRect touchRect = m_frame->view()->contentsToWindow(result.hitTestLocation().boundingBox());
     WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
-    copyToVector(result.rectBasedTestResult(), nodes);
+    copyToVector(result.listBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
     return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>>(nodes));
@@ -2627,12 +2629,17 @@ bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& resu
 
 bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode)
 {
+    if (touchRadius.isEmpty())
+        return false;
+
     IntPoint hitTestPoint = m_frame->view()->windowToContents(touchCenter);
-    HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(touchRadius));
+
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased;
+    HitTestResult result = hitTestResultAtPoint(hitTestPoint, hitType, LayoutSize(touchRadius));
 
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
     WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
-    copyToVector(result.rectBasedTestResult(), nodes);
+    copyToVector(result.listBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
     return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>>(nodes));
@@ -2686,7 +2693,10 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(const 
     LayoutSize padding;
     if (shouldApplyTouchAdjustment(gestureEvent)) {
         padding = LayoutSize(gestureEvent.area());
-        padding.scale(1.f / 2);
+        if (!padding.isEmpty()) {
+            padding.scale(1.f / 2);
+            hitType |= HitTestRequest::ListBased;
+        }
     }
     HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, padding);
 
@@ -2703,7 +2713,7 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(const 
         LocalFrame* hitFrame = hitTestResult.innerNodeFrame();
         if (!hitFrame)
             hitFrame = m_frame;
-        hitTestResult = hitTestResultInFrame(hitFrame, hitFrame->view()->windowToContents(adjustedEvent.position()), hitType | HitTestRequest::ReadOnly);
+        hitTestResult = hitTestResultInFrame(hitFrame, hitFrame->view()->windowToContents(adjustedEvent.position()), (hitType | HitTestRequest::ReadOnly) & ~HitTestRequest::ListBased);
     }
 
     // If we did a rect-based hit test it must be resolved to the best single node by now to

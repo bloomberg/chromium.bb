@@ -459,6 +459,7 @@ interface Document
     method createTouchList
     method createTreeWalker
     method elementFromPoint
+    method elementsFromPoint
     method evaluate
     method execCommand
     method exitPointerLock

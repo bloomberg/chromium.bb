@@ -2182,7 +2182,7 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         && isPointInOverflowControl(result, locationInContainer.point(), adjustedLocation)) {
         updateHitTestResult(result, locationInContainer.point() - localOffset);
         // FIXME: isPointInOverflowControl() doesn't handle rect-based tests yet.
-        if (!result.addNodeToRectBasedTestResult(nodeForHitTest(), request, locationInContainer))
+        if (!result.addNodeToListBasedTestResult(nodeForHitTest(), request, locationInContainer))
            return true;
     }
 
@@ -2250,7 +2250,7 @@ bool RenderBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         LayoutRect boundsRect(adjustedLocation, size());
         if (visibleToHitTestRequest(request) && locationInContainer.intersects(boundsRect)) {
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
-            if (!result.addNodeToRectBasedTestResult(nodeForHitTest(), request, locationInContainer, boundsRect))
+            if (!result.addNodeToListBasedTestResult(nodeForHitTest(), request, locationInContainer, boundsRect))
                 return true;
         }
     }

@@ -241,24 +241,35 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
     return toHTMLMapElement(m_imageMapsByName->getElementByMapName(AtomicString(name), this));
 }
 
-HitTestResult hitTestInDocument(const Document* document, int x, int y)
+static bool pointWithScrollAndZoomIfPossible(const Document& document, IntPoint& point)
 {
-    LocalFrame* frame = document->frame();
-
+    LocalFrame* frame = document.frame();
     if (!frame)
-        return HitTestResult();
+        return false;
     FrameView* frameView = frame->view();
     if (!frameView)
-        return HitTestResult();
+        return false;
 
-    float scaleFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint(x * scaleFactor  + frameView->scrollX(), y * scaleFactor + frameView->scrollY()));
+    FloatPoint pointInDocument(point);
+    pointInDocument.scale(frame->pageZoomFactor(), frame->pageZoomFactor());
+    pointInDocument.moveBy(frameView->scrollPosition());
+    IntPoint roundedPointInDocument = roundedIntPoint(pointInDocument);
 
-    if (!frameView->visibleContentRect().contains(point))
+    if (!frameView->visibleContentRect().contains(roundedPointInDocument))
+        return false;
+
+    point = roundedPointInDocument;
+    return true;
+}
+
+HitTestResult hitTestInDocument(const Document* document, int x, int y)
+{
+    IntPoint hitPoint(x, y);
+    if (!pointWithScrollAndZoomIfPossible(*document, hitPoint))
         return HitTestResult();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
-    HitTestResult result(point);
+    HitTestResult result(hitPoint);
     document->renderView()->hitTest(request, result);
     return result;
 }
@@ -276,6 +287,48 @@ Element* TreeScope::elementFromPoint(int x, int y) const
     if (!node || !node->isElementNode())
         return 0;
     return toElement(node);
+}
+
+Vector<Element*> TreeScope::elementsFromPoint(int x, int y) const
+{
+    Vector<Element*> elements;
+
+    Document& document = rootNode().document();
+    IntPoint hitPoint(x, y);
+    if (!pointWithScrollAndZoomIfPossible(document, hitPoint))
+        return elements;
+
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
+    HitTestResult result(hitPoint);
+    document.renderView()->hitTest(request, result);
+
+    Node* lastNode = nullptr;
+    for (const auto rectBasedNode : result.listBasedTestResult()) {
+        Node* node = rectBasedNode.get();
+        if (!node || !node->isElementNode() || node->isDocumentNode())
+            continue;
+
+        if (node->isPseudoElement() || node->isTextNode())
+            node = node->parentOrShadowHostNode();
+        node = ancestorInThisScope(node);
+
+        // Prune duplicate entries. A pseduo ::before content above its parent
+        // node should only result in a single entry.
+        if (node == lastNode)
+            continue;
+
+        if (node && node->isElementNode()) {
+            elements.append(toElement(node));
+            lastNode = node;
+        }
+    }
+
+    if (m_document) {
+        if (elements.isEmpty() || elements.last() != m_document->documentElement())
+            elements.append(m_document->documentElement());
+    }
+
+    return elements;
 }
 
 void TreeScope::addLabel(const AtomicString& forAttributeValue, HTMLLabelElement* element)

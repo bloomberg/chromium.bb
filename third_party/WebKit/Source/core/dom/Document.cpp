@@ -1242,6 +1242,13 @@ Element* Document::elementFromPoint(int x, int y) const
     return TreeScope::elementFromPoint(x, y);
 }
 
+Vector<Element*> Document::elementsFromPoint(int x, int y) const
+{
+    if (!renderView())
+        return Vector<Element*>();
+    return TreeScope::elementsFromPoint(x, y);
+}
+
 PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
     if (!renderView())

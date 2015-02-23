@@ -1554,10 +1554,10 @@ bool LayoutTableSection::nodeAtPoint(const HitTestRequest& request, HitTestResul
                     return true;
                 }
             }
-            if (!result.isRectBasedTest())
+            if (!request.listBased())
                 break;
         }
-        if (!result.isRectBasedTest())
+        if (!request.listBased())
             break;
     }
 

@@ -23,6 +23,8 @@
 #ifndef HitTestRequest_h
 #define HitTestRequest_h
 
+#include "wtf/Assertions.h"
+
 namespace blink {
 
 class HitTestRequest {
@@ -38,6 +40,12 @@ public:
         AllowChildFrameContent = 1 << 8,
         ChildFrameHitTest = 1 << 9,
         IgnorePointerEventsNone = 1 << 10,
+        // Collect a list of nodes instead of just one.
+        // (This is for elementsFromPoint and rect-based tests).
+        ListBased = 1 << 11,
+        // When using list-based testing, this flag causes us to continue hit
+        // testing after a hit has been found.
+        PenetratingList = 1 << 12,
     };
 
     typedef unsigned HitTestRequestType;
@@ -45,6 +53,8 @@ public:
     HitTestRequest(HitTestRequestType requestType)
         : m_requestType(requestType)
     {
+        // Penetrating lists should also be list-based.
+        ASSERT(!(requestType & PenetratingList) || (requestType & ListBased));
     }
 
     bool readOnly() const { return m_requestType & ReadOnly; }
@@ -57,6 +67,8 @@ public:
     bool allowsChildFrameContent() const { return m_requestType & AllowChildFrameContent; }
     bool isChildFrameHitTest() const { return m_requestType & ChildFrameHitTest; }
     bool ignorePointerEventsNone() const { return m_requestType & IgnorePointerEventsNone; }
+    bool listBased() const { return m_requestType & ListBased; }
+    bool penetratingList() const { return m_requestType & PenetratingList; }
 
     // Convenience functions
     bool touchMove() const { return move() && touchEvent(); }

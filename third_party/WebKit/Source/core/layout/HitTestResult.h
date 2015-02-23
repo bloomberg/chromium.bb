@@ -117,22 +117,22 @@ public:
     bool isContentEditable() const;
 
     bool isOverLink() const;
-    // Returns true if it is rect-based hit test and needs to continue until the rect is fully
-    // enclosed by the boundaries of a node.
-    bool addNodeToRectBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
-    bool addNodeToRectBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const FloatRect&);
-    void append(const HitTestResult&);
 
-    // If m_rectBasedTestResult is 0 then set it to a new NodeSet. Return *m_rectBasedTestResult. Lazy allocation makes
+    // Return true if the test is a list-based test and we should continue testing.
+    bool addNodeToListBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
+    bool addNodeToListBasedTestResult(Node*, const HitTestRequest&, const HitTestLocation& pointInContainer, const FloatRect&);
+    void append(const HitTestResult&, const HitTestRequest&);
+
+    // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return *m_listBasedTestResult. Lazy allocation makes
     // sense because the NodeSet is seldom necessary, and it's somewhat expensive to allocate and initialize. This method does
-    // the same thing as mutableRectBasedTestResult(), but here the return value is const.
-    const NodeSet& rectBasedTestResult() const;
+    // the same thing as mutableListBasedTestResult(), but here the return value is const.
+    const NodeSet& listBasedTestResult() const;
 
     // Collapse the rect-based test result into a single target at the specified location.
     void resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPoint& resolvedPointInMainFrame);
 
 private:
-    NodeSet& mutableRectBasedTestResult(); // See above.
+    NodeSet& mutableListBasedTestResult(); // See above.
     HTMLMediaElement* mediaElement() const;
 
     HitTestLocation m_hitTestLocation;
@@ -148,7 +148,7 @@ private:
     RefPtrWillBeMember<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a LayoutPart for example).
 
-    mutable OwnPtrWillBeMember<NodeSet> m_rectBasedTestResult;
+    mutable OwnPtrWillBeMember<NodeSet> m_listBasedTestResult;
 };
 
 } // namespace blink

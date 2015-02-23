@@ -95,8 +95,8 @@ void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector
     IntPoint touchPoint = touchBox.center();
     IntPoint contentsPoint = mainFrame->view()->windowToContents(touchPoint);
 
-    HitTestResult result = mainFrame->eventHandler().hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, LayoutSize(touchPointPadding, touchPointPadding));
-    const WillBeHeapListHashSet<RefPtrWillBeMember<Node>>& hitResults = result.rectBasedTestResult();
+    HitTestResult result = mainFrame->eventHandler().hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(touchPointPadding, touchPointPadding));
+    const WillBeHeapListHashSet<RefPtrWillBeMember<Node>>& hitResults = result.listBasedTestResult();
 
     // Blacklist nodes that are container of disambiguated nodes.
     // It is not uncommon to have a clickable <div> that contains other clickable objects.

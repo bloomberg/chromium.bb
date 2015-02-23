@@ -287,8 +287,8 @@ bool LayoutImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         }
     }
 
-    if (!inside && result.isRectBasedTest())
-        result.append(tempResult);
+    if (!inside && request.listBased())
+        result.append(tempResult, request);
     if (inside)
         result = tempResult;
     return inside;

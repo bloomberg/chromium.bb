@@ -83,8 +83,8 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     , m_scrollbar(other.scrollbar())
     , m_isOverWidget(other.isOverWidget())
 {
-    // Only copy the NodeSet in case of rect hit test.
-    m_rectBasedTestResult = adoptPtrWillBeNoop(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);
+    // Only copy the NodeSet in case of list hit test.
+    m_listBasedTestResult = adoptPtrWillBeNoop(other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : 0);
 }
 
 HitTestResult::~HitTestResult()
@@ -103,8 +103,8 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other)
     m_scrollbar = other.scrollbar();
     m_isOverWidget = other.isOverWidget();
 
-    // Only copy the NodeSet in case of rect hit test.
-    m_rectBasedTestResult = adoptPtrWillBeNoop(other.m_rectBasedTestResult ? new NodeSet(*other.m_rectBasedTestResult) : 0);
+    // Only copy the NodeSet in case of list hit test.
+    m_listBasedTestResult = adoptPtrWillBeNoop(other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : 0);
 
     return *this;
 }
@@ -117,7 +117,7 @@ DEFINE_TRACE(HitTestResult)
     visitor->trace(m_innerURLElement);
     visitor->trace(m_scrollbar);
 #if ENABLE(OILPAN)
-    visitor->trace(m_rectBasedTestResult);
+    visitor->trace(m_listBasedTestResult);
 #endif
 }
 
@@ -372,43 +372,51 @@ bool HitTestResult::isContentEditable() const
     return m_innerNonSharedNode->hasEditableStyle();
 }
 
-bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const LayoutRect& rect)
+bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const LayoutRect& rect)
 {
-    // If it is not a rect-based hit test, this method has to be no-op.
-    // Return false, so the hit test stops.
-    if (!isRectBasedTest())
+    // If not a list-based test, this function should be a no-op.
+    if (!request.listBased()) {
+        ASSERT(!isRectBasedTest());
         return false;
+    }
 
     // If node is null, return true so the hit test can continue.
     if (!node)
         return true;
 
-    mutableRectBasedTestResult().add(node);
+    mutableListBasedTestResult().add(node);
+
+    if (request.penetratingList())
+        return true;
 
     bool regionFilled = rect.contains(locationInContainer.boundingBox());
     return !regionFilled;
 }
 
-bool HitTestResult::addNodeToRectBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const FloatRect& rect)
+bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestRequest& request, const HitTestLocation& locationInContainer, const FloatRect& rect)
 {
-    // If it is not a rect-based hit test, this method has to be no-op.
-    // Return false, so the hit test stops.
-    if (!isRectBasedTest())
+    // If not a list-based test, this function should be a no-op.
+    if (!request.listBased()) {
+        ASSERT(!isRectBasedTest());
         return false;
+    }
 
     // If node is null, return true so the hit test can continue.
     if (!node)
         return true;
 
-    mutableRectBasedTestResult().add(node);
+    mutableListBasedTestResult().add(node);
+
+    if (request.penetratingList())
+        return true;
 
     bool regionFilled = rect.contains(locationInContainer.boundingBox());
     return !regionFilled;
 }
 
-void HitTestResult::append(const HitTestResult& other)
+void HitTestResult::append(const HitTestResult& other, const HitTestRequest& request)
 {
-    ASSERT(isRectBasedTest() && other.isRectBasedTest());
+    ASSERT(request.listBased());
 
     if (!m_scrollbar && other.scrollbar()) {
         setScrollbar(other.scrollbar());
@@ -424,25 +432,25 @@ void HitTestResult::append(const HitTestResult& other)
         m_isOverWidget = other.isOverWidget();
     }
 
-    if (other.m_rectBasedTestResult) {
-        NodeSet& set = mutableRectBasedTestResult();
-        for (NodeSet::const_iterator it = other.m_rectBasedTestResult->begin(), last = other.m_rectBasedTestResult->end(); it != last; ++it)
+    if (other.m_listBasedTestResult) {
+        NodeSet& set = mutableListBasedTestResult();
+        for (NodeSet::const_iterator it = other.m_listBasedTestResult->begin(), last = other.m_listBasedTestResult->end(); it != last; ++it)
             set.add(it->get());
     }
 }
 
-const HitTestResult::NodeSet& HitTestResult::rectBasedTestResult() const
+const HitTestResult::NodeSet& HitTestResult::listBasedTestResult() const
 {
-    if (!m_rectBasedTestResult)
-        m_rectBasedTestResult = adoptPtrWillBeNoop(new NodeSet);
-    return *m_rectBasedTestResult;
+    if (!m_listBasedTestResult)
+        m_listBasedTestResult = adoptPtrWillBeNoop(new NodeSet);
+    return *m_listBasedTestResult;
 }
 
-HitTestResult::NodeSet& HitTestResult::mutableRectBasedTestResult()
+HitTestResult::NodeSet& HitTestResult::mutableListBasedTestResult()
 {
-    if (!m_rectBasedTestResult)
-        m_rectBasedTestResult = adoptPtrWillBeNoop(new NodeSet);
-    return *m_rectBasedTestResult;
+    if (!m_listBasedTestResult)
+        m_listBasedTestResult = adoptPtrWillBeNoop(new NodeSet);
+    return *m_listBasedTestResult;
 }
 
 void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPoint& resolvedPointInMainFrame)
@@ -454,7 +462,7 @@ void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPo
     m_innerNode = nullptr;
     m_innerNonSharedNode = nullptr;
     m_innerPossiblyPseudoNode = nullptr;
-    m_rectBasedTestResult = nullptr;
+    m_listBasedTestResult = nullptr;
 
     // Update the HitTestResult as if the supplied node had been hit in normal point-based hit-test.
     // Note that we don't know the local point after a rect-based hit-test, but we never use

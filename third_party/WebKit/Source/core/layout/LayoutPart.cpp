@@ -162,8 +162,8 @@ bool LayoutPart::nodeAtPoint(const HitTestRequest& request, HitTestResult& resul
 
         bool isInsideChildFrame = childRoot->hitTest(newHitTestRequest, newHitTestLocation, childFrameResult);
 
-        if (newHitTestLocation.isRectBasedTest())
-            result.append(childFrameResult);
+        if (request.listBased())
+            result.append(childFrameResult, request);
         else if (isInsideChildFrame)
             result = childFrameResult;
 

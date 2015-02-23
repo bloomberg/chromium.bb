@@ -88,7 +88,7 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
         renderer().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
-        if (!result.addNodeToRectBasedTestResult(renderer().node(), request, locationInContainer, boundsRect.rawValue()))
+        if (!result.addNodeToListBasedTestResult(renderer().node(), request, locationInContainer, boundsRect.rawValue()))
             return true;
     }
 
