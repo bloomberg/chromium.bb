@@ -289,6 +289,7 @@ DOMAIN_WHITELIST = (
   'google.vu',
   'google.ws',
   'googleadservices.com',
+  'googleadsserving.cn',
   'googlealumni.com',
   'googleapis.com',
   'googleapps.com',

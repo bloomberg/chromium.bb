@@ -86,6 +86,7 @@
       'domain_reliability/baked_in_configs/star_google_ac.json',
       'domain_reliability/baked_in_configs/star_google_ad.json',
       'domain_reliability/baked_in_configs/star_googleadservices_com.json',
+      'domain_reliability/baked_in_configs/star_googleadsserving_cn.json',
       'domain_reliability/baked_in_configs/star_google_ae.json',
       'domain_reliability/baked_in_configs/star_google_af.json',
       'domain_reliability/baked_in_configs/star_google_ag.json',
