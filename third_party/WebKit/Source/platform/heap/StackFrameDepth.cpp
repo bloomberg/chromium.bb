@@ -29,17 +29,7 @@ NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy)
 
 void StackFrameDepth::configureLimit()
 {
-    static const int kStackRoomSize = 1024;
-
-    size_t stackSize = getUnderestimatedStackSize();
-    if (stackSize) {
-        size_t stackBase = reinterpret_cast<size_t>(getStackStart());
-        m_stackFrameLimit = stackBase - stackSize + kStackRoomSize;
-        return;
-    }
-
-    // Fallback version
-    // Allocate a 32KB object on stack and query stack frame base after it.
+    // Allocate a large object in stack and query stack frame pointer after it.
     char dummy[kSafeStackFrameSize];
     m_stackFrameLimit = currentStackFrameBaseOnCallee(dummy);
 
@@ -49,39 +39,14 @@ void StackFrameDepth::configureLimit()
 
 size_t StackFrameDepth::getUnderestimatedStackSize()
 {
-    // FIXME: On Mac OSX and Linux, this method cannot estimate stack size
-    // correctly for the main thread.
-
 #if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
-    // pthread_getattr_np() can fail if the thread is not invoked by
-    // pthread_create() (e.g., the main thread of webkit_unit_tests).
-    // In this case, this method returns 0 and the caller must handle it.
-
-    pthread_attr_t attr;
-    int error;
-#if OS(FREEBSD)
-    pthread_attr_init(&attr);
-    error = pthread_attr_get_np(pthread_self(), &attr);
-#else
-    error = pthread_getattr_np(pthread_self(), &attr);
-#endif
-    if (!error) {
-        void* base;
-        size_t size;
-        error = pthread_attr_getstack(&attr, &base, &size);
-        RELEASE_ASSERT(!error);
-        pthread_attr_destroy(&attr);
-        return size;
-    }
-#if OS(FREEBSD)
-    pthread_attr_destroy(&attr);
-#endif
-
+    // We cannot get the stack size in these platforms because
+    // pthread_getattr_np() can fail for the main thread.
+    // This is OK because ThreadState::current() doesn't use the stack size
+    // in these platforms.
     return 0;
 #elif OS(MACOSX)
-    // FIXME: pthread_get_stacksize_np() returns shorter size than actual stack
-    // size for the main thread on Mavericks(10.9).
-    return 0;
+    return pthread_get_stacksize_np(pthread_self());
 #elif OS(WIN) && COMPILER(MSVC)
     // On Windows stack limits for the current thread are available in
     // the thread information block (TIB). Its fields can be accessed through
@@ -92,7 +57,6 @@ size_t StackFrameDepth::getUnderestimatedStackSize()
     return __readfsdword(offsetof(NT_TIB, StackBase)) - __readfsdword(offsetof(NT_TIB, StackLimit));
 #endif
 #else
-#error "Stack frame size estimation not supported on this platform."
     return 0;
 #endif
 }
