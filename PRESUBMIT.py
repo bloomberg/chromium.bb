@@ -1744,29 +1744,6 @@ def GetPreferredTryMasters(project, change):
   import re
   files = change.LocalPaths()
 
-  if not files or all(re.search(r'[\\\/]OWNERS$', f) for f in files):
-    return {}
-
-  if all(re.search(r'\.(m|mm)$|(^|[\\\/_])mac[\\\/_.]', f) for f in files):
-    return GetDefaultTryConfigs([
-        'mac_chromium_compile_dbg_ng',
-        'mac_chromium_rel_ng',
-    ])
-  if all(re.search('(^|[/_])win[/_.]', f) for f in files):
-    return GetDefaultTryConfigs([
-        'win8_chromium_rel',
-        'win_chromium_rel_ng',
-        'win_chromium_x64_rel_ng',
-    ])
-  if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) and
-         not re.search(r'(^|[\\\/_])devtools[\\\/_.]', f) for f in files):
-    return GetDefaultTryConfigs([
-        'android_aosp',
-        'android_rel_tests_recipe',
-    ])
-  if all(re.search(r'[\\\/_]ios[\\\/_.]', f) for f in files):
-    return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
-
   import os
   import json
   with open(os.path.join(
@@ -1786,11 +1763,5 @@ def GetPreferredTryMasters(project, change):
         # running local presubmit anyway.
         if 'presubmit' in builder:
           builders[master].pop(builder)
-
-  # Match things like path/aura/file.cc and path/file_aura.cc.
-  # Same for chromeos.
-  if any(re.search(r'[\\\/_](aura|chromeos)', f) for f in files):
-    tryserver_linux = builders.setdefault('tryserver.chromium.linux', {})
-    tryserver_linux['linux_chromium_chromeos_asan_rel_ng'] = ['defaulttests']
 
   return builders

@@ -375,14 +375,6 @@ class BadExtensionsTest(unittest.TestCase):
     results = PRESUBMIT._CheckPatchFiles(mock_input_api, MockOutputApi())
     self.assertEqual(0, len(results))
 
-  def testOnlyOwnersFiles(self):
-    mock_change = MockChange([
-      'some/path/OWNERS',
-      'A\Windows\Path\OWNERS',
-    ])
-    results = PRESUBMIT.GetPreferredTryMasters(None, mock_change)
-    self.assertEqual({}, results)
-
 
 class CheckSingletonInHeadersTest(unittest.TestCase):
   def testSingletonInArbitraryHeader(self):
