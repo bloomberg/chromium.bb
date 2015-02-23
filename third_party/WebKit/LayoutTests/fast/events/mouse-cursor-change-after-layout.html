@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script language="javascript" type="text/javascript">
+function addOverlay() {
+    var testContainer = document.getElementById('test-container');
+    var overlay = document.createElement('div');
+    overlay.id='overlay';
+    testContainer.appendChild(overlay);
+}
+</script>
+<style type="text/css">
+#target {
+  cursor: default;
+}
+#overlay {
+  cursor: wait;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,0,0,0.2);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+</style>
+</head>
+<body>
+<p id="description"></p>
+<p><a href="http://crbug.com/26723">Bug 26723</a></p>
+<div id="test-container">
+    <div id="target" onMouseDown="addOverlay();event.preventDefault();">Click me</div>
+</div>
+<br/>
+<div id="console"></div>
+<script>
+var CURSOR_UPDATE_DELAY = 50;
+
+description("Test that mouse cursors are changed correctly after layout.");
+
+if (!window.eventSender) {
+    testFailed('This test requires DumpRenderTree');
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    window.jsTestIsAsync = true;
+}
+
+function runTest(prepare, next) {
+    prepare();
+    setTimeout(function() {
+        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo(document));
+        debug('');
+        next();
+    }, CURSOR_UPDATE_DELAY);
+}
+
+function testsDone() {
+    // This text is redundant with the test output - hide it
+    document.getElementById('test-container').style.display = 'none';
+    finishJSTest();
+}
+
+// Can't do anything useful here without eventSender
+if (window.eventSender) {
+    var target = document.getElementById('target');
+    eventSender.dragMode = false;
+    var tests = [
+        function() {
+            debug('Mouse move');
+            eventSender.mouseMoveTo(target.offsetLeft + 3, target.offsetTop + 3);
+        }, function() {
+            debug('Mouse down');
+            eventSender.mouseDown();
+        }, function() {
+            debug('Mouse up');
+            eventSender.mouseUp();
+        }
+    ];
+
+    var i = 0;
+    function nextTest() {
+        if (i < tests.length) {
+            runTest(tests[i++], nextTest);
+        } else {
+            testsDone();
+        }
+    }
+    nextTest();
+}
+
+</script>
+</body>
+</html>

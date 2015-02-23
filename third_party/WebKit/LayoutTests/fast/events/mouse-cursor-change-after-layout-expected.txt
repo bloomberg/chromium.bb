@@ -1,0 +1,21 @@
+Test that mouse cursors are changed correctly after layout.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Bug 26723
+
+
+Mouse move
+Cursor Info: type=Pointer hotSpot=0,0
+
+Mouse down
+Cursor Info: type=Wait hotSpot=0,0
+
+Mouse up
+Cursor Info: type=Wait hotSpot=0,0
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

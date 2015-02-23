@@ -2106,6 +2106,8 @@ void FrameView::performPostLayoutTasks()
 
     FontFaceSet::didLayout(*m_frame->document());
 
+    frame().eventHandler().scheduleCursorUpdate();
+
     updateWidgetPositions();
 
     // Plugins could have torn down the page inside updateWidgetPositions().
