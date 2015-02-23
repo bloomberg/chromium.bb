@@ -1832,14 +1832,10 @@ view_accumulate_damage(struct weston_view *view,
 
 		extents = pixman_region32_extents(&view->surface->damage);
 		view_compute_bbox(view, extents, &damage);
-		pixman_region32_translate(&damage,
-					  -view->plane->x,
-					  -view->plane->y);
 	} else {
 		pixman_region32_copy(&damage, &view->surface->damage);
 		pixman_region32_translate(&damage,
-					  view->geometry.x - view->plane->x,
-					  view->geometry.y - view->plane->y);
+					  view->geometry.x, view->geometry.y);
 	}
 
 	pixman_region32_subtract(&damage, &damage, opaque);
