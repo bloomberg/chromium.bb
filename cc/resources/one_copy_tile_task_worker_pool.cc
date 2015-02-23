@@ -78,7 +78,7 @@ class RasterBufferImpl : public RasterBuffer {
 const int kCopyFlushPeriod = 4;
 
 // Number of in-flight copy operations to allow.
-const int kMaxCopyOperations = 32;
+const int kMaxCopyOperations = 16;
 
 // Delay been checking for copy operations to complete.
 const int kCheckForCompletedCopyOperationsTickRateMs = 1;
