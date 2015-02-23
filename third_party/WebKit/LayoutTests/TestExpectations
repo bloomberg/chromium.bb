@@ -1837,8 +1837,6 @@ crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
-crbug.com/460356 fast/workers/worker-exception-during-navigation.html [ Pass Crash ]
-
 crbug.com/460374 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ ImageOnlyFailure ]
 
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
