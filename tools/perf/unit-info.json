@@ -55,6 +55,10 @@
   "frame_time": {
     "improvement_direction": "down"
   },
+  "garbage_collections": {
+    "improvement_direction": "down",
+    "why": "Number of GCs needed to collect an object. Less is better."
+  },
   "Hz": {
     "improvement_direction": "up",
     "why": "Higher frequencies are faster."
