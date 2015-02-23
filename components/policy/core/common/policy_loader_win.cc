@@ -75,6 +75,7 @@ const char kExpectedWebStoreUrl[] =
 const char kBlockedExtensionPrefix[] = "[BLOCKED]";
 
 // List of policies that are considered only if the user is part of a AD domain.
+// Please document any new additions in policy_templates.json!
 const char* kInsecurePolicies[] = {
     key::kMetricsReportingEnabled,
     key::kDefaultSearchProviderEnabled,
@@ -140,7 +141,7 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
 
   int invalid_policies = 0;
   const PolicyMap::Entry* map_entry =
-      policy->Get(policy::key::kExtensionInstallForcelist);
+      policy->Get(key::kExtensionInstallForcelist);
   if (map_entry && map_entry->value) {
     const base::ListValue* policy_list_value = NULL;
     if (!map_entry->value->GetAsList(&policy_list_value))
@@ -164,13 +165,13 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
       filtered_values->AppendString(entry);
     }
     if (invalid_policies) {
-      policy->Set(policy::key::kExtensionInstallForcelist,
+      policy->Set(key::kExtensionInstallForcelist,
                   map_entry->level, map_entry->scope,
                   filtered_values.release(),
                   map_entry->external_data_fetcher);
 
-      const PolicyDetails* details = policy::GetChromePolicyDetails(
-          policy::key::kExtensionInstallForcelist);
+      const PolicyDetails* details = GetChromePolicyDetails(
+          key::kExtensionInstallForcelist);
       UMA_HISTOGRAM_SPARSE_SLOWLY("EnterpriseCheck.InvalidPolicies",
                                   details->id);
     }
@@ -182,7 +183,7 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
       policy->Erase(kInsecurePolicies[i]);
       invalid_policies++;
       const PolicyDetails* details =
-          policy::GetChromePolicyDetails(kInsecurePolicies[i]);
+          GetChromePolicyDetails(kInsecurePolicies[i]);
       UMA_HISTOGRAM_SPARSE_SLOWLY("EnterpriseCheck.InvalidPolicies",
                                   details->id);
     }

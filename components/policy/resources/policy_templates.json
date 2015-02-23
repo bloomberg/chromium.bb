@@ -172,7 +172,10 @@
 
           If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.
 
-          Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.''',
+          Leaving this policy not set will allow the user to choose his home page on his own if HomepageIsNewTabPage is not set too.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.''',
           'label': '''Home page URL''',
         },
         {
@@ -196,7 +199,10 @@
 
           If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          Leaving this policy not set will allow the user to choose whether the new tab page is his home page on his own.''',
+          Leaving this policy not set will allow the user to choose whether the new tab page is his home page on his own.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.''',
         },
       ],
     },
@@ -977,7 +983,10 @@
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If this policy is left not set, RAPPOR will be enabled unless disabled by the user, and the usage and crash reporting setting will be what the user chose upon installation / first run.''',
+      If this policy is left not set, RAPPOR will be enabled unless disabled by the user, and the usage and crash reporting setting will be what the user chose upon installation / first run.
+
+      This policy is not available on Windows instances that are not joined to
+      an Active Directory domain.''',
     },
     {
       'name': 'PasswordManager',
@@ -1797,6 +1806,10 @@
           'caption': '''Configure the list of force-installed extensions''',
           'desc': '''Allows you to specify a list of extensions that will be installed silently, without user interaction.
 
+          For Windows instances that are not joined to an Active Directory
+          domain, forced installation is limited to extensions listed in the
+          Chrome Web Store.
+
           Each item of the list is a string that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The update URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest.
 
           For each item, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retrieve the extension specified by the extension ID from the update service at the specified update URL and silently install it.
@@ -2095,7 +2108,10 @@
 
           If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.''',
         },
         {
           'name': 'RestoreOnStartupURLs',
@@ -2115,7 +2131,10 @@
           'caption': '''URLs to open on startup''',
           'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened. If left not set no URL will be opened on start up.
 
-          This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.''',
+          This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.''',
         },
       ],
     },
@@ -2175,7 +2194,10 @@
 
           If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.''',
+          If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.
+
+          This policy is not available on Windows instances that are not joined
+          to an Active Directory domain.''',
         },
         {
           'name': 'DefaultSearchProviderName',
@@ -7256,12 +7278,9 @@
       name="POLICY_TEMPLATE_DOWNLOAD_URL">http://www.chromium.org/administrators/policy-templates<ex>
       http://www.chromium.org/administrators/policy-templates</ex></ph>.
 
-      Note: Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-      28, policies are loaded directly from the Group Policy API on
-      Windows. Policies manually written to the registry will be ignored. See
-      http://crbug.com/259236 for details.
-
-      Starting with <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 35, policies are read directly from the registry if the workstation is joined to an Active Directory domain; otherwise the policies are read from GPO.'''
+      The recommended way to configure policy on Windows is via GPO, although
+      provisioning policy via registry is still supported for Windows instances
+      that are joined to an Active Directory domain.'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',
