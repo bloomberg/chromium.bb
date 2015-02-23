@@ -27,6 +27,10 @@ bool IsSystemRealTimeMessage(uint8 data) {
   return 0xf8 <= data;
 }
 
+bool IsSystemMessage(uint8 data) {
+  return 0xf0 <= data;
+}
+
 }  // namespace
 
 MidiMessageQueue::MidiMessageQueue(bool allow_running_status)
@@ -104,9 +108,10 @@ void MidiMessageQueue::Get(std::vector<uint8>* message) {
     if (next_message_.size() == target_len) {
       std::swap(*message, next_message_);
       next_message_.clear();
-      if (allow_running_status_) {
+      if (allow_running_status_ && !IsSystemMessage(status_byte)) {
         // Speculatively keep the status byte in case of running status. If this
         // assumption is not true, |next_message_| will be cleared anyway.
+        // Note that system common messages should reset the running status.
         next_message_.push_back(status_byte);
       }
       return;

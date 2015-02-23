@@ -22,6 +22,7 @@ const uint8 kChannelPressureWithRunningStatus[] = {
   0xd0, 0x01, 0x01, 0x01,
 };
 const uint8 kTimingClock[] = { 0xf8 };
+const uint8 kMTCFrame[] = { 0xf1, 0x00 };
 const uint8 kBrokenData1[] = { 0x90 };
 const uint8 kBrokenData2[] = { 0xf7 };
 const uint8 kBrokenData3[] = { 0xf2, 0x00 };
@@ -141,11 +142,11 @@ TEST(MidiMessageQueueTest, RunningStatusEnabled) {
 
 TEST(MidiMessageQueueTest, RunningStatusEnabledWithRealTimeEvent) {
   MidiMessageQueue queue(true);
-  const uint8 kNoteOnWithRunningStatusWithkTimingClock[] = {
+  const uint8 kNoteOnWithRunningStatusWithTimingClock[] = {
     0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c, 0xf8,
     0x7f,
   };
-  Add(&queue, kNoteOnWithRunningStatusWithkTimingClock);
+  Add(&queue, kNoteOnWithRunningStatusWithTimingClock);
   std::vector<uint8> message;
   queue.Get(&message);
   EXPECT_MESSAGE(kTimingClock, message);
@@ -163,6 +164,25 @@ TEST(MidiMessageQueueTest, RunningStatusEnabledWithRealTimeEvent) {
   EXPECT_MESSAGE(kTimingClock, message);
   queue.Get(&message);
   EXPECT_MESSAGE(kTimingClock, message);
+  queue.Get(&message);
+  EXPECT_MESSAGE(kNoteOn, message);
+  queue.Get(&message);
+  EXPECT_TRUE(message.empty());
+}
+
+TEST(MidiMessageQueueTest, RunningStatusEnabledWithSystemCommonMessage) {
+  MidiMessageQueue queue(true);
+  const uint8 kNoteOnWithRunningStatusWithSystemCommonMessage[] = {
+    0x90, 0x3c, 0x7f, 0xf1, 0x00, 0x3c, 0x7f, 0xf8, 0x90, 0x3c, 0x7f,
+  };
+  Add(&queue, kNoteOnWithRunningStatusWithSystemCommonMessage);
+  std::vector<uint8> message;
+  queue.Get(&message);
+  EXPECT_MESSAGE(kNoteOn, message);
+  queue.Get(&message);
+  EXPECT_MESSAGE(kMTCFrame, message);
+  queue.Get(&message);
+  EXPECT_MESSAGE(kTimingClock, message) << "Running status should be reset";
   queue.Get(&message);
   EXPECT_MESSAGE(kNoteOn, message);
   queue.Get(&message);
