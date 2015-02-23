@@ -72,7 +72,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       root_layer_(NULL),
       widget_(widget),
       surface_id_allocator_(context_factory->CreateSurfaceIdAllocator()),
-      compositor_thread_loop_(context_factory->GetCompositorMessageLoop()),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
       device_scale_factor_(0.0f),
@@ -137,25 +136,10 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.hud_typeface = ui::GetHudTypeface();
 
   base::TimeTicks before_create = base::TimeTicks::Now();
-  if (compositor_thread_loop_.get()) {
-    host_ = cc::LayerTreeHost::CreateThreaded(
-        this,
-        context_factory_->GetSharedBitmapManager(),
-        context_factory_->GetGpuMemoryBufferManager(),
-        settings,
-        task_runner_,
-        compositor_thread_loop_,
-        nullptr);
-  } else {
-    host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this,
-        this,
-        context_factory_->GetSharedBitmapManager(),
-        context_factory_->GetGpuMemoryBufferManager(),
-        settings,
-        task_runner_,
-        nullptr);
-  }
+  host_ = cc::LayerTreeHost::CreateSingleThreaded(
+      this, this, context_factory_->GetSharedBitmapManager(),
+      context_factory_->GetGpuMemoryBufferManager(), settings, task_runner_,
+      nullptr);
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
   host_->SetRootLayer(root_web_layer_);
@@ -354,14 +338,6 @@ void Compositor::DidCommitAndDrawFrame() {
 }
 
 void Compositor::DidCompleteSwapBuffers() {
-  // DidPostSwapBuffers is a SingleThreadProxy-only feature.  Synthetically
-  // generate OnCompositingStarted messages for the threaded case so that
-  // OnCompositingStarted/OnCompositingEnded messages match.
-  if (compositor_thread_loop_.get()) {
-    base::TimeTicks start_time = gfx::FrameTime::Now();
-    FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
-                      OnCompositingStarted(this, start_time));
-  }
   FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
                     OnCompositingEnded(this));
 }

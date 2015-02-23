@@ -11,7 +11,6 @@ namespace content {
 
 class BrowserGpuMemoryBufferManager;
 class BufferQueue;
-class GLHelper;
 
 class GpuSurfacelessBrowserCompositorOutputSurface
     : public GpuBrowserCompositorOutputSurface {
@@ -23,7 +22,6 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator,
       unsigned internalformat,
-      bool use_own_gl_helper,
       BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuSurfacelessBrowserCompositorOutputSurface() override;
 
@@ -36,8 +34,6 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   bool BindToClient(cc::OutputSurfaceClient* client) override;
 
   unsigned int internalformat_;
-  bool use_own_gl_helper_;
-  scoped_ptr<GLHelper> gl_helper_;
   scoped_ptr<BufferQueue> output_surface_;
   BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager_;
 };

@@ -32,14 +32,6 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   ScreenOrientationBrowserTest() {
   }
 
-  void SetUp() override {
-    // Painting has to happen otherwise the Resize messages will be added on top
-    // of each other without properly ack-painting which will fail and crash.
-    UseSoftwareCompositing();
-
-    ContentBrowserTest::SetUp();
-  }
-
  protected:
   void SendFakeScreenOrientation(unsigned angle, const std::string& strType) {
     RenderWidgetHost* rwh = shell()->web_contents()->GetRenderWidgetHostView()

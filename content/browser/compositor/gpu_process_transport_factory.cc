@@ -221,10 +221,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   if (!context_provider.get()) {
-    if (compositor_thread_.get()) {
-      LOG(FATAL) << "Failed to create UI context, but can't use software"
-                    " compositing with browser threaded compositing. Aborting.";
-    }
+#if defined(OS_CHROMEOS)
+    LOG(FATAL) << "Shouldn't use software compositing on ChromeOS.";
+#endif
 
     scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
         new SoftwareBrowserCompositorOutputSurface(
@@ -243,7 +242,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         context_provider, data->surface_id, &output_surface_map_,
         compositor->vsync_manager(),
         CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
-        compositor_thread_ != nullptr,
         BrowserGpuMemoryBufferManager::current()));
   }
 #endif
@@ -267,10 +265,8 @@ scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
   PerCompositorData* data = per_compositor_data_[source];
   DCHECK(data);
 
-  data->reflector = new ReflectorImpl(source,
-                                      target,
-                                      &output_surface_map_,
-                                      GetCompositorMessageLoop(),
+  data->reflector = new ReflectorImpl(source, target, &output_surface_map_,
+                                      nullptr,  // Compositor message loop.
                                       data->surface_id);
   return data->reflector;
 }
@@ -327,12 +323,6 @@ GpuProcessTransportFactory::GetGpuMemoryBufferManager() {
 
 ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
   return this;
-}
-
-base::MessageLoopProxy* GpuProcessTransportFactory::GetCompositorMessageLoop() {
-  if (!compositor_thread_)
-    return NULL;
-  return compositor_thread_->message_loop_proxy().get();
 }
 
 gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {

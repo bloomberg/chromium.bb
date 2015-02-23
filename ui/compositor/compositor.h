@@ -97,10 +97,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Gets the GPU memory buffer manager.
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
 
-  // Gets the compositor message loop, or NULL if not using threaded
-  // compositing.
-  virtual base::MessageLoopProxy* GetCompositorMessageLoop() = 0;
-
   // Creates a Surface ID allocator with a new namespace.
   virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;
 
@@ -315,7 +311,6 @@ class COMPOSITOR_EXPORT Compositor
   scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> root_web_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
-  scoped_refptr<base::MessageLoopProxy> compositor_thread_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The manager of vsync parameters for this compositor.

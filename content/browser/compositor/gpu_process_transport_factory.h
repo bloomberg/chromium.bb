@@ -53,7 +53,6 @@ class GpuProcessTransportFactory
   bool DoesCreateTestContexts() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  base::MessageLoopProxy* GetCompositorMessageLoop() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
@@ -85,7 +84,6 @@ class GpuProcessTransportFactory
   void OnLostMainThreadSharedContext();
 
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
-  scoped_ptr<base::Thread> compositor_thread_;
   PerCompositorDataMap per_compositor_data_;
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
   scoped_ptr<GLHelper> gl_helper_;

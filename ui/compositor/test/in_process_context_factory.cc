@@ -179,12 +179,6 @@ InProcessContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }
 
-base::MessageLoopProxy* InProcessContextFactory::GetCompositorMessageLoop() {
-  if (!compositor_thread_)
-    return NULL;
-  return compositor_thread_->message_loop_proxy().get();
-}
-
 scoped_ptr<cc::SurfaceIdAllocator>
 InProcessContextFactory::CreateSurfaceIdAllocator() {
   return make_scoped_ptr(

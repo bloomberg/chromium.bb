@@ -942,16 +942,24 @@ IN_PROC_BROWSER_TEST_P(
                                 video_frame);
 }
 
+#if defined(OS_CHROMEOS)
+// On ChromeOS there is no software compositing.
+static const auto kTestCompositingModes = testing::Values(GL_COMPOSITING);
+#else
+static const auto kTestCompositingModes =
+    testing::Values(GL_COMPOSITING, SOFTWARE_COMPOSITING);
+#endif
+
 INSTANTIATE_TEST_CASE_P(GLAndSoftwareCompositing,
                         CompositingRenderWidgetHostViewBrowserTest,
-                        testing::Values(GL_COMPOSITING, SOFTWARE_COMPOSITING));
+                        kTestCompositingModes);
 INSTANTIATE_TEST_CASE_P(GLAndSoftwareCompositing,
                         CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                        testing::Values(GL_COMPOSITING, SOFTWARE_COMPOSITING));
+                        kTestCompositingModes);
 INSTANTIATE_TEST_CASE_P(
     GLAndSoftwareCompositing,
     CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI,
-    testing::Values(GL_COMPOSITING, SOFTWARE_COMPOSITING));
+    kTestCompositingModes);
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 

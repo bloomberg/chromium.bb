@@ -15,6 +15,10 @@
 
 namespace content {
 
+// ChromeOS does not do software compositing, so kDisableGpu is not available
+// there.
+#if !defined(OS_CHROMEOS)
+
 class ChildDiscardableSharedMemoryManagerBrowserTest
     : public ContentBrowserTest {
  public:
@@ -117,5 +121,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
                    base::Passed(&memory)));
   }
 }
+
+#endif  // !OS_CHROMEOS
 
 }  // content

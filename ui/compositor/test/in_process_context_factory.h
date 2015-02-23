@@ -47,13 +47,11 @@ class InProcessContextFactory : public ContextFactory {
   bool DoesCreateTestContexts() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  base::MessageLoopProxy* GetCompositorMessageLoop() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
 
  private:
-  scoped_ptr<base::Thread> compositor_thread_;
   scoped_refptr<cc::ContextProvider> shared_main_thread_contexts_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;

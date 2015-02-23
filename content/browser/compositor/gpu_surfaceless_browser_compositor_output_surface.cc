@@ -23,7 +23,6 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator,
         unsigned internalformat,
-        bool use_own_gl_helper,
         BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,
                                         surface_id,
@@ -31,7 +30,6 @@ GpuSurfacelessBrowserCompositorOutputSurface::
                                         vsync_manager,
                                         overlay_candidate_validator.Pass()),
       internalformat_(internalformat),
-      use_own_gl_helper_(use_own_gl_helper),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
@@ -86,17 +84,9 @@ bool GpuSurfacelessBrowserCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   if (!GpuBrowserCompositorOutputSurface::BindToClient(client))
     return false;
-  GLHelper* helper;
-  if (use_own_gl_helper_) {
-    gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
-                                  context_provider_->ContextSupport()));
-    helper = gl_helper_.get();
-  } else {
-    helper = ImageTransportFactory::GetInstance()->GetGLHelper();
-  }
+  GLHelper* helper = ImageTransportFactory::GetInstance()->GetGLHelper();
   if (!helper)
     return false;
-
   output_surface_.reset(new BufferQueue(context_provider_, internalformat_,
                                         helper, gpu_memory_buffer_manager_,
                                         surface_id_));
