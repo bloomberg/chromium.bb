@@ -280,7 +280,7 @@ static_library("browser") {
       "//v8",
 
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
-      #"../testing/perf/perf_test.gyp:*",  TODO(GYP)
+      "//testing/perf",
     ]
   } else {  # iOS
     sources +=
@@ -622,7 +622,7 @@ static_library("browser") {
   if (is_mac) {
     deps += [
       "//third_party/google_toolbox_for_mac",
-      #"../third_party/mozilla/mozilla.gyp:mozilla",  TODO(GYP)
+      "//third_party/mozilla",
     ]
     libs += [
       "Accelerate.framework",
