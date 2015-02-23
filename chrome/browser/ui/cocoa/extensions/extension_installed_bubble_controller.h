@@ -7,8 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -17,7 +17,6 @@ class ExtensionInstalledBubble;
 class ExtensionInstalledBubbleBridge;
 @class HyperlinkTextView;
 @class HoverCloseButton;
-@class InfoBubbleView;
 
 namespace extensions {
 class BundleInstaller;

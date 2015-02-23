@@ -15,6 +15,7 @@
 class Browser;
 
 namespace extensions {
+class Command;
 class Extension;
 class ExtensionRegistry;
 }
@@ -64,9 +65,13 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
   const Browser* browser() const { return browser_; }
   const SkBitmap& icon() const { return icon_; }
   BubbleType type() const { return type_; }
+  bool has_command_keybinding() const { return action_command_; }
 
   // Stop listening to NOTIFICATION_BROWSER_CLOSING.
   void IgnoreBrowserClosing();
+
+  // Returns the string describing how to use the new extension.
+  base::string16 GetHowToUseDescription() const;
 
  private:
   // Delegates showing the view to our |view_|. Called internally via PostTask.
@@ -94,6 +99,9 @@ class ExtensionInstalledBubble : public content::NotificationObserver,
   const SkBitmap icon_;
   BubbleType type_;
   content::NotificationRegistrar registrar_;
+
+  // The command to execute the extension action, if one exists.
+  scoped_ptr<extensions::Command> action_command_;
 
   // Listen to extension load, unloaded notifications.
   ScopedObserver<extensions::ExtensionRegistry,

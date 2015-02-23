@@ -9,8 +9,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +26,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
-#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -89,10 +86,8 @@ class InstalledBubbleContent : public views::View,
                                public views::ButtonListener,
                                public views::LinkListener {
  public:
-  InstalledBubbleContent(Browser* browser,
-                         const Extension* extension,
-                         ExtensionInstalledBubble::BubbleType type,
-                         const SkBitmap* icon);
+  InstalledBubbleContent(const ExtensionInstalledBubble& bubble,
+                         Browser* browser);
 
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -109,9 +104,6 @@ class InstalledBubbleContent : public views::View,
     SIGN_IN_PROMO   = 1 << 3,
   };
 
-  bool GetKeybinding(extensions::Command* command);
-  base::string16 GetHowToUseDescription(const base::string16& key);
-
   // Layout the signin promo at coordinates |offset_x| and |offset_y|. Returns
   // the height (in pixels) of the promo UI.
   int LayoutSigninPromo(int offset_x, int offset_y);
@@ -124,9 +116,6 @@ class InstalledBubbleContent : public views::View,
   // The browser we're associated with.
   Browser* browser_;
 
-  // The id of the extension just installed.
-  const std::string extension_id_;
-
   // The string that contains the link text at the beginning of the sign-in
   // promo text.
   base::string16 signin_promo_link_text_;
@@ -137,9 +126,6 @@ class InstalledBubbleContent : public views::View,
   // paragraph as layed out within the bubble, but has the text of the link
   // whited out so the link can be drawn in its place.
   ScopedVector<gfx::RenderText> sign_in_promo_lines_;
-
-  // The type of the bubble to show (Browser Action, Omnibox keyword, etc).
-  ExtensionInstalledBubble::BubbleType type_;
 
   // A bitmask containing the various flavors of bubble sections to show.
   int flavors_;
@@ -159,13 +145,9 @@ class InstalledBubbleContent : public views::View,
 };
 
 InstalledBubbleContent::InstalledBubbleContent(
-    Browser* browser,
-    const Extension* extension,
-    ExtensionInstalledBubble::BubbleType type,
-    const SkBitmap* icon)
+    const ExtensionInstalledBubble& bubble,
+    Browser* browser)
     : browser_(browser),
-      extension_id_(extension->id()),
-      type_(type),
       flavors_(NONE),
       height_of_signin_promo_(0u),
       how_to_use_(NULL),
@@ -189,23 +171,18 @@ InstalledBubbleContent::InstalledBubbleContent(
   //     or a link to configure the keybinding shortcut (if one exists).
   // Extra info can include a promo for signing into sync.
 
-  // First figure out the keybinding situation.
-  extensions::Command command;
-  bool has_keybinding = GetKeybinding(&command);
-  base::string16 key;  // Keyboard shortcut or keyword to display in bubble.
-
+  const Extension* extension = bubble.extension();
   if (extensions::sync_helper::IsSyncableExtension(extension) &&
       SyncPromoUI::ShouldShowSyncPromo(browser->profile()))
     flavors_ |= SIGN_IN_PROMO;
 
   // Determine the bubble flavor we want, based on the extension type.
-  switch (type_) {
+  switch (bubble.type()) {
     case ExtensionInstalledBubble::BROWSER_ACTION:
-    case ExtensionInstalledBubble::PAGE_ACTION: {
+    case ExtensionInstalledBubble::PAGE_ACTION:
       flavors_ |= HOW_TO_USE;
-      if (has_keybinding) {
+      if (bubble.has_command_keybinding()) {
         flavors_ |= SHOW_KEYBINDING;
-        key = command.accelerator().GetShortcutText();
       } else {
         // The How-To-Use text makes the bubble seem a little crowded when the
         // extension has a keybinding, so the How-To-Manage text is not shown
@@ -213,36 +190,32 @@ InstalledBubbleContent::InstalledBubbleContent(
         flavors_ |= HOW_TO_MANAGE;
       }
       break;
-    }
-    case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
+    case ExtensionInstalledBubble::OMNIBOX_KEYWORD:
       flavors_ |= HOW_TO_USE | HOW_TO_MANAGE;
-      key = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
       break;
-    }
-    case ExtensionInstalledBubble::GENERIC: {
+    case ExtensionInstalledBubble::GENERIC:
       break;
-    }
-    default: {
+    default:
       // When adding a new bubble type, the flavor needs to be set.
       static_assert(ExtensionInstalledBubble::GENERIC == 3,
           "kBubbleType enum has changed, this switch statement must "
           "be updateed");
       break;
-    }
   }
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& font_list =
       rb.GetFontList(ui::ResourceBundle::BaseFont);
 
+  const SkBitmap& icon = bubble.icon();
   // Add the icon (for all flavors).
   // Scale down to 43x43, but allow smaller icons (don't scale up).
-  gfx::Size size(icon->width(), icon->height());
+  gfx::Size size(icon.width(), icon.height());
   if (size.width() > kIconSize || size.height() > kIconSize)
     size = gfx::Size(kIconSize, kIconSize);
   icon_ = new views::ImageView();
   icon_->SetImageSize(size);
-  icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*icon));
+  icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(icon));
   AddChildView(icon_);
 
   // Add the heading (for all flavors).
@@ -256,7 +229,7 @@ InstalledBubbleContent::InstalledBubbleContent(
   AddChildView(heading_);
 
   if (flavors_ & HOW_TO_USE) {
-    how_to_use_ = new views::Label(GetHowToUseDescription(key));
+    how_to_use_ = new views::Label(bubble.GetHowToUseDescription());
     how_to_use_->SetFontList(font_list);
     how_to_use_->SetMultiLine(true);
     how_to_use_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -324,58 +297,6 @@ void InstalledBubbleContent::LinkClicked(views::Link* source, int event_flags) {
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser_, GURL(configure_url)));
   chrome::Navigate(&params);
-}
-
-bool InstalledBubbleContent::GetKeybinding(extensions::Command* command) {
-  extensions::CommandService* command_service =
-      extensions::CommandService::Get(browser_->profile());
-  if (type_ == ExtensionInstalledBubble::BROWSER_ACTION) {
-    return command_service->GetBrowserActionCommand(
-        extension_id_,
-        extensions::CommandService::ACTIVE,
-        command,
-        NULL);
-  } else if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
-    return command_service->GetPageActionCommand(
-        extension_id_,
-        extensions::CommandService::ACTIVE,
-        command,
-        NULL);
-  } else {
-    return false;
-  }
-}
-
-base::string16 InstalledBubbleContent::GetHowToUseDescription(
-    const base::string16& key) {
-  switch (type_) {
-    case ExtensionInstalledBubble::BROWSER_ACTION:
-      if (!key.empty()) {
-        return l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT, key);
-      } else {
-        return l10n_util::GetStringUTF16(
-            IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO);
-      }
-      break;
-    case ExtensionInstalledBubble::PAGE_ACTION:
-      if (!key.empty()) {
-        return l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT, key);
-      } else {
-        return l10n_util::GetStringUTF16(
-            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO);
-      }
-      break;
-    case ExtensionInstalledBubble::OMNIBOX_KEYWORD:
-      return l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO, key);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return base::string16();
 }
 
 int InstalledBubbleContent::LayoutSigninPromo(int offset_x, int offset_y) {
@@ -589,9 +510,7 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
             views::BubbleBorder::TOP_LEFT :
             views::BubbleBorder::TOP_RIGHT);
   SetLayoutManager(new views::FillLayout());
-  AddChildView(new InstalledBubbleContent(
-      bubble_.browser(), bubble_.extension(), bubble_.type(),
-      &bubble_.icon()));
+  AddChildView(new InstalledBubbleContent(bubble_, bubble_.browser()));
 
   views::BubbleDelegateView::CreateBubble(this)->Show();
 

@@ -5,16 +5,12 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 
 #include "base/i18n/rtl.h"
-#include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -33,16 +29,13 @@
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
@@ -54,7 +47,6 @@
 using content::BrowserThread;
 using extensions::BundleInstaller;
 using extensions::Extension;
-using extensions::UnloadedExtensionInfo;
 
 class ExtensionInstalledBubbleBridge
     : public ExtensionInstalledBubble::Delegate {
@@ -328,65 +320,6 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
   return window;
 }
 
-- (bool)hasActivePageAction:(extensions::Command*)command {
-  extensions::CommandService* command_service =
-      extensions::CommandService::Get(browser_->profile());
-  if (type_ == extension_installed_bubble::kPageAction) {
-    if (extensions::CommandsInfo::GetPageActionCommand([self extension]) &&
-        command_service->GetPageActionCommand(
-            [self extension]->id(),
-            extensions::CommandService::ACTIVE,
-            command,
-            NULL)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-- (bool)hasActiveBrowserAction:(extensions::Command*)command {
-  extensions::CommandService* command_service =
-      extensions::CommandService::Get(browser_->profile());
-  if (type_ == extension_installed_bubble::kBrowserAction) {
-    if (extensions::CommandsInfo::GetBrowserActionCommand([self extension]) &&
-        command_service->GetBrowserActionCommand(
-            [self extension]->id(),
-            extensions::CommandService::ACTIVE,
-            command,
-            NULL)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-- (NSString*)installMessageForCurrentExtensionAction {
-  if (type_ == extension_installed_bubble::kPageAction) {
-    extensions::Command page_action_command;
-    if ([self hasActivePageAction:&page_action_command]) {
-      return l10n_util::GetNSStringF(
-          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
-          page_action_command.accelerator().GetShortcutText());
-    } else {
-      return l10n_util::GetNSString(
-          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO);
-    }
-  } else {
-    CHECK_EQ(extension_installed_bubble::kBrowserAction, type_);
-    extensions::Command browser_action_command;
-    if ([self hasActiveBrowserAction:&browser_action_command]) {
-      return l10n_util::GetNSStringF(
-          IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
-          browser_action_command.accelerator().GetShortcutText());
-    } else {
-      return l10n_util::GetNSString(
-          IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO);
-    }
-  }
-}
-
 // Calculate the height of each install message, resizing messages in their
 // frames to fit window width.  Return the new window height, based on the
 // total of all message heights.
@@ -459,8 +392,8 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
   // If type is browser/page action, include a special message about them.
   if (type_ == extension_installed_bubble::kBrowserAction ||
       type_ == extension_installed_bubble::kPageAction) {
-    [howToUse_ setStringValue:[self
-        installMessageForCurrentExtensionAction]];
+    [howToUse_ setStringValue:base::SysUTF16ToNSString(
+         installedBubble_->GetHowToUseDescription())];
     [howToUse_ setHidden:NO];
     [[howToUse_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -472,10 +405,8 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
 
   // If type is omnibox keyword, include a special message about the keyword.
   if (type_ == extension_installed_bubble::kOmniboxKeyword) {
-    [howToUse_ setStringValue:l10n_util::GetNSStringF(
-        IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-        base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(
-            [self extension])))];
+    [howToUse_ setStringValue:base::SysUTF16ToNSString(
+         installedBubble_->GetHowToUseDescription())];
     [howToUse_ setHidden:NO];
     [[howToUse_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -510,9 +441,7 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
     newWindowHeight += sync_promo_height;
   }
 
-  extensions::Command command;
-  if ([self hasActivePageAction:&command] ||
-      [self hasActiveBrowserAction:&command]) {
+  if (installedBubble_->has_command_keybinding()) {
     [manageShortcutLink_ setHidden:NO];
     [[manageShortcutLink_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -627,7 +556,6 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
     [promo_.get() setFrame:frame];
   }
 
-  extensions::Command command;
   if (![manageShortcutLink_ isHidden]) {
     NSRect manageShortcutFrame = [manageShortcutLink_ frame];
     manageShortcutFrame.origin.y = NSMinY(frame) - (
