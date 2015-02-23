@@ -143,6 +143,9 @@ def _CreateOptionParser():
                     action='store_true')
   parser.add_option('-z', '--compress', help='Compress the resulting trace '
                     'with gzip. ', action='store_true')
+  parser.add_option('-d', '--device', help='The Android device ID to use.'
+                    'If not specified, only 0 or 1 connected devices are '
+                    'supported.', default=None)
   return parser
 
 
@@ -162,9 +165,10 @@ When in doubt, just try out --trace-frame-viewer.
     logging.getLogger().setLevel(logging.DEBUG)
 
   devices = android_commands.GetAttachedDevices()
-  if len(devices) != 1:
+  if not options.device and len(devices) != 1:
     parser.error('Exactly 1 device must be attached.')
-  device = device_utils.DeviceUtils(devices[0])
+  device = device_utils.DeviceUtils(
+    next((d for d in devices if d == options.device), devices[0]))
   package_info = profiler.GetSupportedBrowsers()[options.browser]
 
   if options.chrome_categories in ['list', 'help']:
