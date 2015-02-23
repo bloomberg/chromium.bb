@@ -37,6 +37,5 @@
 
     readonly attribute boolean sysexEnabled;
 
-    attribute EventHandler onconnect;
-    attribute EventHandler ondisconnect;
+    attribute EventHandler onstatechange;
 };

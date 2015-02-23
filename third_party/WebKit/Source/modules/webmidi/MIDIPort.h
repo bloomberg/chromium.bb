@@ -58,11 +58,11 @@ public:
 
     MIDIAccess* midiAccess() const { return m_access; }
     bool isActive() const { return m_isActive; }
-    void setActiveState(bool isActive) { m_isActive = isActive; }
+    void setActiveState(bool isActive);
 
     DECLARE_VIRTUAL_TRACE();
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }

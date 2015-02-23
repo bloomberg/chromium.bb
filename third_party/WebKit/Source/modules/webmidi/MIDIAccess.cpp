@@ -106,28 +106,38 @@ MIDIOutputMap* MIDIAccess::outputs() const
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(isMainThread());
-    m_inputs.append(MIDIInput::create(this, id, manufacturer, name, version, isActive));
+    MIDIInput* port = MIDIInput::create(this, id, manufacturer, name, version, isActive);
+    m_inputs.append(port);
+    dispatchEvent(MIDIConnectionEvent::create(port));
 }
 
 void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, bool isActive)
 {
     ASSERT(isMainThread());
     unsigned portIndex = m_outputs.size();
-    m_outputs.append(MIDIOutput::create(this, portIndex, id, manufacturer, name, version, isActive));
+    MIDIOutput* port = MIDIOutput::create(this, portIndex, id, manufacturer, name, version, isActive);
+    m_outputs.append(port);
+    dispatchEvent(MIDIConnectionEvent::create(port));
 }
 
 void MIDIAccess::didSetInputPortState(unsigned portIndex, bool isActive)
 {
     ASSERT(isMainThread());
-    if (portIndex < m_inputs.size())
-        m_inputs[portIndex]->setActiveState(isActive);
+    if (portIndex >= m_inputs.size())
+        return;
+
+    m_inputs[portIndex]->setActiveState(isActive);
+    dispatchEvent(MIDIConnectionEvent::create(m_inputs[portIndex]));
 }
 
 void MIDIAccess::didSetOutputPortState(unsigned portIndex, bool isActive)
 {
     ASSERT(isMainThread());
-    if (portIndex < m_outputs.size())
-        m_outputs[portIndex]->setActiveState(isActive);
+    if (portIndex >= m_outputs.size())
+        return;
+
+    m_outputs[portIndex]->setActiveState(isActive);
+    dispatchEvent(MIDIConnectionEvent::create(m_outputs[portIndex]));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)

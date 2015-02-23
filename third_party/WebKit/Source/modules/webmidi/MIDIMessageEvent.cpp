@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "modules/webmidi/MIDIMessageEvent.h"
+#include "modules/webmidi/MIDIMessageEventInit.h"
 
 namespace blink {
 

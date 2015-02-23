@@ -33,10 +33,10 @@
 
 #include "core/dom/DOMTypedArray.h"
 #include "modules/EventModules.h"
-#include "modules/webmidi/MIDIMessageEventInit.h"
 
 namespace blink {
 
+class MIDIMessageEventInit;
 
 class MIDIMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

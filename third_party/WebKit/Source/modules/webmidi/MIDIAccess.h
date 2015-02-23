@@ -64,8 +64,7 @@ public:
     MIDIInputMap* inputs() const;
     MIDIOutputMap* outputs() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     bool sysexEnabled() const { return m_sysexEnabled; }
 

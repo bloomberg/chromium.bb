@@ -32,6 +32,7 @@
 #include "modules/webmidi/MIDIPort.h"
 
 #include "modules/webmidi/MIDIAccess.h"
+#include "modules/webmidi/MIDIConnectionEvent.h"
 
 namespace blink {
 
@@ -65,6 +66,12 @@ String MIDIPort::type() const
         ASSERT_NOT_REACHED();
     }
     return emptyString();
+}
+
+void MIDIPort::setActiveState(bool isActive)
+{
+    m_isActive = isActive;
+    dispatchEvent(MIDIConnectionEvent::create(this));
 }
 
 ExecutionContext* MIDIPort::executionContext() const

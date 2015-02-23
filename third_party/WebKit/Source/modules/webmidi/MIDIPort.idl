@@ -50,5 +50,5 @@ enum MIDIPortType {
     readonly attribute MIDIPortType type;
     readonly attribute DOMString version;
 
-    attribute EventHandler ondisconnect;
+    attribute EventHandler onstatechange;
 };
