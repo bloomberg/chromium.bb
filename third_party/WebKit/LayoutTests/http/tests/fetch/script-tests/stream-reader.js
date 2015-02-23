@@ -88,5 +88,29 @@ sequential_promise_test(function(t) {
       });
   }, 'read contents with ExclusiveStreamReader');
 
+sequential_promise_test(function(t) {
+    return fetch('/fetch/resources/progressive.php').then(function(res) {
+        assert_false(res.bodyUsed);
+        var reader = res.body.getReader();
+        assert_true(res.bodyUsed);
+        return res;
+      }).then(function(res) {
+        return res.text();
+      }).then(unreached_rejection(t), function() {
+        // text() should fail because bodyUsed is set.
+      });
+  }, 'acquiring a reader should set bodyUsed.');
+
+sequential_promise_test(function(t) {
+    return fetch('/fetch/resources/progressive.php').then(function(res) {
+        // We need to access body attribute to start the stream.
+        res.body;
+        assert_false(res.bodyUsed);
+        res.text();
+        assert_true(res.bodyUsed);
+        assert_throws({name: 'TypeError'}, function() { res.body.getReader() });
+      });
+  }, 'Setting bodyUsed means the body is locked.');
+
 sequential_promise_test_done();
 done();

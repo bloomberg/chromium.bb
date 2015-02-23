@@ -69,6 +69,8 @@ public:
     ExclusiveStreamReader* getReader(ExceptionState&);
     // Only ExclusiveStreamReader methods should call this function.
     void setReader(ExclusiveStreamReader*);
+
+    bool isLocked() const { return m_reader; }
     bool isLockedTo(const ExclusiveStreamReader* reader) const { return m_reader == reader; }
 
     bool hasPendingActivity() const override;
