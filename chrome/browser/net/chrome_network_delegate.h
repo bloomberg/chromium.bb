@@ -17,7 +17,6 @@
 #include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
-class ClientHints;
 class CookieSettings;
 class PrefService;
 
@@ -125,9 +124,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
     prerender_tracker_ = prerender_tracker;
   }
 
-  // Adds the Client Hints header to HTTP requests.
-  void SetEnableClientHints();
-
   // Causes |OnCanThrottleRequest| to always return false, for all
   // instances of this object.
   static void NeverThrottleRequests();
@@ -228,8 +224,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // set this variable once at start-up time.  It is effectively
   // static anyway since it is based on a command-line flag.
   static bool g_never_throttle_requests_;
-
-  scoped_ptr<ClientHints> client_hints_;
 
   bool first_request_;
 

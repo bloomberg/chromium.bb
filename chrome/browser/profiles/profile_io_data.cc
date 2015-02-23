@@ -1044,8 +1044,6 @@ void ProfileIOData::Init(
           NULL,
 #endif
           &enable_referrers_));
-  if (command_line.HasSwitch(switches::kEnableClientHints))
-    network_delegate->SetEnableClientHints();
 #if defined(ENABLE_EXTENSIONS)
   network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());

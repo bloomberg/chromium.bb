@@ -117,7 +117,6 @@ extern const char kEnableAppList[];
 extern const char kEnableAppsFileAssociations[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableBenchmarking[];
-extern const char kEnableClientHints[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableDevToolsExperiments[];

@@ -593,9 +593,6 @@ void IOThread::InitAsync() {
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_));
 
-  if (command_line.HasSwitch(switches::kEnableClientHints))
-    chrome_network_delegate->SetEnableClientHints();
-
 #if defined(ENABLE_EXTENSIONS)
   if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))
     chrome_network_delegate->NeverThrottleRequests();

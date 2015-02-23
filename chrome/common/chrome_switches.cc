@@ -398,9 +398,6 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
-// Enables client hints, which adds hints about browser state to HTTP requests.
-const char kEnableClientHints[]             = "enable-client-hints";
-
 // Enables the multi-level undo system for bookmarks.
 const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 
