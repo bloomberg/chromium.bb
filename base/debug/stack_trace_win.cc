@@ -152,10 +152,6 @@ class SymbolContext {
 
     init_error_ = ERROR_SUCCESS;
 
-    // Work around a mysterious hang on Windows XP.
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return;
-
     // When transferring the binaries e.g. between bots, path put
     // into the executable will get off. To still retrieve symbols correctly,
     // add the directory of the executable to symbol search path.
