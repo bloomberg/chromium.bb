@@ -179,39 +179,38 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     return;
 
   SkISize canvas_size;
-  if (hud_canvas_)
-    canvas_size = hud_canvas_->getDeviceSize();
+  if (hud_surface_)
+    canvas_size = hud_surface_->getCanvas()->getDeviceSize();
   else
     canvas_size.set(0, 0);
 
   if (canvas_size.width() != internal_content_bounds_.width() ||
       canvas_size.height() != internal_content_bounds_.height() ||
-      !hud_canvas_) {
+      !hud_surface_) {
     TRACE_EVENT0("cc", "ResizeHudCanvas");
 
-    bool opaque = false;
-    hud_canvas_ = make_scoped_ptr(
-        skia::CreateBitmapCanvas(internal_content_bounds_.width(),
-                                 internal_content_bounds_.height(), opaque));
+    hud_surface_ = skia::AdoptRef(SkSurface::NewRasterN32Premul(
+        internal_content_bounds_.width(), internal_content_bounds_.height()));
   }
 
   UpdateHudContents();
 
   {
     TRACE_EVENT0("cc", "DrawHudContents");
-    hud_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
-    hud_canvas_->save();
-    hud_canvas_->scale(internal_contents_scale_, internal_contents_scale_);
+    hud_surface_->getCanvas()->clear(SkColorSetARGB(0, 0, 0, 0));
+    hud_surface_->getCanvas()->save();
+    hud_surface_->getCanvas()->scale(internal_contents_scale_,
+                                     internal_contents_scale_);
 
-    DrawHudContents(hud_canvas_.get());
+    DrawHudContents(hud_surface_->getCanvas());
 
-    hud_canvas_->restore();
+    hud_surface_->getCanvas()->restore();
   }
 
   TRACE_EVENT0("cc", "UploadHudTexture");
   SkImageInfo info;
   size_t row_bytes = 0;
-  const void* pixels = hud_canvas_->peekPixels(&info, &row_bytes);
+  const void* pixels = hud_surface_->getCanvas()->peekPixels(&info, &row_bytes);
   DCHECK(pixels);
   DCHECK(info.colorType() == kN32_SkColorType);
   resource_provider->CopyToResource(resources_.back()->id(),
