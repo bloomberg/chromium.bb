@@ -156,8 +156,12 @@ void TextTrack::setKind(const AtomicString& newKind)
     AtomicString oldKind = kind();
     TrackBase::setKind(newKind);
 
-    if (mediaElement() && oldKind != kind())
-        mediaElement()->textTrackKindChanged(this);
+    // If kind changes from visual to non-visual and mode is 'showing', then force mode to 'hidden'.
+    // FIXME: This is not per spec. crbug.com/460923
+    if (oldKind != kind() && mode() == showingKeyword()) {
+        if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
+            setMode(hiddenKeyword());
+    }
 }
 
 void TextTrack::setMode(const AtomicString& mode)

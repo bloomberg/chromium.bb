@@ -1184,12 +1184,6 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
     textTracks()->scheduleChangeEvent();
 }
 
-void HTMLMediaElement::textTrackKindChanged(TextTrack* track)
-{
-    if (track->kind() != TextTrack::captionsKeyword() && track->kind() != TextTrack::subtitlesKeyword() && track->mode() == TextTrack::showingKeyword())
-        track->setMode(TextTrack::hiddenKeyword());
-}
-
 bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionIfInvalid)
 {
     if (!url.isValid()) {

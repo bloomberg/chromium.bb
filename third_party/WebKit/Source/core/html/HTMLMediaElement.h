@@ -207,7 +207,6 @@ public:
     double lastSeekTime() const { return m_lastSeekTime; }
     void textTrackReadyStateChanged(TextTrack*);
 
-    void textTrackKindChanged(TextTrack*);
     void textTrackModeChanged(TextTrack*);
 
     // EventTarget function.
