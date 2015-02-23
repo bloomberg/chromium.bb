@@ -79,9 +79,9 @@ void CronetUploadDataStreamDelegate::OnReadSucceeded(JNIEnv* env,
   DCHECK(bytes_read > 0 || (final_chunk && bytes_read == 0));
 
   buffer_ = nullptr;
-  DCHECK(network_task_runner_->PostTask(
+  network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&CronetUploadDataStreamAdapter::OnReadSuccess,
-                            adapter_, bytes_read, final_chunk)));
+                            adapter_, bytes_read, final_chunk));
 }
 
 void CronetUploadDataStreamDelegate::OnRewindSucceeded(JNIEnv* env,
