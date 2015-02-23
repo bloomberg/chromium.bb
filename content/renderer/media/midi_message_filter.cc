@@ -230,8 +230,9 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
   for (blink::WebMIDIAccessorClient* client : clients_waiting_session_queue_) {
     if (result == media::MIDI_OK) {
       // Add the client's input and output ports.
-      const bool active = true;
       for (const auto& info : inputs_) {
+        // TODO(toyoshim): Update blink to support complete MIDIPortState.
+        const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
         client->didAddInputPort(
             base::UTF8ToUTF16(info.id),
             base::UTF8ToUTF16(info.manufacturer),
@@ -241,6 +242,8 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
       }
 
       for (const auto& info : outputs_) {
+        // TODO(toyoshim): Update blink to support complete MIDIPortState.
+        const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
         client->didAddOutputPort(
             base::UTF8ToUTF16(info.id),
             base::UTF8ToUTF16(info.manufacturer),
@@ -258,13 +261,27 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
 void MidiMessageFilter::HandleAddInputPort(media::MidiPortInfo info) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   inputs_.push_back(info);
-  // TODO(toyoshim): Notify to clients that were already added.
+  const base::string16 id = base::UTF8ToUTF16(info.id);
+  const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
+  const base::string16 name = base::UTF8ToUTF16(info.name);
+  const base::string16 version = base::UTF8ToUTF16(info.version);
+  // TODO(toyoshim): Update blink to support complete MIDIPortState.
+  const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
+  for (auto client : clients_)
+    client->didAddInputPort(id, manufacturer, name, version, active);
 }
 
 void MidiMessageFilter::HandleAddOutputPort(media::MidiPortInfo info) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   outputs_.push_back(info);
-  // TODO(toyoshim): Notify to clients that were already added.
+  const base::string16 id = base::UTF8ToUTF16(info.id);
+  const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
+  const base::string16 name = base::UTF8ToUTF16(info.name);
+  const base::string16 version = base::UTF8ToUTF16(info.version);
+  // TODO(toyoshim): Update blink to support complete MIDIPortState.
+  const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
+  for (auto client : clients_)
+    client->didAddOutputPort(id, manufacturer, name, version, active);
 }
 
 void MidiMessageFilter::HandleDataReceived(uint32 port,
@@ -289,14 +306,20 @@ void MidiMessageFilter::HandleSetInputPortState(uint32 port,
                                                 media::MidiPortState state) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   inputs_[port].state = state;
-  // TODO(toyoshim): Notify to all clients.
+  // TODO(toyoshim): Update blink to support complete MIDIPortState.
+  const bool active = state != media::MIDI_PORT_DISCONNECTED;
+  for (auto client : clients_)
+    client->didSetInputPortState(port, active);
 }
 
 void MidiMessageFilter::HandleSetOutputPortState(uint32 port,
                                                  media::MidiPortState state) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   outputs_[port].state = state;
-  // TODO(toyoshim): Notify to all clients.
+  // TODO(toyoshim): Update blink to support complete MIDIPortState.
+  const bool active = state != media::MIDI_PORT_DISCONNECTED;
+  for (auto client : clients_)
+    client->didSetOutputPortState(port, active);
 }
 
 }  // namespace content
