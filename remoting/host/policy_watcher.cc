@@ -228,7 +228,7 @@ void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 
   std::string path;
   std::string error;
-  bool changed;
+  bool changed = false;
   const policy::Schema* schema = GetPolicySchema();
   if (schema->Normalize(policy_dict.get(), strategy, &path, &error, &changed)) {
     if (changed) {
