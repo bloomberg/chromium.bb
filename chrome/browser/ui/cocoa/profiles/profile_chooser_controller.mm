@@ -1607,7 +1607,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Profile name, centered.
   bool editingAllowed = !isGuestSession_ &&
-                        !browser_->profile()->IsSupervised();
+                        !browser_->profile()->IsLegacySupervised();
   base::scoped_nsobject<EditableProfileNameButton> profileName(
       [[EditableProfileNameButton alloc]
           initWithFrame:NSMakeRect(xOffset,
