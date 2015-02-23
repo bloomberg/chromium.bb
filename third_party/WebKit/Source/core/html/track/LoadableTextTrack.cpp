@@ -29,8 +29,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTrackElement.h"
-#include "core/html/track/CueTimeline.h"
-#include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 
 namespace blink {
@@ -120,19 +118,10 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTCue>> newCues;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> newCues;
     m_loader->getNewCues(newCues);
 
-    if (!m_cues)
-        m_cues = TextTrackCueList::create();
-
-    for (size_t i = 0; i < newCues.size(); ++i) {
-        newCues[i]->setTrack(this);
-        m_cues->add(newCues[i].release());
-    }
-
-    if (cueTimeline() && mode() != disabledKeyword())
-        cueTimeline()->addCues(this, m_cues.get());
+    addListOfCues(newCues);
 }
 
 void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadingFailed)

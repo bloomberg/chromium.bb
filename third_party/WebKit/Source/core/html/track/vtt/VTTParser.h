@@ -105,7 +105,7 @@ public:
     void flush();
 
     // Transfers ownership of last parsed cues to caller.
-    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue>>&);
+    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>&);
     void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>&);
 
     DECLARE_TRACE();
@@ -143,7 +143,7 @@ private:
 
     VTTParserClient* m_client;
 
-    WillBeHeapVector<RefPtrWillBeMember<VTTCue>> m_cueList;
+    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> m_cueList;
 
     WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> m_regionList;
 };

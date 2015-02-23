@@ -125,15 +125,16 @@ protected:
     virtual bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
     virtual AtomicString defaultKind() const override { return subtitlesKeyword(); }
 
-    CueTimeline* cueTimeline() const;
-
-    RefPtrWillBeMember<TextTrackCueList> m_cues;
+    void addListOfCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>&);
 
 private:
-    VTTRegionList* ensureVTTRegionList();
-    RefPtrWillBeMember<VTTRegionList> m_regions;
+    CueTimeline* cueTimeline() const;
 
     TextTrackCueList* ensureTextTrackCueList();
+    RefPtrWillBeMember<TextTrackCueList> m_cues;
+
+    VTTRegionList* ensureVTTRegionList();
+    RefPtrWillBeMember<VTTRegionList> m_regions;
 
     RawPtrWillBeMember<TextTrackList> m_trackList;
     AtomicString m_mode;

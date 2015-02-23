@@ -90,16 +90,16 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
 {
 }
 
-void VTTParser::getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue>>& outputCues)
+void VTTParser::getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& outputCues)
 {
-    outputCues = m_cueList;
-    m_cueList.clear();
+    ASSERT(outputCues.isEmpty());
+    outputCues.swap(m_cueList);
 }
 
 void VTTParser::getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& outputRegions)
 {
-    outputRegions = m_regionList;
-    m_regionList.clear();
+    ASSERT(outputRegions.isEmpty());
+    outputRegions.swap(m_regionList);
 }
 
 void VTTParser::parseBytes(const char* data, unsigned length)

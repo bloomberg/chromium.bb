@@ -63,8 +63,8 @@ public:
     enum State { Idle, Loading, Finished, Failed };
     State loadState() { return m_state; }
 
-    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<VTTCue> >& outputCues);
-    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion> >& outputRegions);
+    void getNewCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& outputCues);
+    void getNewRegions(WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& outputRegions);
 
     void trace(Visitor*);
 

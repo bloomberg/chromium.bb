@@ -210,6 +210,19 @@ void TextTrack::removeAllCues()
     m_cues = nullptr;
 }
 
+void TextTrack::addListOfCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>& listOfNewCues)
+{
+    TextTrackCueList* cues = ensureTextTrackCueList();
+
+    for (auto& newCue : listOfNewCues) {
+        newCue->setTrack(this);
+        cues->add(newCue.release());
+    }
+
+    if (cueTimeline() && mode() != disabledKeyword())
+        cueTimeline()->addCues(this, cues);
+}
+
 TextTrackCueList* TextTrack::activeCues() const
 {
     // 4.8.10.12.5 If the text track mode ... is not the text track disabled mode,
