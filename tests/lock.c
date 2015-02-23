@@ -30,6 +30,7 @@
  */
 
 #include <limits.h>
+#include <sys/ioctl.h>
 #include "drmtest.h"
 
 enum auth_event {

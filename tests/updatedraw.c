@@ -25,6 +25,7 @@
  *
  */
 
+#include <sys/ioctl.h>
 #include "drmtest.h"
 
 static void
