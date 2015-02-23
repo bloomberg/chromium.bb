@@ -20,6 +20,7 @@ class SingleThreadTaskRunner;
 namespace policy {
 class AsyncPolicyLoader;
 class ConfigurationPolicyProvider;
+class Schema;
 class SchemaRegistry;
 }  // namespace policy
 
@@ -32,12 +33,6 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   // Called first with all policies, and subsequently with any changed policies.
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
       PolicyUpdatedCallback;
-
-  // TODO(lukasza): PolicyErrorCallback never gets called by PolicyWatcher.
-  // Need to either 1) remove error-handling from PolicyWatcher or 2) add
-  // error-handling around PolicyService 2a) Add policy name/type validation via
-  // policy::Schema::Normalize.  2b) Consider exposing parsing errors from
-  // policy::ConfigDirPolicyLoader.
 
   // Called after detecting malformed policies.
   typedef base::Callback<void()> PolicyErrorCallback;
@@ -89,14 +84,11 @@ class PolicyWatcher : public policy::PolicyService::Observer,
   // relevant policies.
   void UpdatePolicies(const base::DictionaryValue* new_policy);
 
+  // Gets Chromoting schema stored inside |owned_schema_registry_|.
+  const policy::Schema* GetPolicySchema() const;
+
   // Signals policy error to the registered |PolicyErrorCallback|.
   void SignalPolicyError();
-
-  // Called whenever a transient error occurs during reading of policy files.
-  // This will increment a counter, and will trigger a call to
-  // SignalPolicyError() only after a threshold count is reached.
-  // The counter is reset whenever policy has been successfully read.
-  void SignalTransientPolicyError();
 
   // |policy_service_task_runner| is the task runner where it is safe
   // to call |policy_service_| methods and where we expect to get callbacks
@@ -123,11 +115,9 @@ class PolicyWatcher : public policy::PolicyService::Observer,
 
   PolicyUpdatedCallback policy_updated_callback_;
   PolicyErrorCallback policy_error_callback_;
-  int transient_policy_error_retry_counter_;
 
   scoped_ptr<base::DictionaryValue> old_policies_;
   scoped_ptr<base::DictionaryValue> default_values_;
-  scoped_ptr<base::DictionaryValue> bad_type_values_;
 
   policy::PolicyService* policy_service_;
 

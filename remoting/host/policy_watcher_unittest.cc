@@ -63,8 +63,6 @@ class PolicyWatcherTest : public testing::Test {
     policy_watcher_ =
         PolicyWatcher::CreateFromPolicyLoader(make_scoped_ptr(policy_loader_));
 
-    schema_ = policy::Schema::Wrap(policy::GetChromeSchemaData());
-
     nat_true_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal, true);
     nat_false_.SetBoolean(policy::key::kRemoteAccessHostFirewallTraversal,
                           false);
@@ -173,11 +171,9 @@ class PolicyWatcherTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SignalTransientErrorForTest() {
-    policy_watcher_->SignalTransientPolicyError();
+  const policy::Schema* GetPolicySchema() {
+    return policy_watcher_->GetPolicySchema();
   }
-
-  const policy::Schema* GetPolicySchema() { return &schema_; }
 
   const base::DictionaryValue& GetDefaultValues() {
     return *(policy_watcher_->default_values_);
@@ -223,8 +219,6 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue relay_false_;
   base::DictionaryValue port_range_full_;
   base::DictionaryValue port_range_empty_;
-
-  policy::Schema schema_;
 
  private:
   void SetDefaults(base::DictionaryValue& dict) {
@@ -281,9 +275,8 @@ TEST_F(PolicyWatcherTest, NatFalse) {
   StartWatching();
 }
 
-TEST_F(PolicyWatcherTest, NatOne) {
-  EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(&nat_false_others_default_)));
+TEST_F(PolicyWatcherTest, NatWrongType) {
+  EXPECT_CALL(mock_policy_callback_, OnPolicyError());
 
   SetPolicies(nat_one_);
   StartWatching();
@@ -471,39 +464,6 @@ TEST_F(PolicyWatcherTest, UdpPortRange) {
   SetPolicies(port_range_empty_);
 }
 
-const int kMaxTransientErrorRetries = 5;
-
-TEST_F(PolicyWatcherTest, SingleTransientErrorDoesntTriggerErrorCallback) {
-  EXPECT_CALL(mock_policy_callback_, OnPolicyError()).Times(0);
-
-  StartWatching();
-  SignalTransientErrorForTest();
-}
-
-TEST_F(PolicyWatcherTest, MultipleTransientErrorsTriggerErrorCallback) {
-  EXPECT_CALL(mock_policy_callback_, OnPolicyError());
-
-  StartWatching();
-  for (int i = 0; i < kMaxTransientErrorRetries; i++) {
-    SignalTransientErrorForTest();
-  }
-}
-
-TEST_F(PolicyWatcherTest, PolicyUpdateResetsTransientErrorsCounter) {
-  testing::InSequence s;
-  EXPECT_CALL(mock_policy_callback_, OnPolicyUpdatePtr(testing::_));
-  EXPECT_CALL(mock_policy_callback_, OnPolicyError()).Times(0);
-
-  StartWatching();
-  for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
-    SignalTransientErrorForTest();
-  }
-  SetPolicies(nat_true_);
-  for (int i = 0; i < (kMaxTransientErrorRetries - 1); i++) {
-    SignalTransientErrorForTest();
-  }
-}
-
 TEST_F(PolicyWatcherTest, PolicySchemaAndPolicyWatcherShouldBeInSync) {
   // This test verifies that
   // 1) policy schema (generated out of policy_templates.json)
@@ -511,25 +471,25 @@ TEST_F(PolicyWatcherTest, PolicySchemaAndPolicyWatcherShouldBeInSync) {
   // 2) PolicyWatcher's code (i.e. contents of the |default_values_| field)
   // are kept in-sync.
 
-  std::set<std::string> expected_schema_keys;
+  std::map<std::string, base::Value::Type> expected_schema;
   for (base::DictionaryValue::Iterator i(GetDefaultValues()); !i.IsAtEnd();
        i.Advance()) {
-    expected_schema_keys.insert(i.key());
+    expected_schema[i.key()] = i.value().GetType();
   }
 #if defined(OS_WIN)
   // RemoteAccessHostMatchUsername is marked in policy_templates.json as not
   // supported on Windows and therefore is (by design) excluded from the schema.
-  expected_schema_keys.erase(policy::key::kRemoteAccessHostMatchUsername);
+  expected_schema.erase(policy::key::kRemoteAccessHostMatchUsername);
 #endif
 #if defined(NDEBUG)
   // Policy schema / policy_templates.json cannot differ between debug and
   // release builds so we compensate below to account for the fact that
   // PolicyWatcher::default_values_ does differ between debug and release.
-  expected_schema_keys.insert(
-      policy::key::kRemoteAccessHostDebugOverridePolicies);
+  expected_schema[policy::key::kRemoteAccessHostDebugOverridePolicies] =
+      base::Value::TYPE_STRING;
 #endif
 
-  std::set<std::string> actual_schema_keys;
+  std::map<std::string, base::Value::Type> actual_schema;
   const policy::Schema* schema = GetPolicySchema();
   ASSERT_TRUE(schema->valid());
   for (auto it = schema->GetPropertiesIterator(); !it.IsAtEnd(); it.Advance()) {
@@ -539,10 +499,29 @@ TEST_F(PolicyWatcherTest, PolicySchemaAndPolicyWatcherShouldBeInSync) {
       // policies, so we have to skip them here.
       continue;
     }
-    actual_schema_keys.insert(key);
+    actual_schema[key] = it.schema().type();
   }
 
-  EXPECT_THAT(actual_schema_keys, testing::ContainerEq(expected_schema_keys));
+  EXPECT_THAT(actual_schema, testing::ContainerEq(expected_schema));
+}
+
+TEST_F(PolicyWatcherTest, SchemaTypeCheck) {
+  const policy::Schema* schema = GetPolicySchema();
+  ASSERT_TRUE(schema->valid());
+
+  // Check one, random "string" policy to see if the type propagated correctly
+  // from policy_templates.json file.
+  const policy::Schema string_schema =
+      schema->GetKnownProperty("RemoteAccessHostDomain");
+  EXPECT_TRUE(string_schema.valid());
+  EXPECT_EQ(string_schema.type(), base::Value::Type::TYPE_STRING);
+
+  // And check one, random "boolean" policy to see if the type propagated
+  // correctly from policy_templates.json file.
+  const policy::Schema boolean_schema =
+      schema->GetKnownProperty("RemoteAccessHostRequireCurtain");
+  EXPECT_TRUE(boolean_schema.valid());
+  EXPECT_EQ(boolean_schema.type(), base::Value::Type::TYPE_BOOLEAN);
 }
 
 // Unit tests cannot instantiate PolicyWatcher on ChromeOS

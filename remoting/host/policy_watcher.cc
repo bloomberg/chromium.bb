@@ -42,12 +42,10 @@ namespace key = ::policy::key;
 namespace {
 
 // Copies all policy values from one dictionary to another, using values from
-// |default| if they are not set in |from|, or values from |bad_type_values| if
-// the value in |from| has the wrong type.
-scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
+// |default_values| if they are not set in |from|.
+scoped_ptr<base::DictionaryValue> CopyValuesAndAddDefaults(
     const base::DictionaryValue* from,
-    const base::DictionaryValue* default_values,
-    const base::DictionaryValue* bad_type_values) {
+    const base::DictionaryValue* default_values) {
   scoped_ptr<base::DictionaryValue> to(default_values->DeepCopy());
   for (base::DictionaryValue::Iterator i(*default_values); !i.IsAtEnd();
        i.Advance()) {
@@ -58,11 +56,7 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
       continue;
     }
 
-    // If the policy is the wrong type, use the value from |bad_type_values|.
-    if (!value->IsType(i.value().GetType())) {
-      CHECK(bad_type_values->Get(i.key(), &value));
-    }
-
+    CHECK(value->IsType(i.value().GetType()));
     to->Set(i.key(), value->DeepCopy());
   }
 
@@ -84,6 +78,18 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
 
 policy::PolicyNamespace GetPolicyNamespace() {
   return policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+}
+
+scoped_ptr<policy::SchemaRegistry> CreateSchemaRegistry() {
+  // TODO(lukasza): Schema below should ideally only cover Chromoting-specific
+  // policies (expecting perf and maintanability improvement, but no functional
+  // impact).
+  policy::Schema schema = policy::Schema::Wrap(policy::GetChromeSchemaData());
+
+  scoped_ptr<policy::SchemaRegistry> schema_registry(
+      new policy::SchemaRegistry());
+  schema_registry->RegisterComponent(GetPolicyNamespace(), schema);
+  return schema_registry.Pass();
 }
 
 }  // namespace
@@ -112,11 +118,9 @@ void PolicyWatcher::UpdatePolicies(
     const base::DictionaryValue* new_policies_raw) {
   DCHECK(CalledOnValidThread());
 
-  transient_policy_error_retry_counter_ = 0;
-
   // Use default values for any missing policies.
-  scoped_ptr<base::DictionaryValue> new_policies = CopyGoodValuesAndAddDefaults(
-      new_policies_raw, default_values_.get(), bad_type_values_.get());
+  scoped_ptr<base::DictionaryValue> new_policies =
+      CopyValuesAndAddDefaults(new_policies_raw, default_values_.get());
 
   // Find the changed policies.
   scoped_ptr<base::DictionaryValue> changed_policies(
@@ -141,16 +145,7 @@ void PolicyWatcher::UpdatePolicies(
 }
 
 void PolicyWatcher::SignalPolicyError() {
-  transient_policy_error_retry_counter_ = 0;
   policy_error_callback_.Run();
-}
-
-void PolicyWatcher::SignalTransientPolicyError() {
-  const int kMaxRetryCount = 5;
-  transient_policy_error_retry_counter_ += 1;
-  if (transient_policy_error_retry_counter_ >= kMaxRetryCount) {
-    SignalPolicyError();
-  }
 }
 
 PolicyWatcher::PolicyWatcher(
@@ -158,13 +153,15 @@ PolicyWatcher::PolicyWatcher(
     scoped_ptr<policy::PolicyService> owned_policy_service,
     scoped_ptr<policy::ConfigurationPolicyProvider> owned_policy_provider,
     scoped_ptr<policy::SchemaRegistry> owned_schema_registry)
-    : transient_policy_error_retry_counter_(0),
-      old_policies_(new base::DictionaryValue()),
+    : old_policies_(new base::DictionaryValue()),
       default_values_(new base::DictionaryValue()),
       policy_service_(policy_service),
       owned_schema_registry_(owned_schema_registry.Pass()),
       owned_policy_provider_(owned_policy_provider.Pass()),
       owned_policy_service_(owned_policy_service.Pass()) {
+  DCHECK(policy_service_);
+  DCHECK(owned_schema_registry_);
+
   // Initialize the default values for each policy.
   default_values_->SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
   default_values_->SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
@@ -186,13 +183,6 @@ PolicyWatcher::PolicyWatcher(
   default_values_->SetString(key::kRemoteAccessHostDebugOverridePolicies,
                              std::string());
 #endif
-
-  // Initialize the fall-back values to use for unreadable policies.
-  // For most policies these match the defaults.
-  bad_type_values_.reset(default_values_->DeepCopy());
-  bad_type_values_->SetBoolean(key::kRemoteAccessHostFirewallTraversal, false);
-  bad_type_values_->SetBoolean(key::kRemoteAccessHostAllowRelayedConnection,
-                               false);
 }
 
 PolicyWatcher::~PolicyWatcher() {
@@ -206,15 +196,50 @@ PolicyWatcher::~PolicyWatcher() {
   }
 }
 
+const policy::Schema* PolicyWatcher::GetPolicySchema() const {
+  return owned_schema_registry_->schema_map()->GetSchema(GetPolicyNamespace());
+}
+
 void PolicyWatcher::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                     const policy::PolicyMap& previous,
                                     const policy::PolicyMap& current) {
+  const char kPolicyNamePrefix[] = "RemoteAccessHost";
   scoped_ptr<base::DictionaryValue> policy_dict(new base::DictionaryValue());
   for (auto it = current.begin(); it != current.end(); ++it) {
-    // TODO(lukasza): Use policy::Schema::Normalize() for schema verification.
-    policy_dict->Set(it->first, it->second.value->DeepCopy());
+    const std::string& key = it->first;
+    const base::Value* value = it->second.value;
+
+    // Copying only Chromoting-specific policies helps avoid false alarms
+    // raised by Schema::Normalize below (such alarms shutdown the host).
+    // TODO(lukasza): Removing this somewhat brittle filtering will be possible
+    //                after having separate, Chromoting-specific schema.
+    if (key.find(kPolicyNamePrefix) != std::string::npos) {
+      policy_dict->Set(key, value->DeepCopy());
+    }
   }
-  UpdatePolicies(policy_dict.get());
+
+  // Allowing unrecognized policy names allows presence of
+  // 1) comments (i.e. JSON of the form: { "_comment": "blah", ... }),
+  // 2) policies intended for future/newer versions of the host,
+  // 3) policies not supported on all OS-s (i.e. RemoteAccessHostMatchUsername
+  //    is not supported on Windows and therefore policy_templates.json omits
+  //    schema for this policy on this particular platform).
+  auto strategy = policy::SCHEMA_ALLOW_UNKNOWN_TOPLEVEL;
+
+  std::string path;
+  std::string error;
+  bool changed;
+  const policy::Schema* schema = GetPolicySchema();
+  if (schema->Normalize(policy_dict.get(), strategy, &path, &error, &changed)) {
+    if (changed) {
+      LOG(WARNING) << "Unknown (unrecognized or unsupported) policy: " << path
+                   << ": " << error;
+    }
+    UpdatePolicies(policy_dict.get());
+  } else {
+    LOG(ERROR) << "Invalid policy contents: " << path << ": " << error;
+    SignalPolicyError();
+  }
 }
 
 void PolicyWatcher::OnPolicyServiceInitialized(policy::PolicyDomain domain) {
@@ -225,15 +250,7 @@ void PolicyWatcher::OnPolicyServiceInitialized(policy::PolicyDomain domain) {
 
 scoped_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoader(
     scoped_ptr<policy::AsyncPolicyLoader> async_policy_loader) {
-  // TODO(lukasza): Schema below should ideally only cover Chromoting-specific
-  // policies (expecting perf and maintanability improvement, but no functional
-  // impact).
-  policy::Schema schema = policy::Schema::Wrap(policy::GetChromeSchemaData());
-
-  scoped_ptr<policy::SchemaRegistry> schema_registry(
-      new policy::SchemaRegistry());
-  schema_registry->RegisterComponent(GetPolicyNamespace(), schema);
-
+  scoped_ptr<policy::SchemaRegistry> schema_registry = CreateSchemaRegistry();
   scoped_ptr<policy::AsyncPolicyProvider> policy_provider(
       new policy::AsyncPolicyProvider(schema_registry.get(),
                                       async_policy_loader.Pass()));
@@ -256,8 +273,8 @@ scoped_ptr<PolicyWatcher> PolicyWatcher::Create(
 #if defined(OS_CHROMEOS)
   // On Chrome OS the PolicyService is owned by the browser.
   DCHECK(policy_service);
-  return make_scoped_ptr(
-      new PolicyWatcher(policy_service, nullptr, nullptr, nullptr));
+  return make_scoped_ptr(new PolicyWatcher(policy_service, nullptr, nullptr,
+                                           CreateSchemaRegistry()));
 #else  // !defined(OS_CHROMEOS)
   DCHECK(!policy_service);
 
