@@ -101,8 +101,6 @@ String AccessibilityMediaControl::accessibilityDescription() const
         return queryString(WebLocalizedString::AXMediaUnMuteButton);
     case MediaPauseButton:
         return queryString(WebLocalizedString::AXMediaPauseButton);
-    case MediaStatusDisplay:
-        return queryString(WebLocalizedString::AXMediaStatusDisplay);
     case MediaCurrentTimeDisplay:
         return queryString(WebLocalizedString::AXMediaCurrentTimeDisplay);
     case MediaTimeRemainingDisplay:
@@ -135,8 +133,6 @@ String AccessibilityMediaControl::helpText() const
         return queryString(WebLocalizedString::AXMediaUnMuteButtonHelp);
     case MediaPauseButton:
         return queryString(WebLocalizedString::AXMediaPauseButtonHelp);
-    case MediaStatusDisplay:
-        return queryString(WebLocalizedString::AXMediaStatusDisplayHelp);
     case MediaCurrentTimeDisplay:
         return queryString(WebLocalizedString::AXMediaCurrentTimeDisplayHelp);
     case MediaTimeRemainingDisplay:
@@ -174,9 +170,6 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const
     case MediaShowClosedCaptionsButton:
     case MediaHideClosedCaptionsButton:
         return ButtonRole;
-
-    case MediaStatusDisplay:
-        return StaticTextRole;
 
     case MediaTimelineContainer:
         return GroupRole;
