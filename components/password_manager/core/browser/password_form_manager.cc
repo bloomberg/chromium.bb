@@ -411,6 +411,8 @@ bool PasswordFormManager::IsIgnorableChangePasswordForm() const {
 
 void PasswordFormManager::OnRequestDone(
     ScopedVector<PasswordForm> logins_result) {
+  preferred_match_ = nullptr;
+  STLDeleteValues(&best_matches_);
   const size_t logins_result_size = logins_result.size();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -419,88 +421,85 @@ void PasswordFormManager::OnRequestDone(
     logger->LogMessage(Logger::STRING_ON_REQUEST_DONE_METHOD);
   }
 
+  // First, compute scores for credentials in |login_result|.
+  std::vector<int> credential_scores;
+  credential_scores.reserve(logins_result.size());
   int best_score = 0;
-  // These credentials will be in the final result regardless of score.
-  std::vector<PasswordForm> credentials_to_keep;
-  for (auto& login_ptr : logins_result) {
-    scoped_ptr<PasswordForm> login(login_ptr);
-    login_ptr = nullptr;
-
-    if (ShouldIgnoreResult(*login))
+  for (const PasswordForm* login : logins_result) {
+    if (ShouldIgnoreResult(*login)) {
+      credential_scores.push_back(-1);
       continue;
+    }
 
-    // Score and update best matches.
     int current_score = ScoreResult(*login);
-    if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
-        (observed_form_.signon_realm == login->origin.spec()) &&
-        (current_score > 0) && (!login->blacklisted_by_user)) {
-      // This check is here so we can append empty path matches in the event
-      // they don't score as high as others and aren't added to best_matches_.
-      // This is most commonly imported firefox logins. We skip blacklisted
-      // ones because clearly we don't want to autofill them, and secondly
-      // because they only mean something when we have no other matches already
-      // saved in Chrome - in which case they'll make it through the regular
-      // scoring flow below by design. Note signon_realm == origin implies empty
-      // path logins_result, since signon_realm is a prefix of origin for HTML
-      // password forms.
-      // TODO(timsteele): Bug 1269400. We probably should do something more
-      // elegant for any shorter-path match instead of explicitly handling empty
-      // path matches.
-      credentials_to_keep.push_back(*login);
-    } else if (login->type == PasswordForm::TYPE_GENERATED) {
-      // Always keep generated passwords as part of the result set. If a user
-      // generates a password on a signup form, it should show on a login form
-      // even if they have a previous login saved.
-      // TODO(gcasto): We don't want to cut credentials that were saved on
-      // signup forms even if they weren't generated, but currently it's hard to
-      // distinguish between those forms and two different login forms on the
-      // same domain. Filed http://crbug.com/294468 to look into this.
-      credentials_to_keep.push_back(*login);
-    }
-
-    // End of exceptions, only interested in good-scoring candidates since now.
-    if (current_score < best_score) {
-      continue;
-    } else if (current_score == best_score) {
-      auto& best_match = best_matches_[login->username_value];
-      if (best_match == preferred_match_)
-        preferred_match_ = nullptr;
-      delete best_match;
-      preferred_match_ = login->preferred ? login.get() : preferred_match_;
-      best_match = login.release();
-    } else {  // current_score > best_score
+    if (current_score > best_score)
       best_score = current_score;
-      STLDeleteValues(&best_matches_);  // |login| tops the previous matches.
-      preferred_match_ = login->preferred ? login.get() : nullptr;
-      base::string16 username_value = login->username_value;
-      best_matches_[username_value] = login.release();
-    }
-    // |login| is just temporary, should no longer hold the credentials at this
-    // point.
-    DCHECK(!login);
+    credential_scores.push_back(current_score);
   }
-  logins_result.weak_clear();  // It contains just nulls, speed up destruction.
 
-  client_->AutofillResultsComputed();
-
-  // TODO(gcasto): Change this to check that best_matches_ is empty. This should
-  // be equivalent for the moment, but it's less clear and may not be
-  // equivalent in the future.
   if (best_score <= 0) {
     if (logger)
       logger->LogNumber(Logger::STRING_BEST_SCORE, best_score);
     return;
   }
 
-  for (std::vector<PasswordForm>::const_iterator it =
-           credentials_to_keep.begin();
-       it != credentials_to_keep.end(); ++it) {
-    // If we don't already have a result with the same username, add the
-    // lower-scored match (if it had equal score it would already be in
-    // best_matches_).
-    if (best_matches_.find(it->username_value) == best_matches_.end())
-      best_matches_[it->username_value] = new PasswordForm(*it);
+  // Start the |best_matches_| with the best-scoring normal credentials and save
+  // the worse-scoring "protected" ones for later.
+  ScopedVector<PasswordForm> protected_credentials;
+  for (size_t i = 0; i < logins_result.size(); ++i) {
+    if (credential_scores[i] < 0)
+      continue;
+    if (credential_scores[i] < best_score) {
+      // Empty path matches are most commonly imports from Firefox, and
+      // generally useful to autofill. Blacklisted entries are only meaningful
+      // in the absence of non-blacklisted entries, in which case they need no
+      // protection to become |best_matches_|. TODO(timsteele): Bug 1269400. We
+      // probably should do something more elegant for any shorter-path match
+      // instead of explicitly handling empty path matches.
+      bool is_credential_protected =
+          observed_form_.scheme == PasswordForm::SCHEME_HTML &&
+          StartsWithASCII("/", logins_result[i]->origin.path(), true) &&
+          credential_scores[i] > 0 && !logins_result[i]->blacklisted_by_user;
+      // Passwords generated on a signup form must show on a login form even if
+      // there are better-matching saved credentials. TODO(gcasto): We don't
+      // want to cut credentials that were saved on signup forms even if they
+      // weren't generated, but currently it's hard to distinguish between those
+      // forms and two different login forms on the same domain. Filed
+      // http://crbug.com/294468 to look into this.
+      is_credential_protected |=
+          logins_result[i]->type == PasswordForm::TYPE_GENERATED;
+
+      if (is_credential_protected) {
+        protected_credentials.push_back(logins_result[i]);
+        logins_result[i] = nullptr;
+      }
+      continue;
+    }
+
+    // If there is another best-score match for the same username, replace it.
+    // TODO(vabr): Spare the replacing and keep the first instead of the last
+    // candidate.
+    auto& best_match = best_matches_[logins_result[i]->username_value];
+    if (best_match == preferred_match_)
+      preferred_match_ = nullptr;
+    delete best_match;
+
+    best_match = logins_result[i];
+    logins_result[i] = nullptr;
+    preferred_match_ = best_match->preferred ? best_match : preferred_match_;
   }
+
+  // Add the protected results if we don't already have a result with the same
+  // username.
+  for (auto& protege : protected_credentials) {
+    auto& corresponding_best_match = best_matches_[protege->username_value];
+    if (!corresponding_best_match) {
+      corresponding_best_match = protege;
+      protege = nullptr;
+    }
+  }
+
+  client_->AutofillResultsComputed();
 
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
                        logins_result_size - best_matches_.size());
