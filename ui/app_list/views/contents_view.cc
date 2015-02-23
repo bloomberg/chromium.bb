@@ -466,17 +466,6 @@ gfx::Size ContentsView::GetPreferredSize() const {
 }
 
 void ContentsView::Layout() {
-  // The search box is contained in a widget so set the bounds of the widget
-  // rather than the SearchBoxView. In athena, the search box widget will be the
-  // same as the app list widget so don't move it.
-  views::Widget* search_box_widget = GetSearchBoxView()->GetWidget();
-  if (search_box_widget && search_box_widget != GetWidget()) {
-    gfx::Rect search_box_bounds = GetSearchBoxBoundsForState(GetActiveState());
-    search_box_widget->SetBounds(ConvertRectToWidget(
-        GetSearchBoxView()->GetViewBoundsForSearchBoxContentsBounds(
-            search_box_bounds)));
-  }
-
   // Immediately finish all current animations.
   pagination_model_.FinishAnimation();
 
@@ -510,6 +499,17 @@ void ContentsView::Layout() {
   if (current_page == start_page_index) {
     if (custom_page_view_)
       custom_page_view_->SetBoundsRect(GetCustomPageCollapsedBounds());
+  }
+
+  // The search box is contained in a widget so set the bounds of the widget
+  // rather than the SearchBoxView. In athena, the search box widget will be the
+  // same as the app list widget so don't move it.
+  views::Widget* search_box_widget = GetSearchBoxView()->GetWidget();
+  if (search_box_widget && search_box_widget != GetWidget()) {
+    gfx::Rect search_box_bounds = GetSearchBoxBoundsForState(GetActiveState());
+    search_box_widget->SetBounds(ConvertRectToWidget(
+        GetSearchBoxView()->GetViewBoundsForSearchBoxContentsBounds(
+            search_box_bounds)));
   }
 }
 
