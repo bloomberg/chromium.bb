@@ -7,9 +7,11 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -955,5 +957,19 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_ChromeOSConversions) {
   RunChromeOSConversionTest("keybinding/chromeos_conversions");
 }
 #endif  // OS_CHROMEOS
+
+// Make sure component extensions retain keybindings after removal then
+// re-adding.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
+
+  extensions::ExtensionSystem::Get(browser()->profile())
+      ->extension_service()
+      ->component_loader()
+      ->Remove("pkplfbidichfdicaijlchgnapepdginl");
+
+  ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
+}
 
 }  // namespace extensions

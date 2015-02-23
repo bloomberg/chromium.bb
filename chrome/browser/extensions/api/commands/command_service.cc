@@ -308,23 +308,22 @@ void CommandService::OnExtensionWillBeInstalled(
     bool is_update,
     bool from_ephemeral,
     const std::string& old_name) {
-  // Component extensions don't generate normal install and uninstall events so
-  // those are handled in OnExtensionLoaded.
-  if (extension->location() != Manifest::COMPONENT)
-    UpdateKeybindings(extension);
+  UpdateKeybindings(extension);
 }
 
 void CommandService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  RemoveKeybindingPrefs(extension->id(), std::string());
-}
+  // Adding a component extensions will only trigger install the first time on a
+  // clean profile or on a version increase (see
+  // ComponentLoader::AddComponentExtension). It will, however, always trigger
+  // an uninstall on removal. See http://crbug.com/458612. Isolate this case and
+  // ignore it.
+  if (reason == extensions::UNINSTALL_REASON_COMPONENT_REMOVED)
+    return;
 
-void CommandService::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                       const Extension* extension) {
-  if (extension->location() == Manifest::COMPONENT)
-    UpdateKeybindings(extension);
+  RemoveKeybindingPrefs(extension->id(), std::string());
 }
 
 void CommandService::UpdateKeybindingPrefs(const std::string& extension_id,

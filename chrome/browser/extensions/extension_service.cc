@@ -696,11 +696,12 @@ bool ExtensionService::UninstallExtension(
   // we don't do this.
   bool external_uninstall =
       (reason == extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
+      (reason == extensions::UNINSTALL_REASON_COMPONENT_REMOVED) ||
       (reason == extensions::UNINSTALL_REASON_REINSTALL) ||
       (reason == extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
       (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE) ||
       (reason == extensions::UNINSTALL_REASON_SYNC &&
-           extension->was_installed_by_custodian());
+       extension->was_installed_by_custodian());
   if (!external_uninstall &&
       (!by_policy->UserMayModifySettings(extension.get(), error) ||
        by_policy->MustRemainInstalled(extension.get(), error))) {
@@ -1395,7 +1396,7 @@ void ExtensionService::RemoveComponentExtension(
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension.get()));
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
-        extension.get(), extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT);
+        extension.get(), extensions::UNINSTALL_REASON_COMPONENT_REMOVED);
   }
 }
 

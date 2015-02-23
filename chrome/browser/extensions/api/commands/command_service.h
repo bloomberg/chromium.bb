@@ -201,8 +201,6 @@ class CommandService : public BrowserContextKeyedAPI,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const Extension* extension) override;
 
   // Updates keybindings for a given |extension|'s page action, browser action
   // and named commands. Assigns new keybindings and removes relinquished
