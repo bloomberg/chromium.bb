@@ -694,6 +694,8 @@ protected:
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutLayerModelObject& newPaintInvalidationContainer) override;
     virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
 
+    virtual bool hasNonCompositedScrollbars() const override final;
+
 private:
     void updateShapeOutsideInfoAfterStyleChange(const LayoutStyle&, const LayoutStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const LayoutStyle*);
@@ -755,8 +757,6 @@ private:
     mutable LayoutUnit m_intrinsicContentLogicalHeight;
 
     void inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect&) const;
-
-    bool hasNonCompositedScrollbars() const;
 
     LayoutRectOutsets m_marginBoxOutsets;
 

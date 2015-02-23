@@ -1182,6 +1182,8 @@ protected:
     virtual void incrementallyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking);
     void fullyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
+    virtual bool hasNonCompositedScrollbars() const { return false; }
+
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
     {

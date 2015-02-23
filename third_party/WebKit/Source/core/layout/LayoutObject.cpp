@@ -636,6 +636,11 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
     if (isSVG() || (isRenderBlockFlow() && toRenderBlockFlow(this)->firstLineBox()))
         return false;
 
+    // In case scrollbars got repositioned (which will typically happen if the layout object got
+    // resized), we cannot skip invalidation.
+    if (hasNonCompositedScrollbars())
+        return false;
+
     return rendererHasNoBoxEffect();
 }
 
