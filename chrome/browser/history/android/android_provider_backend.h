@@ -49,7 +49,7 @@ class AndroidProviderBackend {
                          HistoryDatabase* history_db,
                          ThumbnailDatabase* thumbnail_db,
                          HistoryClient* history_client,
-                         HistoryBackendNotifier* nofifier);
+                         HistoryBackendNotifier* notifier);
 
   ~AndroidProviderBackend();
 

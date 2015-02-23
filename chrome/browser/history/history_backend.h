@@ -172,12 +172,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // takes ownership of the callback pointer.
   //
   // |history_client| is used to determine bookmarked URLs when deleting and
-  // may be NULL.
+  // may be null.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(const base::FilePath& history_dir,
-                 Delegate* delegate,
-                 HistoryClient* history_client);
+  HistoryBackend(Delegate* delegate, HistoryClient* history_client);
 
   // Must be called after creation but before any objects are created. If this
   // fails, all other functions will fail as well. (Since this runs on another
@@ -211,7 +209,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Querying ------------------------------------------------------------------
 
   // Run the |callback| on the History thread.
-  // |callback| should handle the NULL database case.
+  // |callback| should handle the null database case.
   void ScheduleAutocomplete(const base::Callback<
       void(history::HistoryBackend*, history::URLDatabase*)>& callback);
 
@@ -729,7 +727,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // from our normal dependency-following method for performance reasons. The
   // logic lives here instead of ExpireHistoryBackend since it will cause
   // re-initialization of some databases (e.g. Thumbnails) that could fail.
-  // When these databases are not valid, our pointers must be NULL, so we need
+  // When these databases are not valid, our pointers must be null, so we need
   // to handle this type of operation to keep the pointers in sync.
   void DeleteAllHistory();
 
@@ -749,7 +747,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void DeleteFTSIndexDatabases();
 
   // Returns the HistoryClient, blocking until the bookmarks are loaded. This
-  // may return NULL during testing.
+  // may return null during testing.
   HistoryClient* GetHistoryClient();
 
   // Notify any observers of an addition to the visit database.
@@ -758,16 +756,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Data ----------------------------------------------------------------------
 
   // Delegate. See the class definition above for more information. This will
-  // be NULL before Init is called and after Cleanup, but is guaranteed
-  // non-NULL in between.
+  // be null before Init is called and after Cleanup, but is guaranteed
+  // non-null in between.
   scoped_ptr<Delegate> delegate_;
 
-  // Directory where database files will be stored.
+  // Directory where database files will be stored, empty until Init is called.
   base::FilePath history_dir_;
 
-  // The history/thumbnail databases. Either MAY BE NULL if the database could
-  // not be opened, all users must first check for NULL and return immediately
-  // if it is. The thumbnail DB may be NULL when the history one isn't, but not
+  // The history/thumbnail databases. Either may be null if the database could
+  // not be opened, all users must first check for null and return immediately
+  // if it is. The thumbnail DB may be null when the history one isn't, but not
   // vice-versa.
   scoped_ptr<HistoryDatabase> db_;
   bool scheduled_kill_db_;  // Database is being killed due to error.
@@ -811,7 +809,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // List of QueuedHistoryDBTasks to run;
   std::list<QueuedHistoryDBTask*> queued_history_db_tasks_;
 
-  // Used to determine if a URL is bookmarked; may be NULL.
+  // Used to determine if a URL is bookmarked; may be null.
   //
   // Use GetHistoryClient to access this, which makes sure the bookmarks are
   // loaded before returning.
@@ -822,11 +820,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   scoped_ptr<AndroidProviderBackend> android_provider_backend_;
 #endif
 
-  // Used to manage syncing of the typed urls datatype. This will be NULL
-  // before Init is called.
-  // TODO(sdefresne): turn TypedUrlSyncableService into a HistoryBackendObserver
-  // and remove this field since it is only used for forwarding notifications
-  // about URL visited, modified, deleted.
+  // Used to manage syncing of the typed urls datatype. This will be null before
+  // Init is called.
   scoped_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
 
   // Listens for the system being under memory pressure.

@@ -33,10 +33,6 @@
 #include "sync/api/syncable_service.h"
 #include "ui/base/page_transition_types.h"
 
-#if defined(OS_ANDROID)
-class AndroidHistoryProviderService;
-#endif
-
 class GURL;
 class PageUsageRequest;
 class SkBitmap;
@@ -81,9 +77,9 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   typedef std::vector<history::PageUsageData*> PageUsageDataList;
 
   // Must call Init after construction. The empty constructor provided only for
-  // unit tests. When using the full constructor, |history_client| and |profile|
-  // should only be null during testing, while |visit_delegate| may be null if
-  // the embedder use another way to track visited links.
+  // unit tests. When using the full constructor, |history_client| may only be
+  // null during testing, while |visit_delegate| may be null if the embedder use
+  // another way to track visited links.
   HistoryService();
   HistoryService(history::HistoryClient* history_client,
                  scoped_ptr<history::VisitDelegate> visit_delegate);
@@ -810,10 +806,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.
   bool backend_loaded_;
-
-  // Cached values from Init(), used whenever we need to reload the backend.
-  base::FilePath history_dir_;
-  bool no_db_;
 
   // The index used for quick history lookups.
   // TODO(mrossetti): Move in_memory_url_index out of history_service.

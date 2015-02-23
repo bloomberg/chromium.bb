@@ -289,8 +289,8 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(
-      temp_dir_.path(), new AndroidProviderBackendDelegate(), history_client_);
+  history_backend =
+      new HistoryBackend(new AndroidProviderBackendDelegate(), history_client_);
   history_backend->Init(std::string(), false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
@@ -427,8 +427,8 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(
-      temp_dir_.path(), new AndroidProviderBackendDelegate(), history_client_);
+  history_backend =
+      new HistoryBackend(new AndroidProviderBackendDelegate(), history_client_);
   history_backend->Init(std::string(), false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
@@ -1864,8 +1864,8 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(
-      temp_dir_.path(), new AndroidProviderBackendDelegate(), history_client_);
+  history_backend =
+      new HistoryBackend(new AndroidProviderBackendDelegate(), history_client_);
   history_backend->Init(std::string(), false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.path()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);

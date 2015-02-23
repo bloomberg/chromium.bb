@@ -132,9 +132,7 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
 
   // The backend will call this function if it is being destroyed so that we
   // release our reference.
-  void Cancel() {
-    history_backend_ = NULL;
-  }
+  void Cancel() { history_backend_ = nullptr; }
 
   void RunCommit() {
     if (history_backend_.get())
@@ -187,15 +185,13 @@ void QueuedHistoryDBTask::DoneRun() {
 
 // HistoryBackend --------------------------------------------------------------
 
-HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
-                               Delegate* delegate,
+HistoryBackend::HistoryBackend(Delegate* delegate,
                                HistoryClient* history_client)
     : delegate_(delegate),
-      history_dir_(history_dir),
       scheduled_kill_db_(false),
       expirer_(this, history_client),
       recent_redirects_(kMaxRedirectCount),
-      backend_destroy_message_loop_(NULL),
+      backend_destroy_message_loop_(nullptr),
       segment_queried_(false),
       history_client_(history_client) {
 }
@@ -336,7 +332,7 @@ SegmentID HistoryBackend::UpdateSegments(
       (transition_type & ui::PAGE_TRANSITION_FORWARD_BACK) == 0) {
     // If so, create or get the segment.
     std::string segment_name = db_->ComputeSegmentName(url);
-    URLID url_id = db_->GetRowForURL(url, NULL);
+    URLID url_id = db_->GetRowForURL(url, nullptr);
     if (!url_id)
       return 0;
 
@@ -583,14 +579,13 @@ void HistoryBackend::InitImpl(
   // In the rare case where the db fails to initialize a dialog may get shown
   // the blocks the caller, yet allows other messages through. For this reason
   // we only set db_ to the created database if creation is successful. That
-  // way other methods won't do anything as db_ is still NULL.
+  // way other methods won't do anything as db_ is still null.
 
   TimeTicks beginning_time = TimeTicks::Now();
 
   // Compute the file names.
-  DCHECK(history_dir_ == history_database_params.history_dir);
-  base::FilePath history_name =
-      history_database_params.history_dir.Append(history::kHistoryFilename);
+  history_dir_ = history_database_params.history_dir;
+  base::FilePath history_name = history_dir_.Append(history::kHistoryFilename);
   base::FilePath thumbnail_name = GetFaviconsFileName();
   base::FilePath archived_name = GetArchivedFileName();
 
@@ -612,7 +607,7 @@ void HistoryBackend::InitImpl(
     case sql::INIT_OK:
       break;
     case sql::INIT_FAILURE: {
-      // A NULL db_ will cause all calls on this object to notice this error
+      // A null db_ will cause all calls on this object to notice this error
       // and to not continue. If the error callback scheduled killing the
       // database, the task it posted has not executed yet. Try killing the
       // database now before we close it.
@@ -1056,7 +1051,7 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
   if (!db_)
     return;
 
-  URLID url_id = db_->GetRowForURL(url, NULL);
+  URLID url_id = db_->GetRowForURL(url, nullptr);
   if (!url_id)
     return;
   db_->DeleteKeywordSearchTermForURL(url_id);
@@ -1259,8 +1254,8 @@ void HistoryBackend::QueryRedirectsFrom(const GURL& from_url,
   if (!db_)
     return;
 
-  URLID from_url_id = db_->GetRowForURL(from_url, NULL);
-  VisitID cur_visit = db_->GetMostRecentVisitForURL(from_url_id, NULL);
+  URLID from_url_id = db_->GetRowForURL(from_url, nullptr);
+  VisitID cur_visit = db_->GetMostRecentVisitForURL(from_url_id, nullptr);
   if (!cur_visit)
     return;  // No visits for URL.
 
@@ -1273,8 +1268,8 @@ void HistoryBackend::QueryRedirectsTo(const GURL& to_url,
   if (!db_)
     return;
 
-  URLID to_url_id = db_->GetRowForURL(to_url, NULL);
-  VisitID cur_visit = db_->GetMostRecentVisitForURL(to_url_id, NULL);
+  URLID to_url_id = db_->GetRowForURL(to_url, nullptr);
+  VisitID cur_visit = db_->GetMostRecentVisitForURL(to_url_id, nullptr);
   if (!cur_visit)
     return;  // No visits for URL.
 
@@ -1455,8 +1450,8 @@ void HistoryBackend::GetFavicons(
     int icon_types,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
-  UpdateFaviconMappingsAndFetchImpl(NULL, icon_urls, icon_types, desired_sizes,
-                                    bitmap_results);
+  UpdateFaviconMappingsAndFetchImpl(nullptr, icon_urls, icon_types,
+                                    desired_sizes, bitmap_results);
 }
 
 void HistoryBackend::GetLargestFaviconForURL(
@@ -1598,7 +1593,7 @@ void HistoryBackend::MergeFavicon(
     return;
 
   favicon_base::FaviconID favicon_id =
-      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
+      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, nullptr);
 
   if (!favicon_id) {
     // There is no favicon at |icon_url|, create it.
@@ -1743,7 +1738,7 @@ void HistoryBackend::SetFavicons(const GURL& page_url,
   bool data_modified = false;
 
   favicon_base::FaviconID icon_id =
-      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
+      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, nullptr);
 
   if (!icon_id) {
     icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
@@ -1805,7 +1800,7 @@ void HistoryBackend::SetImportedFavicons(
   for (size_t i = 0; i < favicon_usage.size(); i++) {
     favicon_base::FaviconID favicon_id =
         thumbnail_db_->GetFaviconIDForFaviconURL(
-            favicon_usage[i].favicon_url, favicon_base::FAVICON, NULL);
+            favicon_usage[i].favicon_url, favicon_base::FAVICON, nullptr);
     if (!favicon_id) {
       // This favicon doesn't exist yet, so we create it using the given data.
       // TODO(pkotwicz): Pass in real pixel size.
@@ -1840,7 +1835,7 @@ void HistoryBackend::SetImportedFavicons(
         }
       } else {
         if (!thumbnail_db_->GetIconMappingsForPageURL(
-                *url, favicon_base::FAVICON, NULL)) {
+                *url, favicon_base::FAVICON, nullptr)) {
           // URL is present in history, update the favicon *only* if it is not
           // set already.
           thumbnail_db_->AddIconMapping(*url, favicon_id);
@@ -1982,10 +1977,8 @@ bool HistoryBackend::IsFaviconBitmapDataEqual(
     return false;
 
   scoped_refptr<base::RefCountedMemory> original_bitmap_data;
-  thumbnail_db_->GetFaviconBitmap(bitmap_id,
-                                  NULL,
-                                  &original_bitmap_data,
-                                  NULL);
+  thumbnail_db_->GetFaviconBitmap(bitmap_id, nullptr, &original_bitmap_data,
+                                  nullptr);
   return new_bitmap_data->Equals(original_bitmap_data);
 }
 
@@ -2234,7 +2227,7 @@ void HistoryBackend::ScheduleCommit() {
 void HistoryBackend::CancelScheduledCommit() {
   if (scheduled_commit_.get()) {
     scheduled_commit_->Cancel();
-    scheduled_commit_ = NULL;
+    scheduled_commit_ = nullptr;
   }
 }
 
@@ -2446,7 +2439,7 @@ void HistoryBackend::KillHistoryDatabase() {
 
   // The expirer keeps tabs on the active databases. Tell it about the
   // databases which will be closed.
-  expirer_.SetDatabases(NULL, NULL);
+  expirer_.SetDatabases(nullptr, nullptr);
 
   // Reopen a new transaction for |db_| for the sake of CloseAllDatabases().
   db_->BeginTransaction();

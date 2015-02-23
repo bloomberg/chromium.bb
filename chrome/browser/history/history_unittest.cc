@@ -136,8 +136,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   // Creates the HistoryBackend and HistoryDatabase on the current thread,
   // assigning the values to backend_ and db_.
   void CreateBackendAndDatabase() {
-    backend_ =
-        new HistoryBackend(history_dir_, new BackendDelegate(this), NULL);
+    backend_ = new HistoryBackend(new BackendDelegate(this), nullptr);
     backend_->Init(std::string(), false,
                    HistoryDatabaseParamsForPath(history_dir_));
     db_ = backend_->db_.get();

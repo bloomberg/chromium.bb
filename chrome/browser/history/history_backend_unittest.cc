@@ -250,8 +250,8 @@ class HistoryBackendTestBase : public testing::Test {
     if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                       &test_dir_))
       return;
-    backend_ = new HistoryBackend(
-        test_dir_, new HistoryBackendTestDelegate(this), &history_client_);
+    backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
+                                  &history_client_);
     backend_->Init(std::string(), false,
                    TestHistoryDatabaseParamsForPath(test_dir_));
   }
@@ -1564,8 +1564,8 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
-  backend_ = new HistoryBackend(
-      new_history_path, new HistoryBackendTestDelegate(this), &history_client_);
+  backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
+                                &history_client_);
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
@@ -2817,8 +2817,8 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
 
-  backend_ = new HistoryBackend(
-      new_history_path, new HistoryBackendTestDelegate(this), &history_client_);
+  backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
+                                &history_client_);
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();

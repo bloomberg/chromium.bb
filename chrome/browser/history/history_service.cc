@@ -31,7 +31,6 @@
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -194,7 +193,6 @@ HistoryService::HistoryService()
     : thread_(new base::Thread(kHistoryThreadName)),
       history_client_(nullptr),
       backend_loaded_(false),
-      no_db_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -205,7 +203,6 @@ HistoryService::HistoryService(
       visit_delegate_(visit_delegate.Pass()),
       history_client_(history_client),
       backend_loaded_(false),
-      no_db_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -939,27 +936,24 @@ bool HistoryService::Init(
     return false;
   }
 
-  history_dir_ = history_database_params.history_dir;
-  no_db_ = no_db;
-
   if (!languages.empty()) {
     // Do not create |in_memory_url_index_| when languages is empty (which
     // should only happens during testing).
-    in_memory_url_index_.reset(
-        new history::InMemoryURLIndex(this, history_dir_, languages));
+    in_memory_url_index_.reset(new history::InMemoryURLIndex(
+        this, history_database_params.history_dir, languages));
     in_memory_url_index_->Init();
   }
 
   // Create the history backend.
   scoped_refptr<HistoryBackend> backend(new HistoryBackend(
-      history_dir_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
-                                        base::ThreadTaskRunnerHandle::Get()),
+      new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
+                          base::ThreadTaskRunnerHandle::Get()),
       history_client_));
   history_backend_.swap(backend);
 
   ScheduleTask(PRIORITY_UI,
                base::Bind(&HistoryBackend::Init, history_backend_.get(),
-                          languages, no_db_, history_database_params));
+                          languages, no_db, history_database_params));
 
   if (visit_delegate_ && !visit_delegate_->Init(this))
     return false;

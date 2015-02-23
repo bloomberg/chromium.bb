@@ -6,6 +6,9 @@
 
 namespace history {
 
+HistoryClient::HistoryClient() {
+}
+
 void HistoryClient::BlockUntilBookmarksLoaded() {
 }
 
@@ -23,7 +26,4 @@ bool HistoryClient::ShouldReportDatabaseError() {
   return false;
 }
 
-HistoryClient::HistoryClient() {
-}
-
-}
+}  // namespace history
