@@ -662,15 +662,8 @@ def GetMacWinOrLinux():
   raise Error('Unknown platform: ' + sys.platform)
 
 
-def GetBuildtoolsPath():
-  """Returns the full path to the buildtools directory.
-  This is based on the root of the checkout containing the current directory."""
-
-  # Overriding the build tools path by environment is highly unsupported and may
-  # break without warning.  Do not rely on this for anything important.
-  override = os.environ.get('CHROMIUM_BUILDTOOLS_PATH')
-  if override is not None:
-    return override
+def GetPrimarySolutionPath():
+  """Returns the full path to the primary solution. (gclient_root + src)"""
 
   gclient_root = FindGclientRoot(os.getcwd())
   if not gclient_root:
@@ -691,9 +684,24 @@ def GetBuildtoolsPath():
 
   # Some projects' top directory is not named 'src'.
   source_dir_name = GetGClientPrimarySolutionName(gclient_root) or 'src'
-  buildtools_path = os.path.join(gclient_root, source_dir_name, 'buildtools')
+  return os.path.join(gclient_root, source_dir_name)
+
+
+def GetBuildtoolsPath():
+  """Returns the full path to the buildtools directory.
+  This is based on the root of the checkout containing the current directory."""
+
+  # Overriding the build tools path by environment is highly unsupported and may
+  # break without warning.  Do not rely on this for anything important.
+  override = os.environ.get('CHROMIUM_BUILDTOOLS_PATH')
+  if override is not None:
+    return override
+
+  primary_solution = GetPrimarySolutionPath()
+  buildtools_path = os.path.join(primary_solution, 'buildtools')
   if not os.path.exists(buildtools_path):
     # Buildtools may be in the gclient root.
+    gclient_root = FindGclientRoot(os.getcwd())
     buildtools_path = os.path.join(gclient_root, 'buildtools')
   return buildtools_path
 

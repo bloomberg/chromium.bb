@@ -36,6 +36,7 @@ from third_party import colorama
 from third_party import upload
 import breakpad  # pylint: disable=W0611
 import clang_format
+import dart_format
 import fix_encoding
 import gclient_utils
 import git_common
@@ -2894,6 +2895,26 @@ def CMDowners(parser, args):
       disable_color=options.no_color).run()
 
 
+def BuildGitDiffCmd(diff_type, upstream_commit, args, extensions):
+  """Generates a diff command."""
+  # Generate diff for the current branch's changes.
+  diff_cmd = ['diff', '--no-ext-diff', '--no-prefix', diff_type,
+              upstream_commit, '--' ]
+
+  if args:
+    for arg in args:
+      if os.path.isdir(arg):
+        diff_cmd.extend(os.path.join(arg, '*' + ext) for ext in extensions)
+      elif os.path.isfile(arg):
+        diff_cmd.append(arg)
+      else:
+        DieWithError('Argument "%s" is not a file or a directory' % arg)
+  else:
+    diff_cmd.extend('*' + ext for ext in extensions)
+
+  return diff_cmd
+
+
 @subcommand.usage('[files or directories to diff]')
 def CMDformat(parser, args):
   """Runs clang-format on the diff."""
@@ -2912,15 +2933,6 @@ def CMDformat(parser, args):
   if rel_base_path:
     os.chdir(rel_base_path)
 
-  # Generate diff for the current branch's changes.
-  diff_cmd = ['diff', '--no-ext-diff', '--no-prefix']
-  if opts.full:
-    # Only list the names of modified files.
-    diff_cmd.append('--name-only')
-  else:
-    # Only generate context-less patches.
-    diff_cmd.append('-U0')
-
   # Grab the merge-base commit, i.e. the upstream commit of the current
   # branch when it was created or the last time it was rebased. This is
   # to cover the case where the user may have called "git fetch origin",
@@ -2936,20 +2948,14 @@ def CMDformat(parser, args):
     DieWithError('Could not find base commit for this branch. '
                  'Are you in detached state?')
 
-  diff_cmd.append(upstream_commit)
-
-  # Handle source file filtering.
-  diff_cmd.append('--')
-  if args:
-    for arg in args:
-      if os.path.isdir(arg):
-        diff_cmd += [os.path.join(arg, '*' + ext) for ext in CLANG_EXTS]
-      elif os.path.isfile(arg):
-        diff_cmd.append(arg)
-      else:
-        DieWithError('Argument "%s" is not a file or a directory' % arg)
+  if opts.full:
+    # Only list the names of modified files.
+    clang_diff_type = '--name-only'
   else:
-    diff_cmd += ['*' + ext for ext in CLANG_EXTS]
+    # Only generate context-less patches.
+    clang_diff_type = '-U0'
+
+  diff_cmd = BuildGitDiffCmd(clang_diff_type, upstream_commit, args, CLANG_EXTS)
   diff_output = RunGit(diff_cmd)
 
   top_dir = os.path.normpath(
@@ -2961,18 +2967,20 @@ def CMDformat(parser, args):
   except clang_format.NotFoundError, e:
     DieWithError(e)
 
+  # Set to 2 to signal to CheckPatchFormatted() that this patch isn't
+  # formatted. This is used to block during the presubmit.
+  return_value = 0
+
   if opts.full:
     # diff_output is a list of files to send to clang-format.
     files = diff_output.splitlines()
-    if not files:
-      print "Nothing to format."
-      return 0
-    cmd = [clang_format_tool]
-    if not opts.dry_run and not opts.diff:
-      cmd.append('-i')
-    stdout = RunCommand(cmd + files, cwd=top_dir)
-    if opts.diff:
-      sys.stdout.write(stdout)
+    if files:
+      cmd = [clang_format_tool]
+      if not opts.dry_run and not opts.diff:
+        cmd.append('-i')
+      stdout = RunCommand(cmd + files, cwd=top_dir)
+      if opts.diff:
+        sys.stdout.write(stdout)
   else:
     env = os.environ.copy()
     env['PATH'] = str(os.path.dirname(clang_format_tool))
@@ -2991,9 +2999,29 @@ def CMDformat(parser, args):
     if opts.diff:
       sys.stdout.write(stdout)
     if opts.dry_run and len(stdout) > 0:
-      return 2
+      return_value = 2
 
-  return 0
+  # Build a diff command that only operates on dart files. dart's formatter
+  # does not have the nice property of only operating on modified chunks, so
+  # hard code full.
+  dart_diff_cmd = BuildGitDiffCmd('--name-only', upstream_commit,
+                                  args, ['.dart'])
+  dart_diff_output = RunGit(dart_diff_cmd)
+  if dart_diff_output:
+    try:
+      command = [dart_format.FindDartFmtToolInChromiumTree()]
+      if not opts.dry_run and not opts.diff:
+        command.append('-w')
+      command.extend(dart_diff_output.splitlines())
+
+      stdout = RunCommand(command, cwd=top_dir, env=env)
+      if opts.dry_run and stdout:
+        return_value = 2
+    except dart_format.NotFoundError as e:
+      print ('Unable to check dart code formatting. Dart SDK is not in ' +
+             'this checkout.')
+
+  return return_value
 
 
 def CMDlol(parser, args):
