@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/safe_json_parser.h"
@@ -28,11 +28,9 @@ namespace {
 bool g_load_in_process = false;
 
 std::string ReadFileOnBlockingThread(const base::FilePath& path) {
-  base::TimeTicks start = base::TimeTicks::Now();
+  SCOPED_UMA_HISTOGRAM_TIMER("ManagedUsers.Whitelist.ReadDuration");
   std::string contents;
   base::ReadFileToString(path, &contents);
-  UMA_HISTOGRAM_TIMES("ManagedUsers.Whitelist.ReadDuration",
-                      base::TimeTicks::Now() - start);
   return contents;
 }
 
