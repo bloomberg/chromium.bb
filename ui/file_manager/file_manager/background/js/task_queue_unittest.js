@@ -59,9 +59,14 @@ TestTask.prototype.notifyError = function() {
   this.notify(importer.TaskQueue.UpdateType.ERROR);
 };
 
-/** Sends a quick success notification. */
-TestTask.prototype.notifySuccess = function() {
-  this.notify(importer.TaskQueue.UpdateType.SUCCESS);
+/** Sends a quick completion notification. */
+TestTask.prototype.notifyComplete = function() {
+  this.notify(importer.TaskQueue.UpdateType.COMPLETE);
+};
+
+/** Sends a quick cancelled notification. */
+TestTask.prototype.notifyCanceled = function() {
+  this.notify(importer.TaskQueue.UpdateType.CANCELED);
 };
 
 /** Sends a quick progress notification. */
@@ -86,9 +91,9 @@ function testRunsTasks(callback) {
   var task0 = new TestTask('task0');
   var task1 = new TestTask('task1');
 
-  // Make the tasks call Task#notifySuccess when they are run.
-  task0.whenRun().then(function(task) { task.notifySuccess(); });
-  task1.whenRun().then(function(task) { task.notifySuccess(); });
+  // Make the tasks call Task#notifyComplete when they are run.
+  task0.whenRun().then(function(task) { task.notifyComplete(); });
+  task1.whenRun().then(function(task) { task.notifyComplete(); });
 
   // Enqueue both tasks, and then verify that they were run.
   queue.queueTask(task0);
@@ -121,7 +126,7 @@ function testOnActiveCalled(callback) {
 function testOnIdleCalled(callback) {
   var task = new TestTask('task0');
 
-  task.whenRun().then(function(task) { task.notifySuccess(); });
+  task.whenRun().then(function(task) { task.notifyComplete(); });
 
   // Make a promise that resolves when the idle callback is triggered
   // (i.e. after all queued tasks have finished running).
@@ -152,7 +157,7 @@ function testProgressUpdate(callback) {
           })
       .then(
           function(task) {
-            task.notifySuccess();
+            task.notifyComplete();
             return task;
           });
 
@@ -176,7 +181,7 @@ function testSuccessUpdate(callback) {
   var task = new TestTask('task0');
 
   // Get the task to report success when it's run.
-  task.whenRun().then(function(task) { task.notifySuccess(); });
+  task.whenRun().then(function(task) { task.notifyComplete(); });
 
   queue.queueTask(task);
 
@@ -184,7 +189,7 @@ function testSuccessUpdate(callback) {
     queue.setIdleCallback(
         function() {
           // Verify that the done callback was called.
-          assertEquals(1, updates[importer.TaskQueue.UpdateType.SUCCESS]);
+          assertEquals(1, updates[importer.TaskQueue.UpdateType.COMPLETE]);
           resolve();
         });
   });
@@ -197,7 +202,13 @@ function testErrorUpdate(callback) {
   var task = new TestTask('task0');
 
   // Get the task to report an error when it's run.
-  task.whenRun().then(function(task) { task.notifyError(); });
+  task.whenRun().then(
+      function(task) {
+        task.notifyError();
+        // Errors are not terminal; still need to signal task completion
+        // otherwise the test hangs.
+        task.notifyComplete();
+      });
 
   queue.queueTask(task);
 
@@ -211,4 +222,20 @@ function testErrorUpdate(callback) {
   });
 
   reportPromise(whenDone, callback);
+}
+
+function testOnTaskCancelled(callback) {
+  var task0 = new TestTask('task0');
+  var task1 = new TestTask('task1');
+
+  // Make the tasks call Task#notifyComplete when they are run.
+  task0.whenRun().then(function(task) {task.notifyCanceled(); });
+  task1.whenRun().then(function(task) {task.notifyComplete(); });
+
+  // Enqueue both tasks, and then verify that they were run.
+  queue.queueTask(task0);
+  queue.queueTask(task1);
+  reportPromise(
+      Promise.all([task0.whenRun(), task1.whenRun()]),
+      callback);
 }

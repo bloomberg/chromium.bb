@@ -109,8 +109,6 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
     item.id = task.taskId;
     // TODO(kenobi): Might need a different progress item type here.
     item.type = ProgressItemType.COPY;
-    item.message =
-        strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
     item.progressMax = task.totalBytes;
     item.cancelCallback = function() {
       task.requestCancel();
@@ -119,18 +117,20 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
 
   switch (updateType) {
     case UpdateType.PROGRESS:
-      item.progressValue = task.processedBytes;
       item.message =
           strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
-      break;
-    case UpdateType.SUCCESS:
+      item.progressValue = task.processedBytes;
+      item.state = ProgressItemState.PROGRESSING;
+    break;
+    case UpdateType.COMPLETE:
       item.message = '';
       item.progressValue = item.progressMax;
       item.state = ProgressItemState.COMPLETED;
       break;
     case UpdateType.ERROR:
-      item.message = '';
-      item.progressValue = item.progressMax;
+      item.message =
+          strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
+      item.progressValue = task.processedBytes;
       item.state = ProgressItemState.ERROR;
       break;
     case UpdateType.CANCELED:
@@ -337,7 +337,8 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
               return this.copy_(entry, destinationDirectory);
             }
           }.bind(this))
-      .then(completionCallback);
+      // Regardless of the result of this copy, push on to the next file.
+      .then(completionCallback, completionCallback);
 };
 
 /**
@@ -401,7 +402,12 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
   /** @this {importer.MediaImportHandler.ImportTask} */
   var onError = function(error) {
     this.cancelCallback_ = null;
-    this.onError_(error);
+    this.errorCount_++;
+    // Log the bytes as processed in spite of the error.  This ensures
+    // completion of the progress bar.
+    this.processedBytes_ -= currentBytes;
+    this.processedBytes_ += entry.size;
+    this.notify(importer.TaskQueue.UpdateType.ERROR);
     resolver.reject(error);
   };
 
@@ -474,18 +480,9 @@ importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
 
 /** @private */
 importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
-  this.notify(importer.TaskQueue.UpdateType.SUCCESS);
+  this.notify(importer.TaskQueue.UpdateType.COMPLETE);
   this.tracker_.send(metrics.ImportEvents.ENDED);
   this.sendImportStats_();
-};
-
-/**
- * @param {DOMError} error
- * @private
- */
-importer.MediaImportHandler.ImportTask.prototype.onError_ = function(error) {
-  this.notify(importer.TaskQueue.UpdateType.ERROR);
-  this.errorCount_++;
 };
 
 /**

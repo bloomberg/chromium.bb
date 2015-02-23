@@ -40,7 +40,7 @@ importer.TaskQueue = function() {
  */
 importer.TaskQueue.UpdateType = {
   PROGRESS: 'PROGRESS',
-  SUCCESS: 'SUCCESS',
+  COMPLETE: 'COMPLETE',
   ERROR: 'ERROR',
   CANCELED: 'CANCELED'
 };
@@ -103,7 +103,8 @@ importer.TaskQueue.prototype.onTaskUpdate_ = function(task, updateType) {
 
   // If the task update is a terminal one, move on to the next task.
   var UpdateType = importer.TaskQueue.UpdateType;
-  if (updateType === UpdateType.SUCCESS || updateType === UpdateType.ERROR) {
+  if (updateType === UpdateType.COMPLETE ||
+      updateType === UpdateType.CANCELED) {
     // Assumption: the currently running task is at the head of the queue.
     console.assert(this.tasks_[0] === task,
         'Only tasks that are at the head of the queue should be active');
@@ -212,7 +213,7 @@ importer.TaskQueue.BaseTask.prototype.run = function() {};
 importer.TaskQueue.BaseTask.prototype.notify = function(updateType, opt_data) {
   switch (updateType) {
     case importer.TaskQueue.UpdateType.CANCELED:
-    case importer.TaskQueue.UpdateType.SUCCESS:
+    case importer.TaskQueue.UpdateType.COMPLETE:
       this.finishedResolver_.resolve(updateType);
   }
 

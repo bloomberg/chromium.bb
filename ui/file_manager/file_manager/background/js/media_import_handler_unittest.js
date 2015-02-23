@@ -109,7 +109,7 @@ function testImportMedia(callback) {
              */
             function(updateType, task) {
               switch (updateType) {
-                case importer.TaskQueue.UpdateType.SUCCESS:
+                case importer.TaskQueue.UpdateType.COMPLETE:
                   resolve();
                   break;
                 case importer.TaskQueue.UpdateType.ERROR:
@@ -156,7 +156,7 @@ function testImportMediaWithDuplicateFilenames(callback) {
              */
             function(updateType, task) {
               switch (updateType) {
-                case importer.TaskQueue.UpdateType.SUCCESS:
+                case importer.TaskQueue.UpdateType.COMPLETE:
                   resolve();
                   break;
                 case importer.TaskQueue.UpdateType.ERROR:
@@ -204,7 +204,7 @@ function testKeepAwakeDuringImport(callback) {
               // Assert that keepAwake is set while the task is active.
               assertTrue(chrome.power.requestKeepAwakeStatus);
               switch (updateType) {
-                case importer.TaskQueue.UpdateType.SUCCESS:
+                case importer.TaskQueue.UpdateType.COMPLETE:
                   resolve();
                   break;
                 case importer.TaskQueue.UpdateType.ERROR:
@@ -247,7 +247,7 @@ function testUpdatesHistoryAfterImport(callback) {
              */
             function(updateType, task) {
               switch (updateType) {
-                case importer.TaskQueue.UpdateType.SUCCESS:
+                case importer.TaskQueue.UpdateType.COMPLETE:
                   resolve();
                   break;
                 case importer.TaskQueue.UpdateType.ERROR:
@@ -355,7 +355,7 @@ function testImportWithDuplicates(callback) {
              */
             function(updateType, task) {
               switch (updateType) {
-                case importer.TaskQueue.UpdateType.SUCCESS:
+                case importer.TaskQueue.UpdateType.COMPLETE:
                   resolve();
                   break;
                 case importer.TaskQueue.UpdateType.ERROR:
@@ -378,6 +378,62 @@ function testImportWithDuplicates(callback) {
     }
   });
 
+  reportPromise(
+      whenImportDone.then(
+        function() {
+          var copiedEntries = destinationFileSystem.root.getAllChildren();
+          assertEquals(EXPECTED_COPY_COUNT, copiedEntries.length);
+        }),
+      callback);
+
+  scanResult.finalize();
+}
+
+function testImportWithErrors(callback) {
+  var media = setupFileSystem([
+    '/DCIM/photos0/IMG00001.jpg',
+    '/DCIM/photos0/IMG00002.jpg',
+    '/DCIM/photos0/IMG00003.jpg',
+    '/DCIM/photos1/IMG00004.jpg',
+    '/DCIM/photos1/IMG00005.jpg',
+    '/DCIM/photos1/IMG00006.jpg'
+  ]);
+
+  /** @const {number} */
+  var EXPECTED_COPY_COUNT = 5;
+
+  var scanResult = new TestScanResult(media);
+  var importTask = mediaImporter.importFromScanResult(
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              if (updateType === importer.TaskQueue.UpdateType.COMPLETE) {
+                resolve();
+              }
+            });
+      });
+
+  // Simulate an error after 3 imports.
+  var copyCount = 0;
+  importTask.addObserver(function(updateType) {
+    if (updateType ===
+        importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
+      copyCount++;
+      if (copyCount === 3) {
+        mockCopier.simulateOneError();
+      }
+    }
+  });
+
+  // Verify that the error didn't result in only 3 files being imported.
   reportPromise(
       whenImportDone.then(
         function() {
@@ -415,6 +471,8 @@ function MockCopyTo() {
   // Replace with test function.
   fileOperationUtil.copyTo = this.copyTo_.bind(this);
 
+  this.simulateError_ = false;
+
   this.entryChangedCallback_ = null;
   this.progressCallback_ = null;
   this.successCallback_ = null;
@@ -429,6 +487,13 @@ function MockCopyTo() {
  * }}
  */
 MockCopyTo.CopyInfo;
+
+/**
+ * Makes the mock copier simulate an error the next time copyTo_ is called.
+ */
+MockCopyTo.prototype.simulateOneError = function() {
+  this.simulateError_ = true;
+};
 
 /**
  * A mock to replace fileOperationUtil.copyTo.  See the original for details.
@@ -447,6 +512,12 @@ MockCopyTo.prototype.copyTo_ = function(source, parent, newName,
   this.progressCallback_ = progressCallback;
   this.successCallback_ = successCallback;
   this.errorCallback_ = errorCallback;
+
+  if (this.simulateError_) {
+    this.simulateError_ = false;
+    this.errorCallback_(new Error('test error'));
+    return;
+  }
 
   // Log the copy, then copy the file.
   this.copiedFiles.push({
