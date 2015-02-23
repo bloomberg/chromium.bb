@@ -7,7 +7,7 @@ PASS context.state is "suspended"
 PASS p1 = context.suspend() did not throw exception.
 PASS [object Object] is an instance of function Promise() { [native code] }
 PASS context.suspend() was correctly rejected for an offline context
-PASS p1 = context.resume() did not throw exception.
+PASS p2 = context.resume() did not throw exception.
 PASS [object Object] is an instance of function Promise() { [native code] }
 PASS context.state is "suspended"
 PASS context.resume() was correctly rejected for an offline context

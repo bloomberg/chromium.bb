@@ -1,146 +1,178 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Test AudioContext.close()</title>
-    <script src="resources/compatibility.js"></script>
-    <script src="resources/audio-testing.js"></script>
-    <script src="../resources/js-test.js"></script>
-  </head>
+<head>
+  <title>Test AudioContext.close()</title>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+</head>
 
-  <body>
-    <script>
-      description("Basic functionality test of closing an AudioContext");
+<body>
+  <script>
+    description("Basic functionality test of closing an AudioContext");
+    window.jsTestIsAsync = true;
 
-      var context;
-      var offline;
-      var osc;
-      var gain;
-      var promise1;
-      var promise2;
-      var offlinePromise;
-      var wave = new Float32Array(1);
+    var context;
+    var offline;
+    var osc;
+    var gain;
+    var promise1;
+    var promise2;
+    var offlinePromise;
+    var wave = new Float32Array(1);
+    
+    var audit = Audit.createTaskRunner();
+
+    // Task: test online context (1).
+    audit.defineTask('test-online-context-1', function (done) {
+
+      // Create a context and verify that the various states are correct and 
+      // that close() exists.
+      shouldNotThrow("context = new AudioContext()");
+      shouldBeEqualToString("context.state", "running");
+
+      // Create gain and oscillator for testing later.
+      shouldNotThrow("osc = context.createOscillator()");
+      shouldNotThrow("gain = context.createGain()");
+      shouldNotThrow("gain.connect(context.destination)");
+
+      // Close the context.  When the promise is resolved, continue the next
+      // test task.
+      context.close().then(
+        function () {
+          testPassed("context.close() was correctly resolved");
+        }, 
+        function () {
+          testFailed("context.close() was erroneously rejected");
+        }
+      ).then(done);
+
+    });
+
+    // Task: test online context (2).
+    audit.defineTask('test-online-context-2', function (done) {
+
+      // Context is closed, so verify that we cannot create any more nodes, 
+      // nor connect any.
+      shouldThrow("context.createAnalyser()");
+      shouldThrow("context.createBiquadFilter()");
+
+      // createBuffer is an exception because it's not really tied in any way 
+      // to an audio context. And it's useful to be able to create a buffer 
+      // inside the oncomplete event of an offline context to use for testing 
+      // purposes.
+      shouldNotThrow("context.createBuffer(1, 1, 48000)");
+
+      shouldThrow("context.createBufferSource()");
+      shouldThrow("context.createChannelMerger()");
+      shouldThrow("context.createChannelSplitter()");
+      shouldThrow("context.createConvolver()");
+      shouldThrow("context.createDelay()");
+      shouldThrow("context.createDynamicsCompressor()");
+      shouldThrow("context.createGain()");
+      shouldThrow("context.createOscillator()");
+      shouldThrow("context.createPanner()");
+      shouldThrow("context.createPeriodicWave(wave, wave)");
+      shouldThrow("context.createScriptProcessor()");
+      shouldThrow("context.createStereoPanner()");
+      shouldThrow("context.createWaveShaper()");
+
+      shouldThrow("osc.connect(gain)");
+      shouldNotThrow("gain.disconnect()");
+
+      // Can't resume a context that is closed (released).
+      context.resume().then(
+        function () {
+          testFailed("Attempt to resume a closed context erroneously succeeded");
+        },
+        function () {
+          testPassed("Attempt to resume a closed context was correctly rejected");
+        }
+      ).then(done);
+    });
+
+    // Task: test online context (3).
+    audit.defineTask('test-online-context-3', function (done) {
       
+      // Try closing the context again. The promise should be rejected.
+      context.close().then(
+        function () {
+          testFailed("Closing context again erroneously resolved successfully.");
+        },
+        function () {
+          testPassed("Closing context again correctly rejected promise.");
 
-      function runTest() {
-        window.jsTestIsAsync = true;
-        runOnlineTest();
-      }
+          // Finally, run GC. The context should be gone, but this seems 
+          // difficult to verify.
+          if (window.hasOwnProperty('GCController')) {
+            asyncGC(function () {
+              shouldBeNull("context.destination");
+            });
+          } else {
+            shouldBeNull("context.destination");
+            testFailed("asyncGC test not run");
+          }
+        }
+      ).then(done);
+    });
+
+    // Task: test offline context (1).
+    audit.defineTask('test-offline-context-1', function (done) {
       
-      function runOnlineTest() {
-        // Create a context and verify that the various states are correct and that close() exists.
-        shouldNotThrow("context = new AudioContext()");
-        shouldBeEqualToString("context.state", "running");
+      // For an offline context, just check that if we try to close the context, 
+      // nothing happens except that the promise returned by close() is rejected.
+      shouldNotThrow("offline = new OfflineAudioContext(1, 1000, 48000)");
+      shouldBeEqualToString("offline.state", "suspended");
+      offline.close().then(
+        function () {
+          testFailed("Closing offline context erroneously resolved");
+        },
+        function () {
+          testPassed("Closing offline context correctly rejected");
+        }
+      ).then(done);
+    });
 
-        // Create gain and oscillator for testing later.
-        shouldNotThrow("osc = context.createOscillator()");
-        shouldNotThrow("gain = context.createGain()");
-        shouldNotThrow("gain.connect(context.destination)");
+    // Task: test offline context (2).
+    audit.defineTask('test-offline-context-2', function (done) {
+      
+      // Try closing again
+      offline.close().then(
+        function () {
+          testFailed("Closing offline context again erroneously resolved");
+        }, 
+        function () {
+          testPassed("Closing offline context again correctly rejected");
+        }
+      ).then(
+        function () {
 
-        // Close the context.  When the promise is resolved, continue online testing, and then run
-        // the offline tests.
-        context.close()
-               .then(function () {
-                       testPassed("context.close() was correctly resolved");
-                       continueOnlineTest();
-                     },
-                     function () {
-                       testFailed("context.close() was erroneously rejected");
-                     })
-               .then(runOfflineTest);
-      }
+          // Render the context, and check for a valid state
+          offline.oncomplete = function (event) {
+            shouldBeEqualToString("event.target.state", "closed");
+            done();
+          };
+          shouldNotThrow("offline.startRendering()");
+        }
+      );
 
-      function continueOnlineTest() {
-        // Context is released, so verify that we cannot create any more nodes, nor connect any.
-        shouldThrow("context.createAnalyser()");
-        shouldThrow("context.createBiquadFilter()");
-        // createBuffer is an exception because it's not really tied in any way to an audio
-        // context. And it's useful to be able to create a buffer inside the oncomplete event of an
-        // offline context to use for testing purposes.
-        shouldNotThrow("context.createBuffer(1, 1, 48000)");
-        shouldThrow("context.createBufferSource()");
-        shouldThrow("context.createChannelMerger()");
-        shouldThrow("context.createChannelSplitter()");
-        shouldThrow("context.createConvolver()");
-        shouldThrow("context.createDelay()");
-        shouldThrow("context.createDynamicsCompressor()");
-        shouldThrow("context.createGain()");
-        shouldThrow("context.createOscillator()");
-        shouldThrow("context.createPanner()");
-        shouldThrow("context.createPeriodicWave(wave, wave)");
-        shouldThrow("context.createScriptProcessor()");
-        shouldThrow("context.createStereoPanner()");
-        shouldThrow("context.createWaveShaper()");
+    });
 
-        shouldThrow("osc.connect(gain)");
-        shouldNotThrow("gain.disconnect()");
+    audit.defineTask('finish-test', function (done) {
+      done();
+      finishJSTest();
+    });
 
-        // Can't resume a context that is closed (released).
-        context.resume()
-               .then(function () {
-                       testFailed("Attempt to resume a closed context erroneously succeeded");
-                     },
-                     function () {
-                       testPassed("Attempt to resume a closed context was correctly rejected");
-                     })
-               .then(continueOnlineTest2);
-
-      }
-
-      function continueOnlineTest2() {
-        // Try closing the context again. The promise should be rejected.
-        context.close()
-               .then(function () {
-                       testFailed("Closing context again erroneously resolved successfully.");
-                     },
-                     function () {
-                       testPassed("Closing context again correctly rejected promise.");
-                       // Finally, run GC. The context should be gone, but this seems difficult to verify.
-                       if (window.hasOwnProperty('GCController')) {
-                         asyncGC(function () {
-                                   shouldBeNull("context.destination");
-                                 });
-                       } else {
-                         shouldBeNull("context.destination");
-                         testFailed("asyncGC test not run");
-                       }
-                     });
-      }
-
-      function runOfflineTest () {
-        // For an offline context, just check that if we try to close the context, nothing happens
-        // except that the promise returned by close() is rejected.
-        shouldNotThrow("offline = new OfflineAudioContext(1, 1000, 48000)");
-        shouldBeEqualToString("offline.state", "suspended");
-        offline.close()
-               .then(function () {
-                       testFailed("Closing offline context erroneously resolved");
-                     },
-                     function () {
-                       testPassed("Closing offline context correctly rejected");
-                     })
-               .then(continueOfflineTest);
-      }
-
-      function continueOfflineTest () {
-        // Try closing again
-        offline.close()
-               .then(function () {
-                       testFailed("Closing offline context again erroneously resolved");
-                     }, function () {
-                       testPassed("Closing offline context again correctly rejected");
-                     })
-               .then(function () {
-                       // Render the context, and check for a valid state
-                       offline.oncomplete = function (event) {
-                                              shouldBeEqualToString("offline.state", "closed");
-                                              finishJSTest();
-                                            };
-                       shouldNotThrow("offline.startRendering()");
-                     });
-      }
-
-      runTest();
-      successfullyParsed = true;
-    </script>
-  </body>
+    audit.runTasks(
+      'test-online-context-1', 
+      'test-online-context-2', 
+      'test-online-context-3',
+      'test-offline-context-1', 
+      'test-offline-context-2',
+      'finish-test'
+    );
+    
+    successfullyParsed = true;
+  </script>
+</body>
 </html>
