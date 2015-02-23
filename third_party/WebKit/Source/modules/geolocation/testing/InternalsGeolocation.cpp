@@ -44,9 +44,11 @@ namespace blink {
 
 void InternalsGeolocation::setGeolocationClientMock(Internals&, Document* document)
 {
-    ASSERT(document && document->frame());
-    GeolocationClientMock* client = new GeolocationClientMock();
+    ASSERT(document);
+    if (!document->frame())
+        return;
 
+    GeolocationClientMock* client = new GeolocationClientMock();
     for (Frame* childFrame = document->page()->mainFrame(); childFrame; childFrame = childFrame->tree().traverseNext()) {
         if (childFrame->isLocalFrame())
             GeolocationController::from(toLocalFrame(childFrame))->setClientForTest(client);
@@ -55,7 +57,10 @@ void InternalsGeolocation::setGeolocationClientMock(Internals&, Document* docume
 
 void InternalsGeolocation::setGeolocationPosition(Internals&, Document* document, double latitude, double longitude, double accuracy)
 {
-    ASSERT(document && document->frame());
+    ASSERT(document);
+    if (!document->frame())
+        return;
+
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
@@ -64,7 +69,10 @@ void InternalsGeolocation::setGeolocationPosition(Internals&, Document* document
 
 void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals&, Document* document, const String& message)
 {
-    ASSERT(document && document->frame());
+    ASSERT(document);
+    if (!document->frame())
+        return;
+
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
@@ -73,7 +81,10 @@ void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals&, Do
 
 void InternalsGeolocation::setGeolocationPermission(Internals&, Document* document, bool allowed)
 {
-    ASSERT(document && document->frame());
+    ASSERT(document);
+    if (!document->frame())
+        return;
+
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return;
@@ -82,7 +93,10 @@ void InternalsGeolocation::setGeolocationPermission(Internals&, Document* docume
 
 int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals&, Document* document)
 {
-    ASSERT(document && document->frame());
+    ASSERT(document);
+    if (!document->frame())
+        return -1;
+
     GeolocationClientMock* client = geolocationClient(document);
     if (!client)
         return -1;
@@ -91,9 +105,13 @@ int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals
 
 GeolocationClientMock* InternalsGeolocation::geolocationClient(Document* document)
 {
+    ASSERT(document);
+    if (!document->frame())
+        return nullptr;
+
     GeolocationController* controller = GeolocationController::from(document->frame());
     if (!controller->hasClientForTest())
-        return 0;
+        return nullptr;
     return static_cast<GeolocationClientMock*>(controller->client());
 }
 
