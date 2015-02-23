@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.view.ContextMenu;
 
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -61,9 +62,16 @@ public interface TabObserver {
     void onOverlayContentViewCoreRemoved(Tab tab, ContentViewCore content);
 
     /**
+     * Use onLoadUrl(Tab, LoadUrlParams, int)
+     * TODO(yfriedman): Remove this
+     */
+    @Deprecated
+    void onLoadUrl(Tab tab, String url, int loadType);
+
+    /**
      * Called when loadUrl is triggered on a a {@link Tab}.
      * @param tab      The notifying {@link Tab}.
-     * @param url      The url that is being loaded.
+     * @param params   The params describe the page being loaded.
      * @param loadType The type of load that was performed.
      *
      * @see TabLoadStatus#PAGE_LOAD_FAILED
@@ -71,7 +79,8 @@ public interface TabObserver {
      * @see TabLoadStatus#PARTIAL_PRERENDERED_PAGE_LOAD
      * @see TabLoadStatus#FULL_PRERENDERED_PAGE_LOAD
      */
-    void onLoadUrl(Tab tab, String url, int loadType);
+    void onLoadUrl(Tab tab, LoadUrlParams params, int loadType);
+
 
     /**
      * Called when a tab has started to load a page.

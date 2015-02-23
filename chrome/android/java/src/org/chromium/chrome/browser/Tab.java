@@ -781,7 +781,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     params.getIsRendererInitiated(), params.getIntentReceivedTimestamp());
 
             for (TabObserver observer : mObservers) {
-                observer.onLoadUrl(this, params.getUrl(), loadType);
+                observer.onLoadUrl(this, params, loadType);
             }
             return loadType;
         } finally {
