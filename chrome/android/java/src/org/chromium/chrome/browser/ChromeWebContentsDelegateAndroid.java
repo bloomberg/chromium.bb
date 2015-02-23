@@ -68,4 +68,7 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
             FindMatchRectsDetails findMatchRectsDetails, int index, RectF rect) {
         findMatchRectsDetails.rects[index] = rect;
     }
+
+    protected static native boolean nativeIsCapturingAudio(WebContents webContents);
+    protected static native boolean nativeIsCapturingVideo(WebContents webContents);
 }
