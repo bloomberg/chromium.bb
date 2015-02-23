@@ -48,7 +48,7 @@ DOMStorageArea::RateLimiter::RateLimiter(size_t desired_rate,
 }
 
 base::TimeDelta DOMStorageArea::RateLimiter::ComputeTimeNeeded() const {
-  return time_quantum_.multiply_by(samples_ / rate_);
+  return time_quantum_ * (samples_ / rate_);
 }
 
 base::TimeDelta DOMStorageArea::RateLimiter::ComputeDelayNeeded(
