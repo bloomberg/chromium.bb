@@ -75,13 +75,7 @@ function setUp() {
   importHistory = new importer.TestImportHistory();
   mediaScanner = new TestMediaScanner();
   destinationFileSystem = new MockFileSystem(destinationFactory);
-  destinationFactory = new Promise(
-      function(resolve, reject) {
-        resolve(destinationFileSystem.root);
-      }).then(
-          function(directory) {
-            return directory;
-          });
+  destinationFactory = Promise.resolve(destinationFileSystem.root);
   duplicateFinderFactory = new importer.TestDuplicateFinder.Factory();
 
   mediaImporter = new importer.MediaImportHandler(

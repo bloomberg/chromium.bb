@@ -433,7 +433,8 @@ FileManager.prototype = /** @struct */ {
             this.importController_ = new importer.ImportController(
                 new importer.RuntimeControllerEnvironment(
                     this,
-                    this.selectionHandler_),
+                    /** @type {!FileSelectionHandler} */ (
+                        this.selectionHandler_)),
                 /** @type {!importer.MediaScanner} */ (
                     this.mediaScanner_),
                 /** @type {!importer.ImportRunner} */ (

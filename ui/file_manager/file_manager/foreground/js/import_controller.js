@@ -781,9 +781,14 @@ importer.ScanManager.prototype.clearDirectoryScans = function() {
  * if none.
  */
 importer.ScanManager.prototype.getActiveScan = function() {
-  return this.selectionScan_ ||
-      this.directoryScans_[this.environment_.getCurrentDirectory().toURL()] ||
-      null;
+  if (!!this.selectionScan_) {
+    return this.selectionScan_;
+  }
+  var directory = this.environment_.getCurrentDirectory();
+  if (directory) {
+    return this.directoryScans_[directory.toURL()];
+  }
+  return null;
 };
 
 /**
@@ -792,9 +797,13 @@ importer.ScanManager.prototype.getActiveScan = function() {
  *     selection scan or the scan for the current directory.
  */
 importer.ScanManager.prototype.isActiveScan = function(scan) {
-  return scan === this.selectionScan_ ||
-      scan === this.directoryScans_[
-          this.environment_.getCurrentDirectory().toURL()];
+  if (scan === this.selectionScan_) {
+    return true;
+  }
+
+  var directory = this.environment_.getCurrentDirectory();
+  return !!directory &&
+      scan === this.directoryScans_[directory.toURL()];
 };
 
 /**
@@ -815,10 +824,14 @@ importer.ScanManager.prototype.getSelectionScan = function(entries) {
 /**
  * Returns a scan for the directory.
  *
- * @return {!importer.ScanResult}
+ * @return {importer.ScanResult}
  */
 importer.ScanManager.prototype.getCurrentDirectoryScan = function() {
   var directory = this.environment_.getCurrentDirectory();
+  if (!directory) {
+    return null;
+  }
+
   var url = directory.toURL();
   var scan = this.directoryScans_[url];
   if (!scan) {
@@ -847,7 +860,7 @@ importer.ControllerEnvironment.prototype.getSelection;
 
 /**
  * Returns the directory entry for the current directory.
- * @return {!DirectoryEntry}
+ * @return {DirectoryEntry}
  */
 importer.ControllerEnvironment.prototype.getCurrentDirectory;
 
@@ -929,6 +942,7 @@ importer.ControllerEnvironment.prototype.showImportDestination;
  * @implements {importer.ControllerEnvironment}
  *
  * @param {!FileManager} fileManager
+ * @param {!FileSelectionHandler} selectionHandler
  */
 importer.RuntimeControllerEnvironment =
     function(fileManager, selectionHandler) {
@@ -948,8 +962,7 @@ importer.RuntimeControllerEnvironment.prototype.getSelection =
 /** @override */
 importer.RuntimeControllerEnvironment.prototype.getCurrentDirectory =
     function() {
-  return /** @type {!DirectoryEntry} */ (
-      this.fileManager_.getCurrentDirectoryEntry());
+  return this.fileManager_.getCurrentDirectoryEntry();
 };
 
 /** @override */
@@ -991,8 +1004,7 @@ importer.RuntimeControllerEnvironment.prototype.addVolumeUnmountListener =
 /** @override */
 importer.RuntimeControllerEnvironment.prototype.getFreeStorageSpace =
     function() {
-  // NOTE: Checking Drive (instead of Downloads) actually returns
-  // the amount of available cloud storage space.
+  // Checking DOWNLOADS returns the amount of available local storage space.
   var localVolumeInfo =
       this.fileManager_.volumeManager.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DOWNLOADS);
@@ -1005,7 +1017,9 @@ importer.RuntimeControllerEnvironment.prototype.getFreeStorageSpace =
               if (stats && !chrome.runtime.lastError) {
                 resolve(stats.remainingSize);
               } else {
-                reject('Failed to ascertain available free space.');
+                reject('Failed to ascertain available free space: ' +
+                    chrome.runtime.lastError.message ||
+                    chrome.runtime.lastError);
               }
             });
       });
