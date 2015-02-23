@@ -657,10 +657,12 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
       }
     }
 
-    contents_->GetWebUI()->CallJavascriptFunction(
-        "appList.startPage.onAppListDoodleUpdated", *doodle_json,
-        base::StringValue(
-            UIThreadSearchTermsData(profile_).GoogleBaseURLValue()));
+    if (contents_ && contents_->GetWebUI()) {
+      contents_->GetWebUI()->CallJavascriptFunction(
+          "appList.startPage.onAppListDoodleUpdated", *doodle_json,
+          base::StringValue(
+              UIThreadSearchTermsData(profile_).GoogleBaseURLValue()));
+    }
   }
 
   // Check for a new doodle.
