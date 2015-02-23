@@ -146,6 +146,18 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
   syncer::ModelTypeSet disabled_types;
   std::string disabled_types_str =
       command_line.GetSwitchValueASCII(switches::kDisableSyncTypes);
+
+  // Disable sync types experimentally to measure impact on startup time.
+  // TODO(mlerman): Remove this after the experiment. crbug.com/454788
+  std::string disable_types_finch =
+      variations::GetVariationParamValue("LightSpeed", "DisableSyncPart");
+  if (!disable_types_finch.empty()) {
+    if (disabled_types_str.empty())
+      disabled_types_str = disable_types_finch;
+    else
+      disabled_types_str += ", " + disable_types_finch;
+  }
+
   disabled_types = syncer::ModelTypeSetFromString(disabled_types_str);
   return disabled_types;
 }
