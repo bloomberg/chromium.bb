@@ -179,7 +179,7 @@ class LoadingStateChangedDelegate : public WebContentsDelegate {
 };
 
 // See: http://crbug.com/298193
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_DidStopLoadingDetails DISABLED_DidStopLoadingDetails
 #else
 #define MAYBE_DidStopLoadingDetails DidStopLoadingDetails
