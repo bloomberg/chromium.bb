@@ -393,7 +393,7 @@ are declared in build/common.gypi.
         Camera
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Website Settings popup.">
-        MIDI full control
+        MIDI devices full control
       </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_STORAGE" desc="The label used for the local storage type in the Manage Sites settings.">
         Storage
@@ -13380,7 +13380,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <!-- Web MIDI messages -->
       <message name="IDS_MIDI_SYSEX_TAB_LABEL" desc="Label for MIDI system exclusive message on Content Settings dialog">
-        MIDI full control
+        MIDI devices full control
       </message>
       <message name="IDS_MIDI_SYSEX_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow a site to access MIDI devices with system exclusive messages.">
         Allow all sites to use system exclusive messages to access MIDI devices
