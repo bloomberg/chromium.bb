@@ -107,10 +107,6 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void didNavigateToPendingEntry() {
-    }
-
-    @CalledByNative
     public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, WebContents newWebContents) {
     }

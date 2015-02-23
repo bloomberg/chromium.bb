@@ -69,7 +69,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                            double load_progress) override;
   void RendererUnresponsive(content::WebContents* source) override;
   void RendererResponsive(content::WebContents* source) override;
-  void DidNavigateToPendingEntry(content::WebContents* source) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_frame_id,
                           const base::string16& frame_name,

@@ -216,15 +216,6 @@ void WebContentsDelegateAndroid::RendererResponsive(WebContents* source) {
   Java_WebContentsDelegateAndroid_rendererResponsive(env, obj.obj());
 }
 
-void WebContentsDelegateAndroid::DidNavigateToPendingEntry(
-    WebContents* source) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return;
-  Java_WebContentsDelegateAndroid_didNavigateToPendingEntry(env, obj.obj());
-}
-
 bool WebContentsDelegateAndroid::ShouldCreateWebContents(
     WebContents* web_contents,
     int route_id,

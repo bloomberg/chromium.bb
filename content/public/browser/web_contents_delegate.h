@@ -336,11 +336,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Invoked when a main fram navigation occurs.
   virtual void DidNavigateMainFramePostCommit(WebContents* source) {}
 
-  // Invoked when navigating to a pending entry. When invoked the
-  // NavigationController has configured its pending entry, but it has not yet
-  // been committed.
-  virtual void DidNavigateToPendingEntry(WebContents* source) {}
-
   // Returns a pointer to a service to manage JavaScript dialogs. May return
   // nullptr in which case dialogs aren't shown.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager(
