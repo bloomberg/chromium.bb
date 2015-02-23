@@ -340,8 +340,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
   SetCreditCardOverlayStrings(localized_strings);
 
   localized_strings->SetBoolean(
-      "enableAutofillWalletIntegration",
-      personal_data_->IsExperimentalWalletIntegrationEnabled());
+      "enableAutofillWalletIntegration", false);
   localized_strings->SetString(
       "manageWalletAddressesUrl",
       autofill::wallet::GetManageAddressesUrl(0).spec());
