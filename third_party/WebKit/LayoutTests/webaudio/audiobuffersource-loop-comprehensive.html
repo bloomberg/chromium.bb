@@ -9,10 +9,6 @@
 </head>
 
 <body>
-
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
 description("Tests AudioBufferSourceNode looping with a variety of loop points.");
 
@@ -136,14 +132,37 @@ var tests = [
   expected: [0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7] },
 
 // Start a loop with a duration longer than the buffer.  The output should be the data from frame 1
-// to 6, and then looping from 3 to 5 until 30 frames have been played.
-{ description: "loop from 3 -> 6 with offset 1 for 31 frames",
+// to 6, and then looping from 3 to 5 until 20 frames have been played.
+{ description: "loop from 3 -> 6 with offset 1 for 20 frames",
   loopStartFrame: 3,
   loopEndFrame: 6,
   playbackRate: 1,
   offsetFrame: 1,
-  durationFrames: 30,
-  expected: [1, 2, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3] },
+  renderFrames: 30,
+  durationFrames: 20,
+  expected: [1, 2, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      
+// Start a loop with a duration less than the length of the looping frames.  The output should be
+// the data from frame 1 to 3, and then stopping because duration = 3
+{ description: "loop from 3 -> 8 with offset 1 for 3 frames",
+  loopStartFrame: 3,
+  loopEndFrame: 8,
+  playbackRate: 1,
+  offsetFrame: 1,
+  durationFrames: 3,
+  renderFrames: 30,
+  expected: [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      
+// Start a loop with a duration less than the length of the looping frames.  The output should be
+// the data from frame 1 to 3, and then stopping because duration = 3
+{ description: "loop from 3 -> 8 with offset 7 for 3 frames",
+  loopStartFrame: 3,
+  loopEndFrame: 8,
+  playbackRate: 1,
+  offsetFrame: 7,
+  durationFrames: 3,
+  renderFrames: 30,
+  expected: [7, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
       
 ];
 
@@ -170,7 +189,19 @@ function runLoopTest(context, testNumber, test) {
     // Render each test one after the other, spaced apart by testSpacingSeconds.
     var startTime = testNumber * testSpacingSeconds;
 
-    if (test.renderFrames) {    
+    // If durationFrames is given, run the test for the specified duration.
+    if (test.durationFrames) {
+        if (!test.renderFrames) {
+            testFailed("renderFrames is required for test " + testNumber + ": " + test.description);
+        } else {
+            if (test.durationFrames > testSpacingFrames || test.durationFrames < 0) {
+                testFailed("Test " + testNumber
+                    + ": durationFrames (" + test.durationFrames + ") outside the range [0, "
+                    + testSpacingFrames + "]");
+            }
+            source.start(startTime, offset, test.durationFrames / context.sampleRate);
+        }
+    } else if (test.renderFrames) {    
         var duration = test.renderFrames / context.sampleRate;
         if (test.renderFrames > testSpacingFrames || test.renderFrames < 0) {
             testFailed("Test " + testNumber
@@ -179,24 +210,12 @@ function runLoopTest(context, testNumber, test) {
         }
         source.start(startTime, offset);
         source.stop(startTime + duration);
-    } else if (test.durationFrames) {
-        if (test.durationFrames > testSpacingFrames || test.durationFrames < 0) {
-            testFailed("Test " + testNumber
-                + ": durationFrames (" + test.durationFrames + ") outside the range [0, "
-                + testSpacingFrames + "]");
-        }
-        source.start(startTime, offset, test.durationFrames / context.sampleRate);
     } else {
-        testFailed("Test " + testNumber + " must specify one of renderFrames or durationFrames");
+        testFailed("Test " + testNumber + " must specify renderFrames and possibly durationFrames");
     }
 }
 
 function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
     window.jsTestIsAsync = true;
 
     // Create offline audio context.

@@ -405,7 +405,12 @@ void AudioBufferSourceNode::clampGrainParameters(const AudioBuffer* buffer)
 
     m_grainOffset = clampTo(m_grainOffset, 0.0, bufferDuration);
 
-    if (loop()) {
+    // If the duration was not explicitly given, use the buffer duration to set the grain
+    // duration. Otherwise, we want to use the user-specified value, of course.
+    if (!m_isDurationGiven)
+        m_grainDuration = bufferDuration - m_grainOffset;
+
+    if (m_isDurationGiven && loop()) {
         // We're looping a grain with a grain duration specified. Schedule the loop to stop after
         // grainDuration seconds after starting, possibly running the loop multiple times if
         // grainDuration is larger than the buffer duration. The net effect is as if the user called
@@ -430,10 +435,15 @@ void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState)
 
 void AudioBufferSourceNode::start(double when, double grainOffset, ExceptionState& exceptionState)
 {
-    start(when, grainOffset, buffer() ? buffer()->duration() : 0, exceptionState);
+    startSource(when, grainOffset, buffer() ? buffer()->duration() : 0, false, exceptionState);
 }
 
 void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
+{
+    startSource(when, grainOffset, grainDuration, true, exceptionState);
+}
+
+void AudioBufferSourceNode::startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -465,6 +475,7 @@ void AudioBufferSourceNode::start(double when, double grainOffset, double grainD
         return;
     }
 
+    m_isDurationGiven = isDurationGiven;
     m_isGrain = true;
     m_grainOffset = grainOffset;
     m_grainDuration = grainDuration;

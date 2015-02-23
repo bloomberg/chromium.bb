@@ -77,6 +77,5 @@ function checkAllTests(event) {
     for (var i = 0; i < tests.length; ++i)
         checkSingleTest(renderedBuffer, i);
 
-    if (window.testRunner)
-        testRunner.notifyDone()
+    finishJSTest();
 }

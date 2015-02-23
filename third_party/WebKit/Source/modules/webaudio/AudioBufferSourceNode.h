@@ -98,6 +98,8 @@ public:
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);
 
+    void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
+
     // Returns true on success.
     bool renderFromBuffer(AudioBus*, unsigned destinationFrameOffset, size_t numberOfFrames);
 
@@ -132,7 +134,8 @@ private:
     bool m_isGrain;
     double m_grainOffset; // in seconds
     double m_grainDuration; // in seconds
-
+    // True if grainDuration is given explicitly (via 3 arg start method).
+    bool m_isDurationGiven;
     // totalPitchRate() returns the instantaneous pitch rate (non-time preserving).
     // It incorporates the base pitch rate, any sample-rate conversion factor from the buffer, and any doppler shift from an associated panner node.
     double totalPitchRate();
