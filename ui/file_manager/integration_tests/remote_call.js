@@ -15,6 +15,17 @@ function RemoteCall(extensionId) {
 }
 
 /**
+ * Checks whether step by step tests are enabled or not.
+ * @return {Promise<bool>}
+ */
+RemoteCall.isStepByStepEnabled = function() {
+  return new Promise(function(fulfill) {
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-file-manager-step-by-step-tests', fulfill);
+  });
+};
+
+/**
  * Calls a remote test util in Files.app's extension. See: test_util.js.
  *
  * @param {string} func Function name.
@@ -27,19 +38,37 @@ function RemoteCall(extensionId) {
  */
 RemoteCall.prototype.callRemoteTestUtil =
     function(func, appId, args, opt_callback) {
-  return new Promise(function(onFulfilled) {
-    chrome.runtime.sendMessage(
-        this.extensionId_,
-        {
-          func: func,
-          appId: appId,
-          args: args
-        },
-        function() {
-          if (opt_callback)
-            opt_callback.apply(null, arguments);
-          onFulfilled(arguments[0]);
-        });
+  return RemoteCall.isStepByStepEnabled().then(function(stepByStep) {
+    if (!stepByStep)
+      return false;
+    return new Promise(function(onFulfilled) {
+      console.info('Executing: ' + func + ' on ' + appId + ' with args: ');
+      console.info(args);
+      console.info('Type step() to continue...');
+      window.step = function() {
+        window.step = null;
+        onFulfilled(stepByStep);
+      };
+    });
+  }).then(function(stepByStep) {
+    return new Promise(function(onFulfilled) {
+      chrome.runtime.sendMessage(
+          this.extensionId_,
+          {
+            func: func,
+            appId: appId,
+            args: args
+          },
+          function(var_args) {
+            if (stepByStep) {
+              console.info('Returned value:');
+              console.info(arguments);
+            }
+            if (opt_callback)
+              opt_callback.apply(null, arguments);
+            onFulfilled(arguments[0]);
+          });
+    }.bind(this));
   }.bind(this));
 };
 

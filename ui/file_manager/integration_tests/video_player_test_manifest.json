@@ -12,5 +12,6 @@
       "video_player/background.js",
       "video_player/open_video_files.js"
     ]},
-  "incognito" : "split"
+  "incognito" : "split",
+  "permissions": ["commandLinePrivate"]
 }

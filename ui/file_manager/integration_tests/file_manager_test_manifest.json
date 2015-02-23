@@ -36,6 +36,7 @@
   "permissions": [
     "fileSystem",
     "tabs",
+    "commandLinePrivate",
     "chrome-extension://oobinhbdbiehknkpbpejbbpdbkdjmoco/*",
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/*"
   ]
