@@ -1701,6 +1701,7 @@ const char kCloseStorage[] = "CloseStorage";
 const char kReadDirectoryEntryIds[] = "ReadDirectoryEntryIds";
 const char kGetFileInfo[] = "GetFileInfo";
 const char kReadFileChunk[] = "ReadFileChunk";
+const char kCopyFileFromLocal[] = "CopyFileFromLocal";
 
 // Signals.
 const char kMTPStorageAttached[] = "MTPStorageAttached";
