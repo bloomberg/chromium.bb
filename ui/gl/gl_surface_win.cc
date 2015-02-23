@@ -25,18 +25,6 @@
 #define EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE \
   reinterpret_cast<EGLNativeDisplayType>(-2)
 #endif
-#if !defined(EGL_PLATFORM_ANGLE_ANGLE)
-#define EGL_PLATFORM_ANGLE_ANGLE 0x3201
-#endif
-#if !defined(EGL_PLATFORM_ANGLE_TYPE_ANGLE)
-#define EGL_PLATFORM_ANGLE_TYPE_ANGLE 0x3202
-#endif
-#if !defined(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE)
-#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE 0x3207
-#endif
-#if !defined(EGL_PLATFORM_ANGLE_USE_WARP_ANGLE)
-#define EGL_PLATFORM_ANGLE_USE_WARP_ANGLE 0x3208
-#endif
 
 namespace gfx {
 
