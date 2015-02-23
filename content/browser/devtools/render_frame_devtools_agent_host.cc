@@ -211,11 +211,10 @@ void RenderFrameDevToolsAgentHost::InnerOnClientAttached() {
       render_frame_host_->GetProcess()->GetID());
 
 #if defined(OS_ANDROID)
-  power_save_blocker_.reset(
-      static_cast<PowerSaveBlockerImpl*>(
-          PowerSaveBlocker::Create(
-              PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-              "DevTools").release()));
+  power_save_blocker_.reset(static_cast<PowerSaveBlockerImpl*>(
+      PowerSaveBlocker::Create(
+          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+          PowerSaveBlocker::kReasonOther, "DevTools").release()));
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       render_frame_host_->GetRenderViewHost());
   if (rvh->GetView()) {

@@ -131,7 +131,7 @@ DownloadResourceHandler::DownloadResourceHandler(
                  tab_info_));
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-      "Download in progress");
+      PowerSaveBlocker::kReasonOther, "Download in progress");
 }
 
 bool DownloadResourceHandler::OnUploadProgress(uint64 position,

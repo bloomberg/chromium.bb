@@ -90,9 +90,11 @@ void CastTransportHostFilter::OnNew(
   if (!power_save_blocker_) {
     DVLOG(1) << ("Preventing the application from being suspended while one or "
                  "more transports are active for Cast Streaming.");
-    power_save_blocker_ = content::PowerSaveBlocker::Create(
-        content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-        "Cast is streaming content to a remote receiver.").Pass();
+    power_save_blocker_ =
+        content::PowerSaveBlocker::Create(
+            content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+            content::PowerSaveBlocker::kReasonOther,
+            "Cast is streaming content to a remote receiver").Pass();
   }
 
   if (id_map_.Lookup(channel_id)) {

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_POWER_SAVE_BLOCKER_IMPL_H_
 #define CONTENT_BROWSER_POWER_SAVE_BLOCKER_IMPL_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "ui/gfx/native_widget_types.h"
@@ -13,7 +15,9 @@ namespace content {
 
 class PowerSaveBlockerImpl : public PowerSaveBlocker {
  public:
-  PowerSaveBlockerImpl(PowerSaveBlockerType type, const std::string& reason);
+  PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                       Reason reason,
+                       const std::string& description);
   ~PowerSaveBlockerImpl() override;
 
 #if defined(OS_ANDROID)

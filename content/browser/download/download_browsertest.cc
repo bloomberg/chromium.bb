@@ -242,10 +242,9 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     scoped_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  scoped_ptr<PowerSaveBlocker> psb(
-      PowerSaveBlocker::Create(
-          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-          "Download in progress"));
+  scoped_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+      PowerSaveBlocker::kReasonOther, "Download in progress"));
   return new DownloadFileWithDelay(
       save_info.Pass(), default_download_directory, url, referrer_url,
       calculate_hash, stream.Pass(), bound_net_log,
@@ -342,10 +341,9 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       scoped_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
-    scoped_ptr<PowerSaveBlocker> psb(
-        PowerSaveBlocker::Create(
-            PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-            "Download in progress"));
+    scoped_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
+        PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        PowerSaveBlocker::kReasonOther, "Download in progress"));
     return new CountingDownloadFile(
         save_info.Pass(), default_downloads_directory, url, referrer_url,
         calculate_hash, stream.Pass(), bound_net_log,

@@ -17,7 +17,8 @@ namespace {
 
 int g_blocker_count[2];
 
-HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type, const std::string& reason) {
+HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type,
+                          const std::string& description) {
   typedef HANDLE (WINAPI* PowerCreateRequestPtr)(PREASON_CONTEXT);
   typedef BOOL (WINAPI* PowerSetRequestPtr)(HANDLE, POWER_REQUEST_TYPE);
 
@@ -39,11 +40,12 @@ HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type, const std::string& reason) {
     if (!PowerCreateRequestFn || !PowerSetRequestFn)
       return INVALID_HANDLE_VALUE;
   }
-  base::string16 wide_reason = base::ASCIIToUTF16(reason);
+  base::string16 wide_description = base::ASCIIToUTF16(description);
   REASON_CONTEXT context = {0};
   context.Version = POWER_REQUEST_CONTEXT_VERSION;
   context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
-  context.Reason.SimpleReasonString = const_cast<wchar_t*>(wide_reason.c_str());
+  context.Reason.SimpleReasonString =
+      const_cast<wchar_t*>(wide_description.c_str());
 
   base::win::ScopedHandle handle(PowerCreateRequestFn(&context));
   if (!handle.IsValid())
@@ -110,8 +112,8 @@ void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type,
 class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
-  Delegate(PowerSaveBlockerType type, const std::string& reason)
-      : type_(type), reason_(reason) {}
+  Delegate(PowerSaveBlockerType type, const std::string& description)
+      : type_(type), description_(description) {}
 
   // Does the actual work to apply or remove the desired power save block.
   void ApplyBlock();
@@ -125,7 +127,7 @@ class PowerSaveBlockerImpl::Delegate
   ~Delegate() {}
 
   PowerSaveBlockerType type_;
-  const std::string reason_;
+  const std::string description_;
   base::win::ScopedHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -136,7 +138,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, 1);
 
-  handle_.Set(CreatePowerRequest(RequestType(), reason_));
+  handle_.Set(CreatePowerRequest(RequestType(), description_));
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
@@ -158,8 +160,9 @@ POWER_REQUEST_TYPE PowerSaveBlockerImpl::Delegate::RequestType() {
 }
 
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                                           const std::string& reason)
-    : delegate_(new Delegate(type, reason)) {
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, description)) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Delegate::ApplyBlock, delegate_));

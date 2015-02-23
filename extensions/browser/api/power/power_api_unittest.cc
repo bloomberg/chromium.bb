@@ -91,7 +91,8 @@ class PowerSaveBlockerStubManager {
   // Creates a new PowerSaveBlockerStub of type |type|.
   scoped_ptr<content::PowerSaveBlocker> CreateStub(
       content::PowerSaveBlocker::PowerSaveBlockerType type,
-      const std::string& reason) {
+      content::PowerSaveBlocker::Reason reason,
+      const std::string& description) {
     Request unblock_request = NONE;
     switch (type) {
       case content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension:

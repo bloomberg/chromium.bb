@@ -32,13 +32,26 @@ class CONTENT_EXPORT PowerSaveBlocker {
     kPowerSaveBlockPreventDisplaySleep,
   };
 
+  // Reasons why power-saving features may be blocked.
+  enum Reason {
+    // Audio is being played.
+    kReasonAudioPlayback,
+    // Video is being played.
+    kReasonVideoPlayback,
+    // Power-saving is blocked for some other reason.
+    kReasonOther,
+  };
+
   virtual ~PowerSaveBlocker() = 0;
 
   // Pass in the type of power save blocking desired. If multiple types of
   // blocking are desired, instantiate one PowerSaveBlocker for each type.
-  // |reason| may be provided to the underlying system APIs on some platforms.
+  // |reason| and |description| (a more-verbose, human-readable justification of
+  // the blocking) may be provided to the underlying system APIs on some
+  // platforms.
   static scoped_ptr<PowerSaveBlocker> Create(PowerSaveBlockerType type,
-                                             const std::string& reason);
+                                             Reason reason,
+                                             const std::string& description);
 };
 
 }  // namespace content

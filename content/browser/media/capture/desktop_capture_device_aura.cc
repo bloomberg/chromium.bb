@@ -218,9 +218,11 @@ bool DesktopVideoCaptureMachine::Start(
   if (desktop_window_->GetHost())
     desktop_window_->GetHost()->compositor()->AddObserver(this);
 
-  power_save_blocker_.reset(PowerSaveBlocker::Create(
-      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-      "DesktopCaptureDevice is running").release());
+  power_save_blocker_.reset(
+      PowerSaveBlocker::Create(
+          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+          PowerSaveBlocker::kReasonOther,
+          "DesktopCaptureDevice is running").release());
 
   // Starts timer.
   timer_.Start(FROM_HERE, oracle_proxy_->min_capture_period(),

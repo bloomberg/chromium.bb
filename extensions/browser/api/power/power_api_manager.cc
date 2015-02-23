@@ -13,7 +13,7 @@ namespace extensions {
 
 namespace {
 
-const char kPowerSaveBlockerReason[] = "extension";
+const char kPowerSaveBlockerDescription[] = "extension";
 
 content::PowerSaveBlocker::PowerSaveBlockerType
 LevelToPowerSaveBlockerType(core_api::power::Level level) {
@@ -98,7 +98,9 @@ void PowerApiManager::UpdatePowerSaveBlocker() {
     content::PowerSaveBlocker::PowerSaveBlockerType type =
         LevelToPowerSaveBlockerType(new_level);
     scoped_ptr<content::PowerSaveBlocker> new_blocker(
-        create_blocker_function_.Run(type, kPowerSaveBlockerReason));
+        create_blocker_function_.Run(type,
+                                     content::PowerSaveBlocker::kReasonOther,
+                                     kPowerSaveBlockerDescription));
     power_save_blocker_.swap(new_blocker);
     current_level_ = new_level;
   }

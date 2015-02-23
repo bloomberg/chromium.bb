@@ -160,7 +160,8 @@ class PowerSaveBlockerStub : public content::PowerSaveBlocker {
 
   static scoped_ptr<PowerSaveBlocker> Create(PowerSettingsMock* power_settings,
                                              PowerSaveBlockerType type,
-                                             const std::string& reason) {
+                                             Reason reason,
+                                             const std::string& description) {
     return scoped_ptr<PowerSaveBlocker>(
         new PowerSaveBlockerStub(power_settings));
   }

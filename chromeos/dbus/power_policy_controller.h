@@ -32,6 +32,13 @@ class CHROMEOS_EXPORT PowerPolicyController
   // Returns the global instance. Initialize() must be called first.
   static PowerPolicyController* Get();
 
+  // Reasons why a wake lock may be added.
+  enum WakeLockReason {
+    REASON_AUDIO_PLAYBACK,
+    REASON_VIDEO_PLAYBACK,
+    REASON_OTHER,
+  };
+
   // Note: Do not change these values; they are used by preferences.
   enum Action {
     ACTION_SUSPEND      = 0,
@@ -79,16 +86,20 @@ class CHROMEOS_EXPORT PowerPolicyController
   // constant would imply.
   static const int kScreenLockAfterOffDelayMs;
 
+  // String added to a PowerManagementPolicy |reason| field if the policy has
+  // been modified by preferences.
+  static const char kPrefsReason[];
+
   // Updates |prefs_policy_| with |values| and sends an updated policy.
   void ApplyPrefs(const PrefValues& values);
 
-  // Registers a request to temporarily prevent the screen from getting
-  // dimmed or turned off or the system from suspending in response to user
-  // inactivity and sends an updated policy.  |reason| is a human-readable
-  // description of the reason the lock was created.  Returns a unique ID
-  // that can be passed to RemoveWakeLock() later.
-  int AddScreenWakeLock(const std::string& reason);
-  int AddSystemWakeLock(const std::string& reason);
+  // Registers a request to temporarily prevent the screen from getting dimmed
+  // or turned off or the system from suspending in response to user inactivity
+  // and sends an updated policy. |description| is a human-readable description
+  // of the reason the lock was created. Returns a unique ID that can be passed
+  // to RemoveWakeLock() later.
+  int AddScreenWakeLock(WakeLockReason reason, const std::string& description);
+  int AddSystemWakeLock(WakeLockReason reason, const std::string& description);
 
   // Unregisters a request previously created via AddScreenWakeLock() or
   // AddSystemWakeLock() and sends an updated policy.
@@ -103,7 +114,28 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   friend class PowerPrefsTest;
 
-  typedef std::map<int, std::string> WakeLockMap;
+  // Details about a wake lock added via AddScreenWakeLock() or
+  // AddSystemWakeLock().
+  struct WakeLock {
+    enum Type {
+      TYPE_SCREEN,
+      TYPE_SYSTEM,
+    };
+
+    WakeLock(Type type, WakeLockReason reason, const std::string& description);
+    ~WakeLock();
+
+    const Type type;
+    const WakeLockReason reason;
+    const std::string description;
+  };
+
+  using WakeLockMap = std::map<int, WakeLock>;
+
+  // Helper method for AddScreenWakeLock() and AddSystemWakeLock().
+  int AddWakeLockInternal(WakeLock::Type type,
+                          WakeLockReason reason,
+                          const std::string& description);
 
   // Sends a policy based on |prefs_policy_| to the power manager.
   void SendCurrentPolicy();
@@ -118,12 +150,11 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   // Maps from an ID representing a request to prevent the screen from
   // getting dimmed or turned off or to prevent the system from suspending
-  // to the reason for the request.
-  WakeLockMap screen_wake_locks_;
-  WakeLockMap system_wake_locks_;
+  // to details about the request.
+  WakeLockMap wake_locks_;
 
-  // Should entries in |screen_wake_locks_| be honored?  If false, screen
-  // wake locks are just treated as system wake locks instead.
+  // Should TYPE_SCREEN entries in |wake_locks_| be honored?  If false, screen
+  // wake locks are just treated as TYPE_SYSTEM instead.
   bool honor_screen_wake_locks_;
 
   // Next ID to be used by AddScreenWakeLock() or AddSystemWakeLock().

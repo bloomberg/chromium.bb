@@ -82,7 +82,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_user_activity_screen_dim_delay_factor(2.0);
   expected_policy.set_wait_for_initial_user_activity(true);
   expected_policy.set_force_nonzero_brightness_for_user_activity(false);
-  expected_policy.set_reason("Prefs");
+  expected_policy.set_reason(PowerPolicyController::kPrefsReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
@@ -151,10 +151,12 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   // pref-supplied screen-related delays should be left untouched.
   prefs.allow_screen_wake_locks = false;
   policy_controller_->ApplyPrefs(prefs);
-  policy_controller_->AddScreenWakeLock("Screen");
+  policy_controller_->AddScreenWakeLock(PowerPolicyController::REASON_OTHER,
+                                        "Screen");
   expected_policy.set_ac_idle_action(
       power_manager::PowerManagementPolicy_Action_DO_NOTHING);
-  expected_policy.set_reason("Prefs, Screen");
+  expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
+                             ", Screen");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
@@ -162,8 +164,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
 
 TEST_F(PowerPolicyControllerTest, WakeLocks) {
   const char kSystemWakeLockReason[] = "system";
-  const int system_id =
-      policy_controller_->AddSystemWakeLock(kSystemWakeLockReason);
+  const int system_id = policy_controller_->AddSystemWakeLock(
+      PowerPolicyController::REASON_OTHER, kSystemWakeLockReason);
   power_manager::PowerManagementPolicy expected_policy;
   expected_policy.set_ac_idle_action(
       power_manager::PowerManagementPolicy_Action_DO_NOTHING);
@@ -176,15 +178,15 @@ TEST_F(PowerPolicyControllerTest, WakeLocks) {
 
   const char kScreenWakeLockReason[] = "screen";
   const int screen_id = policy_controller_->AddScreenWakeLock(
-      kScreenWakeLockReason);
+      PowerPolicyController::REASON_OTHER, kScreenWakeLockReason);
   expected_policy.mutable_ac_delays()->set_screen_dim_ms(0);
   expected_policy.mutable_ac_delays()->set_screen_off_ms(0);
   expected_policy.mutable_ac_delays()->set_screen_lock_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_dim_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_off_ms(0);
   expected_policy.mutable_battery_delays()->set_screen_lock_ms(0);
-  expected_policy.set_reason(
-      std::string(kScreenWakeLockReason) + ", " + kSystemWakeLockReason);
+  expected_policy.set_reason(std::string(kSystemWakeLockReason) + ", " +
+                             kScreenWakeLockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
@@ -200,6 +202,72 @@ TEST_F(PowerPolicyControllerTest, WakeLocks) {
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
+}
+
+TEST_F(PowerPolicyControllerTest, IgnoreMediaWakeLocksWhenRequested) {
+  PowerPolicyController::PrefValues prefs;
+  policy_controller_->ApplyPrefs(prefs);
+  const power_manager::PowerManagementPolicy kDefaultPolicy =
+      fake_power_client_->policy();
+
+  // Wake locks created for audio or video playback should be ignored when the
+  // |use_audio_activity| or |use_video_activity| prefs are unset.
+  prefs.use_audio_activity = false;
+  prefs.use_video_activity = false;
+  policy_controller_->ApplyPrefs(prefs);
+
+  const int audio_id = policy_controller_->AddSystemWakeLock(
+      PowerPolicyController::REASON_AUDIO_PLAYBACK, "audio");
+  const int video_id = policy_controller_->AddScreenWakeLock(
+      PowerPolicyController::REASON_VIDEO_PLAYBACK, "video");
+
+  power_manager::PowerManagementPolicy expected_policy = kDefaultPolicy;
+  expected_policy.set_use_audio_activity(false);
+  expected_policy.set_use_video_activity(false);
+  expected_policy.set_reason(PowerPolicyController::kPrefsReason);
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  // Non-media screen wake locks should still be honored.
+  const int other_id = policy_controller_->AddScreenWakeLock(
+      PowerPolicyController::REASON_OTHER, "other");
+
+  expected_policy.set_ac_idle_action(
+      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_battery_idle_action(
+      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.mutable_ac_delays()->set_screen_dim_ms(0);
+  expected_policy.mutable_ac_delays()->set_screen_off_ms(0);
+  expected_policy.mutable_ac_delays()->set_screen_lock_ms(0);
+  expected_policy.mutable_battery_delays()->set_screen_dim_ms(0);
+  expected_policy.mutable_battery_delays()->set_screen_off_ms(0);
+  expected_policy.mutable_battery_delays()->set_screen_lock_ms(0);
+  expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
+                             ", other");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  // Start honoring audio activity and check that the audio wake lock is used.
+  policy_controller_->RemoveWakeLock(other_id);
+  prefs.use_audio_activity = true;
+  policy_controller_->ApplyPrefs(prefs);
+
+  expected_policy = kDefaultPolicy;
+  expected_policy.set_use_video_activity(false);
+  expected_policy.set_ac_idle_action(
+      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_battery_idle_action(
+      power_manager::PowerManagementPolicy_Action_DO_NOTHING);
+  expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
+                             ", audio");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  policy_controller_->RemoveWakeLock(audio_id);
+  policy_controller_->RemoveWakeLock(video_id);
 }
 
 TEST_F(PowerPolicyControllerTest, AvoidSendingEmptyPolicies) {

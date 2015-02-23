@@ -67,7 +67,7 @@ class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
   // Picks an appropriate D-Bus API to use based on the desktop environment.
-  Delegate(PowerSaveBlockerType type, const std::string& reason);
+  Delegate(PowerSaveBlockerType type, const std::string& description);
 
   // Post a task to initialize the delegate on the UI thread, which will itself
   // then post a task to apply the power save block on the FILE thread.
@@ -104,7 +104,7 @@ class PowerSaveBlockerImpl::Delegate
   static DBusAPI SelectAPI();
 
   const PowerSaveBlockerType type_;
-  const std::string reason_;
+  const std::string description_;
 
   // Initially, we post a message to the UI thread to select an API. When it
   // finishes, it will post a message to the FILE thread to perform the actual
@@ -125,9 +125,9 @@ class PowerSaveBlockerImpl::Delegate
 };
 
 PowerSaveBlockerImpl::Delegate::Delegate(PowerSaveBlockerType type,
-                                         const std::string& reason)
+                                         const std::string& description)
     : type_(type),
-      reason_(reason),
+      description_(description),
       api_(NO_API),
       enqueue_apply_(false),
       inhibit_cookie_(0) {
@@ -202,7 +202,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
       message_writer->AppendString(
           base::CommandLine::ForCurrentProcess()->GetProgram().value());
       message_writer->AppendUint32(0);  // should be toplevel_xid
-      message_writer->AppendString(reason_);
+      message_writer->AppendString(description_);
       {
         uint32 flags = 0;
         switch (type_) {
@@ -229,7 +229,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
       //     reason:        The reason for the inhibit
       message_writer->AppendString(
           base::CommandLine::ForCurrentProcess()->GetProgram().value());
-      message_writer->AppendString(reason_);
+      message_writer->AppendString(description_);
       break;
   }
 
@@ -325,9 +325,10 @@ DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
   return NO_API;
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
-    PowerSaveBlockerType type, const std::string& reason)
-    : delegate_(new Delegate(type, reason)) {
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, description)) {
   delegate_->Init();
 }
 

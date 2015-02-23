@@ -11,8 +11,10 @@ PowerSaveBlocker::~PowerSaveBlocker() {}
 // static
 scoped_ptr<PowerSaveBlocker> PowerSaveBlocker::Create(
     PowerSaveBlockerType type,
-    const std::string& reason) {
-  return scoped_ptr<PowerSaveBlocker>(new PowerSaveBlockerImpl(type, reason));
+    Reason reason,
+    const std::string& description) {
+  return scoped_ptr<PowerSaveBlocker>(
+      new PowerSaveBlockerImpl(type, reason, description));
 }
 
 }  // namespace content

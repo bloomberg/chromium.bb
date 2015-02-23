@@ -24,7 +24,8 @@ class PowerSaveBlockerImpl::Delegate
 };
 
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                                           const std::string& reason)
+                                           Reason reason,
+                                           const std::string& description)
     : delegate_(new Delegate()) {
   NOTIMPLEMENTED();
 }

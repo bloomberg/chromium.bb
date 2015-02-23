@@ -174,9 +174,11 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   // This capturer always outputs ARGB, non-interlaced.
   capture_format_.pixel_format = media::PIXEL_FORMAT_ARGB;
 
-  power_save_blocker_.reset(PowerSaveBlocker::Create(
-      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-      "DesktopCaptureDevice is running").release());
+  power_save_blocker_.reset(
+      PowerSaveBlocker::Create(
+          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+          PowerSaveBlocker::kReasonOther,
+          "DesktopCaptureDevice is running").release());
 
   desktop_capturer_->Start(this);
 

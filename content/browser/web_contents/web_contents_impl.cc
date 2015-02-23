@@ -3172,25 +3172,21 @@ void WebContentsImpl::OnUpdateFaviconURL(
 }
 
 void WebContentsImpl::CreateAudioPowerSaveBlocker() {
-  // ChromeOS has its own way of handling power save blocks for media.
-#if !defined(OS_CHROMEOS)
   DCHECK(!audio_power_save_blocker_);
   audio_power_save_blocker_ = PowerSaveBlocker::Create(
-      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension, "Playing Audio");
-#endif
+      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+      PowerSaveBlocker::kReasonAudioPlayback, "Playing audio");
 }
 
 void WebContentsImpl::CreateVideoPowerSaveBlocker() {
-  // ChromeOS has its own way of handling power save blocks for media.
-#if !defined(OS_CHROMEOS)
   DCHECK(!video_power_save_blocker_);
   DCHECK(!active_video_players_.empty());
   video_power_save_blocker_ = PowerSaveBlocker::Create(
-      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep, "Playing Video");
+      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+      PowerSaveBlocker::kReasonVideoPlayback, "Playing video");
 #if defined(OS_ANDROID)
   static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
       ->InitDisplaySleepBlocker(GetView()->GetNativeView());
-#endif
 #endif
 }
 

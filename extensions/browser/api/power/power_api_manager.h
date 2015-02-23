@@ -30,6 +30,7 @@ class PowerApiManager : public BrowserContextKeyedAPI,
  public:
   typedef base::Callback<scoped_ptr<content::PowerSaveBlocker>(
       content::PowerSaveBlocker::PowerSaveBlockerType,
+      content::PowerSaveBlocker::Reason,
       const std::string&)> CreateBlockerFunction;
 
   static PowerApiManager* Get(content::BrowserContext* context);

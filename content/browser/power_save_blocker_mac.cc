@@ -41,8 +41,10 @@ base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
 class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
-  Delegate(PowerSaveBlockerType type, const std::string& reason)
-      : type_(type), reason_(reason), assertion_(kIOPMNullAssertionID) {}
+  Delegate(PowerSaveBlockerType type, const std::string& description)
+      : type_(type),
+        description_(description),
+        assertion_(kIOPMNullAssertionID) {}
 
   // Does the actual work to apply or remove the desired power save block.
   void ApplyBlock();
@@ -52,7 +54,7 @@ class PowerSaveBlockerImpl::Delegate
   friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
   PowerSaveBlockerType type_;
-  std::string reason_;
+  std::string description_;
   IOPMAssertionID assertion_;
 };
 
@@ -75,12 +77,10 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
       break;
   }
   if (level) {
-    base::ScopedCFTypeRef<CFStringRef> cf_reason(
-        base::SysUTF8ToCFStringRef(reason_));
-    IOReturn result = IOPMAssertionCreateWithName(level,
-                                                  kIOPMAssertionLevelOn,
-                                                  cf_reason,
-                                                  &assertion_);
+    base::ScopedCFTypeRef<CFStringRef> cf_description(
+        base::SysUTF8ToCFStringRef(description_));
+    IOReturn result = IOPMAssertionCreateWithName(level, kIOPMAssertionLevelOn,
+                                                  cf_description, &assertion_);
     LOG_IF(ERROR, result != kIOReturnSuccess)
         << "IOPMAssertionCreate: " << result;
   }
@@ -98,8 +98,9 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
 }
 
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                                           const std::string& reason)
-    : delegate_(new Delegate(type, reason)) {
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, description)) {
   g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&Delegate::ApplyBlock, delegate_));

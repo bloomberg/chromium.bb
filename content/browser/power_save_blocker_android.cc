@@ -57,7 +57,8 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
 }
 
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                                           const std::string& reason) {
+                                           Reason reason,
+                                           const std::string& description) {
   // Don't support kPowerSaveBlockPreventAppSuspension
 }
 

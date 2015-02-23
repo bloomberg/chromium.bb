@@ -47,7 +47,7 @@ const char* PowerSaveBlockResourceThrottle::GetNameForLogging() const {
 void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-      "Uploading data.");
+      PowerSaveBlocker::kReasonOther, "Uploading data");
 }
 
 }  // namespace content

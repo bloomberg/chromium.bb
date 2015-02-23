@@ -59,10 +59,10 @@ struct DriveUploader::UploadFileInfo {
         next_start_position(-1),
         power_save_blocker(content::PowerSaveBlocker::Create(
             content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+            content::PowerSaveBlocker::kReasonOther,
             "Upload in progress")),
         cancelled(false),
-        weak_ptr_factory_(this) {
-  }
+        weak_ptr_factory_(this) {}
 
   ~UploadFileInfo() {
   }

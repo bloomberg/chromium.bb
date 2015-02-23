@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/power_policy_controller.h"
 
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -57,9 +59,24 @@ power_manager::PowerManagementPolicy_Action GetProtoAction(
   }
 }
 
+// Returns false if |use_audio_activity| and |use_audio_activity| prevent wake
+// locks created for |reason| from being honored or true otherwise.
+bool IsWakeLockReasonHonored(PowerPolicyController::WakeLockReason reason,
+                             bool use_audio_activity,
+                             bool use_video_activity) {
+  if (reason == PowerPolicyController::REASON_AUDIO_PLAYBACK &&
+      !use_audio_activity)
+    return false;
+  if (reason == PowerPolicyController::REASON_VIDEO_PLAYBACK &&
+      !use_video_activity)
+    return false;
+  return true;
+}
+
 }  // namespace
 
 const int PowerPolicyController::kScreenLockAfterOffDelayMs = 10000;  // 10 sec.
+const char PowerPolicyController::kPrefsReason[] = "Prefs";
 
 // -1 is interpreted as "unset" by powerd, resulting in powerd's default
 // delays being used instead.  There are no similarly-interpreted values
@@ -224,22 +241,18 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   SendCurrentPolicy();
 }
 
-int PowerPolicyController::AddScreenWakeLock(const std::string& reason) {
-  int id = next_wake_lock_id_++;
-  screen_wake_locks_[id] = reason;
-  SendCurrentPolicy();
-  return id;
+int PowerPolicyController::AddScreenWakeLock(WakeLockReason reason,
+                                             const std::string& description) {
+  return AddWakeLockInternal(WakeLock::TYPE_SCREEN, reason, description);
 }
 
-int PowerPolicyController::AddSystemWakeLock(const std::string& reason) {
-  int id = next_wake_lock_id_++;
-  system_wake_locks_[id] = reason;
-  SendCurrentPolicy();
-  return id;
+int PowerPolicyController::AddSystemWakeLock(WakeLockReason reason,
+                                             const std::string& description) {
+  return AddWakeLockInternal(WakeLock::TYPE_SYSTEM, reason, description);
 }
 
 void PowerPolicyController::RemoveWakeLock(int id) {
-  if (!screen_wake_locks_.erase(id) && !system_wake_locks_.erase(id))
+  if (!wake_locks_.erase(id))
     LOG(WARNING) << "Ignoring request to remove nonexistent wake lock " << id;
   else
     SendCurrentPolicy();
@@ -262,14 +275,51 @@ PowerPolicyController::~PowerPolicyController() {
   client_->RemoveObserver(this);
 }
 
+PowerPolicyController::WakeLock::WakeLock(Type type,
+                                          WakeLockReason reason,
+                                          const std::string& description)
+    : type(type), reason(reason), description(description) {
+}
+
+PowerPolicyController::WakeLock::~WakeLock() {
+}
+
+int PowerPolicyController::AddWakeLockInternal(WakeLock::Type type,
+                                               WakeLockReason reason,
+                                               const std::string& description) {
+  const int id = next_wake_lock_id_++;
+  wake_locks_.insert(std::make_pair(id, WakeLock(type, reason, description)));
+  SendCurrentPolicy();
+  return id;
+}
+
 void PowerPolicyController::SendCurrentPolicy() {
-  std::string reason;
+  std::string causes;
 
   power_manager::PowerManagementPolicy policy = prefs_policy_;
   if (prefs_were_set_)
-    reason = "Prefs";
+    causes = kPrefsReason;
 
-  if (honor_screen_wake_locks_ && !screen_wake_locks_.empty()) {
+  bool have_screen_wake_locks = false;
+  bool have_system_wake_locks = false;
+  for (const auto& it : wake_locks_) {
+    // Skip audio and video locks that should be ignored due to policy.
+    if (!IsWakeLockReasonHonored(it.second.reason, policy.use_audio_activity(),
+                                 policy.use_video_activity()))
+      continue;
+
+    switch (it.second.type) {
+      case WakeLock::TYPE_SCREEN:
+        have_screen_wake_locks = true;
+        break;
+      case WakeLock::TYPE_SYSTEM:
+        have_system_wake_locks = true;
+        break;
+    }
+    causes += (causes.empty() ? "" : ", ") + it.second.description;
+  }
+
+  if (honor_screen_wake_locks_ && have_screen_wake_locks) {
     policy.mutable_ac_delays()->set_screen_dim_ms(0);
     policy.mutable_ac_delays()->set_screen_off_ms(0);
     policy.mutable_ac_delays()->set_screen_lock_ms(0);
@@ -278,7 +328,7 @@ void PowerPolicyController::SendCurrentPolicy() {
     policy.mutable_battery_delays()->set_screen_lock_ms(0);
   }
 
-  if (!screen_wake_locks_.empty() || !system_wake_locks_.empty()) {
+  if (have_screen_wake_locks || have_system_wake_locks) {
     if (!policy.has_ac_idle_action() || policy.ac_idle_action() ==
         power_manager::PowerManagementPolicy_Action_SUSPEND) {
       policy.set_ac_idle_action(
@@ -291,17 +341,8 @@ void PowerPolicyController::SendCurrentPolicy() {
     }
   }
 
-  for (WakeLockMap::const_iterator it = screen_wake_locks_.begin();
-       it != screen_wake_locks_.end(); ++it) {
-    reason += (reason.empty() ? "" : ", ") + it->second;
-  }
-  for (WakeLockMap::const_iterator it = system_wake_locks_.begin();
-       it != system_wake_locks_.end(); ++it) {
-    reason += (reason.empty() ? "" : ", ") + it->second;
-  }
-
-  if (!reason.empty())
-    policy.set_reason(reason);
+  if (!causes.empty())
+    policy.set_reason(causes);
   client_->SetPolicy(policy);
 }
 
