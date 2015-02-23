@@ -211,8 +211,7 @@ class CC_EXPORT LayerTreeHost {
   GpuRasterizationStatus GetGpuRasterizationStatus() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
-  void SetTopControlsShrinkBlinkSize(bool shrink);
-  void SetTopControlsHeight(float height);
+  void SetTopControlsHeight(float height, bool shrink);
   void SetTopControlsShownRatio(float ratio);
 
   gfx::Size device_viewport_size() const { return device_viewport_size_; }

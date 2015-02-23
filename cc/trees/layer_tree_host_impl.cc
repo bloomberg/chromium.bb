@@ -916,6 +916,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 }
 
 void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
+  if (top_controls_manager_)
+    top_controls_manager_->MainThreadHasStoppedFlinging();
   if (input_handler_client_)
     input_handler_client_->MainThreadHasStoppedFlinging();
 }

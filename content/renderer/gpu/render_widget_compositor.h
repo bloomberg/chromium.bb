@@ -52,11 +52,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool BeginMainFrameRequested() const;
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
-  void UpdateTopControlsState(cc::TopControlsState constraints,
-                              cc::TopControlsState current,
-                              bool animate);
-  void SetTopControlsShrinkBlinkSize(bool shrink);
-  void SetTopControlsHeight(float height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
   // Redraw will be forced after the next commit
@@ -130,8 +125,12 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void setShowDebugBorders(bool show);
   virtual void setContinuousPaintingEnabled(bool enabled);
   virtual void setShowScrollBottleneckRects(bool show);
-  virtual void setTopControlsShownRatio(float);
 
+  virtual void updateTopControlsState(blink::WebTopControlsState constraints,
+                              blink::WebTopControlsState current,
+                              bool animate);
+  virtual void setTopControlsHeight(float height, bool shrink);
+  virtual void setTopControlsShownRatio(float);
   // TODO(aelias): Delete after Blink roll
   virtual void setTopControlsContentOffset(float);
 

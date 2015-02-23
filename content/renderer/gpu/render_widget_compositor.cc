@@ -64,6 +64,7 @@ using blink::WebFloatPoint;
 using blink::WebRect;
 using blink::WebSelectionBound;
 using blink::WebSize;
+using blink::WebTopControlsState;
 
 namespace content {
 namespace {
@@ -153,6 +154,20 @@ gfx::Size CalculateDefaultTileSize() {
   }
 #endif
   return gfx::Size(default_tile_size, default_tile_size);
+}
+
+// Check cc::TopControlsState, and blink::WebTopControlsState
+// are kept in sync.
+static_assert(int(blink::WebTopControlsBoth) == int(cc::BOTH),
+              "mismatching enums: BOTH");
+static_assert(int(blink::WebTopControlsHidden) == int(cc::HIDDEN),
+              "mismatching enums: HIDDEN");
+static_assert(int(blink::WebTopControlsShown) == int(cc::SHOWN),
+              "mismatching enums: SHOWN");
+
+static cc::TopControlsState ConvertTopControlsState(
+    WebTopControlsState state) {
+  return static_cast<cc::TopControlsState>(state);
 }
 
 }  // namespace
@@ -476,23 +491,6 @@ void RenderWidgetCompositor::SetRasterizeOnlyVisibleContent() {
   layer_tree_host_->SetDebugState(current);
 }
 
-void RenderWidgetCompositor::UpdateTopControlsState(
-    cc::TopControlsState constraints,
-    cc::TopControlsState current,
-    bool animate) {
-  layer_tree_host_->UpdateTopControlsState(constraints,
-                                           current,
-                                           animate);
-}
-
-void RenderWidgetCompositor::SetTopControlsShrinkBlinkSize(bool shrink) {
-  layer_tree_host_->SetTopControlsShrinkBlinkSize(shrink);
-}
-
-void RenderWidgetCompositor::SetTopControlsHeight(float height) {
-  layer_tree_host_->SetTopControlsHeight(height);
-}
-
 void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   layer_tree_host_->SetNeedsRedrawRect(damage_rect);
 }
@@ -760,6 +758,19 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   debug_state.show_wheel_event_handler_rects = show;
   debug_state.show_non_fast_scrollable_rects = show;
   layer_tree_host_->SetDebugState(debug_state);
+}
+
+void RenderWidgetCompositor::updateTopControlsState(
+    WebTopControlsState constraints,
+    WebTopControlsState current,
+    bool animate) {
+  layer_tree_host_->UpdateTopControlsState(ConvertTopControlsState(constraints),
+                                           ConvertTopControlsState(current),
+                                           animate);
+}
+
+void RenderWidgetCompositor::setTopControlsHeight(float height, bool shrink) {
+    layer_tree_host_->SetTopControlsHeight(height, shrink);
 }
 
 void RenderWidgetCompositor::setTopControlsContentOffset(float offset) {

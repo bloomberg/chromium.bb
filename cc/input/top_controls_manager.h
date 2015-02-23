@@ -61,6 +61,8 @@ class CC_EXPORT TopControlsManager
   void PinchBegin();
   void PinchEnd();
 
+  void MainThreadHasStoppedFlinging();
+
   gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
 
  protected:
@@ -73,6 +75,7 @@ class CC_EXPORT TopControlsManager
   void SetupAnimation(AnimationDirection direction);
   void StartAnimationIfNecessary();
   bool IsAnimationCompleteAtTime(base::TimeTicks time);
+  void ResetBaseline();
 
   TopControlsManagerClient* client_;  // The client manages the lifecycle of
                                       // this.
@@ -81,8 +84,11 @@ class CC_EXPORT TopControlsManager
   AnimationDirection animation_direction_;
   TopControlsState permitted_state_;
 
-  float current_scroll_delta_;
-  float controls_scroll_begin_offset_;
+  // Accumulated scroll delta since last baseline reset
+  float accumulated_scroll_delta_;
+
+  // Content offset when last baseline reset occurred
+  float baseline_content_offset_;
 
   // The percent height of the visible top control such that it must be shown
   // when the user stops the scroll.

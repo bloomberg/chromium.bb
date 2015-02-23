@@ -648,7 +648,7 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
       target_url_status_(TARGET_NONE),
       uses_temporary_zoom_level_(false),
 #if defined(OS_ANDROID)
-      top_controls_constraints_(cc::BOTH),
+      top_controls_constraints_(TOP_CONTROLS_STATE_BOTH),
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
       speech_recognition_dispatcher_(NULL),

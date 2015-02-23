@@ -908,7 +908,7 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   // Cache the old top controls state constraints. Used when updating
   // current value only without altering the constraints.
-  cc::TopControlsState top_controls_constraints_;
+  TopControlsState top_controls_constraints_;
 #endif
 
   // View ----------------------------------------------------------------------

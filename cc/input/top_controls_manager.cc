@@ -39,8 +39,8 @@ TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
     : client_(client),
       animation_direction_(NO_ANIMATION),
       permitted_state_(BOTH),
-      current_scroll_delta_(0.f),
-      controls_scroll_begin_offset_(0.f),
+      accumulated_scroll_delta_(0.f),
+      baseline_content_offset_(0.f),
       top_controls_show_threshold_(top_controls_hide_threshold),
       top_controls_hide_threshold_(top_controls_show_threshold),
       pinch_gesture_active_(false) {
@@ -96,8 +96,7 @@ void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
 void TopControlsManager::ScrollBegin() {
   DCHECK(!pinch_gesture_active_);
   ResetAnimations();
-  current_scroll_delta_ = 0.f;
-  controls_scroll_begin_offset_ = ContentTopOffset();
+  ResetBaseline();
 }
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
@@ -110,19 +109,17 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
   else if (permitted_state_ == HIDDEN && pending_delta.y() < 0)
     return pending_delta;
 
-  current_scroll_delta_ += pending_delta.y();
+  accumulated_scroll_delta_ += pending_delta.y();
 
   float old_offset = ContentTopOffset();
   client_->SetCurrentTopControlsShownRatio(
-      (controls_scroll_begin_offset_ - current_scroll_delta_) /
+      (baseline_content_offset_ - accumulated_scroll_delta_) /
       TopControlsHeight());
 
   // If the controls are fully visible, treat the current position as the
   // new baseline even if the gesture didn't end.
-  if (TopControlsShownRatio() == 1.f) {
-    current_scroll_delta_ = 0.f;
-    controls_scroll_begin_offset_ = ContentTopOffset();
-  }
+  if (TopControlsShownRatio() == 1.f)
+    ResetBaseline();
 
   ResetAnimations();
 
@@ -147,6 +144,10 @@ void TopControlsManager::PinchEnd() {
   // so return to a state expected by the remaining scroll sequence.
   pinch_gesture_active_ = false;
   ScrollBegin();
+}
+
+void TopControlsManager::MainThreadHasStoppedFlinging() {
+  StartAnimationIfNecessary();
 }
 
 gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
@@ -206,8 +207,8 @@ void TopControlsManager::StartAnimationIfNecessary() {
     // If we could be either showing or hiding, we determine which one to
     // do based on whether or not the total scroll delta was moving up or
     // down.
-    SetupAnimation(current_scroll_delta_ <= 0.f ? SHOWING_CONTROLS
-                                                : HIDING_CONTROLS);
+    SetupAnimation(accumulated_scroll_delta_ <= 0.f ? SHOWING_CONTROLS
+                                                    : HIDING_CONTROLS);
   }
 }
 
@@ -223,6 +224,11 @@ bool TopControlsManager::IsAnimationCompleteAtTime(base::TimeTicks time) {
     return true;
   }
   return false;
+}
+
+void TopControlsManager::ResetBaseline() {
+  accumulated_scroll_delta_ = 0.f;
+  baseline_content_offset_ = ContentTopOffset();
 }
 
 }  // namespace cc

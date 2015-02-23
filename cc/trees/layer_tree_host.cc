@@ -668,19 +668,13 @@ void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetTopControlsShrinkBlinkSize(bool shrink) {
-  if (top_controls_shrink_blink_size_ == shrink)
-    return;
-
-  top_controls_shrink_blink_size_ = shrink;
-  SetNeedsCommit();
-}
-
-void LayerTreeHost::SetTopControlsHeight(float height) {
-  if (top_controls_height_ == height)
+void LayerTreeHost::SetTopControlsHeight(float height, bool shrink) {
+  if (top_controls_height_ == height &&
+      top_controls_shrink_blink_size_ == shrink)
     return;
 
   top_controls_height_ = height;
+  top_controls_shrink_blink_size_ = shrink;
   SetNeedsCommit();
 }
 

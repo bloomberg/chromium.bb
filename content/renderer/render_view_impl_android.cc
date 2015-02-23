@@ -13,18 +13,23 @@
 
 namespace content {
 
-// Check content::TopControlsState and cc::TopControlsState are kept in sync.
-static_assert(int(TOP_CONTROLS_STATE_SHOWN) == int(cc::SHOWN),
-              "mismatching enums: SHOWN");
-static_assert(int(TOP_CONTROLS_STATE_HIDDEN) == int(cc::HIDDEN),
-              "mismatching enums: HIDDEN");
-static_assert(int(TOP_CONTROLS_STATE_BOTH) == int(cc::BOTH),
-              "mismatching enums: BOTH");
+// Check content::TopControlsState, and blink::WebWidget::TopControlsState
+// are kept in sync.
+static_assert(
+    int(TOP_CONTROLS_STATE_SHOWN) == int(blink::WebTopControlsShown),
+    "mismatching enums: SHOWN");
+static_assert(
+    int(TOP_CONTROLS_STATE_HIDDEN) == int(blink::WebTopControlsHidden),
+    "mismatching enums: HIDDEN");
+static_assert(
+    int(TOP_CONTROLS_STATE_BOTH) == int(blink::WebTopControlsBoth),
+    "mismatching enums: BOTH");
 
-cc::TopControlsState ContentToCcTopControlsState(
+blink::WebTopControlsState ContentToBlink(
     TopControlsState state) {
-  return static_cast<cc::TopControlsState>(state);
+  return static_cast<blink::WebTopControlsState>(state);
 }
+
 
 // TODO(mvanouwerkerk): Stop calling this code path and delete it.
 void RenderViewImpl::OnUpdateTopControlsState(bool enable_hiding,
@@ -33,38 +38,35 @@ void RenderViewImpl::OnUpdateTopControlsState(bool enable_hiding,
   // TODO(tedchoc): Investigate why messages are getting here before the
   //                compositor has been initialized.
   LOG_IF(WARNING, !compositor_) << "OnUpdateTopControlsState was unhandled.";
-  if (compositor_) {
-    cc::TopControlsState constraints = cc::BOTH;
-    if (!enable_showing)
-      constraints = cc::HIDDEN;
-    if (!enable_hiding)
-      constraints = cc::SHOWN;
-    cc::TopControlsState current = cc::BOTH;
-    compositor_->UpdateTopControlsState(constraints, current, animate);
-    top_controls_constraints_ = constraints;
-  }
+  TopControlsState constraints = TOP_CONTROLS_STATE_BOTH;
+  if (!enable_showing)
+    constraints = TOP_CONTROLS_STATE_HIDDEN;
+  if (!enable_hiding)
+    constraints = TOP_CONTROLS_STATE_SHOWN;
+  TopControlsState current = TOP_CONTROLS_STATE_BOTH;
+
+  UpdateTopControlsState(constraints, current, animate);
 }
 
 void RenderViewImpl::UpdateTopControlsState(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) {
-  cc::TopControlsState constraints_cc =
-      ContentToCcTopControlsState(constraints);
-  cc::TopControlsState current_cc = ContentToCcTopControlsState(current);
-  if (compositor_)
-    compositor_->UpdateTopControlsState(constraints_cc, current_cc, animate);
-  top_controls_constraints_ = constraints_cc;
+  if (webwidget())
+    webwidget()->updateTopControlsState(ContentToBlink(constraints),
+                                        ContentToBlink(current),
+                                        animate);
+
+  top_controls_constraints_ = constraints;
 }
 
 void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
   if (delta.height == 0)
     return;
-  if (compositor_) {
-    cc::TopControlsState current = delta.height < 0 ? cc::SHOWN : cc::HIDDEN;
-    compositor_->UpdateTopControlsState(top_controls_constraints_,
-                                        current,
-                                        true);
-  }
+
+  TopControlsState current = delta.height < 0 ? TOP_CONTROLS_STATE_SHOWN
+                                              : TOP_CONTROLS_STATE_HIDDEN;
+
+  UpdateTopControlsState(top_controls_constraints_, current, true);
 }
 
 void RenderViewImpl::OnExtractSmartClipData(const gfx::Rect& rect) {
