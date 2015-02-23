@@ -3744,6 +3744,7 @@
             'css/parser/SizesCalcParserTest.cpp',
             'css/resolver/FontBuilderTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
+            'dom/CrossThreadTaskTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentMarkerControllerTest.cpp',
             'dom/DocumentTest.cpp',

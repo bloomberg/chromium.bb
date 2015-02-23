@@ -40,44 +40,28 @@
 
 namespace blink {
 
-// Traits for the CrossThreadTask.
+// Traits for the CrossThreadTask. They are used to map a cross-thread-capable
+// copied type to a CrossThreadTask constructor parameter type.
 template<typename T> struct CrossThreadTaskTraits {
     typedef const T& ParamType;
 };
 
+// We can copy pointer-like values.
 template<typename T> struct CrossThreadTaskTraits<T*> {
     typedef T* ParamType;
 };
-
 template<typename T> struct CrossThreadTaskTraits<PassRefPtr<T> > {
     typedef PassRefPtr<T> ParamType;
 };
-
 template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T> > {
     typedef PassOwnPtr<T> ParamType;
 };
-
-// FIXME: Oilpan: Using a RawPtr is not safe, because the RawPtr does not keep
-// the pointee alive while the ExecutionContextTask holds the RawPtr.
-//
-// - Ideally, we want to move the ExecutionContextTask to Oilpan's heap and use a Member.
-// However we cannot do that easily because the ExecutionContextTask outlives the thread
-// that created the ExecutionContextTask. Oilpan does not support objects that
-// outlives the thread that created the objects.
-//
-// - It's not either easy to keep the ExecutionContextTask off-heap
-// and use a Persistent handle. This is because the Persistent handle can cause a cycle.
-// It's possible that the ExecutionContextTask holds a Persistent handle to the object
-// that owns the ExecutionContextTask.
-//
-// Given the above, we cannot avoid using a RawPtr at the moment.
-// It's a responsibility of the caller sites to manage the lifetime of the pointee.
 template<typename T> struct CrossThreadTaskTraits<RawPtr<T> > {
     typedef RawPtr<T> ParamType;
 };
 
 template<typename P1, typename MP1>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask1 : public ExecutionContextTask {
+class CrossThreadTask1 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1);
     typedef CrossThreadTask1<P1, MP1> CrossThreadTask;
@@ -91,22 +75,22 @@ public:
 private:
     CrossThreadTask1(Method method, Param1 parameter1)
         : m_method(method)
-        , m_parameter1(parameter1)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1);
+        (*m_method)(context, WTF::ParamStorageTraits<P1>::unwrap(m_parameter1));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask2 : public ExecutionContextTask {
+class CrossThreadTask2 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2);
     typedef CrossThreadTask2<P1, MP1, P2, MP2> CrossThreadTask;
@@ -121,24 +105,26 @@ public:
 private:
     CrossThreadTask2(Method method, Param1 parameter1, Param2 parameter2)
         : m_method(method)
-        , m_parameter1(parameter1)
-        , m_parameter2(parameter2)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask3 : public ExecutionContextTask {
+class CrossThreadTask3 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3);
     typedef CrossThreadTask3<P1, MP1, P2, MP2, P3, MP3> CrossThreadTask;
@@ -154,26 +140,29 @@ public:
 private:
     CrossThreadTask3(Method method, Param1 parameter1, Param2 parameter2, Param3 parameter3)
         : m_method(method)
-        , m_parameter1(parameter1)
-        , m_parameter2(parameter2)
-        , m_parameter3(parameter3)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
+        , m_parameter3(WTF::ParamStorageTraits<P3>::wrap(parameter3))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2, m_parameter3);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2),
+            WTF::ParamStorageTraits<P3>::unwrap(m_parameter3));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
-    P3 m_parameter3;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
+    typename WTF::ParamStorageTraits<P3>::StorageType m_parameter3;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask4 : public ExecutionContextTask {
+class CrossThreadTask4 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4);
     typedef CrossThreadTask4<P1, MP1, P2, MP2, P3, MP3, P4, MP4> CrossThreadTask;
@@ -190,28 +179,32 @@ public:
 private:
     CrossThreadTask4(Method method, Param1 parameter1, Param2 parameter2, Param3 parameter3, Param4 parameter4)
         : m_method(method)
-        , m_parameter1(parameter1)
-        , m_parameter2(parameter2)
-        , m_parameter3(parameter3)
-        , m_parameter4(parameter4)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
+        , m_parameter3(WTF::ParamStorageTraits<P3>::wrap(parameter3))
+        , m_parameter4(WTF::ParamStorageTraits<P4>::wrap(parameter4))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2),
+            WTF::ParamStorageTraits<P3>::unwrap(m_parameter3),
+            WTF::ParamStorageTraits<P4>::unwrap(m_parameter4));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
-    P3 m_parameter3;
-    P4 m_parameter4;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
+    typename WTF::ParamStorageTraits<P3>::StorageType m_parameter3;
+    typename WTF::ParamStorageTraits<P4>::StorageType m_parameter4;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask5 : public ExecutionContextTask {
+class CrossThreadTask5 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5);
     typedef CrossThreadTask5<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5> CrossThreadTask;
@@ -229,30 +222,35 @@ public:
 private:
     CrossThreadTask5(Method method, Param1 parameter1, Param2 parameter2, Param3 parameter3, Param4 parameter4, Param5 parameter5)
         : m_method(method)
-        , m_parameter1(parameter1)
-        , m_parameter2(parameter2)
-        , m_parameter3(parameter3)
-        , m_parameter4(parameter4)
-        , m_parameter5(parameter5)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
+        , m_parameter3(WTF::ParamStorageTraits<P3>::wrap(parameter3))
+        , m_parameter4(WTF::ParamStorageTraits<P4>::wrap(parameter4))
+        , m_parameter5(WTF::ParamStorageTraits<P5>::wrap(parameter5))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2),
+            WTF::ParamStorageTraits<P3>::unwrap(m_parameter3),
+            WTF::ParamStorageTraits<P4>::unwrap(m_parameter4),
+            WTF::ParamStorageTraits<P5>::unwrap(m_parameter5));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
-    P3 m_parameter3;
-    P4 m_parameter4;
-    P5 m_parameter5;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
+    typename WTF::ParamStorageTraits<P3>::StorageType m_parameter3;
+    typename WTF::ParamStorageTraits<P4>::StorageType m_parameter4;
+    typename WTF::ParamStorageTraits<P5>::StorageType m_parameter5;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask6 : public ExecutionContextTask {
+class CrossThreadTask6 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6);
     typedef CrossThreadTask6<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6> CrossThreadTask;
@@ -271,32 +269,38 @@ public:
 private:
     CrossThreadTask6(Method method, Param1 parameter1, Param2 parameter2, Param3 parameter3, Param4 parameter4, Param5 parameter5, Param6 parameter6)
         : m_method(method)
-        , m_parameter1(parameter1)
-        , m_parameter2(parameter2)
-        , m_parameter3(parameter3)
-        , m_parameter4(parameter4)
-        , m_parameter5(parameter5)
-        , m_parameter6(parameter6)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
+        , m_parameter3(WTF::ParamStorageTraits<P3>::wrap(parameter3))
+        , m_parameter4(WTF::ParamStorageTraits<P4>::wrap(parameter4))
+        , m_parameter5(WTF::ParamStorageTraits<P5>::wrap(parameter5))
+        , m_parameter6(WTF::ParamStorageTraits<P6>::wrap(parameter6))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5, m_parameter6);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2),
+            WTF::ParamStorageTraits<P3>::unwrap(m_parameter3),
+            WTF::ParamStorageTraits<P4>::unwrap(m_parameter4),
+            WTF::ParamStorageTraits<P5>::unwrap(m_parameter5),
+            WTF::ParamStorageTraits<P6>::unwrap(m_parameter6));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
-    P3 m_parameter3;
-    P4 m_parameter4;
-    P5 m_parameter5;
-    P6 m_parameter6;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
+    typename WTF::ParamStorageTraits<P3>::StorageType m_parameter3;
+    typename WTF::ParamStorageTraits<P4>::StorageType m_parameter4;
+    typename WTF::ParamStorageTraits<P5>::StorageType m_parameter5;
+    typename WTF::ParamStorageTraits<P6>::StorageType m_parameter6;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask7 : public ExecutionContextTask {
+class CrossThreadTask7 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7);
     typedef CrossThreadTask7<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7> CrossThreadTask;
@@ -316,34 +320,41 @@ public:
 private:
     CrossThreadTask7(Method method, Param1 parameter1, Param2 parameter2, Param3 parameter3, Param4 parameter4, Param5 parameter5, Param6 parameter6, Param7 parameter7)
         : m_method(method)
-        , m_parameter1(parameter1)
-        , m_parameter2(parameter2)
-        , m_parameter3(parameter3)
-        , m_parameter4(parameter4)
-        , m_parameter5(parameter5)
-        , m_parameter6(parameter6)
-        , m_parameter7(parameter7)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
+        , m_parameter3(WTF::ParamStorageTraits<P3>::wrap(parameter3))
+        , m_parameter4(WTF::ParamStorageTraits<P4>::wrap(parameter4))
+        , m_parameter5(WTF::ParamStorageTraits<P5>::wrap(parameter5))
+        , m_parameter6(WTF::ParamStorageTraits<P6>::wrap(parameter6))
+        , m_parameter7(WTF::ParamStorageTraits<P7>::wrap(parameter7))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5, m_parameter6, m_parameter7);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2),
+            WTF::ParamStorageTraits<P3>::unwrap(m_parameter3),
+            WTF::ParamStorageTraits<P4>::unwrap(m_parameter4),
+            WTF::ParamStorageTraits<P5>::unwrap(m_parameter5),
+            WTF::ParamStorageTraits<P6>::unwrap(m_parameter6),
+            WTF::ParamStorageTraits<P7>::unwrap(m_parameter7));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
-    P3 m_parameter3;
-    P4 m_parameter4;
-    P5 m_parameter5;
-    P6 m_parameter6;
-    P7 m_parameter7;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
+    typename WTF::ParamStorageTraits<P3>::StorageType m_parameter3;
+    typename WTF::ParamStorageTraits<P4>::StorageType m_parameter4;
+    typename WTF::ParamStorageTraits<P5>::StorageType m_parameter5;
+    typename WTF::ParamStorageTraits<P6>::StorageType m_parameter6;
+    typename WTF::ParamStorageTraits<P7>::StorageType m_parameter7;
 };
 
 template<typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5, typename P6, typename MP6, typename P7, typename MP7, typename P8, typename MP8>
-class GC_PLUGIN_IGNORE("crbug.com/378192") CrossThreadTask8 : public ExecutionContextTask {
+class CrossThreadTask8 : public ExecutionContextTask {
 public:
     typedef void (*Method)(ExecutionContext*, MP1, MP2, MP3, MP4, MP5, MP6, MP7, MP8);
     typedef CrossThreadTask8<P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5, P6, MP6, P7, MP7, P8, MP8> CrossThreadTask;
@@ -363,33 +374,41 @@ public:
 
 private:
     CrossThreadTask8(Method method, Param1 parameter1, Param2 parameter2, Param3 parameter3, Param4 parameter4, Param5 parameter5, Param6 parameter6, Param7 parameter7, Param8 parameter8)
-    : m_method(method)
-    , m_parameter1(parameter1)
-    , m_parameter2(parameter2)
-    , m_parameter3(parameter3)
-    , m_parameter4(parameter4)
-    , m_parameter5(parameter5)
-    , m_parameter6(parameter6)
-    , m_parameter7(parameter7)
-    , m_parameter8(parameter8)
+        : m_method(method)
+        , m_parameter1(WTF::ParamStorageTraits<P1>::wrap(parameter1))
+        , m_parameter2(WTF::ParamStorageTraits<P2>::wrap(parameter2))
+        , m_parameter3(WTF::ParamStorageTraits<P3>::wrap(parameter3))
+        , m_parameter4(WTF::ParamStorageTraits<P4>::wrap(parameter4))
+        , m_parameter5(WTF::ParamStorageTraits<P5>::wrap(parameter5))
+        , m_parameter6(WTF::ParamStorageTraits<P6>::wrap(parameter6))
+        , m_parameter7(WTF::ParamStorageTraits<P7>::wrap(parameter7))
+        , m_parameter8(WTF::ParamStorageTraits<P8>::wrap(parameter8))
     {
     }
 
     virtual void performTask(ExecutionContext* context)
     {
-        (*m_method)(context, m_parameter1, m_parameter2, m_parameter3, m_parameter4, m_parameter5, m_parameter6, m_parameter7, m_parameter8);
+        (*m_method)(context,
+            WTF::ParamStorageTraits<P1>::unwrap(m_parameter1),
+            WTF::ParamStorageTraits<P2>::unwrap(m_parameter2),
+            WTF::ParamStorageTraits<P3>::unwrap(m_parameter3),
+            WTF::ParamStorageTraits<P4>::unwrap(m_parameter4),
+            WTF::ParamStorageTraits<P5>::unwrap(m_parameter5),
+            WTF::ParamStorageTraits<P6>::unwrap(m_parameter6),
+            WTF::ParamStorageTraits<P7>::unwrap(m_parameter7),
+            WTF::ParamStorageTraits<P8>::unwrap(m_parameter8));
     }
 
 private:
     Method m_method;
-    P1 m_parameter1;
-    P2 m_parameter2;
-    P3 m_parameter3;
-    P4 m_parameter4;
-    P5 m_parameter5;
-    P6 m_parameter6;
-    P7 m_parameter7;
-    P8 m_parameter8;
+    typename WTF::ParamStorageTraits<P1>::StorageType m_parameter1;
+    typename WTF::ParamStorageTraits<P2>::StorageType m_parameter2;
+    typename WTF::ParamStorageTraits<P3>::StorageType m_parameter3;
+    typename WTF::ParamStorageTraits<P4>::StorageType m_parameter4;
+    typename WTF::ParamStorageTraits<P5>::StorageType m_parameter5;
+    typename WTF::ParamStorageTraits<P6>::StorageType m_parameter6;
+    typename WTF::ParamStorageTraits<P7>::StorageType m_parameter7;
+    typename WTF::ParamStorageTraits<P8>::StorageType m_parameter8;
 };
 
 template<typename P1, typename MP1>
