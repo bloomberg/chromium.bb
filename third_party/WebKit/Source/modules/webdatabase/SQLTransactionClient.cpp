@@ -39,6 +39,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
 
 namespace blink {
@@ -55,7 +56,7 @@ void SQLTransactionClient::didCommitWriteTransaction(Database* database)
     String databaseName = database->stringIdentifier();
     ExecutionContext* executionContext = database->databaseContext()->executionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(createCrossThreadTask(&databaseModified, originIdentifier, databaseName));
+        executionContext->postTask(FROM_HERE, createCrossThreadTask(&databaseModified, originIdentifier, databaseName));
     } else {
         databaseModified(originIdentifier, databaseName);
     }

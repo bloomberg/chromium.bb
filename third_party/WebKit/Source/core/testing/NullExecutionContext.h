@@ -24,7 +24,7 @@ public:
     virtual void disableEval(const String&) override { }
     virtual String userAgent(const KURL&) const override { return String(); }
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>) override;
+    virtual void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override;
 
     virtual EventTarget* errorEventTarget() override { return nullptr; }
     virtual EventQueue* eventQueue() const override { return m_queue.get(); }

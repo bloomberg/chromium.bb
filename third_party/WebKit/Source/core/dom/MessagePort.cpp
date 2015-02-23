@@ -127,7 +127,7 @@ PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 void MessagePort::messageAvailable()
 {
     ASSERT(executionContext());
-    executionContext()->postTask(createCrossThreadTask(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
+    executionContext()->postTask(FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
 }
 
 void MessagePort::start()

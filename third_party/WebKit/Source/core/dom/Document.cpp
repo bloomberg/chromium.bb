@@ -4919,14 +4919,14 @@ void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleM
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
-void Document::postTask(PassOwnPtr<ExecutionContextTask> task)
+void Document::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postTask(FROM_HERE, task);
+    m_taskRunner->postTask(location, task);
 }
 
-void Document::postInspectorTask(PassOwnPtr<ExecutionContextTask> task)
+void Document::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postInspectorTask(FROM_HERE, task);
+    m_taskRunner->postInspectorTask(location, task);
 }
 
 void Document::tasksWereSuspended()

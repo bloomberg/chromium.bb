@@ -268,7 +268,7 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
 
 void WebEmbeddedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postTask(task);
+    toWebLocalFrameImpl(m_mainFrame)->frame()->document()->postTask(FROM_HERE, task);
 }
 
 bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)

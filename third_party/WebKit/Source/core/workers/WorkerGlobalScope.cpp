@@ -178,7 +178,7 @@ void WorkerGlobalScope::close()
     // After m_closing is set, all the tasks in the queue continue to be fetched but only
     // tasks with isCleanupTask()==true will be executed.
     m_closing = true;
-    postTask(CloseWorkerGlobalScopeTask::create());
+    postTask(FROM_HERE, CloseWorkerGlobalScopeTask::create());
 }
 
 WorkerConsole* WorkerGlobalScope::console()
@@ -195,7 +195,7 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
     return m_navigator.get();
 }
 
-void WorkerGlobalScope::postTask(PassOwnPtr<ExecutionContextTask> task)
+void WorkerGlobalScope::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
     thread()->postTask(task);
 }
@@ -300,7 +300,7 @@ void WorkerGlobalScope::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>
 {
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     if (!isContextThread()) {
-        postTask(AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
+        postTask(FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
         return;
     }
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);

@@ -119,7 +119,7 @@ bool WorkerEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> prpEvent)
     InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event.release(), task.get());
-    m_executionContext->postTask(task.release());
+    m_executionContext->postTask(FROM_HERE, task.release());
     return true;
 }
 

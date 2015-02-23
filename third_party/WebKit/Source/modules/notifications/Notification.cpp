@@ -160,7 +160,7 @@ void Notification::close()
 
     if (m_persistentId.isEmpty()) {
         // Fire the close event asynchronously.
-        executionContext()->postTask(createSameThreadTask(&Notification::dispatchCloseEvent, this));
+        executionContext()->postTask(FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, this));
 
         m_state = NotificationStateClosing;
         notificationManager()->close(this);
