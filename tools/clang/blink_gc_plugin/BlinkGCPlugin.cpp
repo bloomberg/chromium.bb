@@ -201,8 +201,7 @@ class CollectVisitor : public RecursiveASTVisitor<CollectVisitor> {
 
   // Collect tracing method definitions, but don't traverse method bodies.
   bool TraverseCXXMethodDecl(CXXMethodDecl* method) {
-    if (method->isThisDeclarationADefinition() &&
-        Config::IsTraceMethod(method, nullptr))
+    if (method->isThisDeclarationADefinition() && Config::IsTraceMethod(method))
       trace_decls_.push_back(method);
     return true;
   }
@@ -384,7 +383,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       CXXRecordDecl* decl = base->getPointeeType()->getAsCXXRecordDecl();
       if (decl)
         CheckTraceFieldCall(expr->getMemberName().getAsString(), decl, arg);
-      if (expr->getMemberName().getAsString() == kTraceImplName)
+      if (Config::IsTraceImplName(expr->getMemberName().getAsString()))
         delegates_to_traceimpl_ = true;
       return true;
     }
@@ -393,7 +392,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       if (CheckTraceFieldCall(expr) || CheckRegisterWeakMembers(expr))
         return true;
 
-      if (expr->getMethodDecl()->getNameAsString() == kTraceImplName) {
+      if (Config::IsTraceImplName(expr->getMethodDecl()->getNameAsString())) {
         delegates_to_traceimpl_ = true;
         return true;
       }
@@ -467,11 +466,14 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
       return false;
 
     FunctionDecl* fn = dyn_cast<FunctionDecl>(callee->getMemberDecl());
-    if (!fn || !Config::IsTraceMethod(fn, nullptr))
+    if (!fn || !Config::IsTraceMethod(fn))
       return false;
 
     if (trace_->getName() == kTraceImplName) {
       if (fn->getName() != kTraceName)
+        return false;
+    } else if (trace_->getName() == kTraceAfterDispatchImplName) {
+      if (fn->getName() != kTraceAfterDispatchName)
         return false;
     } else {
       // Currently, a manually dispatched class cannot have mixin bases (having
@@ -1313,21 +1315,20 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
   // Determine what type of tracing method this is (dispatch or trace).
   void CheckTraceOrDispatchMethod(RecordInfo* parent, CXXMethodDecl* method) {
-    bool isTraceAfterDispatch;
-    if (Config::IsTraceMethod(method, &isTraceAfterDispatch)) {
-      if (isTraceAfterDispatch || !parent->GetTraceDispatchMethod()) {
-        CheckTraceMethod(parent, method, isTraceAfterDispatch);
-      }
-      // Dispatch methods are checked when we identify subclasses.
+    Config::TraceMethodType trace_type = Config::GetTraceMethodType(method);
+    if (trace_type != Config::TRACE_METHOD ||
+        !parent->GetTraceDispatchMethod()) {
+      CheckTraceMethod(parent, method, trace_type);
     }
+    // Dispatch methods are checked when we identify subclasses.
   }
 
   // Check an actual trace method.
   void CheckTraceMethod(RecordInfo* parent,
                         CXXMethodDecl* trace,
-                        bool isTraceAfterDispatch) {
+                        Config::TraceMethodType trace_type) {
     // A trace method must not override any non-virtual trace methods.
-    if (!isTraceAfterDispatch) {
+    if (trace_type == Config::TRACE_METHOD) {
       for (RecordInfo::Bases::iterator it = parent->GetBases().begin();
            it != parent->GetBases().end();
            ++it) {
@@ -1341,7 +1342,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     visitor.TraverseCXXMethodDecl(trace);
 
     // Skip reporting if this trace method is a just delegate to
-    // traceImpl method. We will report on CheckTraceMethod on traceImpl method.
+    // traceImpl (or traceAfterDispatchImpl) method. We will report on
+    // CheckTraceMethod on traceImpl method.
     if (visitor.delegates_to_traceimpl())
       return;
 

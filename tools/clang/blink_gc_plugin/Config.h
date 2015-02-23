@@ -12,6 +12,8 @@
 #ifndef TOOLS_BLINK_GC_PLUGIN_CONFIG_H_
 #define TOOLS_BLINK_GC_PLUGIN_CONFIG_H_
 
+#include <cassert>
+
 #include "clang/AST/AST.h"
 #include "clang/AST/Attr.h"
 
@@ -21,6 +23,7 @@ const char kTraceName[] = "trace";
 const char kTraceImplName[] = "traceImpl";
 const char kFinalizeName[] = "finalizeGarbageCollectedObject";
 const char kTraceAfterDispatchName[] = "traceAfterDispatch";
+const char kTraceAfterDispatchImplName[] = "traceAfterDispatchImpl";
 const char kRegisterWeakMembersName[] = "registerWeakMembers";
 const char kHeapAllocatorName[] = "HeapAllocator";
 const char kTraceIfNeededName[] = "TraceIfNeeded";
@@ -202,28 +205,50 @@ class Config {
     return IsVisitorPtrType(formal_type);
   }
 
-  static bool IsTraceMethod(clang::FunctionDecl* method,
-                            bool* is_trace_after_dispatch) {
+  enum TraceMethodType {
+    NOT_TRACE_METHOD,
+    TRACE_METHOD,
+    TRACE_AFTER_DISPATCH_METHOD,
+    TRACE_IMPL_METHOD,
+    TRACE_AFTER_DISPATCH_IMPL_METHOD
+  };
+
+  static TraceMethodType GetTraceMethodType(clang::FunctionDecl* method) {
     if (method->getNumParams() != 1)
-      return false;
+      return NOT_TRACE_METHOD;
 
     const std::string& name = method->getNameAsString();
     if (name != kTraceName && name != kTraceAfterDispatchName &&
-        name != kTraceImplName)
-      return false;
+        name != kTraceImplName && name != kTraceAfterDispatchImplName)
+      return NOT_TRACE_METHOD;
 
     const clang::QualType& formal_type = method->getParamDecl(0)->getType();
-    if (name == kTraceImplName) {
+    if (name == kTraceImplName || name == kTraceAfterDispatchImplName) {
       if (!IsVisitorDispatcherType(formal_type))
-        return false;
+        return NOT_TRACE_METHOD;
     } else if (!IsVisitorPtrType(formal_type)) {
-      return false;
+      return NOT_TRACE_METHOD;
     }
 
-    if (is_trace_after_dispatch)
-      *is_trace_after_dispatch = (name == kTraceAfterDispatchName);
+    if (name == kTraceName)
+      return TRACE_METHOD;
+    if (name == kTraceAfterDispatchName)
+      return TRACE_AFTER_DISPATCH_METHOD;
+    if (name == kTraceImplName)
+      return TRACE_AFTER_DISPATCH_METHOD;
+    if (name == kTraceAfterDispatchImplName)
+      return TRACE_AFTER_DISPATCH_IMPL_METHOD;
 
-    return true;
+    assert(false && "Should not reach here");
+    return NOT_TRACE_METHOD;
+  }
+
+  static bool IsTraceMethod(clang::FunctionDecl* method) {
+    return GetTraceMethodType(method) != NOT_TRACE_METHOD;
+  }
+
+  static bool IsTraceImplName(const std::string& name) {
+    return name == kTraceImplName || name == kTraceAfterDispatchImplName;
   }
 
   static bool StartsWith(const std::string& str, const std::string& prefix) {

@@ -426,39 +426,45 @@ void RecordInfo::DetermineTracingMethods() {
   determined_trace_methods_ = true;
   if (Config::IsGCBase(name_))
     return;
-  CXXMethodDecl* trace = 0;
-  CXXMethodDecl* traceAfterDispatch = 0;
-  bool isTraceAfterDispatch;
-  bool hasAdjustAndMark = false;
-  bool hasIsHeapObjectAlive = false;
+  CXXMethodDecl* trace = nullptr;
+  CXXMethodDecl* trace_after_dispatch = nullptr;
+  bool has_adjust_and_mark = false;
+  bool has_is_heap_object_alive = false;
   for (CXXRecordDecl::method_iterator it = record_->method_begin();
        it != record_->method_end();
        ++it) {
-    if (Config::IsTraceMethod(*it, &isTraceAfterDispatch)) {
-      if (isTraceAfterDispatch) {
-        traceAfterDispatch = *it;
-      } else {
+    switch (Config::GetTraceMethodType(*it)) {
+      case Config::TRACE_METHOD:
         trace = *it;
-      }
-    } else if (it->getNameAsString() == kFinalizeName) {
-      finalize_dispatch_method_ = *it;
-    } else if (it->getNameAsString() == kAdjustAndMarkName) {
-      hasAdjustAndMark = true;
-    } else if (it->getNameAsString() == kIsHeapObjectAliveName) {
-      hasIsHeapObjectAlive = true;
+        break;
+      case Config::TRACE_AFTER_DISPATCH_METHOD:
+        trace_after_dispatch = *it;
+        break;
+      case Config::TRACE_IMPL_METHOD:
+      case Config::TRACE_AFTER_DISPATCH_IMPL_METHOD:
+        break;
+      case Config::NOT_TRACE_METHOD:
+        if (it->getNameAsString() == kFinalizeName) {
+          finalize_dispatch_method_ = *it;
+        } else if (it->getNameAsString() == kAdjustAndMarkName) {
+          has_adjust_and_mark = true;
+        } else if (it->getNameAsString() == kIsHeapObjectAliveName) {
+          has_is_heap_object_alive = true;
+        }
+        break;
     }
   }
   // Record if class defines the two GCMixin methods.
   has_gc_mixin_methods_ =
-      hasAdjustAndMark && hasIsHeapObjectAlive ? kTrue : kFalse;
-  if (traceAfterDispatch) {
-    trace_method_ = traceAfterDispatch;
+      has_adjust_and_mark && has_is_heap_object_alive ? kTrue : kFalse;
+  if (trace_after_dispatch) {
+    trace_method_ = trace_after_dispatch;
     trace_dispatch_method_ = trace;
   } else {
     // TODO: Can we never have a dispatch method called trace without the same
     // class defining a traceAfterDispatch method?
     trace_method_ = trace;
-    trace_dispatch_method_ = 0;
+    trace_dispatch_method_ = nullptr;
   }
   if (trace_dispatch_method_ && finalize_dispatch_method_)
     return;
