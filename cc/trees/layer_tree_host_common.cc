@@ -337,7 +337,8 @@ template <typename LayerType> static inline bool IsRootLayer(LayerType* layer) {
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
   return layer->Is3dSorted() && layer->parent() &&
-         layer->parent()->Is3dSorted();
+         layer->parent()->Is3dSorted() &&
+         (layer->parent()->sorting_context_id() == layer->sorting_context_id());
 }
 
 template <typename LayerType>

@@ -2975,6 +2975,78 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FALSE(child->draw_properties().sorted_for_recursion);
 }
 
+TEST_F(LayerTreeHostCommonTest, WillSortAtContextBoundary) {
+  // Creates a layer tree that looks as follows:
+  // * root (sorting-context-id1)
+  //   * parent (sorting-context-id2)
+  //     * child1 (sorting-context-id2)
+  //     * child2 (sorting-context-id2)
+  //
+  // This test ensures that we sort at |parent| even though both it and root are
+  // set to be 3d sorted.
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+
+  scoped_ptr<LayerImpl> root_ptr(LayerImpl::Create(host_impl.active_tree(), 1));
+  LayerImpl* root = root_ptr.get();
+  scoped_ptr<LayerImpl> parent_ptr(
+      LayerImpl::Create(host_impl.active_tree(), 2));
+  LayerImpl* parent = parent_ptr.get();
+  scoped_ptr<LayerImpl> child1_ptr(
+      LayerImpl::Create(host_impl.active_tree(), 3));
+  LayerImpl* child1 = child1_ptr.get();
+  scoped_ptr<LayerImpl> child2_ptr(
+      LayerImpl::Create(host_impl.active_tree(), 4));
+  LayerImpl* child2 = child2_ptr.get();
+
+  gfx::Transform identity_matrix;
+  gfx::Transform below_matrix;
+  below_matrix.Translate3d(0.f, 0.f, -10.f);
+  gfx::Transform above_matrix;
+  above_matrix.Translate3d(0.f, 0.f, 10.f);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, true,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, true,
+                               true);
+  SetLayerPropertiesForTesting(child1, above_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, true,
+                               false);
+  SetLayerPropertiesForTesting(child2, below_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, true,
+                               false);
+
+  root->Set3dSortingContextId(3);
+  root->SetDrawsContent(true);
+  parent->Set3dSortingContextId(7);
+  parent->SetDrawsContent(true);
+  child1->Set3dSortingContextId(7);
+  child1->SetDrawsContent(true);
+  child2->Set3dSortingContextId(7);
+  child2->SetDrawsContent(true);
+
+  parent->AddChild(child1_ptr.Pass());
+  parent->AddChild(child2_ptr.Pass());
+  root->AddChild(parent_ptr.Pass());
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_ptr.get(), root->bounds(), &render_surface_layer_list);
+  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_TRUE(root->render_surface());
+  EXPECT_EQ(2u, render_surface_layer_list.size());
+
+  EXPECT_EQ(3u, parent->render_surface()->layer_list().size());
+  EXPECT_EQ(child2->id(), parent->render_surface()->layer_list().at(0)->id());
+  EXPECT_EQ(parent->id(), parent->render_surface()->layer_list().at(1)->id());
+  EXPECT_EQ(child1->id(), parent->render_surface()->layer_list().at(2)->id());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        SingularNonAnimatingTransformDoesNotPreventClearingDrawProperties) {
   scoped_refptr<Layer> root = Layer::Create();
