@@ -533,6 +533,7 @@ float toRestrictedFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionSt
 
 double toDoubleSlow(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
+    ASSERT(!value->IsNumber());
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::TryCatch block(isolate);
     double doubleValue = value->NumberValue();
