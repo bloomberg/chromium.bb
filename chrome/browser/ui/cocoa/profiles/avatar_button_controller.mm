@@ -14,11 +14,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/appkit_utils.h"
-#import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -102,7 +102,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 - (void)drawBezelWithFrame:(NSRect)frame
                     inView:(NSView*)controlView {
   HoverState hoverState =
-      [base::mac::ObjCCastStrict<HoverImageButton>(controlView) hoverState];
+      [base::mac::ObjCCastStrict<AvatarButton>(controlView) hoverState];
   ui::NinePartImageIds imageIds = kNormalBorderImageIds;
   if (isThemedWindow_)
     imageIds = kThemedBorderImageIds;
@@ -146,28 +146,29 @@ NSImage* GetImageFromResourceID(int resourceId) {
         ThemeServiceFactory::GetForProfile(browser->profile());
     isThemedWindow_ = !themeService->UsingSystemTheme();
 
-    HoverImageButton* hoverButton =
-        [[HoverImageButton alloc] initWithFrame:NSZeroRect];
-    button_.reset(hoverButton);
+    AvatarButton* avatarButton =
+        [[AvatarButton alloc] initWithFrame:NSZeroRect];
+    button_.reset(avatarButton);
     base::scoped_nsobject<CustomThemeButtonCell> cell(
         [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
-    [button_ setCell:cell.get()];
+    [avatarButton setCell:cell.get()];
 
     // Check if the account already has an authentication error.
     SigninErrorController* errorController =
         profiles::GetSigninErrorController(browser->profile());
     hasError_ = errorController && errorController->HasError();
 
-    [button_ setWantsLayer:YES];
-    [self setView:button_];
+    [avatarButton setWantsLayer:YES];
+    [self setView:avatarButton];
 
-    [button_ setBezelStyle:NSShadowlessSquareBezelStyle];
-    [button_ setButtonType:NSMomentaryChangeButton];
-    [button_ setBordered:YES];
+    [avatarButton setBezelStyle:NSShadowlessSquareBezelStyle];
+    [avatarButton setButtonType:NSMomentaryChangeButton];
+    [avatarButton setBordered:YES];
 
-    [button_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
-    [button_ setTarget:self];
-    [button_ setAction:@selector(buttonClicked:)];
+    [avatarButton setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+    [avatarButton setTarget:self];
+    [avatarButton setAction:@selector(buttonClicked:)];
+    [avatarButton setRightAction:@selector(buttonRightClicked:)];
 
     [self updateAvatarButtonAndLayoutParent:NO];
 
@@ -232,8 +233,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));
   [[button_ cell] setHasError:hasError_ withTitle:buttonTitle];
 
-  HoverImageButton* button =
-      base::mac::ObjCCastStrict<HoverImageButton>(button_);
+  AvatarButton* button =
+      base::mac::ObjCCastStrict<AvatarButton>(button_);
   if (useGenericButton) {
     [button setDefaultImage:GetImageFromResourceID(
         IDR_AVATAR_MAC_BUTTON_AVATAR)];

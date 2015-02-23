@@ -18,18 +18,27 @@ namespace cocoa_test_event_utils {
 // basic, flesh out as needed.  Points are all in window coordinates;
 // where the window is not specified, coordinate system is undefined
 // (but will be repeated when the event is queried).
-NSEvent* MouseEventWithType(NSEventType type, NSUInteger modifiers);
 NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
                            NSUInteger modifiers);
-NSEvent* LeftMouseDownAtPoint(NSPoint point);
-NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
+NSEvent* MouseEventWithType(NSEventType type, NSUInteger modifiers);
+NSEvent* MouseEventAtPointInWindow(NSPoint point,
+                                   NSEventType type,
+                                   NSWindow* window,
+                                   NSUInteger clickCount);
 NSEvent* RightMouseDownAtPoint(NSPoint point);
 NSEvent* RightMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
+NSEvent* LeftMouseDownAtPoint(NSPoint point);
+NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 
 // Return a mouse down and an up event with the given |clickCount| at
 // |view|'s midpoint.
 std::pair<NSEvent*, NSEvent*> MouseClickInView(NSView* view,
                                                NSUInteger clickCount);
+
+// Return a right mouse down and an up event with the given |clickCount| at
+// |view|'s midpoint.
+std::pair<NSEvent*, NSEvent*> RightMouseClickInView(NSView* view,
+                                                    NSUInteger clickCount);
 
 // Returns a key event with the given character.
 NSEvent* KeyEventWithCharacter(unichar c);

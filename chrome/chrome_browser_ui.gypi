@@ -623,6 +623,8 @@
       'browser/ui/cocoa/presentation_mode_controller.mm',
       'browser/ui/cocoa/profiles/avatar_base_controller.h',
       'browser/ui/cocoa/profiles/avatar_base_controller.mm',
+      'browser/ui/cocoa/profiles/avatar_button.h',
+      'browser/ui/cocoa/profiles/avatar_button.mm',
       'browser/ui/cocoa/profiles/avatar_button_controller.h',
       'browser/ui/cocoa/profiles/avatar_button_controller.mm',
       'browser/ui/cocoa/profiles/avatar_icon_controller.h',

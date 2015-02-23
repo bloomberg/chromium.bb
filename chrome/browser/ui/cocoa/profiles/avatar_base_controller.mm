@@ -33,6 +33,7 @@ const CGFloat kMenuXOffsetAdjust = 2.0;
 @interface AvatarBaseController (Private)
 // Shows the avatar bubble.
 - (IBAction)buttonClicked:(id)sender;
+- (IBAction)buttonRightClicked:(id)sender;
 
 - (void)bubbleWillClose:(NSNotification*)notif;
 
@@ -213,8 +214,14 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   BrowserWindow::AvatarBubbleMode mode =
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
 
-  if ([NSEvent modifierFlags] & NSCommandKeyMask)
-    mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
+  [self showAvatarBubbleAnchoredAt:button_
+                          withMode:mode
+                   withServiceType:signin::GAIA_SERVICE_TYPE_NONE];
+}
+
+- (IBAction)buttonRightClicked:(id)sender {
+  BrowserWindow::AvatarBubbleMode mode =
+      BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
 
   [self showAvatarBubbleAnchoredAt:button_
                           withMode:mode
