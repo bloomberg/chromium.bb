@@ -359,7 +359,7 @@ PrintingContext::Result PrintingContextWin::InitializeSettings(
 
 HWND PrintingContextWin::GetRootWindow(gfx::NativeView view) {
   HWND window = NULL;
-  if (view)
+  if (view && view->GetHost())
     window = view->GetHost()->GetAcceleratedWidget();
   if (!window) {
     // TODO(maruel):  crbug.com/1214347 Get the right browser window instead.
