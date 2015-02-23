@@ -35,22 +35,14 @@ PermissionMessages SettingsOverrideAPIPermission::GetMessages() const {
   // in ChromePermissionMessageProvider.
   switch (id()) {
     case kHomepage: {
-      // TODO(sashab): Add a parameter rule in ChromePermissionMessageProvider:
-      // kHomepage -> IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE
       string_id = IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE;
       break;
     }
     case kStartupPages: {
-      // TODO(sashab): Add a parameter rule in ChromePermissionMessageProvider:
-      // kStartupPages ->
-      // IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE
       string_id = IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE;
       break;
     }
     case kSearchProvider: {
-      // TODO(sashab): Add a parameter rule in ChromePermissionMessageProvider:
-      // kSearchProvider ->
-      // IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE
       string_id = IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE;
       break;
     }

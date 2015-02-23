@@ -55,14 +55,16 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   // permission messages. The messages are tested for existence in any order.
   testing::AssertionResult CheckManifestProducesPermissions() {
     return CheckManifestProducesPermissions(
-        std::vector<std::string>(), GetPermissionMessages(), "messages");
+        std::vector<std::string>(), GetPermissionMessages(),
+        GetCoalescedPermissionMessages(), "messages");
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1) {
     std::vector<std::string> expected_messages;
     expected_messages.push_back(expected_message_1);
     return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(), "messages");
+        expected_messages, GetPermissionMessages(),
+        GetCoalescedPermissionMessages(), "messages");
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -71,7 +73,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
     return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(), "messages");
+        expected_messages, GetPermissionMessages(),
+        GetCoalescedPermissionMessages(), "messages");
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -82,7 +85,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
     return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(), "messages");
+        expected_messages, GetPermissionMessages(),
+        GetCoalescedPermissionMessages(), "messages");
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -95,7 +99,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_3);
     expected_messages.push_back(expected_message_4);
     return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(), "messages");
+        expected_messages, GetPermissionMessages(),
+        GetCoalescedPermissionMessages(), "messages");
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -110,7 +115,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_4);
     expected_messages.push_back(expected_message_5);
     return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(), "messages");
+        expected_messages, GetPermissionMessages(),
+        GetCoalescedPermissionMessages(), "messages");
   }
 
   // Checks whether the currently installed app or extension produces the given
@@ -118,16 +124,17 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   // expected permission messages. The messages are tested for existence in any
   // order.
   testing::AssertionResult CheckManifestProducesHostPermissions() {
-    return CheckManifestProducesPermissions(std::vector<std::string>(),
-                                            GetHostPermissionMessages(),
-                                            "host messages");
+    return CheckManifestProducesPermissions(
+        std::vector<std::string>(), GetHostPermissionMessages(),
+        GetCoalescedHostPermissionMessages(), "host messages");
   }
   testing::AssertionResult CheckManifestProducesHostPermissions(
       const std::string& expected_message_1) {
     std::vector<std::string> expected_messages;
     expected_messages.push_back(expected_message_1);
     return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(), "host messages");
+        expected_messages, GetHostPermissionMessages(),
+        GetCoalescedHostPermissionMessages(), "host messages");
   }
   testing::AssertionResult CheckManifestProducesHostPermissions(
       const std::string& expected_message_1,
@@ -136,7 +143,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
     return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(), "host messages");
+        expected_messages, GetHostPermissionMessages(),
+        GetCoalescedHostPermissionMessages(), "host messages");
   }
   testing::AssertionResult CheckManifestProducesHostPermissions(
       const std::string& expected_message_1,
@@ -147,7 +155,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
     return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(), "host messages");
+        expected_messages, GetHostPermissionMessages(),
+        GetCoalescedHostPermissionMessages(), "host messages");
   }
   testing::AssertionResult CheckManifestProducesHostPermissions(
       const std::string& expected_message_1,
@@ -160,7 +169,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_3);
     expected_messages.push_back(expected_message_4);
     return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(), "host messages");
+        expected_messages, GetHostPermissionMessages(),
+        GetCoalescedHostPermissionMessages(), "host messages");
   }
   testing::AssertionResult CheckManifestProducesHostPermissions(
       const std::string& expected_message_1,
@@ -175,12 +185,23 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_4);
     expected_messages.push_back(expected_message_5);
     return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(), "host messages");
+        expected_messages, GetHostPermissionMessages(),
+        GetCoalescedHostPermissionMessages(), "host messages");
   }
 
  private:
   std::vector<base::string16> GetPermissionMessages() {
     return app_->permissions_data()->GetPermissionMessageStrings();
+  }
+
+  std::vector<base::string16> GetCoalescedPermissionMessages() {
+    CoalescedPermissionMessages messages =
+        app_->permissions_data()->GetCoalescedPermissionMessages();
+    std::vector<base::string16> message_strings;
+    for (const auto& message : messages) {
+      message_strings.push_back(message.message());
+    }
+    return message_strings;
   }
 
   std::vector<base::string16> GetHostPermissionMessages() {
@@ -199,10 +220,52 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     return std::vector<base::string16>();
   }
 
+  std::vector<base::string16> GetCoalescedHostPermissionMessages() {
+    // If we have a host permission, exactly one message will contain the
+    // details for it.
+    CoalescedPermissionMessages messages =
+        app_->permissions_data()->GetCoalescedPermissionMessages();
+    for (const auto& message : messages) {
+      if (!message.submessages().empty())
+        return message.submessages();
+    }
+    return std::vector<base::string16>();
+  }
+
+  // TODO(sashab): Remove the legacy messages from this function once the legacy
+  // messages system is no longer used.
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::vector<std::string>& expected_messages,
+      const std::vector<base::string16>& actual_legacy_messages,
       const std::vector<base::string16>& actual_messages,
       const std::string& message_type_name) {
+    // Check the new messages system matches the legacy one.
+    if (actual_legacy_messages.size() != actual_messages.size()) {
+      // Message: Got 2 messages in the legacy system { "Bar", "Baz" }, but 0 in
+      // the new system {}
+      return testing::AssertionFailure()
+             << "Got " << actual_legacy_messages.size() << " "
+             << message_type_name << " in the legacy system "
+             << MessagesVectorToString(actual_legacy_messages) << ", but "
+             << actual_messages.size() << " in the new system "
+             << MessagesVectorToString(actual_messages);
+    }
+
+    for (const auto& actual_message : actual_messages) {
+      if (std::find(actual_legacy_messages.begin(),
+                    actual_legacy_messages.end(),
+                    actual_message) == actual_legacy_messages.end()) {
+        // Message: Got { "Foo" } in the legacy messages system, but { "Bar",
+        // "Baz" } in the new system
+        return testing::AssertionFailure()
+               << "Got " << MessagesVectorToString(actual_legacy_messages)
+               << " in the legacy " << message_type_name << " system, but "
+               << MessagesVectorToString(actual_messages)
+               << " in the new system";
+      }
+    }
+
+    // Check the non-legacy & actual messages are equal.
     if (expected_messages.size() != actual_messages.size()) {
       // Message: Expected 7 messages, got 5
       return testing::AssertionFailure()

@@ -48,6 +48,11 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
     return PermissionMessages();
   }
 
+  CoalescedPermissionMessages GetCoalescedPermissionMessages(
+      const PermissionIDSet& permissions) const override {
+    return CoalescedPermissionMessages();
+  }
+
   std::vector<base::string16> GetWarningMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override {
@@ -66,6 +71,12 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
     // Ensure we implement this before shipping.
     CHECK(false);
     return false;
+  }
+
+  PermissionIDSet GetAllPermissionIDs(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type) const override {
+    return PermissionIDSet();
   }
 
  private:

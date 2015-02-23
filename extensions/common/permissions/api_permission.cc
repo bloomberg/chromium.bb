@@ -22,7 +22,9 @@ class SimpleAPIPermission : public APIPermission {
   ~SimpleAPIPermission() override {}
 
   extensions::PermissionIDSet GetPermissions() const override {
-    return extensions::PermissionIDSet(id());
+    extensions::PermissionIDSet permissions;
+    permissions.insert(id());
+    return permissions;
   }
 
   bool HasMessages() const override {

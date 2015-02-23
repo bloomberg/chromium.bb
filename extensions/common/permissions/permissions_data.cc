@@ -14,6 +14,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -218,6 +219,13 @@ PermissionsData::GetPermissionMessageDetailsStrings() const {
     return std::vector<base::string16>();
   return PermissionMessageProvider::Get()->GetWarningMessagesDetails(
       active_permissions().get(), manifest_type_);
+}
+
+CoalescedPermissionMessages PermissionsData::GetCoalescedPermissionMessages()
+    const {
+  return PermissionMessageProvider::Get()->GetCoalescedPermissionMessages(
+      PermissionMessageProvider::Get()->GetAllPermissionIDs(
+          active_permissions().get(), manifest_type_));
 }
 
 bool PermissionsData::HasWithheldImpliedAllHosts() const {

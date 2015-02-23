@@ -42,7 +42,6 @@ class ManifestPermission {
   // The set of permissions this manifest entry has. These permissions are used
   // by PermissionMessageProvider to generate meaningful permission messages
   // for the app.
-  // TODO(sashab): Use this in PermissionMessageProvider.
   virtual PermissionIDSet GetPermissions() const = 0;
 
   // Returns true if this permission has any PermissionMessages.

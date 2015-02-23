@@ -4,8 +4,11 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permission_message.h"
@@ -82,6 +85,9 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   PermissionMessages messages;
+  // TODO(sashab): Check if this the correct logic - if an app has effective
+  // full access (i.e. the plugin permission), do we not want to display *any*
+  // other permission messages?
   if (permissions->HasEffectiveFullAccess()) {
     messages.push_back(PermissionMessage(
         PermissionMessage::kFullAccess,
@@ -89,8 +95,11 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
     return messages;
   }
 
-  // Some warnings are more generic and/or powerful and superseed other
+  // Some warnings are more generic and/or powerful and supercede other
   // warnings. In that case, the first message suppresses the second one.
+  // WARNING: When modifying a rule in this list, be sure to also modify the
+  // rule in ChromePermissionMessageProvider::GetCoalescedPermissionMessages.
+  // TODO(sashab): Deprecate this function, and remove this list.
   std::multimap<PermissionMessage::ID, PermissionMessage::ID> kSuppressList;
   kSuppressList.insert(
       {PermissionMessage::kBluetooth, PermissionMessage::kBluetoothDevices});
@@ -126,10 +135,10 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
       {PermissionMessage::kTabs, PermissionMessage::kTopSites});
 
   PermissionMsgSet host_msgs =
-      GetHostPermissionMessages(permissions, extension_type);
-  PermissionMsgSet api_msgs = GetAPIPermissionMessages(permissions);
+      GetHostPermissionMessages(permissions, NULL, extension_type);
+  PermissionMsgSet api_msgs = GetAPIPermissionMessages(permissions, NULL);
   PermissionMsgSet manifest_permission_msgs =
-      GetManifestPermissionMessages(permissions);
+      GetManifestPermissionMessages(permissions, NULL);
   messages.insert(messages.end(), host_msgs.begin(), host_msgs.end());
   messages.insert(messages.end(), api_msgs.begin(), api_msgs.end());
   messages.insert(messages.end(), manifest_permission_msgs.begin(),
@@ -146,6 +155,36 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   return messages;
 }
 
+CoalescedPermissionMessages
+ChromePermissionMessageProvider::GetCoalescedPermissionMessages(
+    const PermissionIDSet& permissions) const {
+  std::vector<ChromePermissionMessageRule> rules =
+      ChromePermissionMessageRule::GetAllRules();
+
+  // Apply each of the rules, in order, to generate the messages for the given
+  // permissions. Once a permission is used in a rule, remove it from the set
+  // of available permissions so it cannot be applied to subsequent rules.
+  PermissionIDSet remaining_permissions = permissions;
+  CoalescedPermissionMessages messages;
+  for (const auto& rule : rules) {
+    // Only apply the rule if we have all the required permission IDs.
+    if (remaining_permissions.ContainsAllIDs(rule.required_permissions())) {
+      // We can apply the rule. Add all the required permissions, and as many
+      // optional permissions as we can, to the new message.
+      PermissionIDSet used_permissions =
+          remaining_permissions.GetAllPermissionsWithIDs(
+              rule.all_permissions());
+      messages.push_back(
+          rule.formatter()->GetPermissionMessage(used_permissions));
+
+      remaining_permissions =
+          PermissionIDSet::Difference(remaining_permissions, used_permissions);
+    }
+  }
+
+  return messages;
+}
+
 std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
@@ -153,6 +192,10 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
   PermissionMessages messages =
       GetPermissionMessages(permissions, extension_type);
 
+  // WARNING: When modifying a coalescing rule in this list, be sure to also
+  // modify the corresponding rule in
+  // ChromePermissionMessageProvider::GetCoalescedPermissionMessages().
+  // TODO(sashab): Deprecate this function, and remove this list.
   for (PermissionMessages::const_iterator i = messages.begin();
        i != messages.end(); ++i) {
     int id = i->id();
@@ -287,13 +330,26 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
   return false;
 }
 
+PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
+  PermissionIDSet permission_ids;
+  GetAPIPermissionMessages(permissions, &permission_ids);
+  GetManifestPermissionMessages(permissions, &permission_ids);
+  GetHostPermissionMessages(permissions, &permission_ids, extension_type);
+  return permission_ids;
+}
+
 std::set<PermissionMessage>
 ChromePermissionMessageProvider::GetAPIPermissionMessages(
-    const PermissionSet* permissions) const {
+    const PermissionSet* permissions,
+    PermissionIDSet* permission_ids) const {
   PermissionMsgSet messages;
   for (APIPermissionSet::const_iterator permission_it =
            permissions->apis().begin();
        permission_it != permissions->apis().end(); ++permission_it) {
+    if (permission_ids != NULL)
+      permission_ids->InsertAll(permission_it->GetPermissions());
     if (permission_it->HasMessages()) {
       PermissionMessages new_messages = permission_it->GetMessages();
       messages.insert(new_messages.begin(), new_messages.end());
@@ -306,6 +362,8 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
   // display only the "<all_urls>" warning message if both permissions
   // are required.
   if (permissions->ShouldWarnAllHosts()) {
+    if (permission_ids != NULL)
+      permission_ids->insert(APIPermission::kHostsAll);
     messages.erase(
         PermissionMessage(
             PermissionMessage::kDeclarativeWebRequest, base::string16()));
@@ -315,12 +373,15 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
 
 std::set<PermissionMessage>
 ChromePermissionMessageProvider::GetManifestPermissionMessages(
-    const PermissionSet* permissions) const {
+    const PermissionSet* permissions,
+    PermissionIDSet* permission_ids) const {
   PermissionMsgSet messages;
   for (ManifestPermissionSet::const_iterator permission_it =
            permissions->manifest_permissions().begin();
       permission_it != permissions->manifest_permissions().end();
       ++permission_it) {
+    if (permission_ids != NULL)
+      permission_ids->InsertAll(permission_it->GetPermissions());
     if (permission_it->HasMessages()) {
       PermissionMessages new_messages = permission_it->GetMessages();
       messages.insert(new_messages.begin(), new_messages.end());
@@ -332,6 +393,7 @@ ChromePermissionMessageProvider::GetManifestPermissionMessages(
 std::set<PermissionMessage>
 ChromePermissionMessageProvider::GetHostPermissionMessages(
     const PermissionSet* permissions,
+    PermissionIDSet* permission_ids,
     Manifest::Type extension_type) const {
   PermissionMsgSet messages;
   // Since platform apps always use isolated storage, they can't (silently)
@@ -342,6 +404,8 @@ ChromePermissionMessageProvider::GetHostPermissionMessages(
     return messages;
 
   if (permissions->ShouldWarnAllHosts()) {
+    if (permission_ids != NULL)
+      permission_ids->insert(APIPermission::kHostsAll);
     messages.insert(PermissionMessage(
         PermissionMessage::kHostsAll,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
@@ -349,12 +413,21 @@ ChromePermissionMessageProvider::GetHostPermissionMessages(
     URLPatternSet regular_hosts;
     ExtensionsClient::Get()->FilterHostPermissions(
         permissions->effective_hosts(), &regular_hosts, &messages);
+    if (permission_ids != NULL) {
+      ExtensionsClient::Get()->FilterHostPermissions(
+          permissions->effective_hosts(), &regular_hosts, permission_ids);
+    }
 
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
-    if (!hosts.empty())
+    if (!hosts.empty()) {
+      if (permission_ids != NULL) {
+        permission_message_util::AddHostPermissions(
+            permission_ids, hosts, permission_message_util::kReadWrite);
+      }
       messages.insert(permission_message_util::CreateFromHostList(
           hosts, permission_message_util::kReadWrite));
+    }
   }
   return messages;
 }
@@ -365,8 +438,10 @@ bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
   if (new_permissions == NULL)
     return false;
 
-  PermissionMsgSet old_warnings = GetAPIPermissionMessages(old_permissions);
-  PermissionMsgSet new_warnings = GetAPIPermissionMessages(new_permissions);
+  PermissionMsgSet old_warnings =
+      GetAPIPermissionMessages(old_permissions, NULL);
+  PermissionMsgSet new_warnings =
+      GetAPIPermissionMessages(new_permissions, NULL);
   PermissionMsgSet delta_warnings =
       base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
 
@@ -391,9 +466,9 @@ bool ChromePermissionMessageProvider::IsManifestPermissionPrivilegeIncrease(
     return false;
 
   PermissionMsgSet old_warnings =
-      GetManifestPermissionMessages(old_permissions);
+      GetManifestPermissionMessages(old_permissions, NULL);
   PermissionMsgSet new_warnings =
-      GetManifestPermissionMessages(new_permissions);
+      GetManifestPermissionMessages(new_permissions, NULL);
   PermissionMsgSet delta_warnings =
       base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
 

@@ -114,35 +114,40 @@ class PermissionIDSet {
   PermissionIDSet();
   virtual ~PermissionIDSet();
 
-  // Convenience constructors for inline initialization.
-  PermissionIDSet(APIPermission::ID permission_one);
-  PermissionIDSet(APIPermission::ID permission_one,
-                  APIPermission::ID permission_two);
-  PermissionIDSet(APIPermission::ID permission_one,
-                  APIPermission::ID permission_two,
-                  APIPermission::ID permission_three);
-  PermissionIDSet(APIPermission::ID permission_one,
-                  APIPermission::ID permission_two,
-                  APIPermission::ID permission_three,
-                  APIPermission::ID permission_four);
-  PermissionIDSet(APIPermission::ID permission_one,
-                  APIPermission::ID permission_two,
-                  APIPermission::ID permission_three,
-                  APIPermission::ID permission_four,
-                  APIPermission::ID permission_five);
-  PermissionIDSet(APIPermission::ID permission_one,
-                  APIPermission::ID permission_two,
-                  APIPermission::ID permission_three,
-                  APIPermission::ID permission_four,
-                  APIPermission::ID permission_five,
-                  APIPermission::ID permission_six);
-
   // Adds the given permission, and an optional parameter, to the set.
   void insert(APIPermission::ID permission_id);
   void insert(APIPermission::ID permission_id,
               base::string16 permission_parameter);
+  void InsertAll(const PermissionIDSet& permission_set);
+
+  // Returns the parameters for all PermissionIDs in this set.
+  std::vector<base::string16> GetAllPermissionParameters() const;
+
+  // Check if the set contains permissions with all the given IDs.
+  bool ContainsAllIDs(std::set<APIPermission::ID> permission_ids);
+
+  // Returns all the permissions in this set with one of the given IDs.
+  PermissionIDSet GetAllPermissionsWithIDs(
+      const std::set<APIPermission::ID>& permission_ids) const;
+
+  // Convenience functions that call their stl_util counterparts.
+  bool Includes(const PermissionIDSet& subset) const;
+  static PermissionIDSet Difference(const PermissionIDSet& set_1,
+                                    const PermissionIDSet& set_2);
+  static PermissionIDSet Intersection(const PermissionIDSet& set_1,
+                                      const PermissionIDSet& set_2);
+  static PermissionIDSet Union(const PermissionIDSet& set_1,
+                               const PermissionIDSet& set_2);
+
+  size_t size() const;
+  bool empty() const;
 
  private:
+  PermissionIDSet(std::set<PermissionID> permissions);
+
+  // Check if the set contains a permission with the given ID.
+  bool ContainsID(APIPermission::ID permission_id);
+
   std::set<PermissionID> permissions_;
 };
 

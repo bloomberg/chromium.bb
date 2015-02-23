@@ -84,21 +84,12 @@ PermissionIDSet AutomationManifestPermission::GetPermissions() const {
   // Meant to mimic the behavior of GetMessages().
   PermissionIDSet permissions;
   if (automation_info_->desktop) {
-    // TODO(sashab): Add the rule
-    // kFullAccess -> IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS
-    // to ChromePermissionMessageProvider, when it exists.
     permissions.insert(APIPermission::kFullAccess);
   } else if (automation_info_->matches.MatchesAllURLs()) {
     if (automation_info_->interact) {
       permissions.insert(APIPermission::kHostsAll);
-      // TODO(sashab): Add the rule
-      // kHostsAll -> IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS
-      // to ChromePermissionMessageProvider, when it exists.
     } else {
       permissions.insert(APIPermission::kHostsAllReadOnly);
-      // TODO(sashab): Add the rule
-      // kHostsAllReadOnly -> IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY
-      // to ChromePermissionMessageProvider, when it exists.
     }
   } else {
     // Check if we get any additional permissions from FilterHostPermissions.

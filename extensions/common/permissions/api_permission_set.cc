@@ -176,6 +176,7 @@ bool APIPermissionSet::ParseFromJSON(
 void APIPermissionSet::AddImpliedPermissions() {
   // The fileSystem.write and fileSystem.directory permissions imply
   // fileSystem.writeDirectory.
+  // Has a corresponding rule in ChromePermissionMessageProvider.
   // TODO(sammc): Remove this. See http://crbug.com/284849.
   if (ContainsKey(map(), APIPermission::kFileSystemWrite) &&
       ContainsKey(map(), APIPermission::kFileSystemDirectory)) {
@@ -201,73 +202,101 @@ PermissionIDSet::PermissionIDSet() : permissions_() {
 PermissionIDSet::~PermissionIDSet() {
 }
 
-PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one)
-    : permissions_() {
-  insert(permission_one);
-}
-
-PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
-                                 APIPermission::ID permission_two)
-    : permissions_() {
-  insert(permission_one);
-  insert(permission_two);
-}
-
-PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
-                                 APIPermission::ID permission_two,
-                                 APIPermission::ID permission_three)
-    : permissions_() {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-}
-
-PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
-                                 APIPermission::ID permission_two,
-                                 APIPermission::ID permission_three,
-                                 APIPermission::ID permission_four)
-    : permissions_() {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-  insert(permission_four);
-}
-
-PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
-                                 APIPermission::ID permission_two,
-                                 APIPermission::ID permission_three,
-                                 APIPermission::ID permission_four,
-                                 APIPermission::ID permission_five)
-    : permissions_() {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-  insert(permission_four);
-  insert(permission_five);
-}
-
-PermissionIDSet::PermissionIDSet(APIPermission::ID permission_one,
-                                 APIPermission::ID permission_two,
-                                 APIPermission::ID permission_three,
-                                 APIPermission::ID permission_four,
-                                 APIPermission::ID permission_five,
-                                 APIPermission::ID permission_six)
-    : permissions_() {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-  insert(permission_four);
-  insert(permission_five);
-  insert(permission_six);
-}
-
 void PermissionIDSet::insert(APIPermission::ID permission_id) {
   permissions_.insert(PermissionID(permission_id, base::string16()));
 }
 
 void PermissionIDSet::insert(APIPermission::ID permission_id,
-                             base::string16 permission_parameter) {
-  permissions_.insert(PermissionID(permission_id, permission_parameter));
+                             base::string16 permission_detail) {
+  permissions_.insert(PermissionID(permission_id, permission_detail));
+}
+
+void PermissionIDSet::InsertAll(const PermissionIDSet& permission_set) {
+  for (const auto& permission : permission_set.permissions_) {
+    permissions_.insert(permission);
+  }
+}
+
+std::vector<base::string16> PermissionIDSet::GetAllPermissionParameters()
+    const {
+  std::vector<base::string16> details;
+  for (const auto& permission : permissions_) {
+    details.push_back(permission.parameter());
+  }
+  return details;
+}
+
+bool PermissionIDSet::ContainsAllIDs(
+    std::set<APIPermission::ID> permission_ids) {
+  // TODO(sashab): Find a more efficient way to implement this (e.g. store a set
+  // of IDs and use STLIncludes in base/stl_util.h).
+  PermissionIDSet subset;
+  for (const auto& permission_id : permission_ids) {
+    if (!ContainsID(permission_id)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+PermissionIDSet PermissionIDSet::GetAllPermissionsWithIDs(
+    const std::set<APIPermission::ID>& permission_ids) const {
+  PermissionIDSet subset;
+  for (const auto& permission : permissions_) {
+    if (ContainsKey(permission_ids, permission.id())) {
+      subset.permissions_.insert(permission);
+    }
+  }
+  return subset;
+}
+
+bool PermissionIDSet::Includes(const PermissionIDSet& subset) const {
+  return base::STLIncludes<std::set<PermissionID>>(permissions_,
+                                                   subset.permissions_);
+}
+
+// static
+PermissionIDSet PermissionIDSet::Difference(const PermissionIDSet& set_1,
+                                            const PermissionIDSet& set_2) {
+  return PermissionIDSet(base::STLSetDifference<std::set<PermissionID>>(
+      set_1.permissions_, set_2.permissions_));
+}
+
+// static
+PermissionIDSet PermissionIDSet::Intersection(const PermissionIDSet& set_1,
+                                              const PermissionIDSet& set_2) {
+  return PermissionIDSet(base::STLSetIntersection<std::set<PermissionID>>(
+      set_1.permissions_, set_2.permissions_));
+}
+
+// static
+PermissionIDSet PermissionIDSet::Union(const PermissionIDSet& set_1,
+                                       const PermissionIDSet& set_2) {
+  return PermissionIDSet(base::STLSetUnion<std::set<PermissionID>>(
+      set_1.permissions_, set_2.permissions_));
+}
+
+size_t PermissionIDSet::size() const {
+  return permissions_.size();
+}
+
+bool PermissionIDSet::empty() const {
+  return permissions_.empty();
+}
+
+PermissionIDSet::PermissionIDSet(std::set<PermissionID> permissions)
+    : permissions_(permissions) {
+}
+
+bool PermissionIDSet::ContainsID(APIPermission::ID permission_id) {
+  // TODO(sashab): Find a more efficient way to implement this.
+  PermissionIDSet subset;
+  for (const auto& permission : permissions_) {
+    if (permission.id() == permission_id) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace extensions

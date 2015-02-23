@@ -199,6 +199,8 @@
       'common/extensions/permissions/chrome_api_permissions.h',
       'common/extensions/permissions/chrome_permission_message_provider.cc',
       'common/extensions/permissions/chrome_permission_message_provider.h',
+      'common/extensions/permissions/chrome_permission_message_rules.cc',
+      'common/extensions/permissions/chrome_permission_message_rules.h',
       'common/extensions/sync_helper.cc',
       'common/extensions/sync_helper.h',
     ],

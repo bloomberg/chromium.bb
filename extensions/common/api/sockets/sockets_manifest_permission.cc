@@ -96,8 +96,6 @@ bool AddAnyHostMessage(const SocketPermissionEntrySet& sockets,
   for (const auto& socket : sockets) {
     if (socket.IsAddressBoundType() &&
         socket.GetHostType() == SocketPermissionEntry::ANY_HOST) {
-      // TODO(sashab): Add a rule to ChromePermissionMessageProvider:
-      // kSocketAnyHost -> IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST
       if (ids)
         ids->insert(APIPermission::kSocketAnyHost);
       if (messages) {
@@ -137,10 +135,6 @@ void AddSubdomainHostMessage(const SocketPermissionEntrySet& sockets,
                                                          domains.end()),
                              ' '))));
     }
-    // TODO(sashab): Add rules to ChromePermissionMessageProvider:
-    // kSocketDomainHosts ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN if 1
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS if many
     if (ids) {
       for (const auto& domain : domains)
         ids->insert(APIPermission::kSocketDomainHosts, domain);
@@ -173,10 +167,6 @@ void AddSpecificHostMessage(const SocketPermissionEntrySet& sockets,
                                                          hostnames.end()),
                              ' '))));
     }
-    // TODO(sashab): Add rules to ChromePermissionMessageProvider:
-    // kSocketSpecificHosts ->
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST if 1
-    //         IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS if many
     if (ids) {
       for (const auto& hostname : hostnames)
         ids->insert(APIPermission::kSocketSpecificHosts, hostname);
@@ -192,8 +182,6 @@ void AddNetworkListMessage(const SocketPermissionEntrySet& sockets,
                            PermissionMessages* messages) {
   for (const auto& socket : sockets) {
     if (socket.pattern().type == SocketPermissionRequest::NETWORK_STATE) {
-      // TODO(sashab): Add a rule to ChromePermissionMessageProvider:
-      // kNetworkState -> IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE
       if (ids)
         ids->insert(APIPermission::kNetworkState);
       if (messages) {

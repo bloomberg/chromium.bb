@@ -14,6 +14,8 @@ class APIPermissionInfo;
 // The PermissionsProvider creates APIPermissions instances. It is only
 // needed at startup time. Typically, ExtensionsClient will register
 // its PermissionsProviders with the global PermissionsInfo at startup.
+// TODO(sashab): Remove all permission messages from this class, moving the
+// permission message rules into ChromePermissionMessageProvider.
 class PermissionsProvider {
  public:
   // An alias for a given permission |name|.

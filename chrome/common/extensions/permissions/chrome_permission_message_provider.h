@@ -29,6 +29,8 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   PermissionMessages GetPermissionMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;
+  CoalescedPermissionMessages GetCoalescedPermissionMessages(
+      const PermissionIDSet& permissions) const override;
   std::vector<base::string16> GetWarningMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;
@@ -38,19 +40,34 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   bool IsPrivilegeIncrease(const PermissionSet* old_permissions,
                            const PermissionSet* new_permissions,
                            Manifest::Type extension_type) const override;
+  PermissionIDSet GetAllPermissionIDs(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type) const override;
 
  private:
-  // Gets the permission messages for the API permissions.
+  // Gets the permission messages for the API permissions. Also adds any
+  // permission IDs from API Permissions to |permission_ids|.
+  // TODO(sashab): Deprecate the |permissions| argument, and rename this to
+  // AddAPIPermissions().
   std::set<PermissionMessage> GetAPIPermissionMessages(
-      const PermissionSet* permissions) const;
+      const PermissionSet* permissions,
+      PermissionIDSet* permission_ids) const;
 
-  // Gets the permission messages for the Manifest permissions.
+  // Gets the permission messages for the Manifest permissions. Also adds any
+  // permission IDs from manifest Permissions to |permission_ids|.
+  // TODO(sashab): Deprecate the |permissions| argument, and rename this to
+  // AddManifestPermissions().
   std::set<PermissionMessage> GetManifestPermissionMessages(
-      const PermissionSet* permissions) const;
+      const PermissionSet* permissions,
+      PermissionIDSet* permission_ids) const;
 
-  // Gets the permission messages for the host permissions.
+  // Gets the permission messages for the host permissions. Also adds any
+  // permission IDs from host Permissions to |permission_ids|.
+  // TODO(sashab): Deprecate the |permissions| argument, and rename this to
+  // AddHostPermissions().
   std::set<PermissionMessage> GetHostPermissionMessages(
       const PermissionSet* permissions,
+      PermissionIDSet* permission_ids,
       Manifest::Type extension_type) const;
 
   // Returns true if |new_permissions| has an elevated API privilege level

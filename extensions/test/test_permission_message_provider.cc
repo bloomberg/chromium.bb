@@ -18,6 +18,12 @@ PermissionMessages TestPermissionMessageProvider::GetPermissionMessages(
   return PermissionMessages();
 }
 
+CoalescedPermissionMessages
+TestPermissionMessageProvider::GetCoalescedPermissionMessages(
+    const PermissionIDSet& permissions) const {
+  return CoalescedPermissionMessages();
+}
+
 std::vector<base::string16> TestPermissionMessageProvider::GetWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
@@ -36,6 +42,12 @@ bool TestPermissionMessageProvider::IsPrivilegeIncrease(
     const PermissionSet* new_permissions,
     Manifest::Type extension_type) const {
   return false;
+}
+
+PermissionIDSet TestPermissionMessageProvider::GetAllPermissionIDs(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
+  return PermissionIDSet();
 }
 
 }  // namespace extensions

@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/coalesced_permission_message.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 
@@ -132,15 +133,22 @@ class PermissionsData {
 
   // Returns the full list of permission messages that should display at
   // install time.
+  // TODO(sashab): Deprecate this in favor of GetCoalescedPermissionMessages().
   PermissionMessages GetPermissionMessages() const;
 
   // Returns the full list of permission messages that should display at install
   // time as strings.
+  // TODO(sashab): Deprecate this in favor of GetCoalescedPermissionMessages().
   std::vector<base::string16> GetPermissionMessageStrings() const;
 
   // Returns the full list of permission details for messages that should
   // display at install time as strings.
+  // TODO(sashab): Deprecate this in favor of GetCoalescedPermissionMessages().
   std::vector<base::string16> GetPermissionMessageDetailsStrings() const;
+
+  // Returns the full list of permission details for messages that should
+  // display at install time, in a nested format ready for display.
+  CoalescedPermissionMessages GetCoalescedPermissionMessages() const;
 
   // Returns true if the extension has requested all-hosts permissions (or
   // something close to it), but has had it withheld.
