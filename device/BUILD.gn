@@ -1,0 +1,115 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//testing/test.gni")
+
+test("device_unittests") {
+  sources = [
+    "battery/battery_status_manager_linux_unittest.cc",
+    "battery/battery_status_manager_win_unittest.cc",
+    "battery/battery_status_service_unittest.cc",
+    "bluetooth/bluetooth_adapter_mac_unittest.mm",
+    "bluetooth/bluetooth_adapter_profile_chromeos_unittest.cc",
+    "bluetooth/bluetooth_adapter_unittest.cc",
+    "bluetooth/bluetooth_adapter_win_unittest.cc",
+    "bluetooth/bluetooth_audio_sink_chromeos_unittest.cc",
+    "bluetooth/bluetooth_chromeos_unittest.cc",
+    "bluetooth/bluetooth_device_unittest.cc",
+    "bluetooth/bluetooth_device_win_unittest.cc",
+    "bluetooth/bluetooth_gatt_chromeos_unittest.cc",
+    "bluetooth/bluetooth_low_energy_win_unittest.cc",
+    "bluetooth/bluetooth_service_record_win_unittest.cc",
+    "bluetooth/bluetooth_socket_chromeos_unittest.cc",
+    "bluetooth/bluetooth_task_manager_win_unittest.cc",
+    "bluetooth/bluetooth_uuid_unittest.cc",
+    "hid/hid_connection_unittest.cc",
+    "hid/hid_device_filter_unittest.cc",
+    "hid/hid_report_descriptor_unittest.cc",
+    "hid/input_service_linux_unittest.cc",
+    "hid/test_report_descriptors.cc",
+    "hid/test_report_descriptors.h",
+    "nfc/nfc_chromeos_unittest.cc",
+    "nfc/nfc_ndef_record_unittest.cc",
+    "serial/data_sink_unittest.cc",
+    "serial/data_source_unittest.cc",
+    "serial/serial_connection_unittest.cc",
+    "serial/serial_service_unittest.cc",
+    "test/run_all_unittests.cc",
+    "test/usb_test_gadget_impl.cc",
+    "usb/usb_context_unittest.cc",
+    "usb/usb_device_filter_unittest.cc",
+    "usb/usb_device_handle_unittest.cc",
+    "usb/usb_ids_unittest.cc",
+    "usb/usb_service_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//device/battery",
+    "//device/battery:mojo_bindings",
+    "//device/bluetooth",
+    "//device/hid",
+    "//device/nfc",
+    "//device/serial",
+    "//device/serial:test_support",
+    "//device/usb",
+    "//mojo/environment:chromium",
+    "//net",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/libusb",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//url",
+  ]
+
+  if (is_chromeos) {
+    sources -= [ "battery/battery_status_manager_linux_unittest.cc" ]
+
+    configs += [ "//build/config/linux:dbus" ]
+
+    deps += [
+      "//chromeos",
+      "//chromeos:test_support",
+      "//chromeos:test_support_without_gmock",
+      "//dbus",
+    ]
+  }
+
+  if (is_posix && !is_mac) {
+    libs = [ "rt" ]
+  }
+
+  if (is_mac) {
+    libs = [ "IOBluetooth.framework" ]
+  }
+
+  if (is_linux && !use_udev) {
+    # Udev is the only Linux implementation. If we're compiling without Udev,
+    # disable these unittests.
+    sources -= [
+      "hid/hid_connection_unittest.cc",
+      "hid/hid_device_filter_unittest.cc",
+      "hid/hid_report_descriptor_unittest.cc",
+      "hid/input_service_linux_unittest.cc",
+      "hid/test_report_descriptors.cc",
+      "hid/test_report_descriptors.h",
+      "serial/data_sink_unittest.cc",
+      "serial/data_source_unittest.cc",
+      "serial/serial_connection_unittest.cc",
+      "serial/serial_service_unittest.cc",
+    ]
+
+    deps -= [
+      "//device/hid",
+      "//device/serial",
+      "//device/serial:test_support",
+    ]
+  }
+
+  if (is_linux && !use_dbus) {
+    sources -= [ "battery/battery_status_manager_linux_unittest.cc" ]
+  }
+}

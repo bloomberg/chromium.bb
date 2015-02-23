@@ -261,6 +261,7 @@ group("root") {
   if (!is_android && !is_ios) {
     deps += [
       "//device/usb",
+      "//device:device_unittests",
       "//third_party/pdfium/samples",
     ]
   }

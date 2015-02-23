@@ -310,6 +310,7 @@ component("base") {
     "mac/scoped_sending_event.h",
     "mac/scoped_sending_event.mm",
     "mac/sdk_forward_declarations.h",
+    "mac/sdk_forward_declarations.mm",
     "macros.h",
     "md5.cc",
     "md5.h",
