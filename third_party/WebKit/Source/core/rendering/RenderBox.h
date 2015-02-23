@@ -697,6 +697,8 @@ protected:
     virtual bool hasNonCompositedScrollbars() const override final;
 
 private:
+    void invalidatePaintRectClippedByOldAndNewBounds(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+
     void updateShapeOutsideInfoAfterStyleChange(const LayoutStyle&, const LayoutStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const LayoutStyle*);
 
