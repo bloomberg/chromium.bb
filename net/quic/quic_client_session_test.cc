@@ -43,9 +43,13 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicClientSessionTest()
       : connection_(
             new PacketSavingConnection(false, SupportedVersions(GetParam()))),
-        session_(connection_, GetSocket().Pass(), nullptr,
+        session_(connection_,
+                 GetSocket().Pass(),
+                 nullptr,
                  &transport_security_state_,
-                 make_scoped_ptr((QuicServerInfo*)nullptr), DefaultQuicConfig(),
+                 make_scoped_ptr((QuicServerInfo*)nullptr),
+                 DefaultQuicConfig(),
+                 "CONNECTION_UNKNOWN",
                  base::MessageLoop::current()->message_loop_proxy().get(),
                  &net_log_) {
     session_.InitializeSession(QuicServerId(kServerHostname, kServerPort,

@@ -27,7 +27,9 @@ class CertVerifyResult;
 class NET_EXPORT_PRIVATE QuicConnectionLogger
     : public QuicConnectionDebugVisitor {
  public:
-  QuicConnectionLogger(QuicSession* session, const BoundNetLog& net_log);
+  QuicConnectionLogger(QuicSession* session,
+                       const char* const connection_description,
+                       const BoundNetLog& net_log);
 
   ~QuicConnectionLogger() override;
 

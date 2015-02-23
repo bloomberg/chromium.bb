@@ -96,6 +96,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
                     TransportSecurityState* transport_security_state,
                     scoped_ptr<QuicServerInfo> server_info,
                     const QuicConfig& config,
+                    const char* const connection_description,
                     base::TaskRunner* task_runner,
                     NetLog* net_log);
   ~QuicClientSession() override;

@@ -1169,7 +1169,7 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
-      server_info.Pass(), config,
+      server_info.Pass(), config, network_connection_.GetDescription(),
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
 

@@ -159,6 +159,7 @@ QuicClientSession::QuicClientSession(
     TransportSecurityState* transport_security_state,
     scoped_ptr<QuicServerInfo> server_info,
     const QuicConfig& config,
+    const char* const connection_description,
     base::TaskRunner* task_runner,
     NetLog* net_log)
     : QuicClientSessionBase(connection, config),
@@ -172,7 +173,7 @@ QuicClientSession::QuicClientSession(
       num_total_streams_(0),
       task_runner_(task_runner),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
-      logger_(new QuicConnectionLogger(this, net_log_)),
+      logger_(new QuicConnectionLogger(this, connection_description, net_log_)),
       num_packets_read_(0),
       going_away_(false),
       weak_factory_(this) {

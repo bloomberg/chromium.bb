@@ -21,7 +21,8 @@ class QuicConnectionLoggerPeer {
 class QuicConnectionLoggerTest : public ::testing::Test {
  protected:
   QuicConnectionLoggerTest()
-      : session_(new MockConnection(false)), logger_(&session_, net_log_) {}
+      : session_(new MockConnection(false)),
+        logger_(&session_, "CONNECTION_UNKNOWN", net_log_) {}
 
   BoundNetLog net_log_;
   MockSession session_;

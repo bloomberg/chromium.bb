@@ -19,6 +19,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_database.h"
 #include "net/proxy/proxy_server.h"
+#include "net/quic/network_connection.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
@@ -339,6 +340,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   IPEndPoint local_address_;
   bool check_persisted_supports_quic_;
   std::set<HostPortPair> quic_supported_servers_at_startup_;
+
+  NetworkConnection network_connection_;
 
   base::TaskRunner* task_runner_;
 

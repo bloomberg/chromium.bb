@@ -267,62 +267,6 @@ void UpdatePublicResetAddressMismatchHistogram(
                             sample, QUIC_ADDRESS_MISMATCH_MAX);
 }
 
-const char* GetConnectionDescriptionString() {
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicConnectionLogger GetConnectionDescriptionString"));
-
-  NetworkChangeNotifier::ConnectionType type =
-      NetworkChangeNotifier::GetConnectionType();
-  const char* description = NetworkChangeNotifier::ConnectionTypeToString(type);
-  // Most platforms don't distingish Wifi vs Etherenet, and call everything
-  // CONNECTION_UNKNOWN :-(.  We'll tease out some details when we are on WiFi,
-  // and hopefully leave only ethernet (with no WiFi available) in the
-  // CONNECTION_UNKNOWN category.  This *might* err if there is both ethernet,
-  // as well as WiFi, where WiFi was not being used that much.
-  // This function only seems usefully defined on Windows currently.
-  if (type == NetworkChangeNotifier::CONNECTION_UNKNOWN ||
-      type == NetworkChangeNotifier::CONNECTION_WIFI) {
-    // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422516 QuicConnectionLogger GetConnectionDescriptionString1"));
-
-    WifiPHYLayerProtocol wifi_type = GetWifiPHYLayerProtocol();
-    switch (wifi_type) {
-      case WIFI_PHY_LAYER_PROTOCOL_NONE:
-        // No wifi support or no associated AP.
-        break;
-      case WIFI_PHY_LAYER_PROTOCOL_ANCIENT:
-        // An obsolete modes introduced by the original 802.11, e.g. IR, FHSS.
-        description = "CONNECTION_WIFI_ANCIENT";
-        break;
-      case WIFI_PHY_LAYER_PROTOCOL_A:
-        // 802.11a, OFDM-based rates.
-        description = "CONNECTION_WIFI_802.11a";
-        break;
-      case WIFI_PHY_LAYER_PROTOCOL_B:
-        // 802.11b, DSSS or HR DSSS.
-        description = "CONNECTION_WIFI_802.11b";
-        break;
-      case WIFI_PHY_LAYER_PROTOCOL_G:
-        // 802.11g, same rates as 802.11a but compatible with 802.11b.
-        description = "CONNECTION_WIFI_802.11g";
-        break;
-      case WIFI_PHY_LAYER_PROTOCOL_N:
-        // 802.11n, HT rates.
-        description = "CONNECTION_WIFI_802.11n";
-        break;
-      case WIFI_PHY_LAYER_PROTOCOL_UNKNOWN:
-        // Unclassified mode or failure to identify.
-        break;
-    }
-  }
-  return description;
-}
-
 // If |address| is an IPv4-mapped IPv6 address, returns ADDRESS_FAMILY_IPV4
 // instead of ADDRESS_FAMILY_IPV6. Othewise, behaves like GetAddressFamily().
 AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
@@ -332,8 +276,10 @@ AddressFamily GetRealAddressFamily(const IPAddressNumber& address) {
 
 }  // namespace
 
-QuicConnectionLogger::QuicConnectionLogger(QuicSession* session,
-                                           const BoundNetLog& net_log)
+QuicConnectionLogger::QuicConnectionLogger(
+    QuicSession* session,
+    const char* const connection_description,
+    const BoundNetLog& net_log)
     : net_log_(net_log),
       session_(session),
       last_received_packet_sequence_number_(0),
@@ -353,7 +299,7 @@ QuicConnectionLogger::QuicConnectionLogger(QuicSession* session,
       num_duplicate_packets_(0),
       num_blocked_frames_received_(0),
       num_blocked_frames_sent_(0),
-      connection_description_(GetConnectionDescriptionString()) {
+      connection_description_(connection_description) {
 }
 
 QuicConnectionLogger::~QuicConnectionLogger() {

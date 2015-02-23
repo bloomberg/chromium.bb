@@ -206,16 +206,11 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                          helper_.get(), writer_factory);
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
-    session_.reset(
-        new QuicClientSession(connection_,
-                              scoped_ptr<DatagramClientSocket>(socket),
-                              nullptr,
-                              &transport_security_state_,
-                              make_scoped_ptr((QuicServerInfo*)nullptr),
-                              DefaultQuicConfig(),
-                              base::MessageLoop::current()->
-                                  message_loop_proxy().get(),
-                              nullptr));
+    session_.reset(new QuicClientSession(
+        connection_, scoped_ptr<DatagramClientSocket>(socket), nullptr,
+        &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
+        DefaultQuicConfig(), "CONNECTION_UNKNOWN",
+        base::MessageLoop::current()->message_loop_proxy().get(), nullptr));
     session_->InitializeSession(QuicServerId(kServerHostname, kServerPort,
                                              /*is_secure=*/false,
                                              PRIVACY_MODE_DISABLED),
