@@ -1729,6 +1729,9 @@ crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
 
+crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
+crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
+
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 

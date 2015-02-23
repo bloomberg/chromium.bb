@@ -243,6 +243,7 @@ bool WebPagePopupImpl::initializePage()
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
     // FIXME: Should we support enabling a11y while a popup is shown?
     m_page->settings().setAccessibilityEnabled(m_webView->page()->settings().accessibilityEnabled());
+    m_page->settings().setScrollAnimatorEnabled(m_webView->page()->settings().scrollAnimatorEnabled());
 
     provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
     static FrameLoaderClient* emptyFrameLoaderClient = new EmptyFrameLoaderClient();

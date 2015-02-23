@@ -1,8 +1,10 @@
-Tests that a WebMouseWheelEvent with hasPreciseScrollingDeltas does not produce an animated scroll
+Tests that overflow scrolls are animated, unless the wheel event has precise scrolling deltas.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS element.scrollTop is not 80
+PASS scrollDuration < 500 is true
 PASS element.scrollTop is 80
 PASS successfullyParsed is true
 
