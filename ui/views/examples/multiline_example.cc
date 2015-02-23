@@ -49,7 +49,7 @@ class PreferredSizeLabel : public Label {
 class MultilineExample::RenderTextView : public View {
  public:
   RenderTextView() : render_text_(gfx::RenderText::CreateInstanceForEditing()) {
-    render_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    render_text_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     render_text_->SetColor(SK_ColorBLACK);
     render_text_->SetMultiline(true);
     SetBorder(Border::CreateSolidBorder(2, SK_ColorGRAY));
