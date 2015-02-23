@@ -65,45 +65,27 @@ void MIDIAccessor::sendMIDIData(unsigned portIndex, const unsigned char* data, s
     m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
 }
 
-// FIXME: Remove obsolete interfaces that use isActive.
-void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive)
-{
-    m_client->didAddInputPort(id, manufacturer, name, version, isActive);
-}
-
-void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, bool isActive)
-{
-    m_client->didAddOutputPort(id, manufacturer, name, version, isActive);
-}
-
 void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState state)
 {
+    // FIXME: Update to support complete MIDIPortState in MIDIPort.
     m_client->didAddInputPort(id, manufacturer, name, version, state != MIDIPortStateDisconnected);
 }
 
 void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState state)
 {
+    // FIXME: Update to support complete MIDIPortState in MIDIPort.
     m_client->didAddOutputPort(id, manufacturer, name, version, state != MIDIPortStateDisconnected);
-}
-
-// FIXME: Remove obsolete interfaces that use isActive.
-void MIDIAccessor::didSetInputPortState(unsigned portIndex, bool isActive)
-{
-    m_client->didSetInputPortState(portIndex, isActive);
-}
-
-void MIDIAccessor::didSetOutputPortState(unsigned portIndex, bool isActive)
-{
-    m_client->didSetOutputPortState(portIndex, isActive);
 }
 
 void MIDIAccessor::didSetInputPortState(unsigned portIndex, MIDIPortState state)
 {
+    // FIXME: Update to support complete MIDIPortState in MIDIPort.
     m_client->didSetInputPortState(portIndex, state != MIDIPortStateDisconnected);
 }
 
 void MIDIAccessor::didSetOutputPortState(unsigned portIndex, MIDIPortState state)
 {
+    // FIXME: Update to support complete MIDIPortState in MIDIPort.
     m_client->didSetOutputPortState(portIndex, state != MIDIPortStateDisconnected);
 }
 
