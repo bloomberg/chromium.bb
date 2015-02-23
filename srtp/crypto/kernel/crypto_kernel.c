@@ -8,7 +8,7 @@
  */
 /*
  *	
- * Copyright(c) 2001-2006 Cisco Systems, Inc.
+ * Copyright(c) 2001-2006,2013 Cisco Systems, Inc.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,10 @@
  */
 
 
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
+
 #include "alloc.h"
 
 #include "crypto_kernel.h"
@@ -69,7 +73,12 @@ extern debug_module_t mod_alloc;
 
 extern cipher_type_t null_cipher;
 extern cipher_type_t aes_icm;
+#ifndef OPENSSL
 extern cipher_type_t aes_cbc;
+#else
+extern cipher_type_t aes_gcm_128_openssl;
+extern cipher_type_t aes_gcm_256_openssl;
+#endif
 
 
 /*
@@ -137,6 +146,7 @@ crypto_kernel_init() {
   if (status)
     return status;
 
+#ifndef OPENSSL
   /* initialize pseudorandom number generator */
   status = ctr_prng_init(rand_source_get_octet_string);
   if (status)
@@ -146,6 +156,7 @@ crypto_kernel_init() {
   status = stat_test_rand_source_with_repetition(ctr_prng_get_octet_string, MAX_RNG_TRIALS);
   if (status)
     return status;
+#endif
  
   /* load cipher types */
   status = crypto_kernel_load_cipher_type(&null_cipher, NULL_CIPHER);
@@ -154,9 +165,20 @@ crypto_kernel_init() {
   status = crypto_kernel_load_cipher_type(&aes_icm, AES_ICM);
   if (status) 
     return status;
+#ifndef OPENSSL
   status = crypto_kernel_load_cipher_type(&aes_cbc, AES_CBC);
   if (status) 
     return status;
+#else
+  status = crypto_kernel_load_cipher_type(&aes_gcm_128_openssl, AES_128_GCM);
+  if (status) {
+      return status;
+  }
+  status = crypto_kernel_load_cipher_type(&aes_gcm_256_openssl, AES_256_GCM);
+  if (status) {
+      return status;
+  }
+#endif
 
   /* load auth func types */
   status = crypto_kernel_load_auth_type(&null_auth, NULL_AUTH);
@@ -297,7 +319,7 @@ crypto_kernel_shutdown() {
   return err_status_ok;
 }
 
-static INLINE err_status_t
+static inline err_status_t
 crypto_kernel_do_load_cipher_type(cipher_type_t *new_ct, cipher_type_id_t id,
 				  int replace) {
   kernel_cipher_type_t *ctype, *new_ctype;
@@ -459,7 +481,8 @@ crypto_kernel_get_cipher_type(cipher_type_id_t id) {
 err_status_t
 crypto_kernel_alloc_cipher(cipher_type_id_t id, 
 			      cipher_pointer_t *cp, 
-			      int key_len) {
+			      int key_len,
+			      int tag_len) {
   cipher_type_t *ct;
 
   /* 
@@ -473,7 +496,7 @@ crypto_kernel_alloc_cipher(cipher_type_id_t id,
   if (!ct)
     return err_status_fail;
   
-  return ((ct)->alloc(cp, key_len));
+  return ((ct)->alloc(cp, key_len, tag_len));
 }
 
 
@@ -567,7 +590,11 @@ crypto_kernel_set_debug_module(char *name, int on) {
 err_status_t
 crypto_get_random(unsigned char *buffer, unsigned int length) {
   if (crypto_kernel.state == crypto_kernel_state_secure)
+#ifdef OPENSSL
+    return rand_source_get_octet_string(buffer, length);
+#else
     return ctr_prng_get_octet_string(buffer, length);
+#endif
   else
     return err_status_fail;
 }

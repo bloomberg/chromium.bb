@@ -1,14 +1,10 @@
 /*
- * kernel_driver.c
- *
- * a test driver for the crypto_kernel
- *
- * David A. McGrew
- * Cisco Systems, Inc.
+ * Soak test the RNG for exhaustion failures
  */
+
 /*
  *	
- * Copyright(c) 2001-2006 Cisco Systems, Inc.
+ * Copyright (c) 2001-2006, Cisco Systems, Inc.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +38,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #endif
@@ -51,80 +46,72 @@
 #include <unistd.h>          /* for getopt() */
 #include "crypto_kernel.h"
 
-void
-usage(char *prog_name) {
-  printf("usage: %s [ -v ][ -d debug_module ]*\n", prog_name);
-  exit(255);
-}
+#define BUF_LEN (MAX_PRINT_STRING_LEN/2)
 
-int
-main (int argc, char *argv[]) {
-  extern char *optarg;
-  int q;
-  int do_validation      = 0;
-  err_status_t status;
+int main(int argc, char *argv[])
+{
+    int q;
+    extern char *optarg;
+    int num_octets = 0;
+    err_status_t status;
+    uint32_t iterations = 0;
+    int print_values = 0;
 
-  if (argc == 1)
-    usage(argv[0]);
-
-  /* initialize kernel - we need to do this before anything else */ 
-  status = crypto_kernel_init();
-  if (status) {
-    printf("error: crypto_kernel init failed\n");
-    exit(1);
-  }
-  printf("crypto_kernel successfully initalized\n");
-
-  /* process input arguments */
-  while (1) {
-    q = getopt(argc, argv, "vd:");
-    if (q == -1) 
-      break;
-    switch (q) {
-    case 'v':
-      do_validation = 1;
-      break;
-    case 'd':
-      status = crypto_kernel_set_debug_module(optarg, 1);
-      if (status) {
-	printf("error: set debug module (%s) failed\n", optarg);
-	exit(1);
-      }
-      break;
-    default:
-      usage(argv[0]);
-    }    
-  }
-
-  if (do_validation) {
-    printf("checking crypto_kernel status...\n");
-    status = crypto_kernel_status();
-    if (status) {
-      printf("failed\n");
-      exit(1);
+    if (argc == 1) {
+        exit(255);
     }
-    printf("crypto_kernel passed self-tests\n");
-  }
 
-  status = crypto_kernel_shutdown();
-  if (status) {
-    printf("error: crypto_kernel shutdown failed\n");
-    exit(1);
-  }
-  printf("crypto_kernel successfully shut down\n");
-  
-  return 0;
+    status = crypto_kernel_init();
+    if (status) {
+        printf("error: crypto_kernel init failed\n");
+        exit(1);
+    }
+
+    while (1) {
+        q = getopt(argc, argv, "pvn:");
+        if (q == -1) {
+            break;
+        }
+        switch (q) {
+        case 'p':
+            print_values = 1;
+            break;
+        case 'n':
+            num_octets = atoi(optarg);
+            if (num_octets < 0 || num_octets > BUF_LEN) {
+                exit(255);
+            }
+            break;
+        case 'v':
+            num_octets = 30;
+            print_values = 0;
+            break;
+        default:
+            exit(255);
+        }
+    }
+
+    if (num_octets > 0) {
+        while (iterations < 300000) {
+            uint8_t buffer[BUF_LEN];
+
+            status = crypto_get_random(buffer, num_octets);
+            if (status) {
+                printf("iteration %d error: failure in random source\n", iterations);
+                exit(255);
+            } else if (print_values) {
+                printf("%s\n", octet_string_hex_string(buffer, num_octets));
+            }
+            iterations++;
+        }
+    }
+
+    status = crypto_kernel_shutdown();
+    if (status) {
+        printf("error: crypto_kernel shutdown failed\n");
+        exit(1);
+    }
+
+    return 0;
 }
 
-/*
- * crypto_kernel_cipher_test() is a test of the cipher interface
- * of the crypto_kernel
- */
-
-err_status_t
-crypto_kernel_cipher_test(void) {
-
-  /* not implemented yet! */
-
-  return err_status_ok;
-}

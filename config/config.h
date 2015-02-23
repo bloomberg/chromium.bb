@@ -2,5 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is a stub config.h for libSRTP. It doesn't define anything because
-// build is configured by libsrtp.gyp.
+// This is a stub config.h for libSRTP. It doesn't define anything besides
+// version number strings because the build is configured by libsrtp.gyp.
+
+#define PACKAGE_STRING "libsrtp 1.5.0"
+#define PACKAGE_VERSION "1.5.0"
+
+#if defined(_MSC_VER) && !defined(__cplusplus)
+  // Microsoft provides "inline" only for C++ code
+  #define inline __inline
+#endif

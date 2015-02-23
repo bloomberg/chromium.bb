@@ -6,6 +6,8 @@
  * David A. McGrew
  * Cisco Systems, Inc.
  */
+
+
 /*
  *	
  * Copyright (c) 2001-2006, Cisco Systems, Inc.
@@ -41,7 +43,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 
 #ifndef REPLAY_DB_H
 #define REPLAY_DB_H

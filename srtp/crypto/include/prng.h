@@ -6,6 +6,7 @@
  * David A. McGrew
  * Cisco Systems, Inc.
  */
+
 /*
  *	
  * Copyright (c) 2001-2006, Cisco Systems, Inc.
@@ -47,7 +48,12 @@
 
 #include "rand_source.h"  /* for rand_source_func_t definition       */
 #include "aes.h"          /* for aes                                 */
+//FIXME: this is temporary until we pull in the code to use OpenSSL for RNG
+#ifdef OPENSSL
+#include "aes_icm_ossl.h"    /* for aes ctr                             */
+#else
 #include "aes_icm.h"      /* for aes ctr                             */
+#endif
 
 #define MAX_PRNG_OUT_LEN 0xffffffffU
 

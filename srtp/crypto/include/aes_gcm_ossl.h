@@ -1,16 +1,15 @@
 /*
- * aes_icm.h
+ * aes_gcm_ossl.h
  *
- * Header for AES Integer Counter Mode.
+ * Header for AES Galois Counter Mode.
  *
- * David A. McGrew
+ * John A. Foley
  * Cisco Systems, Inc.
  *
  */
-
 /*
  *	
- * Copyright (c) 2001-2006, Cisco Systems, Inc.
+ * Copyright (c) 2013, Cisco Systems, Inc.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -44,53 +43,21 @@
  *
  */
 
-#ifndef AES_ICM_H
-#define AES_ICM_H
+#ifndef AES_GCM_OSSL_H
+#define AES_GCM_OSSL_H
 
-#include "aes.h"
 #include "cipher.h"
+#include "srtp.h"
+#include <openssl/evp.h>
+#include <openssl/aes.h>
 
 typedef struct {
-  v128_t   counter;                /* holds the counter value          */
-  v128_t   offset;                 /* initial offset value             */
-  v128_t   keystream_buffer;       /* buffers bytes of keystream       */
-  aes_expanded_key_t expanded_key; /* the cipher key                   */
-  int      bytes_in_buffer;        /* number of unused bytes in buffer */
-} aes_icm_ctx_t;
+  v256_t   key;
+  int      key_size;
+  int      tag_len;
+  EVP_CIPHER_CTX ctx;
+  cipher_direction_t dir;
+} aes_gcm_ctx_t;
 
-
-err_status_t
-aes_icm_context_init(aes_icm_ctx_t *c,
-		     const unsigned char *key,
-		     int key_len); 
-
-err_status_t
-aes_icm_set_iv(aes_icm_ctx_t *c, void *iv, int direction);
-
-err_status_t
-aes_icm_encrypt(aes_icm_ctx_t *c,
-		unsigned char *buf, unsigned int *bytes_to_encr);
-
-err_status_t
-aes_icm_output(aes_icm_ctx_t *c,
-	       unsigned char *buf, unsigned int bytes_to_output);
-
-err_status_t 
-aes_icm_dealloc(cipher_t *c);
- 
-err_status_t 
-aes_icm_encrypt_ismacryp(aes_icm_ctx_t *c, 
-			 unsigned char *buf, 
-			 unsigned int *enc_len, 
-			 int forIsmacryp);
- 
-err_status_t 
-aes_icm_alloc_ismacryp(cipher_t **c, 
-		       int key_len, 
-		       int forIsmacryp);
-
-uint16_t
-aes_icm_bytes_encrypted(aes_icm_ctx_t *c);
-
-#endif /* AES_ICM_H */
+#endif /* AES_GCM_OSSL_H */
 

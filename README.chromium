@@ -1,6 +1,6 @@
 Name: libsrtp
-URL: http://srtp.sourceforge.net/srtp.html
-Version: 1.4.4
+URL: https://github.com/cisco/libsrtp
+Version: 1.5.1
 License: 3-clause BSD
 License File: srtp/LICENSE
 Security Critical: Yes
@@ -15,10 +15,13 @@ Description:
 
 Local Modifications:
 
-Replace 'inline' with 'INLINE' and #define to either 'inline' or '__inline'.
-This is required because VS2012 does not allow redefinition of keywords via
-macros, but also does not support 'inline' in C files.
-
-Adding additional RTP header check
-
 Added gyp support to __arm64__
+
+Use '_byteswap_*' functions to convert between host and network byte order on
+Windows.
+
+AES-192 is disabled when compiled against BoringSSL. This is no longer necessary
+when updating to libsrtp 1.5.2 or newer.
+
+Always expose API to convert big endian integers to CPU byte order (WebRTC
+calls "be64_to_cpu" from "srtpfilter.cc").

@@ -43,6 +43,9 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
 
 #include "aes_cbc.h"
 #include "alloc.h"
@@ -55,7 +58,7 @@ debug_module_t mod_aes_cbc = {
 
 
 err_status_t
-aes_cbc_alloc(cipher_t **c, int key_len) {
+aes_cbc_alloc(cipher_t **c, int key_len, int tlen) {
   extern cipher_type_t aes_cbc;
   uint8_t *pointer;
   int tmp;
@@ -74,6 +77,7 @@ aes_cbc_alloc(cipher_t **c, int key_len) {
 
   /* set pointers */
   *c = (cipher_t *)pointer;
+  (*c)->algorithm = AES_CBC;
   (*c)->type = &aes_cbc;
   (*c)->state = pointer + sizeof(cipher_t);
 
@@ -104,36 +108,25 @@ aes_cbc_dealloc(cipher_t *c) {
 }
 
 err_status_t
-aes_cbc_context_init(aes_cbc_ctx_t *c, const uint8_t *key, int key_len,
-		     cipher_direction_t dir) {
-  err_status_t status;
+aes_cbc_context_init(aes_cbc_ctx_t *c, const uint8_t *key, int key_len) {
 
   debug_print(mod_aes_cbc, 
 	      "key:  %s", octet_string_hex_string(key, key_len)); 
 
-  /* expand key for the appropriate direction */
-  switch (dir) {
-  case (direction_encrypt):
-    status = aes_expand_encryption_key(key, key_len, &c->expanded_key);
-    if (status)
-      return status;
-    break;
-  case (direction_decrypt):
-    status = aes_expand_decryption_key(key, key_len, &c->expanded_key);
-    if (status)
-      return status;
-    break;
-  default:
-    return err_status_bad_param;
-  }
-
+  /*
+   * Save the key until we have the IV later.  We don't
+   * know the direction until the IV is set.
+   */
+  c->key_len = (key_len <= 32 ? key_len : 32);
+  memcpy(c->key, key, c->key_len);
 
   return err_status_ok;
 }
 
 
 err_status_t
-aes_cbc_set_iv(aes_cbc_ctx_t *c, void *iv) {
+aes_cbc_set_iv(aes_cbc_ctx_t *c, void *iv, int direction) {
+  err_status_t status;
   int i;
 /*   v128_t *input = iv; */
   uint8_t *input = (uint8_t*) iv;
@@ -143,6 +136,24 @@ aes_cbc_set_iv(aes_cbc_ctx_t *c, void *iv) {
     c->previous.v8[i] = c->state.v8[i] = input[i];
 
   debug_print(mod_aes_cbc, "setting iv: %s", v128_hex_string(&c->state)); 
+
+  /* expand key for the appropriate direction */
+  switch (direction) {
+  case (direction_encrypt):
+    status = aes_expand_encryption_key(c->key, c->key_len, &c->expanded_key);
+    memset(c->key, 0, 32);
+    if (status)
+      return status;
+    break;
+  case (direction_decrypt):
+    status = aes_expand_decryption_key(c->key, c->key_len, &c->expanded_key);
+    memset(c->key, 0, 32);
+    if (status)
+      return status;
+    break;
+  default:
+    return err_status_bad_param;
+  }
 
   return err_status_ok;
 }
@@ -375,6 +386,9 @@ cipher_test_case_t aes_cbc_test_case_0 = {
   aes_cbc_test_case_0_plaintext,         /* plaintext                */
   32,                                    /* octets in ciphertext     */
   aes_cbc_test_case_0_ciphertext,        /* ciphertext               */
+  0,
+  NULL,
+  0,
   NULL                                   /* pointer to next testcase */
 };
 
@@ -426,6 +440,9 @@ cipher_test_case_t aes_cbc_test_case_1 = {
   aes_cbc_test_case_1_plaintext,         /* plaintext                */
   80,                                    /* octets in ciphertext     */
   aes_cbc_test_case_1_ciphertext,        /* ciphertext               */
+  0,
+  NULL,
+  0,
   &aes_cbc_test_case_0                    /* pointer to next testcase */
 };
 
@@ -467,6 +484,9 @@ cipher_test_case_t aes_cbc_test_case_2 = {
   aes_cbc_test_case_2_plaintext,         /* plaintext                */
   32,                                    /* octets in ciphertext     */
   aes_cbc_test_case_2_ciphertext,        /* ciphertext               */
+  0,
+  NULL,
+  0,
   &aes_cbc_test_case_1                   /* pointer to next testcase */
 };
 
@@ -520,6 +540,9 @@ cipher_test_case_t aes_cbc_test_case_3 = {
   aes_cbc_test_case_3_plaintext,         /* plaintext                */
   80,                                    /* octets in ciphertext     */
   aes_cbc_test_case_3_ciphertext,        /* ciphertext               */
+  0,
+  NULL,
+  0,
   &aes_cbc_test_case_2                    /* pointer to next testcase */
 };
 
@@ -527,9 +550,11 @@ cipher_type_t aes_cbc = {
   (cipher_alloc_func_t)          aes_cbc_alloc,
   (cipher_dealloc_func_t)        aes_cbc_dealloc,  
   (cipher_init_func_t)           aes_cbc_context_init,
+  (cipher_set_aad_func_t)        0,
   (cipher_encrypt_func_t)        aes_cbc_nist_encrypt,
   (cipher_decrypt_func_t)        aes_cbc_nist_decrypt,
   (cipher_set_iv_func_t)         aes_cbc_set_iv,
+  (cipher_get_tag_func_t)        0,
   (char *)                       aes_cbc_description,
   (int)                          0,   /* instance count */
   (cipher_test_case_t *)        &aes_cbc_test_case_3,

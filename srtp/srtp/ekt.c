@@ -43,8 +43,8 @@
  */
 
 
-#include "err.h"
 #include "srtp_priv.h"
+#include "err.h"
 #include "ekt.h"
 
 extern debug_module_t mod_srtp;
@@ -90,7 +90,7 @@ ekt_octets_after_base_tag(ekt_stream_t ekt) {
   return 0;
 }
 
-static INLINE ekt_spi_t
+static inline ekt_spi_t
 srtcp_packet_get_ekt_spi(const uint8_t *packet_start, unsigned pkt_octet_len) {
   const uint8_t *spi_location;
   
@@ -99,7 +99,7 @@ srtcp_packet_get_ekt_spi(const uint8_t *packet_start, unsigned pkt_octet_len) {
   return *((const ekt_spi_t *)spi_location);
 }
 
-static INLINE uint32_t
+static inline uint32_t
 srtcp_packet_get_ekt_roc(const uint8_t *packet_start, unsigned pkt_octet_len) {
   const uint8_t *roc_location;
   
@@ -108,7 +108,7 @@ srtcp_packet_get_ekt_roc(const uint8_t *packet_start, unsigned pkt_octet_len) {
   return *((const uint32_t *)roc_location);
 }
 
-static INLINE const uint8_t *
+static inline const uint8_t *
 srtcp_packet_get_emk_location(const uint8_t *packet_start, 
 			      unsigned pkt_octet_len) {
   const uint8_t *location;
@@ -148,10 +148,13 @@ ekt_stream_init_from_policy(ekt_stream_t stream_data, ekt_policy_t policy) {
 
 void
 aes_decrypt_with_raw_key(void *ciphertext, const void *key, int key_len) {
+#ifndef OPENSSL
+//FIXME: need to get this working through the crypto module interface
   aes_expanded_key_t expanded_key;
 
   aes_expand_decryption_key(key, key_len, &expanded_key);
   aes_decrypt(ciphertext, &expanded_key);
+#endif
 }
 
 /*
@@ -166,7 +169,6 @@ srtp_stream_init_from_ekt(srtp_stream_t stream,
   err_status_t err;
   const uint8_t *master_key;
   srtp_policy_t srtp_policy;
-  unsigned master_key_len;
   uint32_t roc;
 
   /*
@@ -178,7 +180,6 @@ srtp_stream_init_from_ekt(srtp_stream_t stream,
 
   if (stream->ekt->data->ekt_cipher_type != EKT_CIPHER_AES_128_ECB)
     return err_status_bad_param;
-  master_key_len = 16;
 
   /* decrypt the Encrypted Master Key field */
   master_key = srtcp_packet_get_emk_location(srtcp_hdr, pkt_octet_len);

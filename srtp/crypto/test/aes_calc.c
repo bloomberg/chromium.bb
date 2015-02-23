@@ -6,6 +6,7 @@
  * David A. McGrew
  * Cisco Systems, Inc.
  */
+
 /*
  *	
  * Copyright (c) 2001-2006, Cisco Systems, Inc.
@@ -53,6 +54,10 @@
 
  */
 
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
+
 #include "aes.h"
 #include <stdio.h>
 #include <string.h>
@@ -71,7 +76,7 @@ main (int argc, char *argv[]) {
   uint8_t key[AES_MAX_KEY_LEN];
   aes_expanded_key_t exp_key;
   int key_len, len;
-  int verbose;
+  int verbose = 0;
   err_status_t status;
 
   if (argc == 3) {

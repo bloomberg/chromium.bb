@@ -1,4 +1,9 @@
 /*
+ * lfsr.c
+ *
+ */
+
+/*
  *	
  * Copyright (c) 2001-2006, Cisco Systems, Inc.
  * All rights reserved.
@@ -33,11 +38,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-/*
- * lfsr.c
- *
- */
-
 
 #include <stdio.h>
 #include "datatypes.h"

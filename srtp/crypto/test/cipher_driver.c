@@ -9,7 +9,7 @@
 
 /*
  *	
- * Copyright (c) 2001-2006, Cisco Systems, Inc.
+ * Copyright (c) 2001-2006,2013 Cisco Systems, Inc.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,12 +43,21 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
+
 #include <stdio.h>           /* for printf() */
 #include <stdlib.h>          /* for rand() */
 #include <string.h>          /* for memset() */
 #include <unistd.h>          /* for getopt() */
 #include "cipher.h"
+#ifdef OPENSSL
+#include "aes_icm_ossl.h"
+#include "aes_gcm_ossl.h"
+#else
 #include "aes_icm.h"
+#endif
 #include "null_cipher.h"
 
 #define PRINT_DEBUG 0
@@ -114,7 +123,16 @@ check_status(err_status_t s) {
 
 extern cipher_type_t null_cipher;
 extern cipher_type_t aes_icm;
+#ifndef OPENSSL
 extern cipher_type_t aes_cbc;
+#else
+#ifndef SRTP_NO_AES192
+extern cipher_type_t aes_icm_192;
+#endif
+extern cipher_type_t aes_icm_256;
+extern cipher_type_t aes_gcm_128_openssl;
+extern cipher_type_t aes_gcm_256_openssl;
+#endif
 
 int
 main(int argc, char *argv[]) {
@@ -171,6 +189,7 @@ main(int argc, char *argv[]) {
     for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8)
       cipher_driver_test_array_throughput(&aes_icm, 30, num_cipher); 
 
+#ifndef OPENSSL
     for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8)
       cipher_driver_test_array_throughput(&aes_icm, 46, num_cipher); 
 
@@ -179,19 +198,44 @@ main(int argc, char *argv[]) {
  
     for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8)
       cipher_driver_test_array_throughput(&aes_cbc, 32, num_cipher); 
+#else
+#ifndef SRTP_NO_AES192
+    for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8)
+      cipher_driver_test_array_throughput(&aes_icm_192, 38, num_cipher); 
+#endif
+    for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8)
+      cipher_driver_test_array_throughput(&aes_icm_256, 46, num_cipher); 
+
+    for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8) {
+	cipher_driver_test_array_throughput(&aes_gcm_128_openssl, AES_128_GCM_KEYSIZE_WSALT, num_cipher);         
+    }
+
+    for (num_cipher=1; num_cipher < max_num_cipher; num_cipher *=8) {
+	cipher_driver_test_array_throughput(&aes_gcm_256_openssl, AES_256_GCM_KEYSIZE_WSALT, num_cipher);         
+    }
+#endif
   }
 
   if (do_validation) {
     cipher_driver_self_test(&null_cipher);
     cipher_driver_self_test(&aes_icm);
+#ifndef OPENSSL
     cipher_driver_self_test(&aes_cbc);
+#else
+#ifndef SRTP_NO_AES192
+    cipher_driver_self_test(&aes_icm_192);
+#endif
+    cipher_driver_self_test(&aes_icm_256);
+    cipher_driver_self_test(&aes_gcm_128_openssl);
+    cipher_driver_self_test(&aes_gcm_256_openssl);
+#endif
   }
 
   /* do timing and/or buffer_test on null_cipher */
-  status = cipher_type_alloc(&null_cipher, &c, 0); 
+  status = cipher_type_alloc(&null_cipher, &c, 0, 0); 
   check_status(status);
 
-  status = cipher_init(c, NULL, direction_encrypt);
+  status = cipher_init(c, NULL);
   check_status(status);
 
   if (do_timing_test) 
@@ -205,13 +249,13 @@ main(int argc, char *argv[]) {
   
 
   /* run the throughput test on the aes_icm cipher (128-bit key) */
-    status = cipher_type_alloc(&aes_icm, &c, 30);  
+    status = cipher_type_alloc(&aes_icm, &c, 30, 0);  
     if (status) {
       fprintf(stderr, "error: can't allocate cipher\n");
       exit(status);
     }
 
-    status = cipher_init(c, test_key, direction_encrypt);
+    status = cipher_init(c, test_key);
     check_status(status);
 
     if (do_timing_test)
@@ -226,13 +270,17 @@ main(int argc, char *argv[]) {
     check_status(status);
 
   /* repeat the tests with 256-bit keys */
-    status = cipher_type_alloc(&aes_icm, &c, 46);  
+#ifndef OPENSSL
+    status = cipher_type_alloc(&aes_icm, &c, 46, 0);  
+#else
+    status = cipher_type_alloc(&aes_icm_256, &c, 46, 0);  
+#endif
     if (status) {
       fprintf(stderr, "error: can't allocate cipher\n");
       exit(status);
     }
 
-    status = cipher_init(c, test_key, direction_encrypt);
+    status = cipher_init(c, test_key);
     check_status(status);
 
     if (do_timing_test)
@@ -245,8 +293,48 @@ main(int argc, char *argv[]) {
     
     status = cipher_dealloc(c);
     check_status(status);
-  
-  return 0;
+
+#ifdef OPENSSL
+    /* run the throughput test on the aes_gcm_128_openssl cipher */
+    status = cipher_type_alloc(&aes_gcm_128_openssl, &c, AES_128_GCM_KEYSIZE_WSALT, 8);
+    if (status) {
+        fprintf(stderr, "error: can't allocate GCM 128 cipher\n");
+        exit(status);
+    }
+    status = cipher_init(c, test_key);
+    check_status(status);
+    if (do_timing_test) {
+        cipher_driver_test_throughput(c);
+    }
+
+    if (do_validation) {
+        status = cipher_driver_test_buffering(c);
+        check_status(status);
+    }
+    status = cipher_dealloc(c);
+    check_status(status);
+
+    /* run the throughput test on the aes_gcm_256_openssl cipher */
+    status = cipher_type_alloc(&aes_gcm_256_openssl, &c, AES_256_GCM_KEYSIZE_WSALT, 16);
+    if (status) {
+        fprintf(stderr, "error: can't allocate GCM 256 cipher\n");
+        exit(status);
+    }
+    status = cipher_init(c, test_key);
+    check_status(status);
+    if (do_timing_test) {
+        cipher_driver_test_throughput(c);
+    }
+
+    if (do_validation) {
+        status = cipher_driver_test_buffering(c);
+        check_status(status);
+    }
+    status = cipher_dealloc(c);
+    check_status(status);
+#endif 
+
+    return 0;
 }
 
 void
@@ -306,7 +394,7 @@ cipher_driver_test_buffering(cipher_t *c) {
       buffer0[j] = buffer1[j] = 0;
     
     /* initialize cipher  */
-    status = cipher_set_iv(c, idx);
+    status = cipher_set_iv(c, idx, direction_encrypt);
     if (status)
       return status;
 
@@ -316,7 +404,7 @@ cipher_driver_test_buffering(cipher_t *c) {
       return status;
 
     /* re-initialize cipher */
-    status = cipher_set_iv(c, idx);
+    status = cipher_set_iv(c, idx, direction_encrypt);
     if (status)
       return status;
     
@@ -400,7 +488,7 @@ cipher_array_alloc_init(cipher_t ***ca, int num_ciphers,
   for (i=0; i < num_ciphers; i++) {
 
     /* allocate cipher */
-    status = cipher_type_alloc(ctype, cipher_array, klen);
+    status = cipher_type_alloc(ctype, cipher_array, klen, 16);
     if (status)
       return status;
     
@@ -409,7 +497,7 @@ cipher_array_alloc_init(cipher_t ***ca, int num_ciphers,
       key[j] = (uint8_t) rand();
     for (; j < klen_pad; j++)
       key[j] = 0;
-    status = cipher_init(*cipher_array, key, direction_encrypt);
+    status = cipher_init(*cipher_array, key);
     if (status)
       return status;
 
@@ -476,7 +564,7 @@ cipher_array_bits_per_second(cipher_t *cipher_array[], int num_cipher,
     unsigned octets_to_encrypt = octets_in_buffer;
 
     /* encrypt buffer with cipher */
-    cipher_set_iv(cipher_array[cipher_index], &nonce);
+    cipher_set_iv(cipher_array[cipher_index], &nonce, direction_encrypt);
     cipher_encrypt(cipher_array[cipher_index], enc_buf, &octets_to_encrypt);
 
     /* choose a cipher at random from the array*/

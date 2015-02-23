@@ -43,6 +43,9 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
 
 #include "aes.h"
 #include "err.h"
@@ -1525,6 +1528,7 @@ aes_expand_decryption_key(const uint8_t *key,
 #ifdef CPU_RISC
     uint32_t tmp;
 
+#ifdef WORDS_BIGENDIAN
     tmp = expanded_key->round[i].v32[0];
     expanded_key->round[i].v32[0] = 
       U0[T4[(tmp >> 24)       ] & 0xff] ^ 
@@ -1552,6 +1556,36 @@ aes_expand_decryption_key(const uint8_t *key,
       U1[T4[(tmp >> 16) & 0xff] & 0xff] ^ 
       U2[T4[(tmp >> 8)  & 0xff] & 0xff] ^ 
       U3[T4[(tmp)       & 0xff] & 0xff];
+#else
+    tmp = expanded_key->round[i].v32[0];
+    expanded_key->round[i].v32[0] = 
+      U3[T4[(tmp >> 24)       ] & 0xff] ^ 
+      U2[T4[(tmp >> 16) & 0xff] & 0xff] ^ 
+      U1[T4[(tmp >> 8)  & 0xff] & 0xff] ^ 
+      U0[T4[(tmp)       & 0xff] & 0xff];
+
+    tmp = expanded_key->round[i].v32[1];
+    expanded_key->round[i].v32[1] = 
+      U3[T4[(tmp >> 24)       ] & 0xff] ^ 
+      U2[T4[(tmp >> 16) & 0xff] & 0xff] ^ 
+      U1[T4[(tmp >> 8)  & 0xff] & 0xff] ^ 
+      U0[T4[(tmp)       & 0xff] & 0xff];
+
+    tmp = expanded_key->round[i].v32[2];
+    expanded_key->round[i].v32[2] = 
+      U3[T4[(tmp >> 24)       ] & 0xff] ^ 
+      U2[T4[(tmp >> 16) & 0xff] & 0xff] ^ 
+      U1[T4[(tmp >> 8)  & 0xff] & 0xff] ^ 
+      U0[T4[(tmp)       & 0xff] & 0xff];
+
+    tmp = expanded_key->round[i].v32[3];
+    expanded_key->round[i].v32[3] = 
+      U3[T4[(tmp >> 24)       ] & 0xff] ^ 
+      U2[T4[(tmp >> 16) & 0xff] & 0xff] ^ 
+      U1[T4[(tmp >> 8)  & 0xff] & 0xff] ^ 
+      U0[T4[(tmp)       & 0xff] & 0xff];
+#endif /* WORDS_BIGENDIAN */
+
 #else /* assume CPU_CISC */
 
     uint32_t c0, c1, c2, c3;
@@ -1590,7 +1624,7 @@ aes_expand_decryption_key(const uint8_t *key,
 #ifdef CPU_CISC
 
 
-static INLINE void
+static inline void
 aes_round(v128_t *state, const v128_t *round_key) {
   uint32_t column0, column1, column2, column3;
 
@@ -1617,7 +1651,7 @@ aes_round(v128_t *state, const v128_t *round_key) {
 }
 
 
-static INLINE void
+static inline void
 aes_inv_round(v128_t *state, const v128_t *round_key) {
   uint32_t column0, column1, column2, column3;
 
@@ -1643,7 +1677,7 @@ aes_inv_round(v128_t *state, const v128_t *round_key) {
 
 }
 
-static INLINE void
+static inline void
 aes_final_round(v128_t *state, const v128_t *round_key) {
   uint8_t tmp;
 
@@ -1679,7 +1713,7 @@ aes_final_round(v128_t *state, const v128_t *round_key) {
   v128_xor_eq(state, round_key);
 }
 
-static INLINE void
+static inline void
 aes_inv_final_round(v128_t *state, const v128_t *round_key) {
   uint8_t tmp;
 
@@ -1718,7 +1752,7 @@ aes_inv_final_round(v128_t *state, const v128_t *round_key) {
 
 #elif CPU_RISC
 
-static INLINE void
+static inline void
 aes_round(v128_t *state, const v128_t *round_key) {
   uint32_t column0, column1, column2, column3;
 
@@ -1757,7 +1791,7 @@ aes_round(v128_t *state, const v128_t *round_key) {
 
 }
 
-static INLINE void
+static inline void
 aes_inv_round(v128_t *state, const v128_t *round_key) {
   uint32_t column0, column1, column2, column3;
 
@@ -1765,7 +1799,6 @@ aes_inv_round(v128_t *state, const v128_t *round_key) {
      of state, using the tables U0, U1, U2, U3 */
 
 #ifdef WORDS_BIGENDIAN
-  /* FIX!  WRong indexes */
   column0 = U0[state->v32[0] >> 24] ^ U1[(state->v32[3] >> 16) & 0xff]
     ^ U2[(state->v32[2] >> 8) & 0xff] ^ U3[state->v32[1] & 0xff];
 
@@ -1778,17 +1811,17 @@ aes_inv_round(v128_t *state, const v128_t *round_key) {
   column3 = U0[state->v32[3] >> 24] ^ U1[(state->v32[2] >> 16) & 0xff]
     ^ U2[(state->v32[1] >> 8) & 0xff] ^ U3[state->v32[0] & 0xff];
 #else
-  column0 = U0[state->v32[0] & 0xff] ^ U1[(state->v32[1] >> 8) & 0xff]
-	^ U2[(state->v32[2] >> 16) & 0xff] ^ U3[state->v32[3] >> 24];
+  column0 = U0[state->v32[0] & 0xff] ^ U1[(state->v32[3] >> 8) & 0xff]
+    ^ U2[(state->v32[2] >> 16) & 0xff] ^ U3[(state->v32[1] >> 24) & 0xff];
 
-  column1 = U0[state->v32[1] & 0xff] ^ U1[(state->v32[2] >> 8) & 0xff]
-	^ U2[(state->v32[3] >> 16) & 0xff] ^ U3[state->v32[0] >> 24];
+  column1 = U0[state->v32[1] & 0xff] ^ U1[(state->v32[0] >> 8) & 0xff]
+    ^ U2[(state->v32[3] >> 16) & 0xff] ^ U3[(state->v32[2] >> 24) & 0xff];
 
-  column2 = U0[state->v32[2] & 0xff] ^ U1[(state->v32[3] >> 8) & 0xff]
-	^ U2[(state->v32[0] >> 16) & 0xff] ^ U3[state->v32[1] >> 24];
+  column2 = U0[state->v32[2] & 0xff] ^ U1[(state->v32[1] >> 8) & 0xff]
+    ^ U2[(state->v32[0] >> 16) & 0xff] ^ U3[(state->v32[3] >> 24) & 0xff];
 
-  column3 = U0[state->v32[3] & 0xff] ^ U1[(state->v32[0] >> 8) & 0xff]
-	^ U2[(state->v32[1] >> 16) & 0xff] ^ U3[state->v32[2] >> 24];
+  column3 = U0[state->v32[3] & 0xff] ^ U1[(state->v32[2] >> 8) & 0xff]
+    ^ U2[(state->v32[1] >> 16) & 0xff] ^ U3[(state->v32[0] >> 24) & 0xff];
 #endif /* WORDS_BIGENDIAN */
 
   state->v32[0] = column0 ^ round_key->v32[0];
@@ -1798,10 +1831,11 @@ aes_inv_round(v128_t *state, const v128_t *round_key) {
 
 }
 
-static INLINE void
+static inline void
 aes_final_round(v128_t *state, const v128_t *round_key) {
   uint32_t tmp0, tmp1, tmp2, tmp3;
 
+#ifdef WORDS_BIGENDIAN
   tmp0 = (T4[(state->v32[0] >> 24)]        & 0xff000000) 
        ^ (T4[(state->v32[1] >> 16) & 0xff] & 0x00ff0000) 
        ^ (T4[(state->v32[2] >>  8) & 0xff] & 0x0000ff00) 
@@ -1825,6 +1859,31 @@ aes_final_round(v128_t *state, const v128_t *round_key) {
        ^ (T4[(state->v32[1] >>  8) & 0xff] & 0x0000ff00)
        ^ (T4[(state->v32[2]      ) & 0xff] & 0x000000ff)
        ^ round_key->v32[3];
+#else
+  tmp0 = (T4[(state->v32[3] >> 24)]        & 0xff000000) 
+       ^ (T4[(state->v32[2] >> 16) & 0xff] & 0x00ff0000) 
+       ^ (T4[(state->v32[1] >>  8) & 0xff] & 0x0000ff00) 
+       ^ (T4[(state->v32[0]      ) & 0xff] & 0x000000ff) 
+       ^ round_key->v32[0];
+
+  tmp1 = (T4[(state->v32[0] >> 24)]        & 0xff000000)
+       ^ (T4[(state->v32[3] >> 16) & 0xff] & 0x00ff0000)
+       ^ (T4[(state->v32[2] >>  8) & 0xff] & 0x0000ff00)
+       ^ (T4[(state->v32[1]      ) & 0xff] & 0x000000ff)
+       ^ round_key->v32[1];
+
+  tmp2 = (T4[(state->v32[1] >> 24)]        & 0xff000000)
+       ^ (T4[(state->v32[0] >> 16) & 0xff] & 0x00ff0000)
+       ^ (T4[(state->v32[3] >>  8) & 0xff] & 0x0000ff00)
+       ^ (T4[(state->v32[2]      ) & 0xff] & 0x000000ff)
+       ^ round_key->v32[2];
+
+  tmp3 = (T4[(state->v32[2] >> 24)]        & 0xff000000)
+       ^ (T4[(state->v32[1] >> 16) & 0xff] & 0x00ff0000)
+       ^ (T4[(state->v32[0] >>  8) & 0xff] & 0x0000ff00)
+       ^ (T4[(state->v32[3]      ) & 0xff] & 0x000000ff)
+       ^ round_key->v32[3];
+#endif /* WORDS_BIGENDIAN */
 
   state->v32[0] = tmp0;
   state->v32[1] = tmp1;
@@ -1833,10 +1892,11 @@ aes_final_round(v128_t *state, const v128_t *round_key) {
 
 }
 
-static INLINE void
+static inline void
 aes_inv_final_round(v128_t *state, const v128_t *round_key) {
   uint32_t tmp0, tmp1, tmp2, tmp3;
 
+#ifdef WORDS_BIGENDIAN
   tmp0 = (U4[(state->v32[0] >> 24)]        & 0xff000000) 
        ^ (U4[(state->v32[3] >> 16) & 0xff] & 0x00ff0000) 
        ^ (U4[(state->v32[2] >>  8) & 0xff] & 0x0000ff00) 
@@ -1860,6 +1920,31 @@ aes_inv_final_round(v128_t *state, const v128_t *round_key) {
        ^ (U4[(state->v32[1] >>  8) & 0xff] & 0x0000ff00)
        ^ (U4[(state->v32[0]      ) & 0xff] & 0x000000ff)
        ^ round_key->v32[3];
+#else
+  tmp0 = (U4[(state->v32[1] >> 24)]        & 0xff000000) 
+       ^ (U4[(state->v32[2] >> 16) & 0xff] & 0x00ff0000) 
+       ^ (U4[(state->v32[3] >>  8) & 0xff] & 0x0000ff00) 
+       ^ (U4[(state->v32[0]      ) & 0xff] & 0x000000ff) 
+       ^ round_key->v32[0];
+
+  tmp1 = (U4[(state->v32[2] >> 24)]        & 0xff000000)
+       ^ (U4[(state->v32[3] >> 16) & 0xff] & 0x00ff0000)
+       ^ (U4[(state->v32[0] >>  8) & 0xff] & 0x0000ff00)
+       ^ (U4[(state->v32[1]      ) & 0xff] & 0x000000ff)
+       ^ round_key->v32[1];
+
+  tmp2 = (U4[(state->v32[3] >> 24)]        & 0xff000000)
+       ^ (U4[(state->v32[0] >> 16) & 0xff] & 0x00ff0000)
+       ^ (U4[(state->v32[1] >>  8) & 0xff] & 0x0000ff00)
+       ^ (U4[(state->v32[2]      ) & 0xff] & 0x000000ff)
+       ^ round_key->v32[2];
+
+  tmp3 = (U4[(state->v32[0] >> 24)]        & 0xff000000)
+       ^ (U4[(state->v32[1] >> 16) & 0xff] & 0x00ff0000)
+       ^ (U4[(state->v32[2] >>  8) & 0xff] & 0x0000ff00)
+       ^ (U4[(state->v32[3]      ) & 0xff] & 0x000000ff)
+       ^ round_key->v32[3];
+#endif /* WORDS_BIGENDIAN */
 
   state->v32[0] = tmp0;
   state->v32[1] = tmp1;
@@ -1870,7 +1955,7 @@ aes_inv_final_round(v128_t *state, const v128_t *round_key) {
 
 #elif CPU_16  /* assume 16-bit word size on processor */
 
-static INLINE void
+static inline void
 aes_round(v128_t *state, const v128_t *round_key) {
   uint32_t column0, column1, column2, column3;
   uint16_t c
@@ -1897,7 +1982,7 @@ aes_round(v128_t *state, const v128_t *round_key) {
 }
 
 
-static INLINE void
+static inline void
 aes_inv_round(v128_t *state, const v128_t *round_key) {
   uint32_t column0, column1, column2, column3;
 
@@ -1923,7 +2008,7 @@ aes_inv_round(v128_t *state, const v128_t *round_key) {
 
 }
 
-static INLINE void
+static inline void
 aes_final_round(v128_t *state, const v128_t *round_key) {
   uint8_t tmp;
 
@@ -1959,7 +2044,7 @@ aes_final_round(v128_t *state, const v128_t *round_key) {
   v128_xor_eq(state, round_key);
 }
 
-static INLINE void
+static inline void
 aes_inv_final_round(v128_t *state, const v128_t *round_key) {
   uint8_t tmp;
 

@@ -42,6 +42,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
+
 #include "crypto_math.h"
 
 int 
@@ -631,7 +635,7 @@ v128_set_bit_to(v128_t *x, int i, int y){
 #endif /* DATATYPES_USE_MACROS */
 
 
-static INLINE void
+static inline void
 v128_left_shift2(v128_t *x, int num_bits) {
   int i;
   int word_shift = num_bits >> 5;

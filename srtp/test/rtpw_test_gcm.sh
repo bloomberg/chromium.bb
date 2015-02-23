@@ -41,10 +41,6 @@ RTPW=./rtpw
 DEST_PORT=9999
 DURATION=3
 
-key=Ky7cUDT2GnI0XKWYbXv9AYmqbcLsqzL9mvdN9t/G
-
-ARGS="-b $key -a -e 128"
-
 # First, we run "killall" to get rid of all existing rtpw processes.
 # This step also enables this script to clean up after itself; if this
 # script is interrupted after the rtpw processes are started but before
@@ -55,9 +51,10 @@ killall rtpw 2>/dev/null
 
 if test -x $RTPW; then
 
-echo  $0 ": starting rtpw receiver process... "
+GCMARGS128="-k 01234567890123456789012345678901234567890123456789012345 -g -e 128"
+echo  $0 ": starting GCM mode 128-bit rtpw receiver process... "
 
-$RTPW $* $ARGS -r 0.0.0.0 $DEST_PORT  &
+exec $RTPW $* $GCMARGS128 -r 127.0.0.1 $DEST_PORT &
 
 receiver_pid=$!
 
@@ -74,9 +71,9 @@ if [ $retval != 0 ]; then
     exit 254
 fi
 
-echo  $0 ": starting rtpw sender process..."
+echo  $0 ": starting GCM 128-bit rtpw sender process..."
 
-$RTPW $* $ARGS -s 127.0.0.1 $DEST_PORT  &
+exec $RTPW $* $GCMARGS128 -s 127.0.0.1 $DEST_PORT  &
 
 sender_pid=$!
 
@@ -96,17 +93,10 @@ sleep $DURATION
 kill $receiver_pid
 kill $sender_pid
 
-wait $receiver_pid
-wait $sender_pid
+GCMARGS128="-k 01234567890123456789012345678901234567890123456789012345 -g -t 16 -e 128"
+echo  $0 ": starting GCM mode 128-bit (16 byte tag) rtpw receiver process... "
 
-
-key=033490ba9e82994fc21013395739038992b2edc5034f61a72345ca598d7bfd0189aa6dc2ecab32fd9af74df6dfc6
-
-ARGS="-k $key -a -e 256"
-
-echo  $0 ": starting rtpw receiver process... "
-
-$RTPW $* $ARGS -r 0.0.0.0 $DEST_PORT  &
+exec $RTPW $* $GCMARGS128 -r 127.0.0.1 $DEST_PORT &
 
 receiver_pid=$!
 
@@ -123,9 +113,9 @@ if [ $retval != 0 ]; then
     exit 254
 fi
 
-echo  $0 ": starting rtpw sender process..."
+echo  $0 ": starting GCM 128-bit (16 byte tag) rtpw sender process..."
 
-$RTPW $* $ARGS -s 127.0.0.1 $DEST_PORT  &
+exec $RTPW $* $GCMARGS128 -s 127.0.0.1 $DEST_PORT  &
 
 sender_pid=$!
 
@@ -145,8 +135,93 @@ sleep $DURATION
 kill $receiver_pid
 kill $sender_pid
 
-wait $receiver_pid
-wait $sender_pid
+
+
+GCMARGS256="-k 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567 -g -e 256"
+echo  $0 ": starting GCM mode 256-bit rtpw receiver process... "
+
+exec $RTPW $* $GCMARGS256 -r 127.0.0.1 $DEST_PORT &
+
+receiver_pid=$!
+
+echo $0 ": receiver PID = $receiver_pid"
+
+sleep 1 
+
+# verify that the background job is running
+ps | grep -q $receiver_pid
+retval=$?
+echo $retval
+if [ $retval != 0 ]; then
+    echo $0 ": error"
+    exit 254
+fi
+
+echo  $0 ": starting GCM 256-bit rtpw sender process..."
+
+exec $RTPW $* $GCMARGS256 -s 127.0.0.1 $DEST_PORT  &
+
+sender_pid=$!
+
+echo $0 ": sender PID = $sender_pid"
+
+# verify that the background job is running
+ps | grep -q $sender_pid
+retval=$?
+echo $retval
+if [ $retval != 0 ]; then
+    echo $0 ": error"
+    exit 255
+fi
+
+sleep $DURATION
+
+kill $receiver_pid
+kill $sender_pid
+
+
+GCMARGS256="-k a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567 -g -t 16 -e 256"
+echo  $0 ": starting GCM mode 256-bit (16 byte tag) rtpw receiver process... "
+
+exec $RTPW $* $GCMARGS256 -r 127.0.0.1 $DEST_PORT &
+
+receiver_pid=$!
+
+echo $0 ": receiver PID = $receiver_pid"
+
+sleep 1 
+
+# verify that the background job is running
+ps | grep -q $receiver_pid
+retval=$?
+echo $retval
+if [ $retval != 0 ]; then
+    echo $0 ": error"
+    exit 254
+fi
+
+echo  $0 ": starting GCM 256-bit (16 byte tag) rtpw sender process..."
+
+exec $RTPW $* $GCMARGS256 -s 127.0.0.1 $DEST_PORT  &
+
+sender_pid=$!
+
+echo $0 ": sender PID = $sender_pid"
+
+# verify that the background job is running
+ps | grep -q $sender_pid
+retval=$?
+echo $retval
+if [ $retval != 0 ]; then
+    echo $0 ": error"
+    exit 255
+fi
+
+sleep $DURATION
+
+kill $receiver_pid
+kill $sender_pid
+
 
 echo $0 ": done (test passed)"
 
