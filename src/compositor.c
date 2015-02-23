@@ -1078,22 +1078,21 @@ weston_view_assign_output(struct weston_view *ev)
 }
 
 static void
-view_compute_bbox(struct weston_view *view, int32_t sx, int32_t sy,
-		  int32_t width, int32_t height,
+view_compute_bbox(struct weston_view *view, const pixman_box32_t *inbox,
 		  pixman_region32_t *bbox)
 {
 	float min_x = HUGE_VALF,  min_y = HUGE_VALF;
 	float max_x = -HUGE_VALF, max_y = -HUGE_VALF;
 	int32_t s[4][2] = {
-		{ sx,         sy },
-		{ sx,         sy + height },
-		{ sx + width, sy },
-		{ sx + width, sy + height }
+		{ inbox->x1, inbox->y1 },
+		{ inbox->x1, inbox->y2 },
+		{ inbox->x2, inbox->y1 },
+		{ inbox->x2, inbox->y2 },
 	};
 	float int_x, int_y;
 	int i;
 
-	if (width == 0 || height == 0) {
+	if (inbox->x1 == inbox->x2 || inbox->y1 == inbox->y2) {
 		/* avoid rounding empty bbox to 1x1 */
 		pixman_region32_init(bbox);
 		return;
@@ -1160,6 +1159,7 @@ weston_view_update_transform_enable(struct weston_view *view)
 	struct weston_matrix *matrix = &view->transform.matrix;
 	struct weston_matrix *inverse = &view->transform.inverse;
 	struct weston_transform *tform;
+	pixman_box32_t surfbox;
 
 	view->transform.enabled = 1;
 
@@ -1182,9 +1182,11 @@ weston_view_update_transform_enable(struct weston_view *view)
 		return -1;
 	}
 
-	view_compute_bbox(view, 0, 0,
-			  view->surface->width, view->surface->height,
-			  &view->transform.boundingbox);
+	surfbox.x1 = 0;
+	surfbox.y1 = 0;
+	surfbox.x2 = view->surface->width;
+	surfbox.y2 = view->surface->height;
+	view_compute_bbox(view, &surfbox, &view->transform.boundingbox);
 
 	return 0;
 }
@@ -1829,10 +1831,7 @@ view_accumulate_damage(struct weston_view *view,
 		pixman_box32_t *extents;
 
 		extents = pixman_region32_extents(&view->surface->damage);
-		view_compute_bbox(view, extents->x1, extents->y1,
-				  extents->x2 - extents->x1,
-				  extents->y2 - extents->y1,
-				  &damage);
+		view_compute_bbox(view, extents, &damage);
 		pixman_region32_translate(&damage,
 					  -view->plane->x,
 					  -view->plane->y);
