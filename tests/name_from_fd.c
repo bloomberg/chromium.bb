@@ -40,8 +40,7 @@
  */
 int main(int argc, char **argv)
 {
-	int fd, ret;
-	drm_set_version_t sv, version;
+	int fd;
 	const char *name = "/dev/dri/card0";
 	char *v;
 
