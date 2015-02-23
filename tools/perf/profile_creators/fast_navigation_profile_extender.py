@@ -8,6 +8,7 @@ from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
 from telemetry.core import platform
 from telemetry.core import util
+from telemetry.core.backends.chrome_inspector import devtools_http
 
 
 class FastNavigationProfileExtender(object):
@@ -39,6 +40,11 @@ class FastNavigationProfileExtender(object):
     # navigations.
     # This member is initialized during SetUp().
     self._browser = None
+
+    # The instance keeps a list of Tabs that can be navigated successfully.
+    # This means that the Tab is not crashed, and is processing JavaScript in a
+    # timely fashion.
+    self._navigation_tabs = []
 
     # The number of tabs to use.
     self._NUM_TABS = maximum_batch_size
@@ -95,9 +101,6 @@ class FastNavigationProfileExtender(object):
         ["win", "mac", "linux"])
     self._browser = possible_browser.Create(finder_options)
 
-    while(len(self._browser.tabs) < self._NUM_TABS):
-      self._browser.tabs.New()
-
   def TearDown(self):
     """Teardown that is guaranteed to be executed before the instance is
     destroyed.
@@ -121,6 +124,28 @@ class FastNavigationProfileExtender(object):
   def profile_path(self):
     return self._profile_path
 
+  def _RefreshNavigationTabs(self):
+    """Updates the member self._navigation_tabs to contain self._NUM_TABS
+    elements, each of which is not crashed. The crashed tabs are intentionally
+    leaked, since Telemetry doesn't have a good way of killing crashed tabs.
+
+    It is also possible for a tab to be stalled in an infinite JavaScript loop.
+    These tabs will be in self._browser.tabs, but not in self._navigation_tabs.
+    There is no way to kill these tabs, so they are also leaked. This method is
+    careful to only use tabs in self._navigation_tabs, or newly created tabs.
+    """
+    live_tabs = [tab for tab in self._navigation_tabs if tab.IsAlive()]
+    self._navigation_tabs = live_tabs
+
+    while len(self._navigation_tabs) < self._NUM_TABS:
+      self._navigation_tabs.append(self._browser.tabs.New())
+
+  def _RemoveNavigationTab(self, tab):
+    """Removes a tab which is no longer in a useable state from
+    self._navigation_tabs. The tab is not removed from self._browser.tabs,
+    since there is no guarantee that the tab can be safely removed."""
+    self._navigation_tabs.remove(tab)
+
   def _GetPossibleBrowser(self, finder_options):
     """Return a possible_browser with the given options."""
     possible_browser = browser_finder.FindBrowser(finder_options)
@@ -137,7 +162,9 @@ class FastNavigationProfileExtender(object):
     """Retrives the URL of the tab."""
     try:
       return tab.EvaluateJavaScript('document.URL', timeout)
-    except exceptions.DevtoolsTargetCrashException:
+    except (exceptions.DevtoolsTargetCrashException,
+        devtools_http.DevToolsClientConnectionError,
+        devtools_http.DevToolsClientUrlError):
       return None
 
   def _WaitForUrlToChange(self, tab, initial_url, timeout):
@@ -178,9 +205,12 @@ class FastNavigationProfileExtender(object):
 
       try:
         tab.Navigate(url, None, timeout_in_seconds)
-      except exceptions.DevtoolsTargetCrashException:
-        # We expect a time out, and don't mind if the webpage crashes. Ignore
-        # both exceptions.
+      except (exceptions.DevtoolsTargetCrashException,
+          devtools_http.DevToolsClientConnectionError,
+          devtools_http.DevToolsClientUrlError):
+        # We expect a time out. It's possible for other problems to arise, but
+        # this method is not responsible for dealing with them. Ignore all
+        # exceptions.
         pass
 
       queued_tabs.append((tab, initial_url))
@@ -210,9 +240,15 @@ class FastNavigationProfileExtender(object):
 
       try:
         tab.WaitForDocumentReadyStateToBeComplete(seconds_to_wait)
-      except (util.TimeoutException, exceptions.DevtoolsTargetCrashException):
-        # Ignore time outs and web page crashes.
+      except util.TimeoutException:
+        # Ignore time outs.
         pass
+      except (exceptions.DevtoolsTargetCrashException,
+          devtools_http.DevToolsClientConnectionError,
+          devtools_http.DevToolsClientUrlError):
+        # If any error occurs, remove the tab. it's probably in an
+        # unrecoverable state.
+        self._RemoveNavigationTab(tab)
 
   def _GetUrlsToNavigate(self, url_iterator):
     """Returns an array of urls to navigate to, given a url_iterator."""
@@ -231,6 +267,7 @@ class FastNavigationProfileExtender(object):
     """
     url_iterator = self.GetUrlIterator()
     while True:
+      self._RefreshNavigationTabs()
       urls = self._GetUrlsToNavigate(url_iterator)
 
       if len(urls) == 0:
@@ -239,7 +276,7 @@ class FastNavigationProfileExtender(object):
       batch = []
       for i in range(len(urls)):
         url = urls[i]
-        tab = self._browser.tabs[i]
+        tab = self._navigation_tabs[i]
         batch.append((tab, url))
 
       queued_tabs = self._BatchNavigateTabs(batch)

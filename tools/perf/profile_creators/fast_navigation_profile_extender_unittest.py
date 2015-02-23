@@ -15,11 +15,22 @@ class FakeTab(object):
   pass
 
 
+class FakeTabList(object):
+  def __init__(self):
+    self._tabs = []
+
+  def New(self):
+    tab = FakeTab()
+    self._tabs.append(tab)
+    return tab
+
+  def __len__(self):
+    return len(self._tabs)
+
+
 class FakeBrowser(object):
-  def __init__(self, tab_count):
-    self.tabs = []
-    for _ in range(tab_count):
-      self.tabs.append(FakeTab())
+  def __init__(self):
+    self.tabs = FakeTabList()
 
 
 # Testing private method.
@@ -40,7 +51,7 @@ class FastNavigationProfileExtenderTest(unittest.TestCase):
     extender.ShouldExitAfterBatchNavigation = mock.MagicMock(return_value=True)
     extender._WaitForQueuedTabsToLoad = mock.MagicMock()
 
-    extender._browser = FakeBrowser(extender._NUM_TABS)
+    extender._browser = FakeBrowser()
     extender._BatchNavigateTabs = mock.MagicMock()
 
     # Set up a callback to record the tabs and urls in each navigation.
@@ -67,7 +78,7 @@ class FastNavigationProfileExtenderTest(unittest.TestCase):
     # The first couple of tabs should have been navigated once. The remaining
     # tabs should not have been navigated.
     for i in range(len(extender._browser.tabs)):
-      tab = extender._browser.tabs[i]
+      tab = extender._browser.tabs._tabs[i]
 
       if i < batch_size:
         expected_tab_navigation_count = 1
