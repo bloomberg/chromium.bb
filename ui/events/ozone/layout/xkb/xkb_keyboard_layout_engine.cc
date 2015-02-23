@@ -750,6 +750,8 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                      base::char16* character,
                                      KeyboardCode* key_code,
                                      uint32* platform_keycode) const {
+  if (dom_code == DomCode::NONE)
+    return false;
   // Convert DOM physical key to XKB representation.
   xkb_keycode_t xkb_keycode = key_code_converter_.DomCodeToXkbKeyCode(dom_code);
   if (xkb_keycode == key_code_converter_.InvalidXkbKeyCode()) {
