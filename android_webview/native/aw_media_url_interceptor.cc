@@ -5,8 +5,8 @@
 #include <string>
 
 #include "android_webview/common/url_constants.h"
+#include "android_webview/native/aw_assets.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
-#include "android_webview/native/public/aw_assets.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 

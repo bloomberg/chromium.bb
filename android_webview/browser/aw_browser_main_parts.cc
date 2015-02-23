@@ -6,7 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_result_codes.h"
-#include "android_webview/native/public/aw_assets.h"
+#include "android_webview/native/aw_assets.h"
 #include "base/android/build_info.h"
 #include "base/android/locale_utils.h"
 #include "base/android/memory_pressure_listener_android.h"
