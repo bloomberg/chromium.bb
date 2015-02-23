@@ -165,10 +165,14 @@ When in doubt, just try out --trace-frame-viewer.
     logging.getLogger().setLevel(logging.DEBUG)
 
   devices = android_commands.GetAttachedDevices()
-  if not options.device and len(devices) != 1:
-    parser.error('Exactly 1 device must be attached.')
-  device = device_utils.DeviceUtils(
-    next((d for d in devices if d == options.device), devices[0]))
+  device = None
+  if options.device in devices:
+    device = options.device
+  elif not options.device and len(devices) == 1:
+    device = devices[0]
+  if not device:
+    parser.error('Use -d/--device to select a device:\n' + '\n'.join(devices))
+  device = device_utils.DeviceUtils(device)
   package_info = profiler.GetSupportedBrowsers()[options.browser]
 
   if options.chrome_categories in ['list', 'help']:
