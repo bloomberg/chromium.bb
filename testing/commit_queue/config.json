@@ -44,6 +44,9 @@
             "trybots": {
                 "launched": {
                     "tryserver.chromium.linux": {
+                    },
+                    "tryserver.chromium.mac": {
+                        "ios_dbg_simulator": ["defaulttests"]
                     }
                 }
             }
@@ -72,19 +75,6 @@
             "tryserver.chromium.mac": {
               "mac_chromium_compile_dbg_ng": ["defaulttests"],
               "mac_chromium_rel_ng": ["defaulttests"],
-              "ios_dbg_simulator": [
-                  "compile",
-                  "base_unittests",
-                  "components_unittests",
-                  "content_unittests",
-                  "crypto_unittests",
-                  "url_unittests",
-                  "net_unittests",
-                  "sql_unittests",
-                  "ui_unittests",
-                  "sync_unit_tests",
-                  "gfx_unittests"
-              ],
               "ios_rel_device_ng": ["defaulttests"],
               "ios_rel_device_ninja_ng": ["defaulttests"]
             },
