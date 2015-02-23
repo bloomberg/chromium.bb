@@ -190,8 +190,8 @@ void BookmarkImageService::SalientImageForUrl(const GURL& page_url,
 
 void BookmarkImageService::ProcessNewImage(const GURL& page_url,
                                            bool update_bookmarks,
-                                           const gfx::Image& image,
-                                           const GURL& image_url) {
+                                           const GURL& image_url,
+                                           const gfx::Image& image) {
   DCHECK(CalledOnValidThread());
   PostTaskToStoreImage(image, image_url, page_url);
   if (update_bookmarks && image_url.is_valid()) {
@@ -212,12 +212,13 @@ bool BookmarkImageService::IsPageUrlInProgress(const GURL& page_url) {
   return in_progress_page_urls_.find(page_url) != in_progress_page_urls_.end();
 }
 
-ImageRecord BookmarkImageService::StoreImage(const gfx::Image& image,
-                                             const GURL& image_url,
-                                             const GURL& page_url) {
-  ImageRecord image_info(image, image_url, SK_ColorBLACK);
-  if (!image.IsEmpty()) {
-    image_info.dominant_color = DominantColorForImage(image);
+ImageRecord BookmarkImageService::ResizeAndStoreImage(const gfx::Image& image,
+                                                      const GURL& image_url,
+                                                      const GURL& page_url) {
+  gfx::Image resized_image = ResizeImage(image);
+  ImageRecord image_info(resized_image, image_url, SK_ColorBLACK);
+  if (!resized_image.IsEmpty()) {
+    image_info.dominant_color = DominantColorForImage(resized_image);
     // TODO(lpromero): this should be saved all the time, even when there is an
     // empty image. http://crbug.com/451450
     pool_->PostNamedSequencedWorkerTask(
@@ -234,8 +235,8 @@ void BookmarkImageService::PostTaskToStoreImage(const gfx::Image& image,
   DCHECK(CalledOnValidThread());
 
   base::Callback<ImageRecord(void)> task =
-      base::Bind(&BookmarkImageService::StoreImage, base::Unretained(this),
-                 image, image_url, page_url);
+      base::Bind(&BookmarkImageService::ResizeAndStoreImage,
+                 base::Unretained(this), image, image_url, page_url);
   base::Callback<void(const ImageRecord&)> reply =
       base::Bind(&BookmarkImageService::OnStoreImagePosted,
                  base::Unretained(this), page_url);

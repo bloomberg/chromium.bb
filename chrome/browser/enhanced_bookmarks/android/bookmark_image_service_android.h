@@ -24,6 +24,8 @@ class BookmarkImageServiceAndroid : public BookmarkImageService {
  public:
   explicit BookmarkImageServiceAndroid(content::BrowserContext* browserContext);
 
+  ~BookmarkImageServiceAndroid() override;
+
   void RetrieveSalientImage(const GURL& page_url,
                             const GURL& image_url,
                             const std::string& referrer,
@@ -48,9 +50,14 @@ class BookmarkImageServiceAndroid : public BookmarkImageService {
                                                bool update_bookmark,
                                                const base::Value* result);
 
+  gfx::Image ResizeImage(gfx::Image image) override;
+
   content::BrowserContext* browser_context_;
   // The script injected in a page to extract image urls.
   base::string16 script_;
+  // Maximum size for retrieved salient images in pixels. This is used when
+  // resizing an image.
+  gfx::Size max_size_;
 
   class BitmapFetcherHandler : private chrome::BitmapFetcherDelegate {
    public:

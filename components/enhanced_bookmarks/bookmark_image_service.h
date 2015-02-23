@@ -84,17 +84,20 @@ class BookmarkImageService : public KeyedService,
   // Returns true if the image for the page_url is currently being fetched.
   bool IsPageUrlInProgress(const GURL& page_url);
 
-  // Stores the image to local storage. If update_bookmarks is true, relates the
-  // corresponding bookmark to image_url.
+  // Stores the new image to local storage. If update_bookmarks is true, relates
+  // the corresponding bookmark to image_url.
   void ProcessNewImage(const GURL& page_url,
                        bool update_bookmarks,
-                       const gfx::Image& image,
-                       const GURL& image_url);
+                       const GURL& image_url,
+                       const gfx::Image& image);
+
+  // Resizes large images to proper size that fits device display. This method
+  // should _not_ run on the UI thread.
+  virtual gfx::Image ResizeImage(gfx::Image image) = 0;
 
   // Sets a new image for a bookmark. If the given page_url is bookmarked and
   // the image is retrieved from the image_url, then the image is locally
   // stored. If update_bookmark is true the URL is also added to the bookmark.
-  // This is the only method subclass needs to implement.
   virtual void RetrieveSalientImage(
       const GURL& page_url,
       const GURL& image_url,
@@ -122,12 +125,13 @@ class BookmarkImageService : public KeyedService,
   // Processes the requests that have been waiting on an image.
   void ProcessRequests(const GURL& page_url, const ImageRecord& image);
 
-  // Once an image is retrieved this method updates the store with it. Returns
-  // the newly formed ImageRecord.  This is typically called on |pool_|, the
-  // background sequenced worker pool for this object.
-  ImageRecord StoreImage(const gfx::Image& image,
-                         const GURL& image_url,
-                         const GURL& page_url);
+  // Once an image is retrieved this method calls ResizeImage() and updates the
+  // store with the smaller image, then returns the newly formed ImageRecord.
+  // This is typically called on |pool_|, the background sequenced worker pool
+  // for this object.
+  ImageRecord ResizeAndStoreImage(const gfx::Image& image,
+                                  const GURL& image_url,
+                                  const GURL& page_url);
 
   // Calls |StoreImage| in the background.  This should only be called from the
   // main thread.
