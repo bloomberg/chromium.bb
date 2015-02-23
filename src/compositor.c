@@ -3754,7 +3754,6 @@ weston_output_init_geometry(struct weston_output *output, int x, int y)
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
-	pixman_region32_t old_region;
 	struct wl_resource *resource;
 
 	output->move_x = x - output->x;
@@ -3762,9 +3761,6 @@ weston_output_move(struct weston_output *output, int x, int y)
 
 	if (output->move_x == 0 && output->move_y == 0)
 		return;
-
-	pixman_region32_init(&old_region);
-	pixman_region32_copy(&old_region, &output->region);
 
 	weston_output_init_geometry(output, x, y);
 
