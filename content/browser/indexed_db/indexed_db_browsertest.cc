@@ -405,7 +405,13 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "delete_over_quota.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAck) {
+// Flaky on Android. https://crbug.com/460948
+#if defined(ANDROID)
+#define MAYBE_BlobDidAck DISABLED_BlobDidAck
+#else
+#define MAYBE_BlobDidAck BlobDidAck
+#endif
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, MAYBE_BlobDidAck) {
   SimpleTest(GetTestUrl("indexeddb", "blob_did_ack.html"));
   content::ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(
