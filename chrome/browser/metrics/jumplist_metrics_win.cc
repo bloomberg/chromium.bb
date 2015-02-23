@@ -9,15 +9,12 @@
 namespace jumplist {
 
 const char kMostVisitedCategory[] = "most-visited";
-const char kProfilesCategory[] = "profiles";
 const char kRecentlyClosedCategory[] = "recently-closed";
 
 void LogJumplistActionFromSwitchValue(const std::string& value) {
   JumplistCategory metric = CATEGORY_UNKNOWN;
   if (value == kMostVisitedCategory)
     metric = MOST_VISITED_URL;
-  else if (value == kProfilesCategory)
-    metric = SWITCH_TO_PROFILE;
   else if (value == kRecentlyClosedCategory)
     metric = RECENTLY_CLOSED_URL;
   DCHECK_NE(metric, CATEGORY_UNKNOWN);

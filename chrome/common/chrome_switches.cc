@@ -21,11 +21,6 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
-// If set, Chrome will activate any existing browsers for a specific profile.
-// Used for example by the fast-user switcher in the Windows JumpList.
-const char kActivateExistingProfileBrowser[] =
-    "activate-existing-profile-browser";
-
 // Allows third-party content included on a page to prompt for a HTTP basic
 // auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";

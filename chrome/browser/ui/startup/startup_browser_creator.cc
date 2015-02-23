@@ -654,19 +654,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     jumplist::LogJumplistActionFromSwitchValue(
         command_line.GetSwitchValueASCII(switches::kWinJumplistAction));
   }
-
-  // If the profile is loaded and the --activate-existing-profile-browser flag
-  // is used, activate one of the profile's browser windows, if one exists.
-  // Continuing to process the command line is not needed, since this will
-  // end up opening a new browser window.
-  if (command_line.HasSwitch(switches::kActivateExistingProfileBrowser)) {
-    Browser* browser = chrome::FindTabbedBrowser(
-        last_used_profile, false, chrome::HOST_DESKTOP_TYPE_NATIVE);
-    if (browser) {
-      browser->window()->Activate();
-      return true;
-    }
-  }
 #endif
 
   VLOG(2) << "ProcessCmdLineImpl: PLACE 5";
