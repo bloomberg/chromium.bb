@@ -269,7 +269,6 @@ static int g2d_copy_test(struct exynos_device *dev, struct exynos_bo *src,
 {
 	struct g2d_context *ctx;
 	struct g2d_image src_img, dst_img;
-	unsigned int count;
 	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
@@ -353,7 +352,6 @@ static int g2d_copy_with_scale_test(struct exynos_device *dev,
 {
 	struct g2d_context *ctx;
 	struct g2d_image src_img, dst_img;
-	unsigned int count;
 	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
@@ -442,7 +440,6 @@ static int g2d_blend_test(struct exynos_device *dev,
 {
 	struct g2d_context *ctx;
 	struct g2d_image src_img, dst_img;
-	unsigned int count;
 	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
@@ -557,7 +554,6 @@ int main(int argc, char **argv)
 	struct exynos_device *dev;
 	struct exynos_bo *bo, *src;
 	struct connector con;
-	char *modeset = NULL;
 	unsigned int fb_id;
 	uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0};
 	drmModeRes *resources;
@@ -573,7 +569,6 @@ int main(int argc, char **argv)
 	while ((c = getopt(argc, argv, optstr)) != -1) {
 		switch (c) {
 		case 's':
-			modeset = strdup(optarg);
 			con.crtc = -1;
 			if (sscanf(optarg, "%d:0x%64s",
 						&con.id,
