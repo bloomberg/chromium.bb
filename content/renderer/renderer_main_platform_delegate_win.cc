@@ -23,7 +23,6 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
-#include "ui/gfx/hud_font.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -55,17 +54,10 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
 void WarmupDirectWrite() {
   // The objects used here are intentionally not freed as we want the Skia
   // code to use these objects after warmup.
-  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
   SkTypeface* typeface =
       GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0);
   DoPreSandboxWarmupForTypeface(typeface);
-
-  // The CC HUD needs a debug font, we warm that up here and pass it down.
-  skia::RefPtr<SkTypeface> hud_typeface =
-      skia::AdoptRef(GetPreSandboxWarmupFontMgr()->legacyCreateTypeface(
-          "Consolas", SkTypeface::kBold));
-  DoPreSandboxWarmupForTypeface(hud_typeface.get());
-  ui::SetHudTypeface(hud_typeface);
+  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
 }
 
 }  // namespace

@@ -125,7 +125,9 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void ReleaseUnmatchedSizeResources(ResourceProvider* resource_provider);
 
   ScopedPtrVector<ScopedResource> resources_;
-  skia::RefPtr<SkSurface> hud_surface_;
+  scoped_ptr<SkCanvas> hud_canvas_;
+
+  skia::RefPtr<SkTypeface> typeface_;
 
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;

@@ -105,8 +105,6 @@ component("gfx") {
     "gfx_paths.h",
     "gpu_memory_buffer.cc",
     "gpu_memory_buffer.h",
-    "hud_font.cc",
-    "hud_font.h",
     "icon_util.cc",
     "icon_util.h",
     "image/canvas_image_source.cc",
@@ -309,10 +307,8 @@ component("gfx") {
 
   # Windows.
   if (is_win) {
-    cflags = [
-      "/wd4324",  # Structure was padded due to __declspec(align()), which is
-                  # uninteresting.
-    ]
+    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()), which is
+                            # uninteresting.
   } else {
     sources -= [
       "gdi_util.cc",

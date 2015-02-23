@@ -31,7 +31,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/frame_time.h"
-#include "ui/gfx/hud_font.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
 
@@ -133,7 +132,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
 
   settings.impl_side_painting = IsUIImplSidePaintingEnabled();
   settings.use_zero_copy = IsUIZeroCopyEnabled();
-  settings.hud_typeface = ui::GetHudTypeface();
 
   base::TimeTicks before_create = base::TimeTicks::Now();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(
