@@ -766,6 +766,8 @@ crbug.com/337774 [ Debug ] svg/animations/use-while-animating-crash.html [ Crash
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
 
+crbug.com/460885 fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Failure Pass ]
+
 crbug.com/310323 [ Linux Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
