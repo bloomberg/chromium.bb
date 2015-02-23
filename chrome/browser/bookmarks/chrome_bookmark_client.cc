@@ -196,11 +196,13 @@ bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
 bool ChromeBookmarkClient::CanSetPermanentNodeTitle(
     const BookmarkNode* permanent_node) {
   // The |managed_node_| can have its title updated if the user signs in or
-  // out, since the name of the managed domain can appear in it. The
-  // |supervised_node_| has a fixed title which can never be updated.
+  // out, since the name of the managed domain can appear in it.
+  // Also, both |managed_node_| and |supervised_node_| can have their title
+  // updated on locale changes (crbug.com/459448).
   return (!bookmarks::IsDescendantOf(permanent_node, managed_node_) &&
           !bookmarks::IsDescendantOf(permanent_node, supervised_node_)) ||
-         permanent_node == managed_node_;
+         permanent_node == managed_node_ ||
+         permanent_node == supervised_node_;
 }
 
 bool ChromeBookmarkClient::CanSyncNode(const BookmarkNode* node) {
