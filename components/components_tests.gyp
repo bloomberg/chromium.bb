@@ -166,6 +166,7 @@
             'enhanced_bookmarks/item_position_unittest.cc',
             'feedback/feedback_common_unittest.cc',
             'feedback/feedback_data_unittest.cc',
+            'feedback/feedback_uploader_chrome_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
             'gcm_driver/gcm_account_mapper_unittest.cc',
             'gcm_driver/gcm_channel_status_request_unittest.cc',
@@ -640,6 +641,7 @@
               'sources!': [
                 'feedback/feedback_common_unittest.cc',
                 'feedback/feedback_data_unittest.cc',
+                'feedback/feedback_uploader_chrome_unittest.cc',
                 'feedback/feedback_uploader_unittest.cc',
                 'gcm_driver/gcm_account_mapper_unittest.cc',
                 'gcm_driver/gcm_channel_status_request_unittest.cc',

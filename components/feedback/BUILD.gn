@@ -30,6 +30,7 @@ static_library("feedback") {
     "//base",
     "//components/keyed_service/core:core",
     "//components/feedback/proto",
+    "//components/variations/net",
     "//content/public/common",
     "//net",
     "//third_party/zlib:zip",

@@ -4,6 +4,8 @@
 
 #include "components/feedback/feedback_uploader_chrome.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -12,6 +14,7 @@
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
 #include "components/feedback/feedback_uploader_delegate.h"
+#include "components/variations/net/variations_http_header_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -42,6 +45,7 @@ FeedbackUploaderChrome::FeedbackUploaderChrome(
 void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
   GURL post_url(url_);
 
+  // Note: FeedbackUploaderDelegate deletes itself and the fetcher.
   net::URLFetcher* fetcher = net::URLFetcher::Create(
       post_url, net::URLFetcher::POST,
       new FeedbackUploaderDelegate(
@@ -49,7 +53,13 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
           base::Bind(&FeedbackUploaderChrome::UpdateUploadTimer, AsWeakPtr()),
           base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())));
 
-  fetcher->SetUploadData(std::string(kProtoBufMimeType), data);
+  // Tell feedback server about the variation state of this install.
+  net::HttpRequestHeaders headers;
+  variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+      fetcher->GetOriginalURL(), context_->IsOffTheRecord(), false, &headers);
+  fetcher->SetExtraRequestHeaders(headers.ToString());
+
+  fetcher->SetUploadData(kProtoBufMimeType, data);
   fetcher->SetRequestContext(context_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);

@@ -14,6 +14,7 @@
         '../third_party/zlib/google/zip.gyp:zip',
         'keyed_service_core',
         'feedback_proto',
+        'components.gyp:variations_http_provider',
       ],
       'include_dirs': [
         '..',
