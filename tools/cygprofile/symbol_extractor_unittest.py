@@ -103,6 +103,19 @@ class TestSymbolInfoMappings(unittest.TestCase):
       self.assertIn(name, name_to_symbol_info)
       self.assertEquals(self.symbol_infos[i], name_to_symbol_info[name])
 
+  def testSymbolCollisions(self):
+    symbol_infos_with_collision = list(self.symbol_infos)
+    symbol_infos_with_collision.append(symbol_extractor.SymbolInfo(
+        'secondNameAtOffset', 0x84, 42, '.text'))
+
+    # The symbol added above should not affect the output.
+    name_to_symbol_info = symbol_extractor.CreateNameToSymbolInfo(
+        self.symbol_infos)
+    self.assertEquals(len(name_to_symbol_info), 3)
+    for i in range(3):
+      name = self.symbol_infos[i].name
+      self.assertIn(name, name_to_symbol_info)
+      self.assertEquals(self.symbol_infos[i], name_to_symbol_info[name])
 
 if __name__ == '__main__':
   unittest.main()

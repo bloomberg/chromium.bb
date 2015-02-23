@@ -6,6 +6,7 @@
 """Utilities to get and manipulate symbols from a binary."""
 
 import collections
+import logging
 import os
 import re
 import subprocess
@@ -17,6 +18,7 @@ sys.path.insert(
                     'scripts'))
 import symbol
 
+_MAX_WARNINGS_TO_PRINT = 200
 
 SymbolInfo = collections.namedtuple('SymbolInfo', ('name', 'offset', 'size',
                                                    'section'))
@@ -106,6 +108,21 @@ def GroupSymbolInfosByOffset(symbol_infos):
     offset_to_symbol_infos[symbol_info.offset].append(symbol_info)
   return dict(offset_to_symbol_infos)
 
+def GroupSymbolInfosByName(symbol_infos):
+  """Create a dict {name: [symbol_info1, ...], ...}.
+
+  A symbol can have several offsets, this is a 1-to-many relationship.
+
+  Args:
+    symbol_infos: iterable of SymbolInfo instances
+
+  Returns:
+    a dict {name: [symbol_info1, ...], ...}
+  """
+  name_to_symbol_infos = collections.defaultdict(list)
+  for symbol_info in symbol_infos:
+    name_to_symbol_infos[symbol_info.name].append(symbol_info)
+  return dict(name_to_symbol_infos)
 
 def CreateNameToSymbolInfo(symbol_infos):
   """Create a dict {name: symbol_info, ...}.
@@ -115,5 +132,23 @@ def CreateNameToSymbolInfo(symbol_infos):
 
   Returns:
     a dict {name: symbol_info, ...}
+    If a symbol name corresponds to more than one symbol_info, the symbol_info
+    with the lowest offset is chosen.
   """
-  return {symbol_info.name: symbol_info for symbol_info in symbol_infos}
+  #TODO(azarchs): move the functionality in this method into check_orderfile.
+  symbol_infos_by_name = {}
+  collision_count = 0
+  for infos in GroupSymbolInfosByName(symbol_infos).itervalues():
+    first_symbol_info = min(infos, key=lambda x:x.offset)
+    symbol_infos_by_name[first_symbol_info.name] = first_symbol_info
+    if len(infos) > 1:
+      collision_count += 1
+      if collision_count <= _MAX_WARNINGS_TO_PRINT:
+        logging.warning('Symbol %s appears at %d offsets: %s' %
+                        (first_symbol_info.name,
+                         len(infos),
+                         ','.join([hex(x.offset) for x in infos])))
+  if collision_count > _MAX_WARNINGS_TO_PRINT:
+    logging.warning('%d symbols at multiple offsets.  First %d shown.' %
+                    (collision_count, _MAX_WARNINGS_TO_PRINT))
+  return symbol_infos_by_name
