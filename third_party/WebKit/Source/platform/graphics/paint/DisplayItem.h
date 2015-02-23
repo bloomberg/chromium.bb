@@ -126,6 +126,8 @@ public:
         EndCompositing,
         BeginTransform,
         EndTransform,
+        BeginTransform3D,
+        EndTransform3D,
         BeginClipPath,
         EndClipPath,
 

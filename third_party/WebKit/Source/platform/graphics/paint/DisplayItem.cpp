@@ -124,6 +124,8 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     case EndCompositing: return "EndCompositing";
     case BeginTransform: return "BeginTransform";
     case EndTransform: return "EndTransform";
+    case BeginTransform3D: return "BeginTransform3D";
+    case EndTransform3D: return "EndTransform3D";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
     default:

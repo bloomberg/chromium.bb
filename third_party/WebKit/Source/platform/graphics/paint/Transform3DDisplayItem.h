@@ -20,7 +20,7 @@ public:
     }
 
     BeginTransform3DDisplayItem(DisplayItemClient client, const TransformationMatrix& transform)
-        : PairedBeginDisplayItem(client, BeginTransform)
+        : PairedBeginDisplayItem(client, BeginTransform3D)
         , m_transform(transform) { }
 
     virtual void replay(GraphicsContext*) override;
@@ -40,15 +40,14 @@ public:
     }
 
     EndTransform3DDisplayItem(DisplayItemClient client)
-        : PairedEndDisplayItem(client, EndTransform) { }
+        : PairedEndDisplayItem(client, EndTransform3D) { }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    // FIXME: Distinguish BeginTransformDisplayItem and BeginTransform3DDisplayItem.
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginTransform; }
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginTransform3D; }
 #endif
 };
 
