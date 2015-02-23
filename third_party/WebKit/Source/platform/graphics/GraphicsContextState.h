@@ -76,11 +76,9 @@ public:
 
     Gradient* strokeGradient() const { return m_strokeGradient.get(); }
     void setStrokeGradient(const PassRefPtr<Gradient>, float);
-    void clearStrokeGradient();
 
     Pattern* strokePattern() const { return m_strokePattern.get(); }
     void setStrokePattern(const PassRefPtr<Pattern>, float);
-    void clearStrokePattern();
 
     const StrokeData& strokeData() const { return m_strokeData; }
     void setStrokeStyle(StrokeStyle);
@@ -97,11 +95,9 @@ public:
 
     Gradient* fillGradient() const { return m_fillGradient.get(); }
     void setFillGradient(const PassRefPtr<Gradient>, float);
-    void clearFillGradient();
 
     Pattern* fillPattern() const { return m_fillPattern.get(); }
     void setFillPattern(const PassRefPtr<Pattern>, float);
-    void clearFillPattern();
 
     // Path fill rule
     WindRule fillRule() const { return m_fillRule; }
