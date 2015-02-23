@@ -46,17 +46,18 @@ MockWebMIDIAccessor::~MockWebMIDIAccessor() {
 
 void MockWebMIDIAccessor::startSession() {
   // Add a mock input and output port.
-  const bool active = true;
+  blink::WebMIDIAccessorClient::MIDIPortState state =
+      blink::WebMIDIAccessorClient::MIDIPortStateConnected;
   client_->didAddInputPort("MockInputID",
                            "MockInputManufacturer",
                            "MockInputName",
                            "MockInputVersion",
-                           active);
+                           state);
   client_->didAddOutputPort("MockOutputID",
                             "MockOutputManufacturer",
                             "MockOutputName",
                             "MockOutputVersion",
-                            active);
+                            state);
   interfaces_->GetDelegate()->PostTask(new DidStartSessionTask(
       this, client_, interfaces_->GetTestRunner()->midiAccessorResult()));
 }

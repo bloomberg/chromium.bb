@@ -44,6 +44,11 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
     return io_message_loop_;
   }
 
+  static blink::WebMIDIAccessorClient::MIDIPortState ToBlinkState(
+      media::MidiPortState state) {
+    return static_cast<blink::WebMIDIAccessorClient::MIDIPortState>(state);
+  }
+
  protected:
   ~MidiMessageFilter() override;
 

@@ -231,25 +231,21 @@ void MidiMessageFilter::HandleClientAdded(media::MidiResult result) {
     if (result == media::MIDI_OK) {
       // Add the client's input and output ports.
       for (const auto& info : inputs_) {
-        // TODO(toyoshim): Update blink to support complete MIDIPortState.
-        const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
         client->didAddInputPort(
             base::UTF8ToUTF16(info.id),
             base::UTF8ToUTF16(info.manufacturer),
             base::UTF8ToUTF16(info.name),
             base::UTF8ToUTF16(info.version),
-            active);
+            ToBlinkState(info.state));
       }
 
       for (const auto& info : outputs_) {
-        // TODO(toyoshim): Update blink to support complete MIDIPortState.
-        const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
         client->didAddOutputPort(
             base::UTF8ToUTF16(info.id),
             base::UTF8ToUTF16(info.manufacturer),
             base::UTF8ToUTF16(info.name),
             base::UTF8ToUTF16(info.version),
-            active);
+            ToBlinkState(info.state));
       }
     }
     client->didStartSession(result == media::MIDI_OK, error16, message16);
@@ -265,10 +261,10 @@ void MidiMessageFilter::HandleAddInputPort(media::MidiPortInfo info) {
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
   const base::string16 name = base::UTF8ToUTF16(info.name);
   const base::string16 version = base::UTF8ToUTF16(info.version);
-  // TODO(toyoshim): Update blink to support complete MIDIPortState.
-  const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
+  const blink::WebMIDIAccessorClient::MIDIPortState state =
+      ToBlinkState(info.state);
   for (auto client : clients_)
-    client->didAddInputPort(id, manufacturer, name, version, active);
+    client->didAddInputPort(id, manufacturer, name, version, state);
 }
 
 void MidiMessageFilter::HandleAddOutputPort(media::MidiPortInfo info) {
@@ -278,10 +274,10 @@ void MidiMessageFilter::HandleAddOutputPort(media::MidiPortInfo info) {
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
   const base::string16 name = base::UTF8ToUTF16(info.name);
   const base::string16 version = base::UTF8ToUTF16(info.version);
-  // TODO(toyoshim): Update blink to support complete MIDIPortState.
-  const bool active = info.state != media::MIDI_PORT_DISCONNECTED;
+  const blink::WebMIDIAccessorClient::MIDIPortState state =
+      ToBlinkState(info.state);
   for (auto client : clients_)
-    client->didAddOutputPort(id, manufacturer, name, version, active);
+    client->didAddOutputPort(id, manufacturer, name, version, state);
 }
 
 void MidiMessageFilter::HandleDataReceived(uint32 port,
@@ -306,20 +302,16 @@ void MidiMessageFilter::HandleSetInputPortState(uint32 port,
                                                 media::MidiPortState state) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   inputs_[port].state = state;
-  // TODO(toyoshim): Update blink to support complete MIDIPortState.
-  const bool active = state != media::MIDI_PORT_DISCONNECTED;
   for (auto client : clients_)
-    client->didSetInputPortState(port, active);
+    client->didSetInputPortState(port, ToBlinkState(state));
 }
 
 void MidiMessageFilter::HandleSetOutputPortState(uint32 port,
                                                  media::MidiPortState state) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
   outputs_[port].state = state;
-  // TODO(toyoshim): Update blink to support complete MIDIPortState.
-  const bool active = state != media::MIDI_PORT_DISCONNECTED;
   for (auto client : clients_)
-    client->didSetOutputPortState(port, active);
+    client->didSetOutputPortState(port, ToBlinkState(state));
 }
 
 }  // namespace content

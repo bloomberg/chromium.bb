@@ -648,6 +648,7 @@
       'renderer/media/android/media_info_loader_unittest.cc',
       'renderer/media/audio_message_filter_unittest.cc',
       'renderer/media/audio_renderer_mixer_manager_unittest.cc',
+      'renderer/media/midi_message_filter_unittest.cc',
       'renderer/media/render_media_client_unittest.cc',
       'renderer/media/render_media_log_unittest.cc',
       'renderer/media/video_capture_impl_manager_unittest.cc',
