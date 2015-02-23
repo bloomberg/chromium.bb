@@ -16,6 +16,7 @@ specific_include_rules = {
     "+ui/views/background.h",
     "+ui/views/border.h",
     "+ui/views/widget/widget.h",
+    "+ui/views/view.h",
   ],
 
   "desktop_capture_controller_unittest.cc": [
@@ -38,7 +39,6 @@ specific_include_rules = {
   ],
 
   "tooltip_aura.h": [
-    "+ui/views/controls/label.h",
     "+ui/views/widget/widget_observer.h",
   ],
 

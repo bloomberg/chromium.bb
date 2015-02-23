@@ -28,7 +28,7 @@ namespace {
 
 const int kTooltipTimeoutMs = 500;
 const int kDefaultTooltipShownTimeoutMs = 10000;
-const size_t kMaxTooltipLength = 1024;
+const size_t kMaxTooltipLength = 2048;
 
 // Returns true if |target| is a valid window to get the tooltip from.
 // |event_target| is the original target from the event and |target| the window
