@@ -22,6 +22,22 @@ include Makefile.sources
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+AM_DISTCHECK_CONFIGURE_FLAGS = \
+	--enable-udev \
+	--enable-libkms \
+	--enable-intel \
+	--enable-radeon \
+	--enable-nouveau \
+	--enable-vmwgfx \
+	--enable-omap-experimental-api \
+	--enable-exynos-experimental-api \
+	--enable-freedreno \
+	--enable-freedreno-kgsl\
+	--enable-tegra-experimental-api \
+	--enable-install-test-programs \
+	--enable-cairo-tests \
+	--enable-manpages
+
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
