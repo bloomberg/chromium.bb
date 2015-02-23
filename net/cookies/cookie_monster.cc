@@ -414,6 +414,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            const base::Time& expiration_time,
                            bool secure,
                            bool http_only,
+                           bool first_party_only,
                            CookiePriority priority,
                            const SetCookiesCallback& callback)
       : CookieMonsterTask(cookie_monster),
@@ -425,6 +426,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
         expiration_time_(expiration_time),
         secure_(secure),
         http_only_(http_only),
+        first_party_only_(first_party_only),
         priority_(priority),
         callback_(callback) {}
 
@@ -443,6 +445,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   base::Time expiration_time_;
   bool secure_;
   bool http_only_;
+  bool first_party_only_;
   CookiePriority priority_;
   SetCookiesCallback callback_;
 
@@ -456,7 +459,7 @@ void CookieMonster::SetCookieWithDetailsTask::Run() {
           "456373 CookieMonster::SetCookieWithDetailsTask::Run"));
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_, secure_,
-      http_only_, priority_);
+      http_only_, first_party_only_, priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
                                     base::Unretained(&callback_), success));
@@ -912,11 +915,12 @@ void CookieMonster::SetCookieWithDetailsAsync(
     const Time& expiration_time,
     bool secure,
     bool http_only,
+    bool first_party_only,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task = new SetCookieWithDetailsTask(
       this, url, name, value, domain, path, expiration_time, secure, http_only,
-      priority, callback);
+      first_party_only, priority, callback);
   DoCookieTaskForURL(task, url);
 }
 
@@ -941,6 +945,7 @@ void CookieMonster::GetAllCookiesForURLAsync(
     const GetCookieListCallback& callback) {
   CookieOptions options;
   options.set_include_httponly();
+  options.set_include_first_party_only();
   scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
@@ -1093,6 +1098,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          const base::Time& expiration_time,
                                          bool secure,
                                          bool http_only,
+                                         bool first_party_only,
                                          CookiePriority priority) {
   base::AutoLock autolock(lock_);
 
@@ -1105,13 +1111,14 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   scoped_ptr<CanonicalCookie> cc;
   cc.reset(CanonicalCookie::Create(url, name, value, domain, path,
                                    creation_time, expiration_time, secure,
-                                   http_only, priority));
+                                   http_only, first_party_only, priority));
 
   if (!cc.get())
     return false;
 
   CookieOptions options;
   options.set_include_httponly();
+  options.set_include_first_party_only();
   return SetCanonicalCookie(&cc, creation_time, options);
 }
 
@@ -1123,6 +1130,7 @@ bool CookieMonster::ImportCookies(const CookieList& list) {
     scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(*iter));
     net::CookieOptions options;
     options.set_include_httponly();
+    options.set_include_first_party_only();
     if (!SetCanonicalCookie(&cookie, cookie->CreationDate(), options))
       return false;
   }
@@ -1181,6 +1189,7 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
 CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   CookieOptions options;
   options.set_include_httponly();
+  options.set_first_party_url(url);
 
   return GetAllCookiesForURLWithOptions(url, options);
 }
@@ -1347,6 +1356,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
 
   CookieOptions options;
   options.set_include_httponly();
+  options.set_include_first_party_only();
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
   FindCookiesForHostAndDomain(url, options, true, &cookies);
@@ -2321,6 +2331,7 @@ void CookieMonster::RunCallbacks(const CanonicalCookie& cookie, bool removed) {
   lock_.AssertAcquired();
   CookieOptions opts;
   opts.set_include_httponly();
+  opts.set_include_first_party_only();
   // Note that the callbacks in hook_map_ are wrapped with MakeAsync(), so they
   // are guaranteed to not take long - they just post a RunAsync task back to
   // the appropriate thread's message loop and return. It is important that this

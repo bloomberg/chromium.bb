@@ -76,20 +76,16 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
   int index = 0;
   for (net::CookieList::const_iterator i = cookies.begin();
       i != cookies.end(); ++i) {
-    ScopedJavaLocalRef<jobject> java_cookie =
-        Java_CookiesFetcher_createCookie(
-            env, jobject_.obj(),
-            base::android::ConvertUTF8ToJavaString(env, i->Source()).obj(),
-            base::android::ConvertUTF8ToJavaString(env, i->Name()).obj(),
-            base::android::ConvertUTF8ToJavaString(env, i->Value()).obj(),
-            base::android::ConvertUTF8ToJavaString(env, i->Domain()).obj(),
-            base::android::ConvertUTF8ToJavaString(env, i->Path()).obj(),
-            i->CreationDate().ToInternalValue(),
-            i->ExpiryDate().ToInternalValue(),
-            i->LastAccessDate().ToInternalValue(),
-            i->IsSecure(),
-            i->IsHttpOnly(),
-            i->Priority());
+    ScopedJavaLocalRef<jobject> java_cookie = Java_CookiesFetcher_createCookie(
+        env, jobject_.obj(),
+        base::android::ConvertUTF8ToJavaString(env, i->Source()).obj(),
+        base::android::ConvertUTF8ToJavaString(env, i->Name()).obj(),
+        base::android::ConvertUTF8ToJavaString(env, i->Value()).obj(),
+        base::android::ConvertUTF8ToJavaString(env, i->Domain()).obj(),
+        base::android::ConvertUTF8ToJavaString(env, i->Path()).obj(),
+        i->CreationDate().ToInternalValue(), i->ExpiryDate().ToInternalValue(),
+        i->LastAccessDate().ToInternalValue(), i->IsSecure(), i->IsHttpOnly(),
+        i->IsFirstPartyOnly(), i->Priority());
     env->SetObjectArrayElement(joa.obj(), index++, java_cookie.obj());
   }
 
@@ -111,6 +107,7 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
                                     int64 last_access,
                                     bool secure,
                                     bool httponly,
+                                    bool firstpartyonly,
                                     int priority) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile->HasOffTheRecordProfile()) {
@@ -129,8 +126,8 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, path),
       base::Time::FromInternalValue(creation),
       base::Time::FromInternalValue(expiration),
-      base::Time::FromInternalValue(last_access),
-      secure, httponly, static_cast<net::CookiePriority>(priority));
+      base::Time::FromInternalValue(last_access), secure, httponly,
+      firstpartyonly, static_cast<net::CookiePriority>(priority));
 
   // The rest must be done from the IO thread.
   content::BrowserThread::PostTask(
@@ -158,17 +155,9 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   base::Callback<void(bool success)> cb;
 
   monster->SetCookieWithDetailsAsync(
-    GURL(cookie.Source()),
-    cookie.Name(),
-    cookie.Value(),
-    cookie.Domain(),
-    cookie.Path(),
-    cookie.ExpiryDate(),
-    cookie.IsSecure(),
-    cookie.IsHttpOnly(),
-    cookie.Priority(),
-    cb
-  );
+      GURL(cookie.Source()), cookie.Name(), cookie.Value(), cookie.Domain(),
+      cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
+      cookie.IsHttpOnly(), cookie.IsFirstPartyOnly(), cookie.Priority(), cb);
 }
 
 // JNI functions

@@ -109,12 +109,18 @@ CanonicalCookie::CanonicalCookie()
       httponly_(false) {
 }
 
-CanonicalCookie::CanonicalCookie(
-    const GURL& url, const std::string& name, const std::string& value,
-    const std::string& domain, const std::string& path,
-    const base::Time& creation, const base::Time& expiration,
-    const base::Time& last_access, bool secure, bool httponly,
-    CookiePriority priority)
+CanonicalCookie::CanonicalCookie(const GURL& url,
+                                 const std::string& name,
+                                 const std::string& value,
+                                 const std::string& domain,
+                                 const std::string& path,
+                                 const base::Time& creation,
+                                 const base::Time& expiration,
+                                 const base::Time& last_access,
+                                 bool secure,
+                                 bool httponly,
+                                 bool firstpartyonly,
+                                 CookiePriority priority)
     : source_(GetCookieSourceFromURL(url)),
       name_(name),
       value_(value),
@@ -125,6 +131,7 @@ CanonicalCookie::CanonicalCookie(
       last_access_date_(last_access),
       secure_(secure),
       httponly_(httponly),
+      first_party_only_(firstpartyonly),
       priority_(priority) {
 }
 
@@ -137,6 +144,7 @@ CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
       last_access_date_(Time()),
       secure_(pc.IsSecure()),
       httponly_(pc.IsHttpOnly()),
+      first_party_only_(pc.IsFirstPartyOnly()),
       priority_(pc.Priority()) {
   if (pc.HasExpires())
     expiry_date_ = CanonExpiration(pc, creation_date_, creation_date_);
@@ -238,12 +246,11 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                                                          creation_time,
                                                          server_time);
 
-  return new CanonicalCookie(url, parsed_cookie.Name(), parsed_cookie.Value(),
-                             cookie_domain, cookie_path, creation_time,
-                             cookie_expires, creation_time,
-                             parsed_cookie.IsSecure(),
-                             parsed_cookie.IsHttpOnly(),
-                             parsed_cookie.Priority());
+  return new CanonicalCookie(
+      url, parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain,
+      cookie_path, creation_time, cookie_expires, creation_time,
+      parsed_cookie.IsSecure(), parsed_cookie.IsHttpOnly(),
+      parsed_cookie.IsFirstPartyOnly(), parsed_cookie.Priority());
 }
 
 CanonicalCookie* CanonicalCookie::Create(const GURL& url,
@@ -255,6 +262,7 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
                                          const base::Time& expiration,
                                          bool secure,
                                          bool http_only,
+                                         bool first_party_only,
                                          CookiePriority priority) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
   // logic, otherwise don't create the cookie.
@@ -293,7 +301,7 @@ CanonicalCookie* CanonicalCookie::Create(const GURL& url,
 
   return new CanonicalCookie(url, parsed_name, parsed_value, cookie_domain,
                              cookie_path, creation, expiration, creation,
-                             secure, http_only, priority);
+                             secure, http_only, first_party_only, priority);
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
@@ -382,6 +390,14 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
   if (!IsOnPath(url.path()))
     return false;
 
+  // Include first-party-only cookies iff |options| tells us to include all of
+  // them, or if a first-party URL is set and its origin matches the origin of
+  // |url|.
+  if (IsFirstPartyOnly() && !options.include_first_party_only() &&
+      options.first_party_url().GetOrigin() != url.GetOrigin()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -406,6 +422,7 @@ CanonicalCookie* CanonicalCookie::Duplicate() const {
   cc->last_access_date_ = last_access_date_;
   cc->secure_ = secure_;
   cc->httponly_ = httponly_;
+  cc->first_party_only_ = first_party_only_;
   cc->priority_ = priority_;
   return cc;
 }

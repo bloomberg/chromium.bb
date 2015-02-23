@@ -223,28 +223,14 @@ void ProfileAuthDataTest::PopulateBrowserContext(
   run_loop_->Run();
 
   net::CookieList cookie_list;
-  cookie_list.push_back(net::CanonicalCookie(GURL(kGAIACookieURL),
-                                             kCookieName,
-                                             cookie_value,
-                                             kGAIACookieDomain,
-                                             std::string(),
-                                             base::Time(),
-                                             base::Time(),
-                                             base::Time(),
-                                             true,
-                                             false,
-                                             net::COOKIE_PRIORITY_DEFAULT));
-  cookie_list.push_back(net::CanonicalCookie(GURL(kSAMLIdPCookieURL),
-                                             kCookieName,
-                                             cookie_value,
-                                             kSAMLIdPCookieDomain,
-                                             std::string(),
-                                             base::Time(),
-                                             base::Time(),
-                                             base::Time(),
-                                             true,
-                                             false,
-                                             net::COOKIE_PRIORITY_DEFAULT));
+  cookie_list.push_back(net::CanonicalCookie(
+      GURL(kGAIACookieURL), kCookieName, cookie_value, kGAIACookieDomain,
+      std::string(), base::Time(), base::Time(), base::Time(), true, false,
+      false, net::COOKIE_PRIORITY_DEFAULT));
+  cookie_list.push_back(net::CanonicalCookie(
+      GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, kSAMLIdPCookieDomain,
+      std::string(), base::Time(), base::Time(), base::Time(), true, false,
+      false, net::COOKIE_PRIORITY_DEFAULT));
   cookies->ImportCookies(cookie_list);
 
   GetChannelIDs(browser_context)->SetChannelID(kChannelIDServerIdentifier,

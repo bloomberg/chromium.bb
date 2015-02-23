@@ -168,6 +168,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const base::Time& expiration_time,
                                  bool secure,
                                  bool http_only,
+                                 bool first_party,
                                  CookiePriority priority,
                                  const SetCookiesCallback& callback);
 
@@ -421,6 +422,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const base::Time& expiration_time,
                             bool secure,
                             bool http_only,
+                            bool first_party,
                             CookiePriority priority);
 
   CookieList GetAllCookies();

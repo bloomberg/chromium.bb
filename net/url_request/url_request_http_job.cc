@@ -629,6 +629,12 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 void URLRequestHttpJob::DoLoadCookies() {
   CookieOptions options;
   options.set_include_httponly();
+  options.set_include_first_party_only();
+
+  // TODO(mkwst): Pipe a switch down here to allow us to decide whether we
+  // should enforce "first-party only" cookies or not (by setting |options|'s
+  // first-party-url to the first-party-for-cookies value. crbug.com/459154
+
   GetCookieStore()->GetCookiesWithOptionsAsync(
       request_->url(), options,
       base::Bind(&URLRequestHttpJob::OnCookiesLoaded,

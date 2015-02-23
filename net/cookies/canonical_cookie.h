@@ -37,6 +37,7 @@ class NET_EXPORT CanonicalCookie {
                   const base::Time& last_access,
                   bool secure,
                   bool httponly,
+                  bool firstpartyonly,
                   CookiePriority priority);
 
   // This constructor does canonicalization but not validation.
@@ -68,6 +69,7 @@ class NET_EXPORT CanonicalCookie {
                                  const base::Time& expiration,
                                  bool secure,
                                  bool http_only,
+                                 bool first_party_only,
                                  CookiePriority priority);
 
   const std::string& Source() const { return source_; }
@@ -81,6 +83,7 @@ class NET_EXPORT CanonicalCookie {
   const base::Time& ExpiryDate() const { return expiry_date_; }
   bool IsSecure() const { return secure_; }
   bool IsHttpOnly() const { return httponly_; }
+  bool IsFirstPartyOnly() const { return first_party_only_; }
   CookiePriority Priority() const { return priority_; }
   bool IsDomainCookie() const {
     return !domain_.empty() && domain_[0] == '.'; }
@@ -158,6 +161,7 @@ class NET_EXPORT CanonicalCookie {
   base::Time last_access_date_;
   bool secure_;
   bool httponly_;
+  bool first_party_only_;
   CookiePriority priority_;
   // NOTE: When any new members are added above this comment, the
   // implementation of Duplicate() must be updated to copy the new member

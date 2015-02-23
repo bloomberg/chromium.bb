@@ -399,6 +399,10 @@ void CookiesSetFunction::SetCookieOnIOThread() {
                                          : false,
       parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
                                             : false,
+      // TODO(mkwst): If we decide to ship First-party-only cookies, we'll need
+      // to extend the extension API to support them. For the moment, we'll set
+      // all cookies as non-First-party-only.
+      false,
       net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookiesSetFunction::PullCookie, this));
 }

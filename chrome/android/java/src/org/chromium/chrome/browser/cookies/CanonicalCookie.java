@@ -22,20 +22,13 @@ class CanonicalCookie {
     private final long mLastAccess;
     private final boolean mSecure;
     private final boolean mHttpOnly;
+    private final boolean mFirstPartyOnly;
     private final int mPriority;
 
     /** Constructs a CanonicalCookie */
-    CanonicalCookie(String url,
-            String name,
-            String value,
-            String domain,
-            String path,
-            long creation,
-            long expiration,
-            long lastAccess,
-            boolean secure,
-            boolean httpOnly,
-            int priority) {
+    CanonicalCookie(String url, String name, String value, String domain, String path,
+            long creation, long expiration, long lastAccess, boolean secure, boolean httpOnly,
+            boolean firstPartyOnly, int priority) {
         mUrl = url;
         mName = name;
         mValue = value;
@@ -46,6 +39,7 @@ class CanonicalCookie {
         mLastAccess = lastAccess;
         mSecure = secure;
         mHttpOnly = httpOnly;
+        mFirstPartyOnly = firstPartyOnly;
         mPriority = priority;
     }
 
@@ -57,6 +51,11 @@ class CanonicalCookie {
     /** @return True if the cookie is HTTP only. */
     boolean isHttpOnly() {
         return mHttpOnly;
+    }
+
+    /** @return True if the cookie is First-Party only. */
+    boolean isFirstPartyOnly() {
+        return mFirstPartyOnly;
     }
 
     /** @return True if the cookie is secure. */
@@ -121,6 +120,7 @@ class CanonicalCookie {
         out.writeLong(mLastAccess);
         out.writeBoolean(mSecure);
         out.writeBoolean(mHttpOnly);
+        out.writeBoolean(mFirstPartyOnly);
         out.writeInt(mPriority);
     }
 
@@ -134,6 +134,6 @@ class CanonicalCookie {
             throws IOException {
         return new CanonicalCookie(in.readUTF(), in.readUTF(), in.readUTF(), in.readUTF(),
                 in.readUTF(), in.readLong(), in.readLong(), in.readLong(), in.readBoolean(),
-                in.readBoolean(), in.readInt());
+                in.readBoolean(), in.readBoolean(), in.readInt());
     }
 }

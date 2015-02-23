@@ -7,18 +7,34 @@
 #ifndef NET_COOKIES_COOKIE_OPTIONS_H_
 #define NET_COOKIES_COOKIE_OPTIONS_H_
 
+#include "url/gurl.h"
+
 namespace net {
 
 class CookieOptions {
  public:
-  // Default is to exclude httponly, which means:
-  // - reading operations will not return httponly cookies.
-  // - writing operations will not write httponly cookies.
-  CookieOptions() : exclude_httponly_(true), server_time_() {}
+  // Default is to exclude httponly completely, and exclude first-party from
+  // being read, which means:
+  // - reading operations will not return httponly or first-party cookies.
+  // - writing operations will not write httponly cookies (first-party will be
+  // written).
+  //
+  // If a first-party URL is set, then first-party cookies which match that URL
+  // will be returned.
+  CookieOptions()
+      : exclude_httponly_(true),
+        include_first_party_only_(false),
+        server_time_() {}
 
   void set_exclude_httponly() { exclude_httponly_ = true; }
   void set_include_httponly() { exclude_httponly_ = false; }
   bool exclude_httponly() const { return exclude_httponly_; }
+
+  void set_include_first_party_only() { include_first_party_only_ = true; }
+  bool include_first_party_only() const { return include_first_party_only_; }
+
+  void set_first_party_url(const GURL& url) { first_party_url_ = url; }
+  GURL first_party_url() const { return first_party_url_; }
 
   // |server_time| indicates what the server sending us the Cookie thought the
   // current time was when the cookie was produced.  This is used to adjust for
@@ -31,8 +47,11 @@ class CookieOptions {
 
  private:
   bool exclude_httponly_;
+  bool include_first_party_only_;
+  GURL first_party_url_;
   base::Time server_time_;
 };
+
 }  // namespace net
 
 #endif  // NET_COOKIES_COOKIE_OPTIONS_H_

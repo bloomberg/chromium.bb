@@ -3542,13 +3542,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV5" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v4 database to v5.</summary>
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV6" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>erikwright@chromium.org</owner>
   <summary>The amount of time (ms) to migrate a v5 database to v6.</summary>
+</histogram>
+
+<histogram name="Cookie.TimeDatabaseMigrationToV7" units="ms">
+  <owner>erikwright@chromium.org</owner>
+  <summary>The amount of time (ms) to migrate a v6 database to v7.</summary>
+</histogram>
+
+<histogram name="Cookie.TimeDatabaseMigrationToV8" units="ms">
+  <owner>erikwright@chromium.org</owner>
+  <summary>The amount of time (ms) to migrate a v7 database to v8.</summary>
 </histogram>
 
 <histogram name="Cookie.TimeGet" units="ms">

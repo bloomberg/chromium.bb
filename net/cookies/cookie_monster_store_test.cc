@@ -121,7 +121,8 @@ CanonicalCookie BuildCanonicalCookie(const std::string& key,
 
   return CanonicalCookie(GURL(), pc.Name(), pc.Value(), key, cookie_path,
                          creation_time, cookie_expires, creation_time,
-                         pc.IsSecure(), pc.IsHttpOnly(), pc.Priority());
+                         pc.IsSecure(), pc.IsHttpOnly(), pc.IsFirstPartyOnly(),
+                         pc.Priority());
 }
 
 void AddCookieToList(const std::string& key,
@@ -214,7 +215,8 @@ CookieMonster* CreateMonsterFromStoreForGC(int num_cookies,
 
     CanonicalCookie cc(GURL(), "a", "1", base::StringPrintf("h%05d.izzle", i),
                        "/path", creation_time, expiration_time,
-                       last_access_time, false, false, COOKIE_PRIORITY_DEFAULT);
+                       last_access_time, false, false, false,
+                       COOKIE_PRIORITY_DEFAULT);
     store->AddCookie(cc);
   }
 

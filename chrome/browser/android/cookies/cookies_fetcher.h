@@ -47,6 +47,7 @@ class CookiesFetcher {
                       int64 last_access,
                       bool secure,
                       bool httponly,
+                      bool firstpartyonly,
                       int priority);
 
  private:
