@@ -176,8 +176,8 @@ struct LookupTable : TableBase {
                 uint16_t countFrom = coverage1->glyphCount;
                 if (!isValidEnd(buffer, &coverage1->glyphArray[countFrom]) || countTo != countFrom)
                     return false;
-                for (uint16_t i = 0; i < countTo; ++i)
-                    map->set(coverage1->glyphArray[i], singleSubstitution2->substitute[i]);
+                for (uint16_t j = 0; j < countTo; ++j)
+                    map->set(coverage1->glyphArray[j], singleSubstitution2->substitute[j]);
                 break;
             }
             case 2: { // Coverage Format 2 (e.g., Adobe Kozuka Gothic)
@@ -187,9 +187,9 @@ struct LookupTable : TableBase {
                 uint16_t countRange = coverage2->rangeCount;
                 if (!isValidEnd(buffer, &coverage2->ranges[countRange]))
                     return false;
-                for (uint16_t i = 0, indexTo = 0; i < countRange; ++i) {
-                    uint16_t from = coverage2->ranges[i].start;
-                    uint16_t fromEnd = coverage2->ranges[i].end + 1; // OpenType "end" is inclusive
+                for (uint16_t j = 0, indexTo = 0; j < countRange; ++j) {
+                    uint16_t from = coverage2->ranges[j].start;
+                    uint16_t fromEnd = coverage2->ranges[j].end + 1; // OpenType "end" is inclusive
                     if (indexTo + (fromEnd - from) > countTo)
                         return false;
                     for (; from != fromEnd; ++from, ++indexTo)
