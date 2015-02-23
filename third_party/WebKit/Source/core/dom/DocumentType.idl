@@ -17,14 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://dom.spec.whatwg.org/#interface-documenttype
+
 interface DocumentType : Node {
-
-    // DOM Level 1
-
     readonly attribute DOMString name;
-
-    // DOM Level 2
-
     readonly attribute DOMString publicId;
     readonly attribute DOMString systemId;
 };
