@@ -950,7 +950,6 @@
       'graphics/filters/ImageFilterBuilderTest.cpp',
       'graphics/gpu/DrawingBufferTest.cpp',
       'graphics/paint/DisplayItemTest.cpp',
-      'graphics/test/MockDiscardablePixelRef.h',
       'image-decoders/ImageDecoderTest.cpp',
       'mac/ScrollElasticityControllerTest.mm',
       'network/FormDataTest.cpp',
