@@ -16,6 +16,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -37,6 +38,8 @@
 #include "components/variations/net/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -206,6 +209,36 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
   streams_private->ExecuteMimeTypeHandler(
       extension_id, web_contents, stream.Pass(), view_id, expected_content_size,
       embedded, render_process_id, render_frame_id);
+}
+
+// TODO(raymes): This won't return the right result if plugins haven't been
+// loaded yet. Fixing this properly really requires fixing crbug.com/443466.
+bool IsPluginEnabledForExtension(const Extension* extension,
+                                 const ResourceRequestInfo* info,
+                                 const std::string& mime_type,
+                                 const GURL& url) {
+  content::PluginService* service = content::PluginService::GetInstance();
+  std::vector<content::WebPluginInfo> plugins;
+  service->GetPluginInfoArray(url, mime_type, true, &plugins, nullptr);
+  content::PluginServiceFilter* filter = service->GetFilter();
+
+  for (auto& plugin : plugins) {
+    // Check that the plugin is running the extension.
+    if (plugin.path !=
+        base::FilePath::FromUTF8Unsafe(extension->url().spec())) {
+      continue;
+    }
+    // Check that the plugin is actually enabled.
+    if (!filter || filter->IsPluginAvailable(info->GetChildID(),
+                                             info->GetRenderFrameID(),
+                                             info->GetContext(),
+                                             url,
+                                             GURL(),
+                                             &plugin)) {
+      return true;
+    }
+  }
+  return false;
 }
 #endif  // !defined(ENABLE_EXTENSIONS)
 
@@ -627,6 +660,13 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
       *origin = Extension::GetBaseURLFromExtensionId(extension_id);
       target_info.extension_id = extension_id;
       if (!handler->handler_url().empty()) {
+        // This is reached in the case of MimeHandlerViews. If the
+        // MimeHandlerView plugin is disabled, then we shouldn't intercept the
+        // stream.
+        if (!IsPluginEnabledForExtension(extension, info, mime_type,
+                                         request->url())) {
+          continue;
+        }
         target_info.view_id = base::GenerateGUID();
         *payload = target_info.view_id;
       }
