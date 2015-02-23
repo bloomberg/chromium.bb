@@ -59,9 +59,9 @@ def main():
       try:
         subprocess.check_call(['python', GSUTIL_PATH, '--force-version', '4.7',
                                'cp', package_zip, local_zip])
-      except AccessDeniedException:
-        print ('WARNING: Bot does not have permission to download SDK packages.'
-               ' If this bot compiles for Android, it may have errors.')
+      except subprocess.CalledProcessError:
+        print ('WARNING: Failed to download SDK packages. If this bot compiles '
+               'for Android, it may have errors.')
         return 0
     # Always clean dir and extract zip to ensure correct contents.
     clean_and_extract(package['dir_name'], package['package'], package['zip'])
