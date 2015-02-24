@@ -7,20 +7,20 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 764x54
           text run at (0,0) width 507: "This page ensures that WebKit can render unicode variation selector correctly. "
           text run at (506,0) width 258: "On platforms which support UVSes, the"
-          text run at (0,18) width 686: "glyphs of U+845B should be different. On platforms which don't support UVSes, they should be identical. "
-          text run at (685,18) width 74: "In addition,"
-          text run at (0,36) width 619: "any glyphs (including the last resort glyph) should not appear after the U+845B on all platforms."
-      RenderBlock {DIV} at (0,70) size 784x24
-        RenderText {#text} at (0,4) size 291x18
-          text run at (0,4) width 291: "Glyph for code point U+845B without UVS: "
-        RenderInline {SPAN} at (0,0) size 17x18
-          RenderText {#text} at (290,4) size 17x18
-            text run at (290,4) width 17: "\x{845B}"
+          text run at (0,18) width 763: "glyph of U+0061 should be a 0.2em high, 1em wide rectangle. On platforms which don't support UVSes, it should be a"
+          text run at (0,36) width 50: "square. "
+          text run at (49,36) width 679: "In addition, any glyphs (including the last resort glyph) should not appear after the glyph on all platforms."
+      RenderBlock {DIV} at (0,70) size 784x18
+        RenderText {#text} at (0,0) size 288x18
+          text run at (0,0) width 288: "Glyph for code point U+0061 without UVS: "
+        RenderInline {SPAN} at (0,0) size 17x16
+          RenderText {#text} at (287,1) size 17x16
+            text run at (287,1) width 17: "a"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,94) size 784x24
-        RenderText {#text} at (0,4) size 270x18
-          text run at (0,4) width 270: "Glyph for code point U+845B with UVS: "
-        RenderInline {SPAN} at (0,0) size 17x18
-          RenderText {#text} at (269,4) size 17x18
-            text run at (269,4) width 17: "\x{845B}\x{DB40}\x{DD00}"
+      RenderBlock {DIV} at (0,88) size 784x18
+        RenderText {#text} at (0,0) size 268x18
+          text run at (0,0) width 268: "Glyph for code point U+0061 with UVS: "
+        RenderInline {SPAN} at (0,0) size 17x16
+          RenderText {#text} at (267,1) size 17x16
+            text run at (267,1) width 17: "a\x{DB40}\x{DD00}"
         RenderText {#text} at (0,0) size 0x0
