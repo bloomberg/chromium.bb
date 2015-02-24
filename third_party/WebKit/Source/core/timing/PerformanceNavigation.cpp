@@ -77,7 +77,7 @@ unsigned short PerformanceNavigation::redirectCount() const
     return timing.redirectCount();
 }
 
-void PerformanceNavigation::trace(Visitor* visitor)
+DEFINE_TRACE(PerformanceNavigation)
 {
     DOMWindowProperty::trace(visitor);
 }

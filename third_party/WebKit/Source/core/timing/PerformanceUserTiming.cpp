@@ -208,7 +208,7 @@ PerformanceEntryVector UserTiming::getMeasures(const String& name) const
     return getEntrySequenceByName(m_measuresMap, name);
 }
 
-void UserTiming::trace(Visitor* visitor)
+DEFINE_TRACE(UserTiming)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_performance);

@@ -19,7 +19,7 @@ DOMWindowPerformance::DOMWindowPerformance(LocalDOMWindow& window)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPerformance);
 
-void DOMWindowPerformance::trace(Visitor* visitor)
+DEFINE_TRACE(DOMWindowPerformance)
 {
     visitor->trace(m_performance);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);

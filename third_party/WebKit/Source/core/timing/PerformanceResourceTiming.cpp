@@ -190,7 +190,7 @@ double PerformanceResourceTiming::responseEnd() const
     return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_finishTime);
 }
 
-void PerformanceResourceTiming::trace(Visitor* visitor)
+DEFINE_TRACE(PerformanceResourceTiming)
 {
     visitor->trace(m_requestingDocument);
     PerformanceEntry::trace(visitor);

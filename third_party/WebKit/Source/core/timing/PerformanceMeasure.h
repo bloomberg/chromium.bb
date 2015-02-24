@@ -43,7 +43,7 @@ public:
 
     virtual bool isMeasure() override { return true; }
 
-    virtual void trace(Visitor* visitor)
+    DEFINE_INLINE_VIRTUAL_TRACE()
     {
         PerformanceEntry::trace(visitor);
     }

@@ -21,7 +21,7 @@ public:
     static DOMWindowPerformance& from(LocalDOMWindow&);
     static Performance* performance(DOMWindow&);
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit DOMWindowPerformance(LocalDOMWindow&);

@@ -62,7 +62,7 @@ public:
     PerformanceEntryVector getMarks(const String& name) const;
     PerformanceEntryVector getMeasures(const String& name) const;
 
-    void trace(Visitor*);
+    DECLARE_TRACE();
 
 private:
     explicit UserTiming(Performance*);

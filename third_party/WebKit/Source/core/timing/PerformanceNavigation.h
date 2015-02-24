@@ -60,7 +60,7 @@ public:
     unsigned short type() const;
     unsigned short redirectCount() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit PerformanceNavigation(LocalFrame*);

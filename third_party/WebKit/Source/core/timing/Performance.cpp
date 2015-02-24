@@ -278,7 +278,7 @@ double Performance::now() const
     return 1000.0 * (monotonicallyIncreasingTime() - m_referenceTime);
 }
 
-void Performance::trace(Visitor* visitor)
+DEFINE_TRACE(Performance)
 {
     visitor->trace(m_navigation);
     visitor->trace(m_timing);

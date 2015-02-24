@@ -51,7 +51,7 @@ public:
     size_t usedJSHeapSize() const { return m_info.usedJSHeapSize; }
     size_t jsHeapSizeLimit() const { return m_info.jsHeapSizeLimit; }
 
-    void trace(Visitor*) { }
+    DEFINE_INLINE_TRACE() { }
 
 private:
     MemoryInfo();

@@ -59,7 +59,7 @@ public:
         return a->startTime() < b->startTime();
     }
 
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime);

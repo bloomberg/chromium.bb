@@ -76,7 +76,7 @@ public:
     unsigned long long loadEventStart() const;
     unsigned long long loadEventEnd() const;
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit PerformanceTiming(LocalFrame*);
