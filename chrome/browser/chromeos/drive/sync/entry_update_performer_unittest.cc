@@ -123,6 +123,66 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
   EXPECT_EQ(dest_entry.resource_id(), gdata_entry->parents()[0].file_id());
 }
 
+TEST_F(EntryUpdatePerformerTest, UpdateEntry_SetProperties) {
+  base::FilePath entry_path(
+      FILE_PATH_LITERAL("drive/root/Directory 1/SubDirectory File 1.txt"));
+
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(entry_path, &entry));
+
+  Property* const first_property = entry.mutable_new_properties()->Add();
+  first_property->set_key("hello");
+  first_property->set_value("world");
+  first_property->set_visibility(Property_Visibility_PUBLIC);
+
+  Property* const second_property = entry.mutable_new_properties()->Add();
+  second_property->set_key("this");
+  second_property->set_value("will-change");
+  second_property->set_visibility(Property_Visibility_PUBLIC);
+  entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+
+  FileError error = FILE_ERROR_FAILED;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(), FROM_HERE,
+      base::Bind(&ResourceMetadata::RefreshEntry, base::Unretained(metadata()),
+                 entry),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Perform server side update.
+  error = FILE_ERROR_FAILED;
+  performer_->UpdateEntry(
+      entry.local_id(), ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+
+  // Add a new property during an update.
+  Property* const property = entry.mutable_new_properties()->Add();
+  property->set_key("tokyo");
+  property->set_value("kyoto");
+  property->set_visibility(Property_Visibility_PUBLIC);
+
+  // Modify an existing property during an update.
+  second_property->set_value("changed");
+
+  // Change the resource entry during an update.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(), FROM_HERE,
+      base::Bind(&ResourceMetadata::RefreshEntry, base::Unretained(metadata()),
+                 entry),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+
+  // Wait until the update is fully completed.
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // List of synced properties should be removed from the proto.
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(entry_path, &entry));
+  ASSERT_EQ(2, entry.new_properties().size());
+  EXPECT_EQ("changed", entry.new_properties().Get(0).value());
+  EXPECT_EQ("tokyo", entry.new_properties().Get(1).key());
+}
+
 // Tests updating metadata of a file with a non-dirty cache file.
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_WithNonDirtyCache) {
   base::FilePath src_path(

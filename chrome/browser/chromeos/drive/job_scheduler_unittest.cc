@@ -424,11 +424,10 @@ TEST_F(JobSchedulerTest, UpdateResource) {
   scoped_ptr<google_apis::FileResource> entry;
 
   scheduler_->UpdateResource(
-      "2_file_resource_id",  // resource ID
+      "2_file_resource_id",    // resource ID
       "1_folder_resource_id",  // parent resource ID
-      "New Document",  // new title
-      base::Time(),
-      base::Time(),
+      "New Document",          // new title
+      base::Time(), base::Time(), google_apis::drive::Properties(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -816,11 +815,8 @@ TEST_F(JobSchedulerTest, JobInfo) {
           &error, &about_resource));
   expected_types.insert(TYPE_UPDATE_RESOURCE);
   scheduler_->UpdateResource(
-      "2_file_resource_id",
-      std::string(),
-      "New Title",
-      base::Time(),
-      base::Time(),
+      "2_file_resource_id", std::string(), "New Title", base::Time(),
+      base::Time(), google_apis::drive::Properties(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   expected_types.insert(TYPE_DOWNLOAD_FILE);

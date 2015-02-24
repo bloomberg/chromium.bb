@@ -80,6 +80,9 @@ ScopedVector<ChangeList> CreateBaseChangeList() {
 
   file.set_title("SubDirectory File 1.txt");
   file.set_resource_id("subdirectory_file_1_id");
+  Property* const property = file.mutable_new_properties()->Add();
+  property->set_key("hello");
+  property->set_value("world");
   change_lists[0]->mutable_entries()->push_back(file);
   change_lists[0]->mutable_parent_resource_ids()->push_back(
       "1_folder_resource_id");
@@ -343,20 +346,25 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
             ApplyChangeList(change_lists.Pass(), &changed_files));
+  EXPECT_EQ(2U, changed_files.size());
+  EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
+      "drive/root/Directory 1/SubDirectory File 1.txt")));
+  EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
+      "drive/root/Directory 1/New SubDirectory File 1.txt")));
 
   int64 changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16767, changestamp);
   EXPECT_FALSE(GetResourceEntry(
       "drive/root/Directory 1/SubDirectory File 1.txt"));
-  EXPECT_TRUE(GetResourceEntry(
-      "drive/root/Directory 1/New SubDirectory File 1.txt"));
+  scoped_ptr<ResourceEntry> new_entry(
+      GetResourceEntry("drive/root/Directory 1/New SubDirectory File 1.txt"));
+  ASSERT_TRUE(new_entry);
 
-  EXPECT_EQ(2U, changed_files.size());
-  EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
-      "drive/root/Directory 1/SubDirectory File 1.txt")));
-  EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
-      "drive/root/Directory 1/New SubDirectory File 1.txt")));
+  // Keep the to-be-synced properties.
+  ASSERT_EQ(1, new_entry->mutable_new_properties()->size());
+  const Property& new_property = new_entry->new_properties().Get(0);
+  EXPECT_EQ("hello", new_property.key());
 }
 
 TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {

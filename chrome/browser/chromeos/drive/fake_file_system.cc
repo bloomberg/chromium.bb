@@ -226,6 +226,15 @@ void FakeFileSystem::AddPermission(const base::FilePath& drive_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeFileSystem::SetProperty(
+    const base::FilePath& drive_file_path,
+    google_apis::drive::Property::Visibility visibility,
+    const std::string& key,
+    const std::string& value,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeFileSystem::Reset(const FileOperationCallback& callback) {
 }
 

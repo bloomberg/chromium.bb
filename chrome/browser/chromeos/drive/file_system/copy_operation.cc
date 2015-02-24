@@ -526,15 +526,11 @@ void CopyOperation::TransferJsonGdocFileAfterLocalWork(
     // but this time we need to resort to server side operation.
     case NOT_IN_METADATA:
       scheduler_->UpdateResource(
-          params->resource_id,
-          params->parent_resource_id,
-          params->new_title,
-          base::Time(),
-          base::Time(),
+          params->resource_id, params->parent_resource_id, params->new_title,
+          base::Time(), base::Time(), google_apis::drive::Properties(),
           ClientContext(USER_INITIATED),
           base::Bind(&CopyOperation::UpdateAfterServerSideOperation,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     params->callback));
+                     weak_ptr_factory_.GetWeakPtr(), params->callback));
       break;
   }
 }

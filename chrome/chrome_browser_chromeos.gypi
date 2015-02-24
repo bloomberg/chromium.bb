@@ -137,6 +137,8 @@
         'browser/chromeos/drive/file_system/remove_operation.h',
         'browser/chromeos/drive/file_system/search_operation.cc',
         'browser/chromeos/drive/file_system/search_operation.h',
+        'browser/chromeos/drive/file_system/set_property_operation.cc',
+        'browser/chromeos/drive/file_system/set_property_operation.h',
         'browser/chromeos/drive/file_system/touch_operation.cc',
         'browser/chromeos/drive/file_system/touch_operation.h',
         'browser/chromeos/drive/file_system/truncate_operation.cc',

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/file_system/open_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/set_property_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/truncate_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
@@ -405,6 +406,8 @@ void FileSystem::ResetComponents() {
                                                  resource_metadata_,
                                                  cache_,
                                                  temporary_file_directory_));
+  set_property_operation_.reset(new file_system::SetPropertyOperation(
+      blocking_task_runner_.get(), delegate, resource_metadata_));
 }
 
 void FileSystem::CheckForUpdates() {
@@ -1000,6 +1003,19 @@ void FileSystem::AddPermissionAfterGetResourceEntry(
       email,
       role,
       base::Bind(&RunFileOperationCallbackAsEntryActionCallback, callback));
+}
+
+void FileSystem::SetProperty(
+    const base::FilePath& drive_file_path,
+    google_apis::drive::Property::Visibility visibility,
+    const std::string& key,
+    const std::string& value,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  set_property_operation_->SetProperty(drive_file_path, visibility, key, value,
+                                       callback);
 }
 
 void FileSystem::OpenFile(const base::FilePath& file_path,

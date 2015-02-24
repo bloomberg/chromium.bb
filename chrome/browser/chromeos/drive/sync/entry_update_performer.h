@@ -72,7 +72,7 @@ class EntryUpdatePerformer {
   void UpdateEntryAfterUpdateResource(
       const ClientContext& context,
       const FileOperationCallback& callback,
-      const std::string& local_id,
+      scoped_ptr<LocalState> local_state,
       scoped_ptr<base::ScopedClosureRunner> loader_lock,
       google_apis::DriveApiErrorCode status,
       scoped_ptr<google_apis::FileResource> entry);

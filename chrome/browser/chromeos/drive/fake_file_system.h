@@ -118,6 +118,11 @@ class FakeFileSystem : public FileSystemInterface {
                      const std::string& email,
                      google_apis::drive::PermissionRole role,
                      const FileOperationCallback& callback) override;
+  void SetProperty(const base::FilePath& drive_file_path,
+                   google_apis::drive::Property::Visibility visibility,
+                   const std::string& key,
+                   const std::string& value,
+                   const FileOperationCallback& callback) override;
   void Reset(const FileOperationCallback& callback) override;
   void GetPathFromResourceId(const std::string& resource_id,
                              const GetFilePathCallback& callback) override;

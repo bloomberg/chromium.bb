@@ -54,6 +54,7 @@ class MoveOperation;
 class OpenFileOperation;
 class RemoveOperation;
 class SearchOperation;
+class SetPropertyOperation;
 class TouchOperation;
 class TruncateOperation;
 }  // namespace file_system
@@ -149,6 +150,11 @@ class FileSystem : public FileSystemInterface,
                      const std::string& email,
                      google_apis::drive::PermissionRole role,
                      const FileOperationCallback& callback) override;
+  void SetProperty(const base::FilePath& drive_file_path,
+                   google_apis::drive::Property::Visibility visibility,
+                   const std::string& key,
+                   const std::string& value,
+                   const FileOperationCallback& callback) override;
   void Reset(const FileOperationCallback& callback) override;
   void GetPathFromResourceId(const std::string& resource_id,
                              const GetFilePathCallback& callback) override;
@@ -284,6 +290,7 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<file_system::SearchOperation> search_operation_;
   scoped_ptr<file_system::GetFileForSavingOperation>
       get_file_for_saving_operation_;
+  scoped_ptr<file_system::SetPropertyOperation> set_property_operation_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

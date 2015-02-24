@@ -1135,6 +1135,7 @@
       'browser/chromeos/drive/file_system/operation_test_base.h',
       'browser/chromeos/drive/file_system/remove_operation_unittest.cc',
       'browser/chromeos/drive/file_system/search_operation_unittest.cc',
+      'browser/chromeos/drive/file_system/set_property_operation_unittest.cc',
       'browser/chromeos/drive/file_system/touch_operation_unittest.cc',
       'browser/chromeos/drive/file_system/truncate_operation_unittest.cc',
       'browser/chromeos/drive/file_system_unittest.cc',

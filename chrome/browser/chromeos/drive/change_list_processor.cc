@@ -366,6 +366,9 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
       if (ShouldApplyChange(existing_entry, new_entry)) {
         // Entry exists and needs to be refreshed.
         new_entry.set_local_id(local_id);
+        // Keep the to-be-synced properties of the existing resource entry.
+        new_entry.mutable_new_properties()->CopyFrom(
+            existing_entry.new_properties());
         error = resource_metadata_->RefreshEntry(new_entry);
       } else {
         if (entry.file_info().is_directory()) {

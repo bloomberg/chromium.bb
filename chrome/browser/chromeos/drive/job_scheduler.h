@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/id_map.h"
@@ -141,6 +142,7 @@ class JobScheduler
                       const std::string& new_title,
                       const base::Time& last_modified,
                       const base::Time& last_viewed_by_me,
+                      const google_apis::drive::Properties& properties,
                       const ClientContext& context,
                       const google_apis::FileResourceCallback& callback);
 

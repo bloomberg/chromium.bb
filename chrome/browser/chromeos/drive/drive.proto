@@ -21,6 +21,21 @@ message PlatformFileInfoProto {
   optional int64 creation_time = 6;
 }
 
+// Represents a property for a file.
+message Property {
+  optional string key = 1;
+  optional string value = 2;
+
+  // Visibility of the property. Either restricted to the same client, or
+  // public.
+  enum Visibility {
+    PRIVATE = 0;
+    PUBLIC = 1;
+  }
+
+  optional Visibility visibility = 3;
+}
+
 // File specific info, which is a part of ResourceEntry.
 message FileSpecificInfo {
   // The argument with ID 1 (thumbnail_url) had been used, but got deleted.
@@ -120,6 +135,11 @@ message ResourceEntry {
 
   // The time of the last modification.
   optional int64 modification_date = 18;
+
+  // List of new properties which are not synced yet via Drive API. Note, that
+  // currently existing properties are never fetched via Drive API, as they are
+  // never used. That would cause growing the proto size for no reason.
+  repeated Property new_properties = 19;
 }
 
 // Container for the header part of ResourceMetadata.
