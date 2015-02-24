@@ -135,6 +135,8 @@ def TripleIsMac(t):
 def TripleIsX8664(t):
   return fnmatch.fnmatch(t, 'x86_64*')
 
+def HostIsDebug(options):
+    return options.host_flavor == 'debug'
 
 # Return a tuple (C compiler, C++ compiler) of the compilers to compile the host
 # toolchains
@@ -168,6 +170,12 @@ def CompilersForHost(host):
 def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
+# name of a build target, including build flavor (debug/release)
+def FlavoredName(component_name, host, options):
+  joined_name = GSDJoin(component_name, host)
+  if HostIsDebug(options):
+    joined_name= joined_name + '_debug'
+  return joined_name
 
 def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
   """ Return flags passed to LLVM and binutils configure for compilers and
@@ -232,8 +240,11 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
         extra_cflags.append('-Wno-inconsistent-missing-override')
       configure_args.extend(
        ['CFLAGS=' + ' '.join(extra_cflags),
-        'LDFLAGS=-L%(' + GSDJoin('abs_libcxx', host) + ')s/lib',
-        'CXXFLAGS=-stdlib=libc++ -I%(' + GSDJoin('abs_libcxx', host) +
+        'LDFLAGS=-L%(' + FlavoredName('abs_libcxx',
+                                      host,
+                                      options) + ')s/lib',
+        'CXXFLAGS=-stdlib=libc++ -I%(' +
+            FlavoredName('abs_libcxx', host, options) +
         ')s/include/c++/v1 ' + ' '.join(extra_cflags)])
 
   return configure_args
@@ -413,8 +424,9 @@ def CopyHostLibcxxForLLVMBuild(host, dest, options):
   else:
     return []
   return [command.Mkdir(dest, parents=True),
-          command.Copy('%(' + GSDJoin('abs_libcxx', host) +')s/lib/' + libname,
-                       os.path.join(dest, libname))]
+          command.Copy('%(' +
+                       FlavoredName('abs_libcxx', host, options) +')s/lib/' +
+                       libname, os.path.join(dest, libname))]
 
 def CreateSymLinksToDirectToNaClTools(host):
   if host == 'le32-nacl':
@@ -434,7 +446,7 @@ def CreateSymLinksToDirectToNaClTools(host):
 def HostLibs(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
-    return GSDJoin(component_name, host)
+    return FlavoredName(component_name, host, options)
   libs = {}
   if TripleIsWindows(host):
     if pynacl.platform.IsWindows():
@@ -490,7 +502,7 @@ def HostLibs(host, options):
 def HostTools(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
-    return GSDJoin(component_name, host)
+    return FlavoredName(component_name, host, options)
   # Return the file name with the appropriate suffix for an executable file.
   def Exe(file):
     if TripleIsWindows(host):
@@ -605,7 +617,8 @@ def HostTools(host, options):
                   CmakeHostArchFlags(host, options) + asan_fix +
                   [
                   '-DBUILD_SHARED_LIBS=ON',
-                  '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                  '-DCMAKE_BUILD_TYPE=' + ('Debug' if HostIsDebug(options)
+                                           else 'RelWithDebInfo'),
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
                   '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
                   '-DLLVM_APPEND_VC_REV=ON',
@@ -648,7 +661,10 @@ def HostTools(host, options):
                    '--disable-jit',
                    '--disable-terminfo',
                    '--disable-zlib',
-                   '--enable-optimized',
+                   '--enable-optimized=' + ('no' if HostIsDebug(options)
+                                            else 'yes'),
+                   '--enable-debug=' + ('yes' if HostIsDebug(options)
+                                        else 'no'),
                    '--enable-targets=x86,arm,mips',
                    '--enable-werror=' + ('yes' if llvm_do_werror else 'no'),
                    '--prefix=/',
@@ -658,7 +674,8 @@ def HostTools(host, options):
                   ] + shared)] +
               CopyHostLibcxxForLLVMBuild(
                   host,
-                  os.path.join('Release+Asserts', 'lib'),
+                  os.path.join(('Debug+Asserts' if HostIsDebug(options)
+                                else 'Release+Asserts'), 'lib'),
                   options) +
               [command.Command(MakeCommand(host) + [
                   'VERBOSE=1',
@@ -690,7 +707,7 @@ def HostTools(host, options):
 
 def TargetLibCompiler(host, options):
   def H(component_name):
-    return GSDJoin(component_name, host)
+    return FlavoredName(component_name, host, options)
   compiler = {
       # Because target_lib_compiler is not a memoized target, its name doesn't
       # need to have the host appended to it (it can be different on different
@@ -743,9 +760,9 @@ def Metadata(revisions, is_canonical):
   return data
 
 
-def HostToolsDirectToNacl(host):
+def HostToolsDirectToNacl(host, options):
   def H(component_name):
-    return GSDJoin(component_name, host)
+    return FlavoredName(component_name, host, options)
 
   tools = {}
 
@@ -1024,6 +1041,10 @@ if __name__ == '__main__':
                       default=[], action='append',
                       help='Extra binutils-pnacl arguments '
                            'to pass pass to host configure')
+  parser.add_argument('--host-flavor', choices=['debug', 'release'],
+                      dest='host_flavor',
+                      default='release',
+                      help='Flavor of the build of the host binaries.')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
@@ -1067,7 +1088,7 @@ if __name__ == '__main__':
       packages.update(HostTools(host, args))
       if not args.pnacl_in_pnacl:
         packages.update(HostLibs(host, args))
-        packages.update(HostToolsDirectToNacl(host))
+        packages.update(HostToolsDirectToNacl(host, args))
     if not args.pnacl_in_pnacl:
       packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
     # Don't build the target libs on Windows because of pathname issues.
