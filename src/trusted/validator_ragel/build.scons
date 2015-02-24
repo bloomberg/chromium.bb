@@ -361,6 +361,8 @@ if ragel_involved:
      '20150107.avx2.groups_0f_6x_0f_7x', '20150113.remaining_avx2_promotions'),
     ('avx2_additions_proof.py', ('32', '64'),
      '20150113.remaining_avx2_promotions', '20150128.avx2_additions'),
+    ('crc32_16_to_32_proof.py', ('32', '64'),
+     '20150210.vmovq_bugfix', '20150223.crc32w'),
   ]
   # Run the 3 latest proofs by default.
   for proof_file, bitnesses, old, new in trie_proofs[-3:]:

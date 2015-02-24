@@ -1,11 +1,9 @@
 @hex:
-  # See https://code.google.com/p/nativeclient/issues/detail?id=3356
   66 f2 0f 38 f1 c0
 @dis:
      0:	66 f2 0f 38 f1 c0                            	crc32w %ax,%eax
 @rdfa_output:
-  0: unrecognized instruction
-  return code: 1
+  return code: 0
 @spec:
   SAFE
 ----------------------------------------------------------------------

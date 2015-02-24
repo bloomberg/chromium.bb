@@ -115,6 +115,14 @@ def GprOperands(bitness, operand_size, is_write_for_64_bit=True,
     regs = ['%ax', '%bx', '%cx', '%dx', '%bp', '%sp', '%di', '%si']
   elif operand_size == 32 and bitness == 32:
     regs = ['%eax', '%ebp', '%ebx', '%ecx', '%edi', '%edx', '%esi', '%esp']
+  elif bitness == 64 and operand_size == 16:
+    regs = ['%ax', '%bx', '%cx', '%dx', '%di', '%si',
+            '%r8w', '%r9w', '%r10w', '%r11w', '%r12w', '%r13w',
+            '%r14w']
+    if not is_write_for_64_bit:
+      regs += ['%bp', '%sp', '%r15w']
+    if can_restrict:
+      raise AssertionError("16 bit writes shouldn't restrict.")
   elif bitness == 64 and operand_size == 32:
     regs = ['%eax', '%ebx', '%ecx', '%edi', '%edx', '%esi',
             '%r8d', '%r9d', '%r10d', '%r11d', '%r12d', '%r13d', '%r14d']
@@ -356,7 +364,8 @@ def Disassemble(options, byte_sequences_iter):
     for line, (accept_info1, accept_info2) in itertools.izip(
         objdump_parser.SkipHeader(objdump_proc.stdout),
         iter(accepts)):
-      instruction = objdump_parser.ParseLine(line)
+      instruction = objdump_parser.CanonicalizeInstruction(
+            objdump_parser.ParseLine(line))
       prefixes, mnemonic, operands = (spec.ParseInstruction(instruction))
       full_operands = tuple(prefixes + [mnemonic] + operands)
       if accept_info1 is not None:
