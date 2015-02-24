@@ -31,26 +31,21 @@ class ScreenshotDelegate;
 // This class does not use aura::Window / views::Widget intentionally to avoid
 // the conflicts of window manager features like mouse captures or window focus.
 class ASH_EXPORT PartialScreenshotController : public ui::EventHandler,
-                                               public ShellObserver,
                                                public gfx::DisplayObserver {
  public:
+  PartialScreenshotController();
+  ~PartialScreenshotController() override;
+
   // Starts the UI for taking partial screenshot; dragging to select a region.
   // PartialScreenshotController manage their own lifetime so caller must not
   // delete the returned values.
-  static void StartPartialScreenshotSession(
-      ScreenshotDelegate* screenshot_delegate);
-
-  ~PartialScreenshotController() override;
+  void StartPartialScreenshotSession(ScreenshotDelegate* screenshot_delegate);
 
  private:
   friend class PartialScreenshotControllerTest;
 
   class ScopedCursorSetter;
   class PartialScreenshotLayer;
-
-  static PartialScreenshotController* GetInstanceForTest();
-
-  PartialScreenshotController(ScreenshotDelegate* screenshot_delegate);
 
   // Starts, ends, cancels, or updates the region selection.
   void MaybeStart(const ui::LocatedEvent& event);
@@ -62,9 +57,6 @@ class ASH_EXPORT PartialScreenshotController : public ui::EventHandler,
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
-
-  // ShellObserver:
-  void OnAppTerminating() override;
 
   // gfx::DisplayObserver:
   void OnDisplayAdded(const gfx::Display& new_display) override;

@@ -405,18 +405,17 @@ void HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
 
 void HandleTakePartialScreenshot(ScreenshotDelegate* screenshot_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
-  if (screenshot_delegate) {
-    ash::PartialScreenshotController::StartPartialScreenshotSession(
-        screenshot_delegate);
-  }
+  DCHECK(screenshot_delegate);
+  Shell::GetInstance()
+      ->partial_screenshot_controller()
+      ->StartPartialScreenshotSession(screenshot_delegate);
 }
 
 void HandleTakeScreenshot(ScreenshotDelegate* screenshot_delegate) {
   base::RecordAction(UserMetricsAction("Accel_Take_Screenshot"));
-  if (screenshot_delegate &&
-      screenshot_delegate->CanTakeScreenshot()) {
+  DCHECK(screenshot_delegate);
+  if (screenshot_delegate->CanTakeScreenshot())
     screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
-  }
 }
 
 bool CanHandleToggleAppList(const ui::Accelerator& accelerator,

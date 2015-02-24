@@ -18,8 +18,6 @@ namespace ash {
 
 namespace {
 
-PartialScreenshotController* instance = nullptr;
-
 // The size to increase the invalidated area in the layer to repaint. The area
 // should be slightly bigger than the actual region because the region indicator
 // rectangles are drawn outside of the selected region.
@@ -112,46 +110,35 @@ class PartialScreenshotController::ScopedCursorSetter {
   DISALLOW_COPY_AND_ASSIGN(ScopedCursorSetter);
 };
 
-// static
-void PartialScreenshotController::StartPartialScreenshotSession(
-    ScreenshotDelegate* screenshot_delegate) {
-  // Already in the session.
-  if (instance)
-    return;
-  instance = new PartialScreenshotController(screenshot_delegate);
-}
-
-// static
-PartialScreenshotController* PartialScreenshotController::GetInstanceForTest() {
-  return instance;
-}
-
-PartialScreenshotController::PartialScreenshotController(
-    ScreenshotDelegate* screenshot_delegate)
-    : root_window_(nullptr), screenshot_delegate_(screenshot_delegate) {
-  DCHECK(screenshot_delegate_);
+PartialScreenshotController::PartialScreenshotController()
+    : root_window_(nullptr), screenshot_delegate_(nullptr) {
   Shell* shell = Shell::GetInstance();
   shell->PrependPreTargetHandler(this);
-  shell->AddShellObserver(this);
-  Shell::GetScreen()->AddObserver(this);
+}
 
+PartialScreenshotController::~PartialScreenshotController() {
+  if (screenshot_delegate_)
+    Cancel();
+  Shell::GetInstance()->RemovePreTargetHandler(this);
+}
+
+void PartialScreenshotController::StartPartialScreenshotSession(
+    ScreenshotDelegate* screenshot_delegate) {
+  // Already in a screenshot session.
+  if (screenshot_delegate_) {
+    DCHECK_EQ(screenshot_delegate_, screenshot_delegate);
+    return;
+  }
+
+  screenshot_delegate_ = screenshot_delegate;
+  Shell::GetScreen()->AddObserver(this);
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     layers_[root] = new PartialScreenshotLayer(
         Shell::GetContainer(root, kShellWindowId_OverlayContainer)->layer());
   }
 
-  cursor_setter_.reset(
-      new ScopedCursorSetter(shell->cursor_manager(), ui::kCursorCross));
-}
-
-PartialScreenshotController::~PartialScreenshotController() {
-  DCHECK_EQ(this, instance);
-  instance = nullptr;
-
-  Shell::GetScreen()->RemoveObserver(this);
-  Shell::GetInstance()->RemovePreTargetHandler(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
-  STLDeleteValues(&layers_);
+  cursor_setter_.reset(new ScopedCursorSetter(
+      Shell::GetInstance()->cursor_manager(), ui::kCursorCross));
 }
 
 void PartialScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
@@ -181,7 +168,11 @@ void PartialScreenshotController::Complete() {
 }
 
 void PartialScreenshotController::Cancel() {
-  delete this;
+  root_window_ = nullptr;
+  screenshot_delegate_ = nullptr;
+  Shell::GetScreen()->RemoveObserver(this);
+  STLDeleteValues(&layers_);
+  cursor_setter_.reset();
 }
 
 void PartialScreenshotController::Update(const ui::LocatedEvent& event) {
@@ -199,6 +190,8 @@ void PartialScreenshotController::Update(const ui::LocatedEvent& event) {
 }
 
 void PartialScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
+  if (!screenshot_delegate_)
+    return;
   if (event->type() == ui::ET_KEY_RELEASED &&
       event->key_code() == ui::VKEY_ESCAPE) {
     Cancel();
@@ -209,6 +202,8 @@ void PartialScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void PartialScreenshotController::OnMouseEvent(ui::MouseEvent* event) {
+  if (!screenshot_delegate_)
+    return;
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       MaybeStart(*event);
@@ -227,6 +222,8 @@ void PartialScreenshotController::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void PartialScreenshotController::OnTouchEvent(ui::TouchEvent* event) {
+  if (!screenshot_delegate_)
+    return;
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       MaybeStart(*event);
@@ -244,17 +241,17 @@ void PartialScreenshotController::OnTouchEvent(ui::TouchEvent* event) {
   event->StopPropagation();
 }
 
-void PartialScreenshotController::OnAppTerminating() {
-  Cancel();
-}
-
 void PartialScreenshotController::OnDisplayAdded(
     const gfx::Display& new_display) {
+  if (!screenshot_delegate_)
+    return;
   Cancel();
 }
 
 void PartialScreenshotController::OnDisplayRemoved(
     const gfx::Display& old_display) {
+  if (!screenshot_delegate_)
+    return;
   Cancel();
 }
 

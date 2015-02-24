@@ -32,6 +32,7 @@ class MirrorWindowTestApi {
   int GetCurrentCursorType() const;
   const gfx::Point& GetCursorHotPoint() const;
   const aura::Window* GetCursorWindow() const;
+  gfx::Point GetCursorLocation() const;
 
   scoped_ptr<RootWindowTransformer> CreateCurrentRootWindowTransformer() const;
 

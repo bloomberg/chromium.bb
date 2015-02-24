@@ -109,6 +109,7 @@ class MruWindowTracker;
 class NewWindowDelegate;
 class OverlayEventFilter;
 class PartialMagnificationController;
+class PartialScreenshotController;
 class PowerButtonController;
 class PowerEventObserver;
 class ProjectingObserver;
@@ -387,6 +388,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return touch_transformer_controller_.get();
   }
 #endif  // defined(OS_CHROMEOS)
+  PartialScreenshotController* partial_screenshot_controller() {
+    return partial_screenshot_controller_.get();
+  }
   MouseCursorEventFilter* mouse_cursor_filter() {
     return mouse_cursor_filter_.get();
   }
@@ -675,6 +679,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<AutoclickController> autoclick_controller_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   aura::client::ActivationClient* activation_client_;
+  scoped_ptr<PartialScreenshotController> partial_screenshot_controller_;
 
   scoped_ptr<MouseCursorEventFilter> mouse_cursor_filter_;
   scoped_ptr<ScreenPositionController> screen_position_controller_;

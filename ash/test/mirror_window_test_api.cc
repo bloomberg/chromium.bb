@@ -37,6 +37,13 @@ const aura::Window* MirrorWindowTestApi::GetCursorWindow() const {
       cursor_window_controller()->cursor_window_.get();
 }
 
+gfx::Point MirrorWindowTestApi::GetCursorLocation() const {
+  gfx::Point point = GetCursorWindow()->GetBoundsInScreen().origin();
+  const gfx::Point hot_point = GetCursorHotPoint();
+  point.Offset(hot_point.x(), hot_point.y());
+  return point;
+}
+
 scoped_ptr<RootWindowTransformer>
 MirrorWindowTestApi::CreateCurrentRootWindowTransformer() const {
   return Shell::GetInstance()->display_controller()->

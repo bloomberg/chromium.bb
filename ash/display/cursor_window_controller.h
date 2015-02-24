@@ -5,6 +5,7 @@
 #ifndef ASH_DISPLAY_CURSOR_WINDOW_CONTROLLER_H_
 #define ASH_DISPLAY_CURSOR_WINDOW_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/display.h"
@@ -21,7 +22,7 @@ class CursorWindowDelegate;
 // to scale and rotate the mouse cursor bitmap to match settings of the
 // primary display.
 // When cursor compositing is enabled, just draw the cursor as-is.
-class CursorWindowController {
+class ASH_EXPORT CursorWindowController {
  public:
   CursorWindowController();
   ~CursorWindowController();
