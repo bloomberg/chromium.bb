@@ -225,6 +225,7 @@ class GLHelper::CopyTextureToImpl
           query(0) {}
 
     bool done;
+    bool result;
     gfx::Size size;
     int bytes_per_row;
     int row_stride_bytes;
@@ -232,6 +233,29 @@ class GLHelper::CopyTextureToImpl
     base::Callback<void(bool)> callback;
     GLuint buffer;
     GLuint query;
+  };
+
+  // We must take care to call the callbacks last, as they may
+  // end up destroying the gl_helper and make *this invalid.
+  // We stick the finished requests in a stack object that calls
+  // the callbacks when it goes out of scope.
+  class FinishRequestHelper {
+   public:
+    FinishRequestHelper() {}
+    ~FinishRequestHelper() {
+      while (!requests_.empty()) {
+        Request* request = requests_.front();
+        requests_.pop();
+        request->callback.Run(request->result);
+        delete request;
+      }
+    }
+    void Add(Request* r) {
+      requests_.push(r);
+    }
+   private:
+    std::queue<Request*> requests_;
+    DISALLOW_COPY_AND_ASSIGN(FinishRequestHelper);
   };
 
   // A readback pipeline that also converts the data to YUV before
@@ -344,7 +368,9 @@ class GLHelper::CopyTextureToImpl
 
   static void nullcallback(bool success) {}
   void ReadbackDone(Request *request, int bytes_per_pixel);
-  void FinishRequest(Request* request, bool result);
+  void FinishRequest(Request* request,
+                     bool result,
+                     FinishRequestHelper* helper);
   void CancelRequests();
 
   static const float kRGBtoYColorWeights[];
@@ -687,6 +713,8 @@ void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
                "GLHelper::CopyTextureToImpl::CheckReadbackFramebufferComplete");
   finished_request->done = true;
 
+  FinishRequestHelper finish_request_helper;
+
   // We process transfer requests in the order they were received, regardless
   // of the order we get the callbacks in.
   while (!request_queue_.empty()) {
@@ -718,15 +746,18 @@ void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
       }
       gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
     }
-    FinishRequest(request, result);
+    FinishRequest(request, result, &finish_request_helper);
   }
 }
 
-void GLHelper::CopyTextureToImpl::FinishRequest(Request* request, bool result) {
+void GLHelper::CopyTextureToImpl::FinishRequest(
+    Request* request,
+    bool result,
+    FinishRequestHelper* finish_request_helper) {
   TRACE_EVENT0("mirror", "GLHelper::CopyTextureToImpl::FinishRequest");
   DCHECK(request_queue_.front() == request);
   request_queue_.pop();
-  request->callback.Run(result);
+  request->result = result;
   ScopedFlush flush(gl_);
   if (request->query != 0) {
     gl_->DeleteQueriesEXT(1, &request->query);
@@ -736,13 +767,14 @@ void GLHelper::CopyTextureToImpl::FinishRequest(Request* request, bool result) {
     gl_->DeleteBuffers(1, &request->buffer);
     request->buffer = 0;
   }
-  delete request;
+  finish_request_helper->Add(request);
 }
 
 void GLHelper::CopyTextureToImpl::CancelRequests() {
+  FinishRequestHelper finish_request_helper;
   while (!request_queue_.empty()) {
     Request* request = request_queue_.front();
-    FinishRequest(request, false);
+    FinishRequest(request, false, &finish_request_helper);
   }
 }
 
