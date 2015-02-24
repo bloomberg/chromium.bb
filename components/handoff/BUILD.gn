@@ -4,7 +4,7 @@
 
 source_set("handoff") {
   if (is_mac || is_ios) {
-    sources += [
+    sources = [
       "handoff_utility.h",
       "handoff_utility.mm",
     ]

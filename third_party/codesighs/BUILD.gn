@@ -28,7 +28,7 @@ if (is_win) {
       "msmap2tsv.c",
     ]
 
-    libs += [ "dbghelp.lib" ]
+    libs = [ "dbghelp.lib" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
