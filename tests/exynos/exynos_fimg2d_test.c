@@ -41,7 +41,7 @@ static unsigned int screen_width, screen_height;
 /*
  * A structure to test fimg2d hw.
  *
- * @solid_fild: fill given color data to source buffer.
+ * @solid_fill: fill given color data to source buffer.
  * @copy: copy source to destination buffer.
  * @copy_with_scale: copy source to destination buffer scaling up or
  *	down properly.
@@ -228,7 +228,7 @@ static int g2d_solid_fill_test(struct exynos_device *dev, struct exynos_bo *dst)
 	memset(&img, 0, sizeof(struct g2d_image));
 	img.bo[0] = dst->handle;
 
-	printf("soild fill test.\n");
+	printf("solid fill test.\n");
 
 	srand(time(NULL));
 	img_w = screen_width;

@@ -148,13 +148,13 @@ static void g2d_reset(struct g2d_context *ctx)
 }
 
 /*
- * g2d_flush - summit all commands and values in user side command buffer
+ * g2d_flush - submit all commands and values in user side command buffer
  *		to command queue aware of fimg2d dma.
  *
  * @ctx: a pointer to g2d_context structure.
  *
  * This function should be called after all commands and values to user
- * side command buffer is set to summit that buffer to kernel side driver.
+ * side command buffer are set. It submits that buffer to the kernel side driver.
  */
 static int g2d_flush(struct g2d_context *ctx)
 {
@@ -195,7 +195,7 @@ static int g2d_flush(struct g2d_context *ctx)
 /**
  * g2d_init - create a new g2d context and get hardware version.
  *
- * fd: a file descriptor to drm device driver opened.
+ * fd: a file descriptor to an opened drm device.
  */
 drm_public struct g2d_context *g2d_init(int fd)
 {
@@ -527,7 +527,7 @@ g2d_copy_with_scale(struct g2d_context *ctx, struct g2d_image *src,
 }
 
 /**
- * g2d_blend - blend image data in source and destion buffers
+ * g2d_blend - blend image data in source and destination buffers.
  *
  * @ctx: a pointer to g2d_context structure.
  * @src: a pointer to g2d_image structure including image and buffer
