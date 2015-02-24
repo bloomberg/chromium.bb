@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/browser_thread.h"
 #import "media/base/mac/avfoundation_glue.h"
@@ -531,10 +532,20 @@ void DeviceMonitorMac::StartMonitoring(
     const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (AVFoundationGlue::IsAVFoundationSupported()) {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458404
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "458404 DeviceMonitorMac::StartMonitoring::AVFoundation"));
     DVLOG(1) << "Monitoring via AVFoundation";
     device_monitor_impl_.reset(new AVFoundationMonitorImpl(this,
                                                            device_task_runner));
   } else {
+    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458404
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "458404 DeviceMonitorMac::StartMonitoring::QTKit"));
     DVLOG(1) << "Monitoring via QTKit";
     device_monitor_impl_.reset(new QTKitMonitorImpl(this));
   }

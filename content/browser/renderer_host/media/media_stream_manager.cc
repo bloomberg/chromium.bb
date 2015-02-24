@@ -966,11 +966,6 @@ void MediaStreamManager::StopRemovedDevice(const MediaStreamDevice& device) {
 }
 
 void MediaStreamManager::StartMonitoring() {
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/458404 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458404 MediaStreamManager::StartMonitoring"));
-
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (monitoring_started_)
     return;
@@ -981,19 +976,10 @@ void MediaStreamManager::StartMonitoring() {
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/458404 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458404 MediaStreamManager::StartMonitoring::EnumerateAudio"));
   // Enumerate both the audio and video devices to cache the device lists
   // and send them to media observer.
   ++active_enumeration_ref_count_[MEDIA_DEVICE_AUDIO_CAPTURE];
   audio_input_device_manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);
-
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/458404 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458404 MediaStreamManager::StartMonitoring::EnumerateVideo"));
   ++active_enumeration_ref_count_[MEDIA_DEVICE_VIDEO_CAPTURE];
   video_capture_manager_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
