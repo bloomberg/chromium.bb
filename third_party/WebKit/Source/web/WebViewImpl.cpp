@@ -1726,7 +1726,8 @@ void WebViewImpl::setTopControlsHeight(float height, bool topControlsShrinkLayou
 void WebViewImpl::updateTopControlsState(WebTopControlsState constraint, WebTopControlsState current, bool animate)
 {
     topControls().updateConstraints(constraint);
-    m_layerTreeView->updateTopControlsState(constraint, current, animate);
+    if (m_layerTreeView)
+        m_layerTreeView->updateTopControlsState(constraint, current, animate);
 }
 
 void WebViewImpl::didUpdateTopControls()
