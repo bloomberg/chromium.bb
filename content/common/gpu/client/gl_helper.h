@@ -272,6 +272,10 @@ class CONTENT_EXPORT GLHelper {
   // Flushes GL commands.
   void Flush();
 
+  // Force commands in the current command buffer to be executed before commands
+  // in other command buffers from the same process (ie channel to the GPU
+  // process).
+  void InsertOrderingBarrier();
 
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.

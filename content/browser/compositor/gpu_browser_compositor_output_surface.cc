@@ -71,9 +71,9 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
   if (reflector_.get()) {
     if (frame->gl_frame_data->sub_buffer_rect ==
         gfx::Rect(frame->gl_frame_data->size))
-      reflector_->OnSwapBuffers();
+      reflector_->OnSourceSwapBuffers();
     else
-      reflector_->OnPostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
+      reflector_->OnSourcePostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
   }
 
   if (frame->gl_frame_data->sub_buffer_rect ==

@@ -176,6 +176,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
                                                         data->surface_id),
         "Compositor");
+    if (!context_provider->BindToCurrentThread())
+      context_provider = nullptr;
   }
 
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
@@ -254,21 +256,25 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         CreateOverlayCandidateValidator(compositor->widget())));
 
   if (data->reflector.get())
-    data->reflector->ReattachToOutputSurfaceFromMainThread(surface.get());
+    data->reflector->OnSourceSurfaceReady(surface.get());
 
   compositor->SetOutputSurface(surface.Pass());
 }
 
 scoped_refptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
-    ui::Compositor* source,
-    ui::Layer* target) {
-  PerCompositorData* data = per_compositor_data_[source];
-  DCHECK(data);
+    ui::Compositor* source_compositor,
+    ui::Layer* target_layer) {
+  PerCompositorData* source_data = per_compositor_data_[source_compositor];
+  DCHECK(source_data);
 
-  data->reflector = new ReflectorImpl(source, target, &output_surface_map_,
-                                      nullptr,  // Compositor message loop.
-                                      data->surface_id);
-  return data->reflector;
+  source_data->reflector = new ReflectorImpl(source_compositor, target_layer);
+  // Use the |output_surface_map_| to check if the output surface has been bound
+  // to the thread/is ready to be used.
+  BrowserCompositorOutputSurface* source_surface =
+      output_surface_map_.Lookup(source_data->surface_id);
+  if (source_surface)
+    source_data->reflector->OnSourceSurfaceReady(source_surface);
+  return source_data->reflector;
 }
 
 void GpuProcessTransportFactory::RemoveReflector(
@@ -279,7 +285,7 @@ void GpuProcessTransportFactory::RemoveReflector(
       per_compositor_data_[reflector_impl->mirrored_compositor()];
   DCHECK(data);
   data->reflector->Shutdown();
-  data->reflector = NULL;
+  data->reflector = nullptr;
 }
 
 void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {

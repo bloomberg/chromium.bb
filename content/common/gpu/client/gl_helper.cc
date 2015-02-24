@@ -1019,6 +1019,10 @@ void GLHelper::Flush() {
   gl_->Flush();
 }
 
+void GLHelper::InsertOrderingBarrier() {
+  gl_->OrderingBarrierCHROMIUM();
+}
+
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
     TextureFrameBufferPair* source,
     const scoped_refptr<media::VideoFrame>& target,
