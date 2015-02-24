@@ -370,6 +370,8 @@
         'resources/clip_display_item.h',
         'resources/clip_path_display_item.cc',
         'resources/clip_path_display_item.h',
+        'resources/compositing_display_item.cc',
+        'resources/compositing_display_item.h',
         'resources/content_layer_updater.cc',
         'resources/content_layer_updater.h',
         'resources/display_item.cc',
