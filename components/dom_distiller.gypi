@@ -181,6 +181,28 @@
             },
           ],
         }],
+        ['OS=="ios"', {
+          'targets': [
+            {
+              'target_name': 'dom_distiller_ios',
+              'type': 'static_library',
+              'dependencies': [
+                '../ios/provider/ios_provider_web.gyp:ios_provider_web',
+                'distilled_page_proto',
+                'dom_distiller_core',
+              ],
+              'include_dirs': [
+                '..',
+              ],
+              'sources': [
+                'dom_distiller/ios/distiller_page_factory_ios.h',
+                'dom_distiller/ios/distiller_page_factory_ios.mm',
+                'dom_distiller/ios/distiller_page_ios.h',
+                'dom_distiller/ios/distiller_page_ios.mm',
+              ],
+            },
+          ],
+        }],
         ['OS=="android"', {
           'targets': [
             {
