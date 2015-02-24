@@ -8,6 +8,19 @@
 function ImageEncoder() {}
 
 /**
+ * The value 360 px is enough in Files.app grid view for HiDPI devices.
+ * @const {number}
+ */
+ImageEncoder.MAX_THUMBNAIL_DIMENSION = 360;
+
+/**
+ * Tries to create thumbnail if the image width or height longer than the size.
+ * @const {number}
+ */
+ImageEncoder.MIN_IMAGE_DIMENSION_FOR_THUMBNAIL =
+    ImageEncoder.MAX_THUMBNAIL_DIMENSION * 4;
+
+/**
  * Metadata encoders.
  * @type {!Object.<string,function(new:ImageEncoder.MetadataEncoder,!Object)>}
  * @const
@@ -123,21 +136,20 @@ ImageEncoder.decodeDataURL = function(dataURL) {
 /**
  * Return a thumbnail for an image.
  * @param {!HTMLCanvasElement} canvas Original image.
- * @param {number=} opt_shrinkage Thumbnail should be at least this much smaller
- *     than the original image (in each dimension).
- * @return {!HTMLCanvasElement} Thumbnail canvas.
+ * @return {HTMLCanvasElement} Thumbnail canvas.
  */
-ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {
-  var MAX_THUMBNAIL_DIMENSION = 320;
+ImageEncoder.createThumbnail = function(canvas) {
+  if (canvas.width < ImageEncoder.MIN_IMAGE_DIMENSION_FOR_THUMBNAIL &&
+      canvas.height < ImageEncoder.MIN_IMAGE_DIMENSION_FOR_THUMBNAIL) {
+    return null;
+  }
 
-  opt_shrinkage = Math.max(opt_shrinkage || 4,
-                           canvas.width / MAX_THUMBNAIL_DIMENSION,
-                           canvas.height / MAX_THUMBNAIL_DIMENSION);
-
+  var ratio = Math.min(ImageEncoder.MAX_THUMBNAIL_DIMENSION / canvas.width,
+                       ImageEncoder.MAX_THUMBNAIL_DIMENSION / canvas.height);
   var thumbnailCanvas = assertInstanceof(
       canvas.ownerDocument.createElement('canvas'), HTMLCanvasElement);
-  thumbnailCanvas.width = Math.round(canvas.width / opt_shrinkage);
-  thumbnailCanvas.height = Math.round(canvas.height / opt_shrinkage);
+  thumbnailCanvas.width = Math.round(canvas.width * ratio);
+  thumbnailCanvas.height = Math.round(canvas.height * ratio);
 
   var context = thumbnailCanvas.getContext('2d');
   context.drawImage(canvas,
@@ -229,13 +241,14 @@ ImageEncoder.MetadataEncoder.prototype.setImageData =
 };
 
 /**
- * @param {!HTMLCanvasElement} canvas Canvas to use as thumbnail.
+ * @param {HTMLCanvasElement} canvas Canvas to use as thumbnail. Note that it
+ *     can be null.
  * @param {number} quality Thumbnail quality.
  */
 ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
     function(canvas, quality) {
   this.metadata_.thumbnailURL =
-      canvas.toDataURL(this.metadata_.media.mimeType, quality);
+      canvas ? canvas.toDataURL(this.metadata_.media.mimeType, quality) : '';
   delete this.metadata_.thumbnailTransform;
 };
 

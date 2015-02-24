@@ -108,7 +108,7 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
       break;
   }
 
-  if (this.metadata_.thumbnailURL.length <= maxDataURLLength) {
+  if (canvas && this.metadata_.thumbnailURL.length <= maxDataURLLength) {
     var thumbnail = this.ifd_.thumbnail;
     if (!thumbnail)
       thumbnail = this.ifd_.thumbnail = {};
@@ -138,7 +138,6 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
       delete this.ifd_.thumbnail;
     }
   }
-  delete this.metadata_.thumbnailTransform;
 };
 
 /**
