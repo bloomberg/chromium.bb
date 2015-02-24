@@ -7,8 +7,8 @@
  *
  * ListThumbnailLoader is a thubmanil loader designed for list style ui. List
  * thumbnail loader loads thumbnail in a viewport of the UI. ListThumbnailLoader
- * is responsible to return dataUrls of valid thumbnails and fetch them with
- * proper priority.
+ * is responsible to return dataUrls of thumbnails and fetch them with proper
+ * priority.
  *
  * @param {!FileListModel} dataModel A file list model.
  * @param {!ThumbnailModel} thumbnailModel Thumbnail metadata model.
@@ -128,10 +128,11 @@ ListThumbnailLoader.prototype.onSorted_ = function(event) {
  * @param {!Event} event Event
  */
 ListThumbnailLoader.prototype.onChange_ = function(event) {
-  // Revoke cache of updated file.
-  var item = this.dataModel_.item(event.index);
-  if (item)
-    this.cache_.remove(item.toURL());
+  // Mark the thumbnail in cache as invalid.
+  var entry = this.dataModel_.item(event.index);
+  var cachedThumbnail = this.cache_.peek(entry.toURL());
+  if (cachedThumbnail)
+    cachedThumbnail.outdated = true;
 
   this.cursor_ = this.beginIndex_;
   this.continue_();
@@ -156,9 +157,11 @@ ListThumbnailLoader.prototype.setHighPriorityRange = function(
 };
 
 /**
- * Returns a thumbnail of an entry if it is in cache.
+ * Returns a thumbnail of an entry if it is in cache. This method returns
+ * thumbnail even if the thumbnail is outdated.
  *
- * @return {Object} If the thumbnail is not in cache, this returns null.
+ * @return {ListThumbnailLoader.ThumbnailData} If the thumbnail is not in cache,
+ *     this returns null.
  */
 ListThumbnailLoader.prototype.getThumbnailFromCache = function(entry) {
   // Since we want to evict cache based on high priority range, we use peek here
@@ -183,9 +186,10 @@ ListThumbnailLoader.prototype.continue_ = function() {
 
   var entry = /** @type {Entry} */ (this.dataModel_.item(this.cursor_));
 
-  // If the entry is a directory, already in cache or fetching, skip it.
+  // If the entry is a directory, already in cache as valid or fetching, skip.
+  var thumbnail = this.cache_.get(entry.toURL());
   if (entry.isDirectory ||
-      this.cache_.get(entry.toURL()) ||
+      (thumbnail && !thumbnail.outdated) ||
       this.active_[entry.toURL()]) {
     this.cursor_++;
     this.continue_();
@@ -307,6 +311,11 @@ ListThumbnailLoader.ThumbnailData = function(fileUrl, dataUrl, width, height) {
    * @const {number}
    */
   this.height = height;
+
+  /**
+   * @type {boolean}
+   */
+  this.outdated = false;
 };
 
 /**

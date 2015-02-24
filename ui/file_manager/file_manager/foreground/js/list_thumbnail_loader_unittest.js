@@ -283,3 +283,35 @@ function testSortedEvent(callback) {
     });
   }), callback);
 }
+
+/**
+ * Test case for handling change event in data model.
+ */
+function testChangeEvent(callback) {
+  listThumbnailLoader.setHighPriorityRange(0, 2);
+  fileListModel.push(directory1, entry1, entry2, entry3);
+
+  resolveGetLatestCallback([entry1]);
+  resolveGetLatestCallback([entry2]);
+  assertEquals(0, Object.keys(getCallbacks).length);
+
+  reportPromise(waitUntil(function() {
+    return thumbnailLoadedEvents.length === 2;
+  }).then(function() {
+    // entry1 is changed.
+    var changeEvent = new Event('change');
+    changeEvent.index = 1;
+    fileListModel.dispatchEvent(changeEvent);
+
+    // cache of entry1 should become invalid.
+    var thumbnail = listThumbnailLoader.getThumbnailFromCache(entry1);
+    assertTrue(thumbnail.outdated);
+
+    resolveGetLatestCallback([entry1]);
+
+    // Wait until thumbnailLoaded event is fired again for the change.
+    return waitUntil(function() {
+      return thumbnailLoadedEvents.length === 3;
+    });
+  }), callback);
+}
