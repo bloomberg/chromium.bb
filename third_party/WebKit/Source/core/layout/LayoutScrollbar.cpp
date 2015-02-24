@@ -80,7 +80,7 @@ LayoutScrollbar::~LayoutScrollbar()
     updateScrollbarParts(true);
 }
 
-void LayoutScrollbar::trace(Visitor* visitor)
+DEFINE_TRACE(LayoutScrollbar)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_owner);
