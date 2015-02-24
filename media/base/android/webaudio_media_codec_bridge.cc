@@ -15,6 +15,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
@@ -64,13 +65,13 @@ int WebAudioMediaCodecBridge::SaveEncodedAudioToFile(
 
   // Open the file and unlink it, so that it will be actually removed
   // when we close the file.
-  int fd = open(temporaryFile.c_str(), O_RDWR);
+  base::ScopedFD fd(open(temporaryFile.c_str(), O_RDWR));
   if (unlink(temporaryFile.c_str())) {
     VLOG(0) << "Couldn't unlink temp file " << temporaryFile
             << ": " << strerror(errno);
   }
 
-  if (fd < 0) {
+  if (!fd.is_valid()) {
     return -1;
   }
 
@@ -83,15 +84,15 @@ int WebAudioMediaCodecBridge::SaveEncodedAudioToFile(
     return -1;
   }
 
-  if (static_cast<uint32_t>(write(fd, encoded_data.memory(), data_size_))
+  if (static_cast<uint32_t>(write(fd.get(), encoded_data.memory(), data_size_))
       != data_size_) {
     VLOG(0) << "Failed to write all audio data to temp file!";
     return -1;
   }
 
-  lseek(fd, 0, SEEK_SET);
+  lseek(fd.get(), 0, SEEK_SET);
 
-  return fd;
+  return fd.release();
 }
 
 bool WebAudioMediaCodecBridge::DecodeInMemoryAudioFile() {
