@@ -372,7 +372,7 @@ void RenderBlock::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
 
             // One of the renderers we're skipping over here may be the child's paint invalidation container,
             // so we can't pass our own paint invalidation container along.
-            const LayoutLayerModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
+            const LayoutBoxModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
 
             // If it's a new paint invalidation container, we won't have properly accumulated the offset into the
             // PaintInvalidationState.
@@ -3478,7 +3478,7 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     }
 }
 
-LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderBlock::rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
 {
     LayoutRect r(RenderBox::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
     if (isAnonymousBlockContinuation())

@@ -60,6 +60,8 @@ namespace blink {
 typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*> ContinuationMap;
 static ContinuationMap* continuationMap = nullptr;
 
+bool LayoutBoxModelObject::s_wasFloating = false;
+
 void LayoutBoxModelObject::setSelectionState(SelectionState state)
 {
     if (state == SelectionInside && selectionState() != SelectionNone)
@@ -93,12 +95,15 @@ bool LayoutBoxModelObject::hasAcceleratedCompositing() const
 }
 
 LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
-    : LayoutLayerModelObject(node)
+    : LayoutObject(node)
 {
 }
 
 LayoutBoxModelObject::~LayoutBoxModelObject()
 {
+    // Our layer should have been destroyed and cleared by now
+    ASSERT(!hasLayer());
+    ASSERT(!m_layer);
 }
 
 void LayoutBoxModelObject::willBeDestroyed()
@@ -108,8 +113,199 @@ void LayoutBoxModelObject::willBeDestroyed()
     // A continuation of this LayoutObject should be destroyed at subclasses.
     ASSERT(!continuation());
 
-    LayoutLayerModelObject::willBeDestroyed();
+    if (isPositioned()) {
+        // Don't use this->view() because the document's renderView has been set to 0 during destruction.
+        if (LocalFrame* frame = this->frame()) {
+            if (FrameView* frameView = frame->view()) {
+                if (style()->hasViewportConstrainedPosition())
+                    frameView->removeViewportConstrainedObject(this);
+            }
+        }
+    }
+
+    LayoutObject::willBeDestroyed();
+
+    destroyLayer();
 }
+
+void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const LayoutStyle& newStyle)
+{
+    s_wasFloating = isFloating();
+
+    if (const LayoutStyle* oldStyle = style()) {
+        if (parent() && diff.needsPaintInvalidationLayer()) {
+            if (oldStyle->hasAutoClip() != newStyle.hasAutoClip()
+                || oldStyle->clip() != newStyle.clip())
+                layer()->clipper().clearClipRectsIncludingDescendants();
+        }
+    }
+
+    LayoutObject::styleWillChange(diff, newStyle);
+}
+
+void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
+{
+    bool hadTransform = hasTransformRelatedProperty();
+    bool hadLayer = hasLayer();
+    bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
+
+    LayoutObject::styleDidChange(diff, oldStyle);
+    updateFromStyle();
+
+    LayerType type = layerTypeRequired();
+    if (type != NoLayer) {
+        if (!layer() && layerCreationAllowedForSubtree()) {
+            if (s_wasFloating && isFloating())
+                setChildNeedsLayout();
+            createLayer(type);
+            if (parent() && !needsLayout()) {
+                // FIXME: We should call a specialized version of this function.
+                layer()->updateLayerPositionsAfterLayout();
+            }
+        }
+    } else if (layer() && layer()->parent()) {
+        setHasTransformRelatedProperty(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
+        setHasReflection(false);
+        layer()->removeOnlyThisLayer(); // calls destroyLayer() which clears m_layer
+        if (s_wasFloating && isFloating())
+            setChildNeedsLayout();
+        if (hadTransform)
+            setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    }
+
+    if (layer()) {
+        // FIXME: Ideally we shouldn't need this setter but we can't easily infer an overflow-only layer
+        // from the style.
+        layer()->setLayerType(type);
+
+        layer()->styleChanged(diff, oldStyle);
+        if (hadLayer && layer()->isSelfPaintingLayer() != layerWasSelfPainting)
+            setChildNeedsLayout();
+    }
+
+    if (FrameView *frameView = view()->frameView()) {
+        bool newStyleIsViewportConstained = style()->hasViewportConstrainedPosition();
+        bool oldStyleIsViewportConstrained = oldStyle && oldStyle->hasViewportConstrainedPosition();
+        if (newStyleIsViewportConstained != oldStyleIsViewportConstrained) {
+            if (newStyleIsViewportConstained && layer())
+                frameView->addViewportConstrainedObject(this);
+            else
+                frameView->removeViewportConstrainedObject(this);
+        }
+    }
+}
+
+void LayoutBoxModelObject::createLayer(LayerType type)
+{
+    ASSERT(!m_layer);
+    m_layer = adoptPtr(new Layer(this, type));
+    setHasLayer(true);
+    m_layer->insertOnlyThisLayer();
+}
+
+void LayoutBoxModelObject::destroyLayer()
+{
+    setHasLayer(false);
+    m_layer = nullptr;
+}
+
+bool LayoutBoxModelObject::hasSelfPaintingLayer() const
+{
+    return m_layer && m_layer->isSelfPaintingLayer();
+}
+
+LayerScrollableArea* LayoutBoxModelObject::scrollableArea() const
+{
+    return m_layer ? m_layer->scrollableArea() : 0;
+}
+
+void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+{
+    if (hasLayer()) {
+        if (isRenderView()) {
+            // RenderView is handled with a special fast-path, but it needs to know the current layer.
+            LayoutObject::addLayerHitTestRects(rects, layer(), LayoutPoint(), LayoutRect());
+        } else {
+            // Since a LayoutObject never lives outside it's container Layer, we can switch
+            // to marking entire layers instead. This may sometimes mark more than necessary (when
+            // a layer is made of disjoint objects) but in practice is a significant performance
+            // savings.
+            layer()->addLayerHitTestRects(rects);
+        }
+    } else {
+        LayoutObject::addLayerHitTestRects(rects, currentLayer, layerOffset, containerRect);
+    }
+}
+
+void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
+{
+    ASSERT(!needsLayout());
+
+    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
+        return;
+
+    bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
+    const LayoutBoxModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
+    // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
+    // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
+
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+    clearPaintInvalidationState(paintInvalidationState);
+
+    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
+    if (reason == PaintInvalidationLocationChange)
+        childTreeWalkState.setForceCheckForPaintInvalidation();
+    invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
+}
+
+void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason) const
+{
+    // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
+    // so assert but check that the layer is composited.
+    ASSERT(compositingState() != NotComposited);
+
+    // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
+    if (layer()->groupedMapping()) {
+        LayoutRect paintInvalidationRect = r;
+        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
+            // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
+            squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), invalidationReason);
+        }
+    } else {
+        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
+    }
+}
+
+void LayoutBoxModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+{
+    for (LayoutObject* current = slowFirstChild(); current; current = current->nextSibling()) {
+        if (current->isText() || current->isListMarker())
+            continue;
+
+        if (!current->isBox()) {
+            current->addFocusRingRects(rects, additionalOffset);
+            continue;
+        }
+
+        RenderBox* box = toRenderBox(current);
+        if (!box->hasLayer()) {
+            box->addFocusRingRects(rects, additionalOffset + box->locationOffset());
+            continue;
+        }
+
+        Vector<LayoutRect> layerFocusRingRects;
+        box->addFocusRingRects(layerFocusRingRects, LayoutPoint());
+        for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
+            FloatQuad quadInBox = box->localToContainerQuad(FloatQuad(layerFocusRingRects[i]), this);
+            LayoutRect rect = LayoutRect(quadInBox.boundingBox());
+            if (!rect.isEmpty()) {
+                rect.moveBy(additionalOffset);
+                rects.append(rect);
+            }
+        }
+    }
+}
+
 
 bool LayoutBoxModelObject::calculateHasBoxDecorations() const
 {
@@ -119,8 +315,6 @@ bool LayoutBoxModelObject::calculateHasBoxDecorations() const
 
 void LayoutBoxModelObject::updateFromStyle()
 {
-    LayoutLayerModelObject::updateFromStyle();
-
     const LayoutStyle& styleToUse = styleRef();
     setHasBoxDecorationBackground(calculateHasBoxDecorations());
     setInline(styleToUse.isDisplayInlineType());
@@ -481,7 +675,7 @@ void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation)
 
 void LayoutBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
 {
-    LayoutLayerModelObject::computeLayerHitTestRects(rects);
+    LayoutObject::computeLayerHitTestRects(rects);
 
     // If there is a continuation then we need to consult it here, since this is
     // the root of the tree walk and it wouldn't otherwise get picked up.
@@ -587,7 +781,7 @@ void LayoutBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
     }
 }
 
-const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     ASSERT(ancestorToStopAt != this);
 

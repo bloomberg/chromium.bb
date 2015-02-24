@@ -91,7 +91,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& render
     }
 }
 
-LayerClipper::LayerClipper(LayoutLayerModelObject& renderer)
+LayerClipper::LayerClipper(LayoutBoxModelObject& renderer)
     : m_renderer(renderer)
 {
 }

@@ -466,10 +466,10 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
     }
 }
 
-static bool checkContainingBlockChainForPagination(LayoutLayerModelObject* renderer, RenderBox* ancestorColumnsRenderer)
+static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, RenderBox* ancestorColumnsRenderer)
 {
     RenderView* view = renderer->view();
-    LayoutLayerModelObject* prevBlock = renderer;
+    LayoutBoxModelObject* prevBlock = renderer;
     RenderBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();
         containingBlock && containingBlock != view && containingBlock != ancestorColumnsRenderer;

@@ -2691,7 +2691,7 @@ LayoutUnit RenderBlockFlow::logicalRightFloatOffsetForLine(LayoutUnit logicalTop
     return fixedOffset;
 }
 
-LayoutRect RenderBlockFlow::selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderBlockFlow::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
 {
     LayoutRect rect = selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
     // FIXME: groupedMapping() leaks the squashing abstraction.
@@ -2700,7 +2700,7 @@ LayoutRect RenderBlockFlow::selectionRectForPaintInvalidation(const LayoutLayerM
     return rect;
 }
 
-GapRects RenderBlockFlow::selectionGapRectsForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const
+GapRects RenderBlockFlow::selectionGapRectsForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 

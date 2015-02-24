@@ -92,22 +92,22 @@ void LayoutSVGBlock::styleDidChange(StyleDifference diff, const LayoutStyle* old
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
-void LayoutSVGBlock::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGBlock::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     SVGLayoutSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* LayoutSVGBlock::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutSVGBlock::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
-LayoutRect LayoutSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutSVGBlock::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGBlock::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     FloatRect paintInvalidationRect = rect;
     paintInvalidationRect.inflate(style()->outlineWidth());

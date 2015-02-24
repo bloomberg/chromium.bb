@@ -34,7 +34,7 @@ PaintInvalidationState::PaintInvalidationState(const RenderView& renderView)
     m_clipped = true;
 }
 
-PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, LayoutLayerModelObject& renderer, const LayoutLayerModelObject& paintInvalidationContainer)
+PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)

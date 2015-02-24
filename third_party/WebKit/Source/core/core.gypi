@@ -612,7 +612,6 @@
             'layout/LayoutImage.cpp',
             'layout/LayoutImageResource.cpp',
             'layout/LayoutImageResourceStyleImage.cpp',
-            'layout/LayoutLayerModelObject.cpp',
             'layout/LayoutMedia.cpp',
             'layout/LayoutMedia.h',
             'layout/LayoutMediaControls.cpp',

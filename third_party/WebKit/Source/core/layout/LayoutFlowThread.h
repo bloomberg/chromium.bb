@@ -87,7 +87,7 @@ public:
     void invalidateRegions();
     bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
-    virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule = IncludePageBoundary);

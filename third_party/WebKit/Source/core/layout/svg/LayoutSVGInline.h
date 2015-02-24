@@ -44,9 +44,9 @@ public:
     virtual FloatRect strokeBoundingBox() const override final;
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
-    virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
-    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&) const override final;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override final;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override final;
 
 private:

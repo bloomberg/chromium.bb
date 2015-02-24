@@ -100,7 +100,7 @@ static CompositingQueryMode gCompositingQueryMode =
 
 using namespace HTMLNames;
 
-Layer::Layer(LayoutLayerModelObject* renderer, LayerType type)
+Layer::Layer(LayoutBoxModelObject* renderer, LayerType type)
     : m_layerType(type)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
@@ -420,10 +420,10 @@ TransformationMatrix Layer::renderableTransform(PaintBehavior paintBehavior) con
     return *m_transform;
 }
 
-static bool checkContainingBlockChainForPagination(LayoutLayerModelObject* renderer, RenderBox* ancestorColumnsRenderer)
+static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* renderer, RenderBox* ancestorColumnsRenderer)
 {
     RenderView* view = renderer->view();
-    LayoutLayerModelObject* prevBlock = renderer;
+    LayoutBoxModelObject* prevBlock = renderer;
     RenderBlock* containingBlock;
     for (containingBlock = renderer->containingBlock();
         containingBlock && containingBlock != view && containingBlock != ancestorColumnsRenderer;
@@ -565,7 +565,7 @@ void Layer::clearPaginationRecursive()
         child->clearPaginationRecursive();
 }
 
-LayoutPoint Layer::positionFromPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutPoint Layer::positionFromPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     FloatPoint point = layoutObject->localToContainerPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
 
@@ -576,7 +576,7 @@ LayoutPoint Layer::positionFromPaintInvalidationBacking(const LayoutObject* layo
     return LayoutPoint(point);
 }
 
-void Layer::mapPointToPaintBackingCoordinates(const LayoutLayerModelObject* paintInvalidationContainer, FloatPoint& point)
+void Layer::mapPointToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint& point)
 {
     Layer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
@@ -584,7 +584,7 @@ void Layer::mapPointToPaintBackingCoordinates(const LayoutLayerModelObject* pain
         return;
     }
 
-    LayoutLayerModelObject* transformedAncestor = paintInvalidationLayer->enclosingTransformedAncestor()->renderer();
+    LayoutBoxModelObject* transformedAncestor = paintInvalidationLayer->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
         return;
 
@@ -595,7 +595,7 @@ void Layer::mapPointToPaintBackingCoordinates(const LayoutLayerModelObject* pain
     point.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void Layer::mapRectToPaintBackingCoordinates(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect)
+void Layer::mapRectToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
     Layer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
@@ -603,7 +603,7 @@ void Layer::mapRectToPaintBackingCoordinates(const LayoutLayerModelObject* paint
         return;
     }
 
-    LayoutLayerModelObject* transformedAncestor = paintInvalidationLayer->enclosingTransformedAncestor()->renderer();
+    LayoutBoxModelObject* transformedAncestor = paintInvalidationLayer->enclosingTransformedAncestor()->renderer();
     if (!transformedAncestor)
         return;
 
@@ -614,7 +614,7 @@ void Layer::mapRectToPaintBackingCoordinates(const LayoutLayerModelObject* paint
     rect.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void Layer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
+void Layer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->layer()->groupedMapping()) {
         layoutObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
@@ -874,7 +874,7 @@ bool Layer::updateLayerPosition()
 
     bool positionOrOffsetChanged = false;
     if (renderer()->isRelPositioned()) {
-        LayoutSize newOffset = toLayoutBoxModelObject(renderer())->offsetForInFlowPosition();
+        LayoutSize newOffset = renderer()->offsetForInFlowPosition();
         positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
         m_offsetForInFlowPosition = newOffset;
         localPoint.move(m_offsetForInFlowPosition);
@@ -1106,7 +1106,7 @@ void Layer::setShouldIsolateCompositedDescendants(bool shouldIsolateCompositedDe
 bool Layer::hasAncestorWithFilterOutsets() const
 {
     for (const Layer* curr = this; curr; curr = curr->parent()) {
-        LayoutLayerModelObject* renderer = curr->renderer();
+        LayoutBoxModelObject* renderer = curr->renderer();
         if (renderer->style()->hasFilterOutsets())
             return true;
     }
@@ -1351,7 +1351,7 @@ static inline const Layer* accumulateOffsetTowardsAncestor(const Layer* layer, c
 {
     ASSERT(ancestorLayer != layer);
 
-    const LayoutLayerModelObject* renderer = layer->renderer();
+    const LayoutBoxModelObject* renderer = layer->renderer();
     EPosition position = renderer->style()->position();
 
     // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a LayoutFlowThread

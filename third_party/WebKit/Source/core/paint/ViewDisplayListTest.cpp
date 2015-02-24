@@ -94,7 +94,7 @@ void drawRect(GraphicsContext* context, LayoutObject* renderer, PaintPhase phase
     context->drawRect(rect);
 }
 
-void drawClippedRect(GraphicsContext* context, LayoutLayerModelObject* renderer, PaintPhase phase, const FloatRect& bound)
+void drawClippedRect(GraphicsContext* context, LayoutBoxModelObject* renderer, PaintPhase phase, const FloatRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
@@ -337,8 +337,8 @@ TEST_F(ViewDisplayListTest, UpdateAddLastOverlap)
 TEST_F(ViewDisplayListTest, UpdateClip)
 {
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutLayerModelObject* firstRenderer = toLayoutLayerModelObject(document().body()->firstChild()->renderer());
-    LayoutLayerModelObject* secondRenderer = toLayoutLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
+    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->renderer());
+    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->renderer());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     ClipRect firstClipRect(IntRect(1, 1, 2, 2));
@@ -385,8 +385,8 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
 
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
-    LayoutLayerModelObject* firstRenderer = toLayoutLayerModelObject(document().body()->firstChild()->renderer());
-    LayoutLayerModelObject* secondRenderer = toLayoutLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
+    LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->renderer());
+    LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->renderer());
     GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));

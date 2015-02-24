@@ -228,7 +228,7 @@ void RenderView::layout()
     clearNeedsLayout();
 }
 
-void RenderView::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT_UNUSED(wasFixed, !wasFixed || *wasFixed == static_cast<bool>(mode & IsFixed));
 
@@ -258,7 +258,7 @@ void RenderView::mapLocalToContainer(const LayoutLayerModelObject* paintInvalida
     }
 }
 
-const LayoutObject* RenderView::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* RenderView::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     LayoutSize offsetForFixedPosition;
     LayoutSize offset;
@@ -328,7 +328,7 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     // short-circuit on full-paint invalidation.
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
-        const LayoutLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
+        const LayoutBoxModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
         Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
     }
@@ -362,12 +362,12 @@ void RenderView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-void RenderView::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
+void RenderView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
 {
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, invalidationState);
 }
 
-void RenderView::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
+void RenderView::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
 {
     if (document().printing())
         return;

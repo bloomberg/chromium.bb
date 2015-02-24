@@ -1594,7 +1594,7 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
     return rect;
 }
 
-LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE)
         return LayoutRect();
@@ -1604,7 +1604,7 @@ LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const LayoutLayer
     return paintInvalidationRect;
 }
 
-LayoutRect RenderText::selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderText::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 

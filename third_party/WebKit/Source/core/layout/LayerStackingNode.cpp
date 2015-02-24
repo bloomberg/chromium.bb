@@ -159,7 +159,7 @@ void LayerStackingNode::rebuildZOrderLists()
         for (LayoutObject* child = view->firstChild(); child; child = child->nextSibling()) {
             Element* childElement = (child->node() && child->node()->isElementNode()) ? toElement(child->node()) : 0;
             if (childElement && childElement->isInTopLayer()) {
-                Layer* layer = toLayoutLayerModelObject(child)->layer();
+                Layer* layer = toLayoutBoxModelObject(child)->layer();
                 // Create the buffer if it doesn't exist yet.
                 if (!m_posZOrderList)
                     m_posZOrderList = adoptPtr(new Vector<LayerStackingNode*>);
@@ -321,7 +321,7 @@ LayerStackingNode* LayerStackingNode::ancestorStackingContextNode() const
     return 0;
 }
 
-LayoutLayerModelObject* LayerStackingNode::renderer() const
+LayoutBoxModelObject* LayerStackingNode::renderer() const
 {
     return m_layer->renderer();
 }

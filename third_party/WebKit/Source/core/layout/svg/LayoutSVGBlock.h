@@ -32,10 +32,10 @@ public:
 
     virtual LayoutRect visualOverflowRect() const override final;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
 
-    virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
-    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&) const override final;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override final;
 
     virtual AffineTransform localTransform() const override final { return m_localTransform; }
 
@@ -48,7 +48,7 @@ public:
 
 protected:
     virtual void willBeDestroyed() override;
-    virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override final;
+    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override final;
 
     AffineTransform m_localTransform;
 

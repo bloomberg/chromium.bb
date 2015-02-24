@@ -411,8 +411,8 @@ public:
     void clearSpannerPlaceholder();
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const final { return m_rareData ? m_rareData->m_spannerPlaceholder : 0; }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
-    virtual void mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 
     virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
@@ -673,7 +673,7 @@ protected:
 
     virtual bool shouldComputeSizeAsReplaced() const { return isReplaced() && !isInlineBlockOrInlineTable(); }
 
-    virtual void mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
 
     LayoutObject* splitAnonymousBoxesAroundChild(LayoutObject* beforeChild);
@@ -681,23 +681,23 @@ protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
-    virtual PaintInvalidationReason paintInvalidationReason(const LayoutLayerModelObject& paintInvalidationContainer,
+    virtual PaintInvalidationReason paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,
         const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationContainer) const override;
-    virtual void incrementallyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) override;
+    virtual void incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationContainer) override;
 
     virtual void clearPaintInvalidationState(const PaintInvalidationState&) override;
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const override;
 #endif
 
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutLayerModelObject& newPaintInvalidationContainer) override;
+    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject& newPaintInvalidationContainer) override;
     virtual void invalidateDisplayItemClients(DisplayItemList*) const override;
 
     virtual bool hasNonCompositedScrollbars() const override final;
 
 private:
-    void invalidatePaintRectClippedByOldAndNewBounds(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+    void invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
     void updateShapeOutsideInfoAfterStyleChange(const LayoutStyle&, const LayoutStyle* oldStyle);
     void updateGridPositionAfterStyleChange(const LayoutStyle*);

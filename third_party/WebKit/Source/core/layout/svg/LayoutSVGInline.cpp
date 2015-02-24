@@ -85,17 +85,17 @@ FloatRect LayoutSVGInline::paintInvalidationRectInLocalCoordinates() const
     return FloatRect();
 }
 
-LayoutRect LayoutSVGInline::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGInline::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(this, paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutSVGInline::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     SVGLayoutSupport::mapLocalToContainer(this, paintInvalidationContainer, transformState, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }

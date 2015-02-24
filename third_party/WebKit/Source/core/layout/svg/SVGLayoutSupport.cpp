@@ -52,7 +52,7 @@ static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
     return enclosingIntRect(rect);
 }
 
-LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject* object, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject* object, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     // Return early for any cases where we don't actually paint
     if (object->style()->visibility() != VISIBLE && !object->enclosingLayer()->hasVisibleContent())
@@ -104,7 +104,7 @@ const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(cons
     return svgRoot;
 }
 
-void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
+void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, bool* wasFixed, const PaintInvalidationState* paintInvalidationState)
 {
     transformState.applyTransform(object->localToParentTransform());
 
@@ -127,7 +127,7 @@ void SVGLayoutSupport::mapLocalToContainer(const LayoutObject* object, const Lay
     parent->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject* object, const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap)
+const LayoutObject* SVGLayoutSupport::pushMappingToContainer(const LayoutObject* object, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap)
 {
     ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != object);
 

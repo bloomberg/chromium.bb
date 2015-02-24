@@ -1136,7 +1136,7 @@ bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
 
     // Check kids first.
     for (LayoutObject* child = slowLastChild(); child; child = child->previousSibling()) {
-        if ((!child->hasLayer() || !toLayoutLayerModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(request, result, locationInContainer, adjustedLocation, action)) {
+        if ((!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(request, result, locationInContainer, adjustedLocation, action)) {
             updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
             return true;
         }
@@ -1386,7 +1386,7 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
     return false;
 }
 
-PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& newPaintInvalidationContainer)
+PaintInvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& newPaintInvalidationContainer)
 {
     PaintInvalidationReason reason = LayoutBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
 
@@ -1559,7 +1559,7 @@ LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
     return cb->adjustContentBoxLogicalHeightForBoxSizing(logicalHeightLength.value());
 }
 
-void RenderBox::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1766,7 +1766,7 @@ void RenderBox::clearSpannerPlaceholder()
     m_rareData->m_spannerPlaceholder = 0;
 }
 
-LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE) {
         Layer* layer = enclosingLayer();
@@ -1780,7 +1780,7 @@ LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const LayoutLayerM
     return r;
 }
 
-void RenderBox::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -3895,7 +3895,7 @@ bool RenderBox::hasNonCompositedScrollbars() const
     return false;
 }
 
-PaintInvalidationReason RenderBox::paintInvalidationReason(const LayoutLayerModelObject& paintInvalidationContainer,
+PaintInvalidationReason RenderBox::paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation) const
 {
     PaintInvalidationReason invalidationReason = LayoutBoxModelObject::paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
@@ -3948,7 +3948,7 @@ PaintInvalidationReason RenderBox::paintInvalidationReason(const LayoutLayerMode
     return PaintInvalidationIncremental;
 }
 
-void RenderBox::incrementallyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
+void RenderBox::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
     LayoutObject::incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, positionFromPaintInvalidationBacking);
 
@@ -4001,7 +4001,7 @@ void RenderBox::incrementallyInvalidatePaint(const LayoutLayerModelObject& paint
     }
 }
 
-void RenderBox::invalidatePaintRectClippedByOldAndNewBounds(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& rect, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+void RenderBox::invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& rect, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     if (rect.isEmpty())
         return;

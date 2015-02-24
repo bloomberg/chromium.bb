@@ -45,7 +45,7 @@
 #ifndef LayerStackingNode_h
 #define LayerStackingNode_h
 
-#include "core/layout/LayoutLayerModelObject.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -55,6 +55,7 @@ namespace blink {
 class Layer;
 class LayerCompositor;
 class LayoutStyle;
+class LayoutBoxModelObject;
 
 class LayerStackingNode {
     WTF_MAKE_NONCOPYABLE(LayerStackingNode);
@@ -139,8 +140,8 @@ private:
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
     LayerCompositor* compositor() const;
-    // FIXME: Investigate changing this to Renderbox.
-    LayoutLayerModelObject* renderer() const;
+    // We can't return a RenderBox as RenderInline can be a stacking context.
+    LayoutBoxModelObject* renderer() const;
 
     Layer* m_layer;
 

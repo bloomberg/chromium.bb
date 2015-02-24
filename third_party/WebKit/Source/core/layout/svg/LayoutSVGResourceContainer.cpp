@@ -173,7 +173,7 @@ void LayoutSVGResourceContainer::addClientLayer(Node* node)
     ASSERT(node);
     if (!node->renderer() || !node->renderer()->hasLayer())
         return;
-    m_clientLayers.add(toLayoutLayerModelObject(node->renderer())->layer());
+    m_clientLayers.add(toLayoutBoxModelObject(node->renderer())->layer());
     clearInvalidationMask();
 }
 

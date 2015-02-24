@@ -40,8 +40,8 @@
 
 namespace blink {
 
+class LayoutBoxModelObject;
 class Node;
-class LayoutLayerModelObject;
 struct WebRect;
 class WebViewImpl;
 
@@ -76,11 +76,11 @@ private:
     void releaseResources();
     void computeQuads(const Node&, WTF::Vector<FloatQuad>&) const;
 
-    void attachLinkHighlightToCompositingLayer(const LayoutLayerModelObject* paintInvalidationContainer);
+    void attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject* paintInvalidationContainer);
     void clearGraphicsLayerLinkHighlightPointer();
     // This function computes the highlight path, and returns true if it has changed
     // size since the last call to this function.
-    bool computeHighlightLayerPathAndPosition(const LayoutLayerModelObject*);
+    bool computeHighlightLayerPathAndPosition(const LayoutBoxModelObject*);
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
 

@@ -622,7 +622,7 @@ static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
     return space;
 }
 
-void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, const LayoutLayerModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
+void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, const LayoutBoxModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
     BackgroundImageGeometry& geometry, LayoutObject* backgroundObject)
 {
     LayoutUnit left = 0;

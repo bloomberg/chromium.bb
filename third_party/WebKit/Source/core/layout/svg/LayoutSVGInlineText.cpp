@@ -234,7 +234,7 @@ void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, c
     scaledFont.update(document.styleEngine()->fontSelector());
 }
 
-LayoutRect LayoutSVGInlineText::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGInlineText::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // FIXME: The following works because LayoutSVGBlock has forced slow rect mapping of the paintInvalidationState.
     // Should let this really work with paintInvalidationState's fast mapping and remove the assert.

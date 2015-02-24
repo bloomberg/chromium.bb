@@ -24,11 +24,23 @@
 #ifndef LayoutBoxModelObject_h
 #define LayoutBoxModelObject_h
 
-#include "core/layout/LayoutLayerModelObject.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
+
+class Layer;
+class LayerScrollableArea;
+
+enum LayerType {
+    NoLayer,
+    NormalLayer,
+    // A forced or overflow clip layer is required for bookkeeping purposes,
+    // but does not force a layer to be self painting.
+    OverflowClipLayer,
+    ForcedLayer
+};
 
 // Modes for some of the line-related functions.
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
@@ -53,10 +65,13 @@ class InlineFlowBox;
 // This class is the base for all objects that adhere to the CSS box model as described
 // at http://www.w3.org/TR/CSS21/box.html
 
-class LayoutBoxModelObject : public LayoutLayerModelObject {
+class LayoutBoxModelObject : public LayoutObject {
 public:
     LayoutBoxModelObject(ContainerNode*);
     virtual ~LayoutBoxModelObject();
+
+    // This is the only way layers should ever be destroyed.
+    void destroyLayer();
 
     LayoutSize relativePositionOffset() const;
     LayoutSize relativePositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? relativePositionOffset() : relativePositionOffset().transposedSize(); }
@@ -75,7 +90,13 @@ public:
     virtual int pixelSnappedOffsetWidth() const;
     virtual int pixelSnappedOffsetHeight() const;
 
-    virtual void updateFromStyle() override;
+    bool hasSelfPaintingLayer() const;
+    Layer* layer() const { return m_layer.get(); }
+    LayerScrollableArea* scrollableArea() const;
+
+    virtual void updateFromStyle();
+
+    virtual LayerType layerTypeRequired() const = 0;
 
     // This will work on inlines to return the bounding box of all of the lines' border boxes.
     virtual IntRect borderBoundingBox() const = 0;
@@ -159,7 +180,7 @@ public:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const = 0;
 
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
-    virtual const LayoutObject* pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
+    virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
 
     virtual void setSelectionState(SelectionState) override;
 
@@ -167,6 +188,15 @@ public:
     bool hasAcceleratedCompositing() const;
 
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const override;
+
+    // Returns true if the background is painted opaque in the given rect.
+    // The query rect is given in local coordinate system.
+    virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const { return false; }
+
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
+
+    // Indicate that the contents of this renderer need to be repainted. Only has an effect if compositing is being used,
+    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this render object
 
 protected:
     virtual void willBeDestroyed() override;
@@ -182,6 +212,13 @@ protected:
 
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;
     RenderBlock* containingBlockForAutoHeightDetection(Length logicalHeight) const;
+
+    void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
+
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer*, const LayoutPoint&, const LayoutRect&) const override;
+
+    void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
+    void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
 
 public:
     // These functions are only used internally to manipulate the render tree structure via remove/insert/appendChildNode.
@@ -212,8 +249,17 @@ public:
     IntSize calculateImageIntrinsicDimensions(StyleImage*, const IntSize& scaledPositioningAreaSize, ScaleByEffectiveZoomOrNot) const;
 
 private:
+    void createLayer(LayerType);
+
     LayoutUnit computedCSSPadding(const Length&) const;
     virtual bool isBoxModelObject() const override final { return true; }
+
+    virtual bool isLayoutBoxModelObject() const override final { return true; }
+
+    OwnPtr<Layer> m_layer;
+
+    // Used to store state between styleWillChange and styleDidChange
+    static bool s_wasFloating;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, isBoxModelObject());

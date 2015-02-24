@@ -90,7 +90,7 @@ protected:
         return element->renderBox();
     }
 
-    static const LayoutLayerModelObject* getRenderContainer(WebView* webView, const WTF::AtomicString &elementId)
+    static const LayoutBoxModelObject* getRenderContainer(WebView* webView, const WTF::AtomicString &elementId)
     {
         RenderBox* rb = getRenderBox(webView, elementId);
         if (!rb)
@@ -101,7 +101,7 @@ protected:
         return compositingLayer->renderer();
     }
 
-    static const LayoutLayerModelObject* getFrameRenderContainer(const char* frameId, WebView* webView, const WTF::AtomicString &elementId)
+    static const LayoutBoxModelObject* getFrameRenderContainer(const char* frameId, WebView* webView, const WTF::AtomicString &elementId)
     {
         RenderBox* rb = getFrameElement(frameId, webView, elementId);
         if (!rb)

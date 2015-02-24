@@ -188,8 +188,8 @@ public:
         const LayoutObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
     void getSelectionGapInfo(SelectionState, bool& leftGap, bool& rightGap) const;
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const override final;
-    GapRects selectionGapRectsForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const;
+    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override final;
+    GapRects selectionGapRectsForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const;
     GapRects selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
     GapRects inlineSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,

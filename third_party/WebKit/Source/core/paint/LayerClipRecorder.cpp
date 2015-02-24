@@ -17,7 +17,7 @@
 
 namespace blink {
 
-LayerClipRecorder::LayerClipRecorder(const LayoutLayerModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
+LayerClipRecorder::LayerClipRecorder(const LayoutBoxModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect,
     const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, BorderRadiusClippingRule rule)
     : m_graphicsContext(graphicsContext)
     , m_renderer(renderer)

@@ -46,7 +46,7 @@
 #define LayerReflectionInfo_h
 
 #include "core/layout/LayerPaintingInfo.h"
-#include "core/layout/LayoutLayerModelObject.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

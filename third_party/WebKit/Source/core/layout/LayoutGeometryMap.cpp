@@ -47,7 +47,7 @@ LayoutGeometryMap::~LayoutGeometryMap()
 {
 }
 
-void LayoutGeometryMap::mapToContainer(TransformState& transformState, const LayoutLayerModelObject* container) const
+void LayoutGeometryMap::mapToContainer(TransformState& transformState, const LayoutBoxModelObject* container) const
 {
     // If the mapping includes something like columns, we have to go via renderers.
     if (hasNonUniformStep()) {
@@ -104,7 +104,7 @@ void LayoutGeometryMap::mapToContainer(TransformState& transformState, const Lay
     transformState.flatten();
 }
 
-FloatPoint LayoutGeometryMap::mapToContainer(const FloatPoint& p, const LayoutLayerModelObject* container) const
+FloatPoint LayoutGeometryMap::mapToContainer(const FloatPoint& p, const LayoutBoxModelObject* container) const
 {
     FloatPoint result;
 
@@ -149,7 +149,7 @@ void LayoutGeometryMap::dumpSteps() const
 }
 #endif
 
-FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutLayerModelObject* container) const
+FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutBoxModelObject* container) const
 {
     FloatQuad result;
 
@@ -183,7 +183,7 @@ FloatQuad LayoutGeometryMap::mapToContainer(const FloatRect& rect, const LayoutL
     return result;
 }
 
-void LayoutGeometryMap::pushMappingsToAncestor(const LayoutObject* renderer, const LayoutLayerModelObject* ancestorRenderer)
+void LayoutGeometryMap::pushMappingsToAncestor(const LayoutObject* renderer, const LayoutBoxModelObject* ancestorRenderer)
 {
     // We need to push mappings in reverse order here, so do insertions rather than appends.
     TemporaryChange<size_t> positionChange(m_insertionPosition, m_mapping.size());
@@ -239,7 +239,7 @@ void LayoutGeometryMap::pushMappingsToAncestor(const Layer* layer, const Layer* 
         push(renderer, toLayoutSize(layerOffset), accumulatingTransform, /*isNonUniform*/ false, /*isFixedPosition*/ false, /*hasTransform*/ false);
         return;
     }
-    const LayoutLayerModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
+    const LayoutBoxModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
     pushMappingsToAncestor(renderer, ancestorRenderer);
 }
 
@@ -279,7 +279,7 @@ void LayoutGeometryMap::push(const LayoutObject* renderer, const TransformationM
     stepInserted(step);
 }
 
-void LayoutGeometryMap::popMappingsToAncestor(const LayoutLayerModelObject* ancestorRenderer)
+void LayoutGeometryMap::popMappingsToAncestor(const LayoutBoxModelObject* ancestorRenderer)
 {
     ASSERT(m_mapping.size());
 
@@ -291,7 +291,7 @@ void LayoutGeometryMap::popMappingsToAncestor(const LayoutLayerModelObject* ance
 
 void LayoutGeometryMap::popMappingsToAncestor(const Layer* ancestorLayer)
 {
-    const LayoutLayerModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
+    const LayoutBoxModelObject* ancestorRenderer = ancestorLayer ? ancestorLayer->renderer() : 0;
     popMappingsToAncestor(ancestorRenderer);
 }
 

@@ -320,7 +320,7 @@ const AffineTransform& LayoutSVGRoot::localToParentTransform() const
     return m_localToParentTransform;
 }
 
-LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
     // LayoutSVGRoot::mapRectToPaintInvalidationBacking and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
@@ -354,7 +354,7 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutLa
     return rect;
 }
 
-void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
@@ -369,7 +369,7 @@ void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutLayerModelObje
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
 // to convert from SVG viewport coordinates to local CSS box coordinates.
-void LayoutSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG rendering tree.
     // We used to have this ASSERT here, but we removed it when enabling layer squashing.
@@ -379,7 +379,7 @@ void LayoutSVGRoot::mapLocalToContainer(const LayoutLayerModelObject* paintInval
     LayoutReplaced::mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* LayoutSVGRoot::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutSVGRoot::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     return LayoutReplaced::pushMappingToContainer(ancestorToStopAt, geometryMap);
 }

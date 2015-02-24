@@ -312,7 +312,7 @@ LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o, const Lay
     return offset;
 }
 
-LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // If the table grid is dirty, we cannot get reliable information about adjoining cells,
     // so we ignore outside borders. This should not be a problem because it means that
@@ -358,7 +358,7 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
     return r;
 }
 
-void LayoutTableCell::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& r, const PaintInvalidationState* paintInvalidationState) const
+void LayoutTableCell::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& r, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;

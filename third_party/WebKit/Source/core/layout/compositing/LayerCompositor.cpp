@@ -446,7 +446,7 @@ bool LayerCompositor::allocateOrClearCompositedLayerMapping(Layer* layer, const 
             // its replica GraphicsLayer. In practice this should never happen because reflectee and reflection
             // are both either composited, or not composited.
             if (layer->isReflection()) {
-                Layer* sourceLayer = toLayoutLayerModelObject(layer->renderer()->parent())->layer();
+                Layer* sourceLayer = toLayoutBoxModelObject(layer->renderer()->parent())->layer();
                 if (sourceLayer->hasCompositedLayerMapping()) {
                     ASSERT(sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->replicaLayer() == layer->compositedLayerMapping()->mainGraphicsLayer());
                     sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->setReplicatedByLayer(0);

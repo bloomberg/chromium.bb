@@ -349,7 +349,7 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     // To avoid the problem alltogether, detect early if we're inside a hidden SVG subtree
     // and stop creating layers at all for these cases - they're not used anyways.
     if (newChild->hasLayer() && !layerCreationAllowedForSubtree())
-        toLayoutLayerModelObject(newChild)->layer()->removeOnlyThisLayer();
+        toLayoutBoxModelObject(newChild)->layer()->removeOnlyThisLayer();
 }
 
 void LayoutObject::removeChild(LayoutObject* oldChild)
@@ -460,7 +460,7 @@ static void addLayers(LayoutObject* obj, Layer* parentLayer, LayoutObject*& newO
             beforeChild = newObject->parent()->findNextLayer(parentLayer, newObject);
             newObject = 0;
         }
-        parentLayer->addChild(toLayoutLayerModelObject(obj)->layer(), beforeChild);
+        parentLayer->addChild(toLayoutBoxModelObject(obj)->layer(), beforeChild);
         return;
     }
 
@@ -484,7 +484,7 @@ void LayoutObject::removeLayers(Layer* parentLayer)
         return;
 
     if (hasLayer()) {
-        parentLayer->removeChild(toLayoutLayerModelObject(this)->layer());
+        parentLayer->removeChild(toLayoutBoxModelObject(this)->layer());
         return;
     }
 
@@ -498,7 +498,7 @@ void LayoutObject::moveLayers(Layer* oldParent, Layer* newParent)
         return;
 
     if (hasLayer()) {
-        Layer* layer = toLayoutLayerModelObject(this)->layer();
+        Layer* layer = toLayoutBoxModelObject(this)->layer();
         ASSERT(oldParent == layer->parent());
         if (oldParent)
             oldParent->removeChild(layer);
@@ -517,7 +517,7 @@ Layer* LayoutObject::findNextLayer(Layer* parentLayer, LayoutObject* startPoint,
         return 0;
 
     // Step 1: If our layer is a child of the desired parent, then return our layer.
-    Layer* ourLayer = hasLayer() ? toLayoutLayerModelObject(this)->layer() : 0;
+    Layer* ourLayer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
     if (ourLayer && ourLayer->parent() == parentLayer)
         return ourLayer;
 
@@ -549,7 +549,7 @@ Layer* LayoutObject::enclosingLayer() const
 {
     for (const LayoutObject* current = this; current; current = current->parent()) {
         if (current->hasLayer())
-            return toLayoutLayerModelObject(current)->layer();
+            return toLayoutBoxModelObject(current)->layer();
     }
     // FIXME: we should get rid of detached render subtrees, at which point this code should
     // not be reached. crbug.com/411429
@@ -778,7 +778,7 @@ void LayoutObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-RenderBlock* LayoutObject::containerForFixedPosition(const LayoutLayerModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+RenderBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
 {
     ASSERT(!paintInvalidationContainerSkipped || !*paintInvalidationContainerSkipped);
     ASSERT(!isText());
@@ -995,7 +995,7 @@ IntRect LayoutObject::absoluteBoundingBoxRectIgnoringTransforms() const
 IntRect LayoutObject::absoluteFocusRingBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
-    const LayoutLayerModelObject* container = enclosingLayer()->renderer();
+    const LayoutBoxModelObject* container = enclosingLayer()->renderer();
     addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
     return container->localToAbsoluteQuad(FloatQuad(unionRect(rects))).enclosingBoundingBox();
 }
@@ -1038,15 +1038,15 @@ void LayoutObject::paint(const PaintInfo&, const LayoutPoint&)
 {
 }
 
-const LayoutLayerModelObject* LayoutObject::containerForPaintInvalidation() const
+const LayoutBoxModelObject* LayoutObject::containerForPaintInvalidation() const
 {
     RELEASE_ASSERT(isRooted());
     return adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
 }
 
-const LayoutLayerModelObject* LayoutObject::enclosingCompositedContainer() const
+const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
 {
-    LayoutLayerModelObject* container = 0;
+    LayoutBoxModelObject* container = 0;
     // FIXME: CompositingState is not necessarily up to date for many callers of this function.
     DisableCompositingQueryAsserts disabler;
 
@@ -1055,7 +1055,7 @@ const LayoutLayerModelObject* LayoutObject::enclosingCompositedContainer() const
     return container;
 }
 
-const LayoutLayerModelObject* LayoutObject::adjustCompositedContainerForSpecialAncestors(const LayoutLayerModelObject* paintInvalidationContainer) const
+const LayoutBoxModelObject* LayoutObject::adjustCompositedContainerForSpecialAncestors(const LayoutBoxModelObject* paintInvalidationContainer) const
 {
     if (paintInvalidationContainer)
         return paintInvalidationContainer;
@@ -1068,7 +1068,7 @@ const LayoutLayerModelObject* LayoutObject::adjustCompositedContainerForSpecialA
 
 bool LayoutObject::isPaintInvalidationContainer() const
 {
-    return hasLayer() && toLayoutLayerModelObject(this)->layer()->isPaintInvalidationContainer();
+    return hasLayer() && toLayoutBoxModelObject(this)->layer()->isPaintInvalidationContainer();
 }
 
 template <typename T>
@@ -1099,12 +1099,12 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForPaintInvali
     return value;
 }
 
-LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     return clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutObject::invalidatePaintUsingContainer(const LayoutLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
+void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
     ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
 
@@ -1142,7 +1142,7 @@ void LayoutObject::invalidateDisplayItemClients(DisplayItemList* displayItemList
     displayItemList->invalidate(displayItemClient());
 }
 
-LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (!paintInvalidationContainer)
         return computePaintInvalidationRect(paintInvalidationContainer, paintInvalidationState);
@@ -1158,7 +1158,7 @@ void LayoutObject::invalidatePaintRectangle(const LayoutRect& r) const
 
     LayoutRect dirtyRect(r);
 
-    const LayoutLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
+    const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationRectangle);
 }
@@ -1217,7 +1217,7 @@ void LayoutObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect
         selectionPaintInvalidationMap->set(this, selectionRect);
 }
 
-void LayoutObject::invalidateSelectionIfNeeded(const LayoutLayerModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason)
+void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason)
 {
     // Update selection rect when we are doing full invalidation (in case that the object is moved, composite status changed, etc.)
     // or shouldInvalidationSelection is set (in case that the selection itself changed).
@@ -1235,7 +1235,7 @@ void LayoutObject::invalidateSelectionIfNeeded(const LayoutLayerModelObject& pai
     fullyInvalidatePaint(paintInvalidationContainer, PaintInvalidationSelection, oldSelectionRect, newSelectionRect);
 }
 
-PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutLayerModelObject& paintInvalidationContainer)
+PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     RenderView* v = view();
     if (v->document().printing())
@@ -1276,7 +1276,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     return invalidationReason;
 }
 
-PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutLayerModelObject& paintInvalidationContainer,
+PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
     const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking) const
 {
@@ -1319,7 +1319,7 @@ PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutLayerM
     return PaintInvalidationIncremental;
 }
 
-void LayoutObject::incrementallyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
+void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
     ASSERT(oldBounds.location() == newBounds.location());
 
@@ -1336,7 +1336,7 @@ void LayoutObject::incrementallyInvalidatePaint(const LayoutLayerModelObject& pa
         invalidatePaintUsingContainer(&paintInvalidationContainer, LayoutRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), PaintInvalidationIncremental);
 }
 
-void LayoutObject::fullyInvalidatePaint(const LayoutLayerModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
+void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     // Otherwise do full paint invalidation.
     invalidatePaintUsingContainer(&paintInvalidationContainer, oldBounds, invalidationReason);
@@ -1354,7 +1354,7 @@ void LayoutObject::invalidatePaintForOverflowIfNeeded()
         invalidatePaintForOverflow();
 }
 
-LayoutRect LayoutObject::rectWithOutlineForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutObject::rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
 {
     LayoutRect r(clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState));
     r.inflate(outlineWidth);
@@ -1366,13 +1366,13 @@ LayoutRect LayoutObject::absoluteClippedOverflowRect() const
     return clippedOverflowRectForPaintInvalidation(view());
 }
 
-LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject*, const PaintInvalidationState*) const
+LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState*) const
 {
     ASSERT_NOT_REACHED();
     return LayoutRect();
 }
 
-void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1542,20 +1542,20 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
     if (diff.transformChanged()) {
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
-        if (!isText() && (!hasLayer() || !toLayoutLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
+        if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
             diff.setNeedsPaintInvalidationLayer();
     }
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
     // ignoring text nodes)
     if (diff.opacityChanged() || diff.zIndexChanged()) {
-        if (!isText() && (!hasLayer() || !toLayoutLayerModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
+        if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
             diff.setNeedsPaintInvalidationLayer();
     }
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
     if (diff.filterChanged() && hasLayer()) {
-        Layer* layer = toLayoutLayerModelObject(this)->layer();
+        Layer* layer = toLayoutBoxModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
             diff.setNeedsPaintInvalidationLayer();
     }
@@ -1569,8 +1569,8 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
     // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
-    if (!diff.needsFullLayout() && style() && isLayoutLayerModelObject()) {
-        bool requiresLayer = toLayoutLayerModelObject(this)->layerTypeRequired() != NoLayer;
+    if (!diff.needsFullLayout() && style() && isLayoutBoxModelObject()) {
+        bool requiresLayer = toLayoutBoxModelObject(this)->layerTypeRequired() != NoLayer;
         if (hasLayer() != requiresLayer)
             diff.setNeedsFullLayout();
     }
@@ -1679,7 +1679,7 @@ void LayoutObject::setStyle(PassRefPtr<LayoutStyle> style)
     }
 
     if (updatedDiff.needsPaintInvalidationLayer())
-        toLayoutLayerModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+        toLayoutBoxModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())
         setShouldDoFullPaintInvalidation();
 }
@@ -1929,7 +1929,7 @@ FloatQuad LayoutObject::absoluteToLocalQuad(const FloatQuad& quad, MapCoordinate
     return transformState.lastPlanarQuad();
 }
 
-void LayoutObject::mapLocalToContainer(const LayoutLayerModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutObject::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1954,7 +1954,7 @@ void LayoutObject::mapLocalToContainer(const LayoutLayerModelObject* paintInvali
     o->mapLocalToContainer(paintInvalidationContainer, transformState, mode, wasFixed, paintInvalidationState);
 }
 
-const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutLayerModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
+const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
 {
     ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != this);
 
@@ -1986,21 +1986,21 @@ bool LayoutObject::shouldUseTransformFromContainer(const LayoutObject* container
 {
     // hasTransform() indicates whether the object has transform, transform-style or perspective. We just care about transform,
     // so check the layer's transform directly.
-    return (hasLayer() && toLayoutLayerModelObject(this)->layer()->transform()) || (containerObject && containerObject->style()->hasPerspective());
+    return (hasLayer() && toLayoutBoxModelObject(this)->layer()->transform()) || (containerObject && containerObject->style()->hasPerspective());
 }
 
 void LayoutObject::getTransformFromContainer(const LayoutObject* containerObject, const LayoutSize& offsetInContainer, TransformationMatrix& transform) const
 {
     transform.makeIdentity();
     transform.translate(offsetInContainer.width().toFloat(), offsetInContainer.height().toFloat());
-    Layer* layer = hasLayer() ? toLayoutLayerModelObject(this)->layer() : 0;
+    Layer* layer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
     if (layer && layer->transform())
         transform.multiply(layer->currentTransform());
 
     if (containerObject && containerObject->hasLayer() && containerObject->style()->hasPerspective()) {
         // Perpsective on the container affects us, so we have to factor it in here.
         ASSERT(containerObject->hasLayer());
-        FloatPoint perspectiveOrigin = toLayoutLayerModelObject(containerObject)->layer()->perspectiveOrigin();
+        FloatPoint perspectiveOrigin = toLayoutBoxModelObject(containerObject)->layer()->perspectiveOrigin();
 
         TransformationMatrix perspectiveMatrix;
         perspectiveMatrix.applyPerspective(containerObject->style()->perspective());
@@ -2011,7 +2011,7 @@ void LayoutObject::getTransformFromContainer(const LayoutObject* containerObject
     }
 }
 
-FloatQuad LayoutObject::localToContainerQuad(const FloatQuad& localQuad, const LayoutLayerModelObject* paintInvalidationContainer, MapCoordinatesFlags mode, bool* wasFixed) const
+FloatQuad LayoutObject::localToContainerQuad(const FloatQuad& localQuad, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     // Track the point at the center of the quad's bounding box. As mapLocalToContainer() calls offsetFromContainer(),
     // it will use that point as the reference point to decide which column's transform to apply in multiple-column blocks.
@@ -2022,7 +2022,7 @@ FloatQuad LayoutObject::localToContainerQuad(const FloatQuad& localQuad, const L
     return transformState.lastPlanarQuad();
 }
 
-FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, const LayoutLayerModelObject* paintInvalidationContainer, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, localPoint);
     mapLocalToContainer(paintInvalidationContainer, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed, paintInvalidationState);
@@ -2033,7 +2033,7 @@ FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, con
 
 FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, Layer** backingLayer)
 {
-    const LayoutLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
+    const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     ASSERT(paintInvalidationContainer);
     ASSERT(paintInvalidationContainer->layer());
 
@@ -2180,7 +2180,7 @@ bool LayoutObject::isRooted() const
     while (object->parent() && !object->hasLayer())
         object = object->parent();
     if (object->hasLayer())
-        return toLayoutLayerModelObject(object)->layer()->root()->isRootLayer();
+        return toLayoutBoxModelObject(object)->layer()->root()->isRootLayer();
     return false;
 }
 
@@ -2214,7 +2214,7 @@ bool LayoutObject::hasEntirelyFixedBackground() const
     return m_style->hasEntirelyFixedBackground();
 }
 
-LayoutObject* LayoutObject::container(const LayoutLayerModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
 {
     if (paintInvalidationContainerSkipped)
         *paintInvalidationContainerSkipped = false;
@@ -2521,7 +2521,7 @@ void LayoutObject::updateDragState(bool dragOn)
 
 CompositingState LayoutObject::compositingState() const
 {
-    return hasLayer() ? toLayoutLayerModelObject(this)->layer()->compositingState() : NotComposited;
+    return hasLayer() ? toLayoutBoxModelObject(this)->layer()->compositingState() : NotComposited;
 }
 
 CompositingReasons LayoutObject::additionalCompositingReasons() const
@@ -3153,7 +3153,7 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
     invalidatePaintIncludingNonCompositingDescendantsInternal(containerForPaintInvalidation());
 }
 
-void LayoutObject::invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutLayerModelObject* paintInvalidationContainer)
+void LayoutObject::invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject* paintInvalidationContainer)
 {
     invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect(), PaintInvalidationLayer);
 

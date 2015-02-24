@@ -389,7 +389,7 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
         updateCompositingLayersAfterScroll();
     }
 
-    const LayoutLayerModelObject* paintInvalidationContainer = box().containerForPaintInvalidation();
+    const LayoutBoxModelObject* paintInvalidationContainer = box().containerForPaintInvalidation();
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 

@@ -426,7 +426,7 @@ PositionWithAffinity LayoutReplaced::positionForPoint(const LayoutPoint& point)
     return RenderBox::positionForPoint(point);
 }
 
-LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const
+LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 
@@ -497,7 +497,7 @@ bool LayoutReplaced::isSelected() const
     ASSERT(0);
     return false;
 }
-LayoutRect LayoutReplaced::clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutReplaced::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
         return LayoutRect();

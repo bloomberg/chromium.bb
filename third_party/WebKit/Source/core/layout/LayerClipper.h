@@ -96,7 +96,7 @@ private:
 class LayerClipper {
     WTF_MAKE_NONCOPYABLE(LayerClipper);
 public:
-    explicit LayerClipper(LayoutLayerModelObject&);
+    explicit LayerClipper(LayoutBoxModelObject&);
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -140,7 +140,7 @@ private:
     }
 
     // FIXME: Could this be a RenderBox?
-    LayoutLayerModelObject& m_renderer;
+    LayoutBoxModelObject& m_renderer;
     mutable OwnPtr<ClipRectsCache> m_cache;
 };
 

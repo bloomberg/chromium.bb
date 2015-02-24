@@ -1614,7 +1614,7 @@ void RenderListMarker::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const
+LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
 {
     ASSERT(!needsLayout());
 

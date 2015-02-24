@@ -33,7 +33,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/Layer.h"
-#include "core/layout/LayoutLayerModelObject.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/style/ShadowData.h"
@@ -106,7 +106,7 @@ void LinkHighlight::releaseResources()
     m_node.clear();
 }
 
-void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutLayerModelObject* paintInvalidationContainer)
+void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject* paintInvalidationContainer)
 {
     GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBacking();
     // FIXME: There should always be a GraphicsLayer. See crbug.com/431961.
@@ -126,7 +126,7 @@ void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutLayerModel
     }
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, LayoutObject* targetRenderer, const LayoutLayerModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, LayoutObject* targetRenderer, const LayoutBoxModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
 {
     ASSERT(targetRenderer);
     ASSERT(paintInvalidationContainer);
@@ -185,7 +185,7 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     }
 }
 
-bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutLayerModelObject* paintInvalidationContainer)
+bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObject* paintInvalidationContainer)
 {
     if (!m_node || !m_node->renderer() || !m_currentGraphicsLayer)
         return false;
@@ -340,7 +340,7 @@ void LinkHighlight::updateGeometry()
     m_geometryNeedsUpdate = false;
 
     bool hasRenderer = m_node && m_node->renderer();
-    const LayoutLayerModelObject* paintInvalidationContainer = hasRenderer ? m_node->renderer()->containerForPaintInvalidation() : 0;
+    const LayoutBoxModelObject* paintInvalidationContainer = hasRenderer ? m_node->renderer()->containerForPaintInvalidation() : 0;
     if (paintInvalidationContainer)
         attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
     if (paintInvalidationContainer && computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {

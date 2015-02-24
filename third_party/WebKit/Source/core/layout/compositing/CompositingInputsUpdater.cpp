@@ -39,14 +39,14 @@ static const Layer* findParentLayerOnClippingContainerChain(const Layer* layer)
                 // Note: it's unclear whether this is what the spec says. Firefox does not clip, but Chrome does.
                 if (current->style()->position() == FixedPosition && current->hasClipOrOverflowClip()) {
                     ASSERT(current->hasLayer());
-                    return static_cast<const LayoutLayerModelObject*>(current)->layer();
+                    return static_cast<const LayoutBoxModelObject*>(current)->layer();
                 }
 
                 // CSS clip applies to fixed position elements even for ancestors that are not what the
                 // fixed element is positioned with respect to.
                 if (current->hasClip()) {
                     ASSERT(current->hasLayer());
-                    return static_cast<const LayoutLayerModelObject*>(current)->layer();
+                    return static_cast<const LayoutBoxModelObject*>(current)->layer();
                 }
             }
         } else {
@@ -54,7 +54,7 @@ static const Layer* findParentLayerOnClippingContainerChain(const Layer* layer)
         }
 
         if (current->hasLayer())
-            return static_cast<const LayoutLayerModelObject*>(current)->layer();
+            return static_cast<const LayoutBoxModelObject*>(current)->layer();
         // Having clip or overflow clip forces the LayoutObject to become a layer.
         ASSERT(!current->hasClipOrOverflowClip());
     }
@@ -66,7 +66,7 @@ static const Layer* findParentLayerOnContainingBlockChain(const LayoutObject* ob
 {
     for (const LayoutObject* current = object; current; current = current->containingBlock()) {
         if (current->hasLayer())
-            return static_cast<const LayoutLayerModelObject*>(current)->layer();
+            return static_cast<const LayoutBoxModelObject*>(current)->layer();
     }
     ASSERT_NOT_REACHED();
     return 0;

@@ -88,12 +88,12 @@ private:
 class Layer {
     WTF_MAKE_NONCOPYABLE(Layer);
 public:
-    Layer(LayoutLayerModelObject*, LayerType);
+    Layer(LayoutBoxModelObject*, LayerType);
     ~Layer();
 
     String debugName() const;
 
-    LayoutLayerModelObject* renderer() const { return m_renderer; }
+    LayoutBoxModelObject* renderer() const { return m_renderer; }
     RenderBox* renderBox() const { return m_renderer && m_renderer->isBox() ? toRenderBox(m_renderer) : 0; }
     Layer* parent() const { return m_parent; }
     Layer* previousSibling() const { return m_previous; }
@@ -282,7 +282,7 @@ public:
     bool hasFilter() const { return renderer()->hasFilter(); }
 
     void* operator new(size_t);
-    // Only safe to call from LayoutLayerModelObject::destroyLayer()
+    // Only safe to call from LayoutBoxModelObject::destroyLayer()
     void operator delete(void*);
 
     CompositingState compositingState() const;
@@ -312,13 +312,13 @@ public:
     // Computes the position of the given render object in the space of |paintInvalidationContainer|.
     // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
     // This will allow us to clean up this static method messiness.
-    static LayoutPoint positionFromPaintInvalidationBacking(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
+    static LayoutPoint positionFromPaintInvalidationBacking(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
 
-    static void mapPointToPaintBackingCoordinates(const LayoutLayerModelObject* paintInvalidationContainer, FloatPoint&);
-    static void mapRectToPaintBackingCoordinates(const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&);
+    static void mapPointToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint&);
+    static void mapRectToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&);
 
     // Adjusts the given rect (in the coordinate space of the LayoutObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-    static void mapRectToPaintInvalidationBacking(const LayoutObject*, const LayoutLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState* = 0);
+    static void mapRectToPaintInvalidationBacking(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState* = 0);
 
     // Computes the bounding paint invalidation rect for |layoutObject|, in the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
     static LayoutRect computePaintInvalidationRect(const LayoutObject*, const Layer* paintInvalidationContainer, const PaintInvalidationState* = 0);
@@ -380,7 +380,7 @@ public:
         // FIXME: This is not in sync with containingBlock.
         // LayoutObject::canContainFixedPositionedObject() should probably be used
         // instead.
-        LayoutLayerModelObject* layerRenderer = renderer();
+        LayoutBoxModelObject* layerRenderer = renderer();
         return isRootLayer() || layerRenderer->isPositioned() || hasTransformRelatedProperty();
     }
 
@@ -658,7 +658,7 @@ private:
     // and we don't yet know to what graphics layer this Layer will be assigned.
     unsigned m_lostGroupedMapping : 1;
 
-    LayoutLayerModelObject* m_renderer;
+    LayoutBoxModelObject* m_renderer;
 
     Layer* m_parent;
     Layer* m_previous;

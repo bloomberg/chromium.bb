@@ -114,7 +114,7 @@ public:
 
     virtual bool canBeSelectionLeaf() const override { return true; }
     virtual void setSelectionState(SelectionState) override final;
-    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer) const override;
+    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override;
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override;
 
     InlineTextBox* firstTextBox() const { return m_firstTextBox; }
@@ -180,7 +180,7 @@ private:
 
     bool isText() const = delete; // This will catch anyone doing an unnecessary check.
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
 
     void checkConsistency() const;
 

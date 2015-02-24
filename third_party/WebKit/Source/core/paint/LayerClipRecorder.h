@@ -15,7 +15,7 @@ namespace blink {
 
 class ClipRect;
 class GraphicsContext;
-class LayoutLayerModelObject;
+class LayoutBoxModelObject;
 
 class LayerClipRecorder {
 public:
@@ -33,7 +33,7 @@ public:
     // same time we pass a fragmentOffset, so that we can translate from flow thread coordinates to
     // visual coordinates. This may look rather confusing/redundant, but it is needed for rounded
     // border clipping. Would be nice to clean up this.
-    explicit LayerClipRecorder(const LayoutLayerModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&, const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+    explicit LayerClipRecorder(const LayoutBoxModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&, const LayerPaintingInfo* localPaintingInfo, const LayoutPoint& fragmentOffset, PaintLayerFlags, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
 
     ~LayerClipRecorder();
 
@@ -43,7 +43,7 @@ private:
         BorderRadiusClippingRule, Vector<FloatRoundedRect>& roundedRectClips);
 
     GraphicsContext* m_graphicsContext;
-    const LayoutLayerModelObject* m_renderer;
+    const LayoutBoxModelObject* m_renderer;
     DisplayItem::Type m_clipType;
 };
 
