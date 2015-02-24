@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "components/crx_file/id_util.h"
@@ -15,6 +16,18 @@
 #include "sync/protocol/sync.pb.h"
 
 namespace extensions {
+
+namespace {
+
+std::string GetExtensionSpecificsLogMessage(
+    const sync_pb::ExtensionSpecifics& specifics) {
+  return base::StringPrintf("id: %s\nversion: %s\nupdate_url: %s",
+                            specifics.id().c_str(),
+                            specifics.version().c_str(),
+                            specifics.update_url().c_str());
+}
+
+}  // namespace
 
 ExtensionSyncData::ExtensionSyncData()
     : uninstalled_(false),
@@ -96,17 +109,21 @@ void ExtensionSyncData::PopulateExtensionSpecifics(
 void ExtensionSyncData::PopulateFromExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& specifics) {
   if (!crx_file::id_util::IdIsValid(specifics.id())) {
-    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
+    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics (bad ID):\n"
+               << GetExtensionSpecificsLogMessage(specifics);
   }
 
   Version specifics_version(specifics.version());
-  if (!specifics_version.IsValid())
-    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
+  if (!specifics_version.IsValid()) {
+    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics (bad version):\n"
+               << GetExtensionSpecificsLogMessage(specifics);
+  }
 
   // The update URL must be either empty or valid.
   GURL specifics_update_url(specifics.update_url());
   if (!specifics_update_url.is_empty() && !specifics_update_url.is_valid()) {
-    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
+    LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics (bad update URL):\n"
+               << GetExtensionSpecificsLogMessage(specifics);
   }
 
   id_ = specifics.id();
