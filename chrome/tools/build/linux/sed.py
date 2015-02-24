@@ -17,5 +17,5 @@ if len(sys.argv) <= 3:
 infile = sys.argv[1]
 outfile = sys.argv[2]
 
-sys.exit(subprocess.call('sed ' + ' '.join(sys.argv[3:]) + ' ' + infile +
+sys.exit(subprocess.call('sed "' + '" "'.join(sys.argv[3:]) + '" ' + infile +
                          ' > ' + outfile, shell=True))
