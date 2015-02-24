@@ -18,25 +18,10 @@ namespace {
 
 bool ValidFormat(unsigned internalformat, gfx::GpuMemoryBuffer::Format format) {
   switch (internalformat) {
-    case GL_ATC_RGB_AMD:
-      return format == gfx::GpuMemoryBuffer::ATC;
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-      return format == gfx::GpuMemoryBuffer::ATCIA;
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-      return format == gfx::GpuMemoryBuffer::DXT1;
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-      return format == gfx::GpuMemoryBuffer::DXT5;
-    case GL_ETC1_RGB8_OES:
-      return format == gfx::GpuMemoryBuffer::ETC1;
     case GL_RGB:
       switch (format) {
         case gfx::GpuMemoryBuffer::RGBX_8888:
           return true;
-        case gfx::GpuMemoryBuffer::ATC:
-        case gfx::GpuMemoryBuffer::ATCIA:
-        case gfx::GpuMemoryBuffer::DXT1:
-        case gfx::GpuMemoryBuffer::DXT5:
-        case gfx::GpuMemoryBuffer::ETC1:
         case gfx::GpuMemoryBuffer::RGBA_8888:
         case gfx::GpuMemoryBuffer::BGRA_8888:
           return false;
@@ -47,11 +32,6 @@ bool ValidFormat(unsigned internalformat, gfx::GpuMemoryBuffer::Format format) {
       switch (format) {
         case gfx::GpuMemoryBuffer::BGRA_8888:
           return true;
-        case gfx::GpuMemoryBuffer::ATC:
-        case gfx::GpuMemoryBuffer::ATCIA:
-        case gfx::GpuMemoryBuffer::DXT1:
-        case gfx::GpuMemoryBuffer::DXT5:
-        case gfx::GpuMemoryBuffer::ETC1:
         case gfx::GpuMemoryBuffer::RGBX_8888:
         case gfx::GpuMemoryBuffer::RGBA_8888:
           return false;
@@ -69,11 +49,6 @@ EGLint FourCC(gfx::GpuMemoryBuffer::Format format) {
       return DRM_FORMAT_ARGB8888;
     case gfx::GpuMemoryBuffer::RGBX_8888:
       return DRM_FORMAT_XRGB8888;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBA_8888:
       NOTREACHED();
       return 0;

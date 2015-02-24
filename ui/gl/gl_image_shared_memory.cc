@@ -18,9 +18,6 @@ bool SizeInBytes(const gfx::Size& size,
   if (size.IsEmpty())
     return false;
 
-  if (!GLImageMemory::ValidSize(size, format))
-    return false;
-
   size_t stride_in_bytes = 0;
   if (!GLImageMemory::StrideInBytes(size.width(), format, &stride_in_bytes))
     return false;

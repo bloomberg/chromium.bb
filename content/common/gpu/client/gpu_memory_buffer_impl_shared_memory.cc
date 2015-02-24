@@ -115,11 +115,6 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
 // static
 bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
   switch (format) {
-    case ATC:
-    case ATCIA:
-    case DXT1:
-    case DXT5:
-    case ETC1:
     case RGBA_8888:
     case BGRA_8888:
       return true;

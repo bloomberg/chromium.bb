@@ -8,7 +8,6 @@
 #include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_memory.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
@@ -34,7 +33,6 @@ GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
       callback_(callback),
       mapped_(false),
       destruction_sync_point_(0) {
-  DCHECK(gfx::GLImageMemory::ValidSize(size, format));
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
@@ -84,20 +82,6 @@ bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
                                         size_t* stride_in_bytes) {
   base::CheckedNumeric<size_t> s = width;
   switch (format) {
-    case ATCIA:
-    case DXT5:
-      *stride_in_bytes = width;
-      return true;
-    case ATC:
-    case DXT1:
-    case ETC1:
-      DCHECK_EQ(width % 2, 0U);
-      s /= 2;
-      if (!s.IsValid())
-        return false;
-
-      *stride_in_bytes = s.ValueOrDie();
-      return true;
     case RGBA_8888:
     case RGBX_8888:
     case BGRA_8888:

@@ -31,11 +31,6 @@ int32 BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return 4;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
       NOTREACHED();
@@ -50,11 +45,6 @@ int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return 'BGRA';
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
       NOTREACHED();

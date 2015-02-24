@@ -28,32 +28,9 @@ bool ValidInternalFormat(unsigned internalformat) {
 
 bool ValidFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return true;
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool IsCompressedFormat(gfx::GpuMemoryBuffer::Format format) {
-  switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-      return true;
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::BGRA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
       return false;
   }
@@ -64,16 +41,6 @@ bool IsCompressedFormat(gfx::GpuMemoryBuffer::Format format) {
 
 GLenum TextureFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-      return GL_ATC_RGB_AMD;
-    case gfx::GpuMemoryBuffer::ATCIA:
-      return GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
-    case gfx::GpuMemoryBuffer::DXT1:
-      return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-    case gfx::GpuMemoryBuffer::DXT5:
-      return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-    case gfx::GpuMemoryBuffer::ETC1:
-      return GL_ETC1_RGB8_OES;
     case gfx::GpuMemoryBuffer::RGBA_8888:
       return GL_RGBA;
     case gfx::GpuMemoryBuffer::BGRA_8888:
@@ -96,11 +63,6 @@ GLenum DataType(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return GL_UNSIGNED_BYTE;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBX_8888:
       NOTREACHED();
       return 0;
@@ -108,15 +70,6 @@ GLenum DataType(gfx::GpuMemoryBuffer::Format format) {
 
   NOTREACHED();
   return 0;
-}
-
-GLsizei SizeInBytes(const gfx::Size& size,
-                    gfx::GpuMemoryBuffer::Format format) {
-  size_t stride_in_bytes = 0;
-  bool valid_stride = GLImageMemory::StrideInBytes(
-      size.width(), format, &stride_in_bytes);
-  DCHECK(valid_stride);
-  return static_cast<GLsizei>(stride_in_bytes * size.height());
 }
 
 }  // namespace
@@ -152,20 +105,6 @@ bool GLImageMemory::StrideInBytes(size_t width,
                                   size_t* stride_in_bytes) {
   base::CheckedNumeric<size_t> s = width;
   switch (format) {
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT5:
-      *stride_in_bytes = width;
-      return true;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::ETC1:
-      DCHECK_EQ(width % 2, 0U);
-      s /= 2;
-      if (!s.IsValid())
-        return false;
-
-      *stride_in_bytes = s.ValueOrDie();
-      return true;
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
       s *= 4;
@@ -173,30 +112,6 @@ bool GLImageMemory::StrideInBytes(size_t width,
         return false;
 
       *stride_in_bytes = s.ValueOrDie();
-      return true;
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-      NOTREACHED();
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
-bool GLImageMemory::ValidSize(const gfx::Size& size,
-                              gfx::GpuMemoryBuffer::Format format) {
-  switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-      // Compressed images must have a width and height that's evenly divisible
-      // by the block size.
-      return size.width() % 4 == 0 && size.height() % 4 == 0;
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::BGRA_8888:
       return true;
     case gfx::GpuMemoryBuffer::RGBX_8888:
       NOTREACHED();
@@ -272,21 +187,11 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
     return false;
 
   DCHECK(memory_);
-  if (IsCompressedFormat(format_)) {
-    glCompressedTexSubImage2D(target,
-                              0,  // level
-                              0,  // x-offset
-                              0,  // y-offset
-                              size_.width(), size_.height(),
-                              DataFormat(format_), SizeInBytes(size_, format_),
-                              memory_);
-  } else {
-    glTexSubImage2D(target, 0,  // level
-                    0,          // x
-                    0,          // y
-                    size_.width(), size_.height(), DataFormat(format_),
-                    DataType(format_), memory_);
-  }
+  glTexSubImage2D(target, 0,  // level
+                  0,          // x
+                  0,          // y
+                  size_.width(), size_.height(), DataFormat(format_),
+                  DataType(format_), memory_);
 
   return true;
 }
@@ -335,24 +240,15 @@ void GLImageMemory::DoBindTexImage(unsigned target) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        if (IsCompressedFormat(format_)) {
-          glCompressedTexImage2D(GL_TEXTURE_2D,
-                                 0,  // mip level
-                                 TextureFormat(format_), size_.width(),
-                                 size_.height(),
-                                 0,  // border
-                                 SizeInBytes(size_, format_), memory_);
-        } else {
-          glTexImage2D(GL_TEXTURE_2D,
-                       0,  // mip level
-                       TextureFormat(format_),
-                       size_.width(),
-                       size_.height(),
-                       0,  // border
-                       DataFormat(format_),
-                       DataType(format_),
-                       memory_);
-        }
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,  // mip level
+                     TextureFormat(format_),
+                     size_.width(),
+                     size_.height(),
+                     0,  // border
+                     DataFormat(format_),
+                     DataType(format_),
+                     memory_);
       }
 
       EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -369,26 +265,15 @@ void GLImageMemory::DoBindTexImage(unsigned target) {
     } else {
       ScopedTextureBinder texture_binder(GL_TEXTURE_2D, egl_texture_id_);
 
-      if (IsCompressedFormat(format_)) {
-        glCompressedTexSubImage2D(GL_TEXTURE_2D,
-                                  0,  // mip level
-                                  0,  // x-offset
-                                  0,  // y-offset
-                                  size_.width(), size_.height(),
-                                  DataFormat(format_),
-                                  SizeInBytes(size_, format_),
-                                  memory_);
-      } else {
-        glTexSubImage2D(GL_TEXTURE_2D,
-                        0,  // mip level
-                        0,  // x-offset
-                        0,  // y-offset
-                        size_.width(),
-                        size_.height(),
-                        DataFormat(format_),
-                        DataType(format_),
-                        memory_);
-      }
+      glTexSubImage2D(GL_TEXTURE_2D,
+                      0,  // mip level
+                      0,  // x-offset
+                      0,  // y-offset
+                      size_.width(),
+                      size_.height(),
+                      DataFormat(format_),
+                      DataType(format_),
+                      memory_);
     }
 
     glEGLImageTargetTexture2DOES(target, egl_image_);
@@ -398,24 +283,15 @@ void GLImageMemory::DoBindTexImage(unsigned target) {
 #endif
 
   DCHECK_NE(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), target);
-  if (IsCompressedFormat(format_)) {
-    glCompressedTexImage2D(target,
-                           0,  // mip level
-                           TextureFormat(format_), size_.width(),
-                           size_.height(),
-                           0,  // border
-                           SizeInBytes(size_, format_), memory_);
-  } else {
-    glTexImage2D(target,
-                 0,  // mip level
-                 TextureFormat(format_),
-                 size_.width(),
-                 size_.height(),
-                 0,  // border
-                 DataFormat(format_),
-                 DataType(format_),
-                 memory_);
-  }
+  glTexImage2D(target,
+               0,  // mip level
+               TextureFormat(format_),
+               size_.width(),
+               size_.height(),
+               0,  // border
+               DataFormat(format_),
+               DataType(format_),
+               memory_);
 }
 
 }  // namespace gfx

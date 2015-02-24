@@ -42,18 +42,7 @@ class GFX_EXPORT GpuMemoryBuffer {
  public:
   // The format needs to be taken into account when mapping a buffer into the
   // client's address space.
-  enum Format {
-    ATC,
-    ATCIA,
-    DXT1,
-    DXT5,
-    ETC1,
-    RGBA_8888,
-    RGBX_8888,
-    BGRA_8888,
-
-    FORMAT_LAST = BGRA_8888
-  };
+  enum Format { RGBA_8888, RGBX_8888, BGRA_8888, FORMAT_LAST = BGRA_8888 };
 
   // The usage mode affects how a buffer can be used. Only buffers created with
   // MAP can be mapped into the client's address space and accessed by the CPU.

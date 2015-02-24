@@ -40,14 +40,6 @@ namespace {
 
 size_t StrideInBytes(size_t width, gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT5:
-      return width;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::ETC1:
-      DCHECK_EQ(width % 2, 0U);
-      return width / 2;
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return width * 4;
