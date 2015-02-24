@@ -11,6 +11,7 @@ package org.chromium.chrome.browser.preferences.website;
  * (org.chromium.chrome.browser.ContentSetting), once this has been upstreamed.
  */
 public enum ContentSetting {
+    DEFAULT(0),
     ALLOW(1),
     BLOCK(2),
     ASK(3);  // Only used for default values.

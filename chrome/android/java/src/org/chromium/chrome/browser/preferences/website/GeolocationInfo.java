@@ -12,11 +12,13 @@ public class GeolocationInfo extends PermissionInfo {
         super(origin, embedder);
     }
 
+    @Override
     protected int getNativePreferenceValue(String origin, String embedder) {
         return WebsitePreferenceBridge.nativeGetGeolocationSettingForOrigin(
                 origin, embedder);
     }
 
+    @Override
     protected void setNativePreferenceValue(
             String origin, String embedder, int value) {
         WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(

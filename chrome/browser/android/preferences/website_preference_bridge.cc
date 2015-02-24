@@ -141,6 +141,7 @@ static void SetSettingForOrigin(JNIEnv* env,
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   switch (value) {
     case -1: break;
+    case 0: setting = CONTENT_SETTING_DEFAULT; break;
     case 1: setting = CONTENT_SETTING_ALLOW; break;
     case 2: setting = CONTENT_SETTING_BLOCK; break;
     default:
