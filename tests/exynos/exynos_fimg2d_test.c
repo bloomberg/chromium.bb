@@ -616,10 +616,22 @@ int main(int argc, char **argv)
 	connector_find_mode(dev->fd, &con, resources);
 	drmModeFreeResources(resources);
 
+	if (!con.mode) {
+		fprintf(stderr, "failed to find usable connector\n");
+		ret = -EFAULT;
+		goto err_drm_close;
+	}
+
 	screen_width = con.mode->hdisplay;
 	screen_height = con.mode->vdisplay;
 
-	printf("screen width  = %d, screen height = %d\n", screen_width,
+	if (screen_width == 0 || screen_height == 0) {
+		fprintf(stderr, "failed to find sane resolution on connector\n");
+		ret = -EFAULT;
+		goto err_drm_close;
+	}
+
+	printf("screen width = %d, screen height = %d\n", screen_width,
 			screen_height);
 
 	bo = exynos_create_buffer(dev, screen_width * screen_height * 4, 0);
