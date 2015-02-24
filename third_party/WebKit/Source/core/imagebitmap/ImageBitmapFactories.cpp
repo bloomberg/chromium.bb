@@ -283,7 +283,7 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
     m_loader.start(context, blob->blobDataHandle());
 }
 
-void ImageBitmapFactories::trace(Visitor* visitor)
+DEFINE_TRACE(ImageBitmapFactories)
 {
     visitor->trace(m_pendingLoaders);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
@@ -332,7 +332,7 @@ void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
     rejectPromise();
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::trace(Visitor* visitor)
+DEFINE_TRACE(ImageBitmapFactories::ImageBitmapLoader)
 {
     visitor->trace(m_factory);
     visitor->trace(m_resolver);
