@@ -316,6 +316,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, KeepAlive);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
+                           TimeoutStartingWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
+                           TimeoutWorkerInEvent);
+  friend class ServiceWorkerVersionBrowserTest;
+
   typedef ServiceWorkerVersion self;
   typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
   typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
@@ -323,6 +329,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ~ServiceWorkerVersion() override;
 
   // EmbeddedWorkerInstance::Listener overrides:
+  void OnScriptLoaded() override;
   void OnStarted() override;
   void OnStopped(EmbeddedWorkerInstance::Status old_status) override;
   void OnReportException(const base::string16& error_message,
@@ -380,6 +387,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnFocusClient(int request_id, int client_id);
   void OnSkipWaiting(int request_id);
   void OnClaimClients(int request_id);
+  void OnPongFromWorker();
 
   void OnFocusClientFinished(int request_id,
                              int client_id,
@@ -391,6 +399,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
                         scoped_refptr<GetClientDocumentsCallback> callback,
                         const ServiceWorkerClientInfo& info);
 
+  // The ping protocol is for terminating workers that are taking excessively
+  // long executing JavaScript (e.g., stuck in while(true) {}). Periodically a
+  // ping IPC is sent to the worker context and if we timeout waiting for a
+  // pong, the worker is terminated.
+  void PingWorker();
+  void StartPingWorker();
+  void SchedulePingWorker();
+  void OnPingTimeout();
+
+  // ScheduleStopWorker is for terminating idle workers. It schedules an attempt
+  // to stop: if the worker has no inflight requests when the attempt runs, the
+  // worker is terminated, otherwise the attempt is rescheduled.
   void ScheduleStopWorker();
   void StopWorkerIfIdle();
   bool HasInflightRequests() const;
@@ -433,6 +453,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerScriptCacheMap script_cache_map_;
   base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
   base::OneShotTimer<ServiceWorkerVersion> update_timer_;
+  base::OneShotTimer<ServiceWorkerVersion> ping_worker_timer_;
+  bool ping_timed_out_;
   bool is_doomed_;
   std::vector<int> pending_skip_waiting_requests_;
   bool skip_waiting_;

@@ -62,13 +62,19 @@ void RunAndQuit(const base::Closure& closure,
   original_message_loop->PostTask(FROM_HERE, quit);
 }
 
-void RunOnIOThread(const base::Closure& closure) {
+void RunOnIOThreadWithDelay(const base::Closure& closure,
+                            base::TimeDelta delay) {
   base::RunLoop run_loop;
-  BrowserThread::PostTask(
+  BrowserThread::PostDelayedTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RunAndQuit, closure, run_loop.QuitClosure(),
-                 base::MessageLoopProxy::current()));
+                 base::MessageLoopProxy::current()),
+      delay);
   run_loop.Run();
+}
+
+void RunOnIOThread(const base::Closure& closure) {
+  RunOnIOThreadWithDelay(closure, base::TimeDelta());
 }
 
 void RunOnIOThread(
@@ -522,6 +528,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     AssociateRendererProcessToPattern(pattern);
   }
 
+  void TimeoutWorkerOnIOThread() {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->PingWorker();
+    version_->OnPingTimeout();
+  }
+
   void StartOnIOThread(const base::Closure& done,
                        ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -697,6 +709,78 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithWaitUntil_Rejected) {
   InstallTestHelper("/service_worker/worker_install_rejected.js",
                     SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
+}
+
+class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
+ public:
+  WaitForLoaded(const base::Closure& quit) : quit_(quit) {}
+
+  void OnScriptLoaded() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
+  }
+  bool OnMessageReceived(const IPC::Message& message) override { return false; }
+
+ private:
+  base::Closure quit_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
+                           "/service_worker/while_true_worker.js"));
+
+  // Start a worker, waiting until the script is loaded.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  base::RunLoop start_run_loop;
+  base::RunLoop load_run_loop;
+  WaitForLoaded wait_for_load(load_run_loop.QuitClosure());
+  version_->embedded_worker()->AddListener(&wait_for_load);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&self::StartOnIOThread, this,
+                                     start_run_loop.QuitClosure(), &status));
+  load_run_loop.Run();
+  version_->embedded_worker()->RemoveListener(&wait_for_load);
+
+  // The script has loaded but start has not completed yet.
+  ASSERT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
+  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
+
+  // Simulate execution timeout. Use a delay to prevent killing the worker
+  // before it's started execution.
+  EXPECT_TRUE(version_->ping_worker_timer_.IsRunning());
+  RunOnIOThreadWithDelay(base::Bind(&self::TimeoutWorkerOnIOThread, this),
+                         base::TimeDelta::FromMilliseconds(100));
+  start_run_loop.Run();
+
+  EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
+                           "/service_worker/while_true_in_install_worker.js"));
+
+  // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  base::RunLoop start_run_loop;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&self::StartOnIOThread, this,
+                                     start_run_loop.QuitClosure(), &status));
+  start_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
+
+  // Dispatch an event.
+  base::RunLoop install_run_loop;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&self::InstallOnIOThread, this,
+                                     install_run_loop.QuitClosure(), &status));
+
+  // Simulate execution timeout. Use a delay to prevent killing the worker
+  // before it's started execution.
+  EXPECT_TRUE(version_->ping_worker_timer_.IsRunning());
+  RunOnIOThreadWithDelay(base::Bind(&self::TimeoutWorkerOnIOThread, this),
+                         base::TimeDelta::FromMilliseconds(100));
+  install_run_loop.Run();
+
+  EXPECT_EQ(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED, status);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {

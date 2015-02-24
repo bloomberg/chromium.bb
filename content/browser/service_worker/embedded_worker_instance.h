@@ -56,6 +56,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   class Listener {
    public:
     virtual ~Listener() {}
+    virtual void OnScriptLoaded() {}
     virtual void OnStarted() {}
     virtual void OnStopped(Status old_status) {}
     virtual void OnPausedAfterDownload() {}
@@ -77,9 +78,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   ~EmbeddedWorkerInstance();
 
   // Starts the worker. It is invalid to call this when the worker is not in
-  // STOPPED status. |callback| is invoked when the worker's process is created
-  // if necessary and the IPC to evaluate the worker's script is sent.
-  // Observer::OnStarted() is run when the worker is actually started.
+  // STOPPED status. |callback| is invoked after the worker script has been
+  // started and evaluated, or when an error occurs.
   void Start(int64 service_worker_version_id,
              const GURL& scope,
              const GURL& script_url,
@@ -98,7 +98,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void StopIfIdle();
 
   // Sends |message| to the embedded worker running in the child process.
-  // It is invalid to call this while the worker is not in RUNNING status.
+  // It is invalid to call this while the worker is not in STARTING or RUNNING
+  // status.
   ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
 
   void ResumeAfterDownload();
@@ -162,11 +163,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnScriptLoadFailed();
 
   // Called back from Registry when the worker instance has ack'ed that
-  // it finished evaluating the script.
+  // it finished evaluating the script. This is called before OnStarted.
   void OnScriptEvaluated(bool success);
 
-  // Called back from Registry when the worker instance has ack'ed that
-  // its WorkerGlobalScope is actually started and parsed.
+  // Called back from Registry when the worker instance has ack'ed that its
+  // WorkerGlobalScope has actually started and evaluated the script. This is
+  // called after OnScriptEvaluated.
   // This will change the internal status from STARTING to RUNNING.
   void OnStarted();
 

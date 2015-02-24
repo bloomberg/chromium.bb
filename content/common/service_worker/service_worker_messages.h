@@ -219,6 +219,10 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
                     int /* request_id */,
                     bool /* accept_connection */)
 
+// Responds to a Ping from the browser.
+// Routed to the target ServiceWorkerVersion.
+IPC_MESSAGE_ROUTED0(ServiceWorkerHostMsg_Pong)
+
 // Asks the browser to retrieve documents controlled by the sender
 // ServiceWorker.
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientDocuments,
@@ -460,6 +464,9 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
                      int /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,
                      base::string16 /* message */)
+
+// Sent via EmbeddedWorker to Ping the worker, expecting a Pong in response.
+IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_Ping)
 
 // Sent via EmbeddedWorker as a response of GetClientDocuments.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,

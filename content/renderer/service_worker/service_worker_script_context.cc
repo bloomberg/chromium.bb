@@ -127,6 +127,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSkipWaiting, OnDidSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidClaimClients, OnDidClaimClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ClaimClientsError, OnClaimClientsError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Ping, OnPing);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -580,6 +581,10 @@ void ServiceWorkerScriptContext::OnClaimClientsError(
       new blink::WebServiceWorkerError(error_type, message));
   callbacks->onError(error.release());
   pending_claim_clients_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerScriptContext::OnPing() {
+  Send(new ServiceWorkerHostMsg_Pong(GetRoutingID()));
 }
 
 }  // namespace content

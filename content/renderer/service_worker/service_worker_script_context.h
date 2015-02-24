@@ -147,6 +147,7 @@ class ServiceWorkerScriptContext {
   void OnClaimClientsError(int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
+  void OnPing();
 
   scoped_ptr<ServiceWorkerCacheStorageDispatcher> cache_storage_dispatcher_;
 

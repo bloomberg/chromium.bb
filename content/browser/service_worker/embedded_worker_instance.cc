@@ -335,6 +335,7 @@ void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
     start_timing_ = base::TimeTicks::Now();
   }
   thread_id_ = thread_id;
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoaded());
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {

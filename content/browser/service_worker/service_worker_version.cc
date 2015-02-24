@@ -85,6 +85,12 @@ const int64 kStopDoomedWorkerDelay = 5;  // 5 secs.
 // Default delay for scheduled update.
 const int kUpdateDelaySeconds = 1;
 
+// Delay between sending pings to the worker.
+const int kPingIntervalTime = 10;  // 10 secs.
+
+// Timeout for waiting for a response to a ping.
+const int kPingTimeoutTime = 30;  // 30 secs.
+
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
 
@@ -297,6 +303,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       status_(NEW),
       context_(context),
       script_cache_map_(this, context),
+      ping_timed_out_(false),
       is_doomed_(false),
       skip_waiting_(false),
       weak_factory_(this) {
@@ -791,11 +798,14 @@ void ServiceWorkerVersion::Doom() {
 
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   embedded_worker()->set_devtools_attached(attached);
-  if (!attached && !stop_worker_timer_.IsRunning()) {
-    // If devtools is detached from this version and stop-worker-timer is not
-    // running, try scheduling stop-worker-timer now.
+  if (attached)
+    return;
+  // If devtools is detached try scheduling the timers for stopping the worker
+  // now.
+  if (!stop_worker_timer_.IsRunning())
     ScheduleStopWorker();
-  }
+  if (!ping_worker_timer_.IsRunning())
+    StartPingWorker();
 }
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
@@ -806,6 +816,11 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
 const net::HttpResponseInfo*
 ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
   return main_script_http_info_.get();
+}
+
+void ServiceWorkerVersion::OnScriptLoaded() {
+  DCHECK_EQ(STARTING, running_status());
+  StartPingWorker();
 }
 
 void ServiceWorkerVersion::OnStarted() {
@@ -826,6 +841,10 @@ void ServiceWorkerVersion::OnStopped(
 
   bool should_restart = !is_doomed() && !start_callbacks_.empty() &&
                         (old_status != EmbeddedWorkerInstance::STARTING);
+
+  ping_worker_timer_.Stop();
+  if (ping_timed_out_)
+    should_restart = false;
 
   // Fire all stop callbacks.
   RunCallbacks(this, &stop_callbacks_, SERVICE_WORKER_OK);
@@ -940,6 +959,7 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
                         OnClaimClients)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_Pong, OnPongFromWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1349,6 +1369,12 @@ void ServiceWorkerVersion::OnClaimClients(int request_id) {
   registration->ClaimClients(callback);
 }
 
+void ServiceWorkerVersion::OnPongFromWorker() {
+  if (ping_timed_out_)
+    return;
+  SchedulePingWorker();
+}
+
 void ServiceWorkerVersion::DidClaimClients(
     int request_id, ServiceWorkerStatusCode status) {
   if (status == SERVICE_WORKER_ERROR_STATE) {
@@ -1387,6 +1413,46 @@ void ServiceWorkerVersion::DidGetClientInfo(
   callback->AddClientInfo(client_id, info);
 }
 
+void ServiceWorkerVersion::PingWorker() {
+  if (running_status() != STARTING && running_status() != RUNNING)
+    return;
+  ServiceWorkerStatusCode status =
+      embedded_worker_->SendMessage(ServiceWorkerMsg_Ping());
+  if (status != SERVICE_WORKER_OK) {
+    // TODO(falken): Maybe try resending Ping a few times first?
+    ping_timed_out_ =  true;
+    StopWorkerIfIdle();
+    return;
+  }
+  ping_worker_timer_.Start(FROM_HERE,
+                           base::TimeDelta::FromSeconds(kPingTimeoutTime),
+                           base::Bind(&ServiceWorkerVersion::OnPingTimeout,
+                                      weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerVersion::StartPingWorker() {
+  ping_timed_out_ = false;
+  SchedulePingWorker();
+}
+
+void ServiceWorkerVersion::SchedulePingWorker() {
+  DCHECK(!ping_timed_out_);
+  ping_worker_timer_.Stop();
+  ping_worker_timer_.Start(FROM_HERE,
+                           base::TimeDelta::FromSeconds(kPingIntervalTime),
+                           base::Bind(&ServiceWorkerVersion::PingWorker,
+                                      weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerVersion::OnPingTimeout() {
+  if (running_status() != STARTING && running_status() != RUNNING)
+    return;
+  ping_timed_out_ = true;
+  // TODO(falken): Show a message to the developer that the SW was stopped due
+  // to timeout (crbug.com/457968).
+  StopWorkerIfIdle();
+}
+
 void ServiceWorkerVersion::ScheduleStopWorker() {
   if (running_status() != RUNNING)
     return;
@@ -1399,10 +1465,7 @@ void ServiceWorkerVersion::ScheduleStopWorker() {
 }
 
 void ServiceWorkerVersion::StopWorkerIfIdle() {
-  // Reschedule the stop the worker while there're inflight requests.
-  // (Note: we'll probably need to revisit this so that we can kill 'bad' SW.
-  // See https://github.com/slightlyoff/ServiceWorker/issues/527)
-  if (HasInflightRequests()) {
+  if (HasInflightRequests() && !ping_timed_out_) {
     ScheduleStopWorker();
     return;
   }
@@ -1410,6 +1473,10 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
       !stop_callbacks_.empty()) {
     return;
   }
+
+  // TODO(falken): We may need to handle StopIfIdle failure and
+  // forcibly fail pending callbacks so no one is stuck waiting
+  // for the worker.
   embedded_worker_->StopIfIdle();
 }
 
