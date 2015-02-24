@@ -11,7 +11,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/filters/renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;

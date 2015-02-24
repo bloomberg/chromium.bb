@@ -9,7 +9,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/media_log.h"
 #include "media/base/test_data_util.h"
-#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -18,7 +17,8 @@
 #endif
 #include "media/filters/file_data_source.h"
 #include "media/filters/opus_audio_decoder.h"
-#include "media/filters/renderer_impl.h"
+#include "media/renderers/audio_renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
 #if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
 #endif

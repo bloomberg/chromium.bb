@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_RENDERER_IMPL_H_
-#define MEDIA_FILTERS_RENDERER_IMPL_H_
+#ifndef MEDIA_RENDERERS_RENDERER_IMPL_H_
+#define MEDIA_RENDERERS_RENDERER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -177,4 +177,4 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_RENDERER_IMPL_H_
+#endif  // MEDIA_RENDERERS_RENDERER_IMPL_H_

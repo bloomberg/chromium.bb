@@ -99,8 +99,6 @@ component("media") {
     "filters/audio_clock.h",
     "filters/audio_renderer_algorithm.cc",
     "filters/audio_renderer_algorithm.h",
-    "filters/audio_renderer_impl.cc",
-    "filters/audio_renderer_impl.h",
     "filters/chunk_demuxer.cc",
     "filters/chunk_demuxer.h",
     "filters/context_3d.h",
@@ -130,8 +128,6 @@ component("media") {
     "filters/h264_parser.h",
     "filters/jpeg_parser.cc",
     "filters/jpeg_parser.h",
-    "filters/renderer_impl.cc",
-    "filters/renderer_impl.h",
     "filters/source_buffer_platform.cc",
     "filters/source_buffer_platform.h",
     "filters/source_buffer_range.cc",
@@ -145,8 +141,6 @@ component("media") {
     "filters/video_frame_scheduler_impl.h",
     "filters/video_frame_scheduler_proxy.cc",
     "filters/video_frame_scheduler_proxy.h",
-    "filters/video_renderer_impl.cc",
-    "filters/video_renderer_impl.h",
     "filters/vp8_bool_decoder.cc",
     "filters/vp8_bool_decoder.h",
     "filters/vp8_parser.cc",
@@ -202,6 +196,12 @@ component("media") {
     "midi/usb_midi_jack.h",
     "midi/usb_midi_output_stream.cc",
     "midi/usb_midi_output_stream.h",
+    "renderers/audio_renderer_impl.cc",
+    "renderers/audio_renderer_impl.h",
+    "renderers/renderer_impl.cc",
+    "renderers/renderer_impl.h",
+    "renderers/video_renderer_impl.cc",
+    "renderers/video_renderer_impl.h",
     "video/capture/file_video_capture_device.cc",
     "video/capture/file_video_capture_device.h",
     "video/capture/linux/video_capture_device_chromeos.cc",
@@ -319,8 +319,8 @@ component("media") {
     ]
     if (!is_ensemble) {
       sources += [
-        "filters/default_renderer_factory.cc",
-        "filters/default_renderer_factory.h",
+        "renderers/default_renderer_factory.cc",
+        "renderers/default_renderer_factory.h",
       ]
     }
   } else {
@@ -486,10 +486,10 @@ component("media") {
   # libraries.
   if (!is_ensemble) {
     sources += [
+      "blink/skcanvas_video_renderer.cc",
+      "blink/skcanvas_video_renderer.h",
       "filters/gpu_video_decoder.cc",
       "filters/gpu_video_decoder.h",
-      "filters/skcanvas_video_renderer.cc",
-      "filters/skcanvas_video_renderer.h",
       "video/capture/fake_video_capture_device.cc",
       "video/capture/fake_video_capture_device.h",
       "video/capture/fake_video_capture_device_factory.cc",
@@ -530,13 +530,13 @@ if (is_ios) {
 
 test("media_unittests") {
   sources = [
+    "blink/skcanvas_video_renderer_unittest.cc",
     "cdm/aes_decryptor_unittest.cc",
     "cdm/cenc_utils_unittest.cc",
     "cdm/json_web_key_unittest.cc",
     "filters/audio_clock_unittest.cc",
     "filters/audio_decoder_selector_unittest.cc",
     "filters/audio_renderer_algorithm_unittest.cc",
-    "filters/audio_renderer_impl_unittest.cc",
     "filters/chunk_demuxer_unittest.cc",
     "filters/decrypting_audio_decoder_unittest.cc",
     "filters/decrypting_demuxer_stream_unittest.cc",
@@ -552,14 +552,11 @@ test("media_unittests") {
     "filters/h264_bit_reader_unittest.cc",
     "filters/h264_parser_unittest.cc",
     "filters/jpeg_parser_unittest.cc",
-    "filters/renderer_impl_unittest.cc",
-    "filters/skcanvas_video_renderer_unittest.cc",
     "filters/source_buffer_stream_unittest.cc",
     "filters/video_decoder_selector_unittest.cc",
     "filters/video_frame_scheduler_impl_unittest.cc",
     "filters/video_frame_scheduler_unittest.cc",
     "filters/video_frame_stream_unittest.cc",
-    "filters/video_renderer_impl_unittest.cc",
     "filters/vp8_bool_decoder_unittest.cc",
     "filters/vp8_parser_unittest.cc",
     "formats/common/offset_byte_queue_unittest.cc",
@@ -581,6 +578,9 @@ test("media_unittests") {
     "midi/usb_midi_descriptor_parser_unittest.cc",
     "midi/usb_midi_input_stream_unittest.cc",
     "midi/usb_midi_output_stream_unittest.cc",
+    "renderers/audio_renderer_impl_unittest.cc",
+    "renderers/renderer_impl_unittest.cc",
+    "renderers/video_renderer_impl_unittest.cc",
     "video/capture/fake_video_capture_device_unittest.cc",
     "video/capture/video_capture_device_unittest.cc",
     "video/h264_poc_unittest.cc",

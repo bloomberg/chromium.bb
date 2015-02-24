@@ -18,7 +18,7 @@
 #include "media/cdm/aes_decryptor.h"
 #include "media/cdm/json_web_key.h"
 #include "media/filters/chunk_demuxer.h"
-#include "media/filters/renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
 #include "media/test/pipeline_integration_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

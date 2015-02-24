@@ -14,11 +14,11 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_log.h"
 #include "media/base/video_renderer.h"
-#include "media/filters/audio_renderer_impl.h"
-#include "media/filters/renderer_impl.h"
-#include "media/filters/video_renderer_impl.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/renderer_config.h"
+#include "media/renderers/audio_renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
+#include "media/renderers/video_renderer_impl.h"
 
 namespace media {
 

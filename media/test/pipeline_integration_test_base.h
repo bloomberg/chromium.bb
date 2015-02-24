@@ -16,7 +16,7 @@
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_frame.h"
-#include "media/filters/video_renderer_impl.h"
+#include "media/renderers/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {

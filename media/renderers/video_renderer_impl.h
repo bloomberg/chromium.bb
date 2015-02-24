@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_VIDEO_RENDERER_IMPL_H_
-#define MEDIA_FILTERS_VIDEO_RENDERER_IMPL_H_
+#ifndef MEDIA_RENDERERS_VIDEO_RENDERER_IMPL_H_
+#define MEDIA_RENDERERS_VIDEO_RENDERER_IMPL_H_
 
 #include <deque>
 
@@ -212,4 +212,4 @@ class MEDIA_EXPORT VideoRendererImpl
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_VIDEO_RENDERER_IMPL_H_
+#endif  // MEDIA_RENDERERS_VIDEO_RENDERER_IMPL_H_

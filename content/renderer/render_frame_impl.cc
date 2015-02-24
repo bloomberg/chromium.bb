@@ -169,7 +169,7 @@
 #include "content/renderer/media/media_renderer_service_provider.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #else
-#include "media/filters/default_renderer_factory.h"
+#include "media/renderers/default_renderer_factory.h"
 #endif
 
 using blink::WebContextMenuData;

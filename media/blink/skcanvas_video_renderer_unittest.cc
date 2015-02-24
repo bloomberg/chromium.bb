@@ -5,9 +5,9 @@
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "media/blink/skcanvas_video_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "media/filters/skcanvas_video_renderer.h"
 
 using media::VideoFrame;
 

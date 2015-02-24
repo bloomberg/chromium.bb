@@ -26,13 +26,13 @@
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_frame.h"
-#include "media/filters/audio_renderer_impl.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
-#include "media/filters/renderer_impl.h"
-#include "media/filters/video_renderer_impl.h"
+#include "media/renderers/audio_renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
+#include "media/renderers/video_renderer_impl.h"
 #include "media/tools/player_x11/data_source_logger.h"
 
 // Include X11 headers here because X11/Xlib.h #define's Status

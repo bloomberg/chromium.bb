@@ -20,7 +20,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
-#include "media/filters/video_renderer_impl.h"
+#include "media/renderers/video_renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/skcanvas_video_renderer.h"
+#include "media/blink/skcanvas_video_renderer.h"
 
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

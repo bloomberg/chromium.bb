@@ -16,8 +16,8 @@
 // queueing audio data and stretching/shrinking audio data when playback rate !=
 // 1.0 or 0.0.
 
-#ifndef MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
-#define MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
+#ifndef MEDIA_RENDERERS_AUDIO_RENDERER_IMPL_H_
+#define MEDIA_RENDERERS_AUDIO_RENDERER_IMPL_H_
 
 #include <deque>
 
@@ -271,4 +271,4 @@ class MEDIA_EXPORT AudioRendererImpl
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_AUDIO_RENDERER_IMPL_H_
+#endif  // MEDIA_RENDERERS_AUDIO_RENDERER_IMPL_H_

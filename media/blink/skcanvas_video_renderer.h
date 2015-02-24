@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
-#define MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
+#ifndef MEDIA_BLINK_SKCANVAS_VIDEO_RENDERER_H_
+#define MEDIA_BLINK_SKCANVAS_VIDEO_RENDERER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -95,4 +95,4 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
+#endif  // MEDIA_BLINK_SKCANVAS_VIDEO_RENDERER_H_

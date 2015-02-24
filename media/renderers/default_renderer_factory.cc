@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/default_renderer_factory.h"
+#include "media/renderers/default_renderer_factory.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "media/filters/audio_renderer_impl.h"
 #if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -14,8 +13,9 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
-#include "media/filters/renderer_impl.h"
-#include "media/filters/video_renderer_impl.h"
+#include "media/renderers/audio_renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
+#include "media/renderers/video_renderer_impl.h"
 #if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
 #endif
