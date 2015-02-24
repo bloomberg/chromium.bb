@@ -61,7 +61,7 @@
       'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/apps_v2_migration_unittest.js',
       'webapp/unittests/base_unittest.js',
-      'webapp/unittests/desktop_connected_view_unittest.js',
+      'webapp/unittests/desktop_viewport_unittest.js',
       'webapp/unittests/dns_blackhole_checker_unittest.js',
       'webapp/unittests/event_hook_unittest.js',
       'webapp/unittests/fallback_signal_strategy_unittest.js',
@@ -199,8 +199,10 @@
     # UI JavaScript files.
     'remoting_webapp_js_ui_files': [
       'webapp/base/js/window_shape.js',
+      'webapp/crd/js/bump_scroller.js',
       'webapp/crd/js/butter_bar.js',
       'webapp/crd/js/connection_stats.js',
+      'webapp/crd/js/desktop_viewport.js',
       'webapp/crd/js/feedback.js',
       'webapp/crd/js/fullscreen.js',
       'webapp/crd/js/fullscreen_v1.js',

@@ -526,7 +526,7 @@ base.EventHook.prototype.dispose = function() {
 /**
   * An event hook implementation for DOM Events.
   *
-  * @param {HTMLElement} src
+  * @param {HTMLElement|Element} src
   * @param {string} eventName
   * @param {function(...?)} listener
   * @param {boolean} capture

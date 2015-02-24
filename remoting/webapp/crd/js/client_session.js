@@ -609,10 +609,6 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
   }
 
   this.capabilities_ = capabilities;
-  if (this.hasCapability(
-      remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION)) {
-    this.uiHandler_.notifyClientResolution_();
-  }
   if (this.hasCapability(remoting.ClientSession.Capability.GOOGLE_DRIVE)) {
     this.sendGoogleDriveAccessToken_();
   }

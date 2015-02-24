@@ -55,9 +55,9 @@ remoting.Host.Options = function(hostId) {
   /** @private */
   this.hostId_ = hostId;
   /** @type {boolean} */
-  this.shrinkToFit = false;
+  this.shrinkToFit = true;
   /** @type {boolean} */
-  this.resizeToClient = false;
+  this.resizeToClient = true;
   /** @type {string} */
   this.remapKeys = '';
   /** @type {number} */
@@ -79,9 +79,13 @@ remoting.Host.Options.prototype.load = function() {
      * @param {Object.<string|boolean|number>} options
      */
     function(options) {
+      // Must be defaulted to true so that app-remoting can resize the host
+      // upon launching.
+      // TODO(kelvinp): Uses a separate host options for app-remoting that
+      // hardcodes resizeToClient to true.
       that.resizeToClient =
-          getBooleanAttr(options, 'resizeToClient', false);
-      that.shrinkToFit = getBooleanAttr(options, 'shrinkToFit', false);
+          getBooleanAttr(options, 'resizeToClient', true);
+      that.shrinkToFit = getBooleanAttr(options, 'shrinkToFit', true);
       that.desktopScale = getNumberAttr(options, 'desktopScale', 1);
       that.remapKeys = getStringAttr(options, 'remapKeys', '');
     });
