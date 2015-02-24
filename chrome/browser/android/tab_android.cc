@@ -493,6 +493,18 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
   web_contents()->SetDelegate(NULL);
 
   if (delete_native) {
+    // Terminate the renderer process if this is the last tab.
+    // If there's no unload listener, FastShutdownForPageCount kills the
+    // renderer process. Otherwise, we go with the slow path where renderer
+    // process shuts down itself when ref count becomes 0.
+    // This helps the render process exit quickly which avoids some issues
+    // during shutdown. See https://codereview.chromium.org/146693011/
+    // and http://crbug.com/338709 for details.
+    content::RenderProcessHost* process =
+        web_contents()->GetRenderProcessHost();
+    if (process)
+      process->FastShutdownForPageCount(1);
+
     web_contents_.reset();
     synced_tab_delegate_->ResetWebContents();
   } else {
