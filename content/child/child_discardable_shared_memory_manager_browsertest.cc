@@ -49,14 +49,8 @@ class ChildDiscardableSharedMemoryManagerBrowserTest
   }
 };
 
-#if defined(OS_WIN)
-#define MAYBE_LockMemory DISABLED_LockMemory
-#else
-#define MAYBE_LockMemory LockMemory
-#endif
-
 IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
-                       MAYBE_LockMemory) {
+                       DISABLED_LockMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
@@ -91,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
-                       AddressSpace) {
+                       DISABLED_AddressSpace) {
   const size_t kLargeSize = 4 * 1024 * 1024;   // 4MiB.
   const size_t kNumberOfInstances = 1024 + 1;  // >4GiB total.
 
