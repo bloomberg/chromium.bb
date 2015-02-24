@@ -100,14 +100,10 @@ void ContentSerializedNavigationDriver::Sanitize(
       content::Referrer::SanitizeForRequest(navigation->virtual_url_,
                                             old_referrer);
 
-  bool page_state_is_valid = navigation->encoded_page_state_.empty() ||
-                             content::PageState::CreateFromEncodedData(
-                                 navigation->encoded_page_state_).IsValid();
-
   // No need to compare the policy, as it doesn't change during
   // sanitization. If there has been a change, the referrer needs to be
   // stripped from the page state as well.
-  if (navigation->referrer_url_ != new_referrer.url || !page_state_is_valid) {
+  if (navigation->referrer_url_ != new_referrer.url) {
     navigation->referrer_url_ = GURL();
     navigation->referrer_policy_ = GetDefaultReferrerPolicy();
     navigation->encoded_page_state_ =

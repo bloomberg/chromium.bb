@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
-#include "content/public/common/referrer.h"
 
 namespace content {
 namespace {
@@ -54,25 +53,6 @@ void RecursivelyRemoveReferrer(ExplodedFrameState* state) {
        ++it) {
     RecursivelyRemoveReferrer(&*it);
   }
-}
-
-bool RecursivelyCheckReferrer(ExplodedFrameState* state) {
-  Referrer referrer(GURL(state->referrer.string()), state->referrer_policy);
-  GURL url(state->url_string.string());
-  if (url.SchemeIsHTTPOrHTTPS() &&
-      Referrer::SanitizeForRequest(url, referrer).url != referrer.url) {
-    LOG(ERROR) << "Referrer for request to " << url << " is " << referrer.url
-               << " but should be "
-               << Referrer::SanitizeForRequest(url, referrer).url;
-    return false;
-  }
-  for (std::vector<ExplodedFrameState>::iterator it = state->children.begin();
-       it != state->children.end();
-       ++it) {
-    if (!RecursivelyCheckReferrer(&*it))
-      return false;
-  }
-  return true;
 }
 
 }  // namespace
@@ -128,16 +108,7 @@ PageState::PageState() {
 }
 
 bool PageState::IsValid() const {
-  if (data_.empty())
-    return false;
-
-  ExplodedPageState state;
-  // This should return false, but tests create invalid page state.
-  if (!DecodePageState(data_, &state))
-    return true;
-
-  // TODO(jochen): Remove referrer check once http://crbug.com/450589 is fixed.
-  return RecursivelyCheckReferrer(&state.top);
+  return !data_.empty();
 }
 
 bool PageState::Equals(const PageState& other) const {
