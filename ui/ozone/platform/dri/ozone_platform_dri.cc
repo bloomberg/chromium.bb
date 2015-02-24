@@ -91,7 +91,9 @@ class OzonePlatformDri : public OzonePlatform {
         display_manager_.get()));
   }
   void InitializeUI() override {
-    dri_->Initialize();
+    if (!dri_->Initialize())
+      LOG(FATAL) << "Failed to initialize primary DRM device";
+
     // This makes sure that simple targets that do not handle display
     // configuration can still use the primary display.
     ForceInitializationOfPrimaryDisplay(dri_, screen_manager_.get());

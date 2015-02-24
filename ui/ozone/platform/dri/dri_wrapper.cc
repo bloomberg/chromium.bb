@@ -88,6 +88,14 @@ void HandlePageFlipEventOnUI(int fd,
   payload->callback.Run(frame, seconds, useconds);
 }
 
+bool CanQueryForResources(int fd) {
+  drm_mode_card_res resources;
+  memset(&resources, 0, sizeof(resources));
+  // If there is no error getting DRM resources then assume this is a
+  // modesetting device.
+  return !drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &resources);
+}
+
 }  // namespace
 
 class DriWrapper::IOWatcher
@@ -163,10 +171,23 @@ DriWrapper::~DriWrapper() {
     watcher_->Shutdown();
 }
 
-void DriWrapper::Initialize() {
+bool DriWrapper::Initialize() {
+  // Ignore devices that cannot perform modesetting.
+  if (!CanQueryForResources(file_.GetPlatformFile())) {
+    VLOG(2) << "Cannot query for resources for '" << device_path_.value()
+            << "'";
+    return false;
+  }
+
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
-  if (!plane_manager_->Initialize(this))
-    LOG(ERROR) << "Failed to initialize the plane manager";
+  if (!plane_manager_->Initialize(this)) {
+    LOG(ERROR) << "Failed to initialize the plane manager for "
+               << device_path_.value();
+    plane_manager_.reset();
+    return false;
+  }
+
+  return true;
 }
 
 void DriWrapper::InitializeTaskRunner(

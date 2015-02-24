@@ -96,8 +96,10 @@ class GbmDeviceGenerator : public DrmDeviceGenerator {
   scoped_refptr<DriWrapper> CreateDevice(const base::FilePath& path,
                                          base::File file) override {
     scoped_refptr<DriWrapper> drm = new GbmWrapper(path, file.Pass());
-    drm->Initialize();
-    return drm;
+    if (drm->Initialize())
+      return drm;
+
+    return nullptr;
   }
 
  private:
@@ -173,7 +175,9 @@ class OzonePlatformGbm : public OzonePlatform {
     gl_api_loader_.reset(new GlApiLoader());
     // Async page flips are supported only on surfaceless mode.
     gbm_ = new GbmWrapper(GetFirstDisplayCardPath());
-    gbm_->Initialize();
+    if (!gbm_->Initialize())
+      LOG(FATAL) << "Failed to initialize primary DRM device";
+
     drm_device_manager_.reset(new DrmDeviceManager(gbm_));
     buffer_generator_.reset(new GbmBufferGenerator());
     screen_manager_.reset(new ScreenManager(buffer_generator_.get()));

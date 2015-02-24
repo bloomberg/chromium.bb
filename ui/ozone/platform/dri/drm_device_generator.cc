@@ -18,8 +18,10 @@ scoped_refptr<DriWrapper> DrmDeviceGenerator::CreateDevice(
     const base::FilePath& device_path,
     base::File file) {
   scoped_refptr<DriWrapper> drm = new DriWrapper(device_path, file.Pass());
-  drm->Initialize();
-  return drm;
+  if (drm->Initialize())
+    return drm;
+
+  return nullptr;
 }
 
 }  // namespace ui

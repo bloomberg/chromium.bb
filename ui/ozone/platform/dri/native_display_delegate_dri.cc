@@ -219,13 +219,17 @@ void NativeDisplayDelegateDri::AddGraphicsDevice(
   auto it =
       std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
   if (it != devices_.end()) {
-    LOG(WARNING) << "Got request to add existing device '" << path.value()
-                 << "'";
+    VLOG(2) << "Got request to add existing device '" << path.value() << "'";
     return;
   }
 
   scoped_refptr<DriWrapper> device =
       drm_device_generator_->CreateDevice(path, file.Pass());
+  if (!device) {
+    VLOG(2) << "Could not initialize DRM device for '" << path.value() << "'";
+    return;
+  }
+
   devices_.push_back(device);
   if (io_task_runner_)
     device->InitializeTaskRunner(io_task_runner_);
@@ -236,8 +240,8 @@ void NativeDisplayDelegateDri::RemoveGraphicsDevice(
   auto it =
       std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
   if (it == devices_.end()) {
-    LOG(ERROR) << "Got request to remove non-existent device '" << path.value()
-               << "'";
+    VLOG(2) << "Got request to remove non-existent device '" << path.value()
+            << "'";
     return;
   }
 

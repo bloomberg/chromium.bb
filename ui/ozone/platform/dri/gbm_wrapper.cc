@@ -21,11 +21,17 @@ GbmWrapper::~GbmWrapper() {
     gbm_device_destroy(device_);
 }
 
-void GbmWrapper::Initialize() {
-  DriWrapper::Initialize();
+bool GbmWrapper::Initialize() {
+  if (!DriWrapper::Initialize())
+    return false;
+
   device_ = gbm_create_device(get_fd());
-  if (!device_)
-    LOG(FATAL) << "Unable to initialize GBM";
+  if (!device_) {
+    LOG(ERROR) << "Unable to initialize GBM";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace ui

@@ -69,7 +69,7 @@ bool HardwareDisplayPlaneManager::Initialize(DriWrapper* drm) {
   drm_ = drm;
   ScopedDrmResourcesPtr resources(drmModeGetResources(drm->get_fd()));
   if (!resources) {
-    LOG(ERROR) << "Failed to get resources.";
+    PLOG(ERROR) << "Failed to get resources";
     return false;
   }
 

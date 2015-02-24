@@ -19,7 +19,7 @@ class GbmWrapper : public DriWrapper {
   gbm_device* device() const { return device_; }
 
   // DriWrapper implementation:
-  void Initialize() override;
+  bool Initialize() override;
 
  private:
   ~GbmWrapper() override;

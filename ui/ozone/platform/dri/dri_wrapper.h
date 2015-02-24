@@ -48,7 +48,7 @@ class OZONE_EXPORT DriWrapper : public base::RefCountedThreadSafe<DriWrapper> {
   DriWrapper(const base::FilePath& device_path, base::File file);
 
   // Open device.
-  virtual void Initialize();
+  virtual bool Initialize();
 
   // |task_runner| will be used to asynchronously page flip.
   virtual void InitializeTaskRunner(
