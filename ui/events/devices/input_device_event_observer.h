@@ -14,10 +14,13 @@ class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
  public:
   virtual ~InputDeviceEventObserver() {}
 
-  virtual void OnKeyboardDeviceConfigurationChanged() = 0;
-  virtual void OnTouchscreenDeviceConfigurationChanged() = 0;
-  virtual void OnMouseDeviceConfigurationChanged() = 0;
-  virtual void OnTouchpadDeviceConfigurationChanged() = 0;
+  virtual void OnKeyboardDeviceConfigurationChanged() {}
+  virtual void OnTouchscreenDeviceConfigurationChanged() {}
+  virtual void OnMouseDeviceConfigurationChanged() {}
+  virtual void OnTouchpadDeviceConfigurationChanged() {}
+
+ protected:
+  InputDeviceEventObserver() {}
 };
 
 }  // namespace ui

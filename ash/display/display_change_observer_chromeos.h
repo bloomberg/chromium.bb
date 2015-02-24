@@ -52,9 +52,6 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
 
   // Overriden from ui::InputDeviceEventObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;
-  void OnKeyboardDeviceConfigurationChanged() override;
-  void OnMouseDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
 
   // Overriden from ShellObserver:
   void OnAppTerminating() override;

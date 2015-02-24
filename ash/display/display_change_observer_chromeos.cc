@@ -287,13 +287,4 @@ void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
       Shell::GetInstance()->display_configurator()->cached_displays());
 }
 
-void DisplayChangeObserver::OnKeyboardDeviceConfigurationChanged() {
-}
-
-void DisplayChangeObserver::OnMouseDeviceConfigurationChanged() {
-}
-
-void DisplayChangeObserver::OnTouchpadDeviceConfigurationChanged() {
-}
-
 }  // namespace ash

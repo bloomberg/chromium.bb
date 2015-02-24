@@ -44,8 +44,6 @@ class PointerDeviceObserver : public DeviceHierarchyObserver,
   void DeviceRemoved(int device_id) override {}
 
   // InputDeviceEventObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override {}
-  void OnKeyboardDeviceConfigurationChanged() override {}
   void OnMouseDeviceConfigurationChanged() override;
   void OnTouchpadDeviceConfigurationChanged() override;
 
