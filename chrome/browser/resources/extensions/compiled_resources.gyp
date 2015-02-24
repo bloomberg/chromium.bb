@@ -30,7 +30,10 @@
           '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/util.js',
         ],
-        'externs': ['<(CLOSURE_DIR)/externs/chrome_send_externs.js'],
+        'externs': [
+          '<(CLOSURE_DIR)/externs/chrome_extensions.js',
+          '<(CLOSURE_DIR)/externs/chrome_send_externs.js',
+        ],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     }
