@@ -41,6 +41,8 @@ public:
 
     const FormAssociatedElement::List& associatedElements() const;
 
+    void setNeedsValidityCheck();
+
 protected:
     virtual void disabledAttributeChanged() override;
 

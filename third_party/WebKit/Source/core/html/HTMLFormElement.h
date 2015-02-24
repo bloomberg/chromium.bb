@@ -48,6 +48,8 @@ public:
     virtual ~HTMLFormElement();
     DECLARE_VIRTUAL_TRACE();
 
+    void setNeedsValidityCheck(ValidityRecalcReason, bool isValid);
+
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
     void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element>>&);
 
@@ -183,6 +185,10 @@ private:
     bool m_isInResetFunction : 1;
 
     bool m_wasDemoted : 1;
+
+    // Number of invalid elements associated to the form that are candidates
+    // for constraint validation (their willValidate state is true).
+    int m_invalidControlsCount;
 
     OwnPtrWillBeMember<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
