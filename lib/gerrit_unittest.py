@@ -25,6 +25,7 @@ from chromite.lib import gob_util
 
 
 # pylint: disable=W0212,R0904
+@cros_test_lib.NetworkTest()
 class GerritHelperTest(cros_test_lib.GerritTestCase):
   """Unittests for GerritHelper."""
 
@@ -50,7 +51,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertEqual(gpatch.revision, revision)
     return gpatch
 
-  @cros_test_lib.NetworkTest()
   def test001SimpleQuery(self):
     """Create one independent and three dependent changes, then query them."""
     project = self.createProject('test001')
@@ -78,7 +78,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertEqual(change.change_id, head_changeid)
     self.assertEqual(change.sha1, head_sha1)
 
-  @cros_test_lib.NetworkTest()
   @mock.patch.object(gerrit.GerritHelper, '_GERRIT_MAX_QUERY_RETURN', 2)
   def test002GerritQueryTruncation(self):
     """Verify that we detect gerrit truncating our query, and handle it."""
@@ -97,7 +96,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     changes = helper.Query(project=project)
     self.assertEqual(len(changes), num_changes)
 
-  @cros_test_lib.NetworkTest()
   def test003IsChangeCommitted(self):
     """Tests that we can parse a json to check if a change is committed."""
     project = self.createProject('test003')
@@ -111,7 +109,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     gpatch = self.createPatch(clone_path, project)
     self.assertFalse(helper.IsChangeCommitted(gpatch.gerrit_number))
 
-  @cros_test_lib.NetworkTest()
   def test004GetLatestSHA1ForBranch(self):
     """Verifies that we can query the tip-of-tree commit in a git repository."""
     project = self.createProject('test004')
@@ -137,7 +134,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertGreaterEqual(len(ret), 2)
     return ret
 
-  @cros_test_lib.NetworkTest()
   def test005SetReviewers(self):
     """Verify that we can set reviewers on a CL."""
     project = self.createProject('test005')
@@ -158,7 +154,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertEqual(len(reviewers), 1)
     self.assertEqual(reviewers[0]['email'], emails[1])
 
-  @cros_test_lib.NetworkTest()
   def test006PatchNotFound(self):
     """Test case where ChangeID isn't found on the server."""
     changeids = ['I' + ('deadbeef' * 5), 'I' + ('beadface' * 5)]
@@ -173,7 +168,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
                       ['*' + num for num in gerrit_numbers])
 
-  @cros_test_lib.NetworkTest()
   def test007VagueQuery(self):
     """Verify GerritHelper complains if an ID matches multiple changes."""
     project = self.createProject('test007')
@@ -191,7 +185,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
                       [changeid])
 
-  @cros_test_lib.NetworkTest()
   def test008Queries(self):
     """Verify assorted query operations."""
     project = self.createProject('test008')
@@ -242,7 +235,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertEqual(patch_info[0].gerrit_number, gpatch.gerrit_number)
     self.assertEqual(patch_info[0].remote, constants.INTERNAL_REMOTE)
 
-  @cros_test_lib.NetworkTest()
   def test009SubmitOutdatedCommit(self):
     """Tests that we can parse a json to check if a change is committed."""
     project = self.createProject('test009')
@@ -269,7 +261,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     helper.SubmitChange(gpatch2)
     self.assertTrue(helper.IsChangeCommitted(gpatch2.gerrit_number))
 
-  @cros_test_lib.NetworkTest()
   def test010SubmitUsingGit(self, projectName='test010', submitC=True):
     """Tests that we can rebase & submit a change."""
     project = self.createProject(projectName)
@@ -317,12 +308,10 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertTrue(helper.IsChangeCommitted(gpatchC.gerrit_number))
     self.assertTrue(helper.IsChangeCommitted(gpatchD.gerrit_number))
 
-  @cros_test_lib.NetworkTest()
   def test011SubmitStackUsingGit(self):
     """Test case where we submit C implicitly, via submitting D."""
     self.test010SubmitUsingGit('test011', submitC=False)
 
-  @cros_test_lib.NetworkTest()
   def test012ResetReviewLabels(self):
     """Tests that we can remove a code review label."""
     project = self.createProject('test012')
@@ -333,7 +322,6 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     gob_util.ResetReviewLabels(helper.host, gpatch.gerrit_number,
                                label='Code-Review', notify='OWNER')
 
-  @cros_test_lib.NetworkTest()
   def test013ApprovalTime(self):
     """Approval timestamp should be reset when a new patchset is created."""
     # Create a change.
