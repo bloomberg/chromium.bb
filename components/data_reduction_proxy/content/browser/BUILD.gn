@@ -37,6 +37,7 @@ if (is_android) {
       ":browser",
       "//skia",
       "//testing/gtest",
+      "//testing/gmock",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }
