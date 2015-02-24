@@ -1073,8 +1073,10 @@ static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS});
 """
     if self.options.native_exports:
       template_str += """
-__attribute__((visibility("default"), alias("${NAME}")))
-${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS});
+__attribute__((visibility("default")))
+${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS}) {
+  return ${NAME}(${PARAMS_IN_CALL});
+}
 """
     template = Template(template_str)
     params_in_call = []
