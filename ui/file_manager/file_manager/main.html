@@ -319,7 +319,7 @@
     <div class="dialog-header">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="cancel-selection-button-wrapper">
-        <paper-button id="cancel-selection-button" tabindex="-1"
+        <paper-button id="cancel-selection-button" tabindex="7"
               i18n-values="aria-label:CANCEL_SELECTION_BUTTON_LABEL">
           <span class="icon-arrow-back"></span>
           <span i18n-content="CANCEL_SELECTION_BUTTON_LABEL"></span>
@@ -328,33 +328,34 @@
       <div id="files-selected-label"></div>
       <div class="spacer"></div>
       <button id="tasks" class="combobutton" menu="#tasks-menu"
-              tabindex="7"
+              tabindex="9"
               i18n-values="aria-label:TASKS_BUTTON_LABEL">
         <paper-ripple fit></paper-ripple>
       </button>
-      <button id="search-button" class="icon-button" tabindex="8"
+      <button id="search-button" class="icon-button" tabindex="10"
               i18n-values="aria-label:SEARCH_TEXT_LABEL">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <div id="search-box">
         <paper-input-decorator i18n-values="label:SEARCH_TEXT_LABEL">
-          <input is="core-input" type="search" tabindex="-1"
+          <input is="core-input" type="search" tabindex="11"
                  i18n-values="aria-label:SEARCH_TEXT_LABEL">
         </paper-input-decorator>
       </div>
-      <button id="share-button" class="icon-button" command="#share" tabindex="9"
+      <button id="share-button" class="icon-button" command="#share"
+              tabindex="12"
               i18n-values="aria-label:SHARE_BUTTON_LABEL"
               visibleif="full-page">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
-      <button id="delete-button" class="icon-button" tabindex="10"
+      <button id="delete-button" class="icon-button" tabindex="13"
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
               visibleif="full-page">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
       <button id="cloud-import-button"
               class="icon-button manual-display"
-              tabindex="11"
+              tabindex="14"
               i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
               hidden>
         <core-icon icon="cloud-queue"></core-icon>
@@ -362,17 +363,18 @@
       </button>
       <button id="cloud-import-details-button"
               class="icon-button manual-display"
-              tabindex="12"
+              tabindex="-1"
               i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
               hidden>
         <core-icon icon="arrow-drop-down"></core-icon>
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
-      <button id="view-button" class="icon-button" tabindex="13"
+      <button id="view-button" class="icon-button" tabindex="15"
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
       </button>
-      <button id="gear-button" class="icon-button" tabindex="14" menu="#gear-menu"
+      <button id="gear-button" class="icon-button" tabindex="16"
+              menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu">
         <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
@@ -398,7 +400,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents">
-          <tree id="directory-tree" tabindex="15"></tree>
+          <tree id="directory-tree" tabindex="17"></tree>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>
@@ -438,9 +440,9 @@
                 Welcome to the new epic photo importer!
               </div>
               <div id="list-container">
-                <div class="detail-table" id="detail-table" tabindex="5" autofocus>
+                <div class="detail-table" id="detail-table" tabindex="1" autofocus>
                 </div>
-                <grid class="thumbnail-grid" tabindex="6"></grid>
+                <grid class="thumbnail-grid" tabindex="2"></grid>
                 <div class="spinner-layer"></div>
                 <div class="drive-welcome page"></div>
                 <div id="no-search-results"></div>
@@ -462,11 +464,12 @@
         <button id="new-folder-button" class="primary"
                 i18n-content="NEW_FOLDER_BUTTON_LABEL"
                 visibleif="saveas-file folder" command="#new-folder"
-                tabindex="4" disabled>
+                tabindex="3" disabled>
         </button>
         <div id="filename-input-box" visibleif="saveas-file">
           <paper-input-decorator i18n-values="label:FILENAME_LABEL">
-            <input is="core-input" class="entry-name" type="text" spellcheck="false" tabindex="1">
+            <input is="core-input" class="entry-name" type="text"
+                   spellcheck="false" tabindex="4">
           </paper-input-decorator>
         </div>
         <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
@@ -475,9 +478,10 @@
         </div>
       </div>
       <div class="right buttonbar">
-        <select class="file-type" hidden></select>
-        <paper-button class="cancel secondary" i18n-content="CANCEL_LABEL" tabindex="3"></paper-button>
-        <paper-button class="ok primary" disabled tabindex="2"></paper-button>
+        <select class="file-type" hidden tabindex="-1"></select>
+        <paper-button class="cancel secondary" i18n-content="CANCEL_LABEL"
+                      tabindex="5"></paper-button>
+        <paper-button class="ok primary" disabled tabindex="6"></paper-button>
       </div>
     </div>
     <div id="drag-container"></div>

@@ -14,8 +14,6 @@ function LocationLine(breadcrumbs, volumeManager) {
   this.breadcrumbs_ = breadcrumbs;
   this.volumeManager_ = volumeManager;
   this.entry_ = null;
-
-  breadcrumbs.addEventListener('click', this.onClick_.bind(this));
 }
 
 /**
@@ -112,12 +110,19 @@ LocationLine.prototype.update_ = function(components) {
     var div = doc.createElement('div');
     div.classList.add('breadcrumb-path', 'entry-name');
     div.textContent = component.name;
-    div.pathComponent = component;
+    div.tabIndex = 8;
+    div.addEventListener('click', this.execute_.bind(this, div, component));
+    div.addEventListener('keydown', function(div, component, event) {
+      // If the pressed key is either Enter or Space.
+      if (event.keyCode == 13 || event.keyCode == 32)
+        this.execute_(div, component);
+    }.bind(this, div, component));
     this.breadcrumbs_.appendChild(div);
 
     // If this is the last component, break here.
     if (i === components.length - 1) {
       div.classList.add('breadcrumb-last');
+      div.tabIndex = -1;
       break;
     }
 
@@ -225,16 +230,18 @@ LocationLine.prototype.hide = function() {
 };
 
 /**
- * Handle a click event on a breadcrumb element.
- * @param {!Event} event The click event.
+ * Execute an element.
+ * @param {!Element} element Element to be executed.
+ * @param {!LocationLine.PathComponent} pathComponent Path Component object of
+ *     the element.
  * @private
  */
-LocationLine.prototype.onClick_ = function(event) {
-  if (!event.target.classList.contains('breadcrumb-path') ||
-      event.target.classList.contains('breadcrumb-last'))
+LocationLine.prototype.execute_ = function(element, pathComponent) {
+  if (!element.classList.contains('breadcrumb-path') ||
+      element.classList.contains('breadcrumb-last'))
     return;
 
-  event.target.pathComponent.resolveEntry().then(function(entry) {
+  pathComponent.resolveEntry().then(function(entry) {
     var pathClickEvent = new Event('pathclick');
     pathClickEvent.entry = entry;
     this.dispatchEvent(pathClickEvent);
