@@ -85,6 +85,7 @@ void CastContentWindow::CreateWindowTree(
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(
       new CastFillLayout(window_tree_host_->window()));
+  window_tree_host_->compositor()->SetBackgroundColor(SK_ColorBLACK);
 
   focus_client_.reset(new aura::test::TestFocusClient());
   aura::client::SetFocusClient(
