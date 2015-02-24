@@ -92,11 +92,10 @@ namespace content {
 namespace {
 
 // Compute a letterbox region, aligned to even coordinates.
-gfx::Rect ComputeYV12LetterboxRegion(const gfx::Size& frame_size,
+gfx::Rect ComputeYV12LetterboxRegion(const gfx::Rect& visible_rect,
                                      const gfx::Size& content_size) {
 
-  gfx::Rect result = media::ComputeLetterboxRegion(gfx::Rect(frame_size),
-                                                   content_size);
+  gfx::Rect result = media::ComputeLetterboxRegion(visible_rect, content_size);
 
   result.set_x(MakeEven(result.x()));
   result.set_y(MakeEven(result.y()));
@@ -464,7 +463,7 @@ void RenderVideoFrame(const SkBitmap& input,
   // Calculate the width and height of the content region in the |output|, based
   // on the aspect ratio of |input|.
   gfx::Rect region_in_frame = ComputeYV12LetterboxRegion(
-      output->coded_size(), gfx::Size(input.width(), input.height()));
+      output->visible_rect(), gfx::Size(input.width(), input.height()));
 
   // Scale the bitmap to the required size, if necessary.
   SkBitmap scaled_bitmap;
@@ -616,11 +615,11 @@ void WebContentsCaptureMachine::Capture(
     return;
   }
 
-  gfx::Size video_size = target->coded_size();
   gfx::Size view_size = view->GetViewBounds().size();
   gfx::Size fitted_size;
   if (!view_size.IsEmpty()) {
-    fitted_size = ComputeYV12LetterboxRegion(video_size, view_size).size();
+    fitted_size = ComputeYV12LetterboxRegion(target->visible_rect(),
+                                             view_size).size();
   }
   if (view_size != last_view_size_) {
     last_view_size_ = view_size;

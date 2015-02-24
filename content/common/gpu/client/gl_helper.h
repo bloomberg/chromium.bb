@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }
@@ -304,15 +305,14 @@ class CONTENT_EXPORT GLHelper {
   // texture, then convert it to YUV422 planar form and then read back that.
   // This reduces the amount of memory read from GPU to CPU memory by a factor
   // 2.6, which can be quite handy since readbacks have very limited speed
-  // on some platforms. All values in |dst_size| and |dst_subrect| must be
-  // a multiple of two. If |use_mrt| is true, the pipeline will try to optimize
-  // the YUV conversion using the multi-render-target extension. |use_mrt|
-  // should only be set to false for testing.
+  // on some platforms. All values in |dst_size| must be a multiple of two. If
+  // |use_mrt| is true, the pipeline will try to optimize the YUV conversion
+  // using the multi-render-target extension. |use_mrt| should only be set to
+  // false for testing.
   ReadbackYUVInterface* CreateReadbackPipelineYUV(ScalerQuality quality,
                                                   const gfx::Size& src_size,
                                                   const gfx::Rect& src_subrect,
                                                   const gfx::Size& dst_size,
-                                                  const gfx::Rect& dst_subrect,
                                                   bool flip_vertically,
                                                   bool use_mrt);
 
@@ -358,10 +358,15 @@ class CONTENT_EXPORT ReadbackYUVInterface {
   ReadbackYUVInterface() {}
   virtual ~ReadbackYUVInterface() {}
 
-  // Note that |target| must use YV12 format.
+  // Note that |target| must use YV12 format.  |paste_location| specifies where
+  // the captured pixels that are read back will be placed in the video frame.
+  // The region defined by the |paste_location| and the |dst_size| specified in
+  // the call to CreateReadbackPipelineYUV() must be fully contained within
+  // |target->visible_rect()|.
   virtual void ReadbackYUV(const gpu::Mailbox& mailbox,
                            uint32 sync_point,
                            const scoped_refptr<media::VideoFrame>& target,
+                           const gfx::Point& paste_location,
                            const base::Callback<void(bool)>& callback) = 0;
   virtual GLHelper::ScalerInterface* scaler() = 0;
 };

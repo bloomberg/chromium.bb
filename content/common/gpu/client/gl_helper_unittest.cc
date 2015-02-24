@@ -1025,25 +1025,25 @@ class GLHelperTest : public testing::Test {
   // Compare two planes make sure that each component of each pixel
   // is no more than |maxdiff| apart.
   void ComparePlane(unsigned char* truth,
+                    int truth_stride,
                     unsigned char* other,
+                    int other_stride,
                     int maxdiff,
                     int xsize,
-                    int stride,
                     int ysize,
                     SkBitmap* source,
                     std::string message) {
-    int truth_stride = stride;
     for (int x = 0; x < xsize; x++) {
       for (int y = 0; y < ysize; y++) {
-        int a = other[y * stride + x];
-        int b = truth[y * stride + x];
+        int a = other[y * other_stride + x];
+        int b = truth[y * truth_stride + x];
         EXPECT_NEAR(a, b, maxdiff) << " x=" << x << " y=" << y << " "
                                    << message;
         if (std::abs(a - b) > maxdiff) {
           LOG(ERROR) << "-------expected--------";
           PrintPlane(truth, xsize, truth_stride, ysize);
           LOG(ERROR) << "-------actual--------";
-          PrintPlane(other, xsize, stride, ysize);
+          PrintPlane(other, xsize, other_stride, ysize);
           if (source) {
             LOG(ERROR) << "-------before yuv conversion: red--------";
             PrintChannel(source, 0);
@@ -1379,15 +1379,18 @@ class GLHelperTest : public testing::Test {
             quality,
             gfx::Size(xsize, ysize),
             gfx::Rect(0, 0, xsize, ysize),
-            gfx::Size(output_xsize, output_ysize),
-            gfx::Rect(xmargin, ymargin, xsize, ysize),
+            gfx::Size(xsize, ysize),
             flip,
             use_mrt));
 
     scoped_refptr<media::VideoFrame> output_frame =
         media::VideoFrame::CreateFrame(
             media::VideoFrame::YV12,
-            gfx::Size(output_xsize, output_ysize),
+            // The coded size of the output frame is rounded up to the next
+            // 16-byte boundary.  This tests that the readback is being
+            // positioned inside the frame's visible region, and not dependent
+            // on its coded size.
+            gfx::Size((output_xsize + 15) & ~15, (output_ysize + 15) & ~15),
             gfx::Rect(0, 0, output_xsize, output_ysize),
             gfx::Size(output_xsize, output_ysize),
             base::TimeDelta::FromSeconds(0));
@@ -1403,6 +1406,7 @@ class GLHelperTest : public testing::Test {
     yuv_reader->ReadbackYUV(mailbox,
                             sync_point,
                             output_frame.get(),
+                            gfx::Point(xmargin, ymargin),
                             base::Bind(&callcallback, run_loop.QuitClosure()));
     run_loop.Run();
 
@@ -1410,9 +1414,9 @@ class GLHelperTest : public testing::Test {
       FlipSKBitmap(&input_pixels);
     }
 
-    unsigned char* Y = truth_frame->data(media::VideoFrame::kYPlane);
-    unsigned char* U = truth_frame->data(media::VideoFrame::kUPlane);
-    unsigned char* V = truth_frame->data(media::VideoFrame::kVPlane);
+    unsigned char* Y = truth_frame->visible_data(media::VideoFrame::kYPlane);
+    unsigned char* U = truth_frame->visible_data(media::VideoFrame::kUPlane);
+    unsigned char* V = truth_frame->visible_data(media::VideoFrame::kVPlane);
     int32 y_stride = truth_frame->stride(media::VideoFrame::kYPlane);
     int32 u_stride = truth_frame->stride(media::VideoFrame::kUPlane);
     int32 v_stride = truth_frame->stride(media::VideoFrame::kVPlane);
@@ -1456,26 +1460,29 @@ class GLHelperTest : public testing::Test {
     }
 
     ComparePlane(Y,
-                 output_frame->data(media::VideoFrame::kYPlane),
+                 y_stride,
+                 output_frame->visible_data(media::VideoFrame::kYPlane),
+                 output_frame->stride(media::VideoFrame::kYPlane),
                  2,
                  output_xsize,
-                 y_stride,
                  output_ysize,
                  &input_pixels,
                  message + " Y plane");
     ComparePlane(U,
-                 output_frame->data(media::VideoFrame::kUPlane),
+                 u_stride,
+                 output_frame->visible_data(media::VideoFrame::kUPlane),
+                 output_frame->stride(media::VideoFrame::kUPlane),
                  2,
                  output_xsize / 2,
-                 u_stride,
                  output_ysize / 2,
                  &input_pixels,
                  message + " U plane");
     ComparePlane(V,
-                 output_frame->data(media::VideoFrame::kVPlane),
+                 v_stride,
+                 output_frame->visible_data(media::VideoFrame::kVPlane),
+                 output_frame->stride(media::VideoFrame::kVPlane),
                  2,
                  output_xsize / 2,
-                 v_stride,
                  output_ysize / 2,
                  &input_pixels,
                  message + " V plane");

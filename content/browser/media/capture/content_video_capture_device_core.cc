@@ -202,6 +202,10 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
   if (success) {
     if (oracle_->CompleteCapture(frame_number, &timestamp)) {
       media::VideoCaptureFormat format = params_.requested_format;
+      // TODO(miu): Passing VideoCaptureFormat here introduces ambiguities.  The
+      // following is a hack where frame_size takes on a different meaning than
+      // everywhere else (i.e., coded size, not visible size).  Will fix in
+      // soon-upcoming code change.
       format.frame_size = frame->coded_size();
       client_->OnIncomingCapturedVideoFrame(buffer, format, frame, timestamp);
     }

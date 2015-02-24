@@ -727,11 +727,10 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   // coordinates and sizes even because we letterbox in YUV space
   // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
   // line up correctly.
-  // The video frame's coded_size() and the result's size() are both physical
+  // The video frame's visible_rect() and the result's size() are both physical
   // pixels.
-  gfx::Rect region_in_frame =
-      media::ComputeLetterboxRegion(gfx::Rect(video_frame->coded_size()),
-                                    result->size());
+  gfx::Rect region_in_frame = media::ComputeLetterboxRegion(
+      video_frame->visible_rect(), result->size());
   region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
                               region_in_frame.y() & ~1,
                               region_in_frame.width() & ~1,
@@ -744,8 +743,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
     // Scale the bitmap to the required size, if necessary.
     SkBitmap scaled_bitmap;
-    if (result->size().width() != region_in_frame.width() ||
-        result->size().height() != region_in_frame.height()) {
+    if (result->size() != region_in_frame.size()) {
       skia::ImageOperations::ResizeMethod method =
           skia::ImageOperations::RESIZE_GOOD;
       scaled_bitmap = skia::ImageOperations::Resize(*bitmap.get(), method,
@@ -810,8 +808,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
         gl_helper->CreateReadbackPipelineYUV(quality,
                                              result_rect.size(),
                                              result_rect,
-                                             video_frame->coded_size(),
-                                             region_in_frame,
+                                             region_in_frame.size(),
                                              true,
                                              true));
     yuv_readback_pipeline = dfh->yuv_readback_pipeline_.get();
@@ -828,6 +825,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   yuv_readback_pipeline->ReadbackYUV(texture_mailbox.mailbox(),
                                      texture_mailbox.sync_point(),
                                      video_frame.get(),
+                                     region_in_frame.origin(),
                                      finished_callback);
 }
 

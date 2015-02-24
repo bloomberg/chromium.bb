@@ -374,11 +374,10 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
   // coordinates and sizes even because we letterbox in YUV space
   // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
   // line up correctly.
-  // The video frame's coded_size() and the result's size() are both physical
+  // The video frame's visible_rect() and the result's size() are both physical
   // pixels.
-  gfx::Rect region_in_frame =
-      media::ComputeLetterboxRegion(gfx::Rect(video_frame->coded_size()),
-                                    result->size());
+  gfx::Rect region_in_frame = media::ComputeLetterboxRegion(
+      video_frame->visible_rect(), result->size());
   region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
                               region_in_frame.y() & ~1,
                               region_in_frame.width() & ~1,
@@ -407,8 +406,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
         gl_helper->CreateReadbackPipelineYUV(GLHelper::SCALER_QUALITY_FAST,
                                              result_rect.size(),
                                              result_rect,
-                                             video_frame->coded_size(),
-                                             region_in_frame,
+                                             region_in_frame.size(),
                                              true,
                                              true));
   }
@@ -418,6 +416,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
       texture_mailbox.mailbox(),
       texture_mailbox.sync_point(),
       video_frame.get(),
+      region_in_frame.origin(),
       base::Bind(&CopyOutputFinishedForVideo,
                  start_time,
                  capture_frame_cb,
