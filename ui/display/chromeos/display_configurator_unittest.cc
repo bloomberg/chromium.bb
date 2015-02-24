@@ -49,6 +49,7 @@ class TestObserver : public DisplayConfigurator::Observer {
   }
 
   void OnDisplayModeChangeFailed(
+      const DisplayConfigurator::DisplayStateList& outputs,
       MultipleDisplayState failed_new_state) override {
     num_failures_++;
     latest_failed_state_ = failed_new_state;

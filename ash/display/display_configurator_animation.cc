@@ -208,6 +208,7 @@ void DisplayConfiguratorAnimation::OnDisplayModeChanged(
 }
 
 void DisplayConfiguratorAnimation::OnDisplayModeChangeFailed(
+    const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();

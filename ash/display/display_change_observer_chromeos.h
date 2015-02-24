@@ -46,6 +46,9 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   // Overriden from ui::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+  void OnDisplayModeChangeFailed(
+      const ui::DisplayConfigurator::DisplayStateList& displays,
+      ui::MultipleDisplayState failed_new_state) override;
 
   // Overriden from ui::InputDeviceEventObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;

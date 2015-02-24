@@ -65,11 +65,13 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     // when this method is called, so the actual configuration could've changed
     // already.
     virtual void OnDisplayModeChanged(
-        const std::vector<DisplayState>& displays) {}
+        const DisplayStateList& displays) {}
 
-    // Called after a display mode change attempt failed. |failed_new_state| is
-    // the new state which the system failed to enter.
+    // Called after a display mode change attempt failed. |displays| contains
+    // displays that are detected when failed.
+    // |failed_new_state| is the new state which the system failed to enter.
     virtual void OnDisplayModeChangeFailed(
+        const DisplayStateList& displays,
         MultipleDisplayState failed_new_state) {}
   };
 

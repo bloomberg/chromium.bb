@@ -1008,7 +1008,8 @@ void DisplayConfigurator::NotifyObservers(
         Observer, observers_, OnDisplayModeChanged(cached_displays_));
   } else {
     FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChangeFailed(attempted_state));
+        Observer, observers_, OnDisplayModeChangeFailed(cached_displays_,
+                                                        attempted_state));
   }
 }
 

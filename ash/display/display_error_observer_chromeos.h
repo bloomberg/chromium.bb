@@ -22,6 +22,7 @@ class ASH_EXPORT DisplayErrorObserver
 
   // ui::DisplayConfigurator::Observer overrides:
   void OnDisplayModeChangeFailed(
+      const ui::DisplayConfigurator::DisplayStateList& displays,
       ui::MultipleDisplayState failed_new_state) override;
 
  private:

@@ -255,6 +255,16 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     user_activity_detector->OnDisplayPowerChanging();
 }
 
+void DisplayChangeObserver::OnDisplayModeChangeFailed(
+    const ui::DisplayConfigurator::DisplayStateList& displays,
+    ui::MultipleDisplayState failed_new_state) {
+  // If display configuration failed during startup, simply update the display
+  // manager with detected displays. If no display is detected, it will
+  // create a pseudo display.
+  if (Shell::GetInstance()->display_manager()->GetNumDisplays() == 0)
+    OnDisplayModeChanged(displays);
+}
+
 void DisplayChangeObserver::OnAppTerminating() {
 #if defined(USE_ASH)
   // Stop handling display configuration events once the shutdown

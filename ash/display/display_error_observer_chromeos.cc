@@ -30,6 +30,7 @@ DisplayErrorObserver::~DisplayErrorObserver() {
 }
 
 void DisplayErrorObserver::OnDisplayModeChangeFailed(
+    const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState new_state) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.

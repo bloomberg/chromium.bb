@@ -46,6 +46,7 @@ class ASH_EXPORT DisplayConfiguratorAnimation
   void OnDisplayModeChanged(
       const ui::DisplayConfigurator::DisplayStateList& outputs) override;
   void OnDisplayModeChangeFailed(
+      const ui::DisplayConfigurator::DisplayStateList& displays,
       ui::MultipleDisplayState failed_new_state) override;
 
  private:
