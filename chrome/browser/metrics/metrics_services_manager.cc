@@ -63,9 +63,6 @@ MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
       may_record_(false) {
   DCHECK(local_state);
   pref_change_registrar_.Init(local_state);
-  pref_change_registrar_.Add(rappor::prefs::kRapporEnabled,
-      base::Bind(&MetricsServicesManager::UpdateRapporService,
-                 base::Unretained(this)));
 }
 
 MetricsServicesManager::~MetricsServicesManager() {
@@ -152,6 +149,14 @@ rappor::RecordingLevel MetricsServicesManager::GetRapporRecordingLevel(
 
 void MetricsServicesManager::UpdateRapporService() {
   GetRapporService()->Update(GetRapporRecordingLevel(may_record_), may_upload_);
+  // The first time this function is called, we can start listening for
+  // changes to RAPPOR option.  This avoids starting the RapporService in
+  // tests which do not intend to start services.
+  if (pref_change_registrar_.IsEmpty() && HasRapporOption()) {
+    pref_change_registrar_.Add(rappor::prefs::kRapporEnabled,
+        base::Bind(&MetricsServicesManager::UpdateRapporService,
+                   base::Unretained(this)));
+  }
 }
 
 void MetricsServicesManager::UpdatePermissions(bool may_record,
