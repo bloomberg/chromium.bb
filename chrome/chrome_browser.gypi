@@ -3020,8 +3020,6 @@
             '../net/net.gyp:net_with_v8',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
-            # TODO(tonyg): Remove this dependency (crbug.com/280157).
-            '../testing/perf/perf_test.gyp:*',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',

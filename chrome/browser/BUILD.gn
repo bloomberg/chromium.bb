@@ -278,9 +278,6 @@ static_library("browser") {
       "//ui/surface",
       "//ui/web_dialogs",
       "//v8",
-
-      ## TODO(tonyg): Remove this dependency (crbug.com/280157).
-      "//testing/perf",
     ]
   } else {  # iOS
     sources +=
