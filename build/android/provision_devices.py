@@ -25,6 +25,7 @@ from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
+from pylib.utils import timeout_retry
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party', 'android_testrunner'))
@@ -84,8 +85,9 @@ def PushAndLaunchAdbReboot(device, target):
   device.PushChangedFiles([(adb_reboot, '/data/local/tmp/')])
   # Launch adb_reboot
   logging.info('  Launching adb_reboot ...')
-  device.old_interface.GetAndroidToolStatusAndOutput(
-      '/data/local/tmp/adb_reboot')
+  device.RunShellCommand([
+      device.GetDevicePieWrapper(),
+      '/data/local/tmp/adb_reboot'])
 
 
 def _ConfigureLocalProperties(device, java_debug=True):
@@ -149,6 +151,20 @@ def WipeDeviceIfPossible(device, timeout):
     pass
 
 
+def ChargeDeviceToLevel(device, level):
+  def device_charged():
+    battery_level = device.GetBatteryInfo().get('level')
+    if battery_level is None:
+      logging.warning('Unable to find current battery level.')
+      battery_level = 100
+    else:
+      logging.info('current battery level: %d', battery_level)
+      battery_level = int(battery_level)
+    return battery_level >= level
+
+  timeout_retry.WaitFor(device_charged, wait_period=60)
+
+
 def ProvisionDevice(device, options):
   if options.reboot_timeout:
     reboot_timeout = options.reboot_timeout
@@ -180,23 +196,11 @@ def ProvisionDevice(device, options):
           device, device_settings.NETWORK_DISABLED_SETTINGS)
     if options.min_battery_level is not None:
       try:
-        battery_info = device.old_interface.GetBatteryInfo()
-      except Exception as e:
-        battery_info = {}
-        logging.error('Unable to obtain battery info for %s, %s',
-                      str(device), e)
+        device.SetUsbCharging(True)
+        ChargeDeviceToLevel(device, options.min_battery_level)
+      except device_errors.CommandFailedError as e:
+        logging.exception('Unable to charge device to specified level.')
 
-      while int(battery_info.get('level', 100)) < options.min_battery_level:
-        if not device.old_interface.IsDeviceCharging():
-          if device.old_interface.CanControlUsbCharging():
-            device.old_interface.EnableUsbCharging()
-          else:
-            logging.error('Device is not charging')
-            break
-        logging.info('Waiting for device to charge. Current level=%s',
-                     battery_info.get('level', 0))
-        time.sleep(60)
-        battery_info = device.old_interface.GetBatteryInfo()
     if not options.skip_wipe:
       device.Reboot(True, timeout=reboot_timeout, retries=0)
     device.RunShellCommand('date -s %s' % time.strftime('%Y%m%d.%H%M%S',

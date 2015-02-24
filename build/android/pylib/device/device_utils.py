@@ -44,6 +44,30 @@ _DEFAULT_RETRIES = 3
 # the timeout_retry decorators.
 DEFAULT = object()
 
+_CONTROL_USB_CHARGING_COMMANDS = [
+  {
+    # Nexus 4
+    'witness_file': '/sys/module/pm8921_charger/parameters/disabled',
+    'enable_command': 'echo 0 > /sys/module/pm8921_charger/parameters/disabled',
+    'disable_command':
+        'echo 1 > /sys/module/pm8921_charger/parameters/disabled',
+  },
+  {
+    # Nexus 5
+    # Setting the HIZ bit of the bq24192 causes the charger to actually ignore
+    # energy coming from USB. Setting the power_supply offline just updates the
+    # Android system to reflect that.
+    'witness_file': '/sys/kernel/debug/bq24192/INPUT_SRC_CONT',
+    'enable_command': (
+        'echo 0x4A > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'echo 1 > /sys/class/power_supply/usb/online'),
+    'disable_command': (
+        'echo 0xCA > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
+        'chmod 644 /sys/class/power_supply/usb/online && '
+        'echo 0 > /sys/class/power_supply/usb/online'),
+  },
+]
+
 
 @decorators.WithExplicitTimeoutAndRetries(
     _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
@@ -142,6 +166,10 @@ class DeviceUtils(object):
     self._cache = {}
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
+
+  def __str__(self):
+    """Returns the device serial."""
+    return self.adb.GetDeviceSerial()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def IsOnline(self, timeout=None, retries=None):
@@ -1370,9 +1398,67 @@ class DeviceUtils(object):
     """
     return logcat_monitor.LogcatMonitor(self.adb, *args, **kwargs)
 
-  def __str__(self):
-    """Returns the device serial."""
-    return self.adb.GetDeviceSerial()
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetBatteryInfo(self, timeout=None, retries=None):
+    """Gets battery info for the device.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    Returns:
+      A dict containing various battery information as reported by dumpsys
+      battery.
+    """
+    result = {}
+    # Skip the first line, which is just a header.
+    for line in self.RunShellCommand(
+        ['dumpsys', 'battery'], check_return=True)[1:]:
+      k, v = line.split(': ', 1)
+      result[k.strip()] = v.strip()
+    return result
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetUsbCharging(self, timeout=None, retries=None):
+    """Gets the USB charging state of the device.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    Returns:
+      True if the device is charging via USB, false otherwise.
+    """
+    return (self.GetBatteryInfo().get('USB powered', '').lower()
+            in ('true', '1', 'yes'))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def SetUsbCharging(self, enabled, timeout=None, retries=None):
+    """Enables or disables USB charging on the device.
+
+    Args:
+      enabled: A boolean indicating whether USB charging should be enabled or
+        disabled.
+      timeout: timeout in seconds
+      retries: number of retries
+    """
+    if 'usb_charging_config' not in self._cache:
+      for c in _CONTROL_USB_CHARGING_COMMANDS:
+        if self.FileExists(c['witness_file']):
+          self._cache['usb_charging_config'] = c
+          break
+      else:
+        raise device_errors.CommandFailedError(
+            'Unable to find charging commands.')
+
+    if enabled:
+      command = self._cache['usb_charging_config']['enable_command']
+    else:
+      command = self._cache['usb_charging_config']['disable_command']
+
+    def set_and_verify_usb_charging():
+      self.RunShellCommand(command)
+      return self.GetUsbCharging() == enabled
+
+    timeout_retry.WaitFor(set_and_verify_usb_charging, wait_period=1)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetDevicePieWrapper(self, timeout=None, retries=None):
