@@ -40,6 +40,7 @@ static const JNINativeMethod kMethodsMyInnerClass[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
+
   g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kTestJniClassPath).obj()));
 

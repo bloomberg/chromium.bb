@@ -255,6 +255,7 @@ static base::android::ScopedJavaLocalRef<jobject>
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env) {
+
   g_InputStream_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kInputStreamClassPath).obj()));
 

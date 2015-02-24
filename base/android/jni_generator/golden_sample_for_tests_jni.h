@@ -373,6 +373,7 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
+
   g_InnerStructA_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kInnerStructAClassPath).obj()));
   g_SampleForTests_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(

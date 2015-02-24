@@ -79,6 +79,7 @@ static const JNINativeMethod kMethodsTest[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
+
   g_Test_clazz = static_cast<jclass>(env->NewWeakGlobalRef(clazz));
 
   const int kMethodsTestSize = arraysize(kMethodsTest);

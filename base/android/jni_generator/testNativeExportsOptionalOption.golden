@@ -241,7 +241,8 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
 
 static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
   if (base::android::IsManualJniRegistrationDisabled()) return true;
-    base::subtle::Release_Store(&g_SampleForTests_clazz,
+
+  base::subtle::Release_Store(&g_SampleForTests_clazz,
       static_cast<base::subtle::AtomicWord>(env->NewWeakGlobalRef(clazz));
 
   const int kMethodsMyOtherInnerClassSize =

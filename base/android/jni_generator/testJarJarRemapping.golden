@@ -65,6 +65,7 @@ static const JNINativeMethod kMethodsExample[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
+
   g_Example_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kExampleClassPath).obj()));
 

@@ -53,6 +53,7 @@ static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env) {
+
   g_HashSet_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, kHashSetClassPath).obj()));
 
