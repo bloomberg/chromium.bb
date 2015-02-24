@@ -961,6 +961,7 @@ crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.h
 crbug.com/352801 [ Linux Mac ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
 # TODO(enne): rebaseline these and leave as flaky
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition.svg [ Pass Failure NeedsManualRebaseline ]
+crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure NeedsManualRebaseline ]
 
 crbug.com/412758 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash NeedsManualRebaseline ]
 
