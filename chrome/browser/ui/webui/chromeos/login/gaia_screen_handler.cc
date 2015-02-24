@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -225,6 +226,11 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
 
   if (StartupUtils::IsWebviewSigninEnabled()) {
     params.SetBoolean("useMinuteMaid", true);
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    std::string enterprise_domain(connector->GetEnterpriseDomain());
+    if (!enterprise_domain.empty())
+      params.SetString("enterpriseDomain", enterprise_domain);
     if (!command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
       command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
                                       kMinuteMaidPath);

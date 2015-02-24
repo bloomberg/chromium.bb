@@ -315,6 +315,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         this.isMinuteMaid = true;
         $('inner-container').classList.add('minute-maid');
         $('progress-dots').hidden = true;
+        if (data.enterpriseDomain)
+          params.enterpriseDomain = data.enterpriseDomain;
         data.useEmbedded = false;
         $('login-header-bar').showGuestButton = true;
       }

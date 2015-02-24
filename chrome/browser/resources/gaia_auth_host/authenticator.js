@@ -161,6 +161,8 @@ cr.define('cr.login', function() {
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
     var url = this.idpOrigin_ + (data.gaiaPath || IDP_PATH);
 
+    if (data.enterpriseDomain)
+      url = appendParam(url, 'managedomain', data.enterpriseDomain);
     url = appendParam(url, 'continue', this.continueUrl_);
     url = appendParam(url, 'service', data.service || SERVICE_ID);
     if (data.hl)
