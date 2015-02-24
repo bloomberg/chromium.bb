@@ -106,18 +106,6 @@ bool VerifyV8SnapshotFile(base::MemoryMappedFile* snapshot_file,
   return !memcmp(fingerprint, output, sizeof(output));
 }
 #endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
-
-#if !defined(OS_MACOSX)
-const int v8_snapshot_dir =
-#if defined(OS_ANDROID)
-    base::DIR_ANDROID_APP_DATA;
-#elif defined(OS_POSIX)
-    base::DIR_EXE;
-#elif defined(OS_WIN)
-    base::DIR_MODULE;
-#endif  // OS_ANDROID
-#endif  // !OS_MACOSX
-
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
 }  // namespace
@@ -130,6 +118,17 @@ extern const unsigned char g_natives_fingerprint[];
 extern const unsigned char g_snapshot_fingerprint[];
 #endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
 
+#if !defined(OS_MACOSX)
+const int IsolateHolder::kV8SnapshotBasePathKey =
+#if defined(OS_ANDROID)
+    base::DIR_ANDROID_APP_DATA;
+#elif defined(OS_POSIX)
+    base::DIR_EXE;
+#elif defined(OS_WIN)
+    base::DIR_MODULE;
+#endif  // OS_ANDROID
+#endif  // !OS_MACOSX
+
 const char IsolateHolder::kNativesFileName[] = "natives_blob.bin";
 const char IsolateHolder::kSnapshotFileName[] = "snapshot_blob.bin";
 
@@ -140,7 +139,7 @@ bool IsolateHolder::LoadV8Snapshot() {
 
 #if !defined(OS_MACOSX)
   base::FilePath data_path;
-  PathService::Get(v8_snapshot_dir, &data_path);
+  PathService::Get(kV8SnapshotBasePathKey, &data_path);
   DCHECK(!data_path.empty());
 
   base::FilePath natives_path = data_path.AppendASCII(kNativesFileName);

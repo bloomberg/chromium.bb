@@ -685,6 +685,10 @@ namespace chrome {
 
 ChromeContentBrowserClient::ChromeContentBrowserClient()
     : prerender_tracker_(NULL),
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+      v8_natives_fd_(-1),
+      v8_snapshot_fd_(-1),
+#endif  // OS_POSIX && !OS_MACOSX
       weak_factory_(this) {
 #if defined(ENABLE_PLUGINS)
   for (size_t i = 0; i < arraysize(kPredefinedAllowedDevChannelOrigins); ++i)
@@ -2401,6 +2405,28 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     FileDescriptorInfo* mappings) {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (v8_snapshot_fd_.get() == -1 && v8_natives_fd_.get() == -1) {
+    base::FilePath v8_data_path;
+    PathService::Get(gin::IsolateHolder::kV8SnapshotBasePathKey, &v8_data_path);
+    DCHECK(!v8_data_path.empty());
+
+    int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+    base::FilePath v8_natives_data_path =
+        v8_data_path.AppendASCII(gin::IsolateHolder::kNativesFileName);
+    base::FilePath v8_snapshot_data_path =
+        v8_data_path.AppendASCII(gin::IsolateHolder::kSnapshotFileName);
+    base::File v8_natives_data_file(v8_natives_data_path, file_flags);
+    base::File v8_snapshot_data_file(v8_snapshot_data_path, file_flags);
+    DCHECK(v8_natives_data_file.IsValid());
+    DCHECK(v8_snapshot_data_file.IsValid());
+    v8_natives_fd_.reset(v8_natives_data_file.TakePlatformFile());
+    v8_snapshot_fd_.reset(v8_snapshot_data_file.TakePlatformFile());
+  }
+  mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
+  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+
 #if defined(OS_ANDROID)
   base::FilePath data_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &data_path);
@@ -2452,27 +2478,6 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   DCHECK(icudata_file.IsValid());
   mappings->Transfer(kAndroidICUDataDescriptor,
                      base::ScopedFD(icudata_file.TakePlatformFile()));
-
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  base::FilePath v8_data_path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &v8_data_path);
-  DCHECK(!v8_data_path.empty());
-
-  int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  base::FilePath v8_natives_data_path =
-      v8_data_path.AppendASCII(gin::IsolateHolder::kNativesFileName);
-  base::FilePath v8_snapshot_data_path =
-      v8_data_path.AppendASCII(gin::IsolateHolder::kSnapshotFileName);
-  base::File v8_natives_data_file(v8_natives_data_path, file_flags);
-  base::File v8_snapshot_data_file(v8_snapshot_data_path, file_flags);
-  DCHECK(v8_natives_data_file.IsValid());
-  DCHECK(v8_snapshot_data_file.IsValid());
-  mappings->Transfer(kV8NativesDataDescriptor,
-                     base::ScopedFD(v8_natives_data_file.TakePlatformFile()));
-  mappings->Transfer(kV8SnapshotDataDescriptor,
-                     base::ScopedFD(v8_snapshot_data_file.TakePlatformFile()));
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {

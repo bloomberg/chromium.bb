@@ -13,15 +13,14 @@ enum {
   kCrashDumpSignal = kIPCDescriptorMax,
   kSandboxIPCChannel,  // http://code.google.com/p/chromium/LinuxSandboxIPC
 
-#if defined(OS_ANDROID)
-  kAndroidPropertyDescriptor,
-  kAndroidICUDataDescriptor,
-
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   kV8NativesDataDescriptor,
   kV8SnapshotDataDescriptor,
 #endif
 
+#if defined(OS_ANDROID)
+  kAndroidPropertyDescriptor,
+  kAndroidICUDataDescriptor,
 #endif
 
   // The first key that embedders can use to register descriptors (see

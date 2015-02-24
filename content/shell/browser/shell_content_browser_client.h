@@ -93,6 +93,11 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   scoped_ptr<ShellResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  base::ScopedFD v8_natives_fd_;
+  base::ScopedFD v8_snapshot_fd_;
+#endif
+
   ShellBrowserMainParts* shell_browser_main_parts_;
 };
 

@@ -52,6 +52,7 @@ class GIN_EXPORT IsolateHolder {
   void RemoveRunMicrotasksObserver();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  static const int kV8SnapshotBasePathKey;
   static const char kNativesFileName[];
   static const char kSnapshotFileName[];
 

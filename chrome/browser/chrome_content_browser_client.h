@@ -336,6 +336,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // created. It is used only the IO thread.
   prerender::PrerenderTracker* prerender_tracker_;
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  base::ScopedFD v8_natives_fd_;
+  base::ScopedFD v8_snapshot_fd_;
+#endif  // OS_POSIX && !OS_MACOSX
+
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.
   std::vector<ChromeContentBrowserClientParts*> extra_parts_;

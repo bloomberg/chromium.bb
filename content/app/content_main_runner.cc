@@ -53,10 +53,6 @@
 #include "gin/public/isolate_holder.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "content/public/common/content_descriptors.h"
-#endif
-
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #if defined(TYPE_PROFILING)
@@ -98,6 +94,7 @@
 #include "content/public/common/content_descriptors.h"
 
 #if !defined(OS_MACOSX)
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #endif
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -498,6 +495,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #endif  // !OS_MACOSX && USE_TCMALLOC
 
+#if !defined(OS_IOS)
+    base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
+#endif
+
     // On Android,
     // - setlocale() is not supported.
     // - We do not override the signal handlers so that we can get
@@ -510,8 +511,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     setlocale(LC_ALL, "");
 
     SetupSignalHandlers();
-
-    base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
     g_fds->Set(kPrimaryIPCChannel,
                kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !OS_ANDROID && !OS_IOS
@@ -519,7 +518,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
     g_fds->Set(kCrashDumpSignal,
                kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
-#endif
+#endif  // OS_LINUX || OS_OPENBSD
+
 
 #endif  // !OS_WIN
 
@@ -679,43 +679,48 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     RegisterContentSchemes(true);
 
 #if defined(OS_ANDROID)
-    int icudata_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
-        kAndroidICUDataDescriptor);
+    int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
     if (icudata_fd != -1) {
-      auto icudata_region = base::GlobalDescriptors::GetInstance()->GetRegion(
-          kAndroidICUDataDescriptor);
+      auto icudata_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
       CHECK(base::i18n::InitializeICUWithFileDescriptor(icudata_fd,
                                                         icudata_region));
     } else {
       CHECK(base::i18n::InitializeICU());
     }
+#else
+    CHECK(base::i18n::InitializeICU());
+#endif  // OS_ANDROID
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-    int v8_natives_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
-        kV8NativesDataDescriptor);
-    int v8_snapshot_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
-        kV8SnapshotDataDescriptor);
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
+    // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor are shared with
+    // child processes. On Android they are set in
+    // ChildProcessService::InternalInitChildProcess, otherwise set them here.
+    if (!process_type.empty() && process_type != switches::kZygoteProcess) {
+      g_fds->Set(
+          kV8NativesDataDescriptor,
+          kV8NativesDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+      g_fds->Set(
+          kV8SnapshotDataDescriptor,
+          kV8SnapshotDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+    }
+#endif  // !OS_ANDROID
+    int v8_natives_fd = g_fds->MaybeGet(kV8NativesDataDescriptor);
+    int v8_snapshot_fd = g_fds->MaybeGet(kV8SnapshotDataDescriptor);
     if (v8_natives_fd != -1 && v8_snapshot_fd != -1) {
-      auto v8_natives_region =
-          base::GlobalDescriptors::GetInstance()->GetRegion(
-              kV8NativesDataDescriptor);
-      auto v8_snapshot_region =
-          base::GlobalDescriptors::GetInstance()->GetRegion(
-              kV8SnapshotDataDescriptor);
+      auto v8_natives_region = g_fds->GetRegion(kV8NativesDataDescriptor);
+      auto v8_snapshot_region = g_fds->GetRegion(kV8SnapshotDataDescriptor);
       CHECK(gin::IsolateHolder::LoadV8SnapshotFd(
           v8_natives_fd, v8_natives_region.offset, v8_natives_region.size,
           v8_snapshot_fd, v8_snapshot_region.offset, v8_snapshot_region.size));
     } else {
       CHECK(gin::IsolateHolder::LoadV8Snapshot());
     }
-#endif // V8_USE_EXTERNAL_STARTUP_DATA
-
 #else
-    CHECK(base::i18n::InitializeICU());
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     CHECK(gin::IsolateHolder::LoadV8Snapshot());
+#endif  // OS_POSIX && !OS_MACOSX
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
-#endif  // OS_ANDROID
 
     if (delegate_)
       delegate_->PreSandboxStartup();
