@@ -36,6 +36,8 @@ def Classname(s):
   eg experimental.downloads -> Experimental_Downloads
   updateAll -> UpdateAll.
   """
+  if s == '':
+    return 'EMPTY_STRING'
   return '_'.join([x[0].upper() + x[1:] for x in re.split('\W', s)])
 
 

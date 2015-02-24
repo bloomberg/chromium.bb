@@ -45,7 +45,6 @@ namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
-namespace LaunchEphemeralAppResult = LaunchEphemeralApp::Results;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 
 namespace {
@@ -92,6 +91,46 @@ chrome::HostDesktopType GetHostDesktopTypeForWebContents(
     content::WebContents* contents) {
   return chrome::GetHostDesktopTypeForNativeWindow(
       contents->GetTopLevelNativeWindow());
+}
+
+api::webstore_private::Result WebstoreInstallResultToApiResult(
+    webstore_install::Result result) {
+  switch (result) {
+    case webstore_install::SUCCESS:
+      return api::webstore_private::RESULT_SUCCESS;
+    case webstore_install::OTHER_ERROR:
+      return api::webstore_private::RESULT_UNKNOWN_ERROR;
+    case webstore_install::INVALID_ID:
+      return api::webstore_private::RESULT_INVALID_ID;
+    case webstore_install::NOT_PERMITTED:
+    case webstore_install::WEBSTORE_REQUEST_ERROR:
+    case webstore_install::INVALID_WEBSTORE_RESPONSE:
+      return api::webstore_private::RESULT_INSTALL_ERROR;
+    case webstore_install::INVALID_MANIFEST:
+      return api::webstore_private::RESULT_MANIFEST_ERROR;
+    case webstore_install::ICON_ERROR:
+      return api::webstore_private::RESULT_ICON_ERROR;
+    case webstore_install::ABORTED:
+    case webstore_install::USER_CANCELLED:
+      return api::webstore_private::RESULT_USER_CANCELLED;
+    case webstore_install::BLACKLISTED:
+      return api::webstore_private::RESULT_BLACKLISTED;
+    case webstore_install::MISSING_DEPENDENCIES:
+    case webstore_install::REQUIREMENT_VIOLATIONS:
+      return api::webstore_private::RESULT_MISSING_DEPENDENCIES;
+    case webstore_install::BLOCKED_BY_POLICY:
+      return api::webstore_private::RESULT_BLOCKED_BY_POLICY;
+    case webstore_install::LAUNCH_FEATURE_DISABLED:
+      return api::webstore_private::RESULT_FEATURE_DISABLED;
+    case webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE:
+      return api::webstore_private::RESULT_UNSUPPORTED_EXTENSION_TYPE;
+    case webstore_install::INSTALL_IN_PROGRESS:
+      return api::webstore_private::RESULT_INSTALL_IN_PROGRESS;
+    case webstore_install::LAUNCH_IN_PROGRESS:
+      return api::webstore_private::RESULT_LAUNCH_IN_PROGRESS;
+  }
+  NOTREACHED();
+  return api::webstore_private::RESULT_NONE;
 }
 
 static base::LazyInstance<PendingApprovals> g_pending_approvals =
@@ -159,12 +198,16 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
   params_ = BeginInstallWithManifest3::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  if (!crx_file::id_util::IdIsValid(params_->details.id))
-    return RespondNow(BuildResponseForError(INVALID_ID, kInvalidIdError));
+  if (!crx_file::id_util::IdIsValid(params_->details.id)) {
+    return RespondNow(BuildResponseForError(
+        api::webstore_private::RESULT_INVALID_ID,
+        kInvalidIdError));
+  }
 
   if (params_->details.icon_data && params_->details.icon_url) {
-    return RespondNow(BuildResponseForError(ICON_ERROR,
-                                            kCannotSpecifyIconDataAndUrlError));
+    return RespondNow(BuildResponseForError(
+        api::webstore_private::RESULT_ICON_ERROR,
+        kCannotSpecifyIconDataAndUrlError));
   }
 
   GURL icon_url;
@@ -172,8 +215,9 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
     std::string tmp_url;
     icon_url = source_url().Resolve(*params_->details.icon_url);
     if (!icon_url.is_valid()) {
-      return RespondNow(BuildResponseForError(INVALID_ICON_URL,
-                                              kInvalidIconUrlError));
+      return RespondNow(BuildResponseForError(
+          api::webstore_private::RESULT_INVALID_ICON_URL,
+          kInvalidIconUrlError));
     }
   }
 
@@ -189,8 +233,9 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
   if (util::IsExtensionInstalledPermanently(params_->details.id,
                                             browser_context()) ||
       tracker->GetActiveInstall(params_->details.id)) {
-    return RespondNow(BuildResponseForError(ALREADY_INSTALLED,
-                                            kAlreadyInstalledError));
+    return RespondNow(BuildResponseForError(
+        api::webstore_private::RESULT_ALREADY_INSTALLED,
+        kAlreadyInstalledError));
   }
   ActiveInstallData install_data(params_->details.id);
   scoped_active_install_.reset(new ScopedActiveInstall(tracker, install_data));
@@ -257,25 +302,26 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
     const std::string& id,
-    WebstoreInstallHelper::Delegate::InstallHelperResultCode result_code,
+    WebstoreInstallHelper::Delegate::InstallHelperResultCode result,
     const std::string& error_message) {
   CHECK_EQ(params_->details.id, id);
 
   // Map from WebstoreInstallHelper's result codes to ours.
-  ResultCode code = ERROR_NONE;
-  switch (result_code) {
+  api::webstore_private::Result api_result =
+      api::webstore_private::RESULT_NONE;
+  switch (result) {
     case WebstoreInstallHelper::Delegate::UNKNOWN_ERROR:
-      code = UNKNOWN_ERROR;
+      api_result = api::webstore_private::RESULT_UNKNOWN_ERROR;
       break;
     case WebstoreInstallHelper::Delegate::ICON_ERROR:
-      code = ICON_ERROR;
+      api_result = api::webstore_private::RESULT_ICON_ERROR;
       break;
     case WebstoreInstallHelper::Delegate::MANIFEST_ERROR:
-      code = MANIFEST_ERROR;
+      api_result = api::webstore_private::RESULT_MANIFEST_ERROR;
       break;
   }
-  DCHECK_NE(code, ERROR_NONE);
-  Respond(BuildResponseForError(code, error_message));
+  DCHECK_NE(api_result, api::webstore_private::RESULT_NONE);
+  Respond(BuildResponseForError(api_result, error_message));
 
   // Matches the AddRef in Run().
   Release();
@@ -318,7 +364,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
 
 void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbort(
     bool user_initiated) {
-  Respond(BuildResponseForError(USER_CANCELLED, kUserCancelledError));
+  Respond(BuildResponseForError(
+      api::webstore_private::RESULT_USER_CANCELLED,
+      kUserCancelledError));
 
   // The web store install histograms are a subset of the install histograms.
   // We need to record both histograms here since CrxInstaller::InstallUIAbort
@@ -338,45 +386,19 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbort(
   Release();
 }
 
-const char* WebstorePrivateBeginInstallWithManifest3Function::
-    ResultCodeToString(ResultCode code) const {
-  switch (code) {
-    case ERROR_NONE:
-      return "";
-    case UNKNOWN_ERROR:
-      return "unknown_error";
-    case USER_CANCELLED:
-      return "user_cancelled";
-    case MANIFEST_ERROR:
-      return "manifest_error";
-    case ICON_ERROR:
-      return "icon_error";
-    case INVALID_ID:
-      return "invalid_id";
-    case PERMISSION_DENIED:
-      return "permission_denied";
-    case INVALID_ICON_URL:
-      return "invalid_icon_url";
-    case ALREADY_INSTALLED:
-      return "already_installed";
-  }
-  NOTREACHED();
-  return "";
-}
-
 ExtensionFunction::ResponseValue
 WebstorePrivateBeginInstallWithManifest3Function::BuildResponseForSuccess() {
-  return ArgumentList(
-      BeginInstallWithManifest3::Results::Create(
-          ResultCodeToString(ERROR_NONE)));
+  // The web store expects an empty string on success, so don't use
+  // RESULT_SUCCESS here.
+  return ArgumentList(BeginInstallWithManifest3::Results::Create(
+      api::webstore_private::RESULT_EMPTY_STRING));
 }
 
 ExtensionFunction::ResponseValue
 WebstorePrivateBeginInstallWithManifest3Function::BuildResponseForError(
-    ResultCode code, const std::string& error) {
-  return ErrorWithArguments(
-      BeginInstallWithManifest3::Results::Create(ResultCodeToString(code)),
-      error);
+    api::webstore_private::Result result, const std::string& error) {
+  return ErrorWithArguments(BeginInstallWithManifest3::Results::Create(result),
+                            error);
 }
 
 WebstorePrivateCompleteInstallFunction::
@@ -613,7 +635,7 @@ WebstorePrivateLaunchEphemeralAppFunction::Run() {
 
   if (!user_gesture()) {
     return RespondNow(BuildResponse(
-        LaunchEphemeralAppResult::RESULT_USER_GESTURE_REQUIRED,
+        api::webstore_private::RESULT_USER_GESTURE_REQUIRED,
         "User gesture is required"));
   }
 
@@ -637,77 +659,28 @@ WebstorePrivateLaunchEphemeralAppFunction::Run() {
 
 void WebstorePrivateLaunchEphemeralAppFunction::OnLaunchComplete(
     webstore_install::Result result, const std::string& error) {
-  // Translate between the EphemeralAppLauncher's error codes and the API
-  // error codes.
-  LaunchEphemeralAppResult::Result api_result =
-      LaunchEphemeralAppResult::RESULT_UNKNOWN_ERROR;
-  switch (result) {
-    case webstore_install::SUCCESS:
-      api_result = LaunchEphemeralAppResult::RESULT_SUCCESS;
-      break;
-    case webstore_install::OTHER_ERROR:
-      api_result = LaunchEphemeralAppResult::RESULT_UNKNOWN_ERROR;
-      break;
-    case webstore_install::INVALID_ID:
-      api_result = LaunchEphemeralAppResult::RESULT_INVALID_ID;
-      break;
-    case webstore_install::NOT_PERMITTED:
-    case webstore_install::WEBSTORE_REQUEST_ERROR:
-    case webstore_install::INVALID_WEBSTORE_RESPONSE:
-    case webstore_install::INVALID_MANIFEST:
-    case webstore_install::ICON_ERROR:
-      api_result = LaunchEphemeralAppResult::RESULT_INSTALL_ERROR;
-      break;
-    case webstore_install::ABORTED:
-    case webstore_install::USER_CANCELLED:
-      api_result = LaunchEphemeralAppResult::RESULT_USER_CANCELLED;
-      break;
-    case webstore_install::BLACKLISTED:
-      api_result = LaunchEphemeralAppResult::RESULT_BLACKLISTED;
-      break;
-    case webstore_install::MISSING_DEPENDENCIES:
-    case webstore_install::REQUIREMENT_VIOLATIONS:
-      api_result = LaunchEphemeralAppResult::RESULT_MISSING_DEPENDENCIES;
-      break;
-    case webstore_install::BLOCKED_BY_POLICY:
-      api_result = LaunchEphemeralAppResult::RESULT_BLOCKED_BY_POLICY;
-      break;
-    case webstore_install::LAUNCH_FEATURE_DISABLED:
-      api_result = LaunchEphemeralAppResult::RESULT_FEATURE_DISABLED;
-      break;
-    case webstore_install::LAUNCH_UNSUPPORTED_EXTENSION_TYPE:
-      api_result = LaunchEphemeralAppResult::RESULT_UNSUPPORTED_EXTENSION_TYPE;
-      break;
-    case webstore_install::INSTALL_IN_PROGRESS:
-      api_result = LaunchEphemeralAppResult::RESULT_INSTALL_IN_PROGRESS;
-      break;
-    case webstore_install::LAUNCH_IN_PROGRESS:
-      api_result = LaunchEphemeralAppResult::RESULT_LAUNCH_IN_PROGRESS;
-      break;
-  }
-
-  Respond(BuildResponse(api_result, error));
+  Respond(BuildResponse(WebstoreInstallResultToApiResult(result), error));
   Release();  // Matches AddRef() in Run()
 }
 
 ExtensionFunction::ResponseValue
 WebstorePrivateLaunchEphemeralAppFunction::BuildResponse(
-    LaunchEphemeralAppResult::Result result, const std::string& error) {
-  if (result != LaunchEphemeralAppResult::RESULT_SUCCESS) {
+    api::webstore_private::Result result, const std::string& error) {
+  if (result != api::webstore_private::RESULT_SUCCESS) {
     std::string error_message;
     if (error.empty()) {
       error_message = base::StringPrintf(
-          "[%s]", LaunchEphemeralAppResult::ToString(result).c_str());
+          "[%s]", api::webstore_private::ToString(result).c_str());
     } else {
       error_message = base::StringPrintf(
           "[%s]: %s",
-          LaunchEphemeralAppResult::ToString(result).c_str(),
+          api::webstore_private::ToString(result).c_str(),
           error.c_str());
     }
-    return ErrorWithArguments(LaunchEphemeralAppResult::Create(result),
+    return ErrorWithArguments(LaunchEphemeralApp::Results::Create(result),
                               error_message);
   }
-  return ArgumentList(LaunchEphemeralAppResult::Create(result));
+  return ArgumentList(LaunchEphemeralApp::Results::Create(result));
 }
 
 WebstorePrivateGetEphemeralAppsEnabledFunction::

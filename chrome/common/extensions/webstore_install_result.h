@@ -10,9 +10,6 @@ namespace extensions {
 namespace webstore_install {
 
 // Result codes returned by WebstoreStandaloneInstaller and its subclasses.
-// IMPORTANT: Keep this list in sync with both the definition in
-// chrome/common/extensions/api/webstore.json and
-// chrome/common/extensions/api/webstore/webstore_install_constants.cc!
 enum Result {
   // Successful operation.
   SUCCESS,

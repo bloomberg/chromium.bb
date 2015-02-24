@@ -42,37 +42,6 @@ class WebstorePrivateBeginInstallWithManifest3Function
   DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
                              WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
 
-  // Result codes for the return value. If you change this, make sure to
-  // update the description for the beginInstallWithManifest3 callback in
-  // the extension API JSON.
-  enum ResultCode {
-    ERROR_NONE = 0,
-
-    // An unspecified error occurred.
-    UNKNOWN_ERROR,
-
-    // The user cancelled the confirmation dialog instead of accepting it.
-    USER_CANCELLED,
-
-    // The manifest failed to parse correctly.
-    MANIFEST_ERROR,
-
-    // There was a problem parsing the base64 encoded icon data.
-    ICON_ERROR,
-
-    // The extension id was invalid.
-    INVALID_ID,
-
-    // The page does not have permission to call this function.
-    PERMISSION_DENIED,
-
-    // Invalid icon url.
-    INVALID_ICON_URL,
-
-    // An extension with the same extension id has already been installed.
-    ALREADY_INSTALLED,
-  };
-
   WebstorePrivateBeginInstallWithManifest3Function();
 
  private:
@@ -86,7 +55,7 @@ class WebstorePrivateBeginInstallWithManifest3Function
                               const SkBitmap& icon,
                               base::DictionaryValue* parsed_manifest) override;
   void OnWebstoreParseFailure(const std::string& id,
-                              InstallHelperResultCode result_code,
+                              InstallHelperResultCode result,
                               const std::string& error_message) override;
 
   // ExtensionInstallPrompt::Delegate:
@@ -94,10 +63,9 @@ class WebstorePrivateBeginInstallWithManifest3Function
   void InstallUIAbort(bool user_initiated) override;
 
   // Response helpers.
-  const char* ResultCodeToString(ResultCode code) const;
   ExtensionFunction::ResponseValue BuildResponseForSuccess();
   ExtensionFunction::ResponseValue BuildResponseForError(
-      ResultCode code, const std::string& error);
+      api::webstore_private::Result result, const std::string& error);
 
   ChromeExtensionFunctionDetails chrome_details_;
 
@@ -291,7 +259,7 @@ class WebstorePrivateLaunchEphemeralAppFunction
                         const std::string& error);
 
   ExtensionFunction::ResponseValue BuildResponse(
-      api::webstore_private::LaunchEphemeralApp::Results::Result result,
+      api::webstore_private::Result result,
       const std::string& error);
 
   ChromeExtensionFunctionDetails chrome_details_;
