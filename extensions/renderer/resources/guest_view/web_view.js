@@ -61,14 +61,16 @@ WebViewImpl.setupElement = function(proto) {
 
 // Initiates navigation once the <webview> element is attached to the DOM.
 WebViewImpl.prototype.onElementAttached = function() {
-  this.attributes[WebViewConstants.ATTRIBUTE_SRC].parse();
+  for (var i in this.attributes) {
+    this.attributes[i].attach();
+  }
 };
 
 // Resets some state upon detaching <webview> element from the DOM.
 WebViewImpl.prototype.onElementDetached = function() {
   this.guest.destroy();
   for (var i in this.attributes) {
-    this.attributes[i].reset();
+    this.attributes[i].detach();
   }
 };
 

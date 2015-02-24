@@ -64,8 +64,11 @@ WebViewAttribute.prototype.maybeHandleMutation = function(oldValue, newValue) {
 // Called when a change that isn't ignored occurs to the attribute's value.
 WebViewAttribute.prototype.handleMutation = function(oldValue, newValue) {};
 
+// Called when the <webview> element is attached to the DOM tree.
+WebViewAttribute.prototype.attach = function() {};
+
 // Called when the <webview> element is detached from the DOM tree.
-WebViewAttribute.prototype.reset = function() {};
+WebViewAttribute.prototype.detach = function() {};
 
 // An attribute that is treated as a Boolean.
 function BooleanAttribute(name, webViewImpl) {
@@ -140,18 +143,18 @@ AutosizeDimensionAttribute.prototype.handleMutation = function(
   }
   this.webViewImpl.guest.setSize({
     'enableAutoSize': this.webViewImpl.attributes[
-      WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
+        WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
     'min': {
       'width': this.webViewImpl.attributes[
-        WebViewConstants.ATTRIBUTE_MINWIDTH].getValue(),
+          WebViewConstants.ATTRIBUTE_MINWIDTH].getValue(),
       'height': this.webViewImpl.attributes[
-        WebViewConstants.ATTRIBUTE_MINHEIGHT].getValue()
+          WebViewConstants.ATTRIBUTE_MINHEIGHT].getValue()
     },
     'max': {
       'width': this.webViewImpl.attributes[
-        WebViewConstants.ATTRIBUTE_MAXWIDTH].getValue(),
+          WebViewConstants.ATTRIBUTE_MAXWIDTH].getValue(),
       'height': this.webViewImpl.attributes[
-        WebViewConstants.ATTRIBUTE_MAXHEIGHT].getValue()
+          WebViewConstants.ATTRIBUTE_MAXHEIGHT].getValue()
     }
   });
   return;
@@ -207,7 +210,7 @@ PartitionAttribute.prototype.handleMutation = function(oldValue, newValue) {
 
   // The partition cannot change if the webview has already navigated.
   if (!this.webViewImpl.attributes[
-        WebViewConstants.ATTRIBUTE_SRC].beforeFirstNavigation) {
+          WebViewConstants.ATTRIBUTE_SRC].beforeFirstNavigation) {
     window.console.error(WebViewConstants.ERROR_MSG_ALREADY_NAVIGATED);
     this.setValueIgnoreMutation(oldValue);
     return;
@@ -219,7 +222,7 @@ PartitionAttribute.prototype.handleMutation = function(oldValue, newValue) {
   }
 };
 
-PartitionAttribute.prototype.reset = function() {
+PartitionAttribute.prototype.detach = function() {
   this.validPartitionId = true;
 };
 
@@ -228,6 +231,7 @@ function SrcAttribute(webViewImpl) {
   WebViewAttribute.call(this, WebViewConstants.ATTRIBUTE_SRC, webViewImpl);
   this.setupMutationObserver();
   this.beforeFirstNavigation = true;
+  this.elementAttached = false;
 }
 
 SrcAttribute.prototype.__proto__ = WebViewAttribute.prototype;
@@ -255,8 +259,14 @@ SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
   this.parse();
 };
 
-SrcAttribute.prototype.reset = function() {
+SrcAttribute.prototype.attach = function() {
+  this.elementAttached = true;
+  this.parse();
+};
+
+SrcAttribute.prototype.detach = function() {
   this.beforeFirstNavigation = true;
+  this.elementAttached = false;
 };
 
 // The purpose of this mutation observer is to catch assignment to the src
@@ -284,9 +294,9 @@ SrcAttribute.prototype.setupMutationObserver =
 };
 
 SrcAttribute.prototype.parse = function() {
-  if (!this.webViewImpl.elementAttached ||
+  if (!this.elementAttached ||
       !this.webViewImpl.attributes[
-        WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
+          WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
       !this.getValue()) {
     return;
   }
