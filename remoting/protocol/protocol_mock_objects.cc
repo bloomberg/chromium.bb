@@ -15,7 +15,8 @@ MockConnectionToClient::MockConnectionToClient(Session* session,
     : ConnectionToClient(session),
       clipboard_stub_(nullptr),
       host_stub_(host_stub),
-      input_stub_(nullptr) {
+      input_stub_(nullptr),
+      video_feedback_stub_(nullptr) {
 }
 
 MockConnectionToClient::~MockConnectionToClient() {}

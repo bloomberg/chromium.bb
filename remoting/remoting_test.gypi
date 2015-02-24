@@ -193,6 +193,7 @@
         'protocol/buffered_socket_writer_unittest.cc',
         'protocol/channel_multiplexer_unittest.cc',
         'protocol/chromium_socket_factory_unittest.cc',
+        'protocol/client_video_dispatcher_unittest.cc',
         'protocol/clipboard_echo_filter_unittest.cc',
         'protocol/clipboard_filter_unittest.cc',
         'protocol/connection_tester.cc',

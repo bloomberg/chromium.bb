@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "remoting/proto/video.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -47,8 +48,16 @@ class CaptureSchedulerTest : public testing::Test {
     CheckCaptureCalled();
     tick_clock_->Advance(capture_delay);
     scheduler_->OnCaptureCompleted();
-    scheduler_->OnFrameEncoded(encode_delay);
+
+    VideoPacket packet;
+    packet.set_encode_time_ms(encode_delay.InMilliseconds());
+    scheduler_->OnFrameEncoded(&packet);
+
     scheduler_->OnFrameSent();
+
+    scoped_ptr<VideoAck> ack(new VideoAck());
+    ack->set_frame_id(packet.frame_id());
+    scheduler_->ProcessVideoAck(ack.Pass());
 
     EXPECT_TRUE(capture_timer_->IsRunning());
     EXPECT_EQ(std::max(base::TimeDelta(),
@@ -132,9 +141,15 @@ TEST_F(CaptureSchedulerTest, RollingAverageDifferentTimes) {
   }
 }
 
-// Verify that we never have more than 2 pending frames.
-TEST_F(CaptureSchedulerTest, MaximumPendingFrames) {
+// Verify that we never have more than 2 encoding frames.
+TEST_F(CaptureSchedulerTest, MaximumEncodingFrames) {
   InitScheduler();
+
+  // Process the first frame to let the scheduler know that receiver supports
+  // ACKs.
+  SimulateSingleFrameCapture(
+      base::TimeDelta(), base::TimeDelta(),
+      base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
 
   capture_timer_->Fire();
   CheckCaptureCalled();
@@ -145,11 +160,55 @@ TEST_F(CaptureSchedulerTest, MaximumPendingFrames) {
   scheduler_->OnCaptureCompleted();
 
   EXPECT_FALSE(capture_timer_->IsRunning());
-
-  scheduler_->OnFrameEncoded(base::TimeDelta());
-  scheduler_->OnFrameSent();
-
+  VideoPacket packet;
+  scheduler_->OnFrameEncoded(&packet);
   EXPECT_TRUE(capture_timer_->IsRunning());
 }
 
+// Verify that the scheduler doesn't exceed maximum number of pending frames.
+TEST_F(CaptureSchedulerTest, MaximumPendingFrames) {
+  InitScheduler();
+
+  // Process the first frame to let the scheduler know that receiver supports
+  // ACKs.
+  SimulateSingleFrameCapture(
+      base::TimeDelta(), base::TimeDelta(),
+      base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
+
+  // Queue some frames until the sender is blocked.
+  while (capture_timer_->IsRunning()) {
+    capture_timer_->Fire();
+    CheckCaptureCalled();
+    scheduler_->OnCaptureCompleted();
+    VideoPacket packet;
+    scheduler_->OnFrameEncoded(&packet);
+    scheduler_->OnFrameSent();
+  }
+
+  // Next frame should be scheduled, once one of the queued frames is
+  // acknowledged.
+  EXPECT_FALSE(capture_timer_->IsRunning());
+  scheduler_->ProcessVideoAck(make_scoped_ptr(new VideoAck()));
+  EXPECT_TRUE(capture_timer_->IsRunning());
+}
+
+// Verify that the scheduler doesn't exceed maximum number of pending frames
+// when acks are not supported.
+TEST_F(CaptureSchedulerTest, MaximumPendingFramesNoAcks) {
+  InitScheduler();
+
+  // Queue some frames until the sender is blocked.
+  while (capture_timer_->IsRunning()) {
+    capture_timer_->Fire();
+    CheckCaptureCalled();
+    scheduler_->OnCaptureCompleted();
+    VideoPacket packet;
+    scheduler_->OnFrameEncoded(&packet);
+  }
+
+  // Next frame should be scheduled, once one of the queued frames is sent.
+  EXPECT_FALSE(capture_timer_->IsRunning());
+  scheduler_->OnFrameSent();
+  EXPECT_TRUE(capture_timer_->IsRunning());
+}
 }  // namespace remoting

@@ -25,6 +25,7 @@ class HostEventDispatcher;
 class HostStub;
 class HostVideoDispatcher;
 class InputStub;
+class VideoFeedbackStub;
 class VideoStub;
 
 // This class represents a remote viewer connection to the chromoting
@@ -97,6 +98,10 @@ class ConnectionToClient : public base::NonThreadSafe,
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub);
   virtual void set_host_stub(HostStub* host_stub);
   virtual void set_input_stub(InputStub* input_stub);
+
+  // Sets video feedback stub. Can be called at any time after connection is
+  // authenticated.
+  virtual void set_video_feedback_stub(VideoFeedbackStub* video_feedback_stub);
 
   // Session::EventHandler interface.
   void OnSessionStateChange(Session::State state) override;

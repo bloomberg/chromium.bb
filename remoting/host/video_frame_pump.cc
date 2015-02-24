@@ -146,8 +146,7 @@ void VideoFramePump::SendEncodedFrame(int64 latest_event_timestamp,
 
   packet->set_latest_event_timestamp(latest_event_timestamp);
 
-  capture_scheduler_.OnFrameEncoded(
-      base::TimeDelta::FromMilliseconds(packet->encode_time_ms()));
+  capture_scheduler_.OnFrameEncoded(packet.get());
 
   video_stub_->ProcessVideoPacket(packet.Pass(),
                                   base::Bind(&VideoFramePump::OnVideoPacketSent,

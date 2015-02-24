@@ -84,6 +84,12 @@ void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
   event_dispatcher_->set_input_stub(input_stub);
 }
 
+void ConnectionToClient::set_video_feedback_stub(
+    VideoFeedbackStub* video_feedback_stub) {
+  DCHECK(CalledOnValidThread());
+  video_dispatcher_->set_video_feedback_stub(video_feedback_stub);
+}
+
 void ConnectionToClient::OnSessionStateChange(Session::State state) {
   DCHECK(CalledOnValidThread());
 

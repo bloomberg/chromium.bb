@@ -66,4 +66,16 @@ message VideoPacket {
 
   // Optional frame timestamp. Used in tests to estimate frame latency.
   optional int64 timestamp = 12;
+
+  // Frame identifier used to match VideoFrame and VideoAck.
+  optional int32 frame_id = 13;
+}
+
+// VideoAck acknowledges that the frame in the VideoPacket with the same
+// frame_id has been rendered. VideoAck messages must be sent only for frames
+// that have frame_id field set. They must be sent the same order in which
+// the corresponding VideoPackets were received.
+message VideoAck {
+  // Frame ID.
+  optional int32 frame_id = 1;
 }

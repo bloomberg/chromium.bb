@@ -23,6 +23,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 namespace protocol {
+class VideoFeedbackStub;
 class VideoStub;
 }  // namespace protocol
 
@@ -90,6 +91,10 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
   void SetLosslessEncode(bool want_lossless);
   void SetLosslessColor(bool want_lossless);
 
+  protocol::VideoFeedbackStub* video_feedback_stub() {
+    return &capture_scheduler_;
+  }
+
  private:
   // webrtc::DesktopCapturer::Callback interface.
   webrtc::SharedMemory* CreateSharedMemory(size_t size) override;
@@ -103,8 +108,7 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
                         base::TimeTicks timestamp,
                         scoped_ptr<VideoPacket> packet);
 
-  // Callback passed to |video_stub_| for the last packet in each frame, to
-  // rate-limit frame captures to network throughput.
+  // Callback passed to |video_stub_|.
   void OnVideoPacketSent();
 
   // Called by |keep_alive_timer_|.
@@ -112,8 +116,6 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
 
   // Callback for |video_stub_| called after a keep-alive packet is sent.
   void OnKeepAlivePacketSent();
-
-  base::ThreadChecker thread_checker_;
 
   // Task runner used to run |encoder_|.
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
@@ -137,6 +139,8 @@ class VideoFramePump : public webrtc::DesktopCapturer::Callback {
 
   // Number updated by the caller to trace performance.
   int64 latest_event_timestamp_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<VideoFramePump> weak_factory_;
 

@@ -21,6 +21,18 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   ~ClientVideoDispatcher() override;
 
  private:
+  struct PendingFrame;
+  typedef std::list<PendingFrame> PendingFramesList;
+
+  void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
+                          const base::Closure& done);
+
+  // Callback for VideoStub::ProcessVideoPacket().
+  void OnPacketDone(PendingFramesList::iterator pending_frame);
+
+  PendingFramesList pending_frames_;
+
+  VideoStub* video_stub_;
   ProtobufMessageParser<VideoPacket> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientVideoDispatcher);

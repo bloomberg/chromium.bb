@@ -447,6 +447,7 @@ void ClientSession::ResetVideoPipeline() {
   DCHECK(CalledOnValidThread());
 
   mouse_shape_pump_.reset();
+  connection_->set_video_feedback_stub(nullptr);
   video_frame_pump_.reset();
 
   // Create VideoEncoder and DesktopCapturer to match the session's video
@@ -484,6 +485,9 @@ void ClientSession::ResetVideoPipeline() {
 
   // Pause capturing if necessary.
   video_frame_pump_->Pause(pause_video_);
+
+  connection_->set_video_feedback_stub(
+      video_frame_pump_->video_feedback_stub());
 }
 
 void ClientSession::SetGnubbyAuthHandlerForTesting(

@@ -50,14 +50,21 @@ class MockConnectionToClient : public ConnectionToClient {
     input_stub_ = input_stub;
   }
 
+  void set_video_feedback_stub(
+      VideoFeedbackStub* video_feedback_stub) override {
+    video_feedback_stub_ = video_feedback_stub;
+  }
+
   ClipboardStub* clipboard_stub() { return clipboard_stub_; }
   HostStub* host_stub() { return host_stub_; }
   InputStub* input_stub() { return input_stub_; }
+  VideoFeedbackStub* video_feedback_stub() { return video_feedback_stub_; }
 
  private:
   ClipboardStub* clipboard_stub_;
   HostStub* host_stub_;
   InputStub* input_stub_;
+  VideoFeedbackStub* video_feedback_stub_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClient);
 };
