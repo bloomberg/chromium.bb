@@ -7,15 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/autofill/core/common/password_form.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
 class CredentialsItemView;
 class ManagePasswordsBubbleModel;
-
-namespace autofill {
-struct PasswordForm;
-}
 
 namespace views {
 class ImageButton;
@@ -42,6 +39,7 @@ class ManageCredentialItemView : public views::View,
   // LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
+  autofill::PasswordForm form_;
   scoped_ptr<CredentialsItemView> credential_button_;
   views::ImageButton* delete_button_;
   views::Link* undo_link_;

@@ -7,13 +7,10 @@
 
 #include <vector>
 
+#include "components/autofill/core/common/password_form.h"
 #include "ui/views/view.h"
 
 class ManagePasswordsBubbleModel;
-
-namespace autofill {
-struct PasswordForm;
-}
 
 // A custom view of individual credentials. The view is represented as a table
 // where each row can be in three distinct states:

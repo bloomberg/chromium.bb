@@ -8,9 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
-#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "ui/views/controls/button/label_button.h"
+
+namespace autofill {
+struct PasswordForm;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -36,13 +39,13 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   };
 
   CredentialsItemView(views::ButtonListener* button_listener,
-                      const autofill::PasswordForm& form,
+                      const autofill::PasswordForm* form,
                       password_manager::CredentialType credential_type,
                       Style style,
                       net::URLRequestContextGetter* request_context);
   ~CredentialsItemView() override;
 
-  const autofill::PasswordForm& form() const { return form_; }
+  const autofill::PasswordForm* form() const { return form_; }
   password_manager::CredentialType credential_type() const {
     return credential_type_;
   }
@@ -56,7 +59,7 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   int GetHeightForWidth(int w) const override;
   void Layout() override;
 
-  const autofill::PasswordForm form_;
+  const autofill::PasswordForm* form_;
   const password_manager::CredentialType credential_type_;
 
   views::ImageView* image_view_;

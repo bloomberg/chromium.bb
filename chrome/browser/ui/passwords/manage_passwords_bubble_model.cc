@@ -151,14 +151,16 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
 
-  base::string16 save_confirmation_link =
-      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_LINK);
-  size_t offset;
-  save_confirmation_text_ =
-      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
-                                 save_confirmation_link, &offset);
-  save_confirmation_link_range_ =
-      gfx::Range(offset, offset + save_confirmation_link.length());
+  if (state_ == password_manager::ui::CONFIRMATION_STATE) {
+    base::string16 save_confirmation_link =
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_LINK);
+    size_t offset;
+    save_confirmation_text_ =
+        l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
+                                   save_confirmation_link, &offset);
+    save_confirmation_link_range_ =
+        gfx::Range(offset, offset + save_confirmation_link.length());
+  }
 
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);

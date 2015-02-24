@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/password_form.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -84,7 +85,7 @@ void CircularImageView::OnPaint(gfx::Canvas* canvas) {
 
 CredentialsItemView::CredentialsItemView(
     views::ButtonListener* button_listener,
-    const autofill::PasswordForm& form,
+    const autofill::PasswordForm* form,
     password_manager::CredentialType credential_type,
     Style style,
     net::URLRequestContextGetter* request_context)
@@ -104,22 +105,22 @@ CredentialsItemView::CredentialsItemView(
   DCHECK(image.Width() >= kAvatarImageSize &&
          image.Height() >= kAvatarImageSize);
   UpdateAvatar(image.AsImageSkia());
-  if (form_.avatar_url.is_valid()) {
+  if (form_->avatar_url.is_valid()) {
     // Fetch the actual avatar.
     AccountAvatarFetcher* fetcher = new AccountAvatarFetcher(
-        form_.avatar_url, weak_ptr_factory_.GetWeakPtr());
+        form_->avatar_url, weak_ptr_factory_.GetWeakPtr());
     fetcher->Start(request_context);
   }
   AddChildView(image_view_);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   upper_label_ = new views::Label(
-      GetUpperLabelText(form_, style),
+      GetUpperLabelText(*form_, style),
       rb->GetFontList(ui::ResourceBundle::BoldFont));
   upper_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(upper_label_);
 
-  base::string16 lower_text = GetLowerLabelText(form_, style);
+  base::string16 lower_text = GetLowerLabelText(*form_, style);
   if (!lower_text.empty()) {
     lower_label_ = new views::Label(
         lower_text, rb->GetFontList(ui::ResourceBundle::SmallFont));

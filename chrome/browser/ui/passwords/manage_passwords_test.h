@@ -52,6 +52,10 @@ class ManagePasswordsTest : public InProcessBrowserTest {
       ScopedVector<autofill::PasswordForm> federated_credentials,
       const GURL& origin);
 
+  // Put the controller, icon, and bubble into an auto sign-in state.
+  void SetupAutoSignin(
+      ScopedVector<autofill::PasswordForm> local_credentials);
+
   // Get samples for |histogram|.
   base::HistogramSamples* GetSamples(const char* histogram);
 

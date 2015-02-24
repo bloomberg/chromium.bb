@@ -49,15 +49,15 @@ void BuildColumnSet(views::GridLayout* layout) {
 ManageCredentialItemView::ManageCredentialItemView(
     ManagePasswordsBubbleModel* model,
     const autofill::PasswordForm* password_form)
-    : delete_button_(nullptr),
+    : form_(*password_form),
+      delete_button_(nullptr),
       undo_link_(nullptr),
       model_(model),
       form_deleted_(false) {
   net::URLRequestContextGetter* request_context =
       model_->GetProfile()->GetRequestContext();
   credential_button_.reset(new CredentialsItemView(
-      this, *password_form,
-      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+      this, &form_, password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
       CredentialsItemView::ACCOUNT_CHOOSER, request_context));
   credential_button_->set_owned_by_client();
   credential_button_->SetEnabled(false);

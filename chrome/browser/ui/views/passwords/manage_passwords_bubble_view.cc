@@ -41,7 +41,7 @@
 
 namespace {
 
-const int kAutoSigninToastTimeout = 5;
+const int kAutoSigninToastTimeout = 3;
 const int kDesiredBubbleWidth = 370;
 
 enum ColumnSetType {
@@ -250,7 +250,7 @@ void ManagePasswordsBubbleView::AccountChooserView::AddCredentialItemsWithType(
     // Add the title to the layout with appropriate padding.
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(new CredentialsItemView(
-        this, *form, type, CredentialsItemView::ACCOUNT_CHOOSER,
+        this, form, type, CredentialsItemView::ACCOUNT_CHOOSER,
         request_context));
   }
 }
@@ -261,7 +261,7 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
     // ManagePasswordsBubbleModel should care about calling a callback in case
     // the bubble is dismissed by any other means.
     CredentialsItemView* view = static_cast<CredentialsItemView*>(sender);
-    parent_->model()->OnChooseCredentials(view->form(),
+    parent_->model()->OnChooseCredentials(*view->form(),
                                           view->credential_type());
   } else {
     parent_->model()->OnNopeClicked();
@@ -295,7 +295,7 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
   SetLayoutManager(new views::FillLayout);
   CredentialsItemView* credential = new CredentialsItemView(
       this,
-      parent_->model()->pending_password(),
+      &parent_->model()->pending_password(),
       password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
       CredentialsItemView::AUTO_SIGNIN,
       parent_->model()->GetProfile()->GetRequestContext());

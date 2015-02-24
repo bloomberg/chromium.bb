@@ -292,3 +292,26 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
             password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
   ManagePasswordsBubbleView::CloseBubble();
 }
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  test_form()->origin = GURL("https://example.com");
+  test_form()->display_name = base::ASCIIToUTF16("Peter");
+  test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
+  GURL avatar_url("https://google.com/avatar.png");
+  test_form()->avatar_url = avatar_url;
+  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+
+  // Prepare to capture the network request.
+  TestURLFetcherCallback url_callback;
+  net::FakeURLFetcherFactory factory(
+      NULL,
+      base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                 base::Unretained(&url_callback)));
+  factory.SetFakeResponse(avatar_url, std::string(), net::HTTP_OK,
+                          net::URLRequestStatus::FAILED);
+  EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
+
+  SetupAutoSignin(local_credentials.Pass());
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+}

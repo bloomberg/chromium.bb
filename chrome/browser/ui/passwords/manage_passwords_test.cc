@@ -87,6 +87,11 @@ void ManagePasswordsTest::SetupChooseCredentials(
       base::Bind(&ManagePasswordsTest::OnChooseCredential, this));
 }
 
+void ManagePasswordsTest::SetupAutoSignin(
+    ScopedVector<autofill::PasswordForm> local_credentials) {
+  GetController()->OnAutoSignin(local_credentials.Pass());
+}
+
 base::HistogramSamples* ManagePasswordsTest::GetSamples(
     const char* histogram) {
   // Ensure that everything has been properly recorded before pulling samples.
