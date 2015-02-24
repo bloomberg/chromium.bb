@@ -595,11 +595,16 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
 
 v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isolate)
 {
+    // The plugin may be destroyed due to re-entrancy when calling
+    // v8ScriptableObject below. crbug.com/458776. Hold a reference to the
+    // plugin container to prevent this from happening.
+    RefPtrWillBeRawPtr<WebPluginContainerImpl> protector(this);
+
     v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
-    // |m_webPlugin| may be destroyed during the above line due to re-entrancy
-    // caused by sync messages to the plugin. If this is the case just return an
-    // empty handle. crbug.com/423263.
-    if (!m_webPlugin)
+
+    // If the plugin has been destroyed and the reference on the stack is the
+    // only one left, then don't return the scriptable object.
+    if (hasOneRef())
         return v8::Local<v8::Object>();
 
     if (!object.IsEmpty()) {
