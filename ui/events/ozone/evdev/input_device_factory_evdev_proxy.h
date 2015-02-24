@@ -18,6 +18,7 @@ namespace ui {
 
 enum class DomCode;
 class InputDeviceFactoryEvdev;
+struct InputDeviceSettingsEvdev;
 
 typedef base::Callback<void(scoped_ptr<std::string>)> GetTouchDeviceStatusReply;
 
@@ -41,13 +42,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void DisableInternalKeyboardExceptKeys(
       scoped_ptr<std::set<DomCode>> excepted_keys);
   void EnableInternalKeyboard();
-  void SetTouchpadSensitivity(int value);
-  void SetTapToClick(bool enabled);
-  void SetThreeFingerClick(bool enabled);
-  void SetTapDragging(bool enabled);
-  void SetNaturalScroll(bool enabled);
-  void SetMouseSensitivity(int value);
-  void SetTapToClickPaused(bool state);
+  void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
 
  private:

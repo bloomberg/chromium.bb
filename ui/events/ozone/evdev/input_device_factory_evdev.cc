@@ -318,6 +318,9 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
     converters_[path] = converter.release();
     converters_[path]->Start();
     UpdateDirtyFlags(converters_[path]);
+
+    // Sync settings to new device.
+    ApplyInputDeviceSettings();
   }
 
   if (--pending_device_changes_ == 0)
@@ -390,35 +393,10 @@ void InputDeviceFactoryEvdev::EnableInternalKeyboard() {
   }
 }
 
-void InputDeviceFactoryEvdev::SetTouchpadSensitivity(int value) {
-  SetIntPropertyForOneType(DT_TOUCHPAD, "Pointer Sensitivity", value);
-  SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity", value);
-}
-
-void InputDeviceFactoryEvdev::SetTapToClick(bool enabled) {
-  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Enable", enabled);
-}
-
-void InputDeviceFactoryEvdev::SetThreeFingerClick(bool enabled) {
-  SetBoolPropertyForOneType(DT_TOUCHPAD, "T5R2 Three Finger Click Enable",
-                            enabled);
-}
-
-void InputDeviceFactoryEvdev::SetTapDragging(bool enabled) {
-  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Drag Enable", enabled);
-}
-
-void InputDeviceFactoryEvdev::SetNaturalScroll(bool enabled) {
-  SetBoolPropertyForOneType(DT_MULTITOUCH, "Australian Scrolling", enabled);
-}
-
-void InputDeviceFactoryEvdev::SetMouseSensitivity(int value) {
-  SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity", value);
-  SetIntPropertyForOneType(DT_MOUSE, "Scroll Sensitivity", value);
-}
-
-void InputDeviceFactoryEvdev::SetTapToClickPaused(bool state) {
-  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused", state);
+void InputDeviceFactoryEvdev::UpdateInputDeviceSettings(
+    const InputDeviceSettingsEvdev& settings) {
+  input_device_settings_ = settings;
+  ApplyInputDeviceSettings();
 }
 
 void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
@@ -432,6 +410,31 @@ void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
 
 base::WeakPtr<InputDeviceFactoryEvdev> InputDeviceFactoryEvdev::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
+  SetIntPropertyForOneType(DT_TOUCHPAD, "Pointer Sensitivity",
+                           input_device_settings_.touchpad_sensitivity);
+  SetIntPropertyForOneType(DT_TOUCHPAD, "Scroll Sensitivity",
+                           input_device_settings_.touchpad_sensitivity);
+
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Enable",
+                            input_device_settings_.tap_to_click_enabled);
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "T5R2 Three Finger Click Enable",
+                            input_device_settings_.three_finger_click_enabled);
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Drag Enable",
+                            input_device_settings_.tap_dragging_enabled);
+
+  SetBoolPropertyForOneType(DT_MULTITOUCH, "Australian Scrolling",
+                            input_device_settings_.natural_scroll_enabled);
+
+  SetIntPropertyForOneType(DT_MOUSE, "Pointer Sensitivity",
+                           input_device_settings_.mouse_sensitivity);
+  SetIntPropertyForOneType(DT_MOUSE, "Scroll Sensitivity",
+                           input_device_settings_.mouse_sensitivity);
+
+  SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
+                            input_device_settings_.tap_to_click_paused);
 }
 
 void InputDeviceFactoryEvdev::UpdateDirtyFlags(

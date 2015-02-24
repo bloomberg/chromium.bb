@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <linux/input.h>
 
+#include "base/thread_task_runner_handle.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
@@ -15,11 +16,13 @@ namespace ui {
 
 InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
                                            MouseButtonMapEvdev* button_map)
-    : input_device_factory_(nullptr),
+    : settings_update_pending_(false),
+      input_device_factory_(nullptr),
       keyboard_(keyboard),
       button_map_(button_map),
       has_mouse_(false),
-      has_touchpad_(false) {
+      has_touchpad_(false),
+      weak_ptr_factory_(this) {
 }
 
 InputControllerEvdev::~InputControllerEvdev() {
@@ -28,6 +31,8 @@ InputControllerEvdev::~InputControllerEvdev() {
 void InputControllerEvdev::SetInputDeviceFactory(
     InputDeviceFactoryEvdevProxy* input_device_factory) {
   input_device_factory_ = input_device_factory;
+
+  UpdateDeviceSettings();
 }
 
 void InputControllerEvdev::set_has_mouse(bool has_mouse) {
@@ -100,33 +105,33 @@ void InputControllerEvdev::EnableInternalKeyboard() {
 }
 
 void InputControllerEvdev::SetTouchpadSensitivity(int value) {
-  if (input_device_factory_)
-    input_device_factory_->SetTouchpadSensitivity(value);
+  input_device_settings_.touchpad_sensitivity = value;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetTapToClick(bool enabled) {
-  if (input_device_factory_)
-    input_device_factory_->SetTapToClick(enabled);
+  input_device_settings_.tap_to_click_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetThreeFingerClick(bool enabled) {
-  if (input_device_factory_)
-    input_device_factory_->SetThreeFingerClick(enabled);
+  input_device_settings_.three_finger_click_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetTapDragging(bool enabled) {
-  if (input_device_factory_)
-    input_device_factory_->SetTapDragging(enabled);
+  input_device_settings_.tap_dragging_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetNaturalScroll(bool enabled) {
-  if (input_device_factory_)
-    input_device_factory_->SetNaturalScroll(enabled);
+  input_device_settings_.natural_scroll_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetMouseSensitivity(int value) {
-  if (input_device_factory_)
-    input_device_factory_->SetMouseSensitivity(value);
+  input_device_settings_.mouse_sensitivity = value;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
@@ -135,8 +140,8 @@ void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
 }
 
 void InputControllerEvdev::SetTapToClickPaused(bool state) {
-  if (input_device_factory_)
-    input_device_factory_->SetTapToClickPaused(state);
+  input_device_settings_.tap_to_click_paused = state;
+  ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::GetTouchDeviceStatus(
@@ -145,6 +150,20 @@ void InputControllerEvdev::GetTouchDeviceStatus(
     input_device_factory_->GetTouchDeviceStatus(reply);
   else
     reply.Run(make_scoped_ptr(new std::string));
+}
+
+void InputControllerEvdev::ScheduleUpdateDeviceSettings() {
+  if (!input_device_factory_ || settings_update_pending_)
+    return;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&InputControllerEvdev::UpdateDeviceSettings,
+                            weak_ptr_factory_.GetWeakPtr()));
+  settings_update_pending_ = true;
+}
+
+void InputControllerEvdev::UpdateDeviceSettings() {
+  input_device_factory_->UpdateInputDeviceSettings(input_device_settings_);
+  settings_update_pending_ = false;
 }
 
 }  // namespace ui

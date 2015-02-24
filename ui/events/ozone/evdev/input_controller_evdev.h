@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/ozone/public/input_controller.h"
 
 namespace ui {
@@ -60,6 +62,18 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void EnableInternalKeyboard() override;
 
  private:
+  // Post task to update settings.
+  void ScheduleUpdateDeviceSettings();
+
+  // Send settings update to input_device_factory_.
+  void UpdateDeviceSettings();
+
+  // Configuration that needs to be passed on to InputDeviceFactory.
+  InputDeviceSettingsEvdev input_device_settings_;
+
+  // Task to update config from input_device_settings_ is pending.
+  bool settings_update_pending_;
+
   // Factory for devices. Needed to update device config.
   InputDeviceFactoryEvdevProxy* input_device_factory_;
 
@@ -72,6 +86,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   // Device presence.
   bool has_mouse_;
   bool has_touchpad_;
+
+  base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);
 };

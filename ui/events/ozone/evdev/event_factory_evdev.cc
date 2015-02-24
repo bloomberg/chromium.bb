@@ -325,7 +325,7 @@ void EventFactoryEvdev::OnThreadStarted(
     scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory) {
   input_device_factory_proxy_ = input_device_factory.Pass();
 
-  // TODO(spang): This settings interface is really broken. crbug.com/450899
+  // Hook up device configuration.
   input_controller_.SetInputDeviceFactory(input_device_factory_proxy_.get());
 
   // Scan & monitor devices.

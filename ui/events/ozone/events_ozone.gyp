@@ -88,6 +88,8 @@
       'evdev/input_device_factory_evdev.h',
       'evdev/input_device_factory_evdev_proxy.cc',
       'evdev/input_device_factory_evdev_proxy.h',
+      'evdev/input_device_settings_evdev.cc',
+      'evdev/input_device_settings_evdev.h',
       'evdev/input_injector_evdev.cc',
       'evdev/input_injector_evdev.h',
       'evdev/keyboard_evdev.cc',

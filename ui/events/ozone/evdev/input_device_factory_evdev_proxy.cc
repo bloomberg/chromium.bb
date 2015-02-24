@@ -71,46 +71,11 @@ void InputDeviceFactoryEvdevProxy::EnableInternalKeyboard() {
                             input_device_factory_));
 }
 
-void InputDeviceFactoryEvdevProxy::SetTouchpadSensitivity(int value) {
+void InputDeviceFactoryEvdevProxy::UpdateInputDeviceSettings(
+    const InputDeviceSettingsEvdev& settings) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::SetTouchpadSensitivity,
-                            input_device_factory_, value));
-}
-
-void InputDeviceFactoryEvdevProxy::SetTapToClick(bool enabled) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&InputDeviceFactoryEvdev::SetTapToClick,
-                                    input_device_factory_, enabled));
-}
-
-void InputDeviceFactoryEvdevProxy::SetThreeFingerClick(bool enabled) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::SetThreeFingerClick,
-                            input_device_factory_, enabled));
-}
-
-void InputDeviceFactoryEvdevProxy::SetTapDragging(bool enabled) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&InputDeviceFactoryEvdev::SetTapDragging,
-                                    input_device_factory_, enabled));
-}
-
-void InputDeviceFactoryEvdevProxy::SetNaturalScroll(bool enabled) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&InputDeviceFactoryEvdev::SetNaturalScroll,
-                                    input_device_factory_, enabled));
-}
-
-void InputDeviceFactoryEvdevProxy::SetMouseSensitivity(int value) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::SetMouseSensitivity,
-                            input_device_factory_, value));
-}
-
-void InputDeviceFactoryEvdevProxy::SetTapToClickPaused(bool state) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::SetTapToClickPaused,
-                            input_device_factory_, state));
+      FROM_HERE, base::Bind(&InputDeviceFactoryEvdev::UpdateInputDeviceSettings,
+                            input_device_factory_, settings));
 }
 
 void InputDeviceFactoryEvdevProxy::GetTouchDeviceStatus(

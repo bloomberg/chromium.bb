@@ -17,6 +17,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 
 namespace ui {
 
@@ -61,13 +62,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void EnableInternalKeyboard();
 
   // Bits from InputController that have to be answered on IO.
-  void SetTouchpadSensitivity(int value);
-  void SetTapToClick(bool enabled);
-  void SetThreeFingerClick(bool enabled);
-  void SetTapDragging(bool enabled);
-  void SetNaturalScroll(bool enabled);
-  void SetMouseSensitivity(int value);
-  void SetTapToClickPaused(bool state);
+  void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
 
   base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
@@ -78,6 +73,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);
+
+  // Sync input_device_settings_ to attached devices.
+  void ApplyInputDeviceSettings();
 
   // Update observers on device changes.
   void UpdateDirtyFlags(const EventConverterEvdev* converter);
@@ -117,6 +115,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   bool keyboard_list_dirty_;
   bool mouse_list_dirty_;
   bool touchpad_list_dirty_;
+
+  // Device settings. These primarily affect libgestures behavior.
+  InputDeviceSettingsEvdev input_device_settings_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<InputDeviceFactoryEvdev> weak_ptr_factory_;
