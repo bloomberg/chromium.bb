@@ -62,6 +62,8 @@ class BuildRow(collections.MutableMapping):
       self['weekday'] = None
     self['chromeos_version'] = self.build_entry.full_version
     self['chrome_version'] = self.build_entry.chrome_version
+    self['waterfall'] = self.build_entry.waterfall
+    self['builder_name'] = self.build_entry.builder_name
 
     failed_stages = [x.name for x in build_stage_entries if
                      x.status == x.FAIL]

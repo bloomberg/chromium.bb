@@ -100,6 +100,7 @@ class BuildTable(BaseModel):
   master_build_id = ba_fields.ReadOnlyForeignKey('self',
                                                  db_column='master_build_id')
   buildbot_generation = ba_fields.ReadOnlyIntegerField()
+  builder_name = ba_fields.ReadOnlyCharField()
   waterfall = ba_fields.ReadOnlyCharField()
   build_number = ba_fields.ReadOnlyIntegerField()
   bot_hostname = ba_fields.ReadOnlyCharField()

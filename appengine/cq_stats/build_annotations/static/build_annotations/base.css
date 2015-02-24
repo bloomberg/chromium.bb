@@ -47,3 +47,11 @@ th.build_details, td.build_details {
 .shown {
   display: block;
 }
+
+a.external_link:after {
+  display: inline-block;
+  content: "";
+  width: 15px;
+  height: 15px;
+  background: transparent url("images/popup_link.png") no-repeat;
+}
