@@ -13,13 +13,6 @@
 #ifndef _FIMG2D_H_
 #define _FIMG2D_H_
 
-#ifndef TRUE
-#define TRUE 0
-#endif
-#ifndef FALSE
-#define FALSE -1
-#endif
-
 #define G2D_MAX_CMD_NR		64
 #define G2D_MAX_GEM_CMD_NR	64
 #define G2D_MAX_CMD_LIST_NR	64
