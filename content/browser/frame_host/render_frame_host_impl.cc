@@ -184,7 +184,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
 
-  if (delegate_)
+  if (delegate_ && render_frame_created_)
     delegate_->RenderFrameDeleted(this);
 
   FrameAccessibility::GetInstance()->OnRenderFrameHostDestroyed(this);
@@ -619,6 +619,15 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
 }
 
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
+  // If the current status is different than the new status, the delegate
+  // needs to be notified.
+  if (delegate_ && (created != render_frame_created_)) {
+    if (created)
+      delegate_->RenderFrameCreated(this);
+    else
+      delegate_->RenderFrameDeleted(this);
+  }
+
   render_frame_created_ = created;
   if (created && render_widget_host_)
     render_widget_host_->InitForFrame();
@@ -669,14 +678,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
   if (!new_frame)
     return;
 
+  new_frame->frame_tree_node()->set_sandbox_flags(sandbox_flags);
+
   // We know that the RenderFrame has been created in this case, immediately
   // after the CreateChildFrame IPC was sent.
   new_frame->SetRenderFrameCreated(true);
-
-  new_frame->frame_tree_node()->set_sandbox_flags(sandbox_flags);
-
-  if (delegate_)
-    delegate_->RenderFrameCreated(new_frame);
 }
 
 void RenderFrameHostImpl::OnDetach() {
@@ -1049,9 +1055,6 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
         static_cast<base::TerminationStatus>(status);
   }
 
-  SetRenderFrameCreated(false);
-  InvalidateMojoConnection();
-
   // Reset frame tree state associated with this process.  This must happen
   // before RenderViewTerminated because observers expect the subframes of any
   // affected frames to be cleared first.
@@ -1060,6 +1063,11 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // not be reset.
   if (!is_swapped_out())
     frame_tree_node_->ResetForNewProcess();
+
+  // Reset state for the current RenderFrameHost once the FrameTreeNode has been
+  // reset.
+  SetRenderFrameCreated(false);
+  InvalidateMojoConnection();
 
   if (frame_tree_node_->IsMainFrame()) {
     // RenderViewHost/RenderWidgetHost needs to reset some stuff.

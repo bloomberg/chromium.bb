@@ -87,6 +87,10 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   // the current RenderFrameHost and uses it during its destructor.
   STLDeleteValues(&proxy_hosts_);
 
+  // Release the WebUI prior to resetting the current RenderFrameHost, as the
+  // WebUI accesses the RenderFrameHost during cleanup.
+  web_ui_.reset();
+
   // We should always have a current RenderFrameHost except in some tests.
   SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
 }
@@ -1411,13 +1415,6 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     if (success) {
       if (view_routing_id_ptr)
         *view_routing_id_ptr = render_view_host->GetRoutingID();
-
-      // A brand new RenderFrame was created by one of the Init calls above.
-      // Announce it to observers.
-      if (swapped_out)
-        render_frame_delegate_->RenderFrameCreated(proxy->render_frame_host());
-      else
-        render_frame_delegate_->RenderFrameCreated(new_render_frame_host.get());
     }
   }
 

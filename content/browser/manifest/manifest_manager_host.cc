@@ -4,6 +4,7 @@
 
 #include "content/browser/manifest/manifest_manager_host.h"
 
+#include "base/stl_util.h"
 #include "content/common/manifest_manager_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,6 +31,7 @@ ManifestManagerHost::ManifestManagerHost(WebContents* web_contents)
 }
 
 ManifestManagerHost::~ManifestManagerHost() {
+  STLDeleteValues(&pending_callbacks_);
 }
 
 ManifestManagerHost::CallbackMap* ManifestManagerHost::GetCallbackMapForFrame(

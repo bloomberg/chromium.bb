@@ -122,6 +122,12 @@ class WebContents : public PageNavigator,
     // Used to specify the location context which display the new view should
     // belong. This can be nullptr if not needed.
     gfx::NativeView context;
+
+    // Used to specify that the new WebContents creation is driven by the
+    // renderer process. In this case, the renderer-side objects, such as
+    // RenderFrame, have already been created on the renderer side, and
+    // WebContents construction should take this into account.
+    bool renderer_initiated_creation;
   };
 
   // Creates a new WebContents.

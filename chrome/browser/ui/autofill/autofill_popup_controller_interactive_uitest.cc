@@ -13,6 +13,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -42,8 +43,6 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
     if (message_loop_runner_.get())
       message_loop_runner_->Quit();
-
-    AutofillExternalDelegate::OnPopupHidden();
   }
 
   void WaitForPopupHidden() {
@@ -90,7 +89,10 @@ class AutofillPopupControllerBrowserTest
 
   // Normally the WebContents will automatically delete the delegate, but here
   // the delegate is owned by this test, so we have to manually destroy.
-  void WebContentsDestroyed() override { autofill_external_delegate_.reset(); }
+  void RenderFrameDeleted(content::RenderFrameHost* rfh) override {
+    if (!rfh->GetParent())
+      autofill_external_delegate_.reset();
+  }
 
  protected:
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;

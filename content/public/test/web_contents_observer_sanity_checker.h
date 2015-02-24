@@ -84,11 +84,12 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   ~WebContentsObserverSanityChecker() override;
 
   std::string Format(RenderFrameHost* render_frame_host);
-  void AssertFrameExists(RenderFrameHost* render_frame_host);
+  void AssertRenderFrameExists(RenderFrameHost* render_frame_host);
   void AssertMainFrameExists();
 
   std::set<std::pair<int, int>> live_routes_;
   std::set<std::pair<int, int>> deleted_routes_;
+
   bool web_contents_destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsObserverSanityChecker);

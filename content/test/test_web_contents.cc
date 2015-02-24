@@ -38,6 +38,7 @@ TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
                                          SiteInstance* instance) {
   TestWebContents* test_web_contents = new TestWebContents(browser_context);
   test_web_contents->Init(WebContents::CreateParams(browser_context, instance));
+  test_web_contents->RenderFrameCreated(test_web_contents->GetMainFrame());
   return test_web_contents;
 }
 

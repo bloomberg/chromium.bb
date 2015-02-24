@@ -17,7 +17,8 @@ WebContents::CreateParams::CreateParams(BrowserContext* context)
       main_frame_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
       guest_delegate(nullptr),
-      context(nullptr) {}
+      context(nullptr),
+      renderer_initiated_creation(false) {}
 
 WebContents::CreateParams::CreateParams(
     BrowserContext* context, SiteInstance* site)
@@ -29,7 +30,8 @@ WebContents::CreateParams::CreateParams(
       main_frame_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
       guest_delegate(nullptr),
-      context(nullptr) {}
+      context(nullptr),
+      renderer_initiated_creation(false) {}
 
 WebContents::CreateParams::~CreateParams() {
 }

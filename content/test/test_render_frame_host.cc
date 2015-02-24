@@ -54,9 +54,13 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
       child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
       contents_mime_type_("text/html"),
       simulate_history_list_was_cleared_(false) {
+  if (frame_tree_node_->IsMainFrame())
+    SetRenderFrameCreated(true);
 }
 
-TestRenderFrameHost::~TestRenderFrameHost() {}
+TestRenderFrameHost::~TestRenderFrameHost() {
+  SetRenderFrameCreated(false);
+}
 
 TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
   return static_cast<TestRenderViewHost*>(
@@ -107,6 +111,11 @@ void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use in SendNavigateWithParameters.
   GURL url_copy(url);
+
+  // Ensure that the RenderFrameCreated notification has been sent to observers
+  // before navigating the frame.
+  SetRenderFrameCreated(true);
+
   OnDidStartProvisionalLoadForFrame(url_copy, false);
   SendNavigateWithParameters(page_id, url_copy, transition, url_copy,
       response_code, 0, std::vector<GURL>());
@@ -116,6 +125,10 @@ void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
     int page_id,
     const GURL& url,
     const GURL& original_request_url) {
+  // Ensure that the RenderFrameCreated notification has been sent to observers
+  // before navigating the frame.
+  SetRenderFrameCreated(true);
+
   OnDidStartProvisionalLoadForFrame(url, false);
   SendNavigateWithParameters(page_id, url, ui::PAGE_TRANSITION_LINK,
       original_request_url, 200, 0, std::vector<GURL>());

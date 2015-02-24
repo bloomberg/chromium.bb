@@ -406,14 +406,10 @@ WebContentsImpl::~WebContentsImpl() {
 
   // Manually call the observer methods for the root frame tree node.
   RenderFrameHostManager* root = GetRenderManager();
-  if (root->pending_frame_host()) {
-    FOR_EACH_OBSERVER(WebContentsObserver,
-                      observers_,
-                      RenderFrameDeleted(root->pending_frame_host()));
-  }
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    observers_,
-                    RenderFrameDeleted(root->current_frame_host()));
+
+  if (root->pending_frame_host())
+    root->pending_frame_host()->SetRenderFrameCreated(false);
+  root->current_frame_host()->SetRenderFrameCreated(false);
 
   if (root->pending_render_view_host()) {
     FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1265,6 +1261,14 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
+
+  // If the WebContents creation was renderer-initiated, it means that the
+  // corresponding RenderView and main RenderFrame have already been created.
+  // Ensure observers are notified about this.
+  if (params.renderer_initiated_creation) {
+    RenderViewCreated(GetRenderViewHost());
+    GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
+  }
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
@@ -1594,6 +1598,7 @@ void WebContentsImpl::CreateNewWindow(
   create_params.opener_suppressed = params.opener_suppressed;
   if (params.disposition == NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;
+  create_params.renderer_initiated_creation = true;
 
   WebContentsImpl* new_contents = NULL;
   if (!is_guest) {
@@ -1607,7 +1612,6 @@ void WebContentsImpl::CreateNewWindow(
   new_contents->GetController().SetSessionStorageNamespace(
       partition_id,
       session_storage_namespace);
-  new_contents->RenderViewCreated(new_contents->GetRenderViewHost());
 
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately).
@@ -3663,14 +3667,6 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   FOR_EACH_OBSERVER(
       WebContentsObserver, observers_, RenderViewCreated(render_view_host));
 
-  // We tell the observers now instead of when the main RenderFrameHostImpl is
-  // constructed because otherwise it would be too early (i.e. IPCs sent to the
-  // frame would be dropped because it's not created yet).
-  RenderFrameHost* main_frame = render_view_host->GetMainFrame();
-  FOR_EACH_OBSERVER(
-      WebContentsObserver, observers_, RenderFrameCreated(main_frame));
-  SetAccessibilityModeOnFrame(accessibility_mode_, main_frame);
-
   DevToolsManager::GetInstance()->RenderViewCreated(this, render_view_host);
 }
 
@@ -3704,10 +3700,6 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
 void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
                                            base::TerminationStatus status,
                                            int error_code) {
-  // TODO(nasko): This isn't ideal; the termination process should be handled by
-  // RenderFrameDeleted().  See http://crbug.com/455943.
-  ClearPowerSaveBlockers(rvh->GetMainFrame());
-
   if (rvh != GetRenderViewHost()) {
     // The pending page's RenderViewHost is gone.
     return;

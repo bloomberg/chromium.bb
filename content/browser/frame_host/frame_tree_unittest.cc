@@ -69,9 +69,13 @@ class TreeWalkingWebContentsLogger : public WebContentsObserver {
 
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override {
+    // TODO(nasko): Re-enable this logging once RenderFrameHostChanged observer
+    // methods are fixed. See https://crbug.com/450799.
+    /*
     if (old_host)
       LogWhatHappened("RenderFrameChanged(old)", old_host);
     LogWhatHappened("RenderFrameChanged(new)", new_host);
+    */
   }
 
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
@@ -229,11 +233,13 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   EXPECT_EQ("RenderFrameCreated(23) -> 1: [22: [], 23: []]", activity.GetLog());
 
   // Crash the renderer
-  main_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
-      0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
+      main_test_rfh()->GetRoutingID(), base::TERMINATION_STATUS_PROCESS_CRASHED,
+      -1));
   EXPECT_EQ(
       "RenderFrameDeleted(22) -> 1: []\n"
       "RenderFrameDeleted(23) -> 1: []\n"
+      "RenderFrameDeleted(1) -> 1: []\n"
       "RenderProcessGone -> 1: []",
       activity.GetLog());
 }

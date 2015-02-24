@@ -4,7 +4,9 @@
 
 #include "content/public/test/web_contents_observer_sanity_checker.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/strings/stringprintf.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -35,17 +37,11 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
       std::make_pair(render_frame_host->GetProcess()->GetID(),
                      render_frame_host->GetRoutingID());
   bool frame_exists = !live_routes_.insert(routing_pair).second;
-  bool dead_already = deleted_routes_.count(routing_pair) != 0;
+  deleted_routes_.erase(routing_pair);
 
   if (frame_exists) {
-// TODO(nick): Disabled because of http://crbug.com/425397
-#if 0
     CHECK(false) << "RenderFrameCreated called more than once for routing pair:"
                  << Format(render_frame_host);
-#endif
-  } else if (dead_already) {
-    CHECK(false) << "RenderFrameCreated called for routing pair that was "
-                 << "previously deleted: " << Format(render_frame_host);
   }
 }
 
@@ -82,14 +78,17 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
   CHECK(new_host);
-  if (old_host)
-    AssertFrameExists(old_host);
-  AssertFrameExists(new_host);
+  CHECK_NE(new_host, old_host);
+
+  // TODO(nasko): Implement consistency checking for RenderFrameHostChanged
+  // in follow up CL.
 }
 
 void WebContentsObserverSanityChecker::FrameDeleted(
     RenderFrameHost* render_frame_host) {
-  AssertFrameExists(render_frame_host);
+  // A frame can be deleted before RenderFrame in the renderer process is
+  // created, so there is not much that can be enforced here.
+  CHECK(!web_contents_destroyed_);
 }
 
 void WebContentsObserverSanityChecker::DidStartProvisionalLoadForFrame(
@@ -97,14 +96,14 @@ void WebContentsObserverSanityChecker::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidCommitProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidFailProvisionalLoad(
@@ -112,7 +111,7 @@ void WebContentsObserverSanityChecker::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidNavigateMainFrame(
@@ -125,7 +124,7 @@ void WebContentsObserverSanityChecker::DidNavigateAnyFrame(
     RenderFrameHost* render_frame_host,
     const LoadCommittedDetails& details,
     const FrameNavigateParams& params) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DocumentAvailableInMainFrame() {
@@ -138,13 +137,13 @@ void WebContentsObserverSanityChecker::DocumentOnLoadCompletedInMainFrame() {
 
 void WebContentsObserverSanityChecker::DocumentLoadedInFrame(
     RenderFrameHost* render_frame_host) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidFinishLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidFailLoad(
@@ -152,13 +151,13 @@ void WebContentsObserverSanityChecker::DidFailLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidGetRedirectForResourceRequest(
     RenderFrameHost* render_frame_host,
     const ResourceRedirectDetails& details) {
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 }
 
 void WebContentsObserverSanityChecker::DidOpenRequestedURL(
@@ -168,15 +167,22 @@ void WebContentsObserverSanityChecker::DidOpenRequestedURL(
     const Referrer& referrer,
     WindowOpenDisposition disposition,
     ui::PageTransition transition) {
-  AssertFrameExists(source_render_frame_host);
+  AssertRenderFrameExists(source_render_frame_host);
 }
 
 bool WebContentsObserverSanityChecker::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
+  // TODO(nasko): FrameHostMsg_RenderProcessGone is delivered to
+  // WebContentsObserver since RenderFrameHost allows the delegate to handle
+  // the message first. This shouldn't happen, but for now handle it here.
+  // https://crbug.com/450799
+  if (message.type() == FrameHostMsg_RenderProcessGone::ID)
+    return false;
+
 #if !defined(OS_MACOSX)
 // TODO(avi): Disabled because of http://crbug.com/445054
-  AssertFrameExists(render_frame_host);
+  AssertRenderFrameExists(render_frame_host);
 #endif
   return false;
 }
@@ -190,20 +196,21 @@ WebContentsObserverSanityChecker::WebContentsObserverSanityChecker(
     WebContents* web_contents)
     : WebContentsObserver(web_contents), web_contents_destroyed_(false) {
   // Prime the pump with the initial objects.
+  // TODO(nasko): Investigate why this is needed.
   RenderViewCreated(web_contents->GetRenderViewHost());
-  RenderFrameCreated(web_contents->GetMainFrame());
 }
 
 WebContentsObserverSanityChecker::~WebContentsObserverSanityChecker() {
   CHECK(web_contents_destroyed_);
 }
 
-void WebContentsObserverSanityChecker::AssertFrameExists(
+void WebContentsObserverSanityChecker::AssertRenderFrameExists(
     RenderFrameHost* render_frame_host) {
   CHECK(!web_contents_destroyed_);
   std::pair<int, int> routing_pair =
       std::make_pair(render_frame_host->GetProcess()->GetID(),
                      render_frame_host->GetRoutingID());
+
   bool render_frame_created_happened = live_routes_.count(routing_pair) != 0;
   bool render_frame_deleted_happened = deleted_routes_.count(routing_pair) != 0;
 
@@ -218,13 +225,13 @@ void WebContentsObserverSanityChecker::AssertFrameExists(
 }
 
 void WebContentsObserverSanityChecker::AssertMainFrameExists() {
-  AssertFrameExists(web_contents()->GetMainFrame());
+  AssertRenderFrameExists(web_contents()->GetMainFrame());
 }
 
 std::string WebContentsObserverSanityChecker::Format(
     RenderFrameHost* render_frame_host) {
   return base::StringPrintf(
-      "(%d, %d -> %s )", render_frame_host->GetProcess()->GetID(),
+      "(%d, %d -> %s)", render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRoutingID(),
       render_frame_host->GetSiteInstance()->GetSiteURL().spec().c_str());
 }

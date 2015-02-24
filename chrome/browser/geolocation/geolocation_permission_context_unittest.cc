@@ -220,8 +220,7 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentInternal(
 }
 
 void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
-  content::WebContents* new_tab = content::WebContents::Create(
-      content::WebContents::CreateParams(profile()));
+  content::WebContents* new_tab = CreateTestWebContents();
   new_tab->GetController().LoadURL(
       url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   content::RenderFrameHostTester::For(new_tab->GetMainFrame())

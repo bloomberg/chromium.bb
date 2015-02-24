@@ -317,6 +317,11 @@ bool RenderViewHostImpl::CreateRenderView(
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
 
+  // Since this method creates the main RenderFrame in the renderer process,
+  // set the proper state on its corresponding RenderFrameHost.
+  RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_routing_id_)
+      ->SetRenderFrameCreated(true);
+
   return true;
 }
 
