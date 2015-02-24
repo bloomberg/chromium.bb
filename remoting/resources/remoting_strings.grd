@@ -886,6 +886,18 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
                name="IDS_OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED">
         Host running at the console logic screen has shutdown to support curtain mode by switching to a host running in a user-specific session.
       </message>
+      <message desc="Error message indicating that the host is offline, because the host policy was unreadable (unparseable, inaccessible, mistyped or malformed)."
+               name="IDS_OFFLINE_REASON_POLICY_READ_ERROR">
+        Host failed to read the policy.
+      </message>
+      <message desc="Error message indicating that the host is temporarily offline, because the host is restarting due to a policy change."
+               name="IDS_OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART">
+        Host is restarting, to take into account a policy change.
+      </message>
+      <message desc="Error message indicating that the host is offline, because another process has requested the host to shut down (via a SIGTERM signal)."
+               name="IDS_OFFLINE_REASON_SUCCESS_EXIT">
+        Host has shut down.
+      </message>
       <message desc="Error message indicating that the host is offline, because RemoteAccessHostMatchUsername policy is enabled and there is a mismatch between the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. 'johndoe' if the host is owned by 'johndoe@example.com' Google account)"
                name="IDS_OFFLINE_REASON_USERNAME_MISMATCH">
         Invalid host owner.

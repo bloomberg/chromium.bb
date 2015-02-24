@@ -9,8 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "remoting/base/auto_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/oauth_token_getter.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
@@ -19,22 +18,15 @@ namespace base {
 class TimeDelta;
 }
 
-namespace net {
-class NetworkChangeNotifier;
-}
-
 namespace remoting {
 
-class ChromotingHostContext;
-class DnsBlackholeChecker;
 class HeartbeatSender;
 class OAuthTokenGetter;
 class SignalStrategy;
 class SignalingConnector;
 
-// HostSignalingManager has 2 functions:
-// 1. Keep sending regular heartbeats to the Chromoting Directory.
-// 2. Keep the host process alive while sending host-offline-reason heartbeat.
+// HostSignalingManager manages objects needed for sending regular heartbeats to
+// the Chromoting Directory.
 class HostSignalingManager {
  public:
   class Listener {
@@ -55,12 +47,10 @@ class HostSignalingManager {
   // Probably necessitates refactoring HostProcess to extract a new
   // class to read and store config/policy/cmdline values.
   //
-  // |listener| has to be valid until either
-  //    1) the returned HostSignalingManager is destroyed
-  // or 2) SendHostOfflineReasonAndDelete is called.
+  // |listener| has to be valid until the returned HostSignalingManager is
+  // destroyed.
   static scoped_ptr<HostSignalingManager> Create(
       Listener* listener,
-      const scoped_refptr<AutoThreadTaskRunner>& network_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
@@ -77,36 +67,22 @@ class HostSignalingManager {
   SignalStrategy* signal_strategy() { return signal_strategy_.get(); }
 
   // Kicks off sending a heartbeat containing a host-offline-reason attribute.
-  // Prevents future calls to the |listener| provided to the Create method.
+  // Will call |ack_callback| once either the bot acks receiving the
+  // |host_offline_reason|, or the |timeout| is reached.
   //
-  // Will delete |this| once either the bot acks receiving the
-  // |host_offline_reason|, or the |timeout| is reached.  Deleting
-  // |this| will release |network_task_runner_| and allow the host
-  // process to exit.
-  void SendHostOfflineReasonAndDelete(const std::string& host_offline_reason,
-                                      const base::TimeDelta& timeout);
+  // For discussion of allowed values for |host_offline_reason| argument,
+  // please see the description of rem:host-offline-reason xml attribute in
+  // the class-level comments for HeartbeatReasonSender.
+  void SendHostOfflineReason(
+      const std::string& host_offline_reason,
+      const base::TimeDelta& timeout,
+      const base::Callback<void(bool success)>& ack_callback);
 
  private:
   HostSignalingManager(
-      scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory_for_listener,
-      const scoped_refptr<AutoThreadTaskRunner>& network_task_runner,
       scoped_ptr<SignalStrategy> signal_strategy,
       scoped_ptr<SignalingConnector> signaling_connector,
       scoped_ptr<HeartbeatSender> heartbeat_sender);
-
-  void OnHostOfflineReasonAck(bool success);
-
-  // Used to bind HeartbeatSender and SignalingConnector callbacks to |listener|
-  // in a way that allows "detaching" the |listener| when either |this| is
-  // destroyed or when SendHostOfflineReasonAndDelete method is called.
-  scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory_for_listener_;
-
-  // By holding a reference to |network_task_runner_|, HostSignalingManager is
-  // extending the lifetime of the host process.  This is needed for the case
-  // where an instance of HostProcess has already been destroyed, but we want
-  // to keep the process running while we try to establish a connection and send
-  // host-offline-reason.
-  scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
 
   // |heartbeat_sender_| and |signaling_connector_| have to be destroyed before
   // |signal_strategy_| because their destructors need to call
@@ -114,6 +90,9 @@ class HostSignalingManager {
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
+
+  // Used to verify thread-safe usage.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HostSignalingManager);
 };

@@ -145,6 +145,7 @@ void PolicyWatcher::UpdatePolicies(
 }
 
 void PolicyWatcher::SignalPolicyError() {
+  old_policies_->Clear();
   policy_error_callback_.Run();
 }
 

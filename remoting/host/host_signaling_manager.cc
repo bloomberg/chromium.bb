@@ -19,21 +19,16 @@
 namespace remoting {
 
 HostSignalingManager::HostSignalingManager(
-    scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory_for_listener,
-    const scoped_refptr<AutoThreadTaskRunner>& network_task_runner,
     scoped_ptr<SignalStrategy> signal_strategy,
     scoped_ptr<SignalingConnector> signaling_connector,
     scoped_ptr<HeartbeatSender> heartbeat_sender)
-    : weak_factory_for_listener_(weak_factory_for_listener.Pass()),
-      network_task_runner_(network_task_runner),
-      signal_strategy_(signal_strategy.Pass()),
+    : signal_strategy_(signal_strategy.Pass()),
       signaling_connector_(signaling_connector.Pass()),
       heartbeat_sender_(heartbeat_sender.Pass()) {
 }
 
 scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
     Listener* listener,
-    const scoped_refptr<AutoThreadTaskRunner>& network_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
@@ -42,11 +37,6 @@ scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
     const scoped_refptr<const RsaKeyPair>& host_key_pair,
     const std::string& directory_bot_jid,
     scoped_ptr<OAuthTokenGetter::OAuthCredentials> oauth_credentials) {
-  DCHECK(network_task_runner->BelongsToCurrentThread());
-
-  scoped_ptr<base::WeakPtrFactory<Listener>> weak_factory(
-      new base::WeakPtrFactory<Listener>(listener));
-
   scoped_ptr<XmppSignalStrategy> signal_strategy(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
                              url_request_context_getter, xmpp_server_config));
@@ -56,7 +46,7 @@ scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
 
   scoped_ptr<SignalingConnector> signaling_connector(new SignalingConnector(
       signal_strategy.get(), dns_blackhole_checker.Pass(),
-      base::Bind(&Listener::OnAuthFailed, weak_factory->GetWeakPtr())));
+      base::Bind(&Listener::OnAuthFailed, base::Unretained(listener))));
 
   if (!oauth_credentials->refresh_token.empty()) {
     scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetter(
@@ -66,45 +56,27 @@ scoped_ptr<HostSignalingManager> HostSignalingManager::Create(
   }
 
   scoped_ptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender(
-      base::Bind(&Listener::OnHeartbeatSuccessful, weak_factory->GetWeakPtr()),
-      base::Bind(&Listener::OnUnknownHostIdError, weak_factory->GetWeakPtr()),
+      base::Bind(&Listener::OnHeartbeatSuccessful, base::Unretained(listener)),
+      base::Bind(&Listener::OnUnknownHostIdError, base::Unretained(listener)),
       host_id, signal_strategy.get(), host_key_pair, directory_bot_jid));
 
   return scoped_ptr<HostSignalingManager>(new HostSignalingManager(
-      weak_factory.Pass(), network_task_runner, signal_strategy.Pass(),
-      signaling_connector.Pass(), heartbeat_sender.Pass()));
+      signal_strategy.Pass(), signaling_connector.Pass(),
+      heartbeat_sender.Pass()));
 }
 
 HostSignalingManager::~HostSignalingManager() {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void HostSignalingManager::SendHostOfflineReasonAndDelete(
+void HostSignalingManager::SendHostOfflineReason(
     const std::string& host_offline_reason,
-    const base::TimeDelta& timeout) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason;
-
-  // Ensure that any subsequent callbacks from the HeartbeatSender or
-  // SignalingConnector don't touch the Listener.
-  weak_factory_for_listener_->InvalidateWeakPtrs();
-
-  heartbeat_sender_->SetHostOfflineReason(
-      host_offline_reason, timeout,
-      base::Bind(&HostSignalingManager::OnHostOfflineReasonAck,
-                 base::Unretained(this)));
-}
-
-void HostSignalingManager::OnHostOfflineReasonAck(bool success) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  if (success) {
-    HOST_LOG << "SendHostOfflineReason: succeeded";
-  } else {
-    HOST_LOG << "SendHostOfflineReason: timed out";
-  }
-
-  delete this;
+    const base::TimeDelta& timeout,
+    const base::Callback<void(bool success)>& ack_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
+  heartbeat_sender_->SetHostOfflineReason(host_offline_reason, timeout,
+                                          ack_callback);
 }
 
 }  // namespace remoting

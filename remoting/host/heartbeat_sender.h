@@ -48,8 +48,9 @@ class IqSender;
 // accept new connections from a client, but the rem:heartbeat xml element can
 // optionally include a rem:host-offline-reason attribute, which indicates that
 // the host cannot accept connections from the client (and might possibly be
-// shutting down).  The value of the host-offline-reason attribute can be a
-// string from host_exit_codes.cc (i.e. "INVALID_HOST_CONFIGURATION" string).
+// shutting down).  The value of the host-offline-reason attribute can be either
+// a string from host_exit_codes.cc (i.e. "INVALID_HOST_CONFIGURATION" string)
+// or one of kHostOfflineReasonXxx constants (i.e. "POLICY_READ_ERROR" string).
 //
 // The sequence-id attribute of the heartbeat is a zero-based incrementally
 // increasing integer unique to each heartbeat from a single host.

@@ -344,10 +344,13 @@ function formatHostOfflineReason(hostOfflineReason) {
   var knownReasonTags = [
     /*i18n-content*/ 'OFFLINE_REASON_INITIALIZATION_FAILED',
     /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_CONFIGURATION',
+    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_DOMAIN',
     /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_ID',
     /*i18n-content*/ 'OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS',
-    /*i18n-content*/ 'OFFLINE_REASON_INVALID_HOST_DOMAIN',
     /*i18n-content*/ 'OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED',
+    /*i18n-content*/ 'OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART',
+    /*i18n-content*/ 'OFFLINE_REASON_POLICY_READ_ERROR',
+    /*i18n-content*/ 'OFFLINE_REASON_SUCCESS_EXIT',
     /*i18n-content*/ 'OFFLINE_REASON_USERNAME_MISMATCH'
   ];
   var offlineReasonTag = 'OFFLINE_REASON_' + hostOfflineReason;
