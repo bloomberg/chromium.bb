@@ -78,6 +78,10 @@ CastSocket::CastSocket(const std::string& owner_extension_id)
     : ApiResource(owner_extension_id) {
 }
 
+bool CastSocket::IsPersistent() const {
+  return true;
+}
+
 CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                const net::IPEndPoint& ip_endpoint,
                                ChannelAuthType channel_auth,

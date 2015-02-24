@@ -112,6 +112,12 @@ class CastSocket : public ApiResource {
   // Returns a pointer to the socket's message transport layer. Can be used to
   // send and receive CastMessages over the socket.
   virtual CastTransport* transport() const = 0;
+
+  // Tells the ApiResourceManager to retain CastSocket objects even
+  // if their corresponding extension is suspended.
+  // (CastSockets are still deleted if the extension is removed entirely from
+  // the browser.)
+  bool IsPersistent() const override;
 };
 
 // This class implements a channel between Chrome and a Cast device using a TCP
